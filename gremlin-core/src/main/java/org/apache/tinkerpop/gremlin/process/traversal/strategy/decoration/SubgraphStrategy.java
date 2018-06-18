@@ -378,22 +378,6 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
             return this;
         }
 
-        @Deprecated
-        /**
-         * @deprecated As of release 3.2.2, replaced by {@code Builder#vertices}.
-         */
-        public Builder vertexCriterion(final Traversal<Vertex, ?> predicate) {
-            return this.vertices(predicate);
-        }
-
-        /**
-         * @deprecated As of release 3.2.2, replaced by {@code Builder#edges}.
-         */
-        @Deprecated
-        public Builder edgeCriterion(final Traversal<Edge, ?> predicate) {
-            return this.edges(predicate);
-        }
-
         public SubgraphStrategy create() {
             if (null == this.vertexCriterion && null == this.edgeCriterion && null == this.vertexPropertyCriterion)
                 throw new IllegalStateException("A subgraph must be filtered by a vertex, edge, or vertex property criterion");

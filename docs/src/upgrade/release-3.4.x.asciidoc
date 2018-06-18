@@ -139,8 +139,12 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-1831[TINKERPOP-1831]
 The following deprecated classes, methods or fields have been removed in this version:
 
 * `gremlin-core`
+** `org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer#GREMLIN_CORE`
 ** `org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine`
 ** `org.apache.tinkerpop.gremlin.process.traversal.engine.*`
+** `org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy.Builder#addReadPartition(String)`
+** `org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy.Builder#edgeCriterion(Traversal)`
+** `org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy.Builder#vertexCriterion(Traversal)`
 ** `org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaCollectingBarrierStep.Consumers`
 ** `org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer#makeHasContainers(String, P)`
 ** `org.apache.tinkerpop.gremlin.process.traversal.step.util.event.MutationListener#vertexPropertyChanged(Vertex, Property, Object, Object...)`
@@ -171,7 +175,8 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1143[TINKERPOP-1143],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1296[TINKERPOP-1296],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1705[TINKERPOP-1705],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1707[TINKERPOP-1707],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1954[TINKERPOP-1954]
+link:https://issues.apache.org/jira/browse/TINKERPOP-1954[TINKERPOP-1954],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1986[TINKERPOP-1986]
 
 ==== Modifications to reducing barrier steps
 

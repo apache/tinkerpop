@@ -30,14 +30,6 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface ImportCustomizer extends Customizer {
-    /**
-     * @deprecated As of release 3.2.4, not replaced.
-     */
-    @Deprecated
-    public static final ImportCustomizer GREMLIN_CORE = DefaultImportCustomizer.build()
-            .addClassImports(CoreImports.getClassImports())
-            .addEnumImports(CoreImports.getEnumImports())
-            .addMethodImports(CoreImports.getMethodImports()).create();
 
     /**
      * Gets the set of classes to be imported to the {@link GremlinScriptEngine}.

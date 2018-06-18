@@ -96,7 +96,7 @@ public class PartitionStrategyTraverseTest {
     @Test
     public void shouldIncludeAdditionalHasStepsAndAppendPartitionOnMutatingSteps() {
         final PartitionStrategy strategy = PartitionStrategy.build()
-                .partitionKey("p").writePartition("a").addReadPartition("a").create();
+                .partitionKey("p").writePartition("a").readPartitions("a").create();
 
         if (hasMutatingStep) {
             if (TraversalHelper.hasStepOfAssignableClass(AddEdgeStep.class, traversal.asAdmin())) {

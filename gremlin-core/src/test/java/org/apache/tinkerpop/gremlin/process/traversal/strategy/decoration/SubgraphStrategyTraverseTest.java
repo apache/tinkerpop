@@ -91,7 +91,7 @@ public class SubgraphStrategyTraverseTest {
 
     @Test
     public void shouldSubgraph() {
-        final SubgraphStrategy strategy = SubgraphStrategy.build().edgeCriterion(__.identity()).vertexCriterion(__.identity()).create();
+        final SubgraphStrategy strategy = SubgraphStrategy.build().edges(__.identity()).vertices(__.identity()).create();
         strategy.apply(traversal.asAdmin());
 
         final List<TraversalFilterStep> steps = TraversalHelper.getStepsOfClass(TraversalFilterStep.class, traversal.asAdmin());
