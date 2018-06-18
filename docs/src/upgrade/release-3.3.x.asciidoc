@@ -38,6 +38,14 @@ that `incr` and `decr` have not been removed - just deprecated and thus marked f
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1956[TINKERPOP-1956]
 
+==== TimedInterrupt
+
+In Gremlin Server, it is best not to use the {{timedInterrupt}} option on {{GroovyCompilerGremlinPlugin}} because it
+can compete with the {{scriptEvaluationTimeout}} setting and produce a different error path. Simply rely on
+{{scriptEvaluationTimeout}} as it covers both script evaluation time and result iteration time.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1778[TINKERPOP-1778]
+
 == TinkerPop 3.3.3
 
 *Release Date: May 8, 2018*

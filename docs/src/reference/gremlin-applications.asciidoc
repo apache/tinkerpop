@@ -1487,7 +1487,7 @@ scriptEngines: {
                org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin: {files: [scripts/empty-sample.groovy]}}}}
 ----
 
-This configuration can be expaded to include a the `GroovyCompilerGremlinPlugin`:
+This configuration can be expanded to include a the `GroovyCompilerGremlinPlugin`:
 
 [source,yaml]
 ----
@@ -1497,18 +1497,18 @@ scriptEngines: {
                org.apache.tinkerpop.gremlin.tinkergraph.jsr223.TinkerGraphGremlinPlugin: {}
                org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin: {classImports: [java.lang.Math], methodImports: [java.lang.Math#*]},
                org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin: {files: [scripts/empty-sample-secure.groovy]},
-               org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin: {timedInterrupt: 10000}}}}
+               org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin: {enableThreadInterrupt: true}}}}
 ----
 
-This configuration sets up the script engine with to ensure that loops (like `while`) can only execute for `10000`
-milliseconds.  With this configuration in place, a remote execution as follows, now times out rather than consuming
-the thread continuously:
+This configuration sets up the script engine with to ensure that loops (like `while`) will respect interrupt requests.
+With this configuration in place, a remote execution as follows, now times out rather than consuming the thread
+continuously:
 
 [source,groovy]
 gremlin> :remote connect tinkerpop.server conf/remote.yaml
 ==>Configured localhost/127.0.0.1:8182
 gremlin> :> while(true) { }
-Execution timed out after 10000 units. Start time: Fri Jul 24 11:04:52 EDT 2015
+==>Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 30000 ms or evaluation was otherwise cancelled directly for request [while(true) {}]
 
 The `GroovyCompilerGremlinPlugin` has a number of configuration options:
 
@@ -1517,10 +1517,9 @@ The `GroovyCompilerGremlinPlugin` has a number of configuration options:
 |Customizer |Description
 |`compilation` |Allows for three configurations: `COMPILE_STATIC`, `TYPE_CHECKED` or `NONE` (default). When configured with `COMPILE_STATIC` or `TYPE_CHECKED` it applies `CompileStatic` or `TypeChecked` annotations (respectively) to incoming scripts thus removing dynamic dispatch. More information about static compilation can be found link:http://docs.groovy-lang.org/latest/html/documentation/#_static_compilation[here] and additional information on `TypeChecked` usage can be found link:http://docs.groovy-lang.org/latest/html/documentation/#_the_code_typechecked_code_annotation[here].
 |`compilerConfigurationOptions` |Allows configuration of the Groovy `CompilerConfiguration` object by taking a `Map` of key/value pairs where the "key" is a property to set on the `CompilerConfiguration`.
-|`enableThreadInterrupt` |Injects checks for thread interruption, thus allowing the thread to potentially respect calls to `Thread.interrupt()`
+|`enableThreadInterrupt` |Injects checks for thread interruption, thus allowing the script to potentially respect calls to `Thread.interrupt()`
 |`expectedCompilationTime` |The amount of time in milliseconds a script is allowed to compile before a warning message is sent to the logs.
 |`extensions` | This setting is for use when `compilation` is configured with `COMPILE_STATIC` or `TYPE_CHECKED` and accepts a comma separated list of link:http://docs.groovy-lang.org/latest/html/documentation/#Typecheckingextensions-Workingwithextensions[type checking extensions] that can have the effect of securing calls to various methods.
-|`timedInterrupt` |Injects checks into loops to interrupt them if they exceed the configured timeout in milliseconds.
 |=========================================================
 
 NOTE: Consult the latest link:http://docs.groovy-lang.org/latest/html/documentation/#_typing[Groovy Documentation]
@@ -1535,7 +1534,7 @@ scriptEngines: {
   gremlin-groovy: {
     plugins: { org.apache.tinkerpop.gremlin.server.jsr223.GremlinServerGremlinPlugin: {},
                org.apache.tinkerpop.gremlin.tinkergraph.jsr223.TinkerGraphGremlinPlugin: {}
-               org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin: {enableThreadInterrupt: true, timedInterrupt: 10000, compilation: COMPILE_STATIC, extensions: org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension},
+               org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin: {enableThreadInterrupt: true, compilation: COMPILE_STATIC, extensions: org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension},
                org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin: {classImports: [java.lang.Math], methodImports: [java.lang.Math#*]},
                org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin: {files: [scripts/empty-sample-secure.groovy]}}}}
 ----
