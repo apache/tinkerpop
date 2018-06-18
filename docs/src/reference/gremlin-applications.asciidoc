@@ -1505,12 +1505,10 @@ milliseconds.  With this configuration in place, a remote execution as follows, 
 the thread continuously:
 
 [source,groovy]
-----
 gremlin> :remote connect tinkerpop.server conf/remote.yaml
 ==>Configured localhost/127.0.0.1:8182
 gremlin> :> while(true) { }
-Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 30000 ms or evaluation was otherwise cancelled directly for request [while(true) { }]
-----
+Execution timed out after 10000 units. Start time: Fri Jul 24 11:04:52 EDT 2015
 
 The `GroovyCompilerGremlinPlugin` has a number of configuration options:
 
