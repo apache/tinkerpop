@@ -1143,7 +1143,7 @@ The following table describes the various configuration options that Gremlin Ser
 |scriptEngines.<name>.staticImports |A comma separated list of "static" imports to make available to the `ScriptEngine`. |_none_
 |scriptEngines.<name>.scripts |A comma separated list of script files to execute on `ScriptEngine` initialization. `Graph` and `TraversalSource` instance references produced from scripts will be stored globally in Gremlin Server, therefore it is possible to use initialization scripts to add Traversal Strategies or create entirely new `Graph` instances all together. Instantiating a `LifeCycleHook` in a script provides a way to execute scripts when Gremlin Server starts and stops.|_none_
 |scriptEngines.<name>.config |A `Map` of configuration settings for the `ScriptEngine`.  These settings are dependent on the `ScriptEngine` implementation being used. |_none_
-|scriptEvaluationTimeout |The amount of time in milliseconds before a script evaluation times out. The notion of "script evaluation" refers to the time it takes for the `ScriptEngine` to do its work and *not* any additional time it takes for the result of the evaluation to be iterated and serialized. This feature can be turned off by setting the value to `0`. |30000
+|scriptEvaluationTimeout |The amount of time in milliseconds before a script evaluation and iteration of result times out. This feature can be turned off by setting the value to `0`. |30000
 |serializers |A `List` of `Map` settings, where each `Map` represents a `MessageSerializer` implementation to use along with its configuration. If this value is not set, then Gremlin Server will configure with GraphSON and Gryo but will not register any `ioRegistries` for configured graphs. |_empty_
 |serializers[X].className |The full class name of the `MessageSerializer` implementation. |_none_
 |serializers[X].config |A `Map` containing `MessageSerializer` specific configurations. |_none_
@@ -1374,18 +1374,22 @@ scriptEngines: {
     scripts: [scripts/empty-sample.groovy],
     config: {
       compilerCustomizerProviders: {
-        "org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider":[10000] }}}
+        "org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ThreadInterruptCustomizerProvider":[] }}}}
 
 This configuration sets up the script engine with a `CompilerCustomizerProvider` implementation.  The
-`TimedInterruptCustomizerProvider` injects checks that ensure that loops (like `while`) can only execute for `10000`
-milliseconds.  With this configuration in place, a remote execution as follows, now times out rather than consuming
-the thread continuously:
+`ThreadInterruptCustomizerProvider` injects checks that ensure that loops (like `while`) respect thread interruption
+requests. Note that the empty square brackets following the declaration of the `ThreadInterruptCustomizerProvider`
+are for parameters - this particular `CustomizerProvider` takes no arguments to enable it. With this configuration in
+place and assuming the `scriptEvaluationTimeout` is set to `30000` milliseconds, consider the following remote
+execution:
 
 [source,groovy]
+----
 gremlin> :remote connect tinkerpop.server conf/remote.yaml
 ==>Configured localhost/127.0.0.1:8182
 gremlin> :> while(true) { }
-Execution timed out after 10000 units. Start time: Fri Jul 24 11:04:52 EDT 2015
+Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 30000 ms or evaluation was otherwise cancelled directly for request [while(true) { }]
+----
 
 There are a number of pre-packaged `CustomizerProvider` implementations:
 
@@ -1396,7 +1400,6 @@ There are a number of pre-packaged `CustomizerProvider` implementations:
 |`CompilationOptionsCustomizerProvider` |The amount of time a script is allowed to compile before a warning message is sent to the logs.
 |`ConfigurationCustomizerProvider` |Allows configuration of the Groovy `CompilerConfiguration` object by taking a `Map` of key/value pairs where the "key" is a property to set on the `CompilerConfiguration`.
 |`ThreadInterruptCustomizerProvider` |Injects checks for thread interruption, thus allowing the thread to potentially respect calls to `Thread.interrupt()`
-|`TimedInterruptCustomizerProvider` |Injects checks into loops to interrupt them if they exceed the configured timeout in milliseconds.
 |`TypeCheckedCustomizerProvider` |Similar to the above mentioned, `CompileStaticCustomizerProvider`, the `TypeCheckedCustomizerProvider` injects `TypeChecked` annotations to incoming scripts.  More information on the nature of this annotation can be found in the link:http://docs.groovy-lang.org/latest/html/documentation/#_the_code_typechecked_code_annotation[Groovy Documentation].  It too takes a comma separated list of link:http://docs.groovy-lang.org/latest/html/documentation/#Typecheckingextensions-Workingwithextensions[type checking extensions].
 |=========================================================
 
@@ -1411,7 +1414,6 @@ scriptEngines: {
     config: {
       compilerCustomizerProviders: {
         "org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ThreadInterruptCustomizerProvider":[],
-        "org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider":[10000],
         "org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompilationOptionsCustomizerProvider":[8000],
         "org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider":["org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension"]}}}}
 

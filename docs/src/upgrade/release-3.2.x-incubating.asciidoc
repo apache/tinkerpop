@@ -44,6 +44,14 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1897[TINKERPOP-1897],
 link:http://tinkerpop.apache.org/docs/current/reference#gremlin-console-docker-image[Reference Documentation - Gremlin Console],
 link:http://tinkerpop.apache.org/docs/current/reference#gremlin-server-docker-image[Reference Documentation - Gremlin Server],
 
+==== TimedInterruptCustomizerProvider
+
+In Gremlin Server, it is best not to use {{TimedInterruptCustomizerProvider}} because it can compete with the
+{{scriptEvaluationTimeout}} setting and produce a different error path. Simply rely on {{scriptEvaluationTimeout}}
+as it covers both script evaluation time and result iteration time.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1778[TINKERPOP-1778]
+
 ==== TinkerFactory.createGratefulDead()
 
 The Grateful Dead dataset has been with TinkerPop since the early days of 1.x. It has always been available as a
