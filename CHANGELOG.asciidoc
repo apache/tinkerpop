@@ -65,6 +65,7 @@ This release also includes changes from <<release-3-2-10, 3.2.10>>.
 
 * Removed `timedInterrupt` from documentation as a way to timeout.
 * Deprecated `Order` for `incr` and `decr` in favor of `asc` and `desc`.
+* Fixed bug in `math()` for OLAP where `ComputerVerificationStrategy` was incorrectly detecting path label access and preventing execution.
 
 [[release-3-3-3]]
 === TinkerPop 3.3.3 (Release Date: May 8, 2018)

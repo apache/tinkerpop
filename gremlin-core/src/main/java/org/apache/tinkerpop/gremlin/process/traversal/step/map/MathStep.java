@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -47,19 +48,14 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
 
     private static final String CURRENT = "_";
     private final String equation;
-    private final Set<String> variables;
-    private final Expression expression;
+    private final TinkerExpression expression;
     private TraversalRing<S, Number> traversalRing = new TraversalRing<>();
     private Set<String> keepLabels;
 
     public MathStep(final Traversal.Admin traversal, final String equation) {
         super(traversal);
         this.equation = equation;
-        this.variables = MathStep.getVariables(this.equation);
-        this.expression = new ExpressionBuilder(this.equation)
-                .variables(this.variables)
-                .implicitMultiplication(false)
-                .build();
+        this.expression = new TinkerExpression(equation, MathStep.getVariables(this.equation));
     }
 
     @Override
@@ -69,8 +65,8 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
 
     @Override
     protected Double map(final Traverser.Admin<S> traverser) {
-        final Expression localExpression = new Expression(this.expression);
-        for (final String var : this.variables) {
+        final Expression localExpression = new Expression(this.expression.getExpression());
+        for (final String var : this.expression.getVariables()) {
             localExpression.setVariable(var,
                     var.equals(CURRENT) ?
                             TraversalUtil.applyNullable(traverser, this.traversalRing.next()).doubleValue() :
@@ -83,6 +79,20 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
     @Override
     public void modulateBy(final Traversal.Admin<?, ?> selectTraversal) {
         this.traversalRing.addTraversal(this.integrateChild(selectTraversal));
+    }
+
+    @Override
+    public ElementRequirement getMaxRequirement() {
+        // this is a trick i saw in DedupGlobalStep that allows ComputerVerificationStrategy to be happy for OLAP.
+        // it's a bit more of a hack here. in DedupGlobalStep, the dedup operation really only just needs the ID, but
+        // here the true max requirement is PROPERTIES, but because of how map() works in this implementation in
+        // relation to CURRENT, if we don't access the path labels, then we really only just operate on the stargraph
+        // and are thus OLAP safe. In tracing around the code a bit, I don't see a problem with taking this approach,
+        // but I suppose a better way might be make it more clear when this step is dealing with an actual path and
+        // when it is not and/or adjust ComputerVerificationStrategy to cope with the situation where math() is only
+        // dealing with the local stargraph.
+        return (this.expression.getVariables().contains(CURRENT) && this.expression.getVariables().size() == 1) ?
+                ElementRequirement.ID : PathProcessor.super.getMaxRequirement();
     }
 
     @Override
@@ -126,12 +136,12 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
 
     @Override
     public Set<String> getScopeKeys() {
-        if (this.variables.contains(CURRENT)) {
-            final Set<String> temp = new HashSet<>(this.variables);
+        if (this.expression.getVariables().contains(CURRENT)) {
+            final Set<String> temp = new HashSet<>(this.expression.getVariables());
             temp.remove(CURRENT);
             return temp;
         } else
-            return this.variables;
+            return this.expression.getVariables();
     }
 
     @Override
@@ -166,6 +176,36 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
             variables.add(matcher.group());
         }
         return variables;
+    }
+
+    /**
+     * A wrapper for the {@code Expression} class. That class is not marked {@code Serializable} and therefore gives
+     * problems in OLAP specifically with Spark. This wrapper allows the {@code Expression} to be serialized in that
+     * context with Java serialization.
+     */
+    public static class TinkerExpression implements Serializable {
+        private transient Expression expression;
+        private final String equation;
+        private final Set<String> variables;
+
+        public TinkerExpression(final String equation, final Set<String> variables) {
+            this.variables = variables;
+            this.equation = equation;
+        }
+
+        public Expression getExpression() {
+            if (null == expression) {
+                this.expression = new ExpressionBuilder(this.equation)
+                        .variables(this.variables)
+                        .implicitMultiplication(false)
+                        .build();
+            }
+            return expression;
+        }
+
+        public Set<String> getVariables() {
+            return variables;
+        }
     }
 
 }
