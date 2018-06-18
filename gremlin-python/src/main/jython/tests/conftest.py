@@ -41,7 +41,7 @@ def connection(request):
     executor = concurrent.futures.ThreadPoolExecutor(5)
     pool = queue.Queue()
     try:
-        conn = Connection('ws://localhost:45940/gremlin', 'gmodern', protocol,
+        conn = Connection('ws://localhost:45941/gremlin', 'gmodern', protocol,
                           lambda: TornadoTransport(), executor, pool)
     except OSError:
         executor.shutdown()
