@@ -244,7 +244,7 @@ g.V().has('name','nothing').bothE()
 *Additional References*
 
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV--++[`addV()`],
-link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV-java.lang.String-++[`addV(String)`]),
+link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV-java.lang.String-++[`addV(String)`],
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV-org.apache.tinkerpop.gremlin.process.traversal.Traversal-++[`addV(Traversal)`]
 
 [[addproperty-step]]
@@ -2630,7 +2630,7 @@ g.V().valueMap().tail(local) <4>
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tail--++[`tail()`],
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tail-long-++[`tail(long)`],
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tail-org.apache.tinkerpop.gremlin.process.traversal.Scope-++[`tail(Scope)`]
-link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tail-org.apache.tinkerpop.gremlin.process.traversal.Scope-long-++[tail(Scope,long)`]
+link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tail-org.apache.tinkerpop.gremlin.process.traversal.Scope-long-++[`tail(Scope,long)`]
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`]
 
 [[timelimit-step]]
