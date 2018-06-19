@@ -1,0 +1,14 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "Apache TinkerPop",
+    "classifications": [ "TinkerPop", "Gremlin", "Gremlin.Net" ],
+    "identity": "Gremlin.Net.Template",
+    "name": "Gremlin.Net Template",
+    "shortName": "gremlin",
+    "tags": {
+        "language": "C#",
+        "type": "project"
+    },
+    "sourceName": "Gremlin.Net.Template",
+    "preferNameDirectory": true
+  }

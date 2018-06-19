@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.12
+VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{584F838B-DAE2-44F5-868C-1F532949C827}"
 EndProject
@@ -14,6 +14,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gremlin.Net.UnitTest", "test\Gremlin.Net.UnitTest\Gremlin.Net.UnitTest.csproj", "{1FAB781B-B857-4AD2-BEC8-E20C214D9E21}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gremlin.Net.IntegrationTest", "test\Gremlin.Net.IntegrationTest\Gremlin.Net.IntegrationTest.csproj", "{CC54ABE3-13D2-491C-81E2-4D0355ABFA93}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gremlin.Net.Template", "src\Gremlin.Net.Template\Gremlin.Net.Template.csproj", "{A9D2567A-6FD0-452B-A2F9-4256FE513ADD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gremlin.Net.Template.IntegrationTest", "test\Gremlin.Net.Template.IntegrationTest\Gremlin.Net.Template.IntegrationTest.csproj", "{3BFC3559-E317-4327-AFB7-CFBB31E1C868}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +37,14 @@ Global
 		{CC54ABE3-13D2-491C-81E2-4D0355ABFA93}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC54ABE3-13D2-491C-81E2-4D0355ABFA93}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC54ABE3-13D2-491C-81E2-4D0355ABFA93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A9D2567A-6FD0-452B-A2F9-4256FE513ADD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9D2567A-6FD0-452B-A2F9-4256FE513ADD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9D2567A-6FD0-452B-A2F9-4256FE513ADD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9D2567A-6FD0-452B-A2F9-4256FE513ADD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BFC3559-E317-4327-AFB7-CFBB31E1C868}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BFC3559-E317-4327-AFB7-CFBB31E1C868}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BFC3559-E317-4327-AFB7-CFBB31E1C868}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BFC3559-E317-4327-AFB7-CFBB31E1C868}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -41,5 +53,10 @@ Global
 		{6C1DD34D-E30F-4E37-AACC-BEB8AD2320D8} = {584F838B-DAE2-44F5-868C-1F532949C827}
 		{1FAB781B-B857-4AD2-BEC8-E20C214D9E21} = {1B54FAC2-5411-4BB6-B450-FE2FFD8C4782}
 		{CC54ABE3-13D2-491C-81E2-4D0355ABFA93} = {1B54FAC2-5411-4BB6-B450-FE2FFD8C4782}
+		{A9D2567A-6FD0-452B-A2F9-4256FE513ADD} = {584F838B-DAE2-44F5-868C-1F532949C827}
+		{3BFC3559-E317-4327-AFB7-CFBB31E1C868} = {1B54FAC2-5411-4BB6-B450-FE2FFD8C4782}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F0AF408C-2147-434A-80FB-73A1626FC30C}
 	EndGlobalSection
 EndGlobal
