@@ -381,6 +381,8 @@ limitations under the License.
                         <exclude>**/*.csproj</exclude>
                         <exclude>**/.vs/**</exclude>
                         <exclude>**/NuGet.Config</exclude>
+                        <exclude>**/*.nuspec</exclude>
+                        <exclude>**/*.nuspec.template</exclude>
                         <exclude>**/gremlin-javascript/node_modules/**</exclude>
                         <exclude>**/node/node_modules/**</exclude>
                         <exclude>**/node/node</exclude>

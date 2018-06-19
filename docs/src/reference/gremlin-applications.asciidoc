@@ -2454,11 +2454,15 @@ The following shows the output for `HadoopGraph`:
 describeGraph(HadoopGraph)
 ----
 
-[[gremlin-archetypes]]
-== Gremlin Archetypes
+[[application-templates]]
+== Application Templates
 
-TinkerPop has a number of link:https://maven.apache.org/guides/introduction/introduction-to-archetypes.html[Maven archetypes],
-which provide example project templates to quickly get started with TinkerPop. The available archetypes are as follows:
+TinkerPop has a number of application templates, which provide example project templates to quickly get started with TinkerPop.
+
+[[gremlin-archetypes]]
+=== Maven Archetypes
+
+The available link:https://maven.apache.org/guides/introduction/introduction-to-archetypes.html[Maven archetypes] are as follows:
 
 * `gremlin-archetype-dsl` - An example project that demonstrates how to build Domain Specific Languages with Gremlin in Java.
 * `gremlin-archetype-server` - An example project that demonstrates the basic structure of a
@@ -2475,3 +2479,24 @@ $ mvn archetype:generate -DarchetypeGroupId=org.apache.tinkerpop -DarchetypeArti
 This command will generate a new Maven project in a directory called "app" with a `pom.xml` specifying a `groupId` of
 `com.my`. Please see the `README.asciidoc` in the root of each generated project for information on how to build and
 execute it.
+
+[[gremlin-dotnet-template]]
+=== Gremlin.Net Template
+
+This link:https://docs.microsoft.com/dotnet/core/tools/custom-templates[dotnet template] helps getting started with
+<<gremlin-DotNet,Gremlin.Net>>. It creates a new C# console project that shows how to connect to a
+<<gremlin-server,Gremlin Server>> with Gremlin.Net.
+
+You can install the template with the dotnet CLI tool:
+[source,shell]
+dotnet new -i Gremlin.Net.Template
+
+After the template is installed, a new project based on this template can be installed:
+
+[source,shell]
+dotnet new gremlin
+
+You can specify the output directory for the new project which will then also be used as the name of the created project:
+
+[source,shell]
+dotnet new gremlin -o MyFirstGremlinProject

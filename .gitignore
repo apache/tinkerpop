@@ -30,4 +30,4 @@ tools/
 .vs/
 *nupkg
 NuGet.Config
-nuget.exe
+nuget*.exe
