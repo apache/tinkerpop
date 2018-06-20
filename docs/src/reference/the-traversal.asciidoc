@@ -1537,8 +1537,8 @@ link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/grem
 [[not-step]]
 === Not Step
 
-The `not()`-step (*filter*) removes objects from the traversal stream when the traversal provided as an argument does
-not return any objects.
+The `not()`-step (*filter*) removes objects from the traversal stream when the traversal provided as an argument
+returns an object.
 
 [gremlin-groovy,modern]
 ----
