@@ -14,19 +14,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-[[transpilers]]
-= Gremlin Transpilers
+[[compilers]]
+= Gremlin Compilers
 
 There are many languages built to query data. SQL is typically used to query relational data. There is SPARQL for RDF
-data. Cypher is used to do pattern matching in graph data. The list could go on. Transpilers convert languages like
+data. Cypher is used to do pattern matching in graph data. The list could go on. compilers convert languages like
 these to Gremlin so that it becomes possible to use them in any context that Gremlin is used. In other words, a
-Gremlin Transpiler enables a particular query language to work on any TinkerPop-enabled graph system.
+Gremlin Cranspiler enables a particular query language to work on any TinkerPop-enabled graph system.
 
+[[sparql-gremlin]]
 == SPARQL-Gremlin
 
 image::gremlintron.png[width=225]
 
-The SPARQL-Gremlin transpiler, transforms link:https://en.wikipedia.org/wiki/SPARQL[SPARQL] queries into Gremlin
+The SPARQL-Gremlin compiler, transforms link:https://en.wikipedia.org/wiki/SPARQL[SPARQL] queries into Gremlin
 traversals. It uses the https://jena.apache.org/index.html[Apache Jena] SPARQL processor
 link:https://jena.apache.org/documentation/query/index.html[ARQ], which provides access to a syntax tree of a
 SPARQL query.
@@ -35,7 +36,7 @@ The goal of this work is to bridge the query interoperability gap between the tw
 graph communities: Semantic Web (which relies on the RDF data model) and Graph database (which relies on property graph
 data model).
 
-NOTE: The foundational research work on SPARQL-Gremlin transpiler (aka Gremlinator) can be found in the
+NOTE: The foundational research work on SPARQL-Gremlin compiler (aka Gremlinator) can be found in the
 link:https://arxiv.org/pdf/1801.02911.pdf[Gremlinator paper]. This paper presents the graph query language semantics of
 SPARQL and Gremlin, and a formal mapping between SPARQL pattern matching graph patterns and Gremlin traversals.
 
@@ -48,8 +49,8 @@ SPARQL and Gremlin, and a formal mapping between SPARQL pattern matching graph p
 </dependency>
 ----
 
-The SPARQL-Gremlin transpiler converts link:https://en.wikipedia.org/wiki/SPARQL[SPARQL] queries into Gremlin so that
-they can be executed across any TinkerPop-enabled graph system. To use this transpiler in the Gremlin Console, first
+The SPARQL-Gremlin compiler converts link:https://en.wikipedia.org/wiki/SPARQL[SPARQL] queries into Gremlin so that
+they can be executed across any TinkerPop-enabled graph system. To use this compiler in the Gremlin Console, first
 install and activate the "tinkerpop.sparql" plugin:
 
 [source,text]
@@ -83,7 +84,7 @@ and then when finally iterated, executes that against the TinkerGraph.
 [[prefixes]]
 === Prefixes
 
-The SPARQL-Gremlin transpiler supports the following prefixes to traverse the graph:
+The SPARQL-Gremlin compiler supports the following prefixes to traverse the graph:
 
 [cols=",",options="header",]
 |====================================
@@ -108,7 +109,7 @@ g.sparql("""SELECT ?name ?id ?label
 [[supported-queries]]
 === Supported Queries
 
-The SPARQL-Gremlin transpiler currently supports translation of the SPARQL 1.0 specification, especially `SELECT`
+The SPARQL-Gremlin compiler currently supports translation of the SPARQL 1.0 specification, especially `SELECT`
 queries, though there is an on-going effort to cover the entire SPARQL 1.1 query feature spectrum. The supported
 SPARQL query types are:
 
@@ -126,7 +127,7 @@ SPARQL query types are:
 [[limitations]]
 === Limitations
 
-The current implementation of SPARQL-Gremlin transpiler (i.e. SPARQL-Gremlin) does not support the following cases:
+The current implementation of SPARQL-Gremlin compiler (i.e. SPARQL-Gremlin) does not support the following cases:
 
 * SPARQL queries with variables in the predicate position are not currently covered, with an exception of the following
 case:
@@ -213,7 +214,7 @@ currently fixing this...
 === Examples
 
 The following section presents a comprehensive examples of SPARQL queries that are currently covered by the
-SPARQL-Gremlin transpiler.
+SPARQL-Gremlin compiler.
 
 [[select-all]]
 ==== Select All

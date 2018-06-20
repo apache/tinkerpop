@@ -53,17 +53,17 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
  * The engine that transpiles SPARQL to Gremlin traversals thus enabling SPARQL to be executed on any TinkerPop-enabled
  * graph system.
  */
-public class SparqlToGremlinTranspiler {
+public class SparqlToGremlinCompiler {
 
     private GraphTraversal<Vertex, ?> traversal;
 
     private List<Traversal> traversalList = new ArrayList<>();
 
-    private SparqlToGremlinTranspiler(final GraphTraversal<Vertex, ?> traversal) {
+    private SparqlToGremlinCompiler(final GraphTraversal<Vertex, ?> traversal) {
         this.traversal = traversal;
     }
 
-    private SparqlToGremlinTranspiler(final GraphTraversalSource g) {
+    private SparqlToGremlinCompiler(final GraphTraversalSource g) {
         this(g.V());
     }
 
@@ -207,7 +207,7 @@ public class SparqlToGremlinTranspiler {
     }
 
     private static GraphTraversal<Vertex, ?> transpile(final GraphTraversalSource g, final Query query) {
-        return new SparqlToGremlinTranspiler(g).transpile(query);
+        return new SparqlToGremlinCompiler(g).transpile(query);
     }
 
     /**

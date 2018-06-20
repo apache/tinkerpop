@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.sparql.SparqlToGremlinTranspiler;
+import org.apache.tinkerpop.gremlin.sparql.SparqlToGremlinCompiler;
 import org.apache.tinkerpop.gremlin.sparql.process.traversal.dsl.sparql.SparqlTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -68,7 +68,7 @@ public class SparqlStrategy extends AbstractTraversalStrategy<TraversalStrategy.
             final Object constant = stepWithSparql.getConstant();
             if (constant instanceof String) {
                 final String sparql = (String) constant;
-                final Traversal<Vertex, ?> sparqlTraversal = SparqlToGremlinTranspiler.transpile(
+                final Traversal<Vertex, ?> sparqlTraversal = SparqlToGremlinCompiler.transpile(
                         traversal.getGraph().get(), sparql);
                 TraversalHelper.removeAllSteps(traversal);
                 sparqlTraversal.asAdmin().getSteps().forEach(s -> traversal.addStep(s));
