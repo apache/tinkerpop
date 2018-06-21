@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process;
 
 import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.GraphProvider;
-import org.apache.tinkerpop.gremlin.process.computer.Computer;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -37,7 +37,7 @@ import java.util.Random;
 @GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
 public class TinkerGraphComputerProvider extends TinkerGraphProvider {
 
-    private static final Random RANDOM = new Random();
+    private static final Random RANDOM = TestHelper.RANDOM;
 
     @Override
     public GraphTraversalSource traversal(final Graph graph) {

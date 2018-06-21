@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.neo4j;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jEdge;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jElement;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
@@ -98,7 +99,7 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
     }
 
     private void createIndices(final Neo4jGraph graph, final LoadGraphWith.GraphData graphData) {
-        final Random random = new Random();
+        final Random random = TestHelper.RANDOM;
         final boolean pick = random.nextBoolean();
         if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL)) {
             if (pick) {

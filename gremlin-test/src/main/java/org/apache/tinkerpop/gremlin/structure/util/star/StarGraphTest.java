@@ -152,7 +152,7 @@ public class StarGraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_PROPERTY)
     public void shouldAttachWithCreateMethod() {
-        final Random random = new Random(234335l);
+        final Random random = TestHelper.RANDOM;
         StarGraph starGraph = StarGraph.open();
         Vertex starVertex = starGraph.addVertex(T.label, "person", "name", "stephen", "name", "spmallete");
         starVertex.property("acl", true, "timestamp", random.nextLong(), "creator", "marko");
