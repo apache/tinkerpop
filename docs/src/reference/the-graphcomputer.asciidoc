@@ -368,71 +368,26 @@ g.V().peerPressure().by(outE('knows')).by('cluster').valueMap()
 ----
 
 [[bulkdumpervertexprogram]]
-=== BulkDumperVertexProgram
+[[clonevertexprogram]]
+=== CloneVertexProgram
 
-The `BulkDumperVertexProgram` can be used to export a whole graph in any of the provided Hadoop GraphOutputFormats (e.g.
-`GraphSONOutputFormat`, `GryoOutputFormat` or `ScriptOutputFormat`). The input can be any Hadoop GraphInputFormat
-(e.g. `GraphSONInputFormat`, `GryoInputFormat` or `ScriptInputFormat`). An <<bulkdumpervertexprogramusingspark,example>>
-is provided in the SparkGraphComputer section.
+The `CloneVertexProgram` (known in versions prior to 3.2.10 as `BulkDumperVertexProgram`) copies a whole graph from
+any graph `InputFormat` to any graph `OutputFormat`. TinkerPop provides the following:
 
-[[bulkloadervertexprogram]]
-=== BulkLoaderVertexProgram
+* `OutputFormat`
+** `GraphSONOutputFormat`
+** `GryoOutputFormat`
+** `ScriptOutputFormat`
+* `InputFormat`
+** `GraphSONInputFormat`
+** `GryoInputFormat`
+** `ScriptInputFormat`).
 
-image:batch-graph.png[width=220,float=left] The `BulkLoaderVertexProgram` provides a generalized way for loading
-graphs of any size into a persistent `Graph`. It is especially useful for large graphs (i.e. hundreds of millions
-or billions of edges) as it can take advantage of the parallel processing offered by `GraphComputer` instances. The
-input can be any existing `Graph` database supporting TinkerPop3 or any of the Hadoop GraphInputFormats (e.g.
-`GraphSONInputFormat`, `GryoInputFormat` or `ScriptInputFormat`). The following example demonstrates how to load data
-from one TinkerGraph to another:
+An <<clonevertexprogramusingspark,example>> is provided in the SparkGraphComputer section.
 
-[gremlin-groovy]
-----
-writeGraphConf = new BaseConfiguration()
-writeGraphConf.setProperty("gremlin.graph", "org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph")
-writeGraphConf.setProperty("gremlin.tinkergraph.graphFormat", "gryo")
-writeGraphConf.setProperty("gremlin.tinkergraph.graphLocation", "/tmp/tinkergraph.kryo")
-modern = TinkerFactory.createModern()
-blvp = BulkLoaderVertexProgram.build().
-           bulkLoader(OneTimeBulkLoader).
-           writeGraph(writeGraphConf).create(modern)
-modern.compute().workers(1).program(blvp).submit().get()
-graph = GraphFactory.open(writeGraphConf)
-g = graph.traversal()
-g.V().valueMap()
-graph.close()
-----
-
-.Available configuration options
-[width="800px",options="header"]
-|========================================
-|Builder Method    |Purpose | Default Value
-|`bulkLoader(Class\|String)` | Sets the class of the bulk loader implementation. | `IncrementalBulkLoader`
-|`vertexIdProperty(String)` | Sets the name of the property in the target graph that holds the vertex id from the
-source graph. | `bulkLoader.vertex.id`
-|`keepOriginalIds(boolean)` |Whether to keep the id's from the source graph in the target graph or not. It's
-recommended to keep them if it's planned to do further bulk loads using the same datasources. | `true`
-|`userSuppliedIds(boolean)` |Whether to use the id's from the source graph as id's in the target graph. If set to
-`true`, `vertexIdProperty` will be ignored. Note, that the target graph must support user supplied identifiers. | `false`
-|`intermediateBatchSize(int)` |Sets the batch size for intermediate transactions. This is per thread in a
-multi-threaded environment. +0+ means that transactions will only be committed at the end of an iteration cycle.
-It's recommended to tune this property for the target graph and not use the default value of +0+. | `0`
-|`writeGraph(String)` | Sets the path to a `GraphFactory` compatible configuration file for the target graph. | _none_
-|========================================
-
-NOTE: `BulkLoaderVertexProgram` uses the `IncrementalBulkLoader` by default. The other option is the `OneTimeBulkLoader`,
-which doesn't store any temporary IDs in the `writeGraph` and thus should only be used for initial bulk loads. Both
-implementations should cover the majority of use-cases, but have a limitation though: They don't support multi-valued
-properties. `OneTimeBulkLoader` and `IncrementalBulkLoader` will handle every property as a single-valued property. A
-custom `BulkLoader` implementation has to be used if the default behavior is not sufficient.
-
-NOTE: A custom `BulkLoader` implementation for incremental loading should use `GraphTraversal` methods to create/update
-elements (e.g. `g.addV()` instead of `graph.addVertex()`). This way the `BulkLoaderVertexProgram` is able to efficiently
-track changes in the underlying graph and can apply several optimization techniques.
-
-WARNING: Edges in the input graph must be present in both directions, e.g. from the source vertex to the target vertex
-as an out-edge and from the target vertex to the source vertex as an in-edge. This is especially important if the input
-graph is a `HadoopGraph`. `BulkLoaderVertexProgram` will likely fail with a `FastNoSuchElementException` if one of the
-edges is missing.
+Graph Providers should consider writing their own `OutputFormat` and `InputFormat` which would allow bulk loading and
+export capabilities through this `VertexProgram`. This topic is discussed further in the
+link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/#bulk-import-export[Provider Documentation].
 
 [[traversalvertexprogram]]
 === TraversalVertexProgram

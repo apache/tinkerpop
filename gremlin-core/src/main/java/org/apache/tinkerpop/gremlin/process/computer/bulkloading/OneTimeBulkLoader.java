@@ -35,7 +35,9 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
  * only clones each element from the source graph.
  *
  * @author Daniel Kuppitz (http://gremlin.guru)
+ * @deprecated As of release 3.2.10, not directly replaced - consider graph provider specific bulk loading methods
  */
+@Deprecated
 public class OneTimeBulkLoader implements BulkLoader {
 
     private boolean userSuppliedIds = false;
