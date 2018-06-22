@@ -876,11 +876,18 @@ limitations under the License.
                                 <configuration>
                                     <resources>
                                         <resource>
-                                            <directory>${asciidoc.input.dir}/</directory>
-                                            <targetPath>${htmlsingle.output.dir}/</targetPath>
-                                            <excludes>${asciidoc.input.dir}/static/*.*</excludes>
+                                            <directory>${asciidoc.input.dir}</directory>
+                                            <targetPath>${htmlsingle.output.dir}</targetPath>
+                                            <includes>
+                                                <include>index.asciidoc</include>
+                                            </includes>
+                                            <excludes>
+                                                <exclude>${asciidoc.input.dir}/static/*.*</exclude>
+                                            </excludes>
                                         </resource>
                                     </resources>
+                                    <sourceDirectory>${asciidoc.input.dir}</sourceDirectory>
+                                    <outputDirectory>${htmlsingle.output.dir}</outputDirectory>
                                     <sourceDocumentName>index.asciidoc</sourceDocumentName>
                                     <backend>html5</backend>
                                     <doctype>article</doctype>
