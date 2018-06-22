@@ -2252,6 +2252,25 @@ g.V(1).repeat(local(
        )).times(10).path()
 ----
 
+As a clarification, note that in the above example `local()` is not strictly required as it only does the random walk
+over a single vertex, but note what happens without it if multiple vertices are traversed:
+
+[gremlin-groovy,modern]
+----
+g.V().repeat(bothE().sample(1).by('weight').otherV()).times(5).path()
+----
+
+The use of `local()` ensures that the traversal over `bothE()` occurs once per vertex traverser that passes through,
+thus allowing one random walk per vertex.
+
+[gremlin-groovy,modern]
+----
+g.V().repeat(local(bothE().sample(1).by('weight').otherV())).times(5).path()
+----
+
+So, while not strictly required, it is likely better to be explicit with the use of `local()` so that the proper intent
+of the traversal is expressed.
+
 *Additional References*
 
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#sample-int-++[`sample(int)`],
