@@ -70,7 +70,7 @@ A brief overview of RDBMS architecture in comparison to graph, basic graph termi
 and an overview of Gremlin. (*external*)
 ^|image:gremlin-compendium.png[width=200] |link:http://www.doanduyhai.com/blog/?p=13460[The Gremlin Compendium, minimum survival kit for any Gremlin user] +
 A series of blog posts that examine the Gremlin language in the context of various graph traversal patterns. (*external*)
-^|image:gremlin-running.png[width=125] |link:http://kelvinlawrence.net/book/Gremlin-Graph-Guide.html[Graph Databases, Gremlin and TinkerPop: A Tutorial] +
+^|image:practical-gremlin.png[width=200] |link:http://kelvinlawrence.net/book/Gremlin-Graph-Guide.html[Practical Gremlin: An Apache TinkerPop Tutorial] +
 A getting started guide for users of graph databases and the Gremlin query language featuring hints, tips and sample queries. (*external*)
 |=========================================================
 
