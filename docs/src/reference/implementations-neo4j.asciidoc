@@ -32,9 +32,9 @@ limitations under the License.
 </dependency>
 ----
 
-link:http://neo4j.com[Neo Technology] are the developers of the OLTP-based link:http://neo4j.com[Neo4j graph database].
+link:http://neo4j.com[Neo4j, Inc.] are the developers of the OLTP-based link:http://neo4j.com[Neo4j graph database].
 
-WARNING: Unless under a commercial agreement with Neo Technology, Neo4j is licensed
+WARNING: Unless under a commercial agreement with Neo4j, Inc., Neo4j is licensed
 link:http://en.wikipedia.org/wiki/Affero_General_Public_License[AGPL]. The `neo4j-gremlin` module is licensed Apache2
 because it only references the Apache2-licensed Neo4j API (not its implementation). Note that neither the
 <<gremlin-console,Gremlin Console>> nor <<gremlin-server,Gremlin Server>> distribute with the Neo4j implementation
