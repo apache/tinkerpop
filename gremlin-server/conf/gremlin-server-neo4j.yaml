@@ -22,7 +22,7 @@
 #
 # bin/gremlin-server.sh -i org.apache.tinkerpop neo4j-gremlin x.y.z
 # 
-# Note that unless under a commercial agreement with Neo Technology, 
+# Note that unless under a commercial agreement with Neo4j, Inc., 
 # Neo4j is licensed AGPL. 
 
 host: localhost
