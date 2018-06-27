@@ -375,6 +375,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Improved performance of `TraversalVertexProgram` and related infrastructure.
 * Added `createGratefulDead()`to `TinkerFactory` to help make it easier to try to instantiate that toy graph.
 * Added identifiers to edges in the Kitchen Sink toy graph.
+* Ordered the loading of plugins in the Gremlin Console by their position in the configuration file.
 * Refactored the Gremlin Server integration testing framework and streamlined that infrastructure.
 * Fixed bug in `GroovyTranslator` that didn't properly handle empty `Map` objects.
 * Added concrete configuration methods to `SparkGraphComputer` to make a more clear API for configuring it.
