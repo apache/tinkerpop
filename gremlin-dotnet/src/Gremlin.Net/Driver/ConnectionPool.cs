@@ -23,7 +23,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Gremlin.Net.Process;
@@ -45,17 +44,26 @@ namespace Gremlin.Net.Driver
 
         public async Task<IConnection> GetAvailableConnectionAsync()
         {
-            Connection connection = null;
-            lock (_connectionsLock)
-            {
-                if (!_connections.IsEmpty)
-                    _connections.TryTake(out connection);
-            }
-
-            if (connection == null)
+            if (!TryGetConnectionFromPool(out var connection))
                 connection = await CreateNewConnectionAsync().ConfigureAwait(false);
 
             return new ProxyConnection(connection, AddConnectionIfOpen);
+        }
+
+        private bool TryGetConnectionFromPool(out Connection connection)
+        {
+            while (true)
+            {
+                connection = null;
+                lock (_connectionsLock)
+                {
+                    if (_connections.IsEmpty) return false;
+                    _connections.TryTake(out connection);
+                }
+
+                if (connection.IsOpen) return true;
+                connection.Dispose();
+            }
         }
 
         private async Task<Connection> CreateNewConnectionAsync()
