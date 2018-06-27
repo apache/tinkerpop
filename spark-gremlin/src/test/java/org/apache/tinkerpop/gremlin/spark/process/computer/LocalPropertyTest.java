@@ -84,7 +84,12 @@ public class LocalPropertyTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, rddName);
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, null);
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, null);
-        configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);
+
+        // just a note that this value should have always been set to true, but from the initial commit was false.
+        // interestingly the last assertion had always passed up to spark 2.3.x when it started to fail. apparently
+        // that assertion should likely have never passed, so it stands to reason that there was a bug in spark in
+        // 2.2.x that was resolved for 2.3.x....that's my story and i'm sticking to it.
+        configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
         configuration.setProperty("spark.jobGroup.id", "44");
         graph = GraphFactory.open(configuration);
         graph.compute(SparkGraphComputer.class)
