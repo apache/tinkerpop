@@ -41,6 +41,7 @@ import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoader;
 import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.bulkloading.IncrementalBulkLoader;
 import org.apache.tinkerpop.gremlin.process.computer.bulkloading.OneTimeBulkLoader;
+import org.apache.tinkerpop.gremlin.process.computer.clone.CloneVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.ClusterCountMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.ClusterPopulationMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
@@ -209,6 +210,7 @@ public final class CoreImports {
         CLASS_IMPORTS.add(GraphComputer.class);
         CLASS_IMPORTS.add(Memory.class);
         CLASS_IMPORTS.add(VertexProgram.class);
+        CLASS_IMPORTS.add(CloneVertexProgram.class);
         CLASS_IMPORTS.add(BulkDumperVertexProgram.class);
         CLASS_IMPORTS.add(BulkLoader.class);
         CLASS_IMPORTS.add(BulkLoaderVertexProgram.class);

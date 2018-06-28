@@ -16,14 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.computer.bulkdumping;
+package org.apache.tinkerpop.gremlin.process.computer.clone;
 
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.clone.CloneVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -35,12 +34,10 @@ import java.util.Set;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
- * @deprecated As of release 3.2.10, replaced by {@link CloneVertexProgram}.
  */
-@Deprecated
-public class BulkDumperVertexProgram implements VertexProgram<Tuple> {
+public class CloneVertexProgram implements VertexProgram<Tuple> {
 
-    private BulkDumperVertexProgram() {
+    private CloneVertexProgram() {
     }
 
     @Override
@@ -89,13 +86,13 @@ public class BulkDumperVertexProgram implements VertexProgram<Tuple> {
     public static class Builder extends AbstractVertexProgramBuilder<Builder> {
 
         private Builder() {
-            super(BulkDumperVertexProgram.class);
+            super(CloneVertexProgram.class);
         }
 
         @SuppressWarnings("unchecked")
         @Override
-        public BulkDumperVertexProgram create(final Graph graph) {
-            return (BulkDumperVertexProgram) VertexProgram.createVertexProgram(graph, configuration);
+        public CloneVertexProgram create(final Graph graph) {
+            return (CloneVertexProgram) VertexProgram.createVertexProgram(graph, configuration);
         }
     }
 }
