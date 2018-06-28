@@ -123,10 +123,12 @@ references to that Spark Context. The exception to this rule are those propertie
 Finally, there is a `spark` object that can be used to manage persisted RDDs (see <<interacting-with-spark, Interacting with Spark>>).
 
 [[bulkdumpervertexprogramusingspark]]
-===== Exporting with BulkDumperVertexProgram
+[[clonevertexprogramusingspark]]
+===== Using CloneVertexProgram
 
-The <<bulkdumpervertexprogram, BulkDumperVertexProgram>> exports a whole graph in any of the supported Hadoop GraphOutputFormats (`GraphSONOutputFormat`,
-`GryoOutputFormat` or `ScriptOutputFormat`). The example below takes a Hadoop graph as the input (in `GryoInputFormat`) and exports it as a GraphSON file
+The <<clonevertexprogram, CloneVertexProgram>> copies a whole graph from any graph `InputFormat` to any graph
+`OutputFormat`. TinkerPop provides formats such as `GraphSONOutputFormat`, `GryoOutputFormat` or `ScriptOutputFormat`.
+The example below takes a Hadoop graph as the input (in `GryoInputFormat`) and exports it as a GraphSON file
 (`GraphSONOutputFormat`).
 
 [gremlin-groovy]
@@ -138,57 +140,3 @@ graph.compute(SparkGraphComputer).program(BulkDumperVertexProgram.build().create
 hdfs.ls('output')
 hdfs.head('output/~g')
 ----
-
-===== Loading with BulkLoaderVertexProgram
-
-The <<bulkloadervertexprogram, BulkLoaderVertexProgram>> is a generalized bulk loader that can be used to load large
-amounts of data to and from different `Graph` implementations. The following code demonstrates how to load the
-Grateful Dead graph from HadoopGraph into TinkerGraph over Spark:
-
-[gremlin-groovy]
-----
-hdfs.copyFromLocal('data/grateful-dead.kryo', 'grateful-dead.kryo')
-readGraph = GraphFactory.open('conf/hadoop/hadoop-grateful-gryo.properties')
-writeGraph = 'conf/tinkergraph-gryo.properties'
-blvp = BulkLoaderVertexProgram.build().
-           keepOriginalIds(false).
-           writeGraph(writeGraph).create(readGraph)
-readGraph.compute(SparkGraphComputer).workers(1).program(blvp).submit().get()
-:set max-iteration 10
-graph = GraphFactory.open(writeGraph)
-g = graph.traversal()
-g.V().valueMap()
-graph.close()
-----
-
-[source,properties]
-----
-# hadoop-grateful-gryo.properties
-
-#
-# Hadoop Graph Configuration
-#
-gremlin.graph=org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph
-gremlin.hadoop.graphReader=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat
-gremlin.hadoop.inputLocation=grateful-dead.kryo
-gremlin.hadoop.outputLocation=output
-gremlin.hadoop.jarsInDistributedCache=true
-
-#
-# SparkGraphComputer Configuration
-#
-spark.master=local[1]
-spark.executor.memory=1g
-spark.serializer=org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer
-----
-
-[source,properties]
-----
-# tinkergraph-gryo.properties
-
-gremlin.graph=org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
-gremlin.tinkergraph.graphFormat=gryo
-gremlin.tinkergraph.graphLocation=/tmp/tinkergraph.kryo
-----
-
-IMPORTANT: The path to TinkerGraph jars needs to be included in the `HADOOP_GREMLIN_LIBS` for the above example to work.

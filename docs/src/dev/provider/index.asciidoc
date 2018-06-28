@@ -616,6 +616,19 @@ something required if there is a need to exploit `withRemote()` in some way. If 
 similar to Gremlin Server that can accept a serialized `Traversal` instance, then that would be one example of a
 reason to implement this interface.
 
+[bulk-import-export]]
+==== Bulk Import Export
+
+When it comes to doing "bulk" operations, the diverse nature of the available graph databases and their specific
+capabilities, prevents TinkerPop from doing a good job of generalizing that capability well. TinkerPop refers users to
+the bulk import/export facilities of specific graph providers as they tend to be more efficient and easier to use than
+the options TinkerPop has tried to generalize in the past.
+
+That said, for graph providers that don't have a special bulk loading feature, they can get a basic bulk loader from
+TinkerPop using the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#clonevertexprogram[CloneVertexProgram].
+Simply provide a `InputFormat` and `OutputFormat` that can be referenced by a `HadoopGraph` instance as discussed
+in the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#clonevertexprogram[Reference Documentation].
+
 [[validating-with-gremlin-test]]
 === Validating with Gremlin-Test
 
