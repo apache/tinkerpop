@@ -292,3 +292,17 @@ Scenario: g_V_untilXconstantXtrueXX_repeatXrepeatXout_createdXX_untilXhasXname_r
     | result |
     | java |
     | java |
+
+Scenario: g_VX3X_repeatXbothX_createdXX_untilXloops_is_40XXemit_repeatXin_knowsXX_emit_loopsXisX1Xdedup_values
+    Given the modern graph
+    And using the parameter v3Id defined as "v[lop].id"
+    And the traversal of
+      """
+      g.V(v3Id).repeat(__.both("created")).until(__.loops().is(40)).emit(__.repeat(__.in("knows")).emit(__.loops().is(1))).dedup().values("name")
+      """
+    When iterated to list
+      Then the result should be unordered
+        | result |
+        | josh |
+        | lop |
+        | ripple |

@@ -26,7 +26,7 @@ import java.io.Serializable;
 /**
  * Class to track a count associated with a Label
  */
-public class LabelledCounter implements Serializable {
+public class LabelledCounter implements Serializable, Cloneable {
 
     private final String label;
 
@@ -50,6 +50,11 @@ public class LabelledCounter implements Serializable {
 
     public void increment() {
         this.count.increment();
+    }
+
+    @Override
+    public Object clone() {
+        return new LabelledCounter(this.label, this.count.shortValue());
     }
 
     @Override

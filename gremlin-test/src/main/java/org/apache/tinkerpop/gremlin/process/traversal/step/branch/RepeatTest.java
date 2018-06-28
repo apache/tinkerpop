@@ -109,6 +109,8 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_untilXconstantXtrueXX_repeatXrepeatXout_createdXX_untilXhasXname_rippleXXXemit_lang();
 
+    public abstract Traversal<Vertex, String> get_g_VX3X_repeatXbothX_createdXX_untilXloops_is_40XXemit_repeatXin_knowsXX_emit_loopsXisX1Xdedup_values(final Object v3Id);
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_repeatXoutX_timesX2X_emit_path() {
@@ -379,6 +381,22 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX3X_repeatXbothX_createdXX_untilXloops_is_40XXemit_repeatXin_knowsXX_emit_loopsXisX1Xdedup_values() {
+        final Traversal<Vertex, String> traversal = get_g_VX3X_repeatXbothX_createdXX_untilXloops_is_40XXemit_repeatXin_knowsXX_emit_loopsXisX1Xdedup_values(convertToVertexId("lop"));
+
+        printTraversalForm(traversal);
+        for (String res :   new String[]{"josh","lop", "ripple"})
+        {
+            assertTrue(traversal.hasNext());
+            String lang = traversal.next();
+            assertEquals(lang, res);
+        }
+
+        assertFalse(traversal.hasNext());
+    }
+
 
     public static class Traversals extends RepeatTest {
 
@@ -476,6 +494,11 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_untilXconstantXtrueXX_repeatXrepeatXout_createdXX_untilXhasXname_rippleXXXemit_lang() {
             return g.V().until(__.constant(true)).repeat(__.repeat(out("created")).until(__.has("name", "ripple"))).emit().values("lang");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX3X_repeatXbothX_createdXX_untilXloops_is_40XXemit_repeatXin_knowsXX_emit_loopsXisX1Xdedup_values(final Object v3Id) {
+            return g.V(v3Id).repeat( __.both("created")).until(loops().is(40)).emit(__.repeat(__.in("knows")).emit(loops().is(1))).dedup().values("name");
         }
     }
 }

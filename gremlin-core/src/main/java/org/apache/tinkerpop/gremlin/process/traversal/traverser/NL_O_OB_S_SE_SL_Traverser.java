@@ -67,14 +67,18 @@ public class NL_O_OB_S_SE_SL_Traverser<T> extends O_OB_S_SE_SL_Traverser<T> {
     @Override
     public <R> Admin<R> split(final R r, final Step<T, R> step) {
         final NL_O_OB_S_SE_SL_Traverser<R> clone = (NL_O_OB_S_SE_SL_Traverser<R>) super.split(r, step);
-        clone.nestedLoops = (Stack<LabelledCounter>)this.nestedLoops.clone();
+        clone.nestedLoops = new Stack<>();
+        for(LabelledCounter lc : this.nestedLoops)
+            clone.nestedLoops.add((LabelledCounter) lc.clone());
         return clone;
     }
 
     @Override
     public Admin<T> split() {
         final NL_O_OB_S_SE_SL_Traverser<T> clone = (NL_O_OB_S_SE_SL_Traverser<T>) super.split();
-        clone.nestedLoops = (Stack<LabelledCounter>)this.nestedLoops.clone();
+        clone.nestedLoops = new Stack<>();
+        for(LabelledCounter lc : this.nestedLoops)
+            clone.nestedLoops.add((LabelledCounter) lc.clone());
         return clone;
     }
 
