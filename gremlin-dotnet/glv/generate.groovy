@@ -64,7 +64,7 @@ def toCSharpTypeMap = ["Long": "long",
                        "Comparator": "IComparator",
                        "VertexProgram": "object"]
 
-def useE2 = ["E2", "E2"];
+def useE2 = ["E2", "E2"]
 def methodsWithSpecificTypes = ["constant": useE2,
                                 "limit": useE2,
                                 "mean": useE2,
@@ -97,17 +97,17 @@ def getCSharpGenericTypeParam = { typeName ->
 }
 
 def toCSharpType = { name ->
-    String typeName = toCSharpTypeMap.getOrDefault(name, name);
+    String typeName = toCSharpTypeMap.getOrDefault(name, name)
     if (typeName.equals(name) && (typeName.contains("? extends") || typeName.equals("Tree"))) {
         typeName = "E2"
     }
-    return typeName;
+    return typeName
 }
 
 def toCSharpMethodName = { symbol -> (String) Character.toUpperCase(symbol.charAt(0)) + symbol.substring(1) }
 
 def getJavaGenericTypeParameterTypeNames = { method ->
-    def typeArguments = method.genericReturnType.actualTypeArguments;
+    def typeArguments = method.genericReturnType.actualTypeArguments
     return typeArguments.
             collect { (it instanceof Class) ? ((Class)it).simpleName : it.typeName }.
             collect { name ->
@@ -115,7 +115,7 @@ def getJavaGenericTypeParameterTypeNames = { method ->
                     name = "object"
                 }
                 else if (name.equals("B")) {
-                    name = "E2";
+                    name = "E2"
                 }
                 name
             }
@@ -129,18 +129,18 @@ def getJavaParameterTypeNames = { method ->
 }
 
 def toCSharpParamString = { param, genTypeName ->
-    String csharpParamTypeName = genTypeName;
+    String csharpParamTypeName = genTypeName
     if (csharpParamTypeName == null){
         csharpParamTypeName = toCSharpType(param.type.simpleName)
     }
     else if (csharpParamTypeName == "M") {
-        csharpParamTypeName = "object";
+        csharpParamTypeName = "object"
     }
     else if (csharpParamTypeName == "A[]") {
-        csharpParamTypeName = "object[]";
+        csharpParamTypeName = "object[]"
     }
     else if (csharpParamTypeName == "A" || csharpParamTypeName == "B") {
-        csharpParamTypeName = "E2";
+        csharpParamTypeName = "E2"
     }
     "${csharpParamTypeName} ${param.name}"
     }
@@ -157,11 +157,11 @@ def getCSharpParamTypeString = { method ->
 }
 
 def getCSharpParamString = { method, useGenericParams ->
-    def parameters = method.parameters;
+    def parameters = method.parameters
     if (parameters.length == 0)
         return ""
 
-    def genericTypes = method.getGenericParameterTypes();
+    def genericTypes = method.getGenericParameterTypes()
     def csharpParameters = parameters.
             toList().indexed().
             collect { index, param ->
@@ -179,11 +179,11 @@ def getCSharpParamString = { method, useGenericParams ->
                 }
                 toCSharpParamString(param, genTypeName)
             }.
-            toArray();
+            toArray()
 
     if (method.isVarArgs()) {
-        def lastIndex = csharpParameters.length-1;
-        csharpParameters[lastIndex] = "params " + csharpParameters[lastIndex];
+        def lastIndex = csharpParameters.length-1
+        csharpParameters[lastIndex] = "params " + csharpParameters[lastIndex]
     }
 
     csharpParameters.join(", ")
