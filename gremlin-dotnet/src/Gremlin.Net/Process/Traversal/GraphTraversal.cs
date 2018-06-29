@@ -1676,5 +1676,14 @@ namespace Gremlin.Net.Process.Traversal
             return Wrap<S, E>(this);
         }
 
+        /// <summary>
+        ///     Adds the with step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, E> With (string key, object value)
+        {
+            Bytecode.AddStep("with", key, value);
+            return Wrap<S, E>(this);
+        }
+
     }
 }
