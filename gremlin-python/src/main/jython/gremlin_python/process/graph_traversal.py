@@ -106,6 +106,16 @@ class GraphTraversalSource(object):
         traversal.bytecode.add_step("inject", *args)
         return traversal
 
+    def read(self, *args):
+        traversal = self.get_graph_traversal()
+        traversal.bytecode.add_step("read", *args)
+        return traversal
+
+    def write(self, *args):
+        traversal = self.get_graph_traversal()
+        traversal.bytecode.add_step("write", *args)
+        return traversal
+
 
 class GraphTraversal(Traversal):
     def __init__(self, graph, traversal_strategies, bytecode):

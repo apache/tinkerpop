@@ -31,6 +31,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ReadStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.WriteStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -40,6 +42,7 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
@@ -388,6 +391,20 @@ public class GraphTraversalSource implements TraversalSource {
         clone.bytecode.addStep(GraphTraversal.Symbols.E, edgesIds);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new GraphStep<>(traversal, Edge.class, true, edgesIds));
+    }
+
+    public GraphTraversal<Map<String,Object>, Map<String,Object>> read(final String localFile) {
+        final GraphTraversalSource clone = this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.read, localFile);
+        final GraphTraversal.Admin<Map<String,Object>, Map<String,Object>> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new ReadStep(traversal, localFile));
+    }
+
+    public GraphTraversal<Map<String,Object>, Map<String,Object>> write(final String localFile) {
+        final GraphTraversalSource clone = this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.write, localFile);
+        final GraphTraversal.Admin<Map<String,Object>, Map<String,Object>> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new WriteStep(traversal, localFile));
     }
 
     /**

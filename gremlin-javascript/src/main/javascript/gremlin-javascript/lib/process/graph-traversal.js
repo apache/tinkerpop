@@ -172,6 +172,26 @@ class GraphTraversalSource {
     return new GraphTraversal(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
   
+  /**
+   * read GraphTraversalSource step method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  read(...args) {
+    const b = new Bytecode(this.bytecode).addStep('read', args);
+    return new GraphTraversal(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+  }
+  
+  /**
+   * write GraphTraversalSource step method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  write(...args) {
+    const b = new Bytecode(this.bytecode).addStep('write', args);
+    return new GraphTraversal(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+  }
+  
 }
 
 /**

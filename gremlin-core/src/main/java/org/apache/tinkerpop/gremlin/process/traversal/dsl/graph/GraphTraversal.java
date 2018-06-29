@@ -2817,6 +2817,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String skip = "skip";
         public static final String tail = "tail";
         public static final String coin = "coin";
+        public static final String read = "read";
+        public static final String write = "write";
 
         public static final String timeLimit = "timeLimit";
         public static final String simplePath = "simplePath";

@@ -333,6 +333,28 @@ namespace Gremlin.Net.Process.Traversal
             return traversal;
         }
 
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the read step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal<IDictionary<string, object>, IDictionary<string, object>> Read(string localFile)
+        {
+            var traversal = new GraphTraversal<IDictionary<string, object>, IDictionary<string, object>>(TraversalStrategies, new Bytecode(Bytecode));
+                traversal.Bytecode.AddStep("read", localFile);
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the write step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal<IDictionary<string, object>, IDictionary<string, object>> Write(string localFile)
+        {
+            var traversal = new GraphTraversal<IDictionary<string, object>, IDictionary<string, object>>(TraversalStrategies, new Bytecode(Bytecode));
+                traversal.Bytecode.AddStep("write", localFile);
+            return traversal;
+        }
+
     }
     
 #pragma warning restore 1591

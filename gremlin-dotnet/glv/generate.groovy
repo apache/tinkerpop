@@ -38,6 +38,7 @@ def toCSharpTypeMap = ["Long": "long",
                        "Object[]": "object[]",
                        "Class": "Type",
                        "Class[]": "Type[]",
+                       "java.util.Map<java.lang.String, java.lang.Object>": "IDictionary<string, object>",
                        "java.util.Map<java.lang.String, E2>": "IDictionary<string, E2>",
                        "java.util.Map<java.lang.String, B>": "IDictionary<string, E2>",
                        "java.util.Map<java.lang.Object, E2>": "IDictionary<object, E2>",
@@ -251,13 +252,13 @@ def binding = ["pmethods": P.class.getMethods().
                         unique { a,b -> a.name <=> b.name ?: getCSharpParamTypeString(a) <=> getCSharpParamTypeString(b) }.
                         collect { javaMethod ->
                             def typeNames = getJavaGenericTypeParameterTypeNames(javaMethod)
-                            def typeNameString = typeNames.join(", ")
+                            def t1 = toCSharpType(typeNames[0])
                             def t2 = toCSharpType(typeNames[1])
                             def tParam = getCSharpGenericTypeParam(t2)
                             def parameters = getCSharpParamString(javaMethod, true)
                             def paramNames = getParamNames(javaMethod.parameters)
                             def argsListType = getArgsListType(parameters)
-                            return ["methodName": javaMethod.name, "typeNameString": typeNameString, "tParam":tParam, "parameters":parameters, "paramNames":paramNames, "argsListType":argsListType]
+                            return ["methodName": javaMethod.name, "t1":t1, "t2":t2, "tParam":tParam, "parameters":parameters, "paramNames":paramNames, "argsListType":argsListType]
                         },
                "graphStepMethods": GraphTraversal.getMethods().
                         findAll { GraphTraversal.class.equals(it.returnType) }.
