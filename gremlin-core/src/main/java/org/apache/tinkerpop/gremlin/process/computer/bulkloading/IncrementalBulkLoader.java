@@ -33,7 +33,9 @@ import java.util.Iterator;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
+ * @deprecated As of release 3.2.10, not directly replaced - consider graph provider specific bulk loading methods
  */
+@Deprecated
 public class IncrementalBulkLoader implements BulkLoader {
 
     private String bulkLoaderVertexId = BulkLoaderVertexProgram.DEFAULT_BULK_LOADER_VERTEX_ID;

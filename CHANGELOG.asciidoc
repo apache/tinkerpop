@@ -33,11 +33,15 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * `min()` and `max()` now support all types implementing `Comparable`.
 * Change the `toString()` of `Path` to be standardized as other graph elements are.
 * `hadoop-gremlin` no longer generates a test artifact.
+* Allowed `GraphProvider` to expose a cached `Graph.Feature` object so that the test suite could re-use them to speed test runs.
 * Fixed a bug in `ReducingBarrierStep`, that returned the provided seed value despite no elements being available.
 * Changed the order of `select()` scopes. The order is now: maps, side-effects, paths.
 * Removed previously deprecated Credentials DSL infrastructure.
 * Moved `TraversalEngine` to `gremlin-test` as it has long been only used in testing infrastructure.
 * Nested loop support added allowing `repeat()` steps to be nested.
+* Events from `EventStrategy` raised from "new" mutations will now return a `KeyedVertexProperty` or `KeyedProperty` as is appropriate.
+* `MutationListener#vertexPropertyChanged(Vertex, VertexProperty, Object, Object...)` no longer has a default implementation.
+* Removed previously deprecated `MutationListener#vertexPropertyChanged(Vertex, Property, Object, Object...)`.
 * Removed previously deprecated `OpSelectorHandler` constructor.
 * Removed previously deprecated `close()` from `GremlinGroovyScriptEngine` which no longer implements `AutoCloseable`.
 * Removed previously deprecated `getGraphInputFormat()` and `getGraphOutputFormat()` from `HadoopConfiguration`.
@@ -60,7 +64,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-2-10, 3.2.10>>.
 
+* Removed `timedInterrupt` from documentation as a way to timeout.
 * Deprecated `Order` for `incr` and `decr` in favor of `asc` and `desc`.
+* Fixed bug in `math()` for OLAP where `ComputerVerificationStrategy` was incorrectly detecting path label access and preventing execution.
 
 [[release-3-3-3]]
 === TinkerPop 3.3.3 (Release Date: May 8, 2018)
@@ -400,12 +406,17 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-2-10]]
 === TinkerPop 3.2.10 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-* Added Docker images for Gremlin Console and Gremlin Server
+* Added a dotnet template project that should make it easier to get started with Gremlin.Net.
+* Removed `ThreadInterruptCustomizerProvider` from documentation as a way to timeout.
+* Added Docker images for Gremlin Console and Gremlin Server.
 * Fixed bug in `branch()` where reducing steps as options would produce incorrect results.
 * Removed recursive handling of streaming results from Gremlin-Python driver to avoid max recursion depth errors.
 * Improved performance of `TraversalVertexProgram` and related infrastructure.
+* Deprecated `BulkLoaderVertexProgram` and related infrastructure.
+* Deprecated `BulkDumperVertexProgram` with the more aptly named `CloneVertexProgram`.
 * Added `createGratefulDead()`to `TinkerFactory` to help make it easier to try to instantiate that toy graph.
 * Added identifiers to edges in the Kitchen Sink toy graph.
+* Ordered the loading of plugins in the Gremlin Console by their position in the configuration file.
 * Refactored the Gremlin Server integration testing framework and streamlined that infrastructure.
 * Fixed bug in `GroovyTranslator` that didn't properly handle empty `Map` objects.
 * Added concrete configuration methods to `SparkGraphComputer` to make a more clear API for configuring it.

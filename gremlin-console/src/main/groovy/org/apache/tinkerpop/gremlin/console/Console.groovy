@@ -111,21 +111,23 @@ class Console {
 
         GremlinLoader.load()
 
-        // check for available plugins.  if they are in the "active" plugins strategies then "activate" them
+        // check for available plugins on the path and track them by plugin class name
         def activePlugins = Mediator.readPluginState()
         ServiceLoader.load(GremlinPlugin, groovy.getInterp().getClassLoader()).each { plugin ->
             if (!mediator.availablePlugins.containsKey(plugin.class.name)) {
                 def pluggedIn = new PluggedIn((GremlinPlugin) plugin, groovy, io, false)
 
                 mediator.availablePlugins.put(plugin.class.name, pluggedIn)
-
-                if (activePlugins.contains(plugin.class.name)) {
-                    pluggedIn.activate()
-
-                    if (!io.quiet)
-                        io.out.println(Colorizer.render(Preferences.infoColor, "plugin activated: " + plugin.getName()))
-                }
             }
+        }
+
+        // if there are active plugins then initialize them in the order that they are listed
+        activePlugins.each { pluginName ->
+            def pluggedIn = mediator.availablePlugins[pluginName]
+            pluggedIn.activate()
+
+            if (!io.quiet)
+                io.out.println(Colorizer.render(Preferences.infoColor, "plugin activated: " + pluggedIn.getPlugin().getName()))
         }
 
         // remove any "uninstalled" plugins from plugin state as it means they were installed, activated, but not

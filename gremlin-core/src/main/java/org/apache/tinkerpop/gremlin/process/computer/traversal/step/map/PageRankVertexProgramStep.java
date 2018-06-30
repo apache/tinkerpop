@@ -23,9 +23,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.lambda.HaltedTraversersCountTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -60,23 +58,23 @@ public final class PageRankVertexProgramStep extends VertexProgramStep
     public PageRankVertexProgramStep(final Traversal.Admin traversal, final double alpha) {
         super(traversal);
         this.alpha = alpha;
-        this.configure(PageRank.EDGES, __.<Vertex>outE().asAdmin());
+        this.configure(PageRank.edges, __.<Vertex>outE().asAdmin());
     }
 
     @Override
     public void configure(final Object... keyValues) {
-        if (keyValues[0].equals(PageRank.EDGES)) {
+        if (keyValues[0].equals(PageRank.edges)) {
             if (!(keyValues[1] instanceof Traversal))
-                throw new IllegalArgumentException("PageRank.EDGES requires a Traversal as its argument");
+                throw new IllegalArgumentException("PageRank.edges requires a Traversal as its argument");
             this.edgeTraversal = new PureTraversal<>(((Traversal<Vertex,Edge>) keyValues[1]).asAdmin());
             this.integrateChild(this.edgeTraversal.get());
-        } else if (keyValues[0].equals(PageRank.PROPERTY_NAME)) {
+        } else if (keyValues[0].equals(PageRank.propertyName)) {
             if (!(keyValues[1] instanceof String))
-                throw new IllegalArgumentException("PageRank.PROPERTY_NAME requires a String as its argument");
+                throw new IllegalArgumentException("PageRank.propertyName requires a String as its argument");
             this.pageRankProperty = (String) keyValues[1];
-        } else if (keyValues[0].equals(PageRank.TIMES)) {
+        } else if (keyValues[0].equals(PageRank.times)) {
             if (!(keyValues[1] instanceof Integer))
-                throw new IllegalArgumentException("PageRank.TIMES requires an Integer as its argument");
+                throw new IllegalArgumentException("PageRank.times requires an Integer as its argument");
             this.times = (int) keyValues[1];
         }else {
             this.parameters.set(this, keyValues);
@@ -94,7 +92,7 @@ public final class PageRankVertexProgramStep extends VertexProgramStep
     @Deprecated
     @Override
     public void modulateBy(final Traversal.Admin<?, ?> edgeTraversal) {
-        configure(PageRank.EDGES, edgeTraversal);
+        configure(PageRank.edges, edgeTraversal);
     }
 
     /**
@@ -103,7 +101,7 @@ public final class PageRankVertexProgramStep extends VertexProgramStep
     @Deprecated
     @Override
     public void modulateBy(final String pageRankProperty) {
-        configure(PageRank.PROPERTY_NAME, pageRankProperty);
+        configure(PageRank.propertyName, pageRankProperty);
     }
 
     /**
@@ -112,7 +110,7 @@ public final class PageRankVertexProgramStep extends VertexProgramStep
     @Deprecated
     @Override
     public void modulateTimes(int times) {
-        configure(PageRank.TIMES, times);
+        configure(PageRank.times, times);
     }
 
     @Override
@@ -162,23 +160,4 @@ public final class PageRankVertexProgramStep extends VertexProgramStep
         return super.hashCode() ^ this.edgeTraversal.hashCode() ^ this.pageRankProperty.hashCode() ^ this.times;
     }
 
-    /**
-     * Configuration options to be passed to the {@link GraphTraversal#with(String, Object)} step.
-     */
-    public static class PageRank {
-        /**
-         * Configures number of iterations that the algorithm should run.
-         */
-        public static final String TIMES = Graph.Hidden.hide("tinkerpop.pageRank.times");
-
-        /**
-         * Configures the edge to traverse when calculating the pagerank.
-         */
-        public static final String EDGES = Graph.Hidden.hide("tinkerpop.pageRank.edges");
-
-        /**
-         * Configures the name of the property within which to store the pagerank value.
-         */
-        public static final String PROPERTY_NAME = Graph.Hidden.hide("tinkerpop.pageRank.propertyName");
-    }
 }

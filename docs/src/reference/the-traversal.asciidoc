@@ -244,7 +244,7 @@ g.V().has('name','nothing').bothE()
 *Additional References*
 
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV--++[`addV()`],
-link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV-java.lang.String-++[`addV(String)`]),
+link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV-java.lang.String-++[`addV(String)`],
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV-org.apache.tinkerpop.gremlin.process.traversal.Traversal-++[`addV(Traversal)`]
 
 [[addproperty-step]]
@@ -1537,8 +1537,8 @@ link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/grem
 [[not-step]]
 === Not Step
 
-The `not()`-step (*filter*) removes objects from the traversal stream when the traversal provided as an argument does
-not return any objects.
+The `not()`-step (*filter*) removes objects from the traversal stream when the traversal provided as an argument
+returns an object.
 
 [gremlin-groovy,modern]
 ----
@@ -1705,14 +1705,13 @@ g = graph.traversal().withComputer()
 g.V().pageRank().by('pageRank').values('pageRank')
 g.V().hasLabel('person').
   pageRank().
-    with(PageRank.EDGES, __.outE('knows')).
-    with(PageRank.PROPERTY_NAME, 'friendRank').
+    with(PageRank.edges, __.outE('knows')).
+    with(PageRank.propertyName, 'friendRank').
   order().by('friendRank',desc).valueMap('name','friendRank')
 ----
 
 Note the use of the `with()` modulating step which provides configuration options to the algorithm. It takes
-configuration keys from the static `PageRank` inner class on `PageRankVertexProgramStep` and is automatically
-imported to the Gremlin Console.
+configuration keys from the `PageRank` and is automatically imported to the Gremlin Console.
 
 The <<explain-step,`explain()`>>-step can be used to understand how the traversal is compiled into multiple `GraphComputer` jobs.
 
@@ -1721,8 +1720,8 @@ The <<explain-step,`explain()`>>-step can be used to understand how the traversa
 g = graph.traversal().withComputer()
 g.V().hasLabel('person').
   pageRank().
-    with(PageRank.EDGES, __.outE('knows')).
-    with(PageRank.PROPERTY_NAME, 'friendRank').
+    with(PageRank.edges, __.outE('knows')).
+    with(PageRank.propertyName, 'friendRank').
   order().by('friendRank',desc).valueMap('name','friendRank').explain()
 ----
 
@@ -1817,15 +1816,14 @@ g = graph.traversal().withComputer()
 g.V().peerPressure().by('cluster').values('cluster')
 g.V().hasLabel('person').
   peerPressure().
-    with(PeerPressure.PROPERTY_NAME, 'cluster').
+    with(PeerPressure.propertyName, 'cluster').
   group().
     by('cluster').
     by('name')
 ----
 
 Note the use of the `with()` modulating step which provides configuration options to the algorithm. It takes
-configuration keys from the static `PeerPressure` inner class on `PeerPressureVertexProgramStep` and is automatically
-imported to the Gremlin Console.
+configuration keys from the `PeerPressure` class and is automatically imported to the Gremlin Console.
 
 *Additional References*
 
@@ -2265,6 +2263,25 @@ g.V(1).repeat(local(
        )).times(10).path()
 ----
 
+As a clarification, note that in the above example `local()` is not strictly required as it only does the random walk
+over a single vertex, but note what happens without it if multiple vertices are traversed:
+
+[gremlin-groovy,modern]
+----
+g.V().repeat(bothE().sample(1).by('weight').otherV()).times(5).path()
+----
+
+The use of `local()` ensures that the traversal over `bothE()` occurs once per vertex traverser that passes through,
+thus allowing one random walk per vertex.
+
+[gremlin-groovy,modern]
+----
+g.V().repeat(local(bothE().sample(1).by('weight').otherV())).times(5).path()
+----
+
+So, while not strictly required, it is likely better to be explicit with the use of `local()` so that the proper intent
+of the traversal is expressed.
+
 *Additional References*
 
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#sample-int-++[`sample(int)`],
@@ -2632,7 +2649,7 @@ g.V().valueMap().tail(local) <4>
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tail--++[`tail()`],
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tail-long-++[`tail(long)`],
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tail-org.apache.tinkerpop.gremlin.process.traversal.Scope-++[`tail(Scope)`]
-link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tail-org.apache.tinkerpop.gremlin.process.traversal.Scope-long-++[tail(Scope,long)`]
+link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tail-org.apache.tinkerpop.gremlin.process.traversal.Scope-long-++[`tail(Scope,long)`]
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`]
 
 [[timelimit-step]]

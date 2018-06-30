@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.io.File;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 
@@ -49,6 +50,26 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
         add(Neo4jVertexProperty.class);
     }};
 
+    protected Graph.Features features = null;
+
+    @Override
+    public Graph openTestGraph(final Configuration config) {
+        final Graph graph = super.openTestGraph(config);
+
+        // we can just use the initial set of features taken from the first graph generated from the provider because
+        // neo4j feature won't ever change. don't think there is any danger of keeping this instance about even if
+        // the original graph instance goes out of scope.
+        if (null == features) {
+            this.features = graph.features();
+        }
+        return graph;
+    }
+
+    @Override
+    public Optional<Graph.Features> getStaticFeatures() {
+        return Optional.ofNullable(features);
+    }
+
     @Override
     public void clear(final Graph graph, final Configuration configuration) throws Exception {
         if (null != graph) {
@@ -56,7 +77,7 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
             graph.close();
         }
 
-        if (configuration.containsKey(Neo4jGraph.CONFIG_DIRECTORY)) {
+        if (configuration != null && configuration.containsKey(Neo4jGraph.CONFIG_DIRECTORY)) {
             // this is a non-in-sideEffects configuration so blow away the directory
             final File graphDirectory = new File(configuration.getString(Neo4jGraph.CONFIG_DIRECTORY));
             deleteDirectory(graphDirectory);

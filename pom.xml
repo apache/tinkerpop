@@ -381,6 +381,8 @@ limitations under the License.
                         <exclude>**/*.csproj</exclude>
                         <exclude>**/.vs/**</exclude>
                         <exclude>**/NuGet.Config</exclude>
+                        <exclude>**/*.nuspec</exclude>
+                        <exclude>**/*.nuspec.template</exclude>
                         <exclude>**/gremlin-javascript/node_modules/**</exclude>
                         <exclude>**/node/node_modules/**</exclude>
                         <exclude>**/node/node</exclude>
@@ -864,11 +866,18 @@ limitations under the License.
                                 <configuration>
                                     <resources>
                                         <resource>
-                                            <directory>${asciidoc.input.dir}/</directory>
-                                            <targetPath>${htmlsingle.output.dir}/</targetPath>
-                                            <excludes>${asciidoc.input.dir}/static/*.*</excludes>
+                                            <directory>${asciidoc.input.dir}</directory>
+                                            <targetPath>${htmlsingle.output.dir}</targetPath>
+                                            <includes>
+                                                <include>index.asciidoc</include>
+                                            </includes>
+                                            <excludes>
+                                                <exclude>${asciidoc.input.dir}/static/*.*</exclude>
+                                            </excludes>
                                         </resource>
                                     </resources>
+                                    <sourceDirectory>${asciidoc.input.dir}</sourceDirectory>
+                                    <outputDirectory>${htmlsingle.output.dir}</outputDirectory>
                                     <sourceDocumentName>index.asciidoc</sourceDocumentName>
                                     <backend>html5</backend>
                                     <doctype>article</doctype>

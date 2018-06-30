@@ -29,6 +29,19 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.2.10/CHANGELOG.as
 
 === Upgrading for Users
 
+==== Bulk Import and Export
+
+TinkerPop has provided some general methods for importing and exporting data, but more and more graph providers are
+producing their own bulk import/export facilities and they are more efficient and easier to use than TinkerPop's
+methods. As a result, TinkerPop will now refer users to the bulk import/export features of individual graph providers
+and as such, has deprecated `BulkLoaderVertexProgram` as of this release.
+
+As part of this change, the `BulkDumperVertexProgram` has been renamed to `CloneVertexProgram` with the former being
+deprecated. `CloneVertexProgram` is more aptly named, as it essentially copies a graph from a graph `InputFormat`
+to a graph `OutputFormat`.
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-1985[TINKERPOP-1985]
+
 ==== Docker Images
 
 Docker images are now available on link:https://hub.docker.com/u/tinkerpop/[Docker Hub] for Gremlin Console and Gremlin
@@ -44,12 +57,34 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1897[TINKERPOP-1897],
 link:http://tinkerpop.apache.org/docs/current/reference#gremlin-console-docker-image[Reference Documentation - Gremlin Console],
 link:http://tinkerpop.apache.org/docs/current/reference#gremlin-server-docker-image[Reference Documentation - Gremlin Server],
 
+==== TimedInterruptCustomizerProvider
+
+In Gremlin Server, it is best not to use {{TimedInterruptCustomizerProvider}} because it can compete with the
+{{scriptEvaluationTimeout}} setting and produce a different error path. Simply rely on {{scriptEvaluationTimeout}}
+as it covers both script evaluation time and result iteration time.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1778[TINKERPOP-1778]
+
 ==== TinkerFactory.createGratefulDead()
 
 The Grateful Dead dataset has been with TinkerPop since the early days of 1.x. It has always been available as a
 packaged dataset that needed to be loaded through the various IO options available, while other toy graphs had the
 benefit of `TinkerFactory` to help get them bootstrapped. For 3.2.10, Grateful Dead is now more conveniently loaded
 via that same method as the other toy graphs with `TinkerFactory.createGratefulDead()`.
+
+=== Upgrading for Providers
+
+==== Graph Database Providers
+
+===== Bulk Import and Export
+
+As noted in the user section, TinkerPop has deprecated its bulk loading feature in `BulkLoaderVertexProgram` and will
+refer TinkerPop users who need bulk import/export capabilities to the native tools of the graph database they have
+chosen. If a graph database provider does not have any bulk loading tools it can choose to build graph `InputFormat`
+and `OutputFormat` implementations which can be used by `CloneVertexProgram` (formerly `BulkDumperVertexProgram`) as
+a easy way to get such a feature.
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-1985[TINKERPOP-1985]
 
 == TinkerPop 3.2.9
 

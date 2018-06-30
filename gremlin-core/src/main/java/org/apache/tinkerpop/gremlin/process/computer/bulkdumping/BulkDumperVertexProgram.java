@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.clone.CloneVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -34,7 +35,9 @@ import java.util.Set;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
+ * @deprecated As of release 3.2.10, replaced by {@link CloneVertexProgram}.
  */
+@Deprecated
 public class BulkDumperVertexProgram implements VertexProgram<Tuple> {
 
     private BulkDumperVertexProgram() {

@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTrav
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ConsoleMutationListener;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.MutationListener;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 import org.junit.runner.RunWith;

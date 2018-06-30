@@ -1197,7 +1197,7 @@ The following table describes the various YAML configuration options that Gremli
 |scriptEngines.<name>.staticImports |A comma separated list of "static" imports to make available to the `ScriptEngine`. |_none_
 |scriptEngines.<name>.scripts |A comma separated list of script files to execute on `ScriptEngine` initialization. `Graph` and `TraversalSource` instance references produced from scripts will be stored globally in Gremlin Server, therefore it is possible to use initialization scripts to add Traversal Strategies or create entirely new `Graph` instances all together. Instantiating a `LifeCycleHook` in a script provides a way to execute scripts when Gremlin Server starts and stops.|_none_
 |scriptEngines.<name>.config |A `Map` of configuration settings for the `ScriptEngine`.  These settings are dependent on the `ScriptEngine` implementation being used. |_none_
-|scriptEvaluationTimeout |The amount of time in milliseconds before a script evaluation times out. The notion of "script evaluation" refers to the time it takes for the `ScriptEngine` to do its work and *not* any additional time it takes for the result of the evaluation to be iterated and serialized. This feature can be turned off by setting the value to `0`. |30000
+|scriptEvaluationTimeout |The amount of time in milliseconds before a script evaluation and iteration of result times out. This feature can be turned off by setting the value to `0`. |30000
 |serializers |A `List` of `Map` settings, where each `Map` represents a `MessageSerializer` implementation to use along with its configuration. If this value is not set, then Gremlin Server will configure with GraphSON and Gryo but will not register any `ioRegistries` for configured graphs. |_empty_
 |serializers[X].className |The full class name of the `MessageSerializer` implementation. |_none_
 |serializers[X].config |A `Map` containing `MessageSerializer` specific configurations. |_none_
@@ -1487,7 +1487,7 @@ scriptEngines: {
                org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin: {files: [scripts/empty-sample.groovy]}}}}
 ----
 
-This configuration can be expaded to include a the `GroovyCompilerGremlinPlugin`:
+This configuration can be expanded to include a the `GroovyCompilerGremlinPlugin`:
 
 [source,yaml]
 ----
@@ -1497,18 +1497,18 @@ scriptEngines: {
                org.apache.tinkerpop.gremlin.tinkergraph.jsr223.TinkerGraphGremlinPlugin: {}
                org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin: {classImports: [java.lang.Math], methodImports: [java.lang.Math#*]},
                org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin: {files: [scripts/empty-sample-secure.groovy]},
-               org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin: {timedInterrupt: 10000}}}}
+               org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin: {enableThreadInterrupt: true}}}}
 ----
 
-This configuration sets up the script engine with to ensure that loops (like `while`) can only execute for `10000`
-milliseconds.  With this configuration in place, a remote execution as follows, now times out rather than consuming
-the thread continuously:
+This configuration sets up the script engine with to ensure that loops (like `while`) will respect interrupt requests.
+With this configuration in place, a remote execution as follows, now times out rather than consuming the thread
+continuously:
 
 [source,groovy]
 gremlin> :remote connect tinkerpop.server conf/remote.yaml
 ==>Configured localhost/127.0.0.1:8182
 gremlin> :> while(true) { }
-Execution timed out after 10000 units. Start time: Fri Jul 24 11:04:52 EDT 2015
+==>Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 30000 ms or evaluation was otherwise cancelled directly for request [while(true) {}]
 
 The `GroovyCompilerGremlinPlugin` has a number of configuration options:
 
@@ -1517,10 +1517,9 @@ The `GroovyCompilerGremlinPlugin` has a number of configuration options:
 |Customizer |Description
 |`compilation` |Allows for three configurations: `COMPILE_STATIC`, `TYPE_CHECKED` or `NONE` (default). When configured with `COMPILE_STATIC` or `TYPE_CHECKED` it applies `CompileStatic` or `TypeChecked` annotations (respectively) to incoming scripts thus removing dynamic dispatch. More information about static compilation can be found link:http://docs.groovy-lang.org/latest/html/documentation/#_static_compilation[here] and additional information on `TypeChecked` usage can be found link:http://docs.groovy-lang.org/latest/html/documentation/#_the_code_typechecked_code_annotation[here].
 |`compilerConfigurationOptions` |Allows configuration of the Groovy `CompilerConfiguration` object by taking a `Map` of key/value pairs where the "key" is a property to set on the `CompilerConfiguration`.
-|`enableThreadInterrupt` |Injects checks for thread interruption, thus allowing the thread to potentially respect calls to `Thread.interrupt()`
+|`enableThreadInterrupt` |Injects checks for thread interruption, thus allowing the script to potentially respect calls to `Thread.interrupt()`
 |`expectedCompilationTime` |The amount of time in milliseconds a script is allowed to compile before a warning message is sent to the logs.
 |`extensions` | This setting is for use when `compilation` is configured with `COMPILE_STATIC` or `TYPE_CHECKED` and accepts a comma separated list of link:http://docs.groovy-lang.org/latest/html/documentation/#Typecheckingextensions-Workingwithextensions[type checking extensions] that can have the effect of securing calls to various methods.
-|`timedInterrupt` |Injects checks into loops to interrupt them if they exceed the configured timeout in milliseconds.
 |=========================================================
 
 NOTE: Consult the latest link:http://docs.groovy-lang.org/latest/html/documentation/#_typing[Groovy Documentation]
@@ -1535,7 +1534,7 @@ scriptEngines: {
   gremlin-groovy: {
     plugins: { org.apache.tinkerpop.gremlin.server.jsr223.GremlinServerGremlinPlugin: {},
                org.apache.tinkerpop.gremlin.tinkergraph.jsr223.TinkerGraphGremlinPlugin: {}
-               org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin: {enableThreadInterrupt: true, timedInterrupt: 10000, compilation: COMPILE_STATIC, extensions: org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension},
+               org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin: {enableThreadInterrupt: true, compilation: COMPILE_STATIC, extensions: org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension},
                org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin: {classImports: [java.lang.Math], methodImports: [java.lang.Math#*]},
                org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin: {files: [scripts/empty-sample-secure.groovy]}}}}
 ----
@@ -2455,11 +2454,15 @@ The following shows the output for `HadoopGraph`:
 describeGraph(HadoopGraph)
 ----
 
-[[gremlin-archetypes]]
-== Gremlin Archetypes
+[[application-templates]]
+== Application Templates
 
-TinkerPop has a number of link:https://maven.apache.org/guides/introduction/introduction-to-archetypes.html[Maven archetypes],
-which provide example project templates to quickly get started with TinkerPop. The available archetypes are as follows:
+TinkerPop has a number of application templates, which provide example project templates to quickly get started with TinkerPop.
+
+[[gremlin-archetypes]]
+=== Maven Archetypes
+
+The available link:https://maven.apache.org/guides/introduction/introduction-to-archetypes.html[Maven archetypes] are as follows:
 
 * `gremlin-archetype-dsl` - An example project that demonstrates how to build Domain Specific Languages with Gremlin in Java.
 * `gremlin-archetype-server` - An example project that demonstrates the basic structure of a
@@ -2476,3 +2479,24 @@ $ mvn archetype:generate -DarchetypeGroupId=org.apache.tinkerpop -DarchetypeArti
 This command will generate a new Maven project in a directory called "app" with a `pom.xml` specifying a `groupId` of
 `com.my`. Please see the `README.asciidoc` in the root of each generated project for information on how to build and
 execute it.
+
+[[gremlin-dotnet-template]]
+=== Gremlin.Net Template
+
+This link:https://docs.microsoft.com/dotnet/core/tools/custom-templates[dotnet template] helps getting started with
+<<gremlin-DotNet,Gremlin.Net>>. It creates a new C# console project that shows how to connect to a
+<<gremlin-server,Gremlin Server>> with Gremlin.Net.
+
+You can install the template with the dotnet CLI tool:
+[source,shell]
+dotnet new -i Gremlin.Net.Template
+
+After the template is installed, a new project based on this template can be installed:
+
+[source,shell]
+dotnet new gremlin
+
+You can specify the output directory for the new project which will then also be used as the name of the created project:
+
+[source,shell]
+dotnet new gremlin -o MyFirstGremlinProject

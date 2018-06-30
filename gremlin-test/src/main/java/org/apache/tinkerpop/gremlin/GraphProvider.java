@@ -294,6 +294,22 @@ public interface GraphProvider {
     }
 
     /**
+     * Gets a {@link Graph.Features} implementation that contains graph feature configuration that will never change
+     * from execution to execution of the tests given this current {@code GraphProvider} implementation. Implementing
+     * this method will allow the test suite to avoid creation of a {@link Graph} instance and thus speed up the
+     * execution of tests if that creation process is expensive. It is important that this static set of features be
+     * representative of what the {@link Graph} instance produced by this {@code GraphProvider} can actually do or
+     * else the cost of {@link Graph} instantiation will be incurred when it doesn't need to be. It is also important
+     * that this method be faster than the cost of {@link Graph} creation in the first place or there really won't be
+     * any difference in execution speed. In cases where some features are static and others are not, simply throw
+     * an {@code UnsupportedOperationException} from those features to let the test suite know that it cannot rely
+     * on them and the test suite will revert to using a constructed {@link Graph} instance.
+     */
+    public default Optional<Graph.Features> getStaticFeatures() {
+        return Optional.empty();
+    }
+
+    /**
      * An annotation to be applied to a {@code GraphProvider} implementation that provides additional information
      * about its intentions. The {@code Descriptor} is required by those {@code GraphProvider} implementations
      * that will be assigned to test suites that use

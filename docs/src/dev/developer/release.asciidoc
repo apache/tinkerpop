@@ -112,6 +112,7 @@ during this period.
 . At some point during the week:
 .. Run the full integration test suite: `mvn clean install -DskipIntegrationTests=false -DincludeNeo4j`
 .. Build and test the Docker images: `mvn clean install -pl gremlin-server,gremlin-console -DdockerImages`
+.. Ensure that the Gremlin.Net.Template gets packaged successfully: `mvn clean install -Dnuget`
 .. Deploy a final SNAPSHOT to the snapshot repository as well as GLV and Docker image pre-releases.
 .. Review LICENSE and NOTICE files to make sure that no <<dependencies,changes are needed>>.
 .. Review javadoc filters on the "Core API" docs to be sure nothing needs to change.

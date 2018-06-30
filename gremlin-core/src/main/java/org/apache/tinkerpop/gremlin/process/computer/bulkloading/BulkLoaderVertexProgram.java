@@ -56,7 +56,9 @@ import java.util.Set;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
+ * @deprecated As of release 3.2.10, not directly replaced - consider graph provider specific bulk loading methods
  */
+@Deprecated
 public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BulkLoaderVertexProgram.class);
@@ -457,12 +459,6 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
         public void vertexPropertyChanged(final Vertex element, final VertexProperty oldValue, final Object setValue,
                                           final Object... vertexPropertyKeyValues) {
             this.counter++;
-        }
-
-        @Override
-        public void vertexPropertyChanged(final Vertex element, final Property oldValue, final Object setValue,
-                                          final Object... vertexPropertyKeyValues) {
-            // do nothing - deprecated
         }
 
         @Override

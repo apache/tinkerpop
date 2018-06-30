@@ -27,7 +27,9 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
+ * @deprecated As of release 3.2.10, not directly replaced - consider graph provider specific bulk loading methods
  */
+@Deprecated
 public interface BulkLoader {
 
     /**
