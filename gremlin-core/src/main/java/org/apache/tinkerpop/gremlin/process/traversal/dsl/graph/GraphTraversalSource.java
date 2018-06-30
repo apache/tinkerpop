@@ -116,87 +116,138 @@ public class GraphTraversalSource implements TraversalSource {
 
     //// CONFIGURATIONS
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public GraphTraversalSource withStrategies(final TraversalStrategy... traversalStrategies) {
         return (GraphTraversalSource) TraversalSource.super.withStrategies(traversalStrategies);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @SuppressWarnings({"unchecked"})
     public GraphTraversalSource withoutStrategies(final Class<? extends TraversalStrategy>... traversalStrategyClasses) {
         return (GraphTraversalSource) TraversalSource.super.withoutStrategies(traversalStrategyClasses);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public GraphTraversalSource withComputer(final Computer computer) {
         return (GraphTraversalSource) TraversalSource.super.withComputer(computer);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public GraphTraversalSource withComputer(final Class<? extends GraphComputer> graphComputerClass) {
         return (GraphTraversalSource) TraversalSource.super.withComputer(graphComputerClass);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public GraphTraversalSource withComputer() {
         return (GraphTraversalSource) TraversalSource.super.withComputer();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <A> GraphTraversalSource withSideEffect(final String key, final Supplier<A> initialValue, final BinaryOperator<A> reducer) {
         return (GraphTraversalSource) TraversalSource.super.withSideEffect(key, initialValue, reducer);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <A> GraphTraversalSource withSideEffect(final String key, final A initialValue, final BinaryOperator<A> reducer) {
         return (GraphTraversalSource) TraversalSource.super.withSideEffect(key, initialValue, reducer);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <A> GraphTraversalSource withSideEffect(final String key, final A initialValue) {
         return (GraphTraversalSource) TraversalSource.super.withSideEffect(key, initialValue);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <A> GraphTraversalSource withSideEffect(final String key, final Supplier<A> initialValue) {
         return (GraphTraversalSource) TraversalSource.super.withSideEffect(key, initialValue);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <A> GraphTraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
         return (GraphTraversalSource) TraversalSource.super.withSack(initialValue, splitOperator, mergeOperator);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <A> GraphTraversalSource withSack(final A initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
         return (GraphTraversalSource) TraversalSource.super.withSack(initialValue, splitOperator, mergeOperator);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <A> GraphTraversalSource withSack(final A initialValue) {
         return (GraphTraversalSource) TraversalSource.super.withSack(initialValue);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <A> GraphTraversalSource withSack(final Supplier<A> initialValue) {
         return (GraphTraversalSource) TraversalSource.super.withSack(initialValue);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <A> GraphTraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator) {
         return (GraphTraversalSource) TraversalSource.super.withSack(initialValue, splitOperator);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <A> GraphTraversalSource withSack(final A initialValue, final UnaryOperator<A> splitOperator) {
         return (GraphTraversalSource) TraversalSource.super.withSack(initialValue, splitOperator);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <A> GraphTraversalSource withSack(final Supplier<A> initialValue, final BinaryOperator<A> mergeOperator) {
         return (GraphTraversalSource) TraversalSource.super.withSack(initialValue, mergeOperator);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <A> GraphTraversalSource withSack(final A initialValue, final BinaryOperator<A> mergeOperator) {
         return (GraphTraversalSource) TraversalSource.super.withSack(initialValue, mergeOperator);
@@ -218,16 +269,25 @@ public class GraphTraversalSource implements TraversalSource {
         return clone;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public GraphTraversalSource withRemote(final Configuration conf) {
         return (GraphTraversalSource) TraversalSource.super.withRemote(conf);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public GraphTraversalSource withRemote(final String configFile) throws Exception {
         return (GraphTraversalSource) TraversalSource.super.withRemote(configFile);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public GraphTraversalSource withRemote(final RemoteConnection connection) {
         try {
@@ -247,6 +307,10 @@ public class GraphTraversalSource implements TraversalSource {
 
     //// SPAWNS
 
+
+    /**
+     * Spawns a {@link GraphTraversal} by adding a vertex with the specified label.
+     */
     public GraphTraversal<Vertex, Vertex> addV(final String label) {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.addV, label);
@@ -254,6 +318,9 @@ public class GraphTraversalSource implements TraversalSource {
         return traversal.addStep(new AddVertexStartStep(traversal, label));
     }
 
+    /**
+     * Spawns a {@link GraphTraversal} by adding a vertex with the label as determined by a {@link Traversal}.
+     */
     public GraphTraversal<Vertex, Vertex> addV(final Traversal<?, String> vertexLabelTraversal) {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.addV, vertexLabelTraversal);
@@ -261,6 +328,9 @@ public class GraphTraversalSource implements TraversalSource {
         return traversal.addStep(new AddVertexStartStep(traversal, vertexLabelTraversal));
     }
 
+    /**
+     * Spawns a {@link GraphTraversal} by adding a vertex with the default label.
+     */
     public GraphTraversal<Vertex, Vertex> addV() {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.addV);
@@ -268,6 +338,9 @@ public class GraphTraversalSource implements TraversalSource {
         return traversal.addStep(new AddVertexStartStep(traversal, (String)null));
     }
 
+    /**
+     * Spawns a {@link GraphTraversal} by adding a edge with the specified label.
+     */
     public GraphTraversal<Edge, Edge> addE(final String label) {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.addE, label);
@@ -275,6 +348,9 @@ public class GraphTraversalSource implements TraversalSource {
         return traversal.addStep(new AddEdgeStartStep(traversal, label));
     }
 
+    /**
+     * Spawns a {@link GraphTraversal} by adding a edge with a label as specified by the provided {@link Traversal}.
+     */
     public GraphTraversal<Edge, Edge> addE(final Traversal<?, String> edgeLabelTraversal) {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.addE, edgeLabelTraversal);
@@ -282,6 +358,9 @@ public class GraphTraversalSource implements TraversalSource {
         return traversal.addStep(new AddEdgeStartStep(traversal, edgeLabelTraversal));
     }
 
+    /**
+     * Spawns a {@link GraphTraversal} starting it with arbitrary values.
+     */
     public <S> GraphTraversal<S, S> inject(S... starts) {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.inject, starts);
@@ -289,6 +368,10 @@ public class GraphTraversalSource implements TraversalSource {
         return traversal.addStep(new InjectStep<S>(traversal, starts));
     }
 
+    /**
+     * Spawns a {@link GraphTraversal} starting with all vertices or some subset of vertices as specified by their
+     * unique identifier.
+     */
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.V, vertexIds);
@@ -296,6 +379,10 @@ public class GraphTraversalSource implements TraversalSource {
         return traversal.addStep(new GraphStep<>(traversal, Vertex.class, true, vertexIds));
     }
 
+    /**
+     * Spawns a {@link GraphTraversal} starting with all edges or some subset of edges as specified by their unique
+     * identifier.
+     */
     public GraphTraversal<Edge, Edge> E(final Object... edgesIds) {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.E, edgesIds);
@@ -303,11 +390,16 @@ public class GraphTraversalSource implements TraversalSource {
         return traversal.addStep(new GraphStep<>(traversal, Edge.class, true, edgesIds));
     }
 
-
+    /**
+     * Proxies calls through to the underlying {@link Graph#tx()}.
+     */
     public Transaction tx() {
         return this.graph.tx();
     }
 
+    /**
+     * If there is an underlying {@link RemoteConnection} it will be closed by this method.
+     */
     @Override
     public void close() throws Exception {
         if (connection != null) connection.close();
