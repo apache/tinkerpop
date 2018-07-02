@@ -190,16 +190,16 @@ class DriverRemoteConnection extends RemoteConnection {
    * @return {Promise}
    */
   close() {
-    if (this._closePromise) {
-      return this._closePromise;
-    }
-    this._closePromise = new Promise(resolve => {
-      this._ws.on('close', function () {
-        this.isOpen = false;
-        resolve();
+    if (!this._closePromise) {
+      this._closePromise = new Promise(resolve => {
+        this._ws.on('close', function () {
+          this.isOpen = false;
+          resolve();
+        });
+        this._ws.close();
       });
-      this._ws.close();
-    });
+    }
+    return this._closePromise;
   }
 }
 
