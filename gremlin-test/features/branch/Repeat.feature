@@ -293,6 +293,18 @@ Scenario: g_V_untilXconstantXtrueXX_repeatXrepeatXout_createdXX_untilXhasXname_r
     | java |
     | java |
 
+Scenario: g_V_emit_repeatXa_outXknows_filterXloops_isX0XX_lang
+  Given the modern graph
+  And the traversal of
+    """
+    g.V().emit().repeat("a", __.out("knows").filter(__.loops("a").is(0))).values("lang")
+    """
+  When iterated to list
+  Then the result should be unordered
+    | result |
+    | java |
+    | java |
+
 Scenario: g_VX3X_repeatXbothX_createdXX_untilXloops_is_40XXemit_repeatXin_knowsXX_emit_loopsXisX1Xdedup_values
     Given the modern graph
     And using the parameter v3Id defined as "v[lop].id"
@@ -318,3 +330,27 @@ Scenario: g_VX1X_repeatXrepeatXunionXout_uses_out_traversesXX_whereXloops_isX0X_
       Then the result should be unordered
         | result |
         | tinkergraph |
+
+Scenario: g_V_repeatXa_outXknows_repeatXb_outXcreatedX_filterXloops_isX0XX_emit_lang
+  Given the modern graph
+  And the traversal of
+    """
+    g.V().repeat("a", __.out("knows").repeat("b", __.out("created").filter(__.loops("a").is(0))).emit()).emit().values("lang")
+    """
+  When iterated to list
+  Then the result should be unordered
+    | result |
+    | java |
+    | java |
+
+Scenario: g_VX6X_repeatXa_bothXcreatedXX_emitXrepeatXb_bothXknowsXX_untilXorXloops_isX2X_loopsXbX_isXloopsXaXXXX_hasXname_vadasXX_dedup_name
+  Given the modern graph
+  And using the parameter v6Id defined as "v[peter].id"
+  And the traversal of
+    """
+    g.V(v6Id).repeat("a", __.both("created")).emit(__.repeat("b", __.both("knows")).until(__.or(__.loops().is(2), __.loops("b").is(__.loops("a")))).has("name", "vadas")).dedup().values("name")
+    """
+  When iterated to list
+  Then the result should be unordered
+    | result |
+    | josh |

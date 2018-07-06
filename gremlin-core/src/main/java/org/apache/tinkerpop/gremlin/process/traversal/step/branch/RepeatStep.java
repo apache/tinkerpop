@@ -43,6 +43,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     private Traversal.Admin<S, S> repeatTraversal = null;
     private Traversal.Admin<S, ?> untilTraversal = null;
     private Traversal.Admin<S, ?> emitTraversal = null;
+    private String loopName = null;
     public boolean untilFirst = false;
     public boolean emitFirst = false;
 
@@ -66,6 +67,11 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         this.repeatTraversal = repeatTraversal; // .clone();
         this.repeatTraversal.addStep(new RepeatEndStep(this.repeatTraversal));
         this.integrateChild(this.repeatTraversal);
+    }
+
+
+    public void setLoopName(final String loopName) {
+        this.loopName = loopName;
     }
 
     public void setUntilTraversal(final Traversal.Admin<S, ?> untilTraversal) {
@@ -189,7 +195,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
                 return this.repeatTraversal.getEndStep();
             } else {
                 final Traverser.Admin<S> start = this.starts.next();
-                start.initialiseLoops(this.getId());
+                start.initialiseLoops(this.getId(), this.loopName);
                 if (doUntil(start, true)) {
                     start.resetLoops();
                     return IteratorUtils.of(start);
@@ -216,7 +222,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
             return IteratorUtils.of(start);
         } else {
             start.setStepId(this.repeatTraversal.getStartStep().getId());
-            start.initialiseLoops(start.getStepId());
+            start.initialiseLoops(start.getStepId(), this.loopName);
             if (doEmit(start, true)) {
                 final Traverser.Admin<S> emitSplit = start.split();
                 emitSplit.resetLoops();
@@ -239,6 +245,13 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
             repeatStep.setRepeatTraversal(repeatTraversal);
             traversal.asAdmin().addStep(repeatStep);
         }
+        return traversal;
+    }
+
+    public static <A, B, C extends Traversal<A, B>> C addRepeatToTraversal(final C traversal, final String loopName, final Traversal.Admin<B, B> repeatTraversal) {
+        addRepeatToTraversal(traversal, repeatTraversal);
+        final Step<?, B> step = traversal.asAdmin().getEndStep();
+        ((RepeatStep) step).setLoopName(loopName);
         return traversal;
     }
 

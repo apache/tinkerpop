@@ -100,7 +100,7 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
 
 
     @Override
-    public void initialiseLoops(final String stepLabel) {
+    public void initialiseLoops(final String stepLabel, final String loopName) {
 
     }
 
@@ -177,6 +177,11 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
     @Override
     public int loops() {
         throw new UnsupportedOperationException("This traverser does not support loops: " + this.getClass().getCanonicalName());
+    }
+
+    @Override
+    public int loops(final String loopName) {
+        throw new UnsupportedOperationException("This traverser does not support named loops: " + this.getClass().getCanonicalName());
     }
 
     @Override

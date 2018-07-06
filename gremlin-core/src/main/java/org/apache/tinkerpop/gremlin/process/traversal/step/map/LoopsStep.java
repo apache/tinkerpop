@@ -26,12 +26,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
  */
 public final class LoopsStep<S> extends MapStep<S, Integer> {
 
-    public LoopsStep(final Traversal.Admin traversal) {
+    private String loopName;
+
+    public LoopsStep(final Traversal.Admin traversal, final String loopName) {
         super(traversal);
+        this.loopName = loopName;
     }
 
     @Override
     protected Integer map(final Traverser.Admin<S> traverser) {
-        return traverser.loops();
+        return traverser.loops(this.loopName);
     }
 }

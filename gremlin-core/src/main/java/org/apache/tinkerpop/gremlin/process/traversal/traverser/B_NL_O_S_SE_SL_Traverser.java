@@ -18,14 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.traverser;
 
+import org.apache.commons.collections.MapIterator;
+import org.apache.commons.collections.map.ReferenceMap;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.LabelledCounter;
 
+import java.util.Iterator;
 import java.util.Stack;
 
 public class B_NL_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
 
     protected Stack<LabelledCounter> nestedLoops;
+    protected ReferenceMap loopNames = null;
 
     protected B_NL_O_S_SE_SL_Traverser() {
     }
@@ -33,6 +37,7 @@ public class B_NL_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
     public B_NL_O_S_SE_SL_Traverser(final T t, final Step<T, ?> step, final long initialBulk) {
         super(t, step, initialBulk);
         this.nestedLoops = new Stack<>();
+        this.loopNames = new ReferenceMap(ReferenceMap.HARD, ReferenceMap.WEAK);
     }
 
     /////////////////
@@ -43,9 +48,23 @@ public class B_NL_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
     }
 
     @Override
-    public void initialiseLoops(final String stepLabel) {
-        if (this.nestedLoops.empty() || !this.nestedLoops.peek().hasLabel(stepLabel))
-            this.nestedLoops.push(new LabelledCounter(stepLabel, (short)0));
+    public int loops(final String loopName) {
+        if (loopName == null)
+            return loops();
+        else if (this.loopNames.containsKey(loopName))
+            return ((LabelledCounter) this.loopNames.get(loopName)).count();
+        else
+            throw new IllegalArgumentException("Loop name not defined: " + loopName);
+    }
+
+    @Override
+    public void initialiseLoops(final String stepLabel, final String loopName) {
+        if (this.nestedLoops.empty() || !this.nestedLoops.peek().hasLabel(stepLabel)) {
+            LabelledCounter lc = new LabelledCounter(stepLabel, (short) 0);
+            this.nestedLoops.push(lc);
+            if (loopName != null)
+                this.loopNames.put(loopName, lc);
+        }
     }
 
     @Override
@@ -63,18 +82,48 @@ public class B_NL_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
     @Override
     public <R> Admin<R> split(final R r, final Step<T, R> step) {
         final B_NL_O_S_SE_SL_Traverser<R> clone = (B_NL_O_S_SE_SL_Traverser<R>) super.split(r, step);
+
         clone.nestedLoops = new Stack<>();
         for(LabelledCounter lc : this.nestedLoops)
             clone.nestedLoops.push((LabelledCounter) lc.clone());
+
+        if (this.loopNames != null) {
+            clone.loopNames = new ReferenceMap(ReferenceMap.HARD, ReferenceMap.WEAK);
+
+            Iterator loopNamesIterator = this.loopNames.entrySet().iterator();
+            while (loopNamesIterator.hasNext()) {
+                ReferenceMap.Entry pair = (ReferenceMap.Entry) loopNamesIterator.next();
+
+                int idx = this.nestedLoops.indexOf(pair.getValue());
+                if (idx != -1)
+                    clone.loopNames.put(pair.getKey(), clone.nestedLoops.get(idx));
+            }
+        }
+
         return clone;
     }
 
     @Override
     public Admin<T> split() {
         final B_NL_O_S_SE_SL_Traverser<T> clone = (B_NL_O_S_SE_SL_Traverser<T>) super.split();
+
         clone.nestedLoops = new Stack<>();
         for(LabelledCounter lc : this.nestedLoops)
             clone.nestedLoops.push((LabelledCounter) lc.clone());
+
+        if (this.loopNames != null) {
+            clone.loopNames = new ReferenceMap(ReferenceMap.HARD, ReferenceMap.WEAK);
+
+            Iterator loopNamesIterator = this.loopNames.entrySet().iterator();
+            while (loopNamesIterator.hasNext()) {
+                ReferenceMap.Entry pair = (ReferenceMap.Entry) loopNamesIterator.next();
+
+                int idx = this.nestedLoops.indexOf(pair.getValue());
+                if (idx != -1)
+                    clone.loopNames.put(pair.getKey(), clone.nestedLoops.get(idx));
+            }
+        }
+
         return clone;
     }
 
@@ -93,13 +142,17 @@ public class B_NL_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
 
         B_NL_O_S_SE_SL_Traverser<?> that = (B_NL_O_S_SE_SL_Traverser<?>) o;
 
-        return this.nestedLoops.equals(that.nestedLoops);
+        if (!this.nestedLoops.equals(that.nestedLoops)) return false;
+        return this.loopNames != null ? this.loopNames.equals(that.loopNames) : that.loopNames == null;
     }
 
     @Override
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + this.nestedLoops.hashCode();
+        result = 31 * result + (this.loopNames != null ? this.loopNames.hashCode() : 0);
+
         return result;
     }
+
 }

@@ -29,15 +29,18 @@ import java.io.Serializable;
 public class LabelledCounter implements Serializable, Cloneable {
 
     private final String label;
+    private final MutableShort count = new MutableShort();
 
-    private final MutableShort count;
+    protected LabelledCounter() {
+        label = "";
+    }
 
     public LabelledCounter(final String label, final short initialCount) {
         if (label == null) {
             throw new NullPointerException("Label is null");
         }
         this.label = label;
-        this.count = new MutableShort(initialCount);
+        this.count.setValue(initialCount);
     }
 
     public boolean hasLabel(final String label){

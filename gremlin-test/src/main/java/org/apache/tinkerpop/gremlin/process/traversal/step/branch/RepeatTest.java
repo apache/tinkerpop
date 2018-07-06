@@ -114,6 +114,14 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_VX1X_repeatXrepeatXunionXout_uses_out_traversesXX_whereXloops_isX0X_timesX1X_timeX2X_name(final Object v1Id);
 
+    // NAMED LOOP
+
+    public abstract Traversal<Vertex, String> get_g_V_repeatXa_outXknows_repeatXb_outXcreatedX_filterXloops_isX0XX_emit_lang();
+
+    public abstract Traversal<Vertex, String> get_g_V_emit_repeatXa_outXknows_filterXloops_isX0XX_lang();
+
+    public abstract Traversal<Vertex, String> get_g_VX6X_repeatXa_bothXcreatedXX_emitXrepeatXb_bothXknowsXX_untilXorXloops_isX2X_loopsXbX_isXloopsXaXXXX_hasXname_vadasXX_dedup_name(final Object v6Id);
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_repeatXoutX_timesX2X_emit_path() {
@@ -388,7 +396,6 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_VX3X_repeatXbothX_createdXX_untilXloops_is_40XXemit_repeatXin_knowsXX_emit_loopsXisX1Xdedup_values() {
         final Traversal<Vertex, String> traversal = get_g_VX3X_repeatXbothX_createdXX_untilXloops_is_40XXemit_repeatXin_knowsXX_emit_loopsXisX1Xdedup_values(convertToVertexId("lop"));
-
         printTraversalForm(traversal);
         for (String res :   new String[]{"josh","lop", "ripple"})
         {
@@ -396,7 +403,6 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
             String lang = traversal.next();
             assertEquals(lang, res);
         }
-
         assertFalse(traversal.hasNext());
     }
 
@@ -404,12 +410,48 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(CREW)
     public void g_VX1X_repeatXrepeatXunionXout_uses_out_traversesXX_whereXloops_isX0X_timesX1X_timeX2X_name() {
         final Traversal<Vertex, String> traversal = get_g_VX1X_repeatXrepeatXunionXout_uses_out_traversesXX_whereXloops_isX0X_timesX1X_timeX2X_name(convertToVertexId("marko"));
-
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         String name = traversal.next();
         assertEquals(name, "tinkergraph");
+        assertFalse(traversal.hasNext());
+    }
 
+    @LoadGraphWith(MODERN)
+    public void g_V_repeatXa_outXknows_repeatXb_outXcreatedX_filterXloops_isX0XX_emit_lang() {
+        final Traversal<Vertex, String> traversal = get_g_V_repeatXa_outXknows_repeatXb_outXcreatedX_filterXloops_isX0XX_emit_lang();
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        String lang = traversal.next();
+        assertEquals(lang, "java");
+        assertTrue(traversal.hasNext());
+        lang = traversal.next();
+        assertEquals(lang, "java");
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_emit_repeatXa_outXknows_filterXloops_isX0XX_lang() {
+        final Traversal<Vertex, String> traversal = get_g_V_emit_repeatXa_outXknows_filterXloops_isX0XX_lang();
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        String lang = traversal.next();
+        assertEquals(lang, "java");
+        assertTrue(traversal.hasNext());
+        lang = traversal.next();
+        assertEquals(lang, "java");
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX6X_repeatXa_bothXcreatedXX_emitXrepeatXb_bothXknowsXX_untilXorXloops_isX2X_loopsXbX_isXloopsXaXXXX_hasXname_vadasXX_dedup_name() {
+        final Traversal<Vertex, String> traversal = get_g_VX6X_repeatXa_bothXcreatedXX_emitXrepeatXb_bothXknowsXX_untilXorXloops_isX2X_loopsXbX_isXloopsXaXXXX_hasXname_vadasXX_dedup_name(convertToVertexId("peter"));
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        String name = traversal.next();
+        assertEquals(name, "josh");
         assertFalse(traversal.hasNext());
     }
 
@@ -513,7 +555,22 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_VX3X_repeatXbothX_createdXX_untilXloops_is_40XXemit_repeatXin_knowsXX_emit_loopsXisX1Xdedup_values(final Object v3Id) {
-            return g.V(v3Id).repeat( __.both("created")).until(loops().is(40)).emit(__.repeat(__.in("knows")).emit(loops().is(1))).dedup().values("name");
+            return g.V(v3Id).repeat(__.both("created")).until(loops().is(40)).emit(__.repeat(__.in("knows")).emit(loops().is(1))).dedup().values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_repeatXa_outXknows_repeatXb_outXcreatedX_filterXloops_isX0XX_emit_lang() {
+            return g.V().repeat("a", out("knows").repeat("b", out("created").filter(loops("a").is(0))).emit()).emit().values("lang");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_emit_repeatXa_outXknows_filterXloops_isX0XX_lang() {
+            return g.V().emit().repeat("a", out("knows").filter(loops("a").is(0))).values("lang");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX6X_repeatXa_bothXcreatedXX_emitXrepeatXb_bothXknowsXX_untilXorXloops_isX2X_loopsXbX_isXloopsXaXXXX_hasXname_vadasXX_dedup_name(final Object v6Id) {
+            return g.V(v6Id).repeat("a", both("created")).emit(__.repeat("b", __.both("knows")).until(__.or(loops().is(2), loops("b").is(loops("a")))).has("name", "vadas")).dedup().values("name");
         }
 
         @Override

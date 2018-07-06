@@ -697,6 +697,14 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the loops step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, int> Loops(string loopName)
+        {
+            return new GraphTraversal<object, int>().Loops(loopName);            
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the map step to that traversal.
         /// </summary>
         public static GraphTraversal<object, E2> Map<E2>(IFunction function)
@@ -928,6 +936,14 @@ namespace Gremlin.Net.Process.Traversal
         public static GraphTraversal<object, E2> Range<E2>(long low, long high)
         {
             return new GraphTraversal<object, E2>().Range<E2>(low, high);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the repeat step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Repeat(string loopName, ITraversal traversal)
+        {
+            return new GraphTraversal<object, object>().Repeat(loopName, traversal);            
         }
 
         /// <summary>

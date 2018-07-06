@@ -647,7 +647,20 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, Integer> loops() {
         this.asAdmin().getBytecode().addStep(Symbols.loops);
-        return this.asAdmin().addStep(new LoopsStep<>(this.asAdmin()));
+        return this.asAdmin().addStep(new LoopsStep<>(this.asAdmin(), null));
+    }
+
+    /**
+     * If the {@link Traverser} supports looping then calling this method will extract the number of loops for that
+     * traverser for the named loop.
+     *
+     * @return the traversal with an appended {@link LoopsStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#loops-step" target="_blank">Reference Documentation - Loops Step</a>
+     * @since 3.4.0
+     */
+    public default GraphTraversal<S, Integer> loops(String loopName) {
+        this.asAdmin().getBytecode().addStep(Symbols.loops, loopName);
+        return this.asAdmin().addStep(new LoopsStep<>(this.asAdmin(), loopName));
     }
 
     /**
@@ -2288,6 +2301,21 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         this.asAdmin().getBytecode().addStep(Symbols.repeat, repeatTraversal);
         return RepeatStep.addRepeatToTraversal(this, (Traversal.Admin<E, E>) repeatTraversal);
     }
+
+    /**
+     * This step is used for looping over a some traversal given some break predicate.
+     *
+     * @param repeatTraversal the traversal to repeat over
+     * @param loopName The name given to the loop
+     * @return the traversal with the appended {@link RepeatStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
+     * @since 3.4.0
+     */
+    public default GraphTraversal<S, E> repeat(final String loopName, final Traversal<?, E> repeatTraversal) {
+        this.asAdmin().getBytecode().addStep(Symbols.repeat, loopName, repeatTraversal);
+        return RepeatStep.addRepeatToTraversal(this, loopName, (Traversal.Admin<E, E>) repeatTraversal);
+    }
+
 
     /**
      * Emit is used in conjunction with {@link #repeat(Traversal)} to determine what objects get emit from the loop.

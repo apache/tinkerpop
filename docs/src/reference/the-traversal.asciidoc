@@ -2125,6 +2125,17 @@ traverser repeats. However, because the emit-predicate is declared true, those v
   Given that `loops==2`, the until-predicate fails and ripple and lop are emitted.
 Therefore, the traverser has seen the vertices: lop, vadas, josh, ripple, and lop.
 
+`repeat()`-steps may be nested inside each other or inside the `emit()` or `until()` predicates and they can also be 'named' by passing a string as the first parameter to `repeat()`. The loop counter of a named repeat step can be accessed within the looped context with `loops(loopName)` where `loopName` is the name set whe creating the `repeat()`-step.
+
+[gremlin-groovy,modern]
+----
+g.V(1).repeat(out("knows")).until(__.repeat(out("created")).emit(__.has("name", "lop"))) <1>
+g.V(6).repeat('a', both('created')).emit(repeat('b', __.both('knows')).until(or(loops().is(2), loops('b').is(loops('a')))).hasId(2)).dedup() <2>
+----
+
+<1> Starting from vertex 1, keep going taking outgoing 'knows' edges until the vertex was created by 'lop'.
+<2> Starting from vertex 6, keep taking created edges in either direction until the vertex is same distance from vertex 2 over knows edges as it is from vertex 6 over created edges.
+
 Finally, note that both `emit()` and `until()` can take a traversal and in such, situations, the predicate is
 determined by `traversal.hasNext()`. A few examples are provided below.
 

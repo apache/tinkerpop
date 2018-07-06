@@ -32,6 +32,7 @@ public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
 
     protected Object sack = null;
     protected short loops = 0;  // an optimization hack to use a short internally to save bits :)
+    protected String loopName = null;
     protected transient TraversalSideEffects sideEffects;
 
     protected B_O_S_SE_SL_Traverser() {
@@ -64,6 +65,19 @@ public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
     }
 
     @Override
+    public int loops(final String loopName) {
+        if (loopName == null || this.loopName != null && this.loopName.equals(loopName))
+            return this.loops;
+        else
+            throw new IllegalArgumentException("Loop name not defined: " + loopName);
+    }
+
+    @Override
+    public void initialiseLoops(final String stepLabel , final String loopName){
+        this.loopName = loopName;
+    }
+
+    @Override
     public void incrLoops() {
         this.loops++;
     }
@@ -79,7 +93,6 @@ public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
     public TraversalSideEffects getSideEffects() {
         return this.sideEffects;
     }
-
 
     @Override
     public void setSideEffects(final TraversalSideEffects sideEffects) {

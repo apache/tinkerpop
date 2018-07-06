@@ -91,8 +91,8 @@ public final class ProjectedTraverser<T, P> implements Traverser.Admin<T> {
     }
 
     @Override
-    public void initialiseLoops(final String stepLabel) {
-        this.baseTraverser.initialiseLoops(stepLabel);
+    public void initialiseLoops(final String stepLabel, final String loopName) {
+        this.baseTraverser.initialiseLoops(stepLabel, loopName);
     }
 
     @Override
@@ -169,6 +169,11 @@ public final class ProjectedTraverser<T, P> implements Traverser.Admin<T> {
     @Override
     public int loops() {
         return this.baseTraverser.loops();
+    }
+
+    @Override
+    public int loops(String loopName) {
+        return this.baseTraverser.loops(loopName);
     }
 
     @Override

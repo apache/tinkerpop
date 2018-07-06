@@ -89,6 +89,15 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
     public int loops();
 
     /**
+     * Return the number of times the traverser has gone through the named looping section of a traversal.
+     *
+     * @param loopName the name applied to the loop or null for the containing loop
+     * @return The number of times the traverser has gone through a loop
+     * @throws IllegalArgumentException if the loopName is not defined
+     */
+    public int loops(final String loopName);
+
+    /**
      * A traverser may represent a grouping of traversers to allow for more efficient data propagation.
      *
      * @return the number of traversers represented in this traverser.
@@ -216,10 +225,12 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
          * Initialise a loop by setting up the looping construct.
          * The step label is important to create a stack of loop counters when within a nested context.
          * If the provided label is not the same as the current label on the stack, add a new loop counter.
+         * The loopName can be used to refer to the loops counter via the {@link LoopsStep}
          *
          * @param stepLabel the label of the step that is being set-up.
+         * @param loopName the user defined name for referencing the loop counter or null if not set
          */
-        public void initialiseLoops(final String stepLabel);
+        public void initialiseLoops(final String stepLabel, final String loopName);
 
         /**
          * Increment the number of times the traverser has gone through a looping section of traversal.
