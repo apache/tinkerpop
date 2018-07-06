@@ -70,7 +70,12 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public void incrLoops(final String stepLabel) {
+    public void initialiseLoops(final String stepLabel) {
+
+    }
+
+    @Override
+    public void incrLoops() {
 
     }
 

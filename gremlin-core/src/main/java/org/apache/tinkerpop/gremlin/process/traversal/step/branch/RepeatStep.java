@@ -189,6 +189,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
                 return this.repeatTraversal.getEndStep();
             } else {
                 final Traverser.Admin<S> start = this.starts.next();
+                start.initialiseLoops(this.getId());
                 if (doUntil(start, true)) {
                     start.resetLoops();
                     return IteratorUtils.of(start);
@@ -210,12 +211,12 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
         final Traverser.Admin<S> start = this.starts.next();
         if (doUntil(start, true)) {
-            start.resetLoops();
             start.setStepId(this.getNextStep().getId());
             start.addLabels(this.labels);
             return IteratorUtils.of(start);
         } else {
             start.setStepId(this.repeatTraversal.getStartStep().getId());
+            start.initialiseLoops(start.getStepId());
             if (doEmit(start, true)) {
                 final Traverser.Admin<S> emitSplit = start.split();
                 emitSplit.resetLoops();
@@ -278,7 +279,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
             final RepeatStep<S> repeatStep = (RepeatStep<S>) this.getTraversal().getParent();
             while (true) {
                 final Traverser.Admin<S> start = this.starts.next();
-                start.incrLoops(this.getId());
+                start.incrLoops();
                 if (repeatStep.doUntil(start, false)) {
                     start.resetLoops();
                     return IteratorUtils.of(start);
@@ -300,7 +301,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         protected Iterator<Traverser.Admin<S>> computerAlgorithm() throws NoSuchElementException {
             final RepeatStep<S> repeatStep = (RepeatStep<S>) this.getTraversal().getParent();
             final Traverser.Admin<S> start = this.starts.next();
-            start.incrLoops(repeatStep.getId());
+            start.incrLoops();
             if (repeatStep.doUntil(start, false)) {
                 start.resetLoops();
                 start.setStepId(repeatStep.getNextStep().getId());

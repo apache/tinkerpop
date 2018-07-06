@@ -213,14 +213,18 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
         public void set(final T t);
 
         /**
-         * Increment the number of times the traverser has gone through a looping section of traversal.
+         * Initialise a loop by setting up the looping construct.
          * The step label is important to create a stack of loop counters when within a nested context.
          * If the provided label is not the same as the current label on the stack, add a new loop counter.
-         * If the provided label is the same as the current label on the stack, increment the loop counter.
          *
-         * @param stepLabel the label of the step that is doing the incrementing
+         * @param stepLabel the label of the step that is being set-up.
          */
-        public void incrLoops(final String stepLabel);
+        public void initialiseLoops(final String stepLabel);
+
+        /**
+         * Increment the number of times the traverser has gone through a looping section of traversal.
+         */
+        public void incrLoops();
 
         /**
          * Set the number of times the traverser has gone through a loop back to 0.

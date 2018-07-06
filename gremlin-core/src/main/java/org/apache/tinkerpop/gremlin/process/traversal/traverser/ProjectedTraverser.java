@@ -91,8 +91,13 @@ public final class ProjectedTraverser<T, P> implements Traverser.Admin<T> {
     }
 
     @Override
-    public void incrLoops(final String stepLabel) {
-        this.baseTraverser.incrLoops(stepLabel);
+    public void initialiseLoops(final String stepLabel) {
+        this.baseTraverser.initialiseLoops(stepLabel);
+    }
+
+    @Override
+    public void incrLoops() {
+        this.baseTraverser.incrLoops();
     }
 
     @Override

@@ -98,8 +98,14 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
         this.t = t;
     }
 
+
     @Override
-    public void incrLoops(final String stepLabel) {
+    public void initialiseLoops(final String stepLabel) {
+
+    }
+
+    @Override
+    public void incrLoops() {
 
     }
 

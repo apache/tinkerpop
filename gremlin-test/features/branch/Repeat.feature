@@ -306,3 +306,15 @@ Scenario: g_VX3X_repeatXbothX_createdXX_untilXloops_is_40XXemit_repeatXin_knowsX
         | josh |
         | lop |
         | ripple |
+
+Scenario: g_VX1X_repeatXrepeatXunionXout_uses_out_traversesXX_whereXloops_isX0X_timesX1X_timeX2X_name
+    Given the crew graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(v1Id).repeat(__.repeat(__.union(__.out("uses"), __.out("traverses")).where(__.loops().is(0))).times(1)).times(2).values("name")
+      """
+    When iterated to list
+      Then the result should be unordered
+        | result |
+        | tinkergraph |

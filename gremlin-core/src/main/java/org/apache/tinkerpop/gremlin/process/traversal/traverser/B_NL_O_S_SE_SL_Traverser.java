@@ -39,26 +39,23 @@ public class B_NL_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
 
     @Override
     public int loops() {
-        return this.nestedLoops.size() > 0 ? this.nestedLoops.peek().count() : 0;
+        return this.nestedLoops.peek().count();
     }
 
     @Override
-    public void incrLoops(final String stepLabel) {
-        // If we encounter a new step label then grow the stack otherwise increment the loop count
-        if (this.nestedLoops.size() == 0 || !this.nestedLoops.peek().hasLabel(stepLabel)) {
-            this.nestedLoops.add(new LabelledCounter(stepLabel, (short)1));
-        }
-        else {
-            this.nestedLoops.peek().increment();
-        }
+    public void initialiseLoops(final String stepLabel) {
+        if (this.nestedLoops.empty() || !this.nestedLoops.peek().hasLabel(stepLabel))
+            this.nestedLoops.push(new LabelledCounter(stepLabel, (short)0));
+    }
+
+    @Override
+    public void incrLoops() {
+        this.nestedLoops.peek().increment();
     }
 
     @Override
     public void resetLoops() {
-        // Protect against reset without increment during RepeatStep setup
-        if (this.nestedLoops.size() > 0) {
-            this.nestedLoops.pop();
-        }
+        this.nestedLoops.pop();
     }
 
     /////////////////
@@ -68,7 +65,7 @@ public class B_NL_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
         final B_NL_O_S_SE_SL_Traverser<R> clone = (B_NL_O_S_SE_SL_Traverser<R>) super.split(r, step);
         clone.nestedLoops = new Stack<>();
         for(LabelledCounter lc : this.nestedLoops)
-            clone.nestedLoops.add((LabelledCounter) lc.clone());
+            clone.nestedLoops.push((LabelledCounter) lc.clone());
         return clone;
     }
 
@@ -77,7 +74,7 @@ public class B_NL_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
         final B_NL_O_S_SE_SL_Traverser<T> clone = (B_NL_O_S_SE_SL_Traverser<T>) super.split();
         clone.nestedLoops = new Stack<>();
         for(LabelledCounter lc : this.nestedLoops)
-            clone.nestedLoops.add((LabelledCounter) lc.clone());
+            clone.nestedLoops.push((LabelledCounter) lc.clone());
         return clone;
     }
 

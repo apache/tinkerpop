@@ -58,6 +58,11 @@ public class LabelledCounter implements Serializable, Cloneable {
     }
 
     @Override
+    public String toString(){
+        return "Step Label: " + label + " Counter: " + count.toString();
+    }
+
+    @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (!(o instanceof LabelledCounter)) return false;

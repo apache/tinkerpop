@@ -74,7 +74,7 @@ public class O_OB_S_SE_SL_Traverser<T> extends O_Traverser<T> {
     }
 
     @Override
-    public void incrLoops(final String stepLabel) {
+    public void incrLoops() {
         this.loops++;
     }
 
