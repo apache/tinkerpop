@@ -22,7 +22,6 @@
  */
 'use strict';
 
-const crypto = require('crypto');
 const WebSocket = require('ws');
 const util = require('util');
 const RemoteConnection = require('./remote-connection').RemoteConnection;
@@ -31,7 +30,8 @@ const serializer = require('../structure/io/graph-serializer');
 const responseStatusCode = {
   success: 200,
   noContent: 204,
-  partialContent: 206
+  partialContent: 206,
+  authenticationChallenge:  407,
 };
 const defaultMimeType = 'application/vnd.gremlin-v2.0+json';
 
@@ -48,6 +48,7 @@ class DriverRemoteConnection extends RemoteConnection {
    * @param {Boolean} [options.rejectUnauthorized] Determines whether to verify or not the server certificate.
    * @param {String} [options.traversalSource] The traversal source. Defaults to: 'g'.
    * @param {GraphSONWriter} [options.writer] The writer to use.
+   * @param {Authenticator} [options.authenticator] The authentication handler to use.
    * @constructor
    */
   constructor(url, options) {
@@ -76,7 +77,13 @@ class DriverRemoteConnection extends RemoteConnection {
     const mimeType = options.mimeType || defaultMimeType;
     this._header = String.fromCharCode(mimeType.length) + mimeType;
     this.isOpen = false;
+    this.connectionError = false;
+    this.connectionErrorMessage = '';
     this.traversalSource = options.traversalSource || 'g';
+
+    if (options.authenticator) {
+      this._authenticator = options.authenticator;
+    }
   }
 
   /**
@@ -102,7 +109,7 @@ class DriverRemoteConnection extends RemoteConnection {
   /** @override */
   submit(bytecode) {
     return this.open().then(() => new Promise((resolve, reject) => {
-      const requestId = getUuid();
+      const requestId = utils.getUuid();
       this._responseHandlers[requestId] = {
         callback: (err, result) => err ? reject(err) : resolve(result),
         result: null
@@ -112,12 +119,12 @@ class DriverRemoteConnection extends RemoteConnection {
     }));
   }
 
-  _getRequest(id, bytecode) {
+  _getRequest(id, bytecode, op, args) {
     return ({
       'requestId': { '@type': 'g:UUID', '@value': id },
-      'op': 'bytecode',
+      'op': op || 'bytecode',
       'processor': 'traversal',
-      'args': {
+      'args': args || {
         'gremlin': this._writer.adaptObject(bytecode),
         'aliases': { 'g': this.traversalSource }
       }
@@ -151,7 +158,11 @@ class DriverRemoteConnection extends RemoteConnection {
       return;
     }
 
-    if (response.status.code >= 400) {
+    if (response.status.code === responseStatusCode.authenticationChallenge && this._authenticator) {
+       this._authenticator.evaluateChallenge(this._ws, this._header);
+       return;
+    }
+    else if (response.status.code >= 400) {
       // callback in error
       return handler.callback(
         new Error(util.format('Server error: %s (%d)', response.status.message, response.status.code)));
@@ -201,25 +212,6 @@ class DriverRemoteConnection extends RemoteConnection {
     }
     return this._closePromise;
   }
-}
-
-function getUuid() {
-  const buffer = crypto.randomBytes(16);
-  //clear the version
-  buffer[6] &= 0x0f;
-  //set the version 4
-  buffer[6] |= 0x40;
-  //clear the variant
-  buffer[8] &= 0x3f;
-  //set the IETF variant
-  buffer[8] |= 0x80;
-  const hex = buffer.toString('hex');
-  return (
-    hex.substr(0, 8) + '-' +
-    hex.substr(8, 4) + '-' +
-    hex.substr(12, 4) + '-' +
-    hex.substr(16, 4) + '-' +
-    hex.substr(20, 12));
 }
 
 const bufferFromString = (Int8Array.from !== Buffer.from && Buffer.from) || function newBuffer(text) {
