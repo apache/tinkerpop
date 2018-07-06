@@ -33,7 +33,7 @@ const responseStatusCode = {
   partialContent: 206,
   authenticationChallenge:  407,
 };
-const defaultMimeType = 'application/vnd.gremlin-v2.0+json';
+const defaultMimeType = 'application/vnd.gremlin-v3.0+json';
 
 class DriverRemoteConnection extends RemoteConnection {
   /**
@@ -77,8 +77,6 @@ class DriverRemoteConnection extends RemoteConnection {
     const mimeType = options.mimeType || defaultMimeType;
     this._header = String.fromCharCode(mimeType.length) + mimeType;
     this.isOpen = false;
-    this.connectionError = false;
-    this.connectionErrorMessage = '';
     this.traversalSource = options.traversalSource || 'g';
 
     if (options.authenticator) {
@@ -119,12 +117,12 @@ class DriverRemoteConnection extends RemoteConnection {
     }));
   }
 
-  _getRequest(id, bytecode, op, args) {
+  _getRequest(id, bytecode) {
     return ({
       'requestId': { '@type': 'g:UUID', '@value': id },
-      'op': op || 'bytecode',
+      'op': 'bytecode',
       'processor': 'traversal',
-      'args': args || {
+      'args': {
         'gremlin': this._writer.adaptObject(bytecode),
         'aliases': { 'g': this.traversalSource }
       }
