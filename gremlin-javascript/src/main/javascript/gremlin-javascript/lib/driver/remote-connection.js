@@ -33,9 +33,11 @@ class RemoteConnection {
   /**
    * @abstract
    * @param {Bytecode} bytecode
+   * @param {String} op Operation to perform, defaults to bytecode.
+   * @param {Object} args The arguments for the operation. Defaults to
    * @returns {Promise}
    */
-  submit(bytecode) {
+  submit(bytecode, op, args) {
     throw new Error('submit() was not implemented');
   };
 }

@@ -1,7 +1,6 @@
 'use strict';
 
 const Authenticator = require('./authenticator');
-const utils = require('../utils');
 
 class SaslAuthenticator extends Authenticator {
   /**
@@ -15,31 +14,17 @@ class SaslAuthenticator extends Authenticator {
     super(credentials);
   }
   
-  evaluateChallenge(ws, header) {
-    const message = bufferFromString(header + JSON.stringify({
-      'requestId': { '@type': 'g:UUID', '@value': utils.getUuid() },
-      'op': 'authentication',
-      'processor': 'traversal',
-      'args': {
-        'sasl': this.saslArgument()
-      }
-    }));
-    
-    return ws.send(message);
+  async evaluateChallenge(challenge) {
+    return Promise.resolve({ 'sasl': this.saslArgument() });
   }
 
   saslArgument() {
-    if (this._credentials.username === null || this._credentials.username.length === 0 
-      || this._credentials.password === null || this._credentials.password.length === 0 ) {
-      return '';
+    if (typeof this._credentials.username === "undefined" || this._credentials.username.length === 0 
+      || typeof this._credentials.password === "undefined" || this._credentials.password.length === 0 ) {
+        throw new Error('No Credentials Supplied');
     }
     return new Buffer(`\0${this._credentials.username}\0${this._credentials.password}`).toString('base64');
   }
 }
-
-
-const bufferFromString = (Int8Array.from !== Buffer.from && Buffer.from) || function newBuffer(text) {
-  return new Buffer(text, 'utf8');
-};
 
 module.exports = SaslAuthenticator;

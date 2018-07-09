@@ -105,24 +105,24 @@ class DriverRemoteConnection extends RemoteConnection {
   }
 
   /** @override */
-  submit(bytecode) {
+  submit(bytecode, op, args) {
     return this.open().then(() => new Promise((resolve, reject) => {
       const requestId = utils.getUuid();
       this._responseHandlers[requestId] = {
         callback: (err, result) => err ? reject(err) : resolve(result),
         result: null
       };
-      const message = bufferFromString(this._header + JSON.stringify(this._getRequest(requestId, bytecode)));
+      const message = bufferFromString(this._header + JSON.stringify(this._getRequest(requestId, bytecode, op, args)));
       this._ws.send(message);
     }));
   }
 
-  _getRequest(id, bytecode) {
+  _getRequest(id, bytecode, op, args) {
     return ({
       'requestId': { '@type': 'g:UUID', '@value': id },
-      'op': 'bytecode',
+      'op': op || 'bytecode',
       'processor': 'traversal',
-      'args': {
+      'args': args || {
         'gremlin': this._writer.adaptObject(bytecode),
         'aliases': { 'g': this.traversalSource }
       }
@@ -157,7 +157,12 @@ class DriverRemoteConnection extends RemoteConnection {
     }
 
     if (response.status.code === responseStatusCode.authenticationChallenge && this._authenticator) {
-       this._authenticator.evaluateChallenge(this._ws, this._header);
+      this._authenticator.evaluateChallenge(response).then(res => {
+        this.submit('', 'authentication', res);
+      }, err => {
+        return handler.callback(err);
+      });
+       
        return;
     }
     else if (response.status.code >= 400) {

@@ -55,5 +55,13 @@ describe('DriverRemoteConnectionWithSaslAuthenticator', function () {
           assert.ok(err.message.indexOf('401') > 0);
         });
     });
+    it('should send incorrect conifugration to the authenticator and parse the response error', function () {
+      delete connection._authenticator.username;
+      delete connection._authenticator.password;
+      return connection.submit(new Bytecode().addStep('V', []).addStep('tail', []))
+        .catch(function (err) {
+          assert.ok(err);
+        });
+    });
   });
 });
