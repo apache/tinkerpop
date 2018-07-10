@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
@@ -48,20 +47,20 @@ public class WriteStep extends AbstractStep<Map<String,Object>, Map<String,Objec
 
     private Parameters parameters = new Parameters();
     private boolean first = true;
-    private String localFile;
+    private String file;
 
-    public WriteStep(final Traversal.Admin traversal, final String localFile) {
+    public WriteStep(final Traversal.Admin traversal, final String file) {
         super(traversal);
 
-        if (null == localFile || localFile.isEmpty())
-            throw new IllegalArgumentException("localFile cannot be null or empty");
+        if (null == file || file.isEmpty())
+            throw new IllegalArgumentException("file cannot be null or empty");
 
-        this.localFile = localFile;
+        this.file = file;
     }
 
     @Override
-    public String getLocalFile() {
-        return localFile;
+    public String getFile() {
+        return file;
     }
 
     @Override
@@ -81,7 +80,7 @@ public class WriteStep extends AbstractStep<Map<String,Object>, Map<String,Objec
         this.first = false;
         final TraverserGenerator generator = this.getTraversal().getTraverserGenerator();
 
-        final File file = new File(localFile);
+        final File file = new File(this.file);
         try (final OutputStream stream = new FileOutputStream(file)) {
             final Graph graph = (Graph) this.traversal.getGraph().get();
             GryoWriter.build().create().writeGraph(stream, graph);
@@ -92,26 +91,26 @@ public class WriteStep extends AbstractStep<Map<String,Object>, Map<String,Objec
 
             return generator.generate(stats, this, 1L);
         } catch (IOException ioe) {
-            throw new IllegalStateException(String.format("Could not write file %s from graph", localFile), ioe);
+            throw new IllegalStateException(String.format("Could not write file %s from graph", this.file), ioe);
         }
     }
 
     @Override
     public int hashCode() {
         final int hash = super.hashCode() ^ this.parameters.hashCode();
-        return (null != this.localFile) ? (hash ^ localFile.hashCode()) : hash;
+        return (null != this.file) ? (hash ^ file.hashCode()) : hash;
     }
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, localFile, this.parameters);
+        return StringFactory.stepString(this, file, this.parameters);
     }
 
     @Override
     public WriteStep clone() {
         final WriteStep clone = (WriteStep) super.clone();
         clone.parameters = this.parameters.clone();
-        clone.localFile = this.localFile;
+        clone.file = this.file;
         return clone;
     }
 }

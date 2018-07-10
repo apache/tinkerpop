@@ -45,7 +45,7 @@ public class HadoopReadStep extends VertexProgramStep implements Reading {
     }
 
     @Override
-    public String getLocalFile() {
+    public String getFile() {
         return (String) ((Graph) traversal.getGraph().get()).configuration().getProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION);
     }
 

@@ -19,8 +19,14 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 /**
+ * An interface for describing steps that will write a graph to some specified location.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface Writing extends Configuring {
-    public String getLocalFile();
+
+    /**
+     * Get the file location to write to.
+     */
+    public String getFile();
 }

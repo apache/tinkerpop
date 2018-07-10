@@ -45,7 +45,7 @@ public final class HadoopIoStrategy extends AbstractTraversalStrategy<TraversalS
         // replace Reading and Writing steps with hadoop specific ones
         if (traversal.getStartStep() instanceof Reading) {
             final Reading reading = (Reading) traversal.getStartStep();
-            final HadoopReadStep hadoopReadStep = new HadoopReadStep(traversal, reading.getLocalFile());
+            final HadoopReadStep hadoopReadStep = new HadoopReadStep(traversal, reading.getFile());
             reading.getParameters().getRaw().entrySet().forEach(kv ->
                 hadoopReadStep.configure(null, kv.getKey(), kv.getValue())
             );
@@ -53,7 +53,7 @@ public final class HadoopIoStrategy extends AbstractTraversalStrategy<TraversalS
             TraversalHelper.replaceStep((Step) reading, hadoopReadStep, traversal);
         } else if (traversal.getStartStep() instanceof Writing) {
             final Writing writing = (Writing) traversal.getStartStep();
-            final HadoopWriteStep hadoopWriteStep = new HadoopWriteStep(traversal, writing.getLocalFile());
+            final HadoopWriteStep hadoopWriteStep = new HadoopWriteStep(traversal, writing.getFile());
             writing.getParameters().getRaw().entrySet().forEach(kv ->
                 hadoopWriteStep.configure(null, kv.getKey(), kv.getValue())
             );

@@ -19,9 +19,14 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 /**
+ * An interface for describing steps that will read a graph from some specified location.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface Reading extends Configuring {
 
-    public String getLocalFile();
+    /**
+     * Get the file location to read from.
+     */
+    public String getFile();
 }
