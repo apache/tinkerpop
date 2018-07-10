@@ -24,9 +24,11 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.AbstractHadoopGraphComputer;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.traversal.strategy.HadoopIoStrategy;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopEdgeIterator;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopVertexIterator;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -147,6 +149,12 @@ public final class HadoopGraph implements Graph {
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
         this.setProperty(Graph.GRAPH, HadoopGraph.class.getName());
     }};
+
+    static {
+        TraversalStrategies.GlobalCache.registerStrategies(HadoopGraph.class,
+                TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().addStrategies(
+                        HadoopIoStrategy.instance()));
+    }
 
     protected final HadoopConfiguration configuration;
 

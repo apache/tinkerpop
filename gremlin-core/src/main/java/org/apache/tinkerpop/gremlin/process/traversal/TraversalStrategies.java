@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Path
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.IoUsageStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -222,6 +223,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                     PathRetractionStrategy.instance(),
                     LazyBarrierStrategy.instance(),
                     ProfileStrategy.instance(),
+                    IoUsageStrategy.instance(),
                     StandardVerificationStrategy.instance());
             GRAPH_CACHE.put(Graph.class, graphStrategies);
             GRAPH_CACHE.put(EmptyGraph.class, new DefaultTraversalStrategies());

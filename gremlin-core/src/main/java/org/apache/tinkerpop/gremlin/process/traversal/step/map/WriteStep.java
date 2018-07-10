@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
@@ -43,7 +44,7 @@ import java.util.Map;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class WriteStep extends AbstractStep<Map<String,Object>, Map<String,Object>> implements Configuring {
+public class WriteStep extends AbstractStep<Map<String,Object>, Map<String,Object>> implements Writing {
 
     private Parameters parameters = new Parameters();
     private boolean first = true;
@@ -56,6 +57,11 @@ public class WriteStep extends AbstractStep<Map<String,Object>, Map<String,Objec
             throw new IllegalArgumentException("localFile cannot be null or empty");
 
         this.localFile = localFile;
+    }
+
+    @Override
+    public String getLocalFile() {
+        return localFile;
     }
 
     @Override

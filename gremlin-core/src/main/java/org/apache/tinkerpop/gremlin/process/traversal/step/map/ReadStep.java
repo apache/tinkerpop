@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Reading;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
@@ -43,7 +44,7 @@ import java.util.Map;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ReadStep extends AbstractStep<Map<String,Object>, Map<String,Object>> implements Configuring {
+public class ReadStep extends AbstractStep<Map<String,Object>, Map<String,Object>> implements Reading {
 
     private Parameters parameters = new Parameters();
     private boolean first = true;
@@ -54,9 +55,13 @@ public class ReadStep extends AbstractStep<Map<String,Object>, Map<String,Object
 
         if (null == localFile || localFile.isEmpty())
             throw new IllegalArgumentException("localFile cannot be null or empty");
-        if (!new File(localFile).exists()) throw new IllegalStateException(localFile + " does not exist");
 
         this.localFile = localFile;
+    }
+
+    @Override
+    public String getLocalFile() {
+        return localFile;
     }
 
     @Override
@@ -76,6 +81,7 @@ public class ReadStep extends AbstractStep<Map<String,Object>, Map<String,Object
         this.first = false;
         final TraverserGenerator generator = this.getTraversal().getTraverserGenerator();
         final File file = new File(localFile);
+        if (!file.exists()) throw new IllegalStateException(localFile + " does not exist");
 
         try (final InputStream stream = new FileInputStream(file)) {
             final Graph graph = (Graph) this.traversal.getGraph().get();

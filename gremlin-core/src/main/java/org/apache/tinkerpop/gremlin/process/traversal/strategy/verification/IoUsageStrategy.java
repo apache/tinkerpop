@@ -26,6 +26,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.ReadStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.WriteStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 
+import java.util.Collections;
+import java.util.Set;
+
 /**
  * {@code IoUsageStrategy} prevents the {@link GraphTraversalSource#read(String)} and
  * {@link GraphTraversalSource#write(String)} steps from being used outside of their intended scope, which is as the
@@ -56,5 +59,10 @@ public final class IoUsageStrategy extends AbstractTraversalStrategy<TraversalSt
 
     public static IoUsageStrategy instance() {
         return INSTANCE;
+    }
+
+    @Override
+    public Set<Class<? extends VerificationStrategy>> applyPrior() {
+        return Collections.singleton(ComputerVerificationStrategy.class);
     }
 }
