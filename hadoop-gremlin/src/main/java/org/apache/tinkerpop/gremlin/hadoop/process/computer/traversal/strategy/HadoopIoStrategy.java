@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Reading;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -60,6 +61,9 @@ public final class HadoopIoStrategy extends AbstractTraversalStrategy<TraversalS
 
             TraversalHelper.replaceStep((Step) writing, hadoopWriteStep, traversal);
         }
+
+        if (traversal.getEndStep() instanceof NoneStep)
+            traversal.removeStep(1);
     }
 
     public static HadoopIoStrategy instance() {

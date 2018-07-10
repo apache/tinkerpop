@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Reading;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
@@ -43,7 +44,7 @@ import java.util.Map;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ReadStep extends AbstractStep<Map<String,Object>, Map<String,Object>> implements Reading {
+public class ReadStep<S> extends AbstractStep<S,S> implements Reading {
 
     private Parameters parameters = new Parameters();
     private boolean first = true;
@@ -74,11 +75,10 @@ public class ReadStep extends AbstractStep<Map<String,Object>, Map<String,Object
     }
 
     @Override
-    protected Traverser.Admin<Map<String,Object>> processNextStart() {
+    protected Traverser.Admin<S> processNextStart() {
         if (!this.first) throw FastNoSuchElementException.instance();
 
         this.first = false;
-        final TraverserGenerator generator = this.getTraversal().getTraverserGenerator();
         final File file = new File(this.file);
         if (!file.exists()) throw new IllegalStateException(this.file + " does not exist");
 
@@ -86,11 +86,7 @@ public class ReadStep extends AbstractStep<Map<String,Object>, Map<String,Object
             final Graph graph = (Graph) this.traversal.getGraph().get();
             GryoReader.build().create().readGraph(stream, graph);
 
-            final Map<String,Object> stats = new LinkedHashMap<>();
-            stats.put("vertices", IteratorUtils.count(graph.vertices()));
-            stats.put("edges", IteratorUtils.count(graph.edges()));
-
-            return generator.generate(stats, this, 1L);
+            return EmptyTraverser.instance();
         } catch (IOException ioe) {
             throw new IllegalStateException(String.format("Could not read file %s into graph", this.file), ioe);
         }

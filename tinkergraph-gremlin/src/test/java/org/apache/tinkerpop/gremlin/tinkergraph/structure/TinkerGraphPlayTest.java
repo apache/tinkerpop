@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
 import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Ignore;
@@ -333,5 +334,14 @@ public class TinkerGraphPlayTest {
         System.out.println(g.V().as("a").both().as("b").dedup("a", "b").by(T.label).select("a", "b").explain());
         System.out.println(g.V().as("a").both().as("b").dedup("a", "b").by(T.label).select("a", "b").toList());
 
+    }
+
+    @Test
+    public void testBlah() {
+        TinkerGraph graph = TinkerGraph.open();
+        GraphTraversalSource g = graph.traversal();
+        g.read("../data/tinkerpop-modern.kryo");
+
+        IoTest.assertModernGraph(graph, true, false);
     }
 }

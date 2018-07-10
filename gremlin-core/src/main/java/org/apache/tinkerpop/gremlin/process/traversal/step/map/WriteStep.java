@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
@@ -43,7 +44,7 @@ import java.util.Map;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class WriteStep extends AbstractStep<Map<String,Object>, Map<String,Object>> implements Writing {
+public class WriteStep<S> extends AbstractStep<S,S> implements Writing {
 
     private Parameters parameters = new Parameters();
     private boolean first = true;
@@ -74,22 +75,16 @@ public class WriteStep extends AbstractStep<Map<String,Object>, Map<String,Objec
     }
 
     @Override
-    protected Traverser.Admin<Map<String,Object>> processNextStart() {
+    protected Traverser.Admin<S> processNextStart() {
         if (!this.first) throw FastNoSuchElementException.instance();
 
         this.first = false;
-        final TraverserGenerator generator = this.getTraversal().getTraverserGenerator();
-
         final File file = new File(this.file);
         try (final OutputStream stream = new FileOutputStream(file)) {
             final Graph graph = (Graph) this.traversal.getGraph().get();
             GryoWriter.build().create().writeGraph(stream, graph);
 
-            final Map<String, Object> stats = new LinkedHashMap<>();
-            stats.put("vertices", IteratorUtils.count(graph.vertices()));
-            stats.put("edges", IteratorUtils.count(graph.edges()));
-
-            return generator.generate(stats, this, 1L);
+            return EmptyTraverser.instance();
         } catch (IOException ioe) {
             throw new IllegalStateException(String.format("Could not write file %s from graph", this.file), ioe);
         }
