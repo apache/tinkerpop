@@ -14,7 +14,7 @@ class SaslAuthenticator extends Authenticator {
     super(credentials);
   }
   
-  async evaluateChallenge(challenge) {
+  evaluateChallenge(challenge) {
     return Promise.resolve({ 'sasl': this.saslArgument() });
   }
 

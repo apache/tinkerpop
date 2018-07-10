@@ -6,7 +6,7 @@ class Authenticator {
     this._credentials = credentials;
   }
   
-  async evaluateChallenge(challenge) {
+  evaluateChallenge(challenge) {
     throw new Error("evaluateChallenge should be implemented");
   }
 }
