@@ -105,19 +105,25 @@ class DriverRemoteConnection extends RemoteConnection {
   }
 
   /** @override */
-  submit(bytecode, op, args) {
+  submit(bytecode, op, args, requestId) {
     return this.open().then(() => new Promise((resolve, reject) => {
-      const requestId = utils.getUuid();
-      this._responseHandlers[requestId] = {
-        callback: (err, result) => err ? reject(err) : resolve(result),
-        result: null
-      };
+      if (requestId === null || requestId === undefined) {
+        requestId = utils.getUuid();
+        this._responseHandlers[requestId] = {
+          callback: (err, result) => err ? reject(err) : resolve(result),
+          result: null
+        };
+      }
       const message = bufferFromString(this._header + JSON.stringify(this._getRequest(requestId, bytecode, op, args)));
       this._ws.send(message);
     }));
   }
 
   _getRequest(id, bytecode, op, args) {
+    if (args) {
+      args = this._adaptArgs(args);
+    }
+
     return ({
       'requestId': { '@type': 'g:UUID', '@value': id },
       'op': op || 'bytecode',
@@ -158,12 +164,10 @@ class DriverRemoteConnection extends RemoteConnection {
 
     if (response.status.code === responseStatusCode.authenticationChallenge && this._authenticator) {
       this._authenticator.evaluateChallenge(response).then(res => {
-        this.submit('', 'authentication', res);
-      }, err => {
-        return handler.callback(err);
-      });
-       
-       return;
+        return this.submit(null, 'authentication', res, response.requestId);
+      }).catch(handler.callback);
+
+      return;
     }
     else if (response.status.code >= 400) {
       // callback in error
@@ -197,6 +201,28 @@ class DriverRemoteConnection extends RemoteConnection {
    */
   _clearHandler(requestId) {
     delete this._responseHandlers[requestId];
+  }
+
+  /**
+   * Takes the given args map and ensures all arguments are passed through to _write.adaptObject
+   * @param {Object} args Map of arguments to process
+   * @returns {Object}
+   * @private
+   */
+  _adaptArgs(args) {
+    if (Array.isArray(args)) {
+      return args.map(val => this._adaptArgs(val));
+    }
+
+    if (args instanceof Object) {
+      let newObj = {};
+      Object.keys(args).forEach((key, val) => {
+        newObj[key] = this._adaptArgs(val);
+      });
+      return newObj;
+    }
+    
+    return this._writer.adaptObject(args);
   }
 
   /**

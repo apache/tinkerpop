@@ -26,4 +26,12 @@ const DriverRemoteConnection = require('../lib/driver/driver-remote-connection')
 
 exports.getConnection = function getConnection(traversalSource) {
   return new DriverRemoteConnection('ws://localhost:45940/gremlin', { traversalSource: traversalSource });
+<<<<<<< HEAD
+=======
+};
+
+exports.getSecureConnectionWithAuthenticator = function getConnection(traversalSource) {
+  const authenticator = new SaslAuthenticator({ username: 'stephen', password: 'password' });
+  return new DriverRemoteConnection('wss://localhost:45941/gremlin', { traversalSource: traversalSource, authenticator: authenticator, rejectUnauthorized: false });
+>>>>>>> 65de11c3c8... Submit can accept an existing requestId.
 };

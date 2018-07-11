@@ -34,10 +34,11 @@ class RemoteConnection {
    * @abstract
    * @param {Bytecode} bytecode
    * @param {String} op Operation to perform, defaults to bytecode.
-   * @param {Object} args The arguments for the operation. Defaults to
+   * @param {Object} args The arguments for the operation. Defaults to an associative array containing values for "aliases" and "gremlin" keyss.
+   * @param {String} requestId A requestId for the current request. If none provided then a requestId is generated internally.
    * @returns {Promise}
    */
-  submit(bytecode, op, args) {
+  submit(bytecode, op, args, requestId) {
     throw new Error('submit() was not implemented');
   };
 }
