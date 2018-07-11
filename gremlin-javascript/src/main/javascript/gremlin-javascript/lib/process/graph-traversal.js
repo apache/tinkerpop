@@ -173,22 +173,12 @@ class GraphTraversalSource {
   }
   
   /**
-   * read GraphTraversalSource step method.
+   * io GraphTraversalSource step method.
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  read(...args) {
-    const b = new Bytecode(this.bytecode).addStep('read', args);
-    return new GraphTraversal(this.graph, new TraversalStrategies(this.traversalStrategies), b);
-  }
-  
-  /**
-   * write GraphTraversalSource step method.
-   * @param {...Object} args
-   * @returns {GraphTraversal}
-   */
-  write(...args) {
-    const b = new Bytecode(this.bytecode).addStep('write', args);
+  io(...args) {
+    const b = new Bytecode(this.bytecode).addStep('io', args);
     return new GraphTraversal(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
   
@@ -913,6 +903,16 @@ class GraphTraversal extends Traversal {
   }
   
   /**
+   * Graph traversal read method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  read(...args) {
+    this.bytecode.addStep('read', args);
+    return this;
+  }
+  
+  /**
    * Graph traversal repeat method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1159,6 +1159,16 @@ class GraphTraversal extends Traversal {
    */
   with_(...args) {
     this.bytecode.addStep('with', args);
+    return this;
+  }
+  
+  /**
+   * Graph traversal write method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  write(...args) {
+    this.bytecode.addStep('write', args);
     return this;
   }
   

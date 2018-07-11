@@ -142,6 +142,16 @@ import java.util.stream.Stream;
         method = "g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.",
         computers = {"ALL"})
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ReadTest$Traversals",
+        method = "*",
+        reason = "This body of tests is not configured to properly suit OLAP based testing and HadoopGraph is not designed to handle single-threaded OLTP reads/writes.",
+        computers = {"ALL"})
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.WriteTest$Traversals",
+        method = "*",
+        reason = "This body of tests is not configured to properly suit OLAP based testing and HadoopGraph is not designed to handle single-threaded OLTP reads/writes.",
+        computers = {"ALL"})
 public final class HadoopGraph implements Graph {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(HadoopGraph.class);

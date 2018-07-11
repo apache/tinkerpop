@@ -43,6 +43,7 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(Parameterized.class)
 public class VertexProgramStrategyTest {
@@ -68,9 +69,11 @@ public class VertexProgramStrategyTest {
 
         final ComputerResultStep computerResultStep = new ComputerResultStep(EmptyTraversal.instance());
 
+        // The tests for io() need to verify that there is no change i.e. we don't want the step getting wrapped up in
+        // traversalvertexprogramstep stuff or else it won't execute properly in OLAP
         return Arrays.asList(new Traversal[][]{
-                { EmptyGraph.instance().traversal().io("blah.json").read(), EmptyGraph.instance().traversal().io("blah.json").read()},
-                { EmptyGraph.instance().traversal().io("blah.json").write(), EmptyGraph.instance().traversal().io("blah.json").write()},
+                { EmptyGraph.instance().traversal().io("blah.json"), EmptyGraph.instance().traversal().io("blah.json")},
+                { EmptyGraph.instance().traversal().io("blah.json"), EmptyGraph.instance().traversal().io("blah.json")},
                 {__.V().out().count(), start().addStep(traversal(__.V().out().count())).addStep(computerResultStep)},
                 {__.V().pageRank().out().count(), start().pageRank().asAdmin().addStep(traversal(__.V().out().count())).addStep(computerResultStep)},
                 {__.V().out().pageRank(), start().addStep(traversal(__.V().out())).pageRank().asAdmin().addStep(traversal(__.identity())).addStep(computerResultStep)},

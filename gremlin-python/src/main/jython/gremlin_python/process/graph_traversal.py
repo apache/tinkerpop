@@ -106,14 +106,9 @@ class GraphTraversalSource(object):
         traversal.bytecode.add_step("inject", *args)
         return traversal
 
-    def read(self, *args):
+    def io(self, *args):
         traversal = self.get_graph_traversal()
-        traversal.bytecode.add_step("read", *args)
-        return traversal
-
-    def write(self, *args):
-        traversal = self.get_graph_traversal()
-        traversal.bytecode.add_step("write", *args)
+        traversal.bytecode.add_step("io", *args)
         return traversal
 
 
@@ -419,6 +414,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("range", *args)
         return self
 
+    def read(self, *args):
+        self.bytecode.add_step("read", *args)
+        return self
+
     def repeat(self, *args):
         self.bytecode.add_step("repeat", *args)
         return self
@@ -517,6 +516,10 @@ class GraphTraversal(Traversal):
 
     def with_(self, *args):
         self.bytecode.add_step("with", *args)
+        return self
+
+    def write(self, *args):
+        self.bytecode.add_step("write", *args)
         return self
 
 

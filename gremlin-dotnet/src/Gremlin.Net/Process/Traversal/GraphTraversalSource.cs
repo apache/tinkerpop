@@ -334,24 +334,13 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the read step to that
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the io step to that
         ///     traversal.
         /// </summary>
-        public GraphTraversal<S, S> Read<S>(string file)
+        public GraphTraversal<S, S> Io<S>(string file)
         {
             var traversal = new GraphTraversal<S, S>(TraversalStrategies, new Bytecode(Bytecode));
-                traversal.Bytecode.AddStep("read", file);
-            return traversal;
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the write step to that
-        ///     traversal.
-        /// </summary>
-        public GraphTraversal<S, S> Write<S>(string file)
-        {
-            var traversal = new GraphTraversal<S, S>(TraversalStrategies, new Bytecode(Bytecode));
-                traversal.Bytecode.AddStep("write", file);
+                traversal.Bytecode.AddStep("io", file);
             return traversal;
         }
 
