@@ -38,6 +38,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
+ * Handles read and write operations into the {@link Graph}.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {

@@ -24,12 +24,16 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.clone.CloneVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ReadWriting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 /**
+ * An OLAP oriented step for doing IO operations with {@link GraphTraversalSource#io(String)} which uses the
+ * {@link CloneVertexProgram} for its implementation.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class HadoopIoStep extends VertexProgramStep implements ReadWriting {

@@ -20,6 +20,8 @@
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.traversal.strategy;
 
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.traversal.step.map.HadoopIoStep;
+import org.apache.tinkerpop.gremlin.process.computer.clone.CloneVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -30,6 +32,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 /**
+ * The default implementation of the {@link IoStep} is a single threaded operation and doesn't properly take into
+ * account the method by which OLAP read/writes take place with Hadoop. This strategy removes that step and replaces
+ * it with the {@link HadoopIoStep} which is a {@link VertexProgramStep} that uses the {@link CloneVertexProgram} to
+ * execute the IO operation in an OLAP fashion.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class HadoopIoStrategy extends AbstractTraversalStrategy<TraversalStrategy.ProviderOptimizationStrategy>

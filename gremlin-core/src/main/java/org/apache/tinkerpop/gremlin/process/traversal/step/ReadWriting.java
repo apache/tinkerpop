@@ -18,11 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+
 /**
+ * An interface that defines a {@link Step} as one that handles IO based operations for a {@link Graph}.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface ReadWriting extends Configuring {
 
+    /**
+     * Determines the mode of the the IO operation as being for reading or writing (or by default "unset")
+     */
     public enum Mode {
         UNSET,
         READING,
