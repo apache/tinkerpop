@@ -20,43 +20,49 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ReadWriting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
- * Writes data to a file from a {@link Graph}. This step is meant to be used as the first and last step in a
- * traversal.
- *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class WriteStep<S> extends AbstractStep<S,S> implements Writing {
-
+public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
     private Parameters parameters = new Parameters();
     private boolean first = true;
     private String file;
+    private Mode mode = Mode.UNSET;
 
-    public WriteStep(final Traversal.Admin traversal, final String file) {
+    public IoStep(final Traversal.Admin traversal, final String file) {
         super(traversal);
 
         if (null == file || file.isEmpty())
             throw new IllegalArgumentException("file cannot be null or empty");
 
         this.file = file;
+    }
+
+    @Override
+    public void setMode(final Mode mode) {
+        this.mode = mode;
+    }
+
+    @Override
+    public Mode getMode() {
+        return mode;
     }
 
     @Override
@@ -76,17 +82,34 @@ public class WriteStep<S> extends AbstractStep<S,S> implements Writing {
 
     @Override
     protected Traverser.Admin<S> processNextStart() {
+        if (mode == Mode.UNSET) throw new IllegalStateException("IO mode was not set to read() or write()");
         if (!this.first) throw FastNoSuchElementException.instance();
 
         this.first = false;
         final File file = new File(this.file);
-        try (final OutputStream stream = new FileOutputStream(file)) {
-            final Graph graph = (Graph) this.traversal.getGraph().get();
-            GryoWriter.build().create().writeGraph(stream, graph);
 
-            return EmptyTraverser.instance();
-        } catch (IOException ioe) {
-            throw new IllegalStateException(String.format("Could not write file %s from graph", this.file), ioe);
+        if (mode == Mode.READING) {
+            if (!file.exists()) throw new IllegalStateException(this.file + " does not exist");
+
+            try (final InputStream stream = new FileInputStream(file)) {
+                final Graph graph = (Graph) this.traversal.getGraph().get();
+                GryoReader.build().create().readGraph(stream, graph);
+
+                return EmptyTraverser.instance();
+            } catch (IOException ioe) {
+                throw new IllegalStateException(String.format("Could not read file %s into graph", this.file), ioe);
+            }
+        } else if (mode == Mode.WRITING) {
+            try (final OutputStream stream = new FileOutputStream(file)) {
+                final Graph graph = (Graph) this.traversal.getGraph().get();
+                GryoWriter.build().create().writeGraph(stream, graph);
+
+                return EmptyTraverser.instance();
+            } catch (IOException ioe) {
+                throw new IllegalStateException(String.format("Could not write file %s from graph", this.file), ioe);
+            }
+        } else {
+            throw new IllegalStateException("Invalid ReadWriting.Mode configured in IoStep: " + mode.name());
         }
     }
 
@@ -102,10 +125,11 @@ public class WriteStep<S> extends AbstractStep<S,S> implements Writing {
     }
 
     @Override
-    public WriteStep clone() {
-        final WriteStep clone = (WriteStep) super.clone();
+    public IoStep clone() {
+        final IoStep clone = (IoStep) super.clone();
         clone.parameters = this.parameters.clone();
         clone.file = this.file;
+        clone.mode = this.mode;
         return clone;
     }
 }

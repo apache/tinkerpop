@@ -34,8 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Reading;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ReadWriting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -102,7 +101,7 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
 
         // wrap all non-VertexComputing steps into a TraversalVertexProgramStep
         currentStep = traversal.getStartStep();
-        if (!(currentStep instanceof Reading) && !(currentStep instanceof Writing)) {
+        if (!(currentStep instanceof ReadWriting)) {
             while (!(currentStep instanceof EmptyStep)) {
                 final Traversal.Admin<?, ?> computerTraversal = new DefaultTraversal<>();
                 final Step<?, ?> firstLegalOLAPStep = getFirstLegalOLAPStep(currentStep);

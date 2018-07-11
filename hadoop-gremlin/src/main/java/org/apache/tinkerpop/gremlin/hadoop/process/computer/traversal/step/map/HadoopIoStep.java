@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.clone.CloneVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Reading;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ReadWriting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -32,21 +32,30 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class HadoopReadStep extends VertexProgramStep implements Reading {
+public class HadoopIoStep extends VertexProgramStep implements ReadWriting {
 
     private Parameters parameters = new Parameters();
+    private Mode mode = Mode.UNSET;
+    private String file;
 
-    public HadoopReadStep(final Traversal.Admin traversal, final String localFile) {
+    public HadoopIoStep(final Traversal.Admin traversal, final String file) {
         super(traversal);
+        this.file = file;
+    }
 
-        final Graph graph = (Graph) traversal.getGraph().get();
-        graph.configuration().setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, "org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat");
-        graph.configuration().setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, localFile);
+    @Override
+    public void setMode(final Mode mode) {
+        this.mode = mode;
+    }
+
+    @Override
+    public Mode getMode() {
+        return mode;
     }
 
     @Override
     public String getFile() {
-        return (String) ((Graph) traversal.getGraph().get()).configuration().getProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION);
+        return file;
     }
 
     @Override
@@ -67,16 +76,35 @@ public class HadoopReadStep extends VertexProgramStep implements Reading {
 
     @Override
     public CloneVertexProgram generateProgram(final Graph graph, final Memory memory) {
+        if (mode == Mode.UNSET)
+            throw new IllegalStateException("IO mode was not set to read() or write()");
+        else if (mode == Mode.READING)
+            configureForRead(graph);
+        else if (mode == Mode.WRITING)
+            configureForWrite(graph);
+        else
+            throw new IllegalStateException("Invalid ReadWriting.Mode configured in IoStep: " + mode.name());
+
         return CloneVertexProgram.build().create(graph);
     }
 
     @Override
-    public HadoopReadStep clone() {
-        return (HadoopReadStep) super.clone();
+    public HadoopIoStep clone() {
+        return (HadoopIoStep) super.clone();
     }
 
     @Override
     public int hashCode() {
         return super.hashCode();
+    }
+
+    private void configureForRead(final Graph graph) {
+        graph.configuration().setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, "org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat");
+        graph.configuration().setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, file);
+    }
+
+    private void configureForWrite(final Graph graph) {
+        graph.configuration().setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, "org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat");
+        graph.configuration().setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, file);
     }
 }

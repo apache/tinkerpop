@@ -19,14 +19,13 @@
 
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.traversal.strategy;
 
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.traversal.step.map.HadoopReadStep;
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.traversal.step.map.HadoopWriteStep;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.traversal.step.map.HadoopIoStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Reading;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ReadWriting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.IoStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -43,23 +42,16 @@ public final class HadoopIoStrategy extends AbstractTraversalStrategy<TraversalS
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        // replace Reading and Writing steps with hadoop specific ones
-        if (traversal.getStartStep() instanceof Reading) {
-            final Reading reading = (Reading) traversal.getStartStep();
-            final HadoopReadStep hadoopReadStep = new HadoopReadStep(traversal, reading.getFile());
-            reading.getParameters().getRaw().entrySet().forEach(kv ->
-                hadoopReadStep.configure(null, kv.getKey(), kv.getValue())
+        // replace IoStep steps with hadoop specific one
+        if (traversal.getStartStep() instanceof IoStep) {
+            final ReadWriting readWriting = (ReadWriting) traversal.getStartStep();
+            final HadoopIoStep hadoopIoStep = new HadoopIoStep(traversal, readWriting.getFile());
+            hadoopIoStep.setMode(readWriting.getMode());
+            readWriting.getParameters().getRaw().entrySet().forEach(kv ->
+                    hadoopIoStep.configure(null, kv.getKey(), kv.getValue())
             );
 
-            TraversalHelper.replaceStep((Step) reading, hadoopReadStep, traversal);
-        } else if (traversal.getStartStep() instanceof Writing) {
-            final Writing writing = (Writing) traversal.getStartStep();
-            final HadoopWriteStep hadoopWriteStep = new HadoopWriteStep(traversal, writing.getFile());
-            writing.getParameters().getRaw().entrySet().forEach(kv ->
-                hadoopWriteStep.configure(null, kv.getKey(), kv.getValue())
-            );
-
-            TraversalHelper.replaceStep((Step) writing, hadoopWriteStep, traversal);
+            TraversalHelper.replaceStep((Step) readWriting, hadoopIoStep, traversal);
         }
 
         if (traversal.getEndStep() instanceof NoneStep)

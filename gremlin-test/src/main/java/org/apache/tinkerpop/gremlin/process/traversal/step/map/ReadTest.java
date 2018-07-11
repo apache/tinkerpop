@@ -43,11 +43,11 @@ import static org.junit.Assert.assertTrue;
 @RunWith(GremlinProcessRunner.class)
 public abstract class ReadTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Map<String,Object>, Map<String,Object>> get_g_read()  throws IOException;
+    public abstract Traversal<Object,Object> get_g_io_read()  throws IOException;
 
     @Test
     public void g_read() throws IOException {
-        final Traversal<Map<String,Object>, Map<String,Object>> traversal = get_g_read();
+        final Traversal<Object,Object> traversal = get_g_io_read();
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
 
@@ -56,9 +56,9 @@ public abstract class ReadTest extends AbstractGremlinProcessTest {
 
     public static class Traversals extends ReadTest {
         @Override
-        public Traversal<Map<String,Object>, Map<String,Object>> get_g_read() throws IOException {
+        public Traversal<Object,Object> get_g_io_read() throws IOException {
             final String fileToRead = TestHelper.generateTempFileFromResource(ReadTest.class, GryoResourceAccess.class, "tinkerpop-modern-v3d0.kryo", "").getAbsolutePath().replace('\\', '/');
-            return g.read(fileToRead);
+            return g.io(fileToRead).read();
         }
     }
 }

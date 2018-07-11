@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -32,8 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ReadStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.WriteStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.IoStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -43,8 +41,6 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
@@ -395,18 +391,11 @@ public class GraphTraversalSource implements TraversalSource {
         return traversal.addStep(new GraphStep<>(traversal, Edge.class, true, edgesIds));
     }
 
-    public <S> GraphTraversal<S, S> read(final String file) {
+    public <S> GraphTraversal<S, S> io(final String file) {
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.read, file);
+        clone.bytecode.addStep(GraphTraversal.Symbols.io, file);
         final GraphTraversal.Admin<S,S> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new ReadStep<S>(traversal, file)).iterate();
-    }
-
-    public <S> GraphTraversal<S, S> write(final String file) {
-        final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.write, file);
-        final GraphTraversal.Admin<S,S> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new WriteStep<S>(traversal, file)).iterate();
+        return traversal.addStep(new IoStep<S>(traversal, file));
     }
 
     /**

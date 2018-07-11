@@ -39,6 +39,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ReadWriting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TimesModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchStep;
@@ -2733,6 +2734,38 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     ////
 
+    ///////////////////// IO TERMINATOR STEPS /////////////////////
+
+    /**
+     * This step is technically a step modulator for the the {@link GraphTraversalSource#io(String)} step which
+     * instructs the step to perform a read with its given configuration.
+     *
+     * @return the traversal that has been iterated with the read IO action executed
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#io-step" target="_blank">Reference Documentation - IO Step</a>
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#read-step" target="_blank">Reference Documentation - Read Step</a>
+     * @since 3.4.0
+     */
+    public default GraphTraversal<S,E> read() {
+        this.asAdmin().getBytecode().addStep(Symbols.read);
+        ((ReadWriting) this.asAdmin().getEndStep()).setMode(ReadWriting.Mode.READING);
+        return this.iterate();
+    }
+
+    /**
+     * This step is technically a step modulator for the the {@link GraphTraversalSource#io(String)} step which
+     * instructs the step to perform a write with its given configuration.
+     *
+     * @return the traversal that has been iterated with the write IO action executed
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#io-step" target="_blank">Reference Documentation - IO Step</a>
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#write-step" target="_blank">Reference Documentation - Write Step</a>
+     * @since 3.4.0
+     */
+    public default GraphTraversal<S,E> write() {
+        this.asAdmin().getBytecode().addStep(Symbols.write);
+        ((ReadWriting) this.asAdmin().getEndStep()).setMode(ReadWriting.Mode.WRITING);
+        return this.iterate();
+    }
+
     /**
      * Iterates the traversal presumably for the generation of side-effects.
      */
@@ -2817,6 +2850,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String skip = "skip";
         public static final String tail = "tail";
         public static final String coin = "coin";
+        public static final String io = "io";
         public static final String read = "read";
         public static final String write = "write";
 

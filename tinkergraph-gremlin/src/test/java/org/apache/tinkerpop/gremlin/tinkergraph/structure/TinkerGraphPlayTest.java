@@ -340,7 +340,7 @@ public class TinkerGraphPlayTest {
     public void testBlah() {
         TinkerGraph graph = TinkerGraph.open();
         GraphTraversalSource g = graph.traversal();
-        g.read("../data/tinkerpop-modern.kryo");
+        g.io("../data/tinkerpop-modern.kryo").read();
 
         IoTest.assertModernGraph(graph, true, false);
     }
