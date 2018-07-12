@@ -216,8 +216,8 @@ class DriverRemoteConnection extends RemoteConnection {
 
     if (args instanceof Object) {
       let newObj = {};
-      Object.keys(args).forEach((key, val) => {
-        newObj[key] = this._adaptArgs(val);
+      Object.keys(args).forEach((key) => {
+        newObj[key] = this._adaptArgs(args[key]);
       });
       return newObj;
     }
