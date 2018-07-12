@@ -417,8 +417,8 @@ class along with a collection of subclasses that mirror the standard Gremlin-Jav
 
 [source,csharp]
 ----
-g = g.WithStrategies(new SubgraphStrategy(vertexCriterion: HasLabel("person"),
-    edgeCriterion: Has("weight", Gt(0.5))));
+g = g.WithStrategies(new SubgraphStrategy(vertices: HasLabel("person"),
+    edges: Has("weight", Gt(0.5))));
 var names = g.V().Values("name").ToList();  // names: [marko, vadas, josh, peter]
 
 g = g.WithoutStrategies(typeof(SubgraphStrategy));

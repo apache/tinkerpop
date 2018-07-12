@@ -37,7 +37,7 @@ public class PartitionStrategyTest {
     @Test
     public void shouldConstructPartitionStrategy() {
         final PartitionStrategy strategy = PartitionStrategy.build()
-                .partitionKey("p").writePartition("a").addReadPartition("a").create();
+                .partitionKey("p").writePartition("a").readPartitions("a").create();
         assertEquals("a", strategy.getReadPartitions().iterator().next());
         assertEquals(1, strategy.getReadPartitions().size());
         assertEquals("p", strategy.getPartitionKey());
@@ -47,9 +47,9 @@ public class PartitionStrategyTest {
     public void shouldConstructPartitionStrategyWithMultipleReadPartitions() {
         final PartitionStrategy strategy = PartitionStrategy.build()
                 .partitionKey("p").writePartition("a")
-                .addReadPartition("a")
-                .addReadPartition("b")
-                .addReadPartition("c").create();
+                .readPartitions("a")
+                .readPartitions("b")
+                .readPartitions("c").create();
 
         assertTrue(IteratorUtils.asList(strategy.getReadPartitions().iterator()).contains("a"));
         assertTrue(IteratorUtils.asList(strategy.getReadPartitions().iterator()).contains("b"));

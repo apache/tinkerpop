@@ -43,7 +43,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var g =
                 graph.Traversal()
                     .WithRemote(connection)
-                    .WithStrategies(new SubgraphStrategy(vertexCriterion: __.HasLabel("person")));
+                    .WithStrategies(new SubgraphStrategy(vertices: __.HasLabel("person")));
 
             var count = g.V().Count().Next();
 
@@ -58,8 +58,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var g =
                 graph.Traversal()
                     .WithRemote(connection)
-                    .WithStrategies(new SubgraphStrategy(vertexCriterion: __.HasLabel("person"),
-                        edgeCriterion: __.HasLabel("created")));
+                    .WithStrategies(new SubgraphStrategy(vertices: __.HasLabel("person"),
+                        edges: __.HasLabel("created")));
 
             var count = g.E().Count().Next();
 
@@ -74,7 +74,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var g =
                 graph.Traversal()
                     .WithRemote(connection)
-                    .WithStrategies(new SubgraphStrategy(vertexCriterion: __.HasLabel("person")));
+                    .WithStrategies(new SubgraphStrategy(vertices: __.HasLabel("person")));
 
             var count = g.V().Label().Dedup().Count().Next();
 
@@ -89,7 +89,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var g =
                 graph.Traversal()
                     .WithRemote(connection)
-                    .WithStrategies(new SubgraphStrategy(vertexCriterion: __.HasLabel("person")));
+                    .WithStrategies(new SubgraphStrategy(vertices: __.HasLabel("person")));
 
             var label = g.V().Label().Dedup().Next();
 
@@ -104,7 +104,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var g =
                 graph.Traversal()
                     .WithRemote(connection)
-                    .WithStrategies(new SubgraphStrategy(vertexCriterion: __.Has("name", "marko")));
+                    .WithStrategies(new SubgraphStrategy(vertices: __.Has("name", "marko")));
 
             var count = g.V().Count().Next();
 
@@ -119,7 +119,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var g =
                 graph.Traversal()
                     .WithRemote(connection)
-                    .WithStrategies(new SubgraphStrategy(edgeCriterion: __.Limit<object>(0)));
+                    .WithStrategies(new SubgraphStrategy(edges: __.Limit<object>(0)));
 
             var count = g.E().Count().Next();
 
@@ -134,7 +134,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var g =
                 graph.Traversal()
                     .WithRemote(connection)
-                    .WithStrategies(new SubgraphStrategy(vertexCriterion: __.Has("name", "marko")));
+                    .WithStrategies(new SubgraphStrategy(vertices: __.Has("name", "marko")));
 
             var label = g.V().Label().Dedup().Next();
 
@@ -149,7 +149,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var g =
                 graph.Traversal()
                     .WithRemote(connection)
-                    .WithStrategies(new SubgraphStrategy(vertexCriterion: __.Has("name", "marko")));
+                    .WithStrategies(new SubgraphStrategy(vertices: __.Has("name", "marko")));
 
             var name = g.V().Values<string>("name").Next();
 
@@ -196,7 +196,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var graph = new Graph();
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = graph.Traversal().WithRemote(connection)
-                .WithStrategies(new SubgraphStrategy(vertexCriterion: __.HasLabel("person")))
+                .WithStrategies(new SubgraphStrategy(vertices: __.HasLabel("person")))
                 .WithoutStrategies(typeof(SubgraphStrategy));
 
             var count = g.V().Count().Next();

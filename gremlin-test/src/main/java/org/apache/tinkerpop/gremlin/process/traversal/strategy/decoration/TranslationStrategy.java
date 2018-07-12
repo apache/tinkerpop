@@ -99,7 +99,7 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
                 final Bindings bindings = scriptEngine.createBindings();
                 bindings.putAll(scriptEngine.getContext().getBindings(ScriptContext.ENGINE_SCOPE));
                 bindings.put(this.translator.getTraversalSource().toString(), this.traversalSource);
-                translatedTraversal = (Traversal.Admin<?, ?>) scriptEngine.eval(bytecode, bindings);
+                translatedTraversal = (Traversal.Admin<?, ?>) scriptEngine.eval(bytecode, bindings, this.translator.getTraversalSource().toString());
             } catch (final Exception e) {
                 throw new IllegalArgumentException(e.getMessage(), e);
             }

@@ -38,31 +38,6 @@ public interface GremlinScriptEngine extends ScriptEngine {
     public GremlinScriptEngineFactory getFactory();
 
     /**
-     * Evaluates {@link Traversal} {@link Bytecode}. This method assumes that the traversal source to execute the
-     * bytecode against is in the global bindings and is named "g".
-     *
-     * @deprecated As of release 3.2.7, replaced by {@link #eval(Bytecode, String)}.
-     */
-    @Deprecated
-    public default Traversal.Admin eval(final Bytecode bytecode) throws ScriptException {
-        final Bindings bindings = this.createBindings();
-        bindings.putAll(bytecode.getBindings());
-        return eval(bytecode, bindings);
-    }
-
-    /**
-     * Evaluates {@link Traversal} {@link Bytecode} with the specified {@code Bindings}. These {@code Bindings}
-     * supplied to this method will be merged with global engine bindings and override them where keys match. This
-     * method assumes that the traversal source to execute against is named "g".
-     *
-     * @deprecated As of release 3.2.7, replaced by {@link #eval(Bytecode, Bindings, String)}.
-     */
-    @Deprecated
-    public default Traversal.Admin eval(final Bytecode bytecode, final Bindings bindings) throws ScriptException {
-        return eval(bytecode, bindings, "g");
-    }
-
-    /**
      * Evaluates {@link Traversal} {@link Bytecode} against a traversal source in the global bindings of the
      * {@code ScriptEngine}.
      *

@@ -68,7 +68,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldFilterVertexCriterion() throws Exception {
         final Traversal<Vertex, ?> vertexCriterion = has("name", P.within("josh", "lop", "ripple"));
 
-        final GraphTraversalSource sg = g.withStrategies(SubgraphStrategy.build().vertexCriterion(vertexCriterion).create());
+        final GraphTraversalSource sg = g.withStrategies(SubgraphStrategy.build().vertices(vertexCriterion).create());
 
         // three vertices are included in the subgraph
         assertEquals(6, g.V().count().next().longValue());
@@ -154,7 +154,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
                 has("weight", 1.0d).hasLabel("created") // 10
         );
 
-        final SubgraphStrategy strategy = SubgraphStrategy.build().edgeCriterion(edgeCriterion).create();
+        final SubgraphStrategy strategy = SubgraphStrategy.build().edges(edgeCriterion).create();
         final GraphTraversalSource sg = g.withStrategies(strategy);
 
         // all vertices are here
@@ -422,7 +422,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
         // this will exclude "peter"
         final Traversal<Vertex, ?> vertexCriterion = has("name", P.within("ripple", "josh", "marko"));
 
-        final GraphTraversalSource sg = g.withStrategies(SubgraphStrategy.build().vertexCriterion(vertexCriterion).create());
+        final GraphTraversalSource sg = g.withStrategies(SubgraphStrategy.build().vertices(vertexCriterion).create());
 
         assertEquals(9, g.V().as("a").out().in().as("b").dedup("a", "b").count().next().intValue());
         assertEquals(2, sg.V().as("a").out().in().as("b").dedup("a", "b").count().next().intValue());
@@ -436,7 +436,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldGetExcludedVertex() throws Exception {
         final Traversal<Vertex, ?> vertexCriterion = has("name", P.within("josh", "lop", "ripple"));
 
-        final GraphTraversalSource sg = g.withStrategies(SubgraphStrategy.build().vertexCriterion(vertexCriterion).create());
+        final GraphTraversalSource sg = g.withStrategies(SubgraphStrategy.build().vertices(vertexCriterion).create());
 
         sg.V(convertToVertexId("marko")).next();
     }

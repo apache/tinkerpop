@@ -38,18 +38,18 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Decoration
         /// <summary>
         ///     Initializes a new instance of the <see cref="SubgraphStrategy" /> class.
         /// </summary>
-        /// <param name="vertexCriterion">Constrains vertices for the <see cref="ITraversal" />.</param>
-        /// <param name="edgeCriterion">Constrains edges for the <see cref="ITraversal" />.</param>
-        /// <param name="vertexPropertyCriterion">Constrains vertex properties for the <see cref="ITraversal" />.</param>
-        public SubgraphStrategy(ITraversal vertexCriterion = null, ITraversal edgeCriterion = null,
-            ITraversal vertexPropertyCriterion = null)
+        /// <param name="vertices">Constrains vertices for the <see cref="ITraversal" />.</param>
+        /// <param name="edges">Constrains edges for the <see cref="ITraversal" />.</param>
+        /// <param name="vertexProperties">Constrains vertex properties for the <see cref="ITraversal" />.</param>
+        public SubgraphStrategy(ITraversal vertices = null, ITraversal edges = null,
+            ITraversal vertexProperties = null)
         {
-            if (vertexCriterion != null)
-                Configuration["vertices"] = vertexCriterion;
-            if (edgeCriterion != null)
-                Configuration["edges"] = edgeCriterion;
-            if (vertexPropertyCriterion != null)
-                Configuration["vertexProperties"] = vertexPropertyCriterion;
+            if (vertices != null)
+                Configuration["vertices"] = vertices;
+            if (edges != null)
+                Configuration["edges"] = edges;
+            if (vertexProperties != null)
+                Configuration["vertexProperties"] = vertexProperties;
         }
     }
 }
