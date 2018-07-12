@@ -62,11 +62,6 @@ public final class WebSocketClientHandler extends SimpleChannelInboundHandler<Ob
     }
 
     @Override
-    public void channelInactive(final ChannelHandlerContext ctx) throws Exception {
-        //System.out.println("WebSocket Client disconnected!");
-    }
-
-    @Override
     protected void channelRead0(final ChannelHandlerContext ctx, final Object msg) throws Exception {
         final Channel ch = ctx.channel();
         if (!handshaker.isHandshakeComplete()) {

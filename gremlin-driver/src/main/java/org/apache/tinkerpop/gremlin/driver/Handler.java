@@ -203,6 +203,14 @@ final class Handler {
         }
 
         @Override
+        public void channelInactive(final ChannelHandlerContext ctx) throws Exception {
+            // occurs when the server shutsdown in a disorderly fashion, otherwise in an orderly shutdown the server
+            // should fire off a close message which will properly release the driver.
+            super.channelInactive(ctx);
+            throw new IllegalStateException("Connection to server is no longer active");
+        }
+
+        @Override
         protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessage response) throws Exception {
             try {
                 final ResponseStatusCode statusCode = response.getStatus().getCode();
