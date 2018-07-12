@@ -23,6 +23,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
+import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
+import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 
 /**
  * Fields that can be provided to the {@link GraphTraversalSource#io(String)} using the
@@ -34,21 +40,37 @@ public class IO {
 
     private IO() {}
 
+    /**
+     * A value to supply to {@link IO#reader} or {@link IO#writer} to indicate the format to use. Using this shorthand
+     * will configure a default {@link GraphSONReader} or {@link GraphSONWriter} respectively,
+     */
     public static final String graphson = "graphson";
+
+    /**
+     * A value to supply to {@link IO#reader} or {@link IO#writer} to indicate the format to use. Using this shorthand
+     * will configure a default {@link GryoReader} or {@link GryoWriter} respectively,
+     */
     public static final String gryo = "gryo";
+
+    /**
+     * A value to supply to {@link IO#reader} or {@link IO#writer} to indicate the format to use. Using this shorthand
+     * will configure a default {@link GraphMLReader} or {@link GraphMLWriter} respectively,
+     */
     public static final String graphml = "graphml";
 
     /**
-     * The specific {@link GraphReader} instance to use or the name of the fully qualified classname of such an
-     * instance. If this value is not specified then {@link GraphTraversalSource#io(String)} will attempt to construct
-     * a default {@link GraphReader} based on the file extension provided to it.
+     * The specific {@link GraphReader} instance to use, the name of the fully qualified classname of such an
+     * instance or one of {@link IO#graphson}, {@link IO#gryo} or {@link IO#graphml}. If this value is not specified
+     * then {@link GraphTraversalSource#io(String)} will attempt to construct a default {@link GraphReader} based on
+     * the file extension provided to it.
      */
     public static final String reader = Graph.Hidden.hide("tinkerpop.io.reader");
 
     /**
-     * The specific {@link GraphWriter} instance to use or the name of the fully qualified classname of such an
-     * instance. If this value is not specified then {@link GraphTraversalSource#io(String)} will attempt to construct
-     * a default {@link GraphWriter} based on the file extension provided to it.
+     * The specific {@link GraphWriter} instance to use, the name of the fully qualified classname of such an
+     * instance or one of {@link IO#graphson}, {@link IO#gryo} or {@link IO#graphml}. If this value is not specified
+     * then {@link GraphTraversalSource#io(String)} will attempt to construct a default {@link GraphWriter} based on
+     * the file extension provided to it.
      */
     public static final String writer = Graph.Hidden.hide("tinkerpop.io.writer");
 }
