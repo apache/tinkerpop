@@ -60,9 +60,6 @@ public final class HadoopIoStrategy extends AbstractTraversalStrategy<TraversalS
 
             TraversalHelper.replaceStep((Step) readWriting, hadoopIoStep, traversal);
         }
-
-        if (traversal.getEndStep() instanceof NoneStep)
-            traversal.removeStep(1);
     }
 
     public static HadoopIoStrategy instance() {
