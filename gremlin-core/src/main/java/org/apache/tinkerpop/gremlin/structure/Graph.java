@@ -300,7 +300,10 @@ public interface Graph extends AutoCloseable, Host {
      * For those graphs that do not need to register any custom serializers, the default implementation should suffice.
      * If the default is overridden, take care to register the current graph via the
      * {@link org.apache.tinkerpop.gremlin.structure.io.Io.Builder#graph(Graph)} method.
+     *
+     * @deprecated As of release 3.4.0, replaced by {@link GraphTraversalSource#io(String)}.
      */
+    @Deprecated
     public default <I extends Io> I io(final Io.Builder<I> builder) {
         return (I) builder.graph(this).create();
     }

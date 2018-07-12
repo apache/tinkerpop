@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
@@ -36,7 +37,9 @@ import java.util.function.Consumer;
  * interfaces should see the {@link GryoMapper} for information on the expectations for the {@link IoRegistry}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.4.0, replaced by {@link GraphTraversalSource#io(String)}.
  */
+@Deprecated
 public final class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, GryoMapper.Builder> {
 
     private final Graph graph;
