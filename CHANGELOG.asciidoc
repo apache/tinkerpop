@@ -28,6 +28,7 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Bumped to Netty 4.1.25.
 * Bumped to Spark 2.3.1.
 * Added the `io()` start step and `read()` and `write()` termination steps to the Gremlin language.
+* Added `GraphFeatures.supportsIoRead()` and `GraphFeatures.supportsIoWrite()`.
 * Deprecated `Graph.io()` and related infrastructure.
 * Moved `Parameterizing` interface to the `org.apache.tinkerpop.gremlin.process.traversal.step` package with other marker interfaces of its type.
 * Replaced `Parameterizing.addPropertyMutations()` with `Configuring.configure()`.
