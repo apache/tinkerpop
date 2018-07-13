@@ -23,6 +23,8 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
+import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.util.FeatureDescriptor;
@@ -439,6 +441,8 @@ public interface Graph extends AutoCloseable, Host {
             public static final String FEATURE_PERSISTENCE = "Persistence";
             public static final String FEATURE_THREADED_TRANSACTIONS = "ThreadedTransactions";
             public static final String FEATURE_CONCURRENT_ACCESS = "ConcurrentAccess";
+            public static final String FEATURE_IO_READ = "IoRead";
+            public static final String FEATURE_IO_WRITE = "IoWrite";
 
             /**
              * Determines if the {@code Graph} implementation supports {@link GraphComputer} based processing.
@@ -485,6 +489,29 @@ public interface Graph extends AutoCloseable, Host {
              */
             @FeatureDescriptor(name = FEATURE_THREADED_TRANSACTIONS)
             public default boolean supportsThreadedTransactions() {
+                return true;
+            }
+
+            /**
+             * Determines if the {@code Graph} implementations supports read operations as executed with the
+             * {@link GraphTraversalSource#io(String)} step. Graph implementations will generally support this by
+             * default as any graph that can support direct mutation through the Structure API will by default
+             * accept data from the standard TinkerPop {@link GraphReader} implementations. However, some graphs like
+             * {@code HadoopGraph} don't accept direct mutations but can still do reads from that {@code io()} step.
+             */
+            @FeatureDescriptor(name = FEATURE_IO_READ)
+            public default boolean supportsIoRead() {
+                return true;
+            }
+
+            /**
+             * Determines if the {@code Graph} implementations supports write operations as executed with the
+             * {@link GraphTraversalSource#io(String)} step. Graph implementations will generally support this by
+             * default given the standard TinkerPop {@link GraphWriter} implementations. However, some graphs like
+             * {@code HadoopGraph} will use a different approach to handle writes.
+             */
+            @FeatureDescriptor(name = FEATURE_IO_WRITE)
+            public default boolean supportsIoWrite() {
                 return true;
             }
 

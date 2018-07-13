@@ -18,12 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,7 +56,8 @@ public abstract class WriteTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    public void g_writeXkryoX() throws IOException {
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_IO_WRITE)
+    public void g_io_writeXkryoX() throws IOException {
         final String fileToWrite = TestHelper.generateTempFile(WriteTest.class, "tinkerpop-modern-v3d0", ".kryo").getAbsolutePath().replace('\\', '/');
 
         final File f = new File(fileToWrite);
@@ -69,6 +72,7 @@ public abstract class WriteTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_IO_WRITE)
     public void g_io_write_withXwrite_gryoX() throws IOException {
         final String fileToWrite = TestHelper.generateTempFile(WriteTest.class, "tinkerpop-modern-v3d0", ".kryo").getAbsolutePath().replace('\\', '/');
 
@@ -84,7 +88,8 @@ public abstract class WriteTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    public void g_writeXjsonX() throws IOException {
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_IO_WRITE)
+    public void g_io_writeXjsonX() throws IOException {
         final String fileToWrite = TestHelper.generateTempFile(WriteTest.class,"tinkerpop-modern-v3d0", ".json").getAbsolutePath().replace('\\', '/');
 
         final File f = new File(fileToWrite);
@@ -99,6 +104,7 @@ public abstract class WriteTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_IO_WRITE)
     public void g_io_write_withXwriter_graphsonX() throws IOException {
         final String fileToWrite = TestHelper.generateTempFile(WriteTest.class,"tinkerpop-modern-v3d0", ".json").getAbsolutePath().replace('\\', '/');
 
@@ -114,7 +120,8 @@ public abstract class WriteTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    public void g_writeXxmlX() throws IOException {
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_IO_WRITE)
+    public void g_io_writeXxmlX() throws IOException {
         final String fileToWrite = TestHelper.generateTempFile(WriteTest.class,"tinkerpop-modern", ".xml").getAbsolutePath().replace('\\', '/');
 
         final File f = new File(fileToWrite);
@@ -129,6 +136,7 @@ public abstract class WriteTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_IO_WRITE)
     public void g_io_write_withXwriter_graphmlX() throws IOException {
         final String fileToWrite = TestHelper.generateTempFile(WriteTest.class,"tinkerpop-modern", ".xml").getAbsolutePath().replace('\\', '/');
 

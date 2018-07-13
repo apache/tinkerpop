@@ -18,17 +18,29 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.traversal.step.map;
 
+import org.apache.hadoop.mapred.InputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONOutputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.clone.CloneVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ReadWriting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
+import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+
+import java.lang.reflect.Method;
 
 /**
  * An OLAP oriented step for doing IO operations with {@link GraphTraversalSource#io(String)} which uses the
@@ -103,12 +115,56 @@ public class HadoopIoStep extends VertexProgramStep implements ReadWriting {
     }
 
     private void configureForRead(final Graph graph) {
-        graph.configuration().setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, "org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat");
+        final String inputFormatClassNameOrKeyword = parameters.get(IO.reader, this::detectReader).get(0);
+        String inputFormatClassName;
+        if (inputFormatClassNameOrKeyword.equals(IO.graphson))
+            inputFormatClassName = GraphSONInputFormat.class.getName();
+        else if (inputFormatClassNameOrKeyword.equals(IO.gryo))
+            inputFormatClassName = GryoInputFormat.class.getName();
+        else if (inputFormatClassNameOrKeyword.equals(IO.graphml))
+            throw new IllegalStateException("GraphML is not a supported file format for OLAP");
+        else
+            inputFormatClassName = inputFormatClassNameOrKeyword;
+
+        graph.configuration().setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, inputFormatClassName);
         graph.configuration().setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, file);
     }
 
     private void configureForWrite(final Graph graph) {
-        graph.configuration().setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, "org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat");
+        final String outputFormatClassNameOrKeyword = parameters.get(IO.writer, this::detectWriter).get(0);
+        String outputFormatClassName;
+        if (outputFormatClassNameOrKeyword.equals(IO.graphson))
+            outputFormatClassName = GraphSONOutputFormat.class.getName();
+        else if (outputFormatClassNameOrKeyword.equals(IO.gryo))
+            outputFormatClassName = GryoOutputFormat.class.getName();
+        else if (outputFormatClassNameOrKeyword.equals(IO.graphml))
+            throw new IllegalStateException("GraphML is not a supported file format for OLAP");
+        else
+            outputFormatClassName = outputFormatClassNameOrKeyword;
+        
+        graph.configuration().setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, outputFormatClassName);
         graph.configuration().setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, file);
+    }
+
+    private String detectReader() {
+        if (file.endsWith(".kryo"))
+            return GryoInputFormat.class.getName();
+        else if (file.endsWith(".json"))
+            return GraphSONInputFormat.class.getName();
+        else if (file.endsWith(".xml"))
+            throw new IllegalStateException("GraphML is not a supported file format for OLAP");
+        else
+            throw new IllegalStateException("Could not detect the file format - specify the reader explicitly or rename file with a standard extension");
+    }
+
+    private String detectWriter() {
+        if (file.endsWith(".kryo"))
+            return GryoOutputFormat.class.getName();
+        else if (file.endsWith(".json"))
+            return GraphSONOutputFormat.class.getName();
+        else if (file.endsWith(".xml"))
+            throw new IllegalStateException("GraphML is not a supported file format for OLAP");
+        else
+            throw new IllegalStateException("Could not detect the file format - specify the reader explicitly or rename file with a standard extension");
     }
 }

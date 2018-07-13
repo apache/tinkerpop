@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
+import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.commons.configuration.BaseConfiguration;
@@ -131,12 +132,19 @@ public abstract class AbstractGraphProvider implements GraphProvider {
         return methodName.replaceAll("[0-9, -]+$", String.valueOf(random));
     }
 
-    protected void readIntoGraph(final Graph g, final String path) throws IOException {
-        final GraphReader reader = GryoReader.build()
-                .mapper(g.io(GryoIo.build()).mapper().create())
-                .create();
+    /**
+     * Used by the default implementation of {@link AbstractGraphProvider#loadGraphData(Graph, LoadGraphWith, Class, String)}
+     * to read the graph from a Kryo file using the default {@link GryoReader} implementation. If the default
+     * implementation does not work (perhaps a graph implementation needs to register some special {@link IoRegistry}
+     * then this method or its caller should be overridden to suit the implementation.
+     *
+     * @param graph the graph to load to
+     * @param path the path to the file to load into the graph
+     */
+    protected void readIntoGraph(final Graph graph, final String path) throws IOException {
+        final GraphReader reader = GryoReader.build().create();
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream(path)) {
-            reader.readGraph(stream, g);
+            reader.readGraph(stream, graph);
         }
     }
 }

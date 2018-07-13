@@ -18,12 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLResourceAccess;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess;
@@ -33,6 +35,7 @@ import org.junit.runner.RunWith;
 
 import java.io.IOException;
 
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_IO_READ;
 import static org.junit.Assert.assertFalse;
 
 /**
@@ -54,8 +57,8 @@ public abstract class ReadTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Object,Object> get_g_io_read_withXreader_graphmlX(final String fileToRead)  throws IOException;
 
     @Test
-    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-    public void g_readXkryoX() throws IOException {
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_IO_READ)
+    public void g_io_readXkryoX() throws IOException {
         final String fileToRead = TestHelper.generateTempFileFromResource(ReadTest.class, GryoResourceAccess.class, "tinkerpop-modern-v3d0.kryo", "").getAbsolutePath().replace('\\', '/');
         final Traversal<Object,Object> traversal = get_g_io_readXkryoX(fileToRead);
         printTraversalForm(traversal);
@@ -65,7 +68,7 @@ public abstract class ReadTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_IO_READ)
     public void g_io_read_withXreader_gryoX() throws IOException {
         final String fileToRead = TestHelper.generateTempFileFromResource(ReadTest.class, GryoResourceAccess.class, "tinkerpop-modern-v3d0.kryo", "").getAbsolutePath().replace('\\', '/');
         final Traversal<Object,Object> traversal = get_g_io_read_withXreader_gryoX(fileToRead);
@@ -76,8 +79,8 @@ public abstract class ReadTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-    public void g_readXjsonX() throws IOException {
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_IO_READ)
+    public void g_io_readXjsonX() throws IOException {
         final String fileToRead = TestHelper.generateTempFileFromResource(ReadTest.class, GraphSONResourceAccess.class, "tinkerpop-modern-v3d0.json", "").getAbsolutePath().replace('\\', '/');
         final Traversal<Object,Object> traversal = get_g_io_readXjsonX(fileToRead);
         printTraversalForm(traversal);
@@ -87,7 +90,7 @@ public abstract class ReadTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_IO_READ)
     public void g_io_read_withXreader_graphsonX() throws IOException {
         final String fileToRead = TestHelper.generateTempFileFromResource(ReadTest.class, GraphSONResourceAccess.class, "tinkerpop-modern-v3d0.json", "").getAbsolutePath().replace('\\', '/');
         final Traversal<Object,Object> traversal = get_g_io_read_withXreader_graphsonX(fileToRead);
@@ -98,8 +101,8 @@ public abstract class ReadTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-    public void g_readXxmlX() throws IOException {
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_IO_READ)
+    public void g_io_readXxmlX() throws IOException {
         final String fileToRead = TestHelper.generateTempFileFromResource(ReadTest.class, GraphMLResourceAccess.class, "tinkerpop-modern.xml", "").getAbsolutePath().replace('\\', '/');
         final Traversal<Object,Object> traversal = get_g_io_readXxmlX(fileToRead);
         printTraversalForm(traversal);
@@ -109,7 +112,7 @@ public abstract class ReadTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_IO_READ)
     public void g_io_read_withXreader_graphmlX() throws IOException {
         final String fileToRead = TestHelper.generateTempFileFromResource(ReadTest.class, GraphMLResourceAccess.class, "tinkerpop-modern.xml", "").getAbsolutePath().replace('\\', '/');
         final Traversal<Object,Object> traversal = get_g_io_read_withXreader_graphmlX(fileToRead);

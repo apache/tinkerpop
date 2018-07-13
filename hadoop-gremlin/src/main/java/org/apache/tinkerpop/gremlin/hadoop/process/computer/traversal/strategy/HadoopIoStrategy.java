@@ -55,7 +55,7 @@ public final class HadoopIoStrategy extends AbstractTraversalStrategy<TraversalS
             final HadoopIoStep hadoopIoStep = new HadoopIoStep(traversal, readWriting.getFile());
             hadoopIoStep.setMode(readWriting.getMode());
             readWriting.getParameters().getRaw().entrySet().forEach(kv ->
-                    hadoopIoStep.configure(kv.getKey(), kv.getValue())
+                    hadoopIoStep.configure(kv.getKey(), kv.getValue().get(0))
             );
 
             TraversalHelper.replaceStep((Step) readWriting, hadoopIoStep, traversal);
