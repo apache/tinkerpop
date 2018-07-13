@@ -1049,6 +1049,146 @@ inject(1,2).map {it.get() + 1}.map {g.V(it.get()).next()}.values('name')
 
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#inject-E...-++[`inject(Object)`]
 
+[[_gremlin_i_o]]
+[[io-step]]
+=== IO Step
+
+image:gremlin-io.png[width=250,float=left] The task of importing and exporting the data of `Graph` instances is the
+job of the `io()`-step. By default, TinkerPop supports three formats for importing and exporting graph data in
+<<graphml,GraphML>>, <<graphson,GraphSON>>, and <<gryo,Gryo>>.
+
+NOTE: Additional documentation for TinkerPop IO formats can be found in the link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/[IO Reference].
+
+By itself the `io()` step merely configures the kind of importing and exporting that is going
+to occur and it is the follow-on call to the `read()` or `write()` step that determines which of those actions will
+execute. Therefore, a typical usage of the `io()` step would look like this:
+
+[source,java]
+----
+g.io(someInputFile).read()
+g.io(someOutputFile).write()
+----
+
+By default, the `io()` step will try to detect the right file format using the file name extension. To gain greater
+control of the format use the `with()` step modulator to provide further information to `io()`. For example:
+
+[source,java]
+----
+g.io(someInputFile).
+    with(IO.reader, IO.graphson).
+  read()
+g.io(someOutputFile).
+    with(IO.writer,IO.graphml).
+  write()
+----
+
+The `IO` class is a helper that for the `io()` step that provides expressions that can be used to help configure it
+and in this case it allows direct specification of the "reader" or "writer" to use. The "reader" actually refers to
+a `GraphReader` implementation and the `writer" refers to a `GraphWriter` implementation. The implementations of
+those interfaces provided by default are the standard TinkerPop implementations.
+
+That default is an important point to consider for users. The default TinkerPop implementations are not designed with
+massive, complex, parallel bulk loading in mind. They are designed to do single-threaded, OLTP-style loading of data
+in the most generic way possible so as to accommodate the greatest number of graph databases out there. As such, from
+a reading perspective, they work best for small datasets (or perhaps medium datasets where memory is plentiful and
+time is not critical) that are loading to an empty graph - incremental loading is not supported. The story from the
+writing perspective is not that different in there are no parallel operations in play, however streaming the output
+to disk requires a single pass of the data without high memory requirements for larger datasets.
+
+In general, TinkerPop recommends that users examine the native bulk import/export tools of the graph implementation
+that they choose. Those tools will often outperform the `io()` step and perhaps be easier to use with a greater
+feature set. That said, graph providers do have the option to optimize `io()` to back it with their own
+import/export utilities and therefore the default behavior provided by TinkerPop described above might be overridden
+by the graph.
+
+An excellent example of this lies in <<hadoop-gremlin,HadoopGraph>> with <<sparkgraphcomputer,SparkGraphComputer>>
+which replaces the default single-threaded implementation with a more advanced OLAP style bulk import/export
+functionality internally using <<clonevertexprogram,CloneVertexProgram>>. With this model, graphs of arbitrary size
+can be imported/exported assuming that there is a Hadoop `InputFormat` or `OutputFormat` to support it.
+
+IMPORTANT: Remote Gremlin Console users or Gremlin Language Variant (GLV) users (e.g. gremlin-python) who utilize
+the `io()` step should recall that their `read()` or `write()` operation will occur on the server and not locally
+and therefore the file specified for import/export must be something accessible by the server.
+
+[[_graphml_reader_writer]]
+[[graphml]]
+==== GraphML
+
+image:gremlin-graphml.png[width=350,float=left] The link:http://graphml.graphdrawing.org/[GraphML] file format is a
+common XML-based representation of a graph. It is widely supported by graph-related tools and libraries making it a
+solid interchange format for TinkerPop. In other words, if the intent is to work with graph data in conjunction with
+applications outside of TinkerPop, GraphML may be the best choice to do that. Common use cases might be:
+
+* Generate a graph using link:https://networkx.github.io/[NetworkX], export it with GraphML and import it to TinkerPop.
+* Produce a subgraph and export it to GraphML to be consumed by and visualized in link:https://gephi.org/[Gephi].
+* Migrate the data of an entire graph to a different graph database not supported by TinkerPop.
+
+WARNING: GraphML is a "lossy" format in that it only supports primitive values for properties and does not have
+support for `Graph` variables.  It will use `toString` to serialize property values outside of those primitives.
+
+WARNING: GraphML as a specification allows for `<edge>` and `<node>` elements to appear in any order.  Most software
+that writes GraphML (including as TinkerPop's `GraphMLWriter`) write `<node>` elements before `<edge>` elements.  However it
+is important to note that `GraphMLReader` will read this data in order and order can matter.  This is because TinkerPop
+does not allow the vertex label to be changed after the vertex has been created.  Therefore, if an `<edge>` element
+comes before the `<node>`, the label on the vertex will be ignored.  It is thus better to order `<node>` elements in the
+GraphML to appear before all `<edge>` elements if vertex labels are important to the graph.
+
+[source,java]
+----
+g.io("graph.xml").read()
+g.io("graph.xml").write()
+----
+
+NOTE: If using GraphML generated from TinkerPop 2.x, read more about its incompatibilities in the
+link:http://tinkerpop.apache.org/docs/x.y.z/upgrade/#graphml-format[Upgrade Documentation].
+
+[[graphson-reader-writer]]
+[[graphson]]
+==== GraphSON
+
+image:gremlin-graphson.png[width=350,float=left] GraphSON is a link:http://json.org/[JSON]-based format extended
+from earlier versions of TinkerPop. It is important to note that TinkerPop's GraphSON is not backwards compatible
+with prior TinkerPop GraphSON versions. GraphSON has some support from graph-related application outside of TinkerPop,
+but it is generally best used in two cases:
+
+* A text format of the graph or its elements is desired (e.g. debugging, usage in source control, etc.)
+* The graph or its elements need to be consumed by code that is not JVM-based (e.g. JavaScript, Python, .NET, etc.)
+
+[source,java]
+----
+g.io("graph.json").read()
+g.io("graph.json").write()
+----
+
+NOTE: Additional documentation for GraphSON can be found in the link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[IO Reference].
+
+[[gryo-reader-writer]]
+[[gryo]]
+==== Gryo
+
+image:gremlin-kryo.png[width=400,float=left] link:https://github.com/EsotericSoftware/kryo[Kryo] is a popular
+serialization package for the JVM. Gremlin-Kryo is a binary `Graph` serialization format for use on the JVM by JVM
+languages. It is designed to be space efficient, non-lossy and is promoted as the standard format to use when working
+with graph data inside of the TinkerPop stack. A list of common use cases is presented below:
+
+* Migration from one Gremlin Structure implementation to another (e.g. `TinkerGraph` to `Neo4jGraph`)
+* Serialization of individual graph elements to be sent over the network to another JVM.
+* Backups of in-memory graphs or subgraphs.
+
+WARNING: When migrating between Gremlin Structure implementations, Kryo may not lose data, but it is important to
+consider the features of each `Graph` and whether or not the data types supported in one will be supported in the
+other.  Failure to do so, may result in errors.
+
+[source,java]
+----
+g.io("graph.kryo").read()
+g.io("graph.kryo").write()
+----
+
+*Additional References*
+
+link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversalSource.html#io-String...-++[`io(String)`]
+
 [[is-step]]
 === Is Step
 
