@@ -2290,7 +2290,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * This step is used for looping over a some traversal given some break predicate.
+     * This step is used for looping over a traversal given some break predicate.
      *
      * @param repeatTraversal the traversal to repeat over
      * @return the traversal with the appended {@link RepeatStep}
@@ -2303,7 +2303,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * This step is used for looping over a some traversal given some break predicate.
+     * This step is used for looping over a traversal given some break predicate and with a specified loop name.
      *
      * @param repeatTraversal the traversal to repeat over
      * @param loopName The name given to the loop

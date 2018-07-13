@@ -19,8 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.traverser.util;
 
-import org.apache.commons.lang.mutable.MutableShort;
-
 import java.io.Serializable;
 
 /**
@@ -29,7 +27,7 @@ import java.io.Serializable;
 public class LabelledCounter implements Serializable, Cloneable {
 
     private final String label;
-    private final MutableShort count = new MutableShort();
+    private short count = 0;
 
     protected LabelledCounter() {
         label = "";
@@ -40,7 +38,7 @@ public class LabelledCounter implements Serializable, Cloneable {
             throw new NullPointerException("Label is null");
         }
         this.label = label;
-        this.count.setValue(initialCount);
+        this.count = initialCount;
     }
 
     public boolean hasLabel(final String label){
@@ -48,38 +46,38 @@ public class LabelledCounter implements Serializable, Cloneable {
     }
 
     public int count() {
-        return this.count.intValue();
+        return this.count;
     }
 
     public void increment() {
-        this.count.increment();
+        this.count++;
     }
 
     @Override
     public Object clone() {
-        return new LabelledCounter(this.label, this.count.shortValue());
+        return new LabelledCounter(this.label, this.count);
     }
 
     @Override
     public String toString(){
-        return "Step Label: " + label + " Counter: " + count.toString();
+        return "Step Label: " + this.label + " Counter: " + Short.toString(this.count);
     }
 
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof LabelledCounter)) return false;
 
         LabelledCounter that = (LabelledCounter) o;
 
-        if (!this.label.equals(that.label)) return false;
-        return this.count.equals(that.count);
+        if (count != that.count) return false;
+        return label != null ? label.equals(that.label) : that.label == null;
     }
 
     @Override
     public int hashCode() {
-        int result = this.label.hashCode();
-        result = 31 * result + this.count.hashCode();
+        int result = label != null ? label.hashCode() : 0;
+        result = 31 * result + (int) count;
         return result;
     }
 }

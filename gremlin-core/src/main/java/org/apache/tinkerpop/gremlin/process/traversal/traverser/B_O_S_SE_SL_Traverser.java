@@ -18,12 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.traverser;
 
-
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
-import java.util.Random;
+import java.util.Objects;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -132,11 +131,13 @@ public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
 
     @Override
     public int hashCode() {
-        return carriesUnmergeableSack() ? System.identityHashCode(this) : (super.hashCode() ^ this.loops);
+        return carriesUnmergeableSack() ? System.identityHashCode(this) : (super.hashCode() ^ this.loops ^ Objects.hashCode(this.loopName));
     }
 
     protected final boolean equals(final B_O_S_SE_SL_Traverser other) {
-        return super.equals(other) && other.loops == this.loops && !carriesUnmergeableSack();
+        return super.equals(other) && other.loops == this.loops
+                && (this.loopName != null ? this.loopName.equals(other.loopName) : other.loopName == null)
+                && !carriesUnmergeableSack();
     }
 
     @Override

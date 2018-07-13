@@ -343,12 +343,12 @@ Scenario: g_V_repeatXa_outXknows_repeatXb_outXcreatedX_filterXloops_isX0XX_emit_
     | java |
     | java |
 
-Scenario: g_VX6X_repeatXa_bothXcreatedXX_emitXrepeatXb_bothXknowsXX_untilXorXloops_isX2X_loopsXbX_isXloopsXaXXXX_hasXname_vadasXX_dedup_name
+Scenario: g_VX6X_repeatXa_bothXcreatedX_simplePathX_emitXrepeatXb_bothXknowsXX_untilXloopsXbX_asXb_whereXloopsXaX_asXbX_hasXname_vadasXX_dedup_name
   Given the modern graph
   And using the parameter v6Id defined as "v[peter].id"
   And the traversal of
     """
-    g.V(v6Id).repeat("a", __.both("created")).emit(__.repeat("b", __.both("knows")).until(__.or(__.loops().is(2), __.loops("b").is(__.loops("a")))).has("name", "vadas")).dedup().values("name")
+    g.V(v6Id).repeat("a", __.both("created").simplePath()).emit(__.repeat("b", __.both("knows")).until(__.loops("b").as("b").where(__.loops("a").as("b"))).has("name", "vadas")).dedup().values("name")
     """
   When iterated to list
   Then the result should be unordered

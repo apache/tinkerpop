@@ -120,7 +120,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_emit_repeatXa_outXknows_filterXloops_isX0XX_lang();
 
-    public abstract Traversal<Vertex, String> get_g_VX6X_repeatXa_bothXcreatedXX_emitXrepeatXb_bothXknowsXX_untilXorXloops_isX2X_loopsXbX_isXloopsXaXXXX_hasXname_vadasXX_dedup_name(final Object v6Id);
+    public abstract Traversal<Vertex, String> get_g_VX6X_repeatXa_bothXcreatedX_simplePathX_emitXrepeatXb_bothXknowsXX_untilXloopsXbX_asXb_whereXloopsXaX_asXbX_hasXname_vadasXX_dedup_name(final Object v6Id);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -446,8 +446,8 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_VX6X_repeatXa_bothXcreatedXX_emitXrepeatXb_bothXknowsXX_untilXorXloops_isX2X_loopsXbX_isXloopsXaXXXX_hasXname_vadasXX_dedup_name() {
-        final Traversal<Vertex, String> traversal = get_g_VX6X_repeatXa_bothXcreatedXX_emitXrepeatXb_bothXknowsXX_untilXorXloops_isX2X_loopsXbX_isXloopsXaXXXX_hasXname_vadasXX_dedup_name(convertToVertexId("peter"));
+    public void g_VX6X_repeatXa_bothXcreatedX_simplePathX_emitXrepeatXb_bothXknowsXX_untilXloopsXbX_asXb_whereXloopsXaX_asXbX_hasXname_vadasXX_dedup_name() {
+        final Traversal<Vertex, String> traversal = get_g_VX6X_repeatXa_bothXcreatedX_simplePathX_emitXrepeatXb_bothXknowsXX_untilXloopsXbX_asXb_whereXloopsXaX_asXbX_hasXname_vadasXX_dedup_name(convertToVertexId("peter"));
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         String name = traversal.next();
@@ -569,8 +569,8 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VX6X_repeatXa_bothXcreatedXX_emitXrepeatXb_bothXknowsXX_untilXorXloops_isX2X_loopsXbX_isXloopsXaXXXX_hasXname_vadasXX_dedup_name(final Object v6Id) {
-            return g.V(v6Id).repeat("a", both("created")).emit(__.repeat("b", __.both("knows")).until(__.or(loops().is(2), loops("b").is(loops("a")))).has("name", "vadas")).dedup().values("name");
+        public Traversal<Vertex, String> get_g_VX6X_repeatXa_bothXcreatedX_simplePathX_emitXrepeatXb_bothXknowsXX_untilXloopsXbX_asXb_whereXloopsXaX_asXbX_hasXname_vadasXX_dedup_name(final Object v6Id) {
+            return g.V(v6Id).repeat("a", both("created").simplePath()).emit(__.repeat("b", __.both("knows")).until(loops("b").as("b").where(loops("a").as("b"))).has("name", "vadas")).dedup().values("name");
         }
 
         @Override

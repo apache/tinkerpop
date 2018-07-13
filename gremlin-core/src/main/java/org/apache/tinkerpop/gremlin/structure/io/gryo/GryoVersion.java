@@ -116,7 +116,6 @@ import org.apache.tinkerpop.shaded.kryo.KryoSerializable;
 import org.apache.tinkerpop.shaded.kryo.serializers.JavaSerializer;
 import org.javatuples.Pair;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.LabelledCounter;
-import org.apache.commons.lang.mutable.MutableShort;
 import org.apache.commons.collections.map.ReferenceMap;
 import java.util.Stack;
 
@@ -393,9 +392,8 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LP_NL_O_OB_S_SE_SL_Traverser.class, 178));
             add(GryoTypeReg.of(LP_NL_O_OB_P_S_SE_SL_Traverser.class, 179));
             add(GryoTypeReg.of(LabelledCounter.class, 180));
-            add(GryoTypeReg.of(MutableShort.class, 181));
-            add(GryoTypeReg.of(Stack.class, 182));
-            add(GryoTypeReg.of(ReferenceMap.class, 183));                        // ***LAST ID***
+            add(GryoTypeReg.of(Stack.class, 181));
+            add(GryoTypeReg.of(ReferenceMap.class, 182));                        // ***LAST ID***
 
 
             // placeholder serializers for classes that don't live here in core. this will allow them to be used if
@@ -584,9 +582,8 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LP_NL_O_OB_S_SE_SL_Traverser.class, 178));
             add(GryoTypeReg.of(LP_NL_O_OB_P_S_SE_SL_Traverser.class, 179));
             add(GryoTypeReg.of(LabelledCounter.class, 180));
-            add(GryoTypeReg.of(MutableShort.class, 181));
-            add(GryoTypeReg.of(Stack.class, 182));
-            add(GryoTypeReg.of(ReferenceMap.class, 183));                        // ***LAST ID***
+            add(GryoTypeReg.of(Stack.class, 181));
+            add(GryoTypeReg.of(ReferenceMap.class, 182));                        // ***LAST ID***
         }};
     }
 

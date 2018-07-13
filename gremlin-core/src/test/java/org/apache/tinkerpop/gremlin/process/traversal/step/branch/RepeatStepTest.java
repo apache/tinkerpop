@@ -39,7 +39,9 @@ public class RepeatStepTest extends StepTest {
                 __.repeat(out()).times(3),
                 __.repeat(out().as("x")).times(3),
                 __.out().emit().repeat(out()).times(3),
-                __.repeat(out()).until(hasLabel("x"))
+                __.repeat(out()).until(hasLabel("x")),
+                __.repeat("a", __.out()).times(3),
+                __.repeat(out().repeat(out()).times(1)).times(1).limit(1)
         );
     }
 }

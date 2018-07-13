@@ -178,6 +178,8 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         int result = super.hashCode() ^ this.repeatTraversal.hashCode();
         result ^= Boolean.hashCode(this.untilFirst);
         result ^= Boolean.hashCode(this.emitFirst) << 1;
+        if (this.loopName != null)
+            result ^= this.loopName.hashCode();
         if (this.untilTraversal != null)
             result ^= this.untilTraversal.hashCode();
         if (this.emitTraversal != null)

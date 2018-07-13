@@ -37,4 +37,23 @@ public final class LoopsStep<S> extends MapStep<S, Integer> {
     protected Integer map(final Traverser.Admin<S> traverser) {
         return traverser.loops(this.loopName);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof LoopsStep)) return false;
+        if (!super.equals(o)) return false;
+
+        LoopsStep<?> loopsStep = (LoopsStep<?>) o;
+
+        return loopName != null ? loopName.equals(loopsStep.loopName) : loopsStep.loopName == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (loopName != null ? loopName.hashCode() : 0);
+        return result;
+    }
+
 }

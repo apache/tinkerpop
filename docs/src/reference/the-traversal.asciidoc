@@ -2129,8 +2129,14 @@ Therefore, the traverser has seen the vertices: lop, vadas, josh, ripple, and lo
 
 [gremlin-groovy,modern]
 ----
-g.V(1).repeat(out("knows")).until(__.repeat(out("created")).emit(__.has("name", "lop"))) <1>
-g.V(6).repeat('a', both('created')).emit(repeat('b', __.both('knows')).until(or(loops().is(2), loops('b').is(loops('a')))).hasId(2)).dedup() <2>
+g.V(1).
+  repeat(out("knows")).
+    until(repeat(out("created")).emit(has("name", "lop"))) <1>
+g.V(6).
+  repeat('a', both('created').simplePath()).
+    emit(repeat('b', both('knows')).
+           until(loops('b').as('b').where(loops('a').as('b'))).
+  hasId(2)).dedup() <2>
 ----
 
 <1> Starting from vertex 1, keep going taking outgoing 'knows' edges until the vertex was created by 'lop'.
