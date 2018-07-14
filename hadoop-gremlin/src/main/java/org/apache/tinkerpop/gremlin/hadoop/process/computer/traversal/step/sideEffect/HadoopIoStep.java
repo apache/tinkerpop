@@ -16,9 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.process.computer.traversal.step.map;
+package org.apache.tinkerpop.gremlin.hadoop.process.computer.traversal.step.sideEffect;
 
-import org.apache.hadoop.mapred.InputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONOutputFormat;
@@ -34,13 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.step.ReadWriting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
-import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-
-import java.lang.reflect.Method;
 
 /**
  * An OLAP oriented step for doing IO operations with {@link GraphTraversalSource#io(String)} which uses the

@@ -19,15 +19,14 @@
 
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.traversal.strategy;
 
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.traversal.step.map.HadoopIoStep;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.traversal.step.sideEffect.HadoopIoStep;
 import org.apache.tinkerpop.gremlin.process.computer.clone.CloneVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ReadWriting;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.IoStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IoStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
