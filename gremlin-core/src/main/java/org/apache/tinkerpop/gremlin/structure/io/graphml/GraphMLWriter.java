@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -42,7 +43,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
-import org.apache.tinkerpop.gremlin.structure.util.Comparators;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 /**
@@ -58,7 +58,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
  */
 public final class GraphMLWriter implements GraphWriter {
     private final XMLOutputFactory inputFactory = XMLOutputFactory.newInstance();
-    private boolean normalize = false;
+    private boolean normalize = true;
 
     private final Optional<Map<String, String>> vertexKeyTypes;
     private final Optional<Map<String, String>> edgeKeyTypes;
@@ -220,8 +220,8 @@ public final class GraphMLWriter implements GraphWriter {
                             final Map<String, String> identifiedEdgeKeyTypes,
                             final XMLStreamWriter writer) throws XMLStreamException {
         // <key id="weight" for="edge" attr.name="weight" attr.type="float"/>
-        Collection<String> vertexKeySet = getVertexKeysAndNormalizeIfRequired(identifiedVertexKeyTypes);
-        Collection<String> edgeKeySet = getEdgeKeysAndNormalizeIfRequired(identifiedEdgeKeyTypes);
+        Collection<String> vertexKeySet = getDataStructureKeysAndNormalizeIfRequired(identifiedVertexKeyTypes);
+        Collection<String> edgeKeySet = getDataStructureKeysAndNormalizeIfRequired(identifiedEdgeKeyTypes);
         // in case vertex and edge may have the same attribute name, the key id in graphml have to be different
         intersection = CollectionUtils.intersection(vertexKeySet, edgeKeySet);
         // speeding-up later checks
@@ -257,7 +257,31 @@ public final class GraphMLWriter implements GraphWriter {
     private void writeEdges(final XMLStreamWriter writer, final Graph graph) throws XMLStreamException {
         if (normalize) {
             final List<Edge> edges = IteratorUtils.list(graph.edges());
-            Collections.sort(edges, Comparators.ELEMENT_COMPARATOR);
+            Collections.sort(edges, new Comparator<Edge>() {
+                @Override
+                public int compare(Edge o1, Edge o2) {
+                    String o1fullString = o1.id().toString();
+                    String o2fullString = o2.id().toString();
+
+                    // strip away any digit, short for [0-9]
+                     String o1StringPart = o1fullString.replaceAll("\\d", "");
+                     String o2StringPart = o2fullString.replaceAll("\\d", "");
+
+                     // if the string parts are equal in the keys there had to be a number involved
+                     if(o1StringPart.equalsIgnoreCase(o2StringPart))
+                     {
+                         return extractInt(o1fullString) - extractInt(o2fullString);
+                     }
+                     // else compare the strings
+                     return o1fullString.compareTo(o2fullString);
+                 }
+
+                 int extractInt(String s) {
+                     String num = s.replaceAll("\\D", "");
+                     // return 0 if no digits found
+                     return num.isEmpty() ? 0 : Integer.parseInt(num);
+                 }
+             });
 
             for (Edge edge : edges) {
                 writer.writeStartElement(GraphMLTokens.EDGE);
@@ -366,36 +390,69 @@ public final class GraphMLWriter implements GraphWriter {
             while (vertexIterator.hasNext()) {
                 ((Collection<Vertex>) vertices).add(vertexIterator.next());
             }
-            Collections.sort((List<Vertex>) vertices, Comparators.ELEMENT_COMPARATOR);
+            Collections.sort((List<Vertex>) vertices, new Comparator<Vertex>() {
+                @Override
+                public int compare(Vertex o1, Vertex o2) {
+                    String o1fullString = o1.id().toString();
+                    String o2fullString = o2.id().toString();
+
+                    // strip away any digit, short for [0-9]
+                     String o1StringPart = o1fullString.replaceAll("\\d", "");
+                     String o2StringPart = o2fullString.replaceAll("\\d", "");
+
+                     // if the string parts are equal in the keys there had to be a number involved
+                     if(o1StringPart.equalsIgnoreCase(o2StringPart))
+                     {
+                         return extractInt(o1fullString) - extractInt(o2fullString);
+                     }
+                     // else compare the strings
+                     return o1fullString.compareTo(o2fullString);
+                 }
+
+                 int extractInt(String s) {
+                     String num = s.replaceAll("\\D", "");
+                     // return 0 if no digits found
+                     return num.isEmpty() ? 0 : Integer.parseInt(num);
+                 }
+             });
         } else
             vertices = IteratorUtils.list(graph.vertices());
 
         return vertices;
     }
 
-    private Collection<String> getEdgeKeysAndNormalizeIfRequired(final Map<String, String> identifiedEdgeKeyTypes) {
-        final Collection<String> edgeKeySet;
+    private Collection<String> getDataStructureKeysAndNormalizeIfRequired(final Map<String, String> identifiedKeyTypes) {
+        final Collection<String> keySet;
         if (normalize) {
-            edgeKeySet = new ArrayList<>();
-            edgeKeySet.addAll(identifiedEdgeKeyTypes.keySet());
-            Collections.sort((List<String>) edgeKeySet);
-        } else
-            edgeKeySet = identifiedEdgeKeyTypes.keySet();
+            keySet = new ArrayList<>();
+            keySet.addAll(identifiedKeyTypes.keySet());
+            Collections.sort((List<String>) keySet, new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    // strip away any digit, short for [0-9]
+                     String o1StringPart = o1.replaceAll("\\d", "");
+                     String o2StringPart = o2.replaceAll("\\d", "");
 
-        return edgeKeySet;
+                     // if the string parts are equal in the keys there had to be a number involved
+                     if(o1StringPart.equalsIgnoreCase(o2StringPart))
+                     {
+                         return extractInt(o1) - extractInt(o2);
                      }
+                     // else compare the strings
+                     return o1.compareTo(o2);
+                 }
 
-    private Collection<String> getVertexKeysAndNormalizeIfRequired(final Map<String, String> identifiedVertexKeyTypes) {
-        final Collection<String> keyset;
-        if (normalize) {
-            keyset = new ArrayList<>();
-            keyset.addAll(identifiedVertexKeyTypes.keySet());
-            Collections.sort((List<String>) keyset);
-        } else
-            keyset = identifiedVertexKeyTypes.keySet();
-
-        return keyset;
+                 int extractInt(String s) {
+                     String num = s.replaceAll("\\D", "");
+                     // return 0 if no digits found
+                     return num.isEmpty() ? 0 : Integer.parseInt(num);
+                 }
+             });
+        } else {
+            keySet = identifiedKeyTypes.keySet();
         }
+        return keySet;
+    }
 
     private void writeXmlNsAndSchema(final XMLStreamWriter writer) throws XMLStreamException {
         writer.writeAttribute(GraphMLTokens.XMLNS, GraphMLTokens.GRAPHML_XMLNS);
@@ -459,7 +516,7 @@ public final class GraphMLWriter implements GraphWriter {
     }
 
     public static final class Builder implements WriterBuilder<GraphMLWriter> {
-        private boolean normalize = false;
+        private boolean normalize = true;
         private Map<String, String> vertexKeyTypes = null;
         private Map<String, String> edgeKeyTypes = null;
 
