@@ -90,12 +90,12 @@ TinkerGraph over the Grateful Dead graph.
 ----
 graph = TinkerGraph.open()
 g = graph.traversal()
-graph.io(graphml()).readGraph('data/grateful-dead.xml')
+g.io('data/grateful-dead.xml').read()
 clock(1000) {g.V().has('name','Garcia').iterate()} <1>
 graph = TinkerGraph.open()
 g = graph.traversal()
 graph.createIndex('name',Vertex.class)
-graph.io(graphml()).readGraph('data/grateful-dead.xml')
+g.io('data/grateful-dead.xml').read()
 clock(1000){g.V().has('name','Garcia').iterate()} <2>
 ----
 
@@ -158,13 +158,13 @@ cardinality to `list` or else the data will import as `single`.  Consider the fo
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-graph.io(gryo()).readGraph("data/tinkerpop-crew.kryo")
 g = graph.traversal()
+g.io("data/tinkerpop-crew.kryo").read()
 g.V().properties()
 conf = new BaseConfiguration()
 conf.setProperty("gremlin.tinkergraph.defaultVertexPropertyCardinality","list")
 graph = TinkerGraph.open(conf)
-graph.io(gryo()).readGraph("data/tinkerpop-crew.kryo")
 g = graph.traversal()
+g.io("data/tinkerpop-crew.kryo").read()
 g.V().properties()
 ----

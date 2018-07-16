@@ -156,7 +156,7 @@ give it the highest rank. Consider the following example using the Grateful Dead
 
 [gremlin-groovy]
 ----
-graph.io(graphml()).readGraph('data/grateful-dead.xml')
+g.io('data/grateful-dead.xml').read()
 g.V().repeat(groupCount('m').by('name').out()).times(5).cap('m').                <1>
   order(local).by(values, desc).limit(local, 10).next()                          <2>
 g.V().repeat(groupCount('m').by('name').out().timeLimit(100)).times(5).cap('m'). <3>

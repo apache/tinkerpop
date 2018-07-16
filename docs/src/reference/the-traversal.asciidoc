@@ -400,7 +400,8 @@ made more salient on a larger graph. Therefore, the example below leverages the 
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-graph.io(graphml()).readGraph('data/grateful-dead.xml')
+g = graph.traversal()
+g.io('data/grateful-dead.xml').read()
 g = graph.traversal().withoutStrategies(LazyBarrierStrategy) <1>
 clockWithResult(1){g.V().both().both().both().count().next()} <2>
 clockWithResult(1){g.V().repeat(both()).times(3).count().next()} <3>
@@ -422,8 +423,8 @@ optimization scenario with the added benefit of reducing the risk of an out-of-m
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-graph.io(graphml()).readGraph('data/grateful-dead.xml')
-g = graph.traversal() <1>
+g = graph.traversal()  <1>
+g.io('data/grateful-dead.xml').read()
 clockWithResult(1){g.V().both().both().both().count().next()}
 g.V().both().both().both().count().iterate().toString()  <2>
 ----
@@ -1401,8 +1402,8 @@ songs which Jerry Garcia has both sung and written (using the Grateful Dead grap
 
 [gremlin-groovy]
 ----
-graph.io(graphml()).readGraph('data/grateful-dead.xml')
 g = graph.traversal()
+g.io('data/grateful-dead.xml').read()
 g.V().match(
         __.as('a').has('name', 'Garcia'),
         __.as('a').in('writtenBy').as('b'),
@@ -2493,8 +2494,8 @@ ranking.
 
 [gremlin-groovy]
 ----
-graph.io(graphml()).readGraph('data/grateful-dead.xml')
 g = graph.traversal()
+g.io('data/grateful-dead.xml').read()
 g.V().hasLabel('song').out('followedBy').groupCount().by('name').
       order(local).by(values,desc).limit(local, 5)
 g.V().hasLabel('song').out('followedBy').groupCount().by('name').
@@ -2507,8 +2508,8 @@ Similarly, for extracting the values from a path or map.
 
 [gremlin-groovy]
 ----
-graph.io(graphml()).readGraph('data/grateful-dead.xml')
 g = graph.traversal()
+g.io('data/grateful-dead.xml').read()
 g.V().hasLabel('song').out('sungBy').groupCount().by('name') <1>
 g.V().hasLabel('song').out('sungBy').groupCount().by('name').select(values) <2>
 g.V().hasLabel('song').out('sungBy').groupCount().by('name').select(values).unfold().
