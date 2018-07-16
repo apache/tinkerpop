@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoResourceAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -142,9 +143,8 @@ public abstract class AbstractGraphProvider implements GraphProvider {
      * @param path the path to the file to load into the graph
      */
     protected void readIntoGraph(final Graph graph, final String path) throws IOException {
-        final GraphReader reader = GryoReader.build().create();
-        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream(path)) {
-            reader.readGraph(stream, graph);
-        }
+        final String dataFile = TestHelper.generateTempFileFromResource(graph.getClass(),
+                GryoResourceAccess.class, path.substring(path.lastIndexOf(File.separator) + 1), "", false).getAbsolutePath();
+        graph.traversal().io(dataFile).read();
     }
 }
