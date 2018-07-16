@@ -56,7 +56,7 @@ public class IoIntegrateTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_PROPERTY)
     public void shouldHaveSizeOfStarGraphLessThanDetached() throws Exception {
-        final Random random = new Random(95746498l);
+        final Random random = TestHelper.RANDOM;
         final Vertex vertex = graph.addVertex("person");
         for (int i = 0; i < 100; i++) { // vertex properties and meta properties
             vertex.property(VertexProperty.Cardinality.list, UUID.randomUUID().toString(), random.nextDouble(),

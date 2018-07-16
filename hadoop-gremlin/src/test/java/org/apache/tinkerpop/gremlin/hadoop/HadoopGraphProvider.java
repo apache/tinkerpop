@@ -54,7 +54,7 @@ import static org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimSe
  */
 public class HadoopGraphProvider extends AbstractGraphProvider {
 
-    protected static final Random RANDOM = new Random();
+    protected static final Random RANDOM = TestHelper.RANDOM;
     private boolean graphSONInput = false;
 
     public static Map<String, String> PATHS = new HashMap<>();
