@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -51,12 +53,6 @@ import java.lang.reflect.Method;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
-
-    private enum Format {
-        GRYO,
-        GRAPHSON,
-        GRAPHML
-    }
 
     private Parameters parameters = new Parameters();
     private boolean first = true;
@@ -217,6 +213,12 @@ public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
             return GraphMLWriter.build().create();
         else
             throw new IllegalStateException("Could not detect the file format - specify the writer explicitly or rename file with a standard extension");
+    }
+
+    private Configuration getConfFromParameters() {
+        final Configuration conf = new BaseConfiguration();
+        parameters.getRaw().forEach((key, value) -> conf.setProperty(key.toString(), value.get(0)));
+        return conf;
     }
 
     @Override
