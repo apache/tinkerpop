@@ -588,8 +588,8 @@ The Gremlin Server `:remote config` command for the driver has the following con
 !`reset` !Clears any aliases that were supplied in previous configurations of the remote.
 !`show` !Shows the current set of aliases which is returned as a `Map`
 !=========================================================
-|timeout |Specifies the length of time in milliseconds a will wait for a response from the server. Specify "none" to
-have no timeout. By default, this setting uses "none".
+|timeout |Specifies the length of time in milliseconds the Console will wait for a response from the server. Specify
+"none" to have no timeout. By default, this setting uses "none".
 |=========================================================
 
 [[console-aliases]]
