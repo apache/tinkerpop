@@ -447,10 +447,16 @@ to the committer wanting to put code into a release branch.
 * When your fix is complete and ready to merge, issue a link:https://git-scm.com/docs/git-request-pull[pull request].
 ** Be certain that the test suite is passing.
 ** If you updated documentation, be sure that the `process-docs.sh` is building the documentation correctly.
-* Before you can merge your branch into the release branch, you must have at least 3 +1 link:http://www.apache.org/foundation/glossary.html#ConsensusApproval[consensus votes] from other committers.
+* Before you can merge your branch into the release branch, you must have at least 3 +1 link:http://www.apache.org/foundation/glossary.html#ConsensusApproval[consensus votes]
+from other committers OR a single +1 from a committer and a one week review period for objections (i.e. a "cool down
+period") at which point we will assume a lazy consensus.
 ** Please see the Apache Software Foundations regulations regarding link:http://www.apache.org/foundation/voting.html#votes-on-code-modification[Voting on Code Modifications].
+** With the "cool down" process and lazy consensus the single +1 may (should) come from the committer who submitted
+the pull request (in other words, the change submitter and the reviewer are the same person).
+** Committers are trusted with their changes, but are expected to request reviews for complex changes as necessary and
+not rely strictly on lazy consensus.
 * Votes are issued by TinkerPop committers as comments to the pull request.
-* Once 3 +1 votes are received, you are responsible for merging to the release branch and handling any merge conflicts.
+* Once either consensus position is reached, you are responsible for merging to the release branch and handling any merge conflicts.
 ** If there is a higher version release branch that requires your fix (e.g. `3.y-1.z` fix going to a `3.y.z` release), be sure to merge to that release branch as well.
 * Be conscious of deleting your branch if it is no longer going to be used so stale branches don't pollute the repository.
 
@@ -458,6 +464,22 @@ NOTE: These steps also generally apply to external pull requests from those who 
 this case, the person responsible for the merge after voting is typically the first person available
 who is knowledgeable in the area that the pull request affects. Any additional coordination on merging can be handled
 via the pull request comment system.
+
+For those performing reviews as part of this process it is worth noting that the notion of "review" is fairly wide for
+our purposes. TinkerPop has grown into a large and complex code base and very few people (if anyone) is knowledgeable
+on all of its modules. Detailed code reviews might often be difficult or impossible as a result.
+
+To be clear, a "review" need not be specifically about the exact nature of the code. It is perfectly reasonable to
+review (and VOTE) in the following fashion:
+
+* VOTE +1 - ran docker integration tests and everything passes
+* VOTE +1 - reviewed the code in detail - solid pull request
+* VOTE +1 - agree with the principle of this pull request but don't fully understand the code
+* VOTE +1 - read through the updated documentation and understand why this is important, nice
+
+Non-committers are welcome to review and VOTE as well and while their VOTEs are not binding, they will be taken as
+seriously as non-binding VOTEs on releases. Reviewing and VOTEing on pull requests as a non-committer is a great way
+to contribute to the TinkerPop community and get a good pulse on the changes that are upcoming to the framework.
 
 The following exceptions to the RTC (review-then-commit) model presented above are itemized below. It is up to the
 committer to self-regulate as the itemization below is not complete and only hints at the types of commits that do not
