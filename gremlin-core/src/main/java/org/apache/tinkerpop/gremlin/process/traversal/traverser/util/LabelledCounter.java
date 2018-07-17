@@ -64,7 +64,7 @@ public class LabelledCounter implements Serializable, Cloneable {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (!(o instanceof LabelledCounter)) return false;
 

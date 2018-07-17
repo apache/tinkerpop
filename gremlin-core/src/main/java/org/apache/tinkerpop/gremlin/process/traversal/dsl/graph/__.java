@@ -326,7 +326,7 @@ public class __ {
     /**
      * @see GraphTraversal#loops(String)
      */
-    public static <A> GraphTraversal<A, Integer> loops(String loopName) {
+    public static <A> GraphTraversal<A, Integer> loops(final String loopName) {
         return __.<A>start().loops(loopName);
     }
 

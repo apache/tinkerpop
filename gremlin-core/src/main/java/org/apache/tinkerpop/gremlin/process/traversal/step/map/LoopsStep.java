@@ -39,12 +39,12 @@ public final class LoopsStep<S> extends MapStep<S, Integer> {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (!(o instanceof LoopsStep)) return false;
         if (!super.equals(o)) return false;
 
-        LoopsStep<?> loopsStep = (LoopsStep<?>) o;
+        final LoopsStep<?> loopsStep = (LoopsStep<?>) o;
 
         return loopName != null ? loopName.equals(loopsStep.loopName) : loopsStep.loopName == null;
     }

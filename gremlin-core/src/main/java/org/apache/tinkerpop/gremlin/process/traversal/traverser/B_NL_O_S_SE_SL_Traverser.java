@@ -60,7 +60,7 @@ public class B_NL_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
     @Override
     public void initialiseLoops(final String stepLabel, final String loopName) {
         if (this.nestedLoops.empty() || !this.nestedLoops.peek().hasLabel(stepLabel)) {
-            LabelledCounter lc = new LabelledCounter(stepLabel, (short) 0);
+            final LabelledCounter lc = new LabelledCounter(stepLabel, (short) 0);
             this.nestedLoops.push(lc);
             if (loopName != null)
                 this.loopNames.put(loopName, lc);
@@ -90,11 +90,11 @@ public class B_NL_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
         if (this.loopNames != null) {
             clone.loopNames = new ReferenceMap(ReferenceMap.HARD, ReferenceMap.WEAK);
 
-            Iterator loopNamesIterator = this.loopNames.entrySet().iterator();
+            final Iterator loopNamesIterator = this.loopNames.entrySet().iterator();
             while (loopNamesIterator.hasNext()) {
-                ReferenceMap.Entry pair = (ReferenceMap.Entry) loopNamesIterator.next();
+                final ReferenceMap.Entry pair = (ReferenceMap.Entry) loopNamesIterator.next();
 
-                int idx = this.nestedLoops.indexOf(pair.getValue());
+                final int idx = this.nestedLoops.indexOf(pair.getValue());
                 if (idx != -1)
                     clone.loopNames.put(pair.getKey(), clone.nestedLoops.get(idx));
             }
@@ -114,11 +114,11 @@ public class B_NL_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
         if (this.loopNames != null) {
             clone.loopNames = new ReferenceMap(ReferenceMap.HARD, ReferenceMap.WEAK);
 
-            Iterator loopNamesIterator = this.loopNames.entrySet().iterator();
+            final Iterator loopNamesIterator = this.loopNames.entrySet().iterator();
             while (loopNamesIterator.hasNext()) {
-                ReferenceMap.Entry pair = (ReferenceMap.Entry) loopNamesIterator.next();
+                final ReferenceMap.Entry pair = (ReferenceMap.Entry) loopNamesIterator.next();
 
-                int idx = this.nestedLoops.indexOf(pair.getValue());
+                final int idx = this.nestedLoops.indexOf(pair.getValue());
                 if (idx != -1)
                     clone.loopNames.put(pair.getKey(), clone.nestedLoops.get(idx));
             }
@@ -140,7 +140,7 @@ public class B_NL_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
         if (!(o instanceof B_NL_O_S_SE_SL_Traverser)) return false;
         if (!super.equals(o)) return false;
 
-        B_NL_O_S_SE_SL_Traverser<?> that = (B_NL_O_S_SE_SL_Traverser<?>) o;
+        final B_NL_O_S_SE_SL_Traverser<?> that = (B_NL_O_S_SE_SL_Traverser<?>) o;
 
         if (!this.nestedLoops.equals(that.nestedLoops)) return false;
         return this.loopNames != null ? this.loopNames.equals(that.loopNames) : that.loopNames == null;

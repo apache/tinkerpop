@@ -172,7 +172,7 @@ public final class ProjectedTraverser<T, P> implements Traverser.Admin<T> {
     }
 
     @Override
-    public int loops(String loopName) {
+    public int loops(final String loopName) {
         return this.baseTraverser.loops(loopName);
     }
 

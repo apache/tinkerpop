@@ -658,7 +658,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#loops-step" target="_blank">Reference Documentation - Loops Step</a>
      * @since 3.4.0
      */
-    public default GraphTraversal<S, Integer> loops(String loopName) {
+    public default GraphTraversal<S, Integer> loops(final String loopName) {
         this.asAdmin().getBytecode().addStep(Symbols.loops, loopName);
         return this.asAdmin().addStep(new LoopsStep<>(this.asAdmin(), loopName));
     }
