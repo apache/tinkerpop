@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -28,6 +27,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.Comparators;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -51,10 +52,18 @@ import static org.junit.Assume.assumeThat;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class TestHelper {
+    private static final Logger logger = LoggerFactory.getLogger(TestHelper.class);
 
+    public static final Random RANDOM;
     private static final String SEP = File.separator;
     private static final char URL_SEP = '/';
     public static final String TEST_DATA_RELATIVE_DIR = "test-case-data";
+
+    static {
+        final long seed = Long.parseLong(System.getProperty("testSeed", String.valueOf(System.currentTimeMillis())));
+        logger.info("*** THE RANDOM TEST SEED IS {} ***", seed);
+        RANDOM = new Random(seed);
+    }
 
     private TestHelper() {
     }
