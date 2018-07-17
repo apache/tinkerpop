@@ -23,6 +23,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
+import java.util.Objects;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -30,6 +32,7 @@ public class O_OB_S_SE_SL_Traverser<T> extends O_Traverser<T> {
 
     protected Object sack = null;
     protected short loops = 0;  // an optimization hack to use a short internally to save bits :)
+    protected String loopName = null;
     protected transient TraversalSideEffects sideEffects;
     protected String future = HALT;
     protected long bulk = 1L;
@@ -74,7 +77,20 @@ public class O_OB_S_SE_SL_Traverser<T> extends O_Traverser<T> {
     }
 
     @Override
-    public void incrLoops(final String stepLabel) {
+    public int loops(final String loopName) {
+        if (loopName == null || this.loopName != null && this.loopName.equals(loopName))
+            return this.loops;
+        else
+            throw new IllegalArgumentException("Loop name not defined: " + loopName);
+    }
+
+    @Override
+    public void initialiseLoops(final String stepLabel , final String loopName){
+        this.loopName = loopName;
+    }
+
+    @Override
+    public void incrLoops() {
         this.loops++;
     }
 
@@ -140,13 +156,15 @@ public class O_OB_S_SE_SL_Traverser<T> extends O_Traverser<T> {
 
     @Override
     public int hashCode() {
-        return carriesUnmergeableSack() ? System.identityHashCode(this) : (super.hashCode() ^ this.loops);
+        return carriesUnmergeableSack() ? System.identityHashCode(this) : (super.hashCode() ^ this.loops ^ Objects.hashCode(this.loopName));
     }
 
     protected  final boolean equals(final O_OB_S_SE_SL_Traverser other) {
-        return super.equals(other) && other.loops == this.loops && other.future.equals(this.future) &&
-                !carriesUnmergeableSack();
+        return super.equals(other) && other.loops == this.loops && other.future.equals(this.future)
+                && (this.loopName != null ? this.loopName.equals(other.loopName) : other.loopName == null)
+                && !carriesUnmergeableSack();
     }
+
     @Override
     public boolean equals(final Object object) {
         return object instanceof O_OB_S_SE_SL_Traverser && this.equals((O_OB_S_SE_SL_Traverser) object);

@@ -914,6 +914,15 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Adds the loops step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, int> Loops (string loopName)
+        {
+            Bytecode.AddStep("loops", loopName);
+            return Wrap<S, int>(this);
+        }
+
+        /// <summary>
         ///     Adds the map step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal<S, E2> Map<E2> (IFunction function)
@@ -1244,6 +1253,15 @@ namespace Gremlin.Net.Process.Traversal
         {
             Bytecode.AddStep("range", low, high);
             return Wrap<S, E2>(this);
+        }
+
+        /// <summary>
+        ///     Adds the repeat step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, E> Repeat (string loopName, ITraversal repeatTraversal)
+        {
+            Bytecode.AddStep("repeat", loopName, repeatTraversal);
+            return Wrap<S, E>(this);
         }
 
         /// <summary>

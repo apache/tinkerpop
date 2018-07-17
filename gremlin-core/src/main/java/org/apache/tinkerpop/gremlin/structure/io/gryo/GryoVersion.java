@@ -65,12 +65,18 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Repe
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_O_P_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_NL_O_P_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_O_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_NL_O_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_NL_O_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.LP_O_OB_P_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.LP_NL_O_OB_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.LP_O_OB_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.LP_NL_O_OB_P_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_OB_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.NL_O_OB_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.ProjectedTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.IndexedTraverserSet;
@@ -109,6 +115,9 @@ import org.apache.tinkerpop.shaded.kryo.ClassResolver;
 import org.apache.tinkerpop.shaded.kryo.KryoSerializable;
 import org.apache.tinkerpop.shaded.kryo.serializers.JavaSerializer;
 import org.javatuples.Pair;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.LabelledCounter;
+import org.apache.commons.collections.map.ReferenceMap;
+import java.util.Stack;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -294,6 +303,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(O_OB_S_SE_SL_Traverser.class, 89));
             add(GryoTypeReg.of(LP_O_OB_S_SE_SL_Traverser.class, 90));
             add(GryoTypeReg.of(LP_O_OB_P_S_SE_SL_Traverser.class, 91));
+
             add(GryoTypeReg.of(ProjectedTraverser.class, 168));
             add(GryoTypeReg.of(DefaultRemoteTraverser.class, 123, new GryoSerializersV3d0.DefaultRemoteTraverserSerializer()));
 
@@ -373,7 +383,18 @@ public enum GryoVersion {
             add(GryoTypeReg.of(RangeGlobalStep.RangeBiOperator.class, 114));
             add(GryoTypeReg.of(OrderGlobalStep.OrderBiOperator.class, 118));
             add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119));
-            add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));                 // ***LAST ID***
+            add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));
+
+            add(GryoTypeReg.of(B_LP_NL_O_P_S_SE_SL_Traverser.class, 174));
+            add(GryoTypeReg.of(B_NL_O_S_SE_SL_Traverser.class, 175));
+            add(GryoTypeReg.of(B_LP_NL_O_S_SE_SL_Traverser.class, 176));
+            add(GryoTypeReg.of(NL_O_OB_S_SE_SL_Traverser.class, 177));
+            add(GryoTypeReg.of(LP_NL_O_OB_S_SE_SL_Traverser.class, 178));
+            add(GryoTypeReg.of(LP_NL_O_OB_P_S_SE_SL_Traverser.class, 179));
+            add(GryoTypeReg.of(LabelledCounter.class, 180));
+            add(GryoTypeReg.of(Stack.class, 181));
+            add(GryoTypeReg.of(ReferenceMap.class, 182));                        // ***LAST ID***
+
 
             // placeholder serializers for classes that don't live here in core. this will allow them to be used if
             // present  or ignored if the class isn't available. either way the registration numbers are held as
@@ -552,7 +573,17 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MatchStep.CountMatchAlgorithm.class, 160));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 167));
             // skip 171, 172 to sync with tp33
-            add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));                 // ***LAST ID***
+            add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));
+
+            add(GryoTypeReg.of(B_LP_NL_O_P_S_SE_SL_Traverser.class, 174));
+            add(GryoTypeReg.of(B_NL_O_S_SE_SL_Traverser.class, 175));
+            add(GryoTypeReg.of(B_LP_NL_O_S_SE_SL_Traverser.class, 176));
+            add(GryoTypeReg.of(NL_O_OB_S_SE_SL_Traverser.class, 177));
+            add(GryoTypeReg.of(LP_NL_O_OB_S_SE_SL_Traverser.class, 178));
+            add(GryoTypeReg.of(LP_NL_O_OB_P_S_SE_SL_Traverser.class, 179));
+            add(GryoTypeReg.of(LabelledCounter.class, 180));
+            add(GryoTypeReg.of(Stack.class, 181));
+            add(GryoTypeReg.of(ReferenceMap.class, 182));                        // ***LAST ID***
         }};
     }
 

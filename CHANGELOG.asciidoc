@@ -37,6 +37,7 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Fixed a bug in `ReducingBarrierStep`, that returned the provided seed value despite no elements being available.
 * Changed the order of `select()` scopes. The order is now: maps, side-effects, paths.
 * Moved `TraversalEngine` to `gremlin-test` as it has long been only used in testing infrastructure.
+* Nested loop support added allowing `repeat()` steps to be nested.
 * Events from `EventStrategy` raised from "new" mutations will now return a `KeyedVertexProperty` or `KeyedProperty` as is appropriate.
 * `MutationListener#vertexPropertyChanged(Vertex, VertexProperty, Object, Object...)` no longer has a default implementation.
 * Removed previously deprecated methods in `SubgraphStrategy` and `PartitionStrategy` builders.

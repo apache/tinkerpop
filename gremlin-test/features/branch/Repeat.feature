@@ -244,3 +244,113 @@ Feature: Step - repeat()
       | loop |
       | loop  |
       | loop  |
+
+Scenario: g_V_repeatXout_repeatXoutX_timesX1XX_timesX1X_limitX1X_path_by_name
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().repeat(__.out().repeat(__.out()).times(1)).times(1).limit(1).path().by("name")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | marko |
+      | josh |
+      | ripple |
+
+Scenario: g_V_repeatXoutXknowsXX_untilXrepeatXoutXcreatedXX_emitXhasXname_lopXXX_path_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().repeat(__.out("knows")).until(__.repeat(__.out("created")).emit(__.has("name", "lop"))).path().by("name")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | marko |
+      | josh |
+
+Scenario: g_V_repeatXrepeatXout_createdXX_untilXhasXname_rippleXXXemit_lang
+  Given the modern graph
+  And the traversal of
+    """
+    g.V().repeat(__.repeat(__.out("created")).until(__.has("name", "ripple"))).emit().values("lang")
+    """
+  When iterated to list
+  Then the result should be unordered
+    | result |
+    | java |
+
+Scenario: g_V_untilXconstantXtrueXX_repeatXrepeatXout_createdXX_untilXhasXname_rippleXXXemit_lang
+  Given the modern graph
+  And the traversal of
+    """
+    g.V().until(__.constant(true)).repeat(__.repeat(__.out("created")).until(__.has("name", "ripple"))).emit().values("lang")
+    """
+  When iterated to list
+  Then the result should be unordered
+    | result |
+    | java |
+    | java |
+
+Scenario: g_V_emit_repeatXa_outXknows_filterXloops_isX0XX_lang
+  Given the modern graph
+  And the traversal of
+    """
+    g.V().emit().repeat("a", __.out("knows").filter(__.loops("a").is(0))).values("lang")
+    """
+  When iterated to list
+  Then the result should be unordered
+    | result |
+    | java |
+    | java |
+
+Scenario: g_VX3X_repeatXbothX_createdXX_untilXloops_is_40XXemit_repeatXin_knowsXX_emit_loopsXisX1Xdedup_values
+    Given the modern graph
+    And using the parameter v3Id defined as "v[lop].id"
+    And the traversal of
+      """
+      g.V(v3Id).repeat(__.both("created")).until(__.loops().is(40)).emit(__.repeat(__.in("knows")).emit(__.loops().is(1))).dedup().values("name")
+      """
+    When iterated to list
+      Then the result should be unordered
+        | result |
+        | josh |
+        | lop |
+        | ripple |
+
+Scenario: g_VX1X_repeatXrepeatXunionXout_uses_out_traversesXX_whereXloops_isX0X_timesX1X_timeX2X_name
+    Given the crew graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(v1Id).repeat(__.repeat(__.union(__.out("uses"), __.out("traverses")).where(__.loops().is(0))).times(1)).times(2).values("name")
+      """
+    When iterated to list
+      Then the result should be unordered
+        | result |
+        | tinkergraph |
+
+Scenario: g_V_repeatXa_outXknows_repeatXb_outXcreatedX_filterXloops_isX0XX_emit_lang
+  Given the modern graph
+  And the traversal of
+    """
+    g.V().repeat("a", __.out("knows").repeat("b", __.out("created").filter(__.loops("a").is(0))).emit()).emit().values("lang")
+    """
+  When iterated to list
+  Then the result should be unordered
+    | result |
+    | java |
+    | java |
+
+Scenario: g_VX6X_repeatXa_bothXcreatedX_simplePathX_emitXrepeatXb_bothXknowsXX_untilXloopsXbX_asXb_whereXloopsXaX_asXbX_hasXname_vadasXX_dedup_name
+  Given the modern graph
+  And using the parameter v6Id defined as "v[peter].id"
+  And the traversal of
+    """
+    g.V(v6Id).repeat("a", __.both("created").simplePath()).emit(__.repeat("b", __.both("knows")).until(__.loops("b").as("b").where(__.loops("a").as("b"))).has("name", "vadas")).dedup().values("name")
+    """
+  When iterated to list
+  Then the result should be unordered
+    | result |
+    | josh |

@@ -324,6 +324,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#loops(String)
+     */
+    public static <A> GraphTraversal<A, Integer> loops(String loopName) {
+        return __.<A>start().loops(loopName);
+    }
+
+    /**
      * @see GraphTraversal#select(Pop, String)
      */
     public static <A, B> GraphTraversal<A, B> select(final Pop pop, final String selectKey) {
@@ -1027,6 +1034,13 @@ public class __ {
      */
     public static <A> GraphTraversal<A, A> repeat(final Traversal<?, A> traversal) {
         return __.<A>start().repeat(traversal);
+    }
+
+    /**
+     * @see GraphTraversal#repeat(Traversal)
+     */
+    public static <A> GraphTraversal<A, A> repeat(final String loopName, final Traversal<?, A> traversal) {
+        return __.<A>start().repeat(loopName, traversal);
     }
 
     /**
