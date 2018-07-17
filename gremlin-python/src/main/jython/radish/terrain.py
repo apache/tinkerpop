@@ -66,7 +66,17 @@ def prepare_static_traversal_source(features, marker):
 @before.each_scenario
 def prepare_traversal_source(scenario):
     # some tests create data - create a fresh remote to the empty graph and clear that graph prior to each test
-    remote = DriverRemoteConnection('ws://localhost:45940/gremlin', "ggraph", message_serializer=serializer.GraphSONSerializersV3d0())
+    if not("graphson" in world.config.user_data):
+        raise ValueError('test configuration requires setting of --user-data="graphson=*" to one of [v2,v3]')
+
+    if world.config.user_data["graphson"] == "v3":
+        s = serializer.GraphSONSerializersV3d0()
+    elif world.config.user_data["graphson"] == "v2":
+        s = serializer.GraphSONSerializersV2d0()
+    else:
+        raise ValueError('serializer set with --user-data="graphson=v2" must be one of [v2,v3]')
+
+    remote = DriverRemoteConnection('ws://localhost:45940/gremlin', "ggraph", message_serializer=s)
     scenario.context.remote_conn["empty"] = remote
     g = Graph().traversal().withRemote(remote)
     g.V().drop().iterate()

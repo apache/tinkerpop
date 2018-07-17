@@ -71,7 +71,7 @@ setup(
     tests_require=[
         'pytest',
         'mock',
-        'radish-bdd==0.8.0',
+        'radish-bdd==0.8.6',
         'PyHamcrest'
     ],
     install_requires=install_requires,
