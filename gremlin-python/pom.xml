@@ -420,11 +420,19 @@ limitations under the License.
                                             <env key="PYTHONPATH" value=""/>
                                             <arg line="setup.py install"/>
                                         </exec>
+                                        <!-- run for graphson 3.0 -->
                                         <exec executable="env/bin/radish" dir="${project.build.directory}/python2"
                                               failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
                                             <env key="PYTHONIOENCODING" value="utf-8:surrogateescape"/>
-                                            <arg line="-e -t -b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/"/> <!-- -no-line-jump -->
+                                            <arg line="-e -t -b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/ --user-data=&quot;graphson=v2&quot;"/> <!-- -no-line-jump -->
+                                        </exec>
+                                        <!-- run for graphson 3.0 -->
+                                        <exec executable="env/bin/radish" dir="${project.build.directory}/python2"
+                                              failonerror="true">
+                                            <env key="PYTHONPATH" value=""/>
+                                            <env key="PYTHONIOENCODING" value="utf-8:surrogateescape"/>
+                                            <arg line="-e -t -b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/ --user-data=&quot;graphson=v3&quot;"/> <!-- -no-line-jump -->
                                         </exec>
                                     </target>
                                 </configuration>
