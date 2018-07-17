@@ -380,6 +380,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added identifiers to edges in the Kitchen Sink toy graph.
 * Ordered the loading of plugins in the Gremlin Console by their position in the configuration file.
 * Refactored the Gremlin Server integration testing framework and streamlined that infrastructure.
+* Logged the seed used in initializing `Random` for tests.
 * Fixed bug in `GroovyTranslator` that didn't properly handle empty `Map` objects.
 * Added concrete configuration methods to `SparkGraphComputer` to make a more clear API for configuring it.
 * Fixed a bug in `TinkerGraphCountStrategy`, which didn't consider that certain map steps may not emit an element.
