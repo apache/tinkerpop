@@ -205,7 +205,10 @@ final class Handler {
             // occurs when the server shutsdown in a disorderly fashion, otherwise in an orderly shutdown the server
             // should fire off a close message which will properly release the driver.
             super.channelInactive(ctx);
-            throw new IllegalStateException("Connection to server is no longer active");
+
+            // the channel isn't going to get anymore results as it is closed so release all pending requests
+            pending.values().forEach(val -> val.markError(new IllegalStateException("Connection to server is no longer active")));
+            pending.clear();
         }
 
         @Override
@@ -277,7 +280,7 @@ final class Handler {
 
             // serialization exceptions should not close the channel - that's worth a retry
             if (!IteratorUtils.anyMatch(ExceptionUtils.getThrowableList(cause).iterator(), t -> t instanceof SerializationException))
-                ctx.close();
+                if (ctx.channel().isActive()) ctx.close();
         }
     }
 
