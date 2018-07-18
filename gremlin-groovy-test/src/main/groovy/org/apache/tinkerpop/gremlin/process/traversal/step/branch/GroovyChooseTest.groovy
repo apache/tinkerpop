@@ -66,6 +66,11 @@ public abstract class GroovyChooseTest {
         }
 
         @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_hasLabelXpersonX_chooseXageX__optionX27L__constantXyoungXX_optionXnone__constantXoldXX_groupCount() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().hasLabel('person').choose(values('age')).option(27L, constant('young')).option(none, constant('old')).groupCount")
+        }
+
+        @Override
         public Traversal<Integer, List<Integer>> get_g_injectX1X_chooseXisX1X__constantX10Xfold__foldX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.inject(1).choose(__.is(1), __.constant(10).fold(), __.fold())")
         }

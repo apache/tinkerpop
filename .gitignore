@@ -32,3 +32,4 @@ tools/
 *nupkg
 NuGet.Config
 nuget*.exe
+/Dockerfile

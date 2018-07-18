@@ -123,6 +123,21 @@ Feature: Step - choose()
       | m[{"p1":"josh", "p2":"josh"}] |
       | m[{"p1":"peter", "p2":"peter"}] |
 
+  Scenario: g_V_hasLabelXpersonX_chooseXageX__optionX27L__constantXyoungXX_optionXnone__constantXoldXX_groupCount
+    Given the modern graph
+    And using the parameter d27 defined as "d[27].l"
+    And the traversal of
+      """
+      g.V().hasLabel("person").choose(__.values("age")).
+          option(d27, __.constant("young")).
+          option(Pick.none, __.constant("old")).
+        groupCount()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"young":"d[1].l", "old":"d[3].l"}] |
+
   Scenario: g_injectX1X_chooseXisX1X__constantX10Xfold__foldX
     Given the empty graph
     And using the parameter d10 defined as "d[10].i"
