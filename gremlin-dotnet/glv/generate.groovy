@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.P
+import org.apache.tinkerpop.gremlin.process.traversal.IO
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.structure.Direction
 import java.lang.reflect.Modifier
@@ -303,6 +304,9 @@ def binding = ["pmethods": P.class.getMethods().
                             def graphTraversalT2 = getGraphTraversalT2ForT2(t2)
                             return ["methodName": javaMethod.name, "t2":t2, "tParam":tParam, "parameters":parameters, "paramNames":paramNames, "callGenericTypeArg":callGenericTypeArg, "graphTraversalT2":graphTraversalT2]
                         },
+               "io": IO.class.getFields().
+                       sort{ a, b -> a.name <=> b.name }.
+                       collectEntries{ f -> [(f.name) : f.get(null)]},
                "toCSharpMethodName": toCSharpMethodName]
 
 def engine = new groovy.text.GStringTemplateEngine()
@@ -321,6 +325,10 @@ anonymousTraversalFile.newWriter().withWriter{ it << anonymousTraversalTemplate 
 def pTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/P.template")).make(binding)
 def pFile = new File("${projectBaseDir}/src/Gremlin.Net/Process/Traversal/P.cs")
 pFile.newWriter().withWriter{ it << pTemplate }
+
+def ioTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/IO.template")).make(binding)
+def ioFile = new File("${projectBaseDir}/src/Gremlin.Net/Process/Traversal/IO.cs")
+ioFile.newWriter().withWriter{ it << ioTemplate }
 
 
 def createEnum = { enumClass ->

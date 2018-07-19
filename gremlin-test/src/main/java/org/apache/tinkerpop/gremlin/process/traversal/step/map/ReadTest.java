@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -34,8 +35,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
+import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_IO_READ;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 /**
@@ -62,9 +65,14 @@ public abstract class ReadTest extends AbstractGremlinProcessTest {
         final String fileToRead = TestHelper.generateTempFileFromResource(ReadTest.class, GryoResourceAccess.class, "tinkerpop-modern-v3d0.kryo", "").getAbsolutePath().replace('\\', '/');
         final Traversal<Object,Object> traversal = get_g_io_readXkryoX(fileToRead);
         printTraversalForm(traversal);
-        assertFalse(traversal.hasNext());
+        traversal.iterate();
 
-        IoTest.assertModernGraph(graph, false, true);
+        if (graph instanceof RemoteGraph) {
+            assertEquals(6L, g.V().count().next().longValue());
+            assertEquals(6L, g.E().count().next().longValue());
+        } else {
+            IoTest.assertModernGraph(graph, false, true);
+        }
     }
 
     @Test
@@ -73,9 +81,14 @@ public abstract class ReadTest extends AbstractGremlinProcessTest {
         final String fileToRead = TestHelper.generateTempFileFromResource(ReadTest.class, GryoResourceAccess.class, "tinkerpop-modern-v3d0.kryo", "").getAbsolutePath().replace('\\', '/');
         final Traversal<Object,Object> traversal = get_g_io_read_withXreader_gryoX(fileToRead);
         printTraversalForm(traversal);
-        assertFalse(traversal.hasNext());
+        traversal.iterate();
 
-        IoTest.assertModernGraph(graph, false, true);
+        if (graph instanceof RemoteGraph) {
+            assertEquals(6L, g.V().count().next().longValue());
+            assertEquals(6L, g.E().count().next().longValue());
+        } else {
+            IoTest.assertModernGraph(graph, false, true);
+        }
     }
 
     @Test
@@ -84,9 +97,14 @@ public abstract class ReadTest extends AbstractGremlinProcessTest {
         final String fileToRead = TestHelper.generateTempFileFromResource(ReadTest.class, GraphSONResourceAccess.class, "tinkerpop-modern-v3d0.json", "").getAbsolutePath().replace('\\', '/');
         final Traversal<Object,Object> traversal = get_g_io_readXjsonX(fileToRead);
         printTraversalForm(traversal);
-        assertFalse(traversal.hasNext());
+        traversal.iterate();
 
-        IoTest.assertModernGraph(graph, false, true);
+        if (graph instanceof RemoteGraph) {
+            assertEquals(6L, g.V().count().next().longValue());
+            assertEquals(6L, g.E().count().next().longValue());
+        } else {
+            IoTest.assertModernGraph(graph, false, true);
+        }
     }
 
     @Test
@@ -95,9 +113,14 @@ public abstract class ReadTest extends AbstractGremlinProcessTest {
         final String fileToRead = TestHelper.generateTempFileFromResource(ReadTest.class, GraphSONResourceAccess.class, "tinkerpop-modern-v3d0.json", "").getAbsolutePath().replace('\\', '/');
         final Traversal<Object,Object> traversal = get_g_io_read_withXreader_graphsonX(fileToRead);
         printTraversalForm(traversal);
-        assertFalse(traversal.hasNext());
+        traversal.iterate();
 
-        IoTest.assertModernGraph(graph, false, true);
+        if (graph instanceof RemoteGraph) {
+            assertEquals(6L, g.V().count().next().longValue());
+            assertEquals(6L, g.E().count().next().longValue());
+        } else {
+            IoTest.assertModernGraph(graph, false, true);
+        }
     }
 
     @Test
@@ -106,9 +129,14 @@ public abstract class ReadTest extends AbstractGremlinProcessTest {
         final String fileToRead = TestHelper.generateTempFileFromResource(ReadTest.class, GraphMLResourceAccess.class, "tinkerpop-modern.xml", "").getAbsolutePath().replace('\\', '/');
         final Traversal<Object,Object> traversal = get_g_io_readXxmlX(fileToRead);
         printTraversalForm(traversal);
-        assertFalse(traversal.hasNext());
+        traversal.iterate();
 
-        IoTest.assertModernGraph(graph, false, true);
+        if (graph instanceof RemoteGraph) {
+            assertEquals(6L, g.V().count().next().longValue());
+            assertEquals(6L, g.E().count().next().longValue());
+        } else {
+            IoTest.assertModernGraph(graph, false, true);
+        }
     }
 
     @Test
@@ -117,9 +145,14 @@ public abstract class ReadTest extends AbstractGremlinProcessTest {
         final String fileToRead = TestHelper.generateTempFileFromResource(ReadTest.class, GraphMLResourceAccess.class, "tinkerpop-modern.xml", "").getAbsolutePath().replace('\\', '/');
         final Traversal<Object,Object> traversal = get_g_io_read_withXreader_graphmlX(fileToRead);
         printTraversalForm(traversal);
-        assertFalse(traversal.hasNext());
+        traversal.iterate();
 
-        IoTest.assertModernGraph(graph, false, true);
+        if (graph instanceof RemoteGraph) {
+            assertEquals(6L, g.V().count().next().longValue());
+            assertEquals(6L, g.E().count().next().longValue());
+        } else {
+            IoTest.assertModernGraph(graph, false, true);
+        }
     }
 
     public static class Traversals extends ReadTest {

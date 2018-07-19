@@ -187,6 +187,7 @@ function getSandbox(g, parameters) {
     },
     Order: traversalModule.order,
     P: traversalModule.P,
+    IO: traversalModule.IO,
     Pick: traversalModule.pick,
     Pop: traversalModule.pop,
     Scope: traversalModule.scope,
@@ -207,6 +208,7 @@ function translate(traversalText) {
   // Change according to naming convention
   traversalText = traversalText.replace(/\.in\(/g, '.in_(');
   traversalText = traversalText.replace(/\.from\(/g, '.from_(');
+  traversalText = traversalText.replace(/\.with\(/g, '.with_(');
   return traversalText;
 }
 

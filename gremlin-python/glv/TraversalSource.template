@@ -135,6 +135,17 @@ statics.add_static('<%= method %>',<%= method %>)
 <% } %>
 
 '''
+IO
+'''
+
+
+class IO(object):
+<% io.each {k,v -> %>
+    <%= k %> = "<%= v %>"
+<% } %>
+
+
+'''
 TRAVERSER
 '''
 

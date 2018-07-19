@@ -111,6 +111,14 @@ class Traversal {
   };
 }
 
+class IO {
+<% io.each {k,v -> %>
+    static get <%= k %>() {
+        return "<%= v %>"
+    }
+<% } %>
+}
+
 class P {
   /**
    * Represents an operation.
@@ -190,6 +198,7 @@ class EnumValue {
 module.exports = {
   EnumValue,
   P,
+  IO,
   Traversal,
   TraversalSideEffects,
   Traverser<%

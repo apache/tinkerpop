@@ -145,6 +145,6 @@ public abstract class AbstractGraphProvider implements GraphProvider {
     protected void readIntoGraph(final Graph graph, final String path) throws IOException {
         final String dataFile = TestHelper.generateTempFileFromResource(graph.getClass(),
                 GryoResourceAccess.class, path.substring(path.lastIndexOf(File.separator) + 1), "", false).getAbsolutePath();
-        graph.traversal().io(dataFile).read();
+        graph.traversal().io(dataFile).read().iterate();
     }
 }

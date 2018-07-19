@@ -305,6 +305,25 @@ statics.add_static('without',without)
 
 
 '''
+IO
+'''
+
+
+class IO(object):
+
+    graphml = "graphml"
+
+    graphson = "graphson"
+
+    gryo = "gryo"
+
+    reader = "~tinkerpop.io.reader"
+
+    writer = "~tinkerpop.io.writer"
+
+
+
+'''
 TRAVERSER
 '''
 
