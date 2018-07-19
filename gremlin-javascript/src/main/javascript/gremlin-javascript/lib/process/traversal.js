@@ -129,6 +129,10 @@ class IO {
         return "~tinkerpop.io.reader"
     }
 
+    static get registry() {
+        return "~tinkerpop.io.registry"
+    }
+
     static get writer() {
         return "~tinkerpop.io.writer"
     }

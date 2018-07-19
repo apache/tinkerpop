@@ -319,6 +319,8 @@ class IO(object):
 
     reader = "~tinkerpop.io.reader"
 
+    registry = "~tinkerpop.io.registry"
+
     writer = "~tinkerpop.io.writer"
 
 

@@ -1256,20 +1256,20 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
-        ///     Adds the repeat step to this <see cref="GraphTraversal{SType, EType}" />.
-        /// </summary>
-        public GraphTraversal<S, E> Repeat (string loopName, ITraversal repeatTraversal)
-        {
-            Bytecode.AddStep("repeat", loopName, repeatTraversal);
-            return Wrap<S, E>(this);
-        }
-
-        /// <summary>
         ///     Adds the read step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal<S, E> Read ()
         {
             Bytecode.AddStep("read");
+            return Wrap<S, E>(this);
+        }
+
+        /// <summary>
+        ///     Adds the repeat step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, E> Repeat (string loopName, ITraversal repeatTraversal)
+        {
+            Bytecode.AddStep("repeat", loopName, repeatTraversal);
             return Wrap<S, E>(this);
         }
 
@@ -1700,15 +1700,6 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal<S, E> Where (ITraversal whereTraversal)
         {
             Bytecode.AddStep("where", whereTraversal);
-            return Wrap<S, E>(this);
-        }
-
-        /// <summary>
-        ///     Adds the with step to this <see cref="GraphTraversal{SType, EType}" />.
-        /// </summary>
-        public GraphTraversal<S, E> With (string key, object value)
-        {
-            Bytecode.AddStep("with", key, value);
             return Wrap<S, E>(this);
         }
 

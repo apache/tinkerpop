@@ -31,10 +31,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementExce
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
+import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -46,6 +49,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Handles read and write operations into the {@link Graph}.
@@ -138,15 +144,19 @@ public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
      * extension or simply uses configurations provided by the user on the parameters given to the step.
      */
     private GraphReader constructReader() {
-        final Object objectOrClass = parameters.get(IO.reader, this::detectReader).get(0);
+        final Object objectOrClass = parameters.get(IO.reader, this::detectFileType).get(0);
         if (objectOrClass instanceof GraphReader)
             return (GraphReader) objectOrClass;
         else if (objectOrClass instanceof String) {
-            if (objectOrClass.equals(IO.graphson))
-                return GraphSONReader.build().create();
-            else if (objectOrClass.equals(IO.gryo))
-                return GryoReader.build().create();
-            else if (objectOrClass.equals(IO.graphml))
+            if (objectOrClass.equals(IO.graphson)) {
+                final GraphSONMapper.Builder builder = GraphSONMapper.build();
+                detectRegistries().forEach(builder::addRegistry);
+                return GraphSONReader.build().mapper(builder.create()).create();
+            } else if (objectOrClass.equals(IO.gryo)){
+                final GryoMapper.Builder builder = GryoMapper.build();
+                detectRegistries().forEach(builder::addRegistry);
+                return GryoReader.build().mapper(builder.create()).create();
+            } else if (objectOrClass.equals(IO.graphml))
                 return GraphMLReader.build().create();
             else {
                 try {
@@ -163,31 +173,24 @@ public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
         }
     }
 
-    private GraphReader detectReader() {
-        if (file.endsWith(".kryo"))
-            return GryoReader.build().create();
-        else if (file.endsWith(".json"))
-            return GraphSONReader.build().create();
-        else if (file.endsWith(".xml"))
-            return GraphMLReader.build().create();
-        else
-            throw new IllegalStateException("Could not detect the file format - specify the reader explicitly or rename file with a standard extension");
-    }
-
     /**
      * Builds a {@link GraphWriter} instance to use. Attempts to detect the file format to be write using the file
      * extension or simply uses configurations provided by the user on the parameters given to the step.
      */
     private GraphWriter constructWriter() {
-        final Object objectOrClass = parameters.get(IO.writer, this::detectWriter).get(0);
+        final Object objectOrClass = parameters.get(IO.writer, this::detectFileType).get(0);
         if (objectOrClass instanceof GraphWriter)
             return (GraphWriter) objectOrClass;
         else if (objectOrClass instanceof String) {
-            if (objectOrClass.equals(IO.graphson))
-                return GraphSONWriter.build().create();
-            else if (objectOrClass.equals(IO.gryo))
-                return GryoWriter.build().create();
-            else if (objectOrClass.equals(IO.graphml))
+            if (objectOrClass.equals(IO.graphson)) {
+                final GraphSONMapper.Builder builder = GraphSONMapper.build();
+                detectRegistries().forEach(builder::addRegistry);
+                return GraphSONWriter.build().mapper(builder.create()).create();
+            } else if (objectOrClass.equals(IO.gryo)){
+                final GryoMapper.Builder builder = GryoMapper.build();
+                detectRegistries().forEach(builder::addRegistry);
+                return GryoWriter.build().mapper(builder.create()).create();
+            }else if (objectOrClass.equals(IO.graphml))
                 return GraphMLWriter.build().create();
             else {
                 try {
@@ -204,21 +207,31 @@ public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
         }
     }
 
-    private GraphWriter detectWriter() {
+    private String detectFileType() {
         if (file.endsWith(".kryo"))
-            return GryoWriter.build().create();
+            return IO.gryo;
         else if (file.endsWith(".json"))
-            return GraphSONWriter.build().create();
+            return IO.graphson;
         else if (file.endsWith(".xml"))
-            return GraphMLWriter.build().create();
+            return IO.graphml;
         else
             throw new IllegalStateException("Could not detect the file format - specify the writer explicitly or rename file with a standard extension");
     }
 
-    private Configuration getConfFromParameters() {
-        final Configuration conf = new BaseConfiguration();
-        parameters.getRaw().forEach((key, value) -> conf.setProperty(key.toString(), value.get(0)));
-        return conf;
+    private List<IoRegistry> detectRegistries() {
+        final List<Object> k = parameters.get(IO.registry, Collections::emptyList);
+        return parameters.get(IO.registry, null).stream().map(cn -> {
+            try {
+                if (cn instanceof IoRegistry)
+                    return (IoRegistry) cn;
+                else {
+                    final Class<?> clazz = Class.forName(cn.toString());
+                    return (IoRegistry) clazz.getMethod("instance").invoke(null);
+                }
+            } catch (Exception ex) {
+                throw new IllegalStateException(ex);
+            }
+        }).collect(Collectors.toList());
     }
 
     @Override

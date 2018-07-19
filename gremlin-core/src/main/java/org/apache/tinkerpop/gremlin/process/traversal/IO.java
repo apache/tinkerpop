@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
+import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
@@ -73,4 +74,10 @@ public class IO {
      * the file extension provided to it.
      */
     public static final String writer = Graph.Hidden.hide("tinkerpop.io.writer");
+
+    /**
+     * A key that identifies the fully qualified class names of {@link IoRegistry} instances to use. May be specified
+     * multiple times (i.e. once for each registry) using the {@link GraphTraversal#with(String, Object)} modulator.
+     */
+    public static final String registry = Graph.Hidden.hide("tinkerpop.io.registry");
 }

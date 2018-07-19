@@ -46,6 +46,8 @@ namespace Gremlin.Net.Process.Traversal
         
             public const String reader = "~tinkerpop.io.reader";
         
+            public const String registry = "~tinkerpop.io.registry";
+        
             public const String writer = "~tinkerpop.io.writer";
         
     }
