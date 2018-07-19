@@ -401,7 +401,7 @@ made more salient on a larger graph. Therefore, the example below leverages the 
 ----
 graph = TinkerGraph.open()
 g = graph.traversal()
-g.io('data/grateful-dead.xml').read()
+g.io('data/grateful-dead.xml').read().iterate()
 g = graph.traversal().withoutStrategies(LazyBarrierStrategy) <1>
 clockWithResult(1){g.V().both().both().both().count().next()} <2>
 clockWithResult(1){g.V().repeat(both()).times(3).count().next()} <3>
@@ -424,7 +424,7 @@ optimization scenario with the added benefit of reducing the risk of an out-of-m
 ----
 graph = TinkerGraph.open()
 g = graph.traversal()  <1>
-g.io('data/grateful-dead.xml').read()
+g.io('data/grateful-dead.xml').read().iterate()
 clockWithResult(1){g.V().both().both().both().count().next()}
 g.V().both().both().both().count().iterate().toString()  <2>
 ----
@@ -1066,9 +1066,12 @@ execute. Therefore, a typical usage of the `io()` step would look like this:
 
 [source,java]
 ----
-g.io(someInputFile).read()
-g.io(someOutputFile).write()
+g.io(someInputFile).read().iterate()
+g.io(someOutputFile).write().iterate()
 ----
+
+IMPORTANT: The commands above are still traversals and therefore require iteration to be executed, hence the use of
+`iterate()` as a termination step.
 
 By default, the `io()` step will try to detect the right file format using the file name extension. To gain greater
 control of the format use the `with()` step modulator to provide further information to `io()`. For example:
@@ -1077,13 +1080,13 @@ control of the format use the `with()` step modulator to provide further informa
 ----
 g.io(someInputFile).
     with(IO.reader, IO.graphson).
-  read()
+  read().iterate()
 g.io(someOutputFile).
     with(IO.writer,IO.graphml).
-  write()
+  write().iterate()
 ----
 
-The `IO` class is a helper that for the `io()` step that provides expressions that can be used to help configure it
+The `IO` class is a helper for the `io()` step that provides expressions that can be used to help configure it
 and in this case it allows direct specification of the "reader" or "writer" to use. The "reader" actually refers to
 a `GraphReader` implementation and the `writer" refers to a `GraphWriter` implementation. The implementations of
 those interfaces provided by default are the standard TinkerPop implementations.
@@ -1136,8 +1139,8 @@ GraphML to appear before all `<edge>` elements if vertex labels are important to
 
 [source,java]
 ----
-g.io("graph.xml").read()
-g.io("graph.xml").write()
+g.io("graph.xml").read().iterate()
+g.io("graph.xml").write().iterate()
 ----
 
 NOTE: If using GraphML generated from TinkerPop 2.x, read more about its incompatibilities in the
@@ -1157,8 +1160,8 @@ but it is generally best used in two cases:
 
 [source,java]
 ----
-g.io("graph.json").read()
-g.io("graph.json").write()
+g.io("graph.json").read().iterate()
+g.io("graph.json").write().iterate()
 ----
 
 NOTE: Additional documentation for GraphSON can be found in the link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[IO Reference].
@@ -1182,8 +1185,8 @@ other.  Failure to do so, may result in errors.
 
 [source,java]
 ----
-g.io("graph.kryo").read()
-g.io("graph.kryo").write()
+g.io("graph.kryo").read().iterate()
+g.io("graph.kryo").write().iterate()
 ----
 
 *Additional References*
@@ -1403,7 +1406,7 @@ songs which Jerry Garcia has both sung and written (using the Grateful Dead grap
 [gremlin-groovy]
 ----
 g = graph.traversal()
-g.io('data/grateful-dead.xml').read()
+g.io('data/grateful-dead.xml').read().iterate()
 g.V().match(
         __.as('a').has('name', 'Garcia'),
         __.as('a').in('writtenBy').as('b'),
@@ -2495,7 +2498,7 @@ ranking.
 [gremlin-groovy]
 ----
 g = graph.traversal()
-g.io('data/grateful-dead.xml').read()
+g.io('data/grateful-dead.xml').read().iterate()
 g.V().hasLabel('song').out('followedBy').groupCount().by('name').
       order(local).by(values,desc).limit(local, 5)
 g.V().hasLabel('song').out('followedBy').groupCount().by('name').
@@ -2509,7 +2512,7 @@ Similarly, for extracting the values from a path or map.
 [gremlin-groovy]
 ----
 g = graph.traversal()
-g.io('data/grateful-dead.xml').read()
+g.io('data/grateful-dead.xml').read().iterate()
 g.V().hasLabel('song').out('sungBy').groupCount().by('name') <1>
 g.V().hasLabel('song').out('sungBy').groupCount().by('name').select(values) <2>
 g.V().hasLabel('song').out('sungBy').groupCount().by('name').select(values).unfold().

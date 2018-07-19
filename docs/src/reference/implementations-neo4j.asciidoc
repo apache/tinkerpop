@@ -94,7 +94,7 @@ labels), a linear scan of the vertex-label partition is still faster than a line
 ----
 graph = Neo4jGraph.open('/tmp/neo4j')
 g = graph.traversal()
-g.io('data/grateful-dead.xml').read()
+g.io('data/grateful-dead.xml').read().iterate()
 g.tx().commit()
 clock(1000) {g.V().hasLabel('artist').has('name','Garcia').iterate()}  <1>
 graph.cypher("CREATE INDEX ON :artist(name)") <2>
@@ -162,7 +162,7 @@ It is possible to leverage Cypher from within Gremlin by using the `Neo4jGraph.c
 ----
 graph = Neo4jGraph.open('/tmp/neo4j')
 g = graph.traversal()
-g.io('data/tinkerpop-modern.kryo').read()
+g.io('data/tinkerpop-modern.kryo').read().iterate()
 graph.cypher('MATCH (a {name:"marko"}) RETURN a')
 graph.cypher('MATCH (a {name:"marko"}) RETURN a').select('a').out('knows').values('name')
 graph.close()
