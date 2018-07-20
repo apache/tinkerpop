@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.hadoop.process.computer.traversal.strategy;
 
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.traversal.step.sideEffect.HadoopIoStep;
 import org.apache.tinkerpop.gremlin.process.computer.clone.CloneVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -29,6 +30,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.ReadWriting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IoStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * The default implementation of the {@link IoStep} is a single threaded operation and doesn't properly take into
@@ -48,16 +54,20 @@ public final class HadoopIoStrategy extends AbstractTraversalStrategy<TraversalS
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        // replace IoStep steps with hadoop specific one
-        if (traversal.getStartStep() instanceof IoStep) {
-            final ReadWriting readWriting = (ReadWriting) traversal.getStartStep();
-            final HadoopIoStep hadoopIoStep = new HadoopIoStep(traversal, readWriting.getFile());
-            hadoopIoStep.setMode(readWriting.getMode());
-            readWriting.getParameters().getRaw().entrySet().forEach(kv ->
-                    hadoopIoStep.configure(kv.getKey(), kv.getValue().get(0))
-            );
+        // VertexProgramStrategy should wrap up the IoStep in a TraversalVertexProgramStep. use that to grab the
+        // GraphComputer that was injected in there and push that in to the HadoopIoStep. this step pattern match
+        // is fairly specific and since you really can't chain together steps after io() this approach should work
+        if (traversal.getStartStep() instanceof TraversalVertexProgramStep) {
+            final TraversalVertexProgramStep tvp = (TraversalVertexProgramStep) traversal.getStartStep();
+            if (tvp.computerTraversal.get().getStartStep() instanceof ReadWriting) {
+                final ReadWriting readWriting = (ReadWriting) tvp.computerTraversal.get().getStartStep();
+                final HadoopIoStep hadoopIoStep = new HadoopIoStep(traversal, readWriting.getFile());
+                hadoopIoStep.setMode(readWriting.getMode());
+                hadoopIoStep.setComputer(tvp.getComputer());
+                readWriting.getParameters().getRaw().forEach((key, value) -> value.forEach(v -> hadoopIoStep.configure(key, v)));
 
-            TraversalHelper.replaceStep((Step) readWriting, hadoopIoStep, traversal);
+                TraversalHelper.replaceStep(tvp, hadoopIoStep, traversal);
+            }
         }
     }
 

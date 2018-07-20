@@ -101,23 +101,21 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
 
         // wrap all non-VertexComputing steps into a TraversalVertexProgramStep
         currentStep = traversal.getStartStep();
-        if (!(currentStep instanceof ReadWriting)) {
+        while (!(currentStep instanceof EmptyStep)) {
+            final Traversal.Admin<?, ?> computerTraversal = new DefaultTraversal<>();
+            final Step<?, ?> firstLegalOLAPStep = getFirstLegalOLAPStep(currentStep);
+            final Step<?, ?> lastLegalOLAPStep = getLastLegalOLAPStep(currentStep);
+            if (!(firstLegalOLAPStep instanceof EmptyStep)) {
+                final int index = TraversalHelper.stepIndex(firstLegalOLAPStep, traversal);
+                TraversalHelper.removeToTraversal(firstLegalOLAPStep, lastLegalOLAPStep.getNextStep(), (Traversal.Admin) computerTraversal);
+                final TraversalVertexProgramStep traversalVertexProgramStep = new TraversalVertexProgramStep(traversal, computerTraversal);
+                traversal.addStep(index, traversalVertexProgramStep);
+            }
+            currentStep = traversal.getStartStep();
             while (!(currentStep instanceof EmptyStep)) {
-                final Traversal.Admin<?, ?> computerTraversal = new DefaultTraversal<>();
-                final Step<?, ?> firstLegalOLAPStep = getFirstLegalOLAPStep(currentStep);
-                final Step<?, ?> lastLegalOLAPStep = getLastLegalOLAPStep(currentStep);
-                if (!(firstLegalOLAPStep instanceof EmptyStep)) {
-                    final int index = TraversalHelper.stepIndex(firstLegalOLAPStep, traversal);
-                    TraversalHelper.removeToTraversal(firstLegalOLAPStep, lastLegalOLAPStep.getNextStep(), (Traversal.Admin) computerTraversal);
-                    final TraversalVertexProgramStep traversalVertexProgramStep = new TraversalVertexProgramStep(traversal, computerTraversal);
-                    traversal.addStep(index, traversalVertexProgramStep);
-                }
-                currentStep = traversal.getStartStep();
-                while (!(currentStep instanceof EmptyStep)) {
-                    if (!(currentStep instanceof VertexComputing))
-                        break;
-                    currentStep = currentStep.getNextStep();
-                }
+                if (!(currentStep instanceof VertexComputing))
+                    break;
+                currentStep = currentStep.getNextStep();
             }
         }
 
