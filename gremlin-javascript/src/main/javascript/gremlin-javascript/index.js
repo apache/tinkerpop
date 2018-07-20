@@ -54,6 +54,7 @@ module.exports = {
     direction: t.direction,
     operator: t.operator,
     order: t.order,
+    pick: t.pick,
     pop: t.pop,
     scope: t.scope,
     t: t.t,
