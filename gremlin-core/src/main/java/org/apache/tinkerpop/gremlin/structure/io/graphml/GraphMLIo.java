@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphml;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
@@ -38,9 +37,7 @@ import java.util.function.Consumer;
  * such things.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.4.0, replaced by {@link GraphTraversalSource#io(String)}.
  */
-@Deprecated
 public final class GraphMLIo implements Io<GraphMLReader.Builder, GraphMLWriter.Builder, GraphMLMapper.Builder> {
     private final Graph graph;
     private Optional<Consumer<Mapper.Builder>> onMapper;

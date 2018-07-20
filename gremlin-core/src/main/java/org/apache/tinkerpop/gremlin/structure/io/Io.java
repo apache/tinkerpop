@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.io.IOException;
@@ -32,9 +31,7 @@ import java.util.function.Consumer;
  * internal {@link Mapper} (if the format has such capability).
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.4.0, replaced by {@link GraphTraversalSource#io(String)}.
  */
-@Deprecated
 public interface Io<R extends GraphReader.ReaderBuilder, W extends GraphWriter.WriterBuilder, M extends Mapper.Builder> {
 
     /**
