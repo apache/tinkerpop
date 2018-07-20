@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IoStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
@@ -46,7 +47,7 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
 
     private static final ComputerVerificationStrategy INSTANCE = new ComputerVerificationStrategy();
     private static final Set<Class<?>> UNSUPPORTED_STEPS = new HashSet<>(Arrays.asList(
-            InjectStep.class, Mutating.class, SubgraphStep.class, ComputerResultStep.class
+            InjectStep.class, Mutating.class, SubgraphStep.class, ComputerResultStep.class, IoStep.class
     ));
 
     private ComputerVerificationStrategy() {
