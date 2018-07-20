@@ -1114,6 +1114,36 @@ IMPORTANT: Remote Gremlin Console users or Gremlin Language Variant (GLV) users 
 the `io()` step should recall that their `read()` or `write()` operation will occur on the server and not locally
 and therefore the file specified for import/export must be something accessible by the server.
 
+GraphSON and Gryo formats are extensible allowing users and graph providers to extend supported serialization options.
+These extensions are exposed through `IoRegistry` implementations. To apply an `IoRegistry` use the `with()` option
+and the `IO.registry` key, where the value is either an actual `IoRegistry` instance or the fully qualified class
+name of one.
+
+[source,java]
+----
+g.io(someInputFile).
+    with(IO.reader, IO.gryo).
+    with(IO.registry, TinkerIoRegistryV3d0.instance())
+  read().iterate()
+g.io(someOutputFile).
+    with(IO.writer,IO.graphson).
+    with(IO.registry, "org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3d0")
+  write().iterate()
+----
+
+GLVs will obviously always be forced to use the latter form as they can't explicitly create an instance of an
+`IoRegistry` to pass to the server (nor are `IoRegistry` instances necessarily serializable).
+
+The version of the formats (e.g. GraphSON 2.0 or 3.0) utilized by `io()` is determined entirely by the `IO.reader` and
+`IO.writer` configurations or their defaults. The defaults will always be the latest version for the current release
+of TinkerPop. It is also possible for graph providers to override these defaults, so consult the documentation of the
+underlying graph database in use for any details on that.
+
+For more advanced configuration of `GraphReader` and `GraphWriter` operations (e.g. normalized output for GraphSON,
+disabling class registrations for Gryo, etc.) then construct the appropriate `GraphReader` and `GraphWriter` using
+the `build()` method on their implementations and use it directly. It can be passed directly to the `IO.reader` or
+`IO.writer` options. Obviously, these are JVM based operations and thus not available to GLVs as portable features.
+
 [[_graphml_reader_writer]]
 [[graphml]]
 ==== GraphML
