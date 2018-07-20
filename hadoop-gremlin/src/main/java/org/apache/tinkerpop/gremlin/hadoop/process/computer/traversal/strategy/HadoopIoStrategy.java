@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ReadWriting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IoStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Arrays;
@@ -54,6 +55,11 @@ public final class HadoopIoStrategy extends AbstractTraversalStrategy<TraversalS
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
+        // since hadoopgraph can't be modified we can't try to use the existing IoStep for standard processing
+        // without graphcomputer
+        if (traversal.getStartStep() instanceof IoStep)
+            throw new VerificationException("HadoopGraph requires a GraphComputer for io() step", traversal);
+
         // VertexProgramStrategy should wrap up the IoStep in a TraversalVertexProgramStep. use that to grab the
         // GraphComputer that was injected in there and push that in to the HadoopIoStep. this step pattern match
         // is fairly specific and since you really can't chain together steps after io() this approach should work
