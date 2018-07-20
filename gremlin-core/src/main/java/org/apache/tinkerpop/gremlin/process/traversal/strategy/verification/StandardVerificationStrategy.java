@@ -84,8 +84,10 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
             throw new VerificationException("The profile()-Step cannot be specified multiple times.", traversal);
         }
 
-        if (traversal.getStartStep() instanceof ReadWriting && traversal.getSteps().size() != 1) {
-            if (TraversalHelper.getStepsOfClass(NoneStep.class, traversal).size() != traversal.getSteps().size() - 1)
+        if (traversal.getStartStep() instanceof ReadWriting && !endStep.equals(traversal.getStartStep())) {
+            final int total = TraversalHelper.getStepsOfClass(NoneStep.class, traversal).size() +
+                    TraversalHelper.getStepsOfClass(RequirementsStep.class, traversal).size() + 1;
+            if (total != traversal.getSteps().size())
                 throw new VerificationException("The io() step must be the first and only step in the traversal - it cannot be used with other steps", traversal);
         }
     }
