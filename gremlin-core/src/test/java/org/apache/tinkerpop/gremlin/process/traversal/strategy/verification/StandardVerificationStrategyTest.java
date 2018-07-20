@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -50,7 +51,11 @@ public class StandardVerificationStrategyTest {
                 {"__.repeat(out().fold().unfold()).times(2)", repeat(out().fold().unfold()).times(2), false},
                 {"__.repeat(sum()).times(2)", repeat(sum()).times(2), false},
                 {"__.repeat(out().count())", repeat(out().count()), false},
+                {"__.io().read().V()", EmptyGraph.instance().traversal().io("junk.kryo").read().V(), false},
+                {"__.io().write().V()", EmptyGraph.instance().traversal().io("junk.kryo").write().V(), false},
                 // traversals that should pass verification
+                {"__.io().read().V().none()", EmptyGraph.instance().traversal().io("junk.kryo").read().none(), true},
+                {"__.io().write().V().none()", EmptyGraph.instance().traversal().io("junk.kryo").write().none(), true},
                 {"__.V().profile()",
                         __.V().profile(), true},
                 {"__.V().profile('metrics').cap('metrics')",
