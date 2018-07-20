@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.computer.clone.CloneVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ReadWriting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
@@ -37,7 +38,9 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 /**
  * An OLAP oriented step for doing IO operations with {@link GraphTraversalSource#io(String)} which uses the
- * {@link CloneVertexProgram} for its implementation.
+ * {@link CloneVertexProgram} for its implementation. Standard Hadoop OLAP configurations can be passed using the
+ * {@link GraphTraversal#with(String, Object)} step modulator as all options aside from those in {@link IO} will be
+ * transferred.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -69,7 +72,6 @@ public class HadoopIoStep extends VertexProgramStep implements ReadWriting {
 
     @Override
     public void configure(final Object... keyValues) {
-        // TODO: probably should write to the Configuration selectively - no need for actual Parameters?????????
         this.parameters.set(null, keyValues);
     }
 
@@ -121,6 +123,8 @@ public class HadoopIoStep extends VertexProgramStep implements ReadWriting {
 
         graph.configuration().setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, inputFormatClassName);
         graph.configuration().setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, file);
+
+        addParametersToConfiguration(graph);
     }
 
     private void configureForWrite(final Graph graph) {
@@ -137,6 +141,27 @@ public class HadoopIoStep extends VertexProgramStep implements ReadWriting {
         
         graph.configuration().setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, outputFormatClassName);
         graph.configuration().setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, file);
+
+        addParametersToConfiguration(graph);
+    }
+
+    /**
+     * Overwrites all configurations from values passed using {@link GraphTraversal#with(String, Object)}.
+     */
+    private void addParametersToConfiguration(final Graph graph) {
+        parameters.getRaw(IO.writer, IO.writer, IO.registry).entrySet().forEach(kv -> {
+            if (kv.getValue().size() == 1)
+                graph.configuration().setProperty(kv.getKey().toString(), kv.getValue().get(0));
+            else {
+                // reset the default configuration with the first option then add to that for List options
+                for (int ix = 0; ix < kv.getValue().size(); ix++) {
+                    if (ix == 0)
+                        graph.configuration().setProperty(kv.getKey().toString(), kv.getValue().get(ix));
+                    else
+                        graph.configuration().addProperty(kv.getKey().toString(), kv.getValue().get(ix));
+                }
+            }
+        });
     }
 
     private String detectReader() {
