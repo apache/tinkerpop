@@ -65,7 +65,7 @@ public abstract class WriteTest extends AbstractGremlinProcessTest {
 
         final Traversal<Object,Object> traversal = get_g_io_writeXkryoX(fileToWrite);
         printTraversalForm(traversal);
-        assertFalse(traversal.hasNext());
+        traversal.iterate();
 
         assertThat(f.length() > 0, is(true));
     }
@@ -81,7 +81,7 @@ public abstract class WriteTest extends AbstractGremlinProcessTest {
 
         final Traversal<Object,Object> traversal = get_g_io_write_withXwriter_gryoX(fileToWrite);
         printTraversalForm(traversal);
-        assertFalse(traversal.hasNext());
+        traversal.iterate();
 
         assertThat(f.length() > 0, is(true));
     }
@@ -97,7 +97,7 @@ public abstract class WriteTest extends AbstractGremlinProcessTest {
 
         final Traversal<Object,Object> traversal = get_g_io_writeXjsonX(fileToWrite);
         printTraversalForm(traversal);
-        assertFalse(traversal.hasNext());
+        traversal.iterate();
 
         assertThat(f.length() > 0, is(true));
     }
@@ -113,7 +113,7 @@ public abstract class WriteTest extends AbstractGremlinProcessTest {
 
         final Traversal<Object,Object> traversal = get_g_io_write_withXwriter_graphsonX(fileToWrite);
         printTraversalForm(traversal);
-        assertFalse(traversal.hasNext());
+        traversal.iterate();
 
         assertThat(f.length() > 0, is(true));
     }
@@ -129,7 +129,7 @@ public abstract class WriteTest extends AbstractGremlinProcessTest {
 
         final Traversal<Object,Object> traversal = get_g_io_writeXxmlX(fileToWrite);
         printTraversalForm(traversal);
-        assertFalse(traversal.hasNext());
+        traversal.iterate();
 
         assertThat(f.length() > 0, is(true));
     }
