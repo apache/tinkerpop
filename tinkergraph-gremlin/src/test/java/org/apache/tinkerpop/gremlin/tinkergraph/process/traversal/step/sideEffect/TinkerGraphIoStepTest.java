@@ -72,4 +72,27 @@ public class TinkerGraphIoStepTest {
 
         assertEquals(1, emptyG.V().has("custom", new CustomId("a", uuid)).count().next().intValue());
     }
+
+    @Test
+    public void shouldWriteReadWithCustomIoRegistryGraphSON() throws Exception {
+        final UUID uuid = UUID.randomUUID();
+        g.addV("person").property("name","stephen").property("custom", new CustomId("a", uuid)).iterate();
+
+        final File file = TestHelper.generateTempFile(TinkerGraphIoStepTest.class, "shouldWriteReadWithCustomIoRegistryGraphSON", ".json");
+        g.io(file.getAbsolutePath()).with(IO.registry, CustomId.CustomIdIoRegistry.class.getName()).write().iterate();
+
+        final Graph emptyGraph = TinkerGraph.open();
+        final GraphTraversalSource emptyG = emptyGraph.traversal();
+
+        try {
+            emptyG.io(file.getAbsolutePath()).read().iterate();
+            fail("Can't read without a registry");
+        } catch (Exception ignored) {
+            // do nothing
+        }
+
+        emptyG.io(file.getAbsolutePath()).with(IO.registry, CustomId.CustomIdIoRegistry.instance()).read().iterate();
+
+        assertEquals(1, emptyG.V().has("custom", new CustomId("a", uuid)).count().next().intValue());
+    }
 }
