@@ -36,9 +36,7 @@ Apache TinkerPop™ is a graph computing framework for both graph databases (OLT
 
 Gremlin.Net implements Gremlin within .NET. C# syntax has the same constructs as Java including "dot notation" for function chaining (a.b.c), round bracket function arguments (a(b,c)), and support for global namespaces (a(b()) vs a(__.b())). As such, anyone familiar with Gremlin-Java will immediately be able to work with Gremlin.Net. Moreover, there are a few added constructs to Gremlin.Net that make traversals a bit more succinct.
 
-Please see the reference documentation at Apache TinkerPop for more information on usage.
-
-NOTE: Gremlin.Net is an extension of the Gremlin.Net driver by Florian Hockmann (versions: 0.y.z) and is now included as part of the Apache TinkerPop project.</Description>
+Please see the reference documentation at Apache TinkerPop for more information on usage.</Description>
     <AssemblyOriginatorKeyFile>../../build/tinkerpop.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PackageId>Gremlin.Net</PackageId>
