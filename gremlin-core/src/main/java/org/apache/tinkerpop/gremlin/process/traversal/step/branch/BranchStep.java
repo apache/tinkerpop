@@ -260,7 +260,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
 
         @Override
         public String toString() {
-            return "PickTokenKey(" + number + ")";
+            return number.toString();
         }
     }
 }
