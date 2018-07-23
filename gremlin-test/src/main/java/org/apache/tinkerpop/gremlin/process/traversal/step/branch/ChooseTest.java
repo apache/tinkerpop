@@ -49,6 +49,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -68,6 +69,8 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_V_chooseXoutXknowsX_count_isXgtX0XX__outXknowsXX_name();
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_hasLabelXpersonX_asXp1X_chooseXoutEXknowsX__outXknowsXX_asXp2X_selectXp1_p2X_byXnameX();
+
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_hasLabelXpersonX_chooseXageX__optionX27L__constantXyoungXX_optionXnone__constantXoldXX_groupCount();
 
     public abstract Traversal<Integer, List<Integer>> get_g_injectX1X_chooseXisX1X__constantX10Xfold__foldX();
 
@@ -138,6 +141,19 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasLabelXpersonX_chooseXageX__optionX27L__constantXyoungXX_optionXnone__constantXoldXX_groupCount() {
+        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_hasLabelXpersonX_chooseXageX__optionX27L__constantXyoungXX_optionXnone__constantXoldXX_groupCount();
+        printTraversalForm(traversal);
+        final Map<String, Long> expected = new HashMap<>(2);
+        expected.put("young", 1L);
+        expected.put("old", 3L);
+        assertTrue(traversal.hasNext());
+        checkMap(expected, traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
     public void g_injectX1X_chooseXisX1X__constantX10Xfold__foldX() {
         final Traversal<Integer, List<Integer>> traversal = get_g_injectX1X_chooseXisX1X__constantX10Xfold__foldX();
         printTraversalForm(traversal);
@@ -188,6 +204,14 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_hasLabelXpersonX_asXp1X_chooseXoutEXknowsX__outXknowsXX_asXp2X_selectXp1_p2X_byXnameX() {
             return g.V().hasLabel("person").as("p1").choose(outE("knows"), out("knows")).as("p2").<String>select("p1", "p2").by("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_hasLabelXpersonX_chooseXageX__optionX27L__constantXyoungXX_optionXnone__constantXoldXX_groupCount() {
+            return g.V().hasLabel("person").choose(values("age"))
+                    .option(27L, __.constant("young"))
+                    .option(TraversalOptionParent.Pick.none, __.constant("old"))
+                    .groupCount();
         }
 
         @Override
