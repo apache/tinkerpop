@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 
+import org.apache.tinkerpop.gremlin.process.traversal.NumberHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
@@ -46,7 +47,7 @@ import java.util.stream.Collectors;
 public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements TraversalOptionParent<M, S, E> {
 
     protected Traversal.Admin<S, M> branchTraversal;
-    protected Map<M, List<Traversal.Admin<S, E>>> traversalOptions = new HashMap<>();
+    protected Map<Object, List<Traversal.Admin<S, E>>> traversalOptions = new HashMap<>();
     private boolean first = true;
     private boolean hasBarrier = false;
 
@@ -60,10 +61,11 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
 
     @Override
     public void addGlobalChildOption(final M pickToken, final Traversal.Admin<S, E> traversalOption) {
-        if (this.traversalOptions.containsKey(pickToken))
-            this.traversalOptions.get(pickToken).add(traversalOption);
+        final Object pickTokenKey = PickTokenKey.make(pickToken);
+        if (this.traversalOptions.containsKey(pickTokenKey))
+            this.traversalOptions.get(pickTokenKey).add(traversalOption);
         else
-            this.traversalOptions.put(pickToken, new ArrayList<>(Collections.singletonList(traversalOption)));
+            this.traversalOptions.put(pickTokenKey, new ArrayList<>(Collections.singletonList(traversalOption)));
 
         // adding an IdentityStep acts as a placeholder when reducing barriers get in the way - see the
         // standardAlgorithm() method for more information.
@@ -136,7 +138,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     private void applyCurrentTraverser(final Traverser.Admin<S> start) {
         // first get the value of the choice based on the current traverser and use that to select the right traversal
         // option to which that traverser should be routed
-        final M choice = TraversalUtil.apply(start, this.branchTraversal);
+        final Object choice = PickTokenKey.make(TraversalUtil.apply(start, this.branchTraversal));
         final List<Traversal.Admin<S, E>> branch = this.traversalOptions.containsKey(choice) ?
                 this.traversalOptions.get(choice) : this.traversalOptions.get(Pick.none);
 
@@ -156,7 +158,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     protected Iterator<Traverser.Admin<E>> computerAlgorithm() {
         final List<Traverser.Admin<E>> ends = new ArrayList<>();
         final Traverser.Admin<S> start = this.starts.next();
-        final M choice = TraversalUtil.apply(start, this.branchTraversal);
+        final Object choice = PickTokenKey.make(TraversalUtil.apply(start, this.branchTraversal));
         final List<Traversal.Admin<S, E>> branch = this.traversalOptions.containsKey(choice) ? this.traversalOptions.get(choice) : this.traversalOptions.get(Pick.none);
         if (null != branch) {
             branch.forEach(traversal -> {
@@ -184,7 +186,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     public BranchStep<S, E, M> clone() {
         final BranchStep<S, E, M> clone = (BranchStep<S, E, M>) super.clone();
         clone.traversalOptions = new HashMap<>(this.traversalOptions.size());
-        for (final Map.Entry<M, List<Traversal.Admin<S, E>>> entry : this.traversalOptions.entrySet()) {
+        for (final Map.Entry<Object, List<Traversal.Admin<S, E>>> entry : this.traversalOptions.entrySet()) {
             final List<Traversal.Admin<S, E>> traversals = entry.getValue();
             if (traversals.size() > 0) {
                 final List<Traversal.Admin<S, E>> clonedTraversals = clone.traversalOptions.compute(entry.getKey(), (k, v) ->
@@ -225,5 +227,40 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
         super.reset();
         this.getGlobalChildren().forEach(Traversal.Admin::reset);
         this.first = true;
+    }
+
+    /**
+     * PickTokenKey is basically a wrapper for numbers that are used as a PickToken. This is
+     * required in order to treat equal numbers of different data types as a match.
+     */
+    private static class PickTokenKey {
+
+        final Number number;
+
+        private PickTokenKey(final Number number) {
+            this.number = number;
+        }
+
+        static Object make(final Object value) {
+            return value instanceof Number ? new PickTokenKey((Number) value) : value;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            final PickTokenKey other = (PickTokenKey) o;
+            return 0 == NumberHelper.compare(number, other.number);
+        }
+
+        @Override
+        public int hashCode() {
+            return number.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return number.toString();
+        }
     }
 }

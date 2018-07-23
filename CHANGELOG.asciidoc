@@ -367,6 +367,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-2-10]]
 === TinkerPop 3.2.10 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Match numbers in `choose()` options using `NumberHelper` (match values, ignore data type).
 * Fixed bug in Java driver where an disorderly shutdown of the server would cause the client to hang.
 * Added a dotnet template project that should make it easier to get started with Gremlin.Net.
 * Removed `ThreadInterruptCustomizerProvider` from documentation as a way to timeout.
