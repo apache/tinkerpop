@@ -41,8 +41,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             new Dictionary<string, IgnoreReason>()
             {
                 { "g_injectX1X_chooseXisX1X__constantX10Xfold__foldX", IgnoreReason.NoReason },
-                { "g_injectX2X_chooseXisX1X__constantX10Xfold__foldX", IgnoreReason.NoReason },
-                { "g_V_asXa_bX_out_asXcX_path_selectXkeysX", IgnoreReason.EmbeddedListAssertion }
+                { "g_injectX2X_chooseXisX1X__constantX10Xfold__foldX", IgnoreReason.NoReason }
             };
         
         private static class Keywords
