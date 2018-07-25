@@ -65,7 +65,7 @@ class DateSerializer extends TypeSerializer {
   serialize(item) {
     return {
       [typeKey]: 'g:Date',
-      [valueKey]: item.value.getTime()
+      [valueKey]: item.getTime()
     };
   }
 
