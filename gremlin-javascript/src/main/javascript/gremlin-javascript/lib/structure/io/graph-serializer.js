@@ -155,6 +155,7 @@ const deserializers = {
   'g:Int64':  typeSerializers.NumberSerializer,
   'g:Float':  typeSerializers.NumberSerializer,
   'g:Double': typeSerializers.NumberSerializer,
+  'g:Date': typeSerializers.DateSerializer,
   'g:Vertex': typeSerializers.VertexSerializer,
   'g:Edge': typeSerializers.EdgeSerializer,
   'g:VertexProperty': typeSerializers.VertexPropertySerializer,
@@ -165,6 +166,7 @@ const deserializers = {
 
 const serializers = [
   typeSerializers.NumberSerializer,
+  typeSerializers.DateSerializer,
   typeSerializers.BytecodeSerializer,
   typeSerializers.TraverserSerializer,
   typeSerializers.PSerializer,

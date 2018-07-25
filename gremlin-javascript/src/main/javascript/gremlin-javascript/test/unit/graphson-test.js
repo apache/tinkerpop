@@ -46,6 +46,14 @@ describe('GraphSONReader', function () {
       assert.strictEqual(result, item[1]);
     });
   });
+  it('should parse Date', function() {
+    const obj = { "@type" : "g:Date", "@value" : 1481750076295 };
+    const reader = new GraphSONReader();
+    const result = reader.read(obj);
+    console.log("++++++++++++++++++++++++++" + obj);
+    console.log("++++++++++++++++++++++++++" + result);
+    assert.ok(result instanceof Date);
+  });
   it('should parse vertices from GraphSON', function () {
     const obj = {
       "@type":"g:Vertex", "@value":{"id":{"@type":"g:Int32","@value":1},"label":"person",
