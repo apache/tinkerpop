@@ -50,8 +50,6 @@ describe('GraphSONReader', function () {
     const obj = { "@type" : "g:Date", "@value" : 1481750076295 };
     const reader = new GraphSONReader();
     const result = reader.read(obj);
-    console.log("++++++++++++++++++++++++++" + obj);
-    console.log("++++++++++++++++++++++++++" + result);
     assert.ok(result instanceof Date);
   });
   it('should parse vertices from GraphSON', function () {
@@ -103,6 +101,11 @@ describe('GraphSONWriter', function () {
   it('should write numbers', function () {
     const writer = new GraphSONWriter();
     assert.strictEqual(writer.write(2), '2');
+  });
+  it('should write Date', function() {
+    const writer = new GraphSONWriter();
+    const expected = JSON.stringify({ "@type" : "g:Date", "@value" : 1481750076295 });
+    assert.strictEqual(writer.write(new Date(1481750076295)), expected);
   });
   it('should write boolean values', function () {
     const writer = new GraphSONWriter();
