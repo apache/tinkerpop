@@ -491,6 +491,9 @@ traversal source.
 Since Gremlin-JavaScript currently doesn't support lambda expressions, all traversals can be translated to
 Gremlin-Java on the remote location (e.g. Gremlin Server).
 
+WARNING: In Javascript, `from` and `in` are reserved words. Gremlin-Javascript simply postfixes `_` to the end of
+these terms for their use with graph traversal. For instance: `g.V().in_().out()`
+
 IMPORTANT: Gremlin-JavaScript’s `Traversal` base class supports the standard Gremlin methods such as `next()` and
 `toList()` Such "terminal" methods trigger the evaluation of the traversal.
 
