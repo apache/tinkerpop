@@ -57,13 +57,12 @@ const parsers = [
 
 const ignoreReason = {
   lambdaNotSupported: 'Lambdas are not supported on gremlin-javascript',
-  embeddedListAssertion: '"This test returns an embedded list in the result and the Gherkin processor does not parse that correctly"',
   needsFurtherInvestigation: '',
 };
 
 const ignoredScenarios = {
   // An associative array containing the scenario name as key, for example:
-  'g_V_asXa_bX_out_asXcX_path_selectXkeysX': new IgnoreError(ignoreReason.embeddedListAssertion),
+  // 'g_V_asXa_bX_out_asXcX_path_selectXkeysX': new IgnoreError(ignoreReason.embeddedListAssertion),
 };
 
 defineSupportCode(function(methods) {

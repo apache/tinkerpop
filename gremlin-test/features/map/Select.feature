@@ -721,12 +721,9 @@ Feature: Step - select()
       """
       g.V().as("a", "b").out().as("c").path().select(Column.keys)
       """
-    When iterated to list
-    Then the result should be unordered
+    When iterated next
+    Then the result should be ordered
       | result |
-      | l[l[a,b],l[c]] |
-      | l[l[a,b],l[c]] |
-      | l[l[a,b],l[c]] |
-      | l[l[a,b],l[c]] |
-      | l[l[a,b],l[c]] |
-      | l[l[a,b],l[c]] |
+      | l[a,b] |
+      | l[c]   |
+    And the graph should return 6 for count of "g.V().as(\"a\", \"b\").out().as(\"c\").path().select(Column.keys)"
