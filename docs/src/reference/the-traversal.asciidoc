@@ -323,6 +323,11 @@ link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/grem
 
 The `and()`-step ensures that all provided traversals yield a result (*filter*). Please see <<or-step,`or()`>> for or-semantics.
 
+[NOTE, caption=Python]
+====
+The term `and` is a reserved word in Python, and therefore must be referred to in Gremlin with `and_()`.
+====
+
 [gremlin-groovy,modern]
 ----
 g.V().and(
@@ -352,6 +357,17 @@ link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/grem
 The `as()`-step is not a real step, but a "step modulator" similar to <<by-step,`by()`>> and <<option-step,`option()`>>.
 With `as()`, it is possible to provide a label to the step that can later be accessed by steps and data structures
 that make use of such labels -- e.g., <<select-step,`select()`>>, <<match-step,`match()`>>, and path.
+
+[NOTE, caption=Groovy]
+====
+The term `as` is a reserved word in Groovy, and when therefore used as part of an anonymous traversal must be referred
+to in Gremlin with the double underscore `__.as()`.
+====
+
+[NOTE, caption=Python]
+====
+The term `as` is a reserved word in Python, and therefore must be referred to in Gremlin with `as_()`.
+====
 
 [gremlin-groovy,modern]
 ----
@@ -817,6 +833,16 @@ means by which they are added. The general pattern is `step().from()`. See <<to-
 The list of steps that support `from()`-modulation are: <<simplepath-step,`simplePath()`>>, <<cyclicpath-step,`cyclicPath()`>>,
  <<path-step,`path()`>>, and <<addedge-step,`addE()`>>.
 
+[NOTE, caption=Javasacript]
+====
+The term `from` is a reserved word in Javascript, and therefore must be referred to in Gremlin with `from_()`.
+====
+
+[NOTE, caption=Python]
+====
+The term `from` is a reserved word in Python, and therefore must be referred to in Gremlin with `from_()`.
+====
+
 *Additional References*
 
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#from-java.lang.String-++[`from(String)`],
@@ -1053,6 +1079,11 @@ link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/grem
 === Is Step
 
 It is possible to filter scalar values using `is()`-step (*filter*).
+
+[NOTE, caption=Python]
+====
+The term `is` is a reserved word in Python, and therefore must be referred to in Gremlin with `is_()`.
+====
 
 [gremlin-groovy,modern]
 ----
@@ -1540,6 +1571,17 @@ link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/grem
 The `not()`-step (*filter*) removes objects from the traversal stream when the traversal provided as an argument
 returns an object.
 
+[NOTE, caption=Groovy]
+====
+The term `not` is a reserved word in Groovy, and when therefore used as part of an anonymous traversal must be referred
+to in Gremlin with the double underscore `__.not()`.
+====
+
+[NOTE, caption=Python]
+====
+The term `not` is a reserved word in Python, and therefore must be referred to in Gremlin with `not_()`.
+====
+
 [gremlin-groovy,modern]
 ----
 g.V().not(hasLabel('person')).valueMap(true)
@@ -1596,6 +1638,11 @@ link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/grem
 
 The `or()`-step ensures that at least one of the provided traversals yield a result (*filter*). Please see
 <<and-step,`and()`>> for and-semantics.
+
+[NOTE, caption=Python]
+====
+The term `or` is a reserved word in Python, and therefore must be referred to in Gremlin with `or_()`.
+====
 
 [gremlin-groovy,modern]
 ----
@@ -2914,6 +2961,22 @@ graph -- i.e. traverse.
 * `inV()`: Move to the incoming vertex.
 * `bothV()`: Move to both vertices.
 * `otherV()` : Move to the vertex that was not the vertex that was moved from.
+
+[NOTE, caption=Groovy]
+====
+The term `in` is a reserved word in Groovy, and when therefore used as part of an anonymous traversal must be referred
+to in Gremlin with the double underscore `__.in()`.
+====
+
+[NOTE, caption=Javascript]
+====
+The term `in` is a reserved word in Python, and therefore must be referred to in Gremlin with `in_()`.
+====
+
+[NOTE, caption=Python]
+====
+The term `in` is a reserved word in Python, and therefore must be referred to in Gremlin with `in_()`.
+====
 
 [gremlin-groovy,modern]
 ----
