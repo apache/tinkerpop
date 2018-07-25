@@ -61,6 +61,23 @@ class NumberSerializer extends TypeSerializer {
   }
 }
 
+class DateSerializer extends TypeSerializer {
+  serialize(item) {
+    return {
+      [typeKey]: 'g:Date',
+      [valueKey]: item.value.getTime()
+    };
+  }
+
+  deserialize(obj) {
+    return new Date(obj[valueKey]);
+  }
+
+  canBeUsedFor(value) {
+    return (value instanceof Date);
+  }
+}
+
 class LongSerializer extends TypeSerializer {
   serialize(item) {
     return {
@@ -355,6 +372,7 @@ class SetSerializer extends ArraySerializer {
 
 module.exports = {
   BytecodeSerializer,
+  DateSerializer,
   EdgeSerializer,
   EnumSerializer,
   LambdaSerializer,
