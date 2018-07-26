@@ -180,16 +180,31 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
 
     @Test
     public void shouldFailWithNonexistentServerPrincipal() throws Exception {
+
+        // wait for logger to flush - (don't think there is a way to detect this)
+        stopServer();
+        Thread.sleep(1000);
+
         assertTrue(recordingAppender.logContainsAny("WARN - Failed to login to kdc"));
     }
 
     @Test
     public void shouldFailWithEmptyServerKeytab() throws Exception {
+
+        // wait for logger to flush - (don't think there is a way to detect this)
+        stopServer();
+        Thread.sleep(1000);
+
         assertTrue(recordingAppender.logContainsAny("WARN - Failed to login to kdc"));
     }
 
     @Test
     public void shouldFailWithWrongServerKeytab() throws Exception {
+
+        // wait for logger to flush - (don't think there is a way to detect this)
+        stopServer();
+        Thread.sleep(1000);
+
         assertTrue(recordingAppender.logContainsAny("WARN - Failed to login to kdc"));
     }
 

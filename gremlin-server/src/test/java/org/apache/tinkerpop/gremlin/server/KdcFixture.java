@@ -32,14 +32,14 @@ import java.net.Inet4Address;
 
 
 /**
- * @author Marc de Lignie
- *
  * This class is derived from the following classes from https://github.com/apache/directory-kerby/blob/kerby-all-1.0.0-RC2:
  *  - org.apache.kerby.kerberos.kerb.server.TestKdcServer
  *  - org.apache.kerby.kerberos.kerb.server.KdcTestBase
  *  - org.apache.kerby.kerberos.kerb.server.LoginTestBase
  *
  * See also: gremlin-server/src/main/static/NOTICE
+ *
+ * @author Marc de Lignie
  */
 public class KdcFixture {
 
@@ -65,8 +65,7 @@ public class KdcFixture {
     final String hostname;
     private SimpleKdcServer kdcServer;
 
-
-    public KdcFixture(String authConfigName)  throws Exception {
+    public KdcFixture(final String authConfigName) {
         System.setProperty("java.security.auth.login.config", authConfigName);
         hostname = findHostname();
         serverPrincipal = serverPrincipalName + "/" + hostname + "@" + KdcFixture.TestKdcServer.KDC_REALM;
@@ -92,9 +91,9 @@ public class KdcFixture {
     }
 
     private File createTestDir() {
-        String basedir = System.getProperty("basedir");
-        File targetdir = new File(basedir, "target");
-        File testDir = new File(targetdir, "tmp");
+        final String basedir = System.getProperty("basedir");
+        final File targetdir = new File(basedir, "target");
+        final File testDir = new File(targetdir, "tmp");
         testDir.mkdirs();
         return testDir;
     }
@@ -110,8 +109,8 @@ public class KdcFixture {
             setAllowUdp(false);    // There are still udp issues in Apache Directory-Kerby 1.0.0-RC2
             setKdcTcpPort(NetworkUtil.getServerPort());
 
-            KrbClient krbClnt = getKrbClient();
-            KrbConfig krbConfig = krbClnt.getKrbConfig();
+            final KrbClient krbClnt = getKrbClient();
+            final KrbConfig krbConfig = krbClnt.getKrbConfig();
             krbConfig.setString(KrbConfigKey.PERMITTED_ENCTYPES,
                     "aes128-cts-hmac-sha1-96 des-cbc-crc des-cbc-md5 des3-cbc-sha1");
             krbClnt.setTimeout(10 * 1000);
@@ -135,11 +134,11 @@ public class KdcFixture {
         kdcServer.exportPrincipal(serverPrincipal, serviceKeytabFile);
 
         kdcServer.createPrincipal(clientPrincipal, clientPassword);
-        TgtTicket tgt = kdcServer.getKrbClient().requestTgt(clientPrincipal, clientPassword);
+        final TgtTicket tgt = kdcServer.getKrbClient().requestTgt(clientPrincipal, clientPassword);
         kdcServer.getKrbClient().storeTicket(tgt, ticketCacheFile);
 
         kdcServer.createPrincipal(clientPrincipal2, clientPassword2);
-        TgtTicket tgt2 = kdcServer.getKrbClient().requestTgt(clientPrincipal2, clientPassword2);
+        final TgtTicket tgt2 = kdcServer.getKrbClient().requestTgt(clientPrincipal2, clientPassword2);
         kdcServer.getKrbClient().storeTicket(tgt2, ticketCacheFile2);
     }
 
