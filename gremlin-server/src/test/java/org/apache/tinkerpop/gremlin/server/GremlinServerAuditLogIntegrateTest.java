@@ -23,8 +23,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.log4j.Appender;
-import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
 import static org.apache.log4j.Level.INFO;
@@ -165,6 +163,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         }
 
         // wait for logger to flush - (don't think there is a way to detect this)
+        stopServer();
         Thread.sleep(1000);
 
         // WebSocketChannelizer does not add SaslAuthenticationHandler for AllowAllAuthenticator,
@@ -192,6 +191,10 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
             cluster.close();
         }
 
+        // wait for logger to flush - (don't think there is a way to detect this)
+        stopServer();
+        Thread.sleep(1000);
+
         final String simpleAuthenticatorName = SimpleAuthenticator.class.getSimpleName();
         final String authMsg = recordingAppender.getMessages().stream()
                 .filter(msg -> msg.contains("by " + simpleAuthenticatorName)).iterator().next();
@@ -199,8 +202,6 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         m.find();
         final String address = m.group(1);
 
-        // wait for logger to flush - (don't think there is a way to detect this)
-        Thread.sleep(1000);
 
         assertTrue(recordingAppender.logContainsAny(AUDIT_LOGGER_NAME, INFO,
                 String.format("User %s with address %s authenticated by %s", username, address, simpleAuthenticatorName)));
@@ -226,6 +227,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         }
 
         // wait for logger to flush - (don't think there is a way to detect this)
+        stopServer();
         Thread.sleep(1000);
 
         final List<LoggingEvent> log = recordingAppender.getEvents();
@@ -260,6 +262,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         }
 
         // wait for logger to flush - (don't think there is a way to detect this)
+        stopServer();
         Thread.sleep(1000);
 
         final List<LoggingEvent> log = recordingAppender.getEvents();
@@ -287,6 +290,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         }
 
         // wait for logger to flush - (don't think there is a way to detect this)
+        stopServer();
         Thread.sleep(1000);
 
         final List<LoggingEvent> log = recordingAppender.getEvents();
@@ -322,6 +326,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         }
 
         // wait for logger to flush - (don't think there is a way to detect this)
+        stopServer();
         Thread.sleep(1000);
 
         final List<LoggingEvent> log = recordingAppender.getEvents();
@@ -359,6 +364,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         }
 
         // wait for logger to flush - (don't think there is a way to detect this)
+        stopServer();
         Thread.sleep(1000);
 
         final List<LoggingEvent> log = recordingAppender.getEvents();
