@@ -290,19 +290,15 @@ public class GraphTraversalSource implements TraversalSource {
      */
     @Override
     public GraphTraversalSource withRemote(final RemoteConnection connection) {
-        try {
-            // check if someone called withRemote() more than once, so just release resources on the initial
-            // connection as you can't have more than one. maybe better to toss IllegalStateException??
-            if (this.connection != null)
-                this.connection.close();
-        } catch (Exception ignored) {
-            // not sure there's anything to do here
-        }
+        // check if someone called withRemote() more than once, so just release resources on the initial
+        // connection as you can't have more than one. maybe better to toss IllegalStateException??
+        if (this.connection != null)
+            throw new IllegalStateException(String.format("TraversalSource already configured with a RemoteConnection [%s]", connection));
 
-        this.connection = connection;
-        final TraversalSource clone = this.clone();
+        final GraphTraversalSource clone = this.clone();
+        clone.connection = connection;
         clone.getStrategies().addStrategies(new RemoteStrategy(connection));
-        return (GraphTraversalSource) clone;
+        return clone;
     }
 
     //// SPAWNS

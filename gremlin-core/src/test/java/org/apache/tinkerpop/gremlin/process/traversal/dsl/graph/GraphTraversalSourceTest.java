@@ -47,16 +47,11 @@ public class GraphTraversalSourceTest {
         verify(mock, times(1)).close();
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void shouldNotAllowLeakRemoteConnectionsIfMultipleAreCreated() throws Exception {
-
         final RemoteConnection mock1 = mock(RemoteConnection.class);
         final RemoteConnection mock2 = mock(RemoteConnection.class);
-        final GraphTraversalSource g = EmptyGraph.instance().traversal().withRemote(mock1).withRemote(mock2);
-        g.close();
-
-        verify(mock1, times(1)).close();
-        verify(mock2, times(1)).close();
+        EmptyGraph.instance().traversal().withRemote(mock1).withRemote(mock2);
     }
 
     @Test
