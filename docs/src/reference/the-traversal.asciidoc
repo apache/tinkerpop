@@ -1060,9 +1060,9 @@ job of the `io()`-step. By default, TinkerPop supports three formats for importi
 
 NOTE: Additional documentation for TinkerPop IO formats can be found in the link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/[IO Reference].
 
-By itself the `io()` step merely configures the kind of importing and exporting that is going
+By itself the `io()`-step merely configures the kind of importing and exporting that is going
 to occur and it is the follow-on call to the `read()` or `write()` step that determines which of those actions will
-execute. Therefore, a typical usage of the `io()` step would look like this:
+execute. Therefore, a typical usage of the `io()`-step would look like this:
 
 [source,java]
 ----
@@ -1073,7 +1073,7 @@ g.io(someOutputFile).write().iterate()
 IMPORTANT: The commands above are still traversals and therefore require iteration to be executed, hence the use of
 `iterate()` as a termination step.
 
-By default, the `io()` step will try to detect the right file format using the file name extension. To gain greater
+By default, the `io()`-step will try to detect the right file format using the file name extension. To gain greater
 control of the format use the `with()` step modulator to provide further information to `io()`. For example:
 
 [source,java]

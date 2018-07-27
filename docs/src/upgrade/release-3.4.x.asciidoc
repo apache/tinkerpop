@@ -81,7 +81,7 @@ g.io(someInputFile).read().iterate()
 g.io(someOutputFile).write().iterate()
 ----
 
-While `io()` step is still single-threaded for OLTP style loading, it can be utilized in conjunction with OLAP which
+While `io()`-step is still single-threaded for OLTP style loading, it can be utilized in conjunction with OLAP which
 internally uses `CloneVertexProgram` and therefore any graph `InputFormat` or `OutputFormat` can be configured in
 conjunction with this step for parallel loads of large datasets.
 
