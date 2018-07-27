@@ -1,0 +1,91 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[element-existence]]
+== Element Existence
+
+Checking for whether or not a graph element is present in the graph is simple:
+
+[gremlin-groovy,modern]
+----
+g.V().has('person','name','marko').hasNext()
+g.V().has('person','name','stephen').hasNext()
+----
+
+Knowing that an element exists or not is usually a common point of decision in determining the appropriate path of code
+to take. In the example above, the check is for vertex existence and a typical reason to check for existence is to
+determine whether or not to add a new vertex or to return the one that exists (i.e. "get or create" pattern). This
+entire operation can occur in a single traversal.
+
+[gremlin-groovy,modern]
+----
+g.V().has('person','name','marko').
+  fold().
+  coalesce(unfold(),
+           addV('person').
+             property('name','marko').
+             property('age',29))
+g.V().has('person','name','stephen').
+  fold().
+  coalesce(unfold(), 
+           addV('person').
+             property('name','stephen').
+             property('age',34))
+----
+
+This use of `coalesce()` shown above is the basis for this pattern. Note that at the end of `has()`-step there is
+either a vertex or not. By using `fold()`, "existence" or "not existence" is reduced to a `List` with the vertex or
+a `List` with no values. With a `List` as the traverser flowing into `coalesce()` the first child traversal to return
+something will execute. If the `List` has a vertex then it will `unfold()` and return the existing one. If it is empty,
+then the vertex does not exist and it is added and returned.
+
+This "get or create" logic can be expanded to be "upsert" like functionality as follows:
+
+[gremlin-groovy,modern]
+----
+g.V().has('person','name','marko').
+  fold().
+  coalesce(unfold(),
+           addV('person').property('name','marko')).
+  property('age',29)
+g.V().has('person','name','stephen').
+  fold().
+  coalesce(unfold(),
+           addV('person').property('name','stephen')).
+  property('age',34)
+----
+
+By moving the `property()`-step that set the "age" value outside of `coalesce()`, the property is then set for both
+newly created vertices and for existing ones.
+
+WARNING: Always consider the specific nature of the graph implementation in use when considering these patterns. Some
+graph databases may not treat these traversals as true "upsert" operations and may do a "read before write" in their
+execution.
+
+It is possible to do similar sorts of operations with edges using the same pattern:
+
+[gremlin-groovy,modern]
+----
+g.V().has('person','name','vadas').as('v').
+  V().has('software','name','ripple').
+  coalesce(__.inE('created').where(outV().as('v')),
+           addE('created').from('v').property('weight',0.5))
+----
+
+In this case, the adjacent vertices of the edge are retrieved first and within the `coalesce()`, the existence of
+the edge is checked with `where()` using a matching pattern on the "v" label and returned if found. If the edge is not
+found between these two vertices, then it is created as part of the second traversal given to `coalesce()`.
+

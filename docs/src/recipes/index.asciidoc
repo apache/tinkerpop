@@ -50,6 +50,8 @@ include::duplicate-vertex.asciidoc[]
 
 include::edge-move.asciidoc[]
 
+include::element-existence.asciidoc[]
+
 include::if-then-based-grouping.asciidoc[]
 
 include::pagination.asciidoc[]
