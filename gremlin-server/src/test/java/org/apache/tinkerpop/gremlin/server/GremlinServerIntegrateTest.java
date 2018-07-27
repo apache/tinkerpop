@@ -66,19 +66,14 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
 import java.nio.channels.ClosedChannelException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -373,6 +368,39 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(t, instanceOf(ResponseException.class));
             assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
         }
+    }
+
+    @Test
+    public void shouldProduceProperExceptionOnTimeout() throws Exception {
+        final Cluster cluster = TestClientFactory.open();
+        final Client client = cluster.connect(name.getMethodName());
+
+        boolean success = false;
+        // Run a short test script a few times with progressively longer timeouts.
+        // Each submissions should either succeed or fail with a timeout.
+        // Note: the range of timeouts is intended to cover the case when the script finishes at about the
+        // same time when the timeout occurs. In this situation either a timeout response or a successful
+        // response is acceptable, however no other processing errors should occur.
+        // Note: the timeout of 30 ms is generally sufficient for running a simple groovy script, so using longer
+        // timeouts are not likely to results in a success/timeout response collision, which is the purpose
+        // of this test.
+        for(int i = 0; i < 30; i++) {
+            int timeout = 1 + i;
+            overriddenSettings.scriptEvaluationTimeout = timeout;
+
+            try {
+                client.submit("x = 1 + 1").all().get().get(0).getInt();
+                success = true;
+            } catch (Exception ex) {
+                final Throwable t = ex.getCause();
+                assertThat("Unexpected exception with script evaluation timeout: " + timeout, t, instanceOf(ResponseException.class));
+                assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+            }
+        }
+
+        assertTrue("Some script submissions should succeed", success);
+
+        cluster.close();
     }
 
     @Test
@@ -981,6 +1009,21 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final List<ResponseMessage> responses = client.submit(request);
             assertEquals(1, responses.size());
             assertEquals(ResponseStatusCode.SUCCESS, responses.get(0).getStatus().getCode());
+        }
+    }
+
+    @Test
+    public void shouldHavePartialContentWithLongResultsCollection() throws Exception {
+        try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
+            final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_GREMLIN, "new String[100]").create();
+            final List<ResponseMessage> responses = client.submit(request);
+            assertThat(responses.size(), Matchers.greaterThan(1));
+            for (Iterator<ResponseMessage> it = responses.iterator(); it.hasNext(); ) {
+                ResponseMessage msg = it.next();
+                ResponseStatusCode expected = it.hasNext() ? ResponseStatusCode.PARTIAL_CONTENT : ResponseStatusCode.SUCCESS;
+                assertEquals(expected, msg.getStatus().getCode());
+            }
         }
     }
 

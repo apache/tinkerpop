@@ -19,10 +19,13 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The context of Gremlin Server within which a particular request is made.
@@ -36,6 +39,7 @@ public final class Context {
     private final GraphManager graphManager;
     private final GremlinExecutor gremlinExecutor;
     private final ScheduledExecutorService scheduledExecutorService;
+    private final AtomicBoolean finalResponseWritten = new AtomicBoolean();
 
     public Context(final RequestMessage requestMessage, final ChannelHandlerContext ctx,
                    final Settings settings, final GraphManager graphManager,
@@ -86,5 +90,36 @@ public final class Context {
      */
     public GremlinExecutor getGremlinExecutor() {
         return gremlinExecutor;
+    }
+
+    /**
+     * Writes a response message to the underlying channel while ensuring that at most one
+     * {@link ResponseStatusCode#isFinalResponse() final} response is written.
+     * <p>Note: this method should be used instead of writing to the channel directly when multiple threads
+     * are expected to produce response messages concurrently.</p>
+     * <p>Attempts to write more than one final response message will result in an {@link IllegalStateException}.</p>
+     * @see #writeAndFlush(ResponseStatusCode, Object)
+     */
+    public void writeAndFlush(ResponseMessage message) {
+        writeAndFlush(message.getStatus().getCode(), message);
+    }
+
+    /**
+     * Writes a response message to the underlying channel while ensuring that at most one
+     * {@link ResponseStatusCode#isFinalResponse() final} response is written.
+     * <p>The caller must make sure that the provided response status code matches the content of the message.</p>
+     * <p>Note: this method should be used instead of writing to the channel directly when multiple threads
+     * are expected to produce response messages concurrently.</p>
+     * <p>Attempts to write more than one final response message will result in an {@link IllegalStateException}.</p>
+     * @see #writeAndFlush(ResponseMessage)
+     */
+    public void writeAndFlush(ResponseStatusCode code, Object responseMessage) {
+        final boolean messageIsFinal = code.isFinalResponse();
+        if(!finalResponseWritten.compareAndSet(false, messageIsFinal)) {
+            final String errorMessage = String.format("Another final response message was already written for request %s", requestMessage.getRequestId());
+            throw new IllegalStateException(errorMessage);
+        }
+
+        channelHandlerContext.writeAndFlush(responseMessage);
     }
 }
