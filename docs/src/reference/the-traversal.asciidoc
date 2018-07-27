@@ -1086,9 +1086,9 @@ g.io(someOutputFile).
   write().iterate()
 ----
 
-The `IO` class is a helper for the `io()` step that provides expressions that can be used to help configure it
+The `IO` class is a helper for the `io()`-step that provides expressions that can be used to help configure it
 and in this case it allows direct specification of the "reader" or "writer" to use. The "reader" actually refers to
-a `GraphReader` implementation and the `writer" refers to a `GraphWriter` implementation. The implementations of
+a `GraphReader` implementation and the "writer" refers to a `GraphWriter` implementation. The implementations of
 those interfaces provided by default are the standard TinkerPop implementations.
 
 That default is an important point to consider for users. The default TinkerPop implementations are not designed with
@@ -1100,7 +1100,7 @@ writing perspective is not that different in there are no parallel operations in
 to disk requires a single pass of the data without high memory requirements for larger datasets.
 
 In general, TinkerPop recommends that users examine the native bulk import/export tools of the graph implementation
-that they choose. Those tools will often outperform the `io()` step and perhaps be easier to use with a greater
+that they choose. Those tools will often outperform the `io()`-step and perhaps be easier to use with a greater
 feature set. That said, graph providers do have the option to optimize `io()` to back it with their own
 import/export utilities and therefore the default behavior provided by TinkerPop described above might be overridden
 by the graph.
@@ -1111,7 +1111,7 @@ functionality internally using <<clonevertexprogram,CloneVertexProgram>>. With t
 can be imported/exported assuming that there is a Hadoop `InputFormat` or `OutputFormat` to support it.
 
 IMPORTANT: Remote Gremlin Console users or Gremlin Language Variant (GLV) users (e.g. gremlin-python) who utilize
-the `io()` step should recall that their `read()` or `write()` operation will occur on the server and not locally
+the `io()`-step should recall that their `read()` or `write()` operation will occur on the server and not locally
 and therefore the file specified for import/export must be something accessible by the server.
 
 GraphSON and Gryo formats are extensible allowing users and graph providers to extend supported serialization options.
