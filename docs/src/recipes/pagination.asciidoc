@@ -64,7 +64,7 @@ NOTE: The first traversal above could also be written as `g.V().hasLabel('person
 In this case, there is no way to know the total count so the only way to know if the end of the results have been
 reached is to count the results from each paged result to see if there's less than the number expected or simply zero
 results. In that case, further requests for additional pages would be unnecessary. Of course, this approach is not
-free of problems either. Most graph databases will not optimize the `range()` step, meaning that the second traversal
+free of problems either. Most graph databases will not optimize the `range()`-step, meaning that the second traversal
 will repeat the iteration of the first two vertices to get to the second set of two vertices. In other words, for the
 second traversal, the graph will still read four vertices even though there was only a request for two.
 

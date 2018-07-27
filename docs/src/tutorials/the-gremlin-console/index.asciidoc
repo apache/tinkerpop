@@ -353,7 +353,7 @@ public final class Traversals {
 ----
 
 Of course, this won't work and you will likely be left wondering why your unit test for "removeByName" is failing, but
-the identical line of code in the console is doing what is expected.  The `drop()` step is not some special form
+the identical line of code in the console is doing what is expected.  The `drop()`-step is not some special form
 of terminating step that iterates the traversal - it is just one more step that vertices will pass through.  Outside
 of the console you must add `iterate()` as follows:
 

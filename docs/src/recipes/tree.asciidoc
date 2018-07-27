@@ -154,7 +154,7 @@ single result.
 
 The previous approaches to calculating the maximum depth use path calculations to achieve the answer. Path calculations
 can be expensive and if possible avoided if they are not needed. Another way to express a traversal that calculates
-the maximum depth is to use the `sack()` step:
+the maximum depth is to use the `sack()`-step:
 
 [gremlin-groovy,existing]
 ----
