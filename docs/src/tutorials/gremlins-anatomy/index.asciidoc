@@ -102,11 +102,11 @@ g.V().
     by(label()).next()
 ----
 
-the `GraphTraversal` components are represented by the `has()`, `outE()` and `groupCount()` steps. The key to reading
+the `GraphTraversal` components are represented by the `has()`, `outE()` and `groupCount()`-steps. The key to reading
 this Gremlin is to realize that the output of one step becomes the input to the next. Therefore, if you consider the
 start step of `V()` and realize that it returns vertices in the graph, the input to `has()` is going to be a `Vertex`.
-The `has()` step is a filtering step and will take the vertices that are passed into it and block any that do not
-meet the criteria it has specified. In this case, that means that the output of the `has()` step is vertices that have
+The `has()`-step is a filtering step and will take the vertices that are passed into it and block any that do not
+meet the criteria it has specified. In this case, that means that the output of the `has()`-step is vertices that have
 the label of "person" and the "name" property value of "josh" or "marko". 
 
 image::gremlin-anatomy-filter.png[width=600]
@@ -118,7 +118,7 @@ incoming "marko" and "josh" vertices and traverse their outgoing edges as the ou
 image::gremlin-anatomy-navigate.png[width=600]
 
 Now that it is clear that the output of `outE()` is an edge, you are aware of the input to `groupCount()` - edges.
-The `groupCount()` step requires a bit more discussion of other Gremlin components and will thus be examined in the
+The `groupCount()`-step requires a bit more discussion of other Gremlin components and will thus be examined in the
 following sections. At this point, it is simply worth noting that the output of `groupCount()` is a `Map` and if a
 Gremlin step followed it, the input to that step would therefore be a `Map`.
 
@@ -130,7 +130,7 @@ remaining pieces.
 === Step Modulators
 
 It's been explained in several ways now that the output of one step becomes the input to the next, so surely the `Map`
-produced by `groupCount()` will feed the `by()` step. As alluded to at the end of the previous section, that
+produced by `groupCount()` will feed the `by()`-step. As alluded to at the end of the previous section, that
 expectation is not correct. Technically, `by()` is not a step. It is a step modulator. A step modulator modifies the
 behavior of the previous step. In this case, it is telling Gremlin how the key for the `groupCount()` should be
 determined. Or said another way in the context of the example, it answers this question: What do you want the "marko"
@@ -148,7 +148,7 @@ methods, thus allowing `__.label()` to be referred to simply as `label()`.
 
 NOTE: In Java, the full package name for the `__` is `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph`.
 
-In the context of the example traversal, you can imagine Gremlin getting to the `groupCount()` step with a "marko" or
+In the context of the example traversal, you can imagine Gremlin getting to the `groupCount()`-step with a "marko" or
 "josh" outgoing edge, checking the `by()` modulator to see "what to group by", and then putting edges into buckets
 by their `label()` and incrementing a counter on each bucket.
 
@@ -160,7 +160,7 @@ The output is thus an edge label distribution for the outgoing edges of the "mar
 
 Terminal steps are different from the `GraphTraversal` steps in that terminal steps do not return a `GraphTraversal`
 instance, but instead return the result of the `GraphTraversal`. In the case of the example, `next()` is the terminal
-step and it returns the `Map` constructed in the `groupCount()` step. Other examples of terminal steps include:
+step and it returns the `Map` constructed in the `groupCount()`-step. Other examples of terminal steps include:
 `hasNext()`, `toList()`, and `iterate()`. Without terminal steps, you don't have a result. You only have a
 `GraphTraversal`
 
@@ -169,7 +169,7 @@ link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/#resul
 
 === Expressions
 
-It is worth backing up a moment to re-examine the `has()` step. Now that you have come to understand anonymous
+It is worth backing up a moment to re-examine the `has()`-step. Now that you have come to understand anonymous
 traversals, it would be reasonable to make the assumption that the `within()` argument to `has()` falls into that
 category. It does not. The `within()` option is not a step either, but instead, something called an expression. An
 expression typically refers to anything not mentioned in the previously described Gremlin component categories that

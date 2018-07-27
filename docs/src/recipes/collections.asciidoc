@@ -86,7 +86,7 @@ g.V().
 ----
 
 The call to `local()` executes its anonymous sub-traversal over each individual `List` iterator and as the
-sub-traversal ends with a `fold()` step, the results are reduced back into a `List` to preserve the original structure,
+sub-traversal ends with a `fold()`-step, the results are reduced back into a `List` to preserve the original structure,
 thus maintaining two traverser results.
 
 This pattern for unfolding and folding `List` traversers ends up having other applications:
@@ -112,7 +112,7 @@ g.V().union(limit(3).fold(),tail(3).fold()).   <3>
 with the highest degree (i.e. number of edges). By ending with `fold()` the `List` traverser structure is preserved
 thus returning two `List` objects. Consider this a method for choosing a "max" or a highly ranked vertex. In this case
 the rank was determined by the number of edges, but it could have just as easily been determined by a vertex property,
-edge property, a calculated value, etc. - one simply needs to alter the `by()` step modulator to `order()`.
+edge property, a calculated value, etc. - one simply needs to alter the `by()`-step modulator to `order()`.
 <3> For each `List` of vertices, filter that `List` to only include vertices that have an "age" property with a
 value greater than or equal to "29" and then average the results of each list. More generally, consider how this
 approach performs some kind of reducing calculation on each `List` traverser. In this case, an average was calculated,
@@ -194,11 +194,11 @@ the `mean()` to store in a `List` called "c". Note that `aggregate()` was used h
 the former is an eager collection of the elements in the stream (`store()` is lazy) and will force the traversal to be
 iterated up to that point before moving forward. Without that eager collection, "v" and "e" would not contain the
 complete information required for the production of "b" and "c".
-<6> Adding `fold()` step here is a bit of a trick. To see the trick, copy and paste all lines of Gremlin up to but
-not including this `fold()` step and run them against the "modern" graph. The output is three vertices and if the
-`profile()` step was added one would also see that the traversal contained three traversers. These three traversers
-with a vertex in each one were produced from the `repeat()` step (i.e. those vertices that had the "lang" of "java"
-when traversing away from "marko"). The `aggregate()` steps are side-effects and just allow the traversers to pass
+<6> Adding `fold()`-step here is a bit of a trick. To see the trick, copy and paste all lines of Gremlin up to but
+not including this `fold()`-step and run them against the "modern" graph. The output is three vertices and if the
+`profile()`-step was added one would also see that the traversal contained three traversers. These three traversers
+with a vertex in each one were produced from the `repeat()`-step (i.e. those vertices that had the "lang" of "java"
+when traversing away from "marko"). The `aggregate()`-steps are side-effects and just allow the traversers to pass
 through them unchanged. The `fold()` obviously converts those three traversers to a single `List` to make one
 traverser with a `List` inside. That means that the remaining steps following the `fold()` will only be executed one
 time each instead of three, which, as will be shown, is critical to the proper result.
@@ -212,7 +212,7 @@ presents an override to include "c" into the result.
 All of the above code and explanation show that `store()` can be used to construct `List` objects as side-effects
 which can then be used as a result. Note that `aggregate()` can be used to similar effect, should it make sense that
 lazy `List` creation is not acceptable with respect to the nature of the traversal. An interesting sub-pattern that
-emerges here is that the `by()` step can modulate its step to completely override the current traverser and ignore its
+emerges here is that the `by()`-step can modulate its step to completely override the current traverser and ignore its
 contents for purpose of that step. This ability to override a traverser acts as a powerful and flexible tool as it
 means that each traverser can effectively become a completely different object as determined by a sub-traversal.
 
@@ -361,7 +361,7 @@ g.V().
 
 <1> The `valueMap(true)` of a `Vertex` can be extended with the "degree" of the `Vertex` by performing a `union()` of
 the two traversals that produce that output (both produce `Map` objects).
-<2> The `unfold()` step is used to decompose the `Map` objects into key/value entries that are then constructed back
+<2> The `unfold()`-step is used to decompose the `Map` objects into key/value entries that are then constructed back
 into a single new `Map` given the patterns shown earlier. The `Map` objects of both traversals in the `union()` are
 essentially merged together.
 
