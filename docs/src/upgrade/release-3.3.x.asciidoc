@@ -115,7 +115,7 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.3.1/CHANGELOG.asc
 ==== Gremlin Python path()
 
 There was a bug in GraphSON 3.0 serialization that prevented proper handling of results contain `Path` object. As a
-result, traversals that used and returned results from the `path()` step in Python would return unusable results,
+result, traversals that used and returned results from the `path()`-step in Python would return unusable results,
 but did not actually cause an exception condition. This problem is now resolved.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1799[TINKERPOP-1799]
@@ -154,7 +154,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1632[TINKERPOP-1632]
 
 ==== Changed Typing on `from()` and `to()`
 
-The `from()` and `to()` steps of `GraphTraversal` have a `Traversal<E,Vertex>` overload. The `E` has been changed to `?`
+The `from()` and `to()`-steps of `GraphTraversal` have a `Traversal<E,Vertex>` overload. The `E` has been changed to `?`
 in order to reduce `< >`-based coersion in strongly type Gremlin language variants.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1793[TINKERPOP-1793]
