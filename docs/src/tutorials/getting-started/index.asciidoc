@@ -228,7 +228,7 @@ for the creation of link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graph
 Second, don't forget that you are working with TinkerGraph which allows for identifier assignment. That is _not_ the
 case with most graph databases.
 
-Finally, the `as()` steps label the value held at a particular step so that you can reference back to it later in the
+Finally, the `as()`-steps label the value held at a particular step so that you can reference back to it later in the
 traversal. In this case, that allows you to reference both vertices as "v1" and "v2" during edge creation.
 
 === Graph Traversal - Staying Simple
@@ -333,7 +333,7 @@ graph = TinkerFactory.createModern()
 g = graph.traversal()
 ----
 
-Earlier we'd used the `has()` step to tell Gremlin how to find the "marko" vertex. Let's look at some other ways to
+Earlier we'd used the `has()`-step to tell Gremlin how to find the "marko" vertex. Let's look at some other ways to
 use `has()`. What if we wanted Gremlin to find the "age" values of both "vadas" and "marko"? In this case we could
 use the `within` comparator with `has()` as follows:
 
@@ -393,13 +393,13 @@ g.V().has('name','marko').as('exclude').
 ----
 
 We made two additions to the traversal to make it exclude "marko" from the results. First, we added the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#as-step[as()] step. The `as()` step is not really a "step",
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#as-step[as()] step. The `as()`-step is not really a "step",
 but a "step modulator" - something that adds features to a step or the traversal. Here, the `as('exclude')` labels
-the `has()` step with the name "exclude" and all values that pass through that step are held in that label for later
+the `has()`-step with the name "exclude" and all values that pass through that step are held in that label for later
 use. In this case, the "marko" vertex is the only vertex to pass through that point, so it is held in "exclude".
 
-The other addition that was made was the `where()` step which is a filter step like `has()`. The `where()` is
-positioned after the `in()` step that has "person" vertices, which means that the `where()` filter is occurring
+The other addition that was made was the `where()`-step which is a filter step like `has()`. The `where()` is
+positioned after the `in()`-step that has "person" vertices, which means that the `where()` filter is occurring
 on the list of "marko" collaborators. The `where()` specifies that the "person" vertices passing through it should
 not equal (i.e. `neq()`) the contents of the "exclude" label. As it just contains the "marko" vertex, the `where()`
 filters out the "marko" that we get when we traverse back _in_ on the "created" edges.

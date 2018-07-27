@@ -366,7 +366,7 @@ in it
 * "the result should be ordered" - the exact results and should appear in the order presented
 * "the result should be unordered" - the exact results but can appear any order
 * "the result should be of" - results can be any of the specified values and in any order (use when guarantees
-regarding the exact results cannot be pre-determined easily - see the `range()` step tests for examples)
+regarding the exact results cannot be pre-determined easily - see the `range()`-step tests for examples)
 
 These final three types of assertions mentioned above should be followed by a Gherkin table that has one column, where
 each row value in that column represents a value to assert in the result. These values are type notation respected as

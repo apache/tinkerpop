@@ -20,7 +20,7 @@ limitations under the License.
 Good software development practices require reuse to keep software maintainable. In Gremlin, there are often bits of
 traversal logic that could be represented as components that might be tested independently and utilized
 as part of other traversals. One approach to doing this would be to extract such logic into an anonymous traversal
-and provide it to a parent traversal through `flatMap()` step.
+and provide it to a parent traversal through `flatMap()`-step.
 
 Using the modern toy graph as an example, assume that there are number of traversals that are interested in filtering
 on edges where the "weight" property is greater than "0.5". A query like that might look like this:
@@ -42,7 +42,7 @@ g.V(1).flatMap(weightFilter).both()
 
 The `weightFilter` is an anonymous traversal and it is created by way `__` class. The `__` is omitted above from
 initalization of `weightFilter` because it is statically imported to the Gremlin Console. The `weightFilter` gets
-passed to the "full" traversal by way for `flatMap()` step and the results are the same. Of course, there is a problem.
+passed to the "full" traversal by way for `flatMap()`-step and the results are the same. Of course, there is a problem.
 If there is an attempt to use that `weightFilter` a second time, the traversal with thrown an exception because both
 the `weightFilter` and parent traversal have been "compiled" which prevents their re-use. A simple fix to this would
 be to clone the `weightFilter`.

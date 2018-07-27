@@ -33,7 +33,7 @@ g.V(1).out().where(__.in().hasId(6))             <6>
 ----
 
 <1> There are three edges from the vertex with the identifier of "1".
-<2> Filter those three edges using the `where()` step using the identifier of the vertex returned by `otherV()` to
+<2> Filter those three edges using the `where()`-step using the identifier of the vertex returned by `otherV()` to
 ensure it matches on the vertex of concern, which is the one with an identifier of "2".
 <3> Note that the same traversal will work if there are actual `Vertex` instances rather than just vertex identifiers.
 <4> The vertex with identifier "1" has all outgoing edges, so it would also be acceptable to use the directional steps
@@ -43,7 +43,7 @@ vertices with identifiers "2" and "3".
 <6> There's no reason why the same pattern of exclusion used for edges with `where()` can't work for a vertex between
 two vertices.
 
-The basic pattern of using `where()` step to find the "other" known vertex can be applied in far more complex
+The basic pattern of using `where()`-step to find the "other" known vertex can be applied in far more complex
 scenarios. For one such example, consider the following traversal that finds all the paths between a group of defined
 vertices:
 
@@ -113,6 +113,6 @@ g.V(vRexsterJob1, vBlueprintsJob1).as('job').
 ----
 
 While the traversals above are more complex, the pattern for finding "things" between two vertices is largely the same.
-Note the use of the `where()` step to terminate the traversers for a specific user. It is embedded in a `coalesce()`
+Note the use of the `where()`-step to terminate the traversers for a specific user. It is embedded in a `coalesce()`
 step to handle situations where the specified user did not complete an application for the specified job and will
 return `false` in those cases.
