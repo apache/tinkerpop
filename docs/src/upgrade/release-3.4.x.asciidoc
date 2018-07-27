@@ -31,9 +31,9 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.4.0/CHANGELOG.asc
 
 ==== with() Step
 
-This version of TinkerPop introduces the `with()` step to Gremlin. It isn't really a step but is instead a step
+This version of TinkerPop introduces the `with()`-step to Gremlin. It isn't really a step but is instead a step
 modulator. This modulator allows the step it is modifying to accept configurations that can be used to alter the
-behavior of the step itself. A good example of its usage is shown with the revised syntax of the `pageRank()` step
+behavior of the step itself. A good example of its usage is shown with the revised syntax of the `pageRank()`-step
 which now uses `with()` to replace the old `by()` options:
 
 [groovy]
@@ -47,7 +47,7 @@ g.V().hasLabel('person').
   valueMap('name','friendRank')
 ----
 
-A similar change was made for `peerPressure()` step:
+A similar change was made for `peerPressure()`-step:
 
 [groovy]
 ----
@@ -306,7 +306,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1518[TINKERPOP-1518]
 ===== Configuring Interface
 
 There were some changes to interfaces that were related to `Step`. A new `Configuring` interface was added that was
-helpful in the implementation of the `with()` step modulator. This new interface extends the `Parameterizing` interface
+helpful in the implementation of the `with()`-step modulator. This new interface extends the `Parameterizing` interface
 (which moved to the `org.apache.tinkerpop.gremlin.process.traversal.step` package with the other step interfaces) and
 in turn is extended by the `Mutating` interface. Making this change meant that the `Mutating.addPropertyMutations()`
 method could be removed in favor of the new `Configuring.configure()` method.
