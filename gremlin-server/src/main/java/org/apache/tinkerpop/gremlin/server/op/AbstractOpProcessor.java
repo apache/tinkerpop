@@ -90,7 +90,7 @@ public abstract class AbstractOpProcessor implements OpProcessor {
             // as there is nothing left to iterate if we are transaction managed then we should execute a
             // commit here before we send back a NO_CONTENT which implies success
             if (managedTransactionsForRequest) attemptCommit(msg, context.getGraphManager(), settings.strictTransactionManagement);
-            ctx.writeAndFlush(ResponseMessage.build(msg)
+            context.writeAndFlush(ResponseMessage.build(msg)
                     .code(ResponseStatusCode.NO_CONTENT)
                     .create());
             return;
@@ -143,7 +143,7 @@ public abstract class AbstractOpProcessor implements OpProcessor {
                     // thread that processed the eval of the script so, we have to push serialization down into that
                     Frame frame = null;
                     try {
-                        frame = makeFrame(ctx, msg, serializer, useBinary, aggregate, code, generateMetaData(ctx, msg, code, itty));
+                        frame = makeFrame(context, msg, serializer, useBinary, aggregate, code, generateMetaData(ctx, msg, code, itty));
                     } catch (Exception ex) {
                         // a frame may use a Bytebuf which is a countable release - if it does not get written
                         // downstream it needs to be released here
@@ -191,7 +191,7 @@ public abstract class AbstractOpProcessor implements OpProcessor {
                     // required then it will be 100% complete before the client receives it. the "frame" at this point
                     // should have completely detached objects from the transaction (i.e. serialization has occurred)
                     // so a new one should not be opened on the flush down the netty pipeline
-                    ctx.writeAndFlush(frame);
+                    context.writeAndFlush(code, frame);
                 }
             } else {
                 // don't keep triggering this warning over and over again for the same request
@@ -252,15 +252,29 @@ public abstract class AbstractOpProcessor implements OpProcessor {
     /**
      * @deprecated As of release 3.2.2, replaced by {@link #makeFrame(ChannelHandlerContext, RequestMessage, MessageSerializer, boolean, List, ResponseStatusCode, Map)}.
      */
+    @Deprecated
     protected static Frame makeFrame(final ChannelHandlerContext ctx, final RequestMessage msg,
                                      final MessageSerializer serializer, final boolean useBinary, final List<Object> aggregate,
                                      final ResponseStatusCode code) throws Exception {
         return makeFrame(ctx, msg, serializer, useBinary, aggregate, code, Collections.emptyMap());
     }
 
+    /**
+     * @deprecated As of release 3.2.10, replaced by {@link #makeFrame(Context, RequestMessage, MessageSerializer, boolean, List, ResponseStatusCode, Map)}.
+     */
+    @Deprecated
     protected static Frame makeFrame(final ChannelHandlerContext ctx, final RequestMessage msg,
                                    final MessageSerializer serializer, final boolean useBinary, final List<Object> aggregate,
                                    final ResponseStatusCode code, final Map<String,Object> responseMetaData) throws Exception {
+        logger.warn("Using deprecated AbstractOpProcessor.makeFrame(...) methods may lead to incorrect handling of response messages.", new IllegalStateException("Deprecated API call"));
+        Context context = new Context(msg, ctx, null, null, null, null); // dummy context, good only for writing response messages to the channel
+        return makeFrame(context, msg, serializer, useBinary, aggregate, code, responseMetaData);
+    }
+
+    protected static Frame makeFrame(final Context context, final RequestMessage msg,
+                                   final MessageSerializer serializer, final boolean useBinary, final List<Object> aggregate,
+                                   final ResponseStatusCode code, final Map<String,Object> responseMetaData) throws Exception {
+        final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         try {
             if (useBinary) {
                 return new Frame(serializer.serializeResponseAsBinary(ResponseMessage.build(msg)
@@ -283,7 +297,7 @@ public abstract class AbstractOpProcessor implements OpProcessor {
                     .statusMessage(errorMessage)
                     .statusAttributeException(ex)
                     .code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION).create();
-            ctx.writeAndFlush(error);
+            context.writeAndFlush(error);
             throw ex;
         }
     }

@@ -123,4 +123,11 @@ public enum ResponseStatusCode {
     public boolean isSuccess() {
         return String.valueOf(this.value).startsWith("2");
     }
+
+    /**
+     * Indicates whether the status code can only be used in the last response for a particular request.
+     */
+    public boolean isFinalResponse() {
+        return this != PARTIAL_CONTENT && this != AUTHENTICATE;
+    }
 }
