@@ -33,7 +33,7 @@ exports.getConnection = function getConnection(traversalSource) {
 
 exports.getSecureConnectionWithAuthenticator = function getConnection(traversalSource) {
   const authenticator = new SaslAuthenticator({ mechanism: new SaslMechanismPlain(), username: 'stephen', password: 'password', authId: os.hostname() });
-  return new DriverRemoteConnection('wss://localhost:45941/gremlin', { 
+  return new DriverRemoteConnection('ws://localhost:45941/gremlin', { 
     traversalSource: traversalSource, 
     authenticator: authenticator, 
     rejectUnauthorized: false 
