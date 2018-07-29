@@ -21,14 +21,21 @@
  * @author Jorge Bay Gondra
  */
 'use strict';
+const os = require('os');
 
 const DriverRemoteConnection = require('../lib/driver/driver-remote-connection');
+const SaslAuthenticator = require('../lib/driver/sasl-authenticator');
+const SaslMechanismPlain = require('../lib/driver/auth/mechanisms/sasl-mechanism-plain');
 
 exports.getConnection = function getConnection(traversalSource) {
   return new DriverRemoteConnection('ws://localhost:45940/gremlin', { traversalSource: traversalSource });
 };
 
 exports.getSecureConnectionWithAuthenticator = function getConnection(traversalSource) {
-  const authenticator = new SaslAuthenticator({ username: 'stephen', password: 'password' });
-  return new DriverRemoteConnection('ws://localhost:45941/gremlin', { traversalSource: traversalSource, authenticator: authenticator, rejectUnauthorized: false });
+  const authenticator = new SaslAuthenticator({ mechanism: new SaslMechanismPlain(), username: 'stephen', password: 'password', authId: os.hostname() });
+  return new DriverRemoteConnection('wss://localhost:45941/gremlin', { 
+    traversalSource: traversalSource, 
+    authenticator: authenticator, 
+    rejectUnauthorized: false 
+  });
 };

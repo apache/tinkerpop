@@ -163,7 +163,7 @@ class DriverRemoteConnection extends RemoteConnection {
     }
 
     if (response.status.code === responseStatusCode.authenticationChallenge && this._authenticator) {
-      this._authenticator.evaluateChallenge(response).then(res => {
+      this._authenticator.evaluateChallenge(response.result.data).then(res => {
         return this.submit(null, 'authentication', res, response.requestId);
       }).catch(handler.callback);
 
