@@ -80,7 +80,7 @@ public abstract class AbstractOpProcessor implements OpProcessor {
     }
 
     /**
-     * A variant of {@link #handleIterator(Context, Iterator)} that is suitable for use in situations when mutiple
+     * A variant of {@link #handleIterator(Context, Iterator)} that is suitable for use in situations when multiple
      * threads may produce {@link ResponseStatusCode#isFinalResponse() final} response messages concurrently.
      * @see #handleIterator(Context, Iterator)
      */

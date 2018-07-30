@@ -19,10 +19,13 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import io.netty.channel.ChannelHandlerContext;
+import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
-import org.hamcrest.CoreMatchers;
+import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -32,8 +35,7 @@ import java.util.Arrays;
 import java.util.UUID;
 import java.util.function.BiFunction;
 
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class ResponseHandlerContextTest {
@@ -45,6 +47,7 @@ public class ResponseHandlerContextTest {
     private final RequestMessage request = RequestMessage.build("test").create();
     private final Context context = new Context(request, ctx, null, null, null, null);
     private final ResponseHandlerContext rhc = new ResponseHandlerContext(context);
+    private final Log4jRecordingAppender recordingAppender = new Log4jRecordingAppender();
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
@@ -79,6 +82,18 @@ public class ResponseHandlerContextTest {
         });
     }
 
+    @Before
+    public void addRecordingAppender() {
+        final Logger rootLogger = Logger.getRootLogger();
+        rootLogger.addAppender(recordingAppender);
+    }
+
+    @After
+    public void removeRecordingAppender() {
+        final Logger rootLogger = Logger.getRootLogger();
+        rootLogger.removeAppender(recordingAppender);
+    }
+
     @Test
     public void shouldAllowMultipleNonFinalResponses() {
         writeInvoker.apply(rhc, ResponseStatusCode.AUTHENTICATE);
@@ -99,12 +114,24 @@ public class ResponseHandlerContextTest {
         writeInvoker.apply(rhc, ResponseStatusCode.SUCCESS);
         Mockito.verify(ctx, Mockito.times(2)).writeAndFlush(Mockito.any());
 
-        try {
-            writeInvoker.apply(rhc, ResponseStatusCode.SERVER_ERROR_TIMEOUT);
-            fail("Expected an IllegalStateException");
-        } catch (IllegalStateException ex) {
-            assertThat(ex.toString(), CoreMatchers.containsString(request.getRequestId().toString()));
-        }
+        writeInvoker.apply(rhc, ResponseStatusCode.SERVER_ERROR_TIMEOUT);
+        assertTrue(recordingAppender.logContainsAny(".*" + request.getRequestId() + ".*"));
+        assertTrue(recordingAppender.logContainsAny(".*" + ResponseStatusCode.SERVER_ERROR_TIMEOUT + "$"));
+
+        // ensure there were no other writes to the channel
         Mockito.verify(ctx, Mockito.times(2)).writeAndFlush(Mockito.any());
+    }
+
+    @Test
+    public void shouldNotAllowNonFinalMessagesAfterFinalResponse() {
+        writeInvoker.apply(rhc, ResponseStatusCode.SERVER_ERROR_TIMEOUT);
+        Mockito.verify(ctx, Mockito.times(1)).writeAndFlush(Mockito.any());
+
+        writeInvoker.apply(rhc, ResponseStatusCode.PARTIAL_CONTENT);
+        assertTrue(recordingAppender.logContainsAny(".*" + request.getRequestId() + ".*"));
+        assertTrue(recordingAppender.logContainsAny(".*" + ResponseStatusCode.PARTIAL_CONTENT + "$"));
+
+        // ensure there were no other writes to the channel
+        Mockito.verify(ctx, Mockito.times(1)).writeAndFlush(Mockito.any());
     }
 }

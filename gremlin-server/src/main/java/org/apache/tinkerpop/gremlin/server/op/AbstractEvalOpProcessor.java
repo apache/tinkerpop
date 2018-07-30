@@ -223,9 +223,33 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
      *                                script evaluation.
      * @param bindingsSupplier A function that returns the {@link Bindings} to provide to the
      *                         {@link GremlinExecutor#eval} method.
+     * @see #evalOpInternal(ResponseHandlerContext, Supplier, BindingSupplier)
      */
     protected void evalOpInternal(final Context context, final Supplier<GremlinExecutor> gremlinExecutorSupplier,
                                   final BindingSupplier bindingsSupplier) throws OpProcessorException {
+        ResponseHandlerContext rhc = new ResponseHandlerContext(context);
+        try {
+            evalOpInternal(rhc, gremlinExecutorSupplier, bindingsSupplier);
+        } catch (Exception ex) {
+            // Exceptions may occur on after the script started executing, therefore corresponding errors must be
+            // reported via the ResponseHandlerContext.
+            logger.warn("Unable to process script evaluation request: " + ex, ex);
+            rhc.writeAndFlush(ResponseMessage.build(context.getRequestMessage())
+                    .code(ResponseStatusCode.SERVER_ERROR)
+                    .statusAttributeException(ex)
+                    .statusMessage(ex.getMessage()).create());
+        }
+    }
+
+    /**
+     * A variant of {@link #evalOpInternal(Context, Supplier, BindingSupplier)} that is suitable for use in situations
+     * when multiple threads may produce {@link ResponseStatusCode#isFinalResponse() final} response messages
+     * concurrently.
+     * @see #evalOpInternal(Context, Supplier, BindingSupplier)
+     */
+    protected void evalOpInternal(final ResponseHandlerContext rhc, final Supplier<GremlinExecutor> gremlinExecutorSupplier,
+                                  final BindingSupplier bindingsSupplier) throws OpProcessorException {
+        final Context context = rhc.getContext();
         final Timer.Context timerContext = evalOpTimer.time();
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
@@ -245,8 +269,6 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
         // timeout override
         final long seto = args.containsKey(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT) ?
                 Long.parseLong(args.get(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT).toString()) : settings.scriptEvaluationTimeout;
-
-        ResponseHandlerContext rhc = new ResponseHandlerContext(context);
 
         final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build()
                 .scriptEvaluationTimeoutOverride(seto)
