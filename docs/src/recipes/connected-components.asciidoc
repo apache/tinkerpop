@@ -64,9 +64,12 @@ The traversal looks like:
 [gremlin-groovy,existing]
 ----
 g.withComputer().V().connectedComponent().
-    group().by('gremlin.connectedComponentVertexProgram.component').
+    group().by(component).
     select(values).unfold()
 ----
+
+NOTE: The `component` option passed to `by()` is statically imported from `ConnectedComponent` and refers to the
+default property key within which the result of the algorithm is stored.
 
 A straightforward way to detect the various subgraphs with an OLTP traversal is to do this:
 

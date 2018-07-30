@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.computer.clustering.connected.ConnectedComponentVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
@@ -26,6 +27,12 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
  * {@link GraphTraversal#connectedComponent()} ()}.
  */
 public class ConnectedComponent {
+
+    /**
+     * The default property key name that will hold the result of the algorithm.
+     */
+    public static final String component = ConnectedComponentVertexProgram.COMPONENT;
+
     /**
      * Configures the edge to traverse when calculating the pagerank.
      */
