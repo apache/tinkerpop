@@ -394,7 +394,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         // Note: this test may have a false negative result, but a failure  would indicate a real problem.
         for(int i = 0; i < 30; i++) {
             int timeout = 1 + i;
-            overriddenSettings.scriptEvaluationTimeout = timeout;
+            overrideScriptEvaluationTimeout(timeout);
 
             try {
                 client.submit("x = 1 + 1").all().get().get(0).getInt();
