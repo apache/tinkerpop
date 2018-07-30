@@ -39,12 +39,28 @@ public abstract class ConnectedComponentTest extends AbstractGremlinProcessTest 
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasLabelXsoftwareX_connectedComponent();
 
+    public abstract Traversal<Vertex, Vertex> get_g_V_dedup_connectedComponent();
+
     public abstract Traversal<Vertex, Vertex> get_g_V_connectedComponent_withXedges_bothEXknowsXX_withXpropertyName_clusterX();
 
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_connectedComponent() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_connectedComponent();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            final Vertex vertex = traversal.next();
+            counter++;
+            assertEquals("1", vertex.value(ConnectedComponentVertexProgram.COMPONENT));
+        }
+        assertEquals(6, counter);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_dedup_connectedComponent() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_dedup_connectedComponent();
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -103,6 +119,11 @@ public abstract class ConnectedComponentTest extends AbstractGremlinProcessTest 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_connectedComponent() {
             return g.V().connectedComponent();
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_dedup_connectedComponent() {
+            return g.V().dedup().connectedComponent();
         }
 
         @Override
