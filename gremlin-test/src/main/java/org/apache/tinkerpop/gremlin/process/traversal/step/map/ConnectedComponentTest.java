@@ -67,7 +67,7 @@ public abstract class ConnectedComponentTest extends AbstractGremlinProcessTest 
             switch (name) {
                 case "lop":
                 case "ripple":
-                    assertEquals("3", vertex.value(ConnectedComponentVertexProgram.COMPONENT));
+                    assertEquals("1", vertex.value(ConnectedComponentVertexProgram.COMPONENT));
                     break;
             }
             counter++;

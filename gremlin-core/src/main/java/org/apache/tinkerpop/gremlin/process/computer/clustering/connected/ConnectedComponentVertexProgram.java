@@ -32,7 +32,10 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexPr
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.IndexedTraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -40,6 +43,8 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -61,12 +66,14 @@ public class ConnectedComponentVertexProgram implements VertexProgram<String> {
     private static final String VOTE_TO_HALT = "gremlin.connectedComponentVertexProgram.voteToHalt";
 
     private static final Set<MemoryComputeKey> MEMORY_COMPUTE_KEYS = Collections.singleton(MemoryComputeKey.of(VOTE_TO_HALT, Operator.and, false, true));
+
     private MessageScope.Local<?> scope = MessageScope.Local.of(__::bothE);
     private Set<MessageScope> scopes;
     private String property = COMPONENT;
-    private boolean hasHalted = false;
     private PureTraversal<Vertex, Edge> edgeTraversal = null;
     private Configuration configuration;
+    private TraverserSet<Vertex> haltedTraversers;
+    private IndexedTraverserSet<Vertex, Vertex> haltedTraversersIndex;
 
     private ConnectedComponentVertexProgram() {}
 
@@ -85,7 +92,12 @@ public class ConnectedComponentVertexProgram implements VertexProgram<String> {
         scopes = new HashSet<>(Collections.singletonList(scope));
 
         this.property = configuration.getString(PROPERTY, COMPONENT);
-        this.hasHalted = configuration.getBoolean(HAS_HALTED, false);
+
+        this.haltedTraversers = TraversalVertexProgram.loadHaltedTraversers(configuration);
+        this.haltedTraversersIndex = new IndexedTraverserSet<>(v -> v);
+        for (final Traverser.Admin<Vertex> traverser : this.haltedTraversers) {
+            this.haltedTraversersIndex.add(traverser.split());
+        }
     }
 
     @Override
@@ -104,6 +116,8 @@ public class ConnectedComponentVertexProgram implements VertexProgram<String> {
     @Override
     public void execute(final Vertex vertex, final Messenger<String> messenger, final Memory memory) {
         if (memory.isInitialIteration()) {
+            copyHaltedTraversersFromMemory(vertex);
+
             // on the first pass, just initialize the component to its own id then pass it to all adjacent vertices
             // for evaluation
             vertex.property(VertexProperty.Cardinality.single, property, vertex.id().toString());
@@ -113,7 +127,7 @@ public class ConnectedComponentVertexProgram implements VertexProgram<String> {
             // halting traversers. only want to send messages from traversers that are still hanging about after
             // the filter. the unfiltered vertices can only react to messages sent to them. of course, this can
             // lead to weirdness in results. 
-            if (vertex.edges(Direction.BOTH).hasNext() && !(hasHalted && !vertex.property(TraversalVertexProgram.HALTED_TRAVERSERS).isPresent())) {
+            if (vertex.edges(Direction.BOTH).hasNext()) {
                 // since there was message passing we don't want to halt on the first round. this should only trigger
                 // a single pass finish if the graph is completely disconnected (technically, it won't even really
                 // work in cases where halted traversers come into play
@@ -148,7 +162,9 @@ public class ConnectedComponentVertexProgram implements VertexProgram<String> {
 
     @Override
     public Set<VertexComputeKey> getVertexComputeKeys() {
-        return new HashSet<>(Collections.singletonList(VertexComputeKey.of(property, false)));
+        return new HashSet<>(Arrays.asList(
+                VertexComputeKey.of(property, false),
+                VertexComputeKey.of(TraversalVertexProgram.HALTED_TRAVERSERS, false)));
     }
 
     @Override
@@ -158,6 +174,10 @@ public class ConnectedComponentVertexProgram implements VertexProgram<String> {
 
     @Override
     public boolean terminate(final Memory memory) {
+        if (memory.isInitialIteration() && this.haltedTraversersIndex != null) {
+            this.haltedTraversersIndex.clear();
+        }
+
         final boolean voteToHalt = memory.<Boolean>get(VOTE_TO_HALT);
         if (voteToHalt) {
             return true;
@@ -206,6 +226,15 @@ public class ConnectedComponentVertexProgram implements VertexProgram<String> {
         };
     }
 
+    private void copyHaltedTraversersFromMemory(final Vertex vertex) {
+        final Collection<Traverser.Admin<Vertex>> traversers = this.haltedTraversersIndex.get(vertex);
+        if (traversers != null) {
+            final TraverserSet<Vertex> newHaltedTraversers = new TraverserSet<>();
+            newHaltedTraversers.addAll(traversers);
+            vertex.property(VertexProperty.Cardinality.single, TraversalVertexProgram.HALTED_TRAVERSERS, newHaltedTraversers);
+        }
+    }
+
     public static ConnectedComponentVertexProgram.Builder build() {
         return new ConnectedComponentVertexProgram.Builder();
     }
@@ -214,11 +243,6 @@ public class ConnectedComponentVertexProgram implements VertexProgram<String> {
 
         private Builder() {
             super(ConnectedComponentVertexProgram.class);
-        }
-
-        public ConnectedComponentVertexProgram.Builder hasHalted(final boolean hasHalted) {
-            this.configuration.setProperty(HAS_HALTED, hasHalted);
-            return this;
         }
 
         public ConnectedComponentVertexProgram.Builder edges(final Traversal.Admin<Vertex, Edge> edgeTraversal) {

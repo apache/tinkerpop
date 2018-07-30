@@ -29,11 +29,16 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.Serializer;
+
+import java.io.IOException;
+import java.util.Base64;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -84,10 +89,25 @@ public final class ConnectedComponentVertexProgramStep extends VertexProgramStep
     public ConnectedComponentVertexProgram generateProgram(final Graph graph, final Memory memory) {
         final Traversal.Admin<Vertex, Edge> detachedTraversal = this.edgeTraversal.getPure();
         detachedTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()));
-        return ConnectedComponentVertexProgram.build().
-                hasHalted(memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS)).
+
+        final ConnectedComponentVertexProgram.Builder builder = ConnectedComponentVertexProgram.build().
                 edges(detachedTraversal).
-                property(this.clusterProperty).create(graph);
+                property(this.clusterProperty);
+
+        if (memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS)) {
+            final TraverserSet<?> haltedTraversers = memory.get(TraversalVertexProgram.HALTED_TRAVERSERS);
+            if (!haltedTraversers.isEmpty()) {
+                Object haltedTraversersValue;
+                try {
+                    haltedTraversersValue = Base64.getEncoder().encodeToString(Serializer.serializeObject(haltedTraversers));
+                } catch (final IOException ignored) {
+                    haltedTraversersValue = haltedTraversers;
+                }
+                builder.configure(TraversalVertexProgram.HALTED_TRAVERSERS, haltedTraversersValue);
+            }
+        }
+
+        return builder.create(graph);
     }
 
     @Override
