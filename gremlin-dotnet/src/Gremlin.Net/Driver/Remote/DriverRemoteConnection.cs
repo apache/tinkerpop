@@ -71,7 +71,7 @@ namespace Gremlin.Net.Driver.Remote
             return new DriverRemoteTraversal<S, E>(_client, requestId, resultSet);
         }
 
-        private async Task<IEnumerable<Traverser>> SubmitBytecodeAsync(Guid requestid, Bytecode bytecode)
+        private Task<IReadOnlyCollection<Traverser>> SubmitBytecodeAsync(Guid requestid, Bytecode bytecode)
         {
             var requestMsg =
                 RequestMessage.Build(Tokens.OpsBytecode)
@@ -80,7 +80,7 @@ namespace Gremlin.Net.Driver.Remote
                     .AddArgument(Tokens.ArgsGremlin, bytecode)
                     .AddArgument(Tokens.ArgsAliases, new Dictionary<string, string> {{"g", _traversalSource}})
                     .Create();
-            return await _client.SubmitAsync<Traverser>(requestMsg).ConfigureAwait(false);
+            return _client.SubmitAsync<Traverser>(requestMsg);
         }
 
         /// <inheritdoc />

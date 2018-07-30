@@ -59,23 +59,23 @@ namespace Gremlin.Net.Driver
             return await ReceiveAsync<T>().ConfigureAwait(false);
         }
 
-        public async Task ConnectAsync()
+        public Task ConnectAsync()
         {
-            await _webSocketConnection.ConnectAsync(_uri).ConfigureAwait(false);
+            return _webSocketConnection.ConnectAsync(_uri);
         }
 
-        public async Task CloseAsync()
+        public Task CloseAsync()
         {
-            await _webSocketConnection.CloseAsync().ConfigureAwait(false);
+            return _webSocketConnection.CloseAsync();
         }
 
         public bool IsOpen => _webSocketConnection.IsOpen;
 
-        private async Task SendAsync(RequestMessage message)
+        private Task SendAsync(RequestMessage message)
         {
             var graphsonMsg = _graphSONWriter.WriteObject(message);
             var serializedMsg = _messageSerializer.SerializeMessage(graphsonMsg);
-            await _webSocketConnection.SendMessageAsync(serializedMsg).ConfigureAwait(false);
+            return _webSocketConnection.SendMessageAsync(serializedMsg);
         }
 
         private async Task<IReadOnlyCollection<T>> ReceiveAsync<T>()
@@ -121,7 +121,7 @@ namespace Gremlin.Net.Driver
             return result;
         }
 
-        private async Task AuthenticateAsync()
+        private Task AuthenticateAsync()
         {
             if (string.IsNullOrEmpty(_username) || string.IsNullOrEmpty(_password))
                 throw new InvalidOperationException(
@@ -130,7 +130,7 @@ namespace Gremlin.Net.Driver
             var message = RequestMessage.Build(Tokens.OpsAuthentication).Processor(Tokens.ProcessorTraversal)
                 .AddArgument(Tokens.ArgsSasl, SaslArgument()).Create();
 
-            await SendAsync(message).ConfigureAwait(false);
+            return SendAsync(message);
         }
 
         private string SaslArgument()

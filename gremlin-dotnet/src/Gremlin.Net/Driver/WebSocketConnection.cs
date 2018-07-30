@@ -35,24 +35,20 @@ namespace Gremlin.Net.Driver
         private const WebSocketMessageType MessageType = WebSocketMessageType.Binary;
         private ClientWebSocket _client;
 
-        public async Task ConnectAsync(Uri uri)
+        public Task ConnectAsync(Uri uri)
         {
             _client = new ClientWebSocket();
-            await _client.ConnectAsync(uri, CancellationToken.None).ConfigureAwait(false);
+            return _client.ConnectAsync(uri, CancellationToken.None);
         }
 
-        public async Task CloseAsync()
+        public Task CloseAsync()
         {
-            await
-                _client.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None)
-                    .ConfigureAwait(false);
+            return _client.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
         }
 
-        public async Task SendMessageAsync(byte[] message)
+        public Task SendMessageAsync(byte[] message)
         {
-            await
-                _client.SendAsync(new ArraySegment<byte>(message), MessageType, true, CancellationToken.None)
-                    .ConfigureAwait(false);
+            return _client.SendAsync(new ArraySegment<byte>(message), MessageType, true, CancellationToken.None);
         }
 
         public async Task<byte[]> ReceiveMessageAsync()

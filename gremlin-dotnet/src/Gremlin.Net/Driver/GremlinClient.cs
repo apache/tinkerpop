@@ -53,13 +53,16 @@ namespace Gremlin.Net.Driver
         /// <param name="graphSONReader">A <see cref="GraphSONReader" /> instance to read received GraphSON data.</param>
         /// <param name="graphSONWriter">a <see cref="GraphSONWriter" /> instance to write GraphSON data.</param>
         /// <param name="mimeType">The GraphSON version mime type, defaults to latest supported by the server.</param>
+        /// <param name="connectionPoolSettings">The <see cref="ConnectionPoolSettings"/> for the connection pool.</param>
         public GremlinClient(GremlinServer gremlinServer, GraphSONReader graphSONReader = null,
-                             GraphSONWriter graphSONWriter = null, string mimeType = null)
+            GraphSONWriter graphSONWriter = null, string mimeType = null,
+            ConnectionPoolSettings connectionPoolSettings = null)
         {
             var reader = graphSONReader ?? new GraphSON3Reader();
             var writer = graphSONWriter ?? new GraphSON3Writer();
             var connectionFactory = new ConnectionFactory(gremlinServer, reader, writer, mimeType ?? DefaultMimeType);
-            _connectionPool = new ConnectionPool(connectionFactory);
+            _connectionPool =
+                new ConnectionPool(connectionFactory, connectionPoolSettings ?? new ConnectionPoolSettings());
         }
 
         /// <summary>

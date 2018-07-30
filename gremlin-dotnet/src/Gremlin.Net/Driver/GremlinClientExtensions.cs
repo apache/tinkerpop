@@ -92,10 +92,10 @@ namespace Gremlin.Net.Driver
         ///     Thrown when a response is received from Gremlin Server that indicates
         ///     that an error occurred.
         /// </exception>
-        public static async Task SubmitAsync(this IGremlinClient gremlinClient, string requestScript,
+        public static Task SubmitAsync(this IGremlinClient gremlinClient, string requestScript,
             Dictionary<string, object> bindings = null)
         {
-            await gremlinClient.SubmitAsync<object>(requestScript, bindings).ConfigureAwait(false);
+            return gremlinClient.SubmitAsync<object>(requestScript, bindings);
         }
 
         /// <summary>
@@ -109,9 +109,9 @@ namespace Gremlin.Net.Driver
         ///     Thrown when a response is received from Gremlin Server that indicates
         ///     that an error occurred.
         /// </exception>
-        public static async Task SubmitAsync(this IGremlinClient gremlinClient, RequestMessage requestMessage)
+        public static Task SubmitAsync(this IGremlinClient gremlinClient, RequestMessage requestMessage)
         {
-            await gremlinClient.SubmitAsync<object>(requestMessage).ConfigureAwait(false);
+            return gremlinClient.SubmitAsync<object>(requestMessage);
         }
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace Gremlin.Net.Driver
         ///     Thrown when a response is received from Gremlin Server that indicates
         ///     that an error occurred.
         /// </exception>
-        public static async Task<IReadOnlyCollection<T>> SubmitAsync<T>(this IGremlinClient gremlinClient,
+        public static Task<IReadOnlyCollection<T>> SubmitAsync<T>(this IGremlinClient gremlinClient,
             string requestScript,
             Dictionary<string, object> bindings = null)
         {
@@ -134,7 +134,7 @@ namespace Gremlin.Net.Driver
             if (bindings != null)
                 msgBuilder.AddArgument(Tokens.ArgsBindings, bindings);
             var msg = msgBuilder.Create();
-            return await gremlinClient.SubmitAsync<T>(msg).ConfigureAwait(false);
+            return gremlinClient.SubmitAsync<T>(msg);
         }
     }
 }
