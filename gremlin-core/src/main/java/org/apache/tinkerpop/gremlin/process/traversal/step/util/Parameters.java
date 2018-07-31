@@ -100,11 +100,11 @@ public final class Parameters implements Cloneable, Serializable {
      * Gets the value of a key and if that key isn't present returns the default value from the {@link Supplier}.
      *
      * @param key          the key to retrieve
-     * @param defaultValue the default value generator
+     * @param defaultValue the default value generator which if null will return an empty list
      */
     public <E> List<E> get(final Object key, final Supplier<E> defaultValue) {
         final List<E> list = (List<E>) this.parameters.get(key);
-        return (null == list) ? Collections.singletonList(defaultValue.get()) : list;
+        return (null == list) ? (null == defaultValue ? Collections.emptyList() : Collections.singletonList(defaultValue.get())) : list;
 
     }
 

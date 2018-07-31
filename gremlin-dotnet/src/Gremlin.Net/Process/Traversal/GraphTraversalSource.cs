@@ -333,6 +333,17 @@ namespace Gremlin.Net.Process.Traversal
             return traversal;
         }
 
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the io step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal<S, S> Io<S>(string file)
+        {
+            var traversal = new GraphTraversal<S, S>(TraversalStrategies, new Bytecode(Bytecode));
+                traversal.Bytecode.AddStep("io", file);
+            return traversal;
+        }
+
     }
     
 #pragma warning restore 1591

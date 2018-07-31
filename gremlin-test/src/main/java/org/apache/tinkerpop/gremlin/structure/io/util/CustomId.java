@@ -18,9 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.util;
 
+import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.Io;
+import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.AbstractObjectDeserializer;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.TinkerPopJacksonModule;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerationException;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.core.JsonParser;
@@ -31,11 +36,13 @@ import org.apache.tinkerpop.shaded.jackson.databind.deser.std.StdDeserializer;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
+import org.javatuples.Pair;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -63,6 +70,24 @@ public class CustomId {
 
     public UUID getElementId() {
         return elementId;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final CustomId customId = (CustomId) o;
+
+        if (!cluster.equals(customId.cluster)) return false;
+        return elementId.equals(customId.elementId);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = cluster.hashCode();
+        result = 31 * result + elementId.hashCode();
+        return result;
     }
 
     @Override
@@ -217,6 +242,20 @@ public class CustomId {
         @Override
         public String getTypeNamespace() {
             return "simple";
+        }
+    }
+
+    public static class CustomIdIoRegistry extends AbstractIoRegistry {
+
+        private static final CustomIdIoRegistry INSTANCE = new CustomIdIoRegistry();
+
+        private CustomIdIoRegistry() {
+            register(GryoIo.class, CustomId.class, null);
+            register(GraphSONIo.class, null, new CustomIdTinkerPopJacksonModuleV3d0());
+        }
+
+        public static CustomIdIoRegistry instance() {
+            return INSTANCE;
         }
     }
 }

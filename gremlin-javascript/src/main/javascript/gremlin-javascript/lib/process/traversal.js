@@ -111,6 +111,34 @@ class Traversal {
   };
 }
 
+class IO {
+
+    static get graphml() {
+        return "graphml"
+    }
+
+    static get graphson() {
+        return "graphson"
+    }
+
+    static get gryo() {
+        return "gryo"
+    }
+
+    static get reader() {
+        return "~tinkerpop.io.reader"
+    }
+
+    static get registry() {
+        return "~tinkerpop.io.registry"
+    }
+
+    static get writer() {
+        return "~tinkerpop.io.writer"
+    }
+
+}
+
 class P {
   /**
    * Represents an operation.
@@ -250,6 +278,7 @@ class EnumValue {
 module.exports = {
   EnumValue,
   P,
+  IO,
   Traversal,
   TraversalSideEffects,
   Traverser,

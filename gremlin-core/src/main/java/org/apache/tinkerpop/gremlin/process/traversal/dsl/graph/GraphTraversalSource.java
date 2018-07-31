@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IoStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -384,6 +385,27 @@ public class GraphTraversalSource implements TraversalSource {
         clone.bytecode.addStep(GraphTraversal.Symbols.E, edgesIds);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new GraphStep<>(traversal, Edge.class, true, edgesIds));
+    }
+
+    /**
+     * Performs a read or write based operation on the {@link Graph} backing this {@code GraphTraversalSource}. This
+     * step can be accompanied by the {@link GraphTraversal#with(String, Object)} modulator for further configuration
+     * and must be accompanied by a {@link GraphTraversal#read()} or {@link GraphTraversal#write()} modulator step
+     * which will terminate the traversal.
+     *
+     * @param file the name of file for which the read or write will apply - note that the context of how this
+     *             parameter is used is wholly dependent on the implementation
+     * @return the traversal with the {@link IoStep} added
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#io-step" target="_blank">Reference Documentation - IO Step</a>
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#read-step" target="_blank">Reference Documentation - Read Step</a>
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#write-step" target="_blank">Reference Documentation - Write Step</a>
+     * @since 3.4.0
+     */
+    public <S> GraphTraversal<S, S> io(final String file) {
+        final GraphTraversalSource clone = this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.io, file);
+        final GraphTraversal.Admin<S,S> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new IoStep<S>(traversal, file));
     }
 
     /**

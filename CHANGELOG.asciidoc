@@ -25,6 +25,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-3-3, 3.3.3>>.
 
+* `AbstractGraphProvider` uses `g.io()` for loading test data.
+* Added the `io()` start step and `read()` and `write()` termination steps to the Gremlin language.
+* Added `GraphFeatures.supportsIoRead()` and `GraphFeatures.supportsIoWrite()`.
+* Deprecated `Graph.io()` and related infrastructure.
 * Bumped to Netty 4.1.25.
 * Bumped to Spark 2.3.1.
 * Moved `Parameterizing` interface to the `org.apache.tinkerpop.gremlin.process.traversal.step` package with other marker interfaces of its type.

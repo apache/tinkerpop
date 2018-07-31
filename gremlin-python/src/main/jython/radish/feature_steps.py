@@ -21,7 +21,7 @@ import json
 import re
 from gremlin_python.structure.graph import Graph, Path
 from gremlin_python.process.graph_traversal import __
-from gremlin_python.process.traversal import Barrier, Cardinality, P, Pop, Scope, Column, Order, Direction, T, Pick, Operator
+from gremlin_python.process.traversal import Barrier, Cardinality, P, Pop, Scope, Column, Order, Direction, T, Pick, Operator, IO
 from radish import given, when, then
 from hamcrest import *
 
@@ -34,6 +34,7 @@ regex_in = re.compile(r"([(.,\s])in\(")
 regex_is = re.compile(r"([(.,\s])is\(")
 regex_not = re.compile(r"([(.,\s])not\(")
 regex_or = re.compile(r"([(.,\s])or\(")
+regex_with = re.compile(r"([(.,\s])with\(")
 regex_true = re.compile(r"(true)")
 regex_false = re.compile(r"(false)")
 
@@ -241,6 +242,7 @@ def _translate(traversal):
     replaced = regex_not.sub(r"\1not_(", replaced)
     replaced = regex_or.sub(r"\1or_(", replaced)
     replaced = regex_in.sub(r"\1in_(", replaced)
+    replaced = regex_with.sub(r"\1with_(", replaced)
     replaced = regex_true.sub(r"True", replaced)
     return regex_false.sub(r"False", replaced)
 
@@ -254,6 +256,7 @@ def _make_traversal(g, traversal_string, params):
          "Direction": Direction,
          "Order": Order,
          "P": P,
+         "IO": IO,
          "Pick": Pick,
          "Pop": Pop,
          "Scope": Scope,

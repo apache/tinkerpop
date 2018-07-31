@@ -39,6 +39,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ReadWriting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TimesModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchStep;
@@ -123,6 +124,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCount
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IoStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.LambdaSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackValueStep;
@@ -2733,6 +2735,38 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     ////
 
+    ///////////////////// IO STEPS /////////////////////
+
+    /**
+     * This step is technically a step modulator for the the {@link GraphTraversalSource#io(String)} step which
+     * instructs the step to perform a read with its given configuration.
+     *
+     * @return the traversal with the {@link IoStep} modulated to read
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#io-step" target="_blank">Reference Documentation - IO Step</a>
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#read-step" target="_blank">Reference Documentation - Read Step</a>
+     * @since 3.4.0
+     */
+    public default GraphTraversal<S,E> read() {
+        this.asAdmin().getBytecode().addStep(Symbols.read);
+        ((ReadWriting) this.asAdmin().getEndStep()).setMode(ReadWriting.Mode.READING);
+        return this;
+    }
+
+    /**
+     * This step is technically a step modulator for the the {@link GraphTraversalSource#io(String)} step which
+     * instructs the step to perform a write with its given configuration.
+     *
+     * @return the traversal with the {@link IoStep} modulated to write
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#io-step" target="_blank">Reference Documentation - IO Step</a>
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#write-step" target="_blank">Reference Documentation - Write Step</a>
+     * @since 3.4.0
+     */
+    public default GraphTraversal<S,E> write() {
+        this.asAdmin().getBytecode().addStep(Symbols.write);
+        ((ReadWriting) this.asAdmin().getEndStep()).setMode(ReadWriting.Mode.WRITING);
+        return this;
+    }
+
     /**
      * Iterates the traversal presumably for the generation of side-effects.
      */
@@ -2817,6 +2851,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String skip = "skip";
         public static final String tail = "tail";
         public static final String coin = "coin";
+        public static final String io = "io";
+        public static final String read = "read";
+        public static final String write = "write";
 
         public static final String timeLimit = "timeLimit";
         public static final String simplePath = "simplePath";

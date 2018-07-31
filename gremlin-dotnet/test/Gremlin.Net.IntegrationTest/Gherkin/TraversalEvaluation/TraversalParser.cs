@@ -44,6 +44,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 
         private static readonly Regex RegexEnum = new Regex(@"\w+\.\w+", RegexOptions.Compiled);
 
+        private static readonly Regex RegexIO = new Regex(@"IO.\w+", RegexOptions.Compiled);
+
         private static readonly Regex RegexParam = new Regex(@"\w+", RegexOptions.Compiled);
         
         private static readonly HashSet<Type> NumericTypes = new HashSet<Type>
@@ -423,6 +425,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             {
                 i += parameterText.Length - 1;
                 return LiteralParameter.Create(Convert.ToBoolean(parameterText));
+            }
+            if (RegexIO.IsMatch(parameterText))
+            {
+                i += parameterText.Length - 1;
+                return new IOParameter(parameterText);
             }
             if (RegexEnum.IsMatch(parameterText))
             {

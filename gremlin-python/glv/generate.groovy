@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.P
+import org.apache.tinkerpop.gremlin.process.traversal.IO
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import java.lang.reflect.Modifier
 // this is a bit of a copy of what's in SymbolHelper - no way around it because this code generation task occurs
@@ -78,6 +79,9 @@ def binding = ["enums": CoreImports.getClassImports()
                        collect { toPython(it.name) }.
                        unique().
                        sort { a, b -> a <=> b },
+               "io": IO.class.getFields().
+                       sort{ a, b -> a.name <=> b.name }.
+                       collectEntries{ f -> [(f.name) : f.get(null)]},
                "toPython": toPython,
                "toJava": toJava]
 

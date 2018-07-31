@@ -36,7 +36,7 @@ modulator. This modulator allows the step it is modifying to accept configuratio
 behavior of the step itself. A good example of its usage is shown with the revised syntax of the `pageRank()`-step
 which now uses `with()` to replace the old `by()` options:
 
-[groovy]
+[source,groovy]
 ----
 g.V().hasLabel('person').
   pageRank().
@@ -49,7 +49,7 @@ g.V().hasLabel('person').
 
 A similar change was made for `peerPressure()`-step:
 
-[groovy]
+[source,groovy]
 ----
 g.V().hasLabel('person').
   peerPressure().
@@ -64,6 +64,33 @@ release where breaking changes are allowed.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1975[TINKERPOP-1975],
 link:http://tinkerpop.apache.org/docs/3.4.0/reference/#with-step[Reference Documentation]
+
+==== io() Step
+
+There have been some important changes to IO operations for reading and writing graph data. The use of `Graph.io()`
+has been deprecated to further remove dependence on the Graph (Structure) API for users and to extend these basic
+operations to GLV users by making these features available as part of the Gremlin language.
+
+It is now possible to simply use Gremlin:
+
+[source,groovy]
+----
+graph = ...
+g = graph.traversal()
+g.io(someInputFile).read().iterate()
+g.io(someOutputFile).write().iterate()
+----
+
+While `io()`-step is still single-threaded for OLTP style loading, it can be utilized in conjunction with OLAP which
+internally uses `CloneVertexProgram` and therefore any graph `InputFormat` or `OutputFormat` can be configured in
+conjunction with this step for parallel loads of large datasets.
+
+It is also worth noting that the `io()`-step may be overriden by graph providers to utilize their native bulk-loading
+features, so consult the documentation of the implementation being used to determine if there are any improved
+efficiencies there.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1996[TINKERPOP-1996],
+link:http://tinkerpop.apache.org/docs/3.4.0/reference/#io-step[Reference Documentation]
 
 ==== Removal of Giraph Support
 
@@ -283,6 +310,24 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1522[TINKERPOP-1522]
 === Upgrading for Providers
 
 ==== Graph Database Providers
+
+===== io() Step
+
+The new `io()`-step that was introduced provides some new changes to consider. Note that `Graph.io()` has been
+deprecated and users are no longer instructed to utilize that method. It is not yet decided when that method will be
+removed completely, but given the public nature of it and the high chance of common usage, it should be hanging around
+for some time.
+
+As with any step in Gremlin, it is possible to replace it with a more provider specific implementation that could be
+more efficient. Developing a `TraversalStrategy` to do this is encouraged, especially for those graph providers who
+might have special bulk loaders that could be abstracted by this step. Examples of this are already shown with
+`HadoopGraph` which replaces the simple single-threaded loader with `CloneVertexProgram`. Graph providers are
+encouraged to use the `with()` step to capture any necessary configurations required for their underlying loader to
+work. Graph providers should not feel restricted to `graphson`, `gryo` and `graphml` formats either. If a graph
+supports CSV or some custom graph specific format, it shouldn't be difficult to gather the configurations necessary to
+make that available to users.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1996[TINKERPOP-1996]
 
 ===== Caching Graph Features
 

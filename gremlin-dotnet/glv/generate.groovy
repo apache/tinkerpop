@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.P
+import org.apache.tinkerpop.gremlin.process.traversal.IO
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.structure.Direction
 import java.lang.reflect.Modifier
@@ -38,6 +39,7 @@ def toCSharpTypeMap = ["Long": "long",
                        "Object[]": "object[]",
                        "Class": "Type",
                        "Class[]": "Type[]",
+                       "java.util.Map<java.lang.String, java.lang.Object>": "IDictionary<string, object>",
                        "java.util.Map<java.lang.String, E2>": "IDictionary<string, E2>",
                        "java.util.Map<java.lang.String, B>": "IDictionary<string, E2>",
                        "java.util.Map<java.lang.Object, E2>": "IDictionary<object, E2>",
@@ -251,13 +253,13 @@ def binding = ["pmethods": P.class.getMethods().
                         unique { a,b -> a.name <=> b.name ?: getCSharpParamTypeString(a) <=> getCSharpParamTypeString(b) }.
                         collect { javaMethod ->
                             def typeNames = getJavaGenericTypeParameterTypeNames(javaMethod)
-                            def typeNameString = typeNames.join(", ")
+                            def t1 = toCSharpType(typeNames[0])
                             def t2 = toCSharpType(typeNames[1])
                             def tParam = getCSharpGenericTypeParam(t2)
                             def parameters = getCSharpParamString(javaMethod, true)
                             def paramNames = getParamNames(javaMethod.parameters)
                             def argsListType = getArgsListType(parameters)
-                            return ["methodName": javaMethod.name, "typeNameString": typeNameString, "tParam":tParam, "parameters":parameters, "paramNames":paramNames, "argsListType":argsListType]
+                            return ["methodName": javaMethod.name, "t1":t1, "t2":t2, "tParam":tParam, "parameters":parameters, "paramNames":paramNames, "argsListType":argsListType]
                         },
                "graphStepMethods": GraphTraversal.getMethods().
                         findAll { GraphTraversal.class.equals(it.returnType) }.
@@ -302,6 +304,9 @@ def binding = ["pmethods": P.class.getMethods().
                             def graphTraversalT2 = getGraphTraversalT2ForT2(t2)
                             return ["methodName": javaMethod.name, "t2":t2, "tParam":tParam, "parameters":parameters, "paramNames":paramNames, "callGenericTypeArg":callGenericTypeArg, "graphTraversalT2":graphTraversalT2]
                         },
+               "io": IO.class.getFields().
+                       sort{ a, b -> a.name <=> b.name }.
+                       collectEntries{ f -> [(f.name) : f.get(null)]},
                "toCSharpMethodName": toCSharpMethodName]
 
 def engine = new groovy.text.GStringTemplateEngine()
@@ -320,6 +325,10 @@ anonymousTraversalFile.newWriter().withWriter{ it << anonymousTraversalTemplate 
 def pTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/P.template")).make(binding)
 def pFile = new File("${projectBaseDir}/src/Gremlin.Net/Process/Traversal/P.cs")
 pFile.newWriter().withWriter{ it << pTemplate }
+
+def ioTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/IO.template")).make(binding)
+def ioFile = new File("${projectBaseDir}/src/Gremlin.Net/Process/Traversal/IO.cs")
+ioFile.newWriter().withWriter{ it << ioTemplate }
 
 
 def createEnum = { enumClass ->
