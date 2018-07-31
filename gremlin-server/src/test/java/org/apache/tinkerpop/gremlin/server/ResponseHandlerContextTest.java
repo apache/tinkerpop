@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import io.netty.channel.ChannelHandlerContext;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -48,6 +49,8 @@ public class ResponseHandlerContextTest {
     private final Context context = new Context(request, ctx, null, null, null, null);
     private final ResponseHandlerContext rhc = new ResponseHandlerContext(context);
     private final Log4jRecordingAppender recordingAppender = new Log4jRecordingAppender();
+
+    private Level originalLogLevel;
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
@@ -86,11 +89,14 @@ public class ResponseHandlerContextTest {
     public void addRecordingAppender() {
         final Logger rootLogger = Logger.getRootLogger();
         rootLogger.addAppender(recordingAppender);
+        originalLogLevel = rootLogger.getLevel();
+        rootLogger.setLevel(Level.ALL);
     }
 
     @After
     public void removeRecordingAppender() {
         final Logger rootLogger = Logger.getRootLogger();
+        rootLogger.setLevel(originalLogLevel);
         rootLogger.removeAppender(recordingAppender);
     }
 
