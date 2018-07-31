@@ -33,9 +33,9 @@ public class AbstractOpProcessorTest {
 
     @Test
     public void deprecatedMakeFrameMethodShouldRedirectCorrectly() throws Exception {
-        ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
-        RequestMessage request = RequestMessage.build("test").create();
-        ArgumentCaptor<ResponseMessage> responseCaptor = ArgumentCaptor.forClass(ResponseMessage.class);
+        final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
+        final RequestMessage request = RequestMessage.build("test").create();
+        final ArgumentCaptor<ResponseMessage> responseCaptor = ArgumentCaptor.forClass(ResponseMessage.class);
 
         try {
             // Induce a NullPointerException to validate error response message writing
@@ -53,9 +53,9 @@ public class AbstractOpProcessorTest {
 
     @Test
     public void alternativeMakeFrameMethodShouldRedirectCorrectly() throws Exception {
-        ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
-        RequestMessage request = RequestMessage.build("test").create();
-        ArgumentCaptor<ResponseMessage> responseCaptor = ArgumentCaptor.forClass(ResponseMessage.class);
+        final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
+        final RequestMessage request = RequestMessage.build("test").create();
+        final ArgumentCaptor<ResponseMessage> responseCaptor = ArgumentCaptor.forClass(ResponseMessage.class);
 
         try {
             // Induce a NullPointerException to validate error response message writing

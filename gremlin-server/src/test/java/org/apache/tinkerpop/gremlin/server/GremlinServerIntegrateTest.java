@@ -1028,8 +1028,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final List<ResponseMessage> responses = client.submit(request);
             assertThat(responses.size(), Matchers.greaterThan(1));
             for (Iterator<ResponseMessage> it = responses.iterator(); it.hasNext(); ) {
-                ResponseMessage msg = it.next();
-                ResponseStatusCode expected = it.hasNext() ? ResponseStatusCode.PARTIAL_CONTENT : ResponseStatusCode.SUCCESS;
+                final ResponseMessage msg = it.next();
+                final ResponseStatusCode expected = it.hasNext() ? ResponseStatusCode.PARTIAL_CONTENT : ResponseStatusCode.SUCCESS;
                 assertEquals(expected, msg.getStatus().getCode());
             }
         }

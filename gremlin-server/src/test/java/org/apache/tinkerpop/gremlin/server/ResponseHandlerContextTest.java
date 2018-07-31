@@ -55,7 +55,7 @@ public class ResponseHandlerContextTest {
                 {
                     new BiFunction<ResponseHandlerContext, ResponseStatusCode, Void>() {
                         @Override
-                        public Void apply(ResponseHandlerContext context, ResponseStatusCode code) {
+                        public Void apply(final ResponseHandlerContext context, final ResponseStatusCode code) {
                             context.writeAndFlush(code, "testMessage");
                             return null;
                         }
@@ -68,7 +68,7 @@ public class ResponseHandlerContextTest {
                 }, {
                     new BiFunction<ResponseHandlerContext, ResponseStatusCode, Void>() {
                         @Override
-                        public Void apply(ResponseHandlerContext context, ResponseStatusCode code) {
+                        public Void apply(final ResponseHandlerContext context, final ResponseStatusCode code) {
                             context.writeAndFlush(ResponseMessage.build(UUID.randomUUID()).code(code).create());
                             return null;
                         }

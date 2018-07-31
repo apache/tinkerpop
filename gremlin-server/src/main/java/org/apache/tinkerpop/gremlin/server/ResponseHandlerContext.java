@@ -42,7 +42,7 @@ public class ResponseHandlerContext {
     private final Context context;
     private final AtomicBoolean finalResponseWritten = new AtomicBoolean();
 
-    public ResponseHandlerContext(Context context) {
+    public ResponseHandlerContext(final Context context) {
         this.context = context;
     }
 
@@ -58,7 +58,7 @@ public class ResponseHandlerContext {
      * <p>Attempts to write more than one final response message will be ignored.</p>
      * @see #writeAndFlush(ResponseStatusCode, Object)
      */
-    public void writeAndFlush(ResponseMessage message) {
+    public void writeAndFlush(final ResponseMessage message) {
         writeAndFlush(message.getStatus().getCode(), message);
     }
 
@@ -71,7 +71,7 @@ public class ResponseHandlerContext {
      * <p>Attempts to write more than one final response message will be ignored.</p>
      * @see #writeAndFlush(ResponseMessage)
      */
-    public void writeAndFlush(ResponseStatusCode code, Object responseMessage) {
+    public void writeAndFlush(final ResponseStatusCode code, final Object responseMessage) {
         final boolean messageIsFinal = code.isFinalResponse();
         if(finalResponseWritten.compareAndSet(false, messageIsFinal)) {
             context.getChannelHandlerContext().writeAndFlush(responseMessage);

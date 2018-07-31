@@ -41,17 +41,17 @@ public class AbstractEvalOpProcessorTest {
 
     @Test
     public void evalOpInternalShouldHandleAllEvaluationExceptions() throws OpProcessorException {
-        AbstractEvalOpProcessor processor = new StandardOpProcessor();
-        RequestMessage request = RequestMessage.build("test").create();
-        Settings settings = new Settings();
-        ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
-        ArgumentCaptor<ResponseMessage> responseCaptor = ArgumentCaptor.forClass(ResponseMessage.class);
+        final AbstractEvalOpProcessor processor = new StandardOpProcessor();
+        final RequestMessage request = RequestMessage.build("test").create();
+        final Settings settings = new Settings();
+        final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
+        final ArgumentCaptor<ResponseMessage> responseCaptor = ArgumentCaptor.forClass(ResponseMessage.class);
 
-        GremlinExecutor gremlinExecutor = Mockito.mock(GremlinExecutor.class);
+        final GremlinExecutor gremlinExecutor = Mockito.mock(GremlinExecutor.class);
         Mockito.when(gremlinExecutor.eval(anyString(), anyString(), Mockito.any(), Mockito.<GremlinExecutor.LifeCycle>any()))
                 .thenThrow(new IllegalStateException("test-exception"));
 
-        Context context = new Context(request, ctx, settings, null, gremlinExecutor, null);
+        final Context context = new Context(request, ctx, settings, null, gremlinExecutor, null);
         processor.evalOpInternal(context, context::getGremlinExecutor, SimpleBindings::new);
 
         Mockito.verify(ctx, Mockito.times(1)).writeAndFlush(responseCaptor.capture());

@@ -227,7 +227,7 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
      */
     protected void evalOpInternal(final Context context, final Supplier<GremlinExecutor> gremlinExecutorSupplier,
                                   final BindingSupplier bindingsSupplier) throws OpProcessorException {
-        ResponseHandlerContext rhc = new ResponseHandlerContext(context);
+        final ResponseHandlerContext rhc = new ResponseHandlerContext(context);
         try {
             evalOpInternal(rhc, gremlinExecutorSupplier, bindingsSupplier);
         } catch (Exception ex) {
@@ -251,7 +251,6 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                                   final BindingSupplier bindingsSupplier) throws OpProcessorException {
         final Context context = rhc.getContext();
         final Timer.Context timerContext = evalOpTimer.time();
-        final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
         final GremlinExecutor gremlinExecutor = gremlinExecutorSupplier.get();
         final Settings settings = context.getSettings();

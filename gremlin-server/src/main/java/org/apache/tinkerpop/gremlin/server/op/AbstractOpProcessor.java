@@ -278,8 +278,8 @@ public abstract class AbstractOpProcessor implements OpProcessor {
     protected static Frame makeFrame(final ChannelHandlerContext ctx, final RequestMessage msg,
                                    final MessageSerializer serializer, final boolean useBinary, final List<Object> aggregate,
                                    final ResponseStatusCode code, final Map<String,Object> responseMetaData) throws Exception {
-        Context context = new Context(msg, ctx, null, null, null, null); // dummy context, good only for writing response messages to the channel
-        ResponseHandlerContext rhc = new ResponseHandlerContext(context);
+        final Context context = new Context(msg, ctx, null, null, null, null); // dummy context, good only for writing response messages to the channel
+        final ResponseHandlerContext rhc = new ResponseHandlerContext(context);
         return makeFrame(rhc, msg, serializer, useBinary, aggregate, code, responseMetaData);
     }
 
