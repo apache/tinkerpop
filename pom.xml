@@ -304,6 +304,7 @@ limitations under the License.
                             <failIfNoMatch>false</failIfNoMatch>
                         </configuration>
                     </execution>
+                    <!-- Needed to figure out the version components when reading revapi API check config below -->
                     <execution>
                         <id>parse-version</id>
                         <goals>
@@ -405,21 +406,6 @@ limitations under the License.
                         </exclusions>
                     </dependency>
                 </dependencies>
-            </plugin>
-            <!-- Needed to figure out the version components when reading revapi API check config below -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-		<version>3.0.0</version>
-                <executions>
-                    <execution>
-                        <id>parse-version</id>
-                        <goals>
-                            <goal>parse-version</goal>
-                        </goals>
-                        <phase>validate</phase>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.revapi</groupId>
