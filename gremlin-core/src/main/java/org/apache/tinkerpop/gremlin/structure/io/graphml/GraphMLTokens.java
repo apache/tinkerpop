@@ -55,4 +55,6 @@ final class GraphMLTokens {
     public static final String LONG = "long";
     public static final String BOOLEAN = "boolean";
     public static final String INT = "int";
+    public static final String VERTEX_SUFFIX = "V";
+    public static final String EDGE_SUFFIX = "E";
 }
