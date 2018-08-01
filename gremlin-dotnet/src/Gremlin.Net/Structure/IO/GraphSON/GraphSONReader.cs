@@ -58,8 +58,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 {"gx:ByteBuffer", new ByteBufferDeserializer()},
                 {"gx:Char", new CharConverter()},
                 {"gx:Period", new TimeSpanDeserializer() },
-                {"gx:Int16", new Int16Converter() },
-                {"gx:ZoneOffset", new ZoneOffsetDeserializer() }
+                {"gx:Int16", new Int16Converter() }
             };
 
         /// <summary>
