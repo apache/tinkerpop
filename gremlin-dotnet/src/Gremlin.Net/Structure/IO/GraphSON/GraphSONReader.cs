@@ -57,7 +57,6 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 {"gx:Byte", new ByteConverter()},
                 {"gx:ByteBuffer", new ByteBufferDeserializer()},
                 {"gx:Char", new CharConverter()},
-                {"gx:Instant", new InstantDeserializer()},
                 {"gx:LocalDate", new LocalDateDeserializer()},
                 {"gx:LocalDateTime", new LocalDateTimeDeserializer()},
                 {"gx:LocalTime", new LocalTimeDeserializer()},
