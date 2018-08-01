@@ -35,6 +35,7 @@ import org.apache.jena.sparql.algebra.OpVisitorBase;
 import org.apache.jena.sparql.algebra.OpWalker;
 import org.apache.jena.sparql.algebra.op.OpBGP;
 import org.apache.jena.sparql.algebra.op.OpFilter;
+        import org.apache.jena.sparql.algebra.op.OpLeftJoin;  
 import org.apache.jena.sparql.algebra.op.OpUnion;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarExprList;
@@ -58,6 +59,9 @@ public class SparqlToGremlinCompiler {
     private GraphTraversal<Vertex, ?> traversal;
 
     private List<Traversal> traversalList = new ArrayList<>();
+            List<Traversal> optionalTraversals = new ArrayList<Traversal>();
+            List<String> optionalVariable = new ArrayList<String>();
+            boolean optionalFlag = false;
 
     private SparqlToGremlinCompiler(final GraphTraversal<Vertex, ?> traversal) {
         this.traversal = traversal;
@@ -93,17 +97,37 @@ public class SparqlToGremlinCompiler {
 
         int traversalIndex = 0;
         final int numberOfTraversal = traversalList.size();
-        final Traversal arrayOfAllTraversals[] = new Traversal[numberOfTraversal];
+        final int numberOfOptionalTraversal = optionalTraversals.size();
+        Traversal arrayOfAllTraversals[] = null;
+
+        if (numberOfOptionalTraversal > 0) {
+            arrayOfAllTraversals = new Traversal[numberOfTraversal - numberOfOptionalTraversal +1];
+        } else {
+            arrayOfAllTraversals = new Traversal[numberOfTraversal - numberOfOptionalTraversal];
+        }
+        
+        Traversal arrayOfOptionalTraversals[] = new Traversal[numberOfOptionalTraversal];
 
         for (Traversal tempTrav : traversalList) {
             arrayOfAllTraversals[traversalIndex++] = tempTrav;
         }
 
-        // creates a map of ordering keys and their ordering direction
+        traversalIndex = 0;
+        for (Traversal tempTrav : optionalTraversals) 
+            arrayOfOptionalTraversals[traversalIndex++] = tempTrav;
+ 
+         // creates a map of ordering keys and their ordering direction
         final Map<String, Order> orderingIndex = createOrderIndexFromQuery(query);
 
         if (traversalList.size() > 0)
             traversal = traversal.match(arrayOfAllTraversals);
+
+        if (optionalTraversals.size() > 0) {
+            traversal = traversal.coalesce(__.match(arrayOfOptionalTraversals), (Traversal) __.constant("N/A"));
+            for (int i = 0; i < optionalVariable.size(); i++) {
+                traversal = traversal.as(optionalVariable.get(i).substring(1));
+            }
+        }
 
         final List<String> vars = query.getResultVars();
         if (!query.isQueryResultStar() && !query.hasGroupBy()) {
@@ -157,7 +181,6 @@ public class SparqlToGremlinCompiler {
                             traversal = traversal.groupCount();
                         }
                     }
-
                     if (expr.getAggregator().getName().contains("MAX")) {
                         traversal = traversal.max();
                     }
@@ -220,7 +243,14 @@ public class SparqlToGremlinCompiler {
          */
         @Override
         public void visit(final OpBGP opBGP) {
-            opBGP.getPattern().getList().forEach(triple -> traversalList.add(TraversalBuilder.transform(triple)));
+        if(optionalFlag)
+            {
+                opBGP.getPattern().getList().forEach(triple -> optionalTraversals.add(TraversalBuilder.transform(triple)));
+                opBGP.getPattern().getList().forEach(triple -> optionalVariable.add(triple.getObject().toString()));
+                
+            }
+            else        
+                opBGP.getPattern().getList().forEach(triple -> traversalList.add(TraversalBuilder.transform(triple)));
         }
 
         /**
@@ -235,6 +265,32 @@ public class SparqlToGremlinCompiler {
                     traversalList.add(traversal);
                 }
             }
+        }
+
+        
+        /**
+         * Visiting LeftJoin(Optional) in SPARQL algebra.
+         */
+        @Override
+        public void visit(final OpLeftJoin opLeftJoin) {
+            optionalFlag = true;
+            optionalVisit(opLeftJoin.getRight());
+            if (opLeftJoin.getExprs() != null) {
+                for (Expr expr : opLeftJoin.getExprs().getList()) {
+                    if (expr != null) {
+                        if (optionalFlag)
+                            optionalTraversals.add(__.where(WhereTraversalBuilder.transform(expr)));
+                    }
+                }
+            }
+        }
+        
+        /**
+         * Walking OP for Optional in SPARQL algebra.
+         */
+        private void optionalVisit(final Op op) {
+
+            OpWalker.walk(op, this);
         }
 
         /**
