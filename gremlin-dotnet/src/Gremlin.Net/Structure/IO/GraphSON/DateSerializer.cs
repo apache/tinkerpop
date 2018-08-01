@@ -23,11 +23,10 @@
 
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class DateSerializer : IGraphSONSerializer, IGraphSONDeserializer
+    internal class DateSerializer : IGraphSONSerializer
     {
         private static readonly DateTimeOffset UnixStart = new DateTimeOffset(1970, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
         
@@ -36,12 +35,6 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             DateTimeOffset value = objectData;
             var ticks = (value - UnixStart).Ticks;
             return GraphSONUtil.ToTypedValue("Date", ticks / TimeSpan.TicksPerMillisecond);
-        }
-
-        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
-        {
-            var milliseconds = graphsonObject.ToObject<long>();
-            return UnixStart.AddTicks(TimeSpan.TicksPerMillisecond * milliseconds);
         }
     }
 }
