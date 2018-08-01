@@ -206,9 +206,8 @@ WHERE { ?person v:label "person" . ?person v:age ?age . ?person v:name ?name . }
 The the variable encountered first will be the ordering decider, i.e. since we have `?person` being encountered first, the result set will be ordered according to the `?person` variable (which are vertex id).
 
 * OPTIONAL
-....
-currently fixing this...
-....
+In the current implementation, `OPTIONAL` clause doesn't work under nesting with `UNION` clause (i.e. multiple optional clauses with in a union clause) and `ORDER-By` clause (i.e. declaring ordering over triple patterns within optional clauses). Everything else with SPARQL `OPTIONAL` works just fine.
+
 
 [[examples]]
 === Examples
