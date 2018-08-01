@@ -50,7 +50,6 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 {typeof(long), new Int64Converter()},
                 {typeof(float), new FloatConverter()},
                 {typeof(double), new DoubleConverter()},
-                {typeof(decimal), new DecimalConverter()},
                 {typeof(Guid), new UuidSerializer()},
                 {typeof(DateTimeOffset), new DateSerializer()},
                 {typeof(Type), new ClassSerializer()},
@@ -64,6 +63,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 {typeof(ILambda), new LambdaSerializer()},
 
                 //Extended
+                {typeof(decimal), new DecimalConverter()},
                 {typeof(TimeSpan), new TimeSpanSerializer()},
                 {typeof(BigInteger), new BigIntegerSerializer()},
                 {typeof(byte), new ByteConverter()},
