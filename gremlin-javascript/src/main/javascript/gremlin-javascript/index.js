@@ -31,17 +31,13 @@ const rc = require('./lib/driver/remote-connection');
 const Bytecode = require('./lib/process/bytecode');
 const utils = require('./lib/utils');
 const DriverRemoteConnection = require('./lib/driver/driver-remote-connection');
-const Auth = require('./lib/driver/authenticator');
-const SaslAuth = require('./lib/driver/sasl-authenticator');
 
 module.exports = {
   driver: {
     RemoteConnection: rc.RemoteConnection,
     RemoteStrategy: rc.RemoteStrategy,
     RemoteTraversal: rc.RemoteTraversal,
-    DriverRemoteConnection: DriverRemoteConnection,
-    Authenticator: Auth,
-    SaslAuthenticator: SaslAuth
+    DriverRemoteConnection: DriverRemoteConnection
   },
   process: {
     Bytecode: Bytecode,

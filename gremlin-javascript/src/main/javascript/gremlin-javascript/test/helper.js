@@ -24,7 +24,7 @@
 const os = require('os');
 
 const DriverRemoteConnection = require('../lib/driver/driver-remote-connection');
-const SaslAuthenticator = require('../lib/driver/sasl-authenticator');
+const SaslAuthenticator = require('../lib/driver/auth/sasl-authenticator');
 const SaslMechanismPlain = require('../lib/driver/auth/mechanisms/sasl-mechanism-plain');
 
 exports.getConnection = function getConnection(traversalSource) {
@@ -32,7 +32,7 @@ exports.getConnection = function getConnection(traversalSource) {
 };
 
 exports.getSecureConnectionWithAuthenticator = function getConnection(traversalSource) {
-  const authenticator = new SaslAuthenticator({ mechanism: new SaslMechanismPlain(), username: 'stephen', password: 'password', authId: os.hostname() });
+  const authenticator = new SaslAuthenticator({ mechanism: new SaslMechanismPlain({ username: 'stephen', password: 'password', authzid: os.hostname() }) });
   return new DriverRemoteConnection('ws://localhost:45941/gremlin', { 
     traversalSource: traversalSource, 
     authenticator: authenticator, 

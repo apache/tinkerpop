@@ -49,16 +49,16 @@ describe('DriverRemoteConnectionWithSaslAuthenticator', function () {
         });
     });
     it('should send the request with invalid credentials and parse the response error', function () {
-      connection._authenticator.username = 'Bob';
+      connection._authenticator._options.mechanism._options.username = 'Bob';
       return connection.submit(new Bytecode().addStep('V', []).addStep('tail', []))
         .catch(function (err) {
           assert.ok(err);
           assert.ok(err.message.indexOf('401') > 0);
         });
     });
-    it('should send incorrect conifugration to the authenticator and parse the response error', function () {
-      delete connection._authenticator.username;
-      delete connection._authenticator.password;
+    it('should send incorrect configuration to the authenticator and parse the response error', function () {
+      delete connection._authenticator._options.mechanism._options.username;
+      delete connection._authenticator._options.mechanism._options.password;
       return connection.submit(new Bytecode().addStep('V', []).addStep('tail', []))
         .catch(function (err) {
           assert.ok(err);
