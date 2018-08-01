@@ -22,22 +22,15 @@
 
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class ByteBufferSerializer : IGraphSONSerializer, IGraphSONDeserializer
+    internal class ByteBufferSerializer : IGraphSONSerializer
     {
         public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
         {
             byte[] value = objectData;
             return GraphSONUtil.ToTypedValue("ByteBuffer", Convert.ToBase64String(value), "gx");
-        }
-
-        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
-        {
-            var base64String = graphsonObject.ToObject<string>();
-            return Convert.FromBase64String(base64String);
         }
     }
 }
