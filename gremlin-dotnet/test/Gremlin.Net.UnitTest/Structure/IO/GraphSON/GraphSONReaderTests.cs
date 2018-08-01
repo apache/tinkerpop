@@ -420,80 +420,6 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         }
 
         [Fact]
-        public void ShouldDeserializeInstant()
-        {
-            var serializedValue = "{\"@type\":\"gx:Instant\",\"@value\":\"2016-12-14T16:39:19.349Z\"}";
-            var reader = CreateStandardGraphSONReader();
-
-            var jObject = JObject.Parse(serializedValue);
-            var deserializedValue = reader.ToObject(jObject);
-
-            Assert.Equal(new DateTime(2016, 12, 14, 16, 39, 19, 349, DateTimeKind.Utc), deserializedValue);
-        }
-
-        [Fact]
-        public void ShouldDeserializeLocalDate()
-        {
-            var serializedValue = "{\"@type\":\"gx:LocalDate\",\"@value\":\"2016-01-01\"}";
-            var reader = CreateStandardGraphSONReader();
-
-            var jObject = JObject.Parse(serializedValue);
-            DateTime deserializedValue = reader.ToObject(jObject);
-
-            Assert.Equal(new DateTime(2016, 1, 1, 0, 0, 0), deserializedValue);
-            Assert.Equal(DateTimeKind.Local, deserializedValue.Kind);
-        }
-
-        [Fact]
-        public void ShouldDeserializeLocalDateTime()
-        {
-            var serializedValue = "{\"@type\":\"gx:LocalDateTime\",\"@value\":\"2016-01-01T12:30\"}";
-            var reader = CreateStandardGraphSONReader();
-
-            var jObject = JObject.Parse(serializedValue);
-            DateTime deserializedValue = reader.ToObject(jObject);
-
-            Assert.Equal(new DateTime(2016, 1, 1, 12, 30, 0), deserializedValue);
-            Assert.Equal(DateTimeKind.Local, deserializedValue.Kind);
-        }
-        
-        [Fact]
-        public void ShouldDeserializeLocalTime()
-        {
-            var serializedValue = "{\"@type\":\"gx:LocalTime\",\"@value\":\"12:30:45\"}";
-            var reader = CreateStandardGraphSONReader();
-
-            var jObject = JObject.Parse(serializedValue);
-            var deserializedValue = reader.ToObject(jObject);
-
-            Assert.Equal(new TimeSpan(12, 30, 45), deserializedValue);
-        }
-
-        [Fact]
-        public void ShouldDeserializeOffsetDateTime()
-        {
-            var serializedValue = "{\"@type\":\"gx:OffsetDateTime\",\"@value\":\"2007-12-03T10:15:30+01:00\"}";
-            var reader = CreateStandardGraphSONReader();
-
-            var jObject = JObject.Parse(serializedValue);
-            var deserializedValue = reader.ToObject(jObject);
-
-            Assert.Equal(new DateTimeOffset(2007, 12, 3, 10, 15, 30, TimeSpan.FromHours(1)), deserializedValue);
-        }
-
-        [Fact]
-        public void ShouldDeserializePeriod()
-        {
-            var serializedValue = "{\"@type\":\"gx:Period\",\"@value\":\"P1Y6M15D\"}";
-            var reader = CreateStandardGraphSONReader();
-
-            var jObject = JObject.Parse(serializedValue);
-            var deserializedValue = reader.ToObject(jObject);
-
-            Assert.Equal(TimeSpan.FromDays(560), deserializedValue);
-        }
-
-        [Fact]
         public void ShouldDeserializeInt16()
         {
             var serializedValue = "{\"@type\":\"gx:Int16\",\"@value\":100}";
@@ -503,42 +429,6 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var deserializedValue = reader.ToObject(jObject);
 
             Assert.Equal(100, deserializedValue);
-        }
-
-        [Fact]
-        public void ShouldDeserializeZoneOffset()
-        {
-            var serializedValue = "{\"@type\":\"gx:ZoneOffset\",\"@value\":\"+03:06:09\"}";
-            var reader = CreateStandardGraphSONReader();
-
-            var jObject = JObject.Parse(serializedValue);
-            var deserializedValue = reader.ToObject(jObject);
-
-            Assert.Equal(new TimeSpan(3, 6, 9), deserializedValue);
-        }
-
-        [Fact]
-        public void ShouldDeserializeNegativeZoneOffset()
-        {
-            var serializedValue = "{\"@type\":\"gx:ZoneOffset\",\"@value\":\"-03:06:09\"}";
-            var reader = CreateStandardGraphSONReader();
-
-            var jObject = JObject.Parse(serializedValue);
-            var deserializedValue = reader.ToObject(jObject);
-
-            Assert.Equal(new TimeSpan(-3, -6, -9), deserializedValue);
-        }
-
-        [Fact]
-        public void ShouldDeserializeInetAddress()
-        {
-            var serializedValue = "{\"@type\":\"gx:InetAddress\",\"@value\":\"localhost\"}";
-            var reader = CreateStandardGraphSONReader();
-
-            var jObject = JObject.Parse(serializedValue);
-            var deserializedValue = reader.ToObject(jObject);
-
-            Assert.Equal("localhost", deserializedValue);
         }
     }
 
