@@ -30,7 +30,7 @@ RUN apt-get update \
     && apt-get update \
     && apt-get install -y oracle-java8-installer curl gawk git maven openssh-server subversion zip \
     && sh -c 'curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /etc/apt/trusted.gpg.d/microsoft.gpg' \
-    && apt-get install -y --force-yes dotnet-sdk-2.1.101 python python-dev python-pip build-essential mono-devel \
+    && apt-get install -y --force-yes dotnet-sdk-2.1.101 python python-dev python3-dev python-pip build-essential mono-devel \
     && pip install virtualenv virtualenvwrapper \
     && pip install --upgrade pip \
     && rm -rf /var/lib/apt/lists/* /var/cache/oracle-jdk8-installer
