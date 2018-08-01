@@ -18,9 +18,9 @@ limitations under the License.
 = Gremlin Compilers
 
 There are many languages built to query data. SQL is typically used to query relational data. There is SPARQL for RDF
-data. Cypher is used to do pattern matching in graph data. The list could go on. compilers convert languages like
+data. Cypher is used to do pattern matching in graph data. The list could go on. Compilers convert languages like
 these to Gremlin so that it becomes possible to use them in any context that Gremlin is used. In other words, a
-Gremlin Cranspiler enables a particular query language to work on any TinkerPop-enabled graph system.
+Gremlin Compiler enables a particular query language to work on any TinkerPop-enabled graph system.
 
 [[sparql-gremlin]]
 == SPARQL-Gremlin
@@ -139,83 +139,90 @@ g.sparql("""SELECT * WHERE { ?x ?y ?z . }""")
 
 * A SPARQL Union query with un-balanced patterns, i.e. a gremlin union traversal can only be generated if the input
 SPARQL query has the same number of patterns on both the side of the union operator. For instance, the following
-SPARQL query cannot be mapped using Gremlinator, since a union is executed between different number of graph patterns
-(two patterns `union` 1 pattern).
+SPARQL query cannot be mapped, since a union is executed between different number of graph patterns (two patterns
+`union` 1 pattern).
 
 [source,groovy]
 ----
-g.sparql("""SELECT * WHERE {
-	{?person e:created ?software .
-	?person v:name "josh" .}
-	UNION
-	{?software v:lang "java" .} }""")
+g.sparql("""SELECT *
+            WHERE {
+                {?person e:created ?software .
+                ?person v:name "josh" .}
+                UNION
+                {?software v:lang "java" .} }""")
 ----
 
-* A non-Group key variable cannot be projected in a SPARQL query. This is a SPARQL langauge limitation rather than that of Gremlin/TinkerPop. Apache Jena throws the exception " Non-group key variable in SELECT" if this occurs.
-For instance, in a SPARQL query with GROUP-BY clause, only the variable on which the grouping is declared, can be projected. The following query is valid:
+* A non-Group key variable cannot be projected in a SPARQL query. This is a SPARQL language limitation rather than
+that of Gremlin/TinkerPop. Apache Jena throws the exception "Non-group key variable in SELECT" if this occurs.
+For instance, in a SPARQL query with GROUP-BY clause, only the variable on which the grouping is declared, can be
+projected. The following query is valid:
 
 [source,groovy]
 ----
-g.sparql("""SELECT ?age WHERE {
-    ?person v:label "person" .
-    ?person v:age ?age .
-    ?person v:name ?name .} GROUP BY (?age)""")
+g.sparql("""SELECT ?age
+            WHERE {
+                ?person v:label "person" .
+                ?person v:age ?age .
+                ?person v:name ?name .} GROUP BY (?age)""")
 ----
 
 Whereas, the following SPARQL query will be invalid:
 
 [source,groovy]
 ----
-g.sparql("""SELECT ?person WHERE {
-      ?person v:label "person" .
-      ?person v:age ?age .
-      ?person v:name ?name .} GROUP BY (?age)""")
+g.sparql("""SELECT ?person
+            WHERE {
+              ?person v:label "person" .
+              ?person v:age ?age .
+              ?person v:name ?name .} GROUP BY (?age)""")
 ----
 
-
-* In a SPARQL query with an ORDER-BY clause, the ordering occurs wrt to the first projected variable in the query. You may choose any number of variable to be projected, however, the first variable in the selection will be the ordering decider.
-For instance, in the query:
-
+* In a SPARQL query with an ORDER-BY clause, the ordering occurs with respect to the first projected variable in the
+query. It is possible to choose any number of variable to be projected, however, the first variable in the selection
+will be the ordering decider. For instance, in the query:
 
 [source,groovy]
 ----
-g.sparql("""SELECT ?name ?age WHERE {
-    ?person v:label "person" .
-    ?person v:age ?age .
-    ?person v:name ?name . } ORDER BY (?age)""")
+g.sparql("""SELECT ?name ?age
+            WHERE {
+                ?person v:label "person" .
+                ?person v:age ?age .
+                ?person v:name ?name . } ORDER BY (?age)""")
 ----
 
-the result set will be ordered according to the `?name` variable (in ascending order by default) despite having passed `?age` in the order by. Whereas, for the following query:
+the result set will be ordered according to the `?name` variable (in ascending order by default) despite having passed
+`?age` in the order by. Whereas, for the following query:
 
 [source,groovy]
 ----
-g.sparql("""SELECT ?age ?name WHERE {
-    ?person v:label "person" .
-    ?person v:age ?age .
-    ?person v:name ?name . } ORDER BY (?age)""")
+g.sparql("""SELECT ?age ?name
+            WHERE {
+                ?person v:label "person" .
+                ?person v:age ?age .
+                ?person v:name ?name . } ORDER BY (?age)""")
 ----
 
-the result set will be ordered according to the `?age` (as it is the first projected variable). Finally, for the select all case (`SELECT *`):
+the result set will be ordered according to the `?age` (as it is the first projected variable). Finally, for the
+select all case (`SELECT *`):
 
 [source,groovy]
 ----
 g.sparql("""SELECT *
-WHERE { ?person v:label "person" . ?person v:age ?age . ?person v:name ?name . } ORDER BY (?age)""")
+            WHERE { ?person v:label "person" . ?person v:age ?age . ?person v:name ?name . } ORDER BY (?age)""")
 ----
 
-The the variable encountered first will be the ordering decider, i.e. since we have `?person` being encountered first, the result set will be ordered according to the `?person` variable (which are vertex id).
+the the variable encountered first will be the ordering decider, i.e. since we have `?person` encountered first,
+the result set will be ordered according to the `?person` variable (which are vertex id).
 
-* OPTIONAL
-In the current implementation, `OPTIONAL` clause doesn't work under nesting with `UNION` clause (i.e. multiple optional clauses with in a union clause) and `ORDER-By` clause (i.e. declaring ordering over triple patterns within optional clauses). Everything else with SPARQL `OPTIONAL` works just fine.
-
+* In the current implementation, `OPTIONAL` clause doesn't work under nesting with `UNION` clause (i.e. multiple optional
+clauses with in a union clause) and `ORDER-By` clause (i.e. declaring ordering over triple patterns within optional
+clauses). Everything else with SPARQL `OPTIONAL` works just fine.
 
 [[examples]]
 === Examples
 
-The following section presents a comprehensive examples of SPARQL queries that are currently covered by the
-SPARQL-Gremlin compiler.
+The following section presents examples of SPARQL queries that are currently covered by the SPARQL-Gremlin compiler.
 
-[[select-all]]
 ==== Select All
 
 Select all vertices in the graph.
@@ -225,7 +232,6 @@ Select all vertices in the graph.
 g.sparql("""SELECT * WHERE { }""")
 ----
 
-[[match-constant-values]]
 ==== Match Constant Values
 
 Select all vertices with the label `person`.
@@ -235,7 +241,6 @@ Select all vertices with the label `person`.
 g.sparql("""SELECT * WHERE {  ?person v:label "person" .}""")
 ----
 
-[[select-specific-elements]]
 ==== Select Specific Elements
 
 Select the values of the properties `name` and `age` for each `person` vertex.
@@ -249,7 +254,6 @@ WHERE {
   ?person v:age ?age . }""")
 ----
 
-[[pattern-matching]]
 ==== Pattern Matching
 
 Select only those persons who created a project.
@@ -264,7 +268,6 @@ WHERE {
   ?person e:created ?project . }""")
 ----
 
-[[filtering]]
 ==== Filtering
 
 Select only those persons who are older than 30.
@@ -279,7 +282,6 @@ WHERE {
     FILTER (?age > 30) }""")
 ----
 
-[[deduplication]]
 ==== Deduplication
 
 Select the distinct names of the created projects.
@@ -295,7 +297,6 @@ WHERE {
     FILTER (?age > 30)}""")
 ----
 
-[[multiple-filters]]
 ==== Multiple Filters
 
 Select the distinct names of all Java projects.
@@ -312,34 +313,6 @@ WHERE {
     FILTER (?age > 30 && ?lang = "java") }""")
 ----
 
-////
-[[pattern-filters]]
-==== Pattern Filter(s)
-
-A different way to filter all person who created a project.
-
-[gremlin-groovy,existing]
-----
-g.sparql("""SELECT ?name
-WHERE {
-  ?person v:label "person" .
-  ?person v:name ?name .
-    FILTER EXISTS { ?person e:created ?project } }""")
-----
-
-Filter all person who did not create a project.
-
-[gremlin-groovy,existing]
-----
-g.sparql("""SELECT ?name
-WHERE {
-  ?person v:label "person" .
-  ?person v:name ?name .
-    FILTER NOT EXISTS { ?person e:created ?project } }""")
-----
-////
-
-[[union]]
 ==== Union
 
 Select all persons who have developed a software in java using union.
@@ -353,7 +326,6 @@ WHERE {
   {?software v:lang "java" .} }""")
 ----
 
-[[optional]]
 ==== Optional
 
 Return the names of the persons who have created a software in java and optionally python.
@@ -368,7 +340,6 @@ WHERE {
   OPTIONAL {?software v:lang "python" . }}""")
 ----
 
-[[order-by]]
 ==== Order By
 
 Select all vertices with the label `person` and order them by their age.
@@ -383,7 +354,6 @@ WHERE {
 } ORDER BY (?age))
 ----
 
-[[group-by]]
 ==== Group By
 
 Select all vertices with the label `person` and group them by their age.
@@ -397,7 +367,6 @@ WHERE {
 } GROUP BY (?age)""")
 ----
 
-[[mixedcomplexaggregation-based-queries]]
 ==== Mixed/complex/aggregation-based queries
 
 Count the number of projects which have been created by persons under the age of 30 and group them by age. Return only
@@ -413,7 +382,6 @@ WHERE {
 } GROUP BY (?age) LIMIT 2""")
 ----
 
-[[meta-property-access]]
 ==== Meta-Property Access
 
 Accessing the Meta-Property of a graph element. Meta-Property can be perceived as the reified statements in an RDF
@@ -430,7 +398,6 @@ WHERE {
   ?location v:startTime ?startTime }""")
 ----
 
-[[star-shaped-queries]]
 ==== STAR-shaped queries
 
 STAR-shaped queries are the queries that form/follow a star-shaped execution plan. These in terms of graph traversals
