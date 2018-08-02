@@ -47,7 +47,7 @@ namespace Gremlin.Net.Driver
         public int MaxSize { get; set; } = DefaultMaxPoolSize;
 
         /// <summary>
-        ///     Gets or sets the timespan to wait for a new connection before timing out.
+        ///     Gets or sets the timespan to wait for a connection to become available before timing out.
         /// </summary>
         /// <remarks>The default value is 3 seconds.</remarks>
         public TimeSpan WaitForConnectionTimeout { get; set; } = DefaultWaitForConnectionTimeout;

@@ -25,7 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-3-3, 3.3.3>>.
 
-* Added min and max connection pool sizes for Gremlin.Net which are configurable through optional ConnectionPoolSettings.
+* Added min and max connection pool sizes for Gremlin.Net which are configurable through optional `ConnectionPoolSettings`.
 * Implemented `ShortestPathVertexProgram` and the `shortestPath()` step.
 * `AbstractGraphProvider` uses `g.io()` for loading test data.
 * Added the `io()` start step and `read()` and `write()` termination steps to the Gremlin language.

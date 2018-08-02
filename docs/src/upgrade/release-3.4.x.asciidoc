@@ -242,9 +242,9 @@ when dealing with that event. To make this easier, the event now raises with a `
 
 link:https://issues.apache.org/jira/browse/TINKERPOP-1831[TINKERPOP-1831]
 
-==== Gremlin.Net: Configurable Max and Min ConnectionPool Sizes
+==== Gremlin.Net Connection Pool
 
-Gremlin.Net's `ConnectionPool` now has a minimum and a maximum size. These sizes are configurable through added
+Gremlin.Net's `ConnectionPool` now has a minimum and a maximum size. These sizes are configurable through the newly added
 `ConnectionPoolSettings`. The minimum size determines how many connections are initially created. The maximum size
 is an upper limit of connections that can be created. When this limit is reached and another connection is needed,
 then the connection pool waits for a connection to become available again. The time to be waited is limited by the

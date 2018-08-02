@@ -342,7 +342,8 @@ A traversal source can be spawned with `RemoteStrategy` from an empty `Graph`.
 [source,csharp]
 ----
 var graph = new Graph();
-var g = graph.Traversal().WithRemote(new DriverRemoteConnection(new GremlinClient(new GremlinServer("localhost", 8182))));
+var remoteConnection = new DriverRemoteConnection(new GremlinClient(new GremlinServer("localhost", 8182)));
+var g = graph.Traversal().WithRemote(remoteConnection);
 ----
 
 When a traversal from the `GraphTraversalSource` is iterated, the traversal’s `Bytecode` is sent over the wire via the registered
@@ -365,6 +366,48 @@ terminal/action methods off of `ITraversal`.
 * `ITraversal.ToList()`
 * `ITraversal.ToSet()`
 * `ITraversal.Iterate()`
+
+=== Configuration
+
+The following sections describe how the Gremlin.Net driver can be configured.
+
+==== Gremlin Server
+
+The connection properties for the Gremlin.Net driver can be passed to the `GremlinServer` instance as keyword arguments:
+
+[width="100%",cols="3,10,^2",options="header"]
+|=========================================================
+|Key |Description |Default
+|hostname |The hostname that the driver will connect to. |localhost
+|port |The port on which Gremlin Server can be reached. |8182
+|enableSsl |Determines if SSL should be enabled or not. If enabled on the server then it must be enabled on the client. |false
+|username |The username to submit on requests that require authentication. |_none_
+|password |The password to submit on requests that require authentication. |_none_
+|=========================================================
+
+==== Connection Pool
+
+It is also possible to configure the `ConnectionPool` of the Gremlin.Net driver. These configuration options can be set as properties
+on the `ConnectionPoolSettings` instance that can be passed to the `GremlinClient`:
+
+[width="100%",cols="3,10,^2",options="header"]
+|=========================================================
+|Key |Description |Default
+|MinSize |The minimum size of the connection pool. This determines how many connections are initially created. |8
+|MaxSize |The maximum size of the connection pool. |128
+|WaitForConnectionTimeout |The timespan to wait for a connection when the maximum size is reached before timing out. A `TimeoutException` is thrown when no connection becomes available until this timeout is reached. |3 seconds.
+|=========================================================
+
+==== GraphSON Serialization
+
+The Gremlin.Net driver uses by default GraphSON 3.0 but it is also possible to use GraphSON 2.0 which can be necessary
+when the server does not support GraphSON 3.0 yet:
+
+[source,csharp]
+----
+var client = new GremlinClient(new GremlinServer("localhost", 8182), new GraphSON2Reader(),
+    new GraphSON2Writer(), GremlinClient.GraphSON2MimeType);
+----
 
 === Static Enums and Methods
 
