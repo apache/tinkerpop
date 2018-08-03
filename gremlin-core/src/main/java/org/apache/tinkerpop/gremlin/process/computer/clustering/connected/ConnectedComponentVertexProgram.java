@@ -62,7 +62,6 @@ public class ConnectedComponentVertexProgram implements VertexProgram<String> {
     public static final String COMPONENT = "gremlin.connectedComponentVertexProgram.component";
     private static final String PROPERTY = "gremlin.connectedComponentVertexProgram.property";
     private static final String EDGE_TRAVERSAL = "gremlin.pageRankVertexProgram.edgeTraversal";
-    private static final String HAS_HALTED = "gremlin.connectedComponentVertexProgram.hasHalted";
     private static final String VOTE_TO_HALT = "gremlin.connectedComponentVertexProgram.voteToHalt";
 
     private static final Set<MemoryComputeKey> MEMORY_COMPUTE_KEYS = Collections.singleton(MemoryComputeKey.of(VOTE_TO_HALT, Operator.and, false, true));
@@ -122,11 +121,7 @@ public class ConnectedComponentVertexProgram implements VertexProgram<String> {
             // for evaluation
             vertex.property(VertexProperty.Cardinality.single, property, vertex.id().toString());
 
-            // no need to send messages from traversers that were filtered - happens for stuff like
-            // g.V().hasLabel('software').connectedComponent() (i.e. when there is a TraversalVertexProgram in the mix
-            // halting traversers. only want to send messages from traversers that are still hanging about after
-            // the filter. the unfiltered vertices can only react to messages sent to them. of course, this can
-            // lead to weirdness in results. 
+            // vertices that have no edges remain in their own component - nothing to message pass here
             if (vertex.edges(Direction.BOTH).hasNext()) {
                 // since there was message passing we don't want to halt on the first round. this should only trigger
                 // a single pass finish if the graph is completely disconnected (technically, it won't even really
