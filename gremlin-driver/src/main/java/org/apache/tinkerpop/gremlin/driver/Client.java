@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.slf4j.Logger;
@@ -109,7 +110,10 @@ public abstract class Client {
     }
 
     /**
-     * Submit a {@link Traversal} to the server for remote execution.
+     * Submit a {@link Traversal} to the server for remote execution.Results are returned as {@link Traverser}
+     * instances and are therefore bulked, meaning that to properly iterate the contents of the result each
+     * {@link Traverser#bulk()} must be examined to determine the number of times that object should be presented in
+     * iteration.
      */
     public ResultSet submit(final Traversal traversal) {
         try {
@@ -122,14 +126,19 @@ public abstract class Client {
     }
 
     /**
-     * An asynchronous version of {@link #submit(Traversal)}.
+     * An asynchronous version of {@link #submit(Traversal)}. Results are returned as {@link Traverser} instances and
+     * are therefore bulked, meaning that to properly iterate the contents of the result each {@link Traverser#bulk()}
+     * must be examined to determine the number of times that object should be presented in iteration.
      */
     public CompletableFuture<ResultSet> submitAsync(final Traversal traversal) {
         throw new UnsupportedOperationException("This implementation does not support Traversal submission - use a sessionless Client created with from the alias() method");
     }
 
     /**
-     * Submit a {@link Bytecode} to the server for remote execution.
+     * Submit a {@link Bytecode} to the server for remote execution. Results are returned as {@link Traverser}
+     * instances and are therefore bulked, meaning that to properly iterate the contents of the result each
+     * {@link Traverser#bulk()} must be examined to determine the number of times that object should be presented in
+     * iteration.
      */
     public ResultSet submit(final Bytecode bytecode) {
         try {
@@ -142,7 +151,9 @@ public abstract class Client {
     }
 
     /**
-     * An asynchronous version of {@link #submit(Traversal)}.
+     * An asynchronous version of {@link #submit(Traversal)}. Results are returned as {@link Traverser} instances and
+     * are therefore bulked, meaning that to properly iterate the contents of the result each {@link Traverser#bulk()}
+     * must be examined to determine the number of times that object should be presented in iteration.
      */
     public CompletableFuture<ResultSet> submitAsync(final Bytecode bytecode) {
         throw new UnsupportedOperationException("This implementation does not support Traversal submission - use a sessionless Client created with from the alias() method");
