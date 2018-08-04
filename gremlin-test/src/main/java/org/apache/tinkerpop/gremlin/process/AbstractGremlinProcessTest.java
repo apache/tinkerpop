@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +41,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -81,7 +81,7 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
             final String methodName = testName.contains("[") ? testName.substring(0, testName.indexOf('[')) : testName;
             final IgnoreEngine ignoreEngine = this.getClass().getMethod(methodName).getAnnotation(IgnoreEngine.class);
             if (ignoreEngine != null)
-                assumeTrue(String.format("This test is ignored for %s", ignoreEngine.value()), !ignoreEngine.value().equals(GraphManager.getTraversalEngineType()));
+                assumeTrue(String.format("%s.%s is ignored for %s", this.getClass().getName(), testName, ignoreEngine.value()), !ignoreEngine.value().equals(GraphManager.getTraversalEngineType()));
         } catch (NoSuchMethodException nsme) {
             // some tests are parameterized
             throw new RuntimeException(String.format("Could not find test method %s in test case %s", name.getMethodName(), this.getClass().getName()));
@@ -128,7 +128,7 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
 
         for (T t : results) {
             if (t instanceof Map) {
-                assertThat("Checking map result existence: " + t, expectedResults.stream().filter(e -> e instanceof Map).filter(e -> internalCheckMap((Map) e, (Map) t)).findAny().isPresent(), is(true));
+                assertThat("Checking map result existence: " + t, expectedResults.stream().filter(e -> e instanceof Map).anyMatch(e -> internalCheckMap((Map) e, (Map) t)), is(true));
             } else {
                 assertThat("Checking result existence: " + t, expectedResults.contains(t), is(true));
             }
@@ -153,8 +153,8 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
     }
 
     public static <A, B> void checkMap(final Map<A, B> expectedMap, final Map<A, B> actualMap) {
-        final List<Map.Entry<A, B>> actualList = actualMap.entrySet().stream().sorted((a, b) -> a.getKey().toString().compareTo(b.getKey().toString())).collect(Collectors.toList());
-        final List<Map.Entry<A, B>> expectedList = expectedMap.entrySet().stream().sorted((a, b) -> a.getKey().toString().compareTo(b.getKey().toString())).collect(Collectors.toList());
+        final List<Map.Entry<A, B>> actualList = actualMap.entrySet().stream().sorted(Comparator.comparing(a -> a.getKey().toString())).collect(Collectors.toList());
+        final List<Map.Entry<A, B>> expectedList = expectedMap.entrySet().stream().sorted(Comparator.comparing(a -> a.getKey().toString())).collect(Collectors.toList());
         assertEquals(expectedList.size(), actualList.size());
         for (int i = 0; i < actualList.size(); i++) {
             assertEquals(expectedList.get(i).getKey(), actualList.get(i).getKey());
@@ -163,8 +163,8 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
     }
 
     private static <A, B> boolean internalCheckMap(final Map<A, B> expectedMap, final Map<A, B> actualMap) {
-        final List<Map.Entry<A, B>> actualList = actualMap.entrySet().stream().sorted((a, b) -> a.getKey().toString().compareTo(b.getKey().toString())).collect(Collectors.toList());
-        final List<Map.Entry<A, B>> expectedList = expectedMap.entrySet().stream().sorted((a, b) -> a.getKey().toString().compareTo(b.getKey().toString())).collect(Collectors.toList());
+        final List<Map.Entry<A, B>> actualList = actualMap.entrySet().stream().sorted(Comparator.comparing(a -> a.getKey().toString())).collect(Collectors.toList());
+        final List<Map.Entry<A, B>> expectedList = expectedMap.entrySet().stream().sorted(Comparator.comparing(a -> a.getKey().toString())).collect(Collectors.toList());
 
         if (expectedList.size() != actualList.size()) {
             return false;
