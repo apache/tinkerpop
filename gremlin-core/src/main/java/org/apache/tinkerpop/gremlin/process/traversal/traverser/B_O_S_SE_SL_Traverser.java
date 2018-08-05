@@ -103,14 +103,14 @@ public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
     @Override
     public <R> Traverser.Admin<R> split(final R r, final Step<T, R> step) {
         final B_O_S_SE_SL_Traverser<R> clone = (B_O_S_SE_SL_Traverser<R>) super.split(r, step);
-        clone.sack = null == clone.sack ? null : null == clone.sideEffects.getSackSplitter() ? clone.sack : clone.sideEffects.getSackSplitter().apply(clone.sack);
+        clone.sack = null == clone.sack ? null : null == clone.sideEffects.getSackSplitter() ? clone.sack : clone.sideEffects.getSackSplitter().apply(this.sack);
         return clone;
     }
 
     @Override
     public Traverser.Admin<T> split() {
         final B_O_S_SE_SL_Traverser<T> clone = (B_O_S_SE_SL_Traverser<T>) super.split();
-        clone.sack = null == clone.sack ? null : null == clone.sideEffects.getSackSplitter() ? clone.sack : clone.sideEffects.getSackSplitter().apply(clone.sack);
+        clone.sack = null == clone.sack ? null : null == clone.sideEffects.getSackSplitter() ? clone.sack : clone.sideEffects.getSackSplitter().apply(this.sack);
         return clone;
     }
 
