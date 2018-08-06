@@ -620,12 +620,17 @@ reason to implement this interface.
 ==== Bulk Import Export
 
 When it comes to doing "bulk" operations, the diverse nature of the available graph databases and their specific
-capabilities, prevents TinkerPop from doing a good job of generalizing that capability well. TinkerPop refers users to
-the bulk import/export facilities of specific graph providers as they tend to be more efficient and easier to use than
-the options TinkerPop has tried to generalize in the past.
+capabilities, prevents TinkerPop from doing a good job of generalizing that capability well. TinkerPop thus maintains
+two positions on the concept of import and export:
 
-That said, for graph providers that don't have a special bulk loading feature, they can get a basic bulk loader from
-TinkerPop using the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#clonevertexprogram[CloneVertexProgram].
+1. TinkerPop refers users to the bulk import/export facilities of specific graph providers as they tend to be more
+efficient and easier to use than the options TinkerPop has tried to generalize in the past.
+2. TinkerPop encourages graph providers to expose those capabilities via `g.io()` and the `IoStep` by way of a
+`TraversalStrategy`.
+
+That said, for graph providers that don't have a special bulk loading feature, they can either rely on the default
+OLTP (single-threaded) `GraphReader` and `GraphWriter` options that are embedded in `IoStep` or get a basic bulk loader
+from TinkerPop using the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#clonevertexprogram[CloneVertexProgram].
 Simply provide a `InputFormat` and `OutputFormat` that can be referenced by a `HadoopGraph` instance as discussed
 in the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#clonevertexprogram[Reference Documentation].
 
