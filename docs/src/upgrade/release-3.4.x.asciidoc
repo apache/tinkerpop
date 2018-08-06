@@ -85,7 +85,7 @@ While `io()`-step is still single-threaded for OLTP style loading, it can be uti
 internally uses `CloneVertexProgram` and therefore any graph `InputFormat` or `OutputFormat` can be configured in
 conjunction with this step for parallel loads of large datasets.
 
-It is also worth noting that the `io()`-step may be overriden by graph providers to utilize their native bulk-loading
+It is also worth noting that the `io()`-step may be overridden by graph providers to utilize their native bulk-loading
 features, so consult the documentation of the implementation being used to determine if there are any improved
 efficiencies there.
 
