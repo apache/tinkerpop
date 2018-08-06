@@ -53,6 +53,8 @@ TinkerPop 3.x. These items include:
 * The concept of `Traversal` as the sole means of interacting with the graph.
 ** The role of Blueprints should be significantly reduced.
 ** The role of Gremlin should be significantly increased.
+* Provide better methods of versioning Gremlin itself - being bound to JVM releases and forcing local and remote
+versions of Gremlin to be the same isn't ideal.
 
 == Hiding Blueprints
 
