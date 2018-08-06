@@ -48,10 +48,6 @@ import java.util.Iterator;
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountTest",
-        method = "g_V_hasXnoX_groupCountXaX_capXaX",
-        reason = "This test asserts an empty side-effect which reflects as a null rather than an \"empty\" and thus doesn't assert")
-@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest",
         method = "*",
         reason = "The test suite does not support profiling or lambdas and for groovy tests: 'Could not locate method: GraphTraversalSource.withStrategies([{traversalCategory=interface org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy$DecorationStrategy}])'")
