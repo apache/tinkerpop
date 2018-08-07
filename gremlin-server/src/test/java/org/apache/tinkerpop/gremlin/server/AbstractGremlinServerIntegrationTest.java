@@ -39,6 +39,7 @@ import static org.junit.Assume.assumeThat;
  */
 public abstract class AbstractGremlinServerIntegrationTest {
     protected GremlinServer server;
+    private Settings overriddenSettings;
     private final static String epollOption = "gremlin.server.epoll";
     private static final boolean GREMLIN_SERVER_EPOLL = "true".equalsIgnoreCase(System.getProperty(epollOption));
     private static final Logger logger = LoggerFactory.getLogger(AbstractGremlinServerIntegrationTest.class);
@@ -48,6 +49,17 @@ public abstract class AbstractGremlinServerIntegrationTest {
 
     public Settings overrideSettings(final Settings settings) {
         return settings;
+    }
+
+    /**
+     * This method may be called after {@link #startServer()} to (re-)set the script evaluation timeout in
+     * the running server.
+     * @param timeoutInMillis new script evaluation timeout
+     */
+    protected void overrideScriptEvaluationTimeout(final long timeoutInMillis) {
+        // Note: overriding settings in a running server is not guaranteed to work for all settings.
+        // It works for the evaluation timeout, though, because GremlinExecutor is re-created for each evaluation.
+        overriddenSettings.scriptEvaluationTimeout = timeoutInMillis;
     }
 
     public InputStream getSettingsInputStream() {
@@ -87,13 +99,13 @@ public abstract class AbstractGremlinServerIntegrationTest {
     public void startServer() throws Exception {
         final InputStream stream = getSettingsInputStream();
         final Settings settings = Settings.read(stream);
-        final Settings overridenSettings = overrideSettings(settings);
-        ServerTestHelper.rewritePathsInGremlinServerSettings(overridenSettings);
+        overriddenSettings = overrideSettings(settings);
+        ServerTestHelper.rewritePathsInGremlinServerSettings(overriddenSettings);
         if (GREMLIN_SERVER_EPOLL) {
-            overridenSettings.useEpollEventLoop = true;
+            overriddenSettings.useEpollEventLoop = true;
         }
 
-        this.server = new GremlinServer(overridenSettings);
+        this.server = new GremlinServer(overriddenSettings);
 
         server.start().join();
     }
