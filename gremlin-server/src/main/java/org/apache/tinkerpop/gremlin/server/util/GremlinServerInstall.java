@@ -23,6 +23,8 @@ import org.apache.tinkerpop.gremlin.groovy.util.DependencyGrabber;
 import groovy.lang.GroovyClassLoader;
 
 /**
+ * Command line installer for plugins to Gremlin Server.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinServerInstall {
@@ -39,6 +41,7 @@ public class GremlinServerInstall {
             } catch (Exception iae) {
                 System.out.println(String.format("Could not install the dependency: %s", iae.getMessage()));
                 iae.printStackTrace();
+                System.exit(1);
             }
 
         }

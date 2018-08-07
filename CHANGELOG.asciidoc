@@ -23,6 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-2-10]]
 === TinkerPop 3.2.10 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Added an system error code for failed plugin installs for Gremlin Server `-i` option.
 * Match numbers in `choose()` options using `NumberHelper` (match values, ignore data type).
 * Added support for GraphSON serialization of `Date` in Javascript.
 * Fixed bug in Java driver where an disorderly shutdown of the server would cause the client to hang.
