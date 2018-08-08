@@ -48,21 +48,19 @@ Feature: Step - pageRank()
       | m[{"name": ["lop"], "projectRank": [3.0]}] |
       | m[{"name": ["ripple"], "projectRank": [1.0]}] |
 
-  # can't fully assert order here because some ranks are equivalent. the java test does an "or" type assert to deal
-  # with this, which we can't express here in these tests. should probably change the test or
-  Scenario: g_V_pageRank_order_byXpageRank_decrX_name
+  Scenario: g_V_pageRank_order_byXpageRank_decrX_byXnameX_name
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().pageRank().order().by("gremlin.pageRankVertexProgram.pageRank", Order.decr).values("name")
+      g.withComputer().V().pageRank().order().by("gremlin.pageRankVertexProgram.pageRank", Order.decr).by("name").values("name")
       """
     When iterated to list
-    Then the result should be unordered
+    Then the result should be ordered
       | result |
       | lop    |
       | ripple |
-      | vadas  |
       | josh   |
+      | vadas  |
       | marko  |
       | peter  |
 
