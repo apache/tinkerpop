@@ -48,6 +48,8 @@ Feature: Step - pageRank()
       | m[{"name": ["lop"], "projectRank": [3.0]}] |
       | m[{"name": ["ripple"], "projectRank": [1.0]}] |
 
+  # can't fully assert order here because some ranks are equivalent. the java test does an "or" type assert to deal
+  # with this, which we can't express here in these tests. should probably change the test or
   Scenario: g_V_pageRank_order_byXpageRank_decrX_name
     Given the modern graph
     And the traversal of
@@ -55,7 +57,7 @@ Feature: Step - pageRank()
       g.withComputer().V().pageRank().order().by("gremlin.pageRankVertexProgram.pageRank", Order.decr).values("name")
       """
     When iterated to list
-    Then the result should be ordered
+    Then the result should be unordered
       | result |
       | lop    |
       | ripple |
