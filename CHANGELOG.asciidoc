@@ -32,6 +32,8 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Deprecated `Graph.io()` and related infrastructure.
 * Bumped to Netty 4.1.25.
 * Bumped to Spark 2.3.1.
+* Added sparql-gremlin.
+* Fixed a bug in dynamic Gryo registration where registrations that did not have serializers would fail.
 * Moved `Parameterizing` interface to the `org.apache.tinkerpop.gremlin.process.traversal.step` package with other marker interfaces of its type.
 * Replaced `Parameterizing.addPropertyMutations()` with `Configuring.configure()`.
 * Changed interface hierarchy for `Parameterizing` and `Mutating` interfaces as they are tightly related.
@@ -113,7 +115,6 @@ This release also includes changes from <<release-3-2-8, 3.2.8>>.
 
 * Fixed regression issue where the HTTPChannelizer doesn't instantiate the specified AuthenticationHandler.
 * Defaulted GLV tests for gremlin-python to run for GraphSON 3.0.
-* Fixed a bug in dynamic Gryo registration where registrations that did not have serializers would fail.
 * Fixed a bug with `Tree` serialization in GraphSON 3.0.
 * In gremlin-python, the GraphSON 3.0 `g:Set` type is now deserialized to `List`.
 
