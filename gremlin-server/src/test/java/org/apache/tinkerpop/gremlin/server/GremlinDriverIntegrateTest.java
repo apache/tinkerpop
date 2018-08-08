@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
@@ -179,9 +180,29 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldProcessEvalInterruption":
                 settings.scriptEvaluationTimeout = 1500;
                 break;
+            case "shouldProcessEvalTimeoutOverride":
+                settings.scriptEvaluationTimeout = 15000;
+                break;
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldProcessEvalTimeoutOverride() throws Exception {
+        final Cluster cluster = TestClientFactory.open();
+        final Client client = cluster.connect();
+        final RequestOptions options = RequestOptions.build().timeout(500).create();
+
+        try {
+            client.submit("Thread.sleep(5000);'done'", options).all().get();
+            fail("Should have timed out");
+        } catch (Exception ex) {
+            final ResponseException re = (ResponseException) ex.getCause();
+            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, re.getResponseStatusCode());
+        }
+
+        cluster.close();
     }
 
     @Test

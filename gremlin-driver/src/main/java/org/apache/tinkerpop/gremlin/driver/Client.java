@@ -67,7 +67,7 @@ public abstract class Client {
     }
 
     /**
-     * Makes any final changes to the builder and returns the constructed {@link RequestMessage}.  Implementers
+     * Makes any initial changes to the builder and returns the constructed {@link RequestMessage}.  Implementers
      * may choose to override this message to append data to the request before sending.  By default, this method
      * will simply return the {@code builder} passed in by the caller.
      */
@@ -184,7 +184,7 @@ public abstract class Client {
      * @param gremlin the gremlin script to execute
      */
     public ResultSet submit(final String gremlin) {
-        return submit(gremlin, null);
+        return submit(gremlin, RequestOptions.EMPTY);
     }
 
     /**
@@ -205,13 +205,28 @@ public abstract class Client {
     }
 
     /**
+     * Submits a Gremlin script to the server and returns a {@link ResultSet} once the write of the request is
+     * complete.
+     *
+     * @param gremlin the gremlin script to execute
+     * @param options for the request
+     */
+    public ResultSet submit(final String gremlin, final RequestOptions options) {
+        try {
+            return submitAsync(gremlin, options).get();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /**
      * The asynchronous version of {@link #submit(String)} where the returned future will complete when the
      * write of the request completes.
      *
      * @param gremlin the gremlin script to execute
      */
     public CompletableFuture<ResultSet> submitAsync(final String gremlin) {
-        return submitAsync(gremlin, null);
+        return submitAsync(gremlin, RequestOptions.build().create());
     }
 
     /**
@@ -222,13 +237,12 @@ public abstract class Client {
      * @param parameters a map of parameters that will be bound to the script on execution
      */
     public CompletableFuture<ResultSet> submitAsync(final String gremlin, final Map<String, Object> parameters) {
-        final RequestMessage.Builder request = RequestMessage.build(Tokens.OPS_EVAL)
-                .add(Tokens.ARGS_GREMLIN, gremlin)
-                .add(Tokens.ARGS_BATCH_SIZE, cluster.connectionPoolSettings().resultIterationBatchSize);
+        final RequestOptions.Builder options = RequestOptions.build();
+        if (parameters != null && !parameters.isEmpty()) {
+            parameters.forEach(options::addParameter);
+        }
 
-        Optional.ofNullable(parameters).ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, parameters));
-
-        return submitAsync(buildMessage(request).create());
+        return submitAsync(gremlin, options.create());
     }
 
     /**
@@ -238,19 +252,17 @@ public abstract class Client {
      * @param gremlin the gremlin script to execute
      * @param parameters a map of parameters that will be bound to the script on execution
      * @param graphOrTraversalSource rebinds the specified global Gremlin Server variable to "g"
+     * @deprecated As of release 3.4.0, replaced by {@link #submitAsync(String, RequestOptions)}.
      */
+    @Deprecated
     public CompletableFuture<ResultSet> submitAsync(final String gremlin, final String graphOrTraversalSource,
                                                     final Map<String, Object> parameters) {
-        final RequestMessage.Builder request = RequestMessage.build(Tokens.OPS_EVAL)
-                .add(Tokens.ARGS_GREMLIN, gremlin)
-                .add(Tokens.ARGS_BATCH_SIZE, cluster.connectionPoolSettings().resultIterationBatchSize);
+        Map<String,String> aliases = null;
+        if (graphOrTraversalSource != null && !graphOrTraversalSource.isEmpty()) {
+            aliases = makeDefaultAliasMap(graphOrTraversalSource);
+        }
 
-        Optional.ofNullable(parameters).ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, parameters));
-
-        if (graphOrTraversalSource != null && !graphOrTraversalSource.isEmpty())
-            request.addArg(Tokens.ARGS_ALIASES, makeDefaultAliasMap(graphOrTraversalSource));
-
-        return submitAsync(buildMessage(request).create());
+        return submitAsync(gremlin, aliases, parameters);
     }
 
     /**
@@ -262,19 +274,47 @@ public abstract class Client {
      * @param aliases aliases the specified global Gremlin Server variable some other name that then be used in the
      *                script where the key is the alias name and the value represents the global variable on the
      *                server
+     * @deprecated As of release 3.4.0, replaced by {@link #submitAsync(String, RequestOptions)}.
      */
+    @Deprecated
     public CompletableFuture<ResultSet> submitAsync(final String gremlin, final Map<String,String> aliases,
                                                     final Map<String, Object> parameters) {
-        final RequestMessage.Builder request = RequestMessage.build(Tokens.OPS_EVAL)
+        final RequestOptions.Builder options = RequestOptions.build();
+        if (aliases != null && !aliases.isEmpty()) {
+            aliases.forEach(options::addAlias);
+        }
+
+        if (parameters != null && !parameters.isEmpty()) {
+            parameters.forEach(options::addParameter);
+        }
+
+        options.batchSize(cluster.connectionPoolSettings().resultIterationBatchSize);
+
+        return submitAsync(gremlin, options.create());
+    }
+
+    /**
+     * The asynchronous version of {@link #submit(String, RequestOptions)}} where the returned future will complete when the
+     * write of the request completes.
+     *
+     * @param gremlin the gremlin script to execute
+     * @param options the options to supply for this request
+     */
+    public CompletableFuture<ResultSet> submitAsync(final String gremlin, final RequestOptions options) {
+        final int batchSize = options.getBatchSize().orElse(cluster.connectionPoolSettings().resultIterationBatchSize);
+
+        // need to call buildMessage() right away to get client specific configurations, that way request specific
+        // ones can override as needed
+        final RequestMessage.Builder request = buildMessage(RequestMessage.build(Tokens.OPS_EVAL))
                 .add(Tokens.ARGS_GREMLIN, gremlin)
-                .add(Tokens.ARGS_BATCH_SIZE, cluster.connectionPoolSettings().resultIterationBatchSize);
+                .add(Tokens.ARGS_BATCH_SIZE, batchSize);
 
-        Optional.ofNullable(parameters).ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, parameters));
+        // apply settings if they were made available
+        options.getTimeout().ifPresent(timeout -> request.add(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT, timeout));
+        options.getParameters().ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, params));
+        options.getAliases().ifPresent(aliases -> request.addArg(Tokens.ARGS_ALIASES, aliases));
 
-        if (aliases != null && !aliases.isEmpty())
-            request.addArg(Tokens.ARGS_ALIASES, aliases);
-
-        return submitAsync(buildMessage(request).create());
+        return submitAsync(request.create());
     }
 
     /**
@@ -384,52 +424,6 @@ public abstract class Client {
         }
 
         /**
-         * The asynchronous version of {@link #submit(String, Map)}} where the returned future will complete when the
-         * write of the request completes.
-         *
-         * @param gremlin the gremlin script to execute
-         * @param parameters a map of parameters that will be bound to the script on execution
-         * @param graphOrTraversalSource rebinds the specified global Gremlin Server variable to "g"
-         */
-        public CompletableFuture<ResultSet> submitAsync(final String gremlin, final String graphOrTraversalSource,
-                                                        final Map<String, Object> parameters) {
-            final RequestMessage.Builder request = RequestMessage.build(Tokens.OPS_EVAL)
-                    .add(Tokens.ARGS_GREMLIN, gremlin)
-                    .add(Tokens.ARGS_BATCH_SIZE, cluster.connectionPoolSettings().resultIterationBatchSize);
-
-            Optional.ofNullable(parameters).ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, parameters));
-
-            if (graphOrTraversalSource != null && !graphOrTraversalSource.isEmpty())
-                request.addArg(Tokens.ARGS_ALIASES, makeDefaultAliasMap(graphOrTraversalSource));
-
-            return submitAsync(buildMessage(request).create());
-        }
-
-        /**
-         * The asynchronous version of {@link #submit(String, Map)}} where the returned future will complete when the
-         * write of the request completes.
-         *
-         * @param gremlin the gremlin script to execute
-         * @param parameters a map of parameters that will be bound to the script on execution
-         * @param aliases aliases the specified global Gremlin Server variable some other name that then be used in the
-         *                script where the key is the alias name and the value represents the global variable on the
-         *                server
-         */
-        public CompletableFuture<ResultSet> submitAsync(final String gremlin, final Map<String,String> aliases,
-                                                        final Map<String, Object> parameters) {
-            final RequestMessage.Builder request = RequestMessage.build(Tokens.OPS_EVAL)
-                    .add(Tokens.ARGS_GREMLIN, gremlin)
-                    .add(Tokens.ARGS_BATCH_SIZE, cluster.connectionPoolSettings().resultIterationBatchSize);
-
-            Optional.ofNullable(parameters).ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, parameters));
-
-            if (aliases != null && !aliases.isEmpty())
-                request.addArg(Tokens.ARGS_ALIASES, aliases);
-
-            return submitAsync(buildMessage(request).create());
-        }
-
-        /**
          * {@inheritDoc}
          */
         @Override
@@ -535,8 +529,16 @@ public abstract class Client {
         @Override
         public CompletableFuture<ResultSet> submitAsync(final RequestMessage msg) {
             final RequestMessage.Builder builder = RequestMessage.from(msg);
-            if (!aliases.isEmpty())
-                builder.addArg(Tokens.ARGS_ALIASES, aliases);
+
+            // only add aliases which aren't already present. if they are present then they represent request level
+            // overrides which should be mucked with
+            if (!aliases.isEmpty()) {
+                final Map original = (Map) msg.getArgs().getOrDefault(Tokens.ARGS_ALIASES, Collections.emptyMap());
+                aliases.forEach((k,v) -> {
+                    if (!original.containsKey(k))
+                        builder.addArg(Tokens.ARGS_ALIASES, aliases);
+                });
+            }
 
             return super.submitAsync(builder.create());
         }
