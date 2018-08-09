@@ -38,6 +38,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             {"name", typeof(string)},
             {"lang", typeof(string)},
             {"weight", typeof(float)},
+            {"gremlin.pageRankVertexProgram.pageRank", typeof(double)},
+            {"gremlin.peerPressureVertexProgram.cluster", typeof(int)},
+            {"friendRank", typeof(double)},
+            {"pageRank", typeof(double)},
             {"foo", typeof(object)}, // used when for invalid property key lookups
             {"friendWeight", typeof(float)},  // used in an AddVertex.feature test
             {"performances", typeof(int)} // grateful dead graph

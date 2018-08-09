@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,11 +49,11 @@ import static org.junit.Assert.fail;
 @RunWith(GremlinProcessRunner.class)
 public abstract class PageRankTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_pageRank();
+    public abstract Traversal<Vertex, Vertex> get_g_V_pageRank_hasXpageRankX();
 
     public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX();
 
-    public abstract Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_descX_name();
+    public abstract Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_descX_byXnameX_name();
 
     public abstract Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_descX_name_limitX2X();
 
@@ -70,16 +71,10 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_pageRank() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_pageRank();
+    public void g_V_pageRank_hasXpageRankX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_pageRank_hasXpageRankX();
         printTraversalForm(traversal);
-        int counter = 0;
-        while (traversal.hasNext()) {
-            final Vertex vertex = traversal.next();
-            counter++;
-            assertTrue(vertex.property(PageRankVertexProgram.PAGE_RANK).isPresent());
-        }
-        assertEquals(6, counter);
+        assertEquals(6, IteratorUtils.count(traversal));
     }
 
     @Test
@@ -102,17 +97,17 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_pageRank_order_byXpageRank_descX_name() {
-        final Traversal<Vertex, String> traversal = get_g_V_pageRank_order_byXpageRank_descX_name();
+    public void g_V_pageRank_order_byXpageRank_descX_byXnameX_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_pageRank_order_byXpageRank_descX_byXnameX_name();
         printTraversalForm(traversal);
         final List<String> names = traversal.toList();
         assertEquals(6, names.size());
         assertEquals("lop", names.get(0));
         assertEquals("ripple", names.get(1));
-        assertTrue(names.get(2).equals("josh") || names.get(2).equals("vadas"));
-        assertTrue(names.get(3).equals("josh") || names.get(3).equals("vadas"));
-        assertTrue(names.get(4).equals("marko") || names.get(4).equals("peter"));
-        assertTrue(names.get(5).equals("marko") || names.get(5).equals("peter"));
+        assertEquals("josh", names.get(2));
+        assertEquals("vadas", names.get(3));
+        assertEquals("marko", names.get(4));
+        assertEquals("peter", names.get(5));
     }
 
     @Test
@@ -277,8 +272,8 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
     public static class Traversals extends PageRankTest {
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_pageRank() {
-            return g.V().pageRank();
+        public Traversal<Vertex, Vertex> get_g_V_pageRank_hasXpageRankX() {
+            return g.V().pageRank().has(PageRankVertexProgram.PAGE_RANK);
         }
 
         @Override
@@ -292,8 +287,8 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_descX_name() {
-            return g.V().pageRank().order().by(PageRankVertexProgram.PAGE_RANK, Order.desc).values("name");
+        public Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_descX_byXnameX_name() {
+            return g.V().pageRank().order().by(PageRankVertexProgram.PAGE_RANK, Order.desc).by("name").values("name");
         }
 
         @Override

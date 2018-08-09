@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -88,7 +89,7 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
                 final Result result = client.submitAsync(msg).get().all().get().get(0);
                 sideEffects.put(key, null == result ? null : result.getObject());
             } catch (Exception ex) {
-                // we use to try to catch  "no found" situations returned from the server here and then null the
+                // we use to try to catch "no found" situations returned from the server here and then null the
                 // side-effect for the requested key. doesn't seem like there is a need for that now because calls
                 // to get() now initially trigger a call the keys() so you would know all of the keys available on
                 // the server and would validate them up front throwing sideEffectKeyDoesNotExist(key) which thus
