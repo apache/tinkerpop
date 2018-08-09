@@ -141,6 +141,22 @@ efficiencies there.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1996[TINKERPOP-1996],
 link:http://tinkerpop.apache.org/docs/3.4.0/reference/#io-step[Reference Documentation]
 
+==== Per Request Options
+
+The Java driver now allows for various options to be set on a per-request basis via new overloads to `submit()` that
+accept `RequestOption` instances. A good use-case for this feature is to set a per-request override to the
+`scriptEvaluationTimeout` so that it only applies to the current request.
+
+[source,java]
+----
+Cluster cluster = Cluster.open();
+Client client = cluster.connect();
+RequestOptions options = RequestOptions.build().timeout(500).create();
+List<Result> result = client.submit("g.V()", options).all().get();
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1342[TINKERPOP-1342]
+
 ==== Removal of Giraph Support
 
 Support for Giraph has been removed as of this version. There were a number of reasons for this decision which were

@@ -827,6 +827,21 @@ The above code demonstrates using the `TitanIoRegistry` which is an `IoRegistry`
 what classes (from Titan in this case) to auto-register during serialization.  Gremlin Server roughly uses this same
 approach when it configures it's serializers, so using this same model will ensure compatibility when making requests.
 
+==== Per Request Settings
+
+There are a number of overloads to `Client.submit()` that accept a `RequestOptions` object. The `RequestOptions`
+provide a way to include options that are specific to the request made with the call to `submit()`. A good use-case for
+this feature is to set a per-request override to the `scriptEvaluationTimeout` so that it only applies to the current
+request.
+
+[source,java]
+----
+Cluster cluster = Cluster.open();
+Client client = cluster.connect();
+RequestOptions options = RequestOptions.build().timeout(500).create();
+List<Result> result = client.submit("g.V()", options).all().get();
+----
+
 [[connecting-via-python]]
 === Connecting via Python
 

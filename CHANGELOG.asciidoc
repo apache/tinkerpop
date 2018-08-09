@@ -32,6 +32,8 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Deprecated `Graph.io()` and related infrastructure.
 * Bumped to Netty 4.1.25.
 * Bumped to Spark 2.3.1.
+* Deprecated two `submit()`-related methods on the Java driver `Client` class.
+* Added `Client.submit()` overloads that accept per-request `RequestOptions`.
 * Added sparql-gremlin.
 * Fixed a bug in dynamic Gryo registration where registrations that did not have serializers would fail.
 * Moved `Parameterizing` interface to the `org.apache.tinkerpop.gremlin.process.traversal.step` package with other marker interfaces of its type.
