@@ -42,7 +42,7 @@ public abstract class GroovyPageRankTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_decrX_byXnameX_name() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.pageRank.order.by(PageRankVertexProgram.PAGE_RANK, decr).name")
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.pageRank.order.by(PageRankVertexProgram.PAGE_RANK, decr).by('name').name")
         }
 
         @Override
