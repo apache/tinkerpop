@@ -108,12 +108,12 @@ public abstract class ConnectedComponentTest extends AbstractGremlinProcessTest 
     public static class Traversals extends ConnectedComponentTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_connectedComponent_hasXcomponentX() {
-            return g.V().connectedComponent();
+            return g.V().connectedComponent().has(ConnectedComponent.component);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_dedup_connectedComponent_hasXcomponentX() {
-            return g.V().dedup().connectedComponent();
+            return g.V().dedup().connectedComponent().has(ConnectedComponent.component);
         }
 
         @Override

@@ -63,6 +63,10 @@ const ignoreReason = {
 
 const ignoredScenarios = {
   // An associative array containing the scenario name as key, for example:
+  'g_V_connectedComponent_hasXcomponentX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_dedup_connectedComponent_hasXcomponentX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_hasLabelXsoftwareX_connectedComponent_project_byXnameX_byXcomponentX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_connectedComponent_withXEDGES_bothEXknowsXX_withXPROPERTY_NAME_clusterX_project_byXnameX_byXclusterX': new IgnoreError(ignoreReason.computerNotSupported),
   'g_V_pageRank_hasXpageRankX': new IgnoreError(ignoreReason.computerNotSupported),
   'g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX': new IgnoreError(ignoreReason.computerNotSupported),
   'g_V_pageRank_order_byXpageRank_decrX_byXnameX_name': new IgnoreError(ignoreReason.computerNotSupported),
