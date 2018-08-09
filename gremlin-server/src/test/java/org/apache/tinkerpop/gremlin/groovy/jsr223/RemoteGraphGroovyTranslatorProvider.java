@@ -38,7 +38,8 @@ public class RemoteGraphGroovyTranslatorProvider extends RemoteGraphProvider {
     private static boolean SKIP = false;
 
     private static Set<String> SKIP_TESTS = new HashSet<>(Arrays.asList(
-            "g_injectXg_VX1X_propertiesXnameX_nextX_value"));
+            "g_injectXg_VX1X_propertiesXnameX_nextX_value",
+            "shouldNotHaveAnonymousTraversalMixups"));
 
 
     @Override

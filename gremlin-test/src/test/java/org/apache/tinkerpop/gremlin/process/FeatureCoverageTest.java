@@ -53,7 +53,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PageRankTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PeerPressureTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProjectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectTest;
@@ -140,9 +142,9 @@ public class FeatureCoverageTest {
                 MeanTest.class,
                 MinTest.class,
                 OrderTest.class,
-                //PageRankTest.class,
+                PageRankTest.class,
                 PathTest.class,
-                // PeerPressureTest.class,
+                PeerPressureTest.class,
                 // ProfileTest.class,
                 // ProgramTest.class,
                 ProjectTest.class,
