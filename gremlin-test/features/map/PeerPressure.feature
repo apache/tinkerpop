@@ -17,11 +17,11 @@
 
 Feature: Step - peerPressure()
                 
-  Scenario: g_V_peerPressure
+  Scenario: g_V_peerPressure_hasXclusterX
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().peerPressure()
+      g.withComputer().V().peerPressure().has("gremlin.peerPressureVertexProgram.cluster")
       """
     When iterated to list
     Then the result should be unordered

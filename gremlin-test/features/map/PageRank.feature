@@ -17,11 +17,11 @@
 
 Feature: Step - pageRank()
                 
-  Scenario: g_V_pageRank
+  Scenario: g_V_pageRank_hasXpageRankX
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().pageRank()
+      g.withComputer().V().pageRank().has("gremlin.pageRankVertexProgram.pageRank")
       """
     When iterated to list
     Then the result should be unordered

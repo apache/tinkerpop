@@ -61,7 +61,7 @@ const ignoreReason = {
 
 const ignoredScenarios = {
   // An associative array containing the scenario name as key, for example:
-  'g_V_pageRank': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_pageRank_hasXpageRankX': new IgnoreError(ignoreReason.computerNotSupported),
   'g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX': new IgnoreError(ignoreReason.computerNotSupported),
   'g_V_pageRank_order_byXpageRank_decrX_byXnameX_name': new IgnoreError(ignoreReason.computerNotSupported),
   'g_V_pageRank_order_byXpageRank_decrX_name_limitX2X': new IgnoreError(ignoreReason.computerNotSupported),
@@ -70,7 +70,7 @@ const ignoredScenarios = {
   'g_V_pageRank_byXpageRankX_asXaX_outXknowsX_pageRank_asXbX_selectXa_bX': new IgnoreError(ignoreReason.computerNotSupported),
   'g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_byXinEXcreatedXX_timesX1X_byXpriorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX': new IgnoreError(ignoreReason.computerNotSupported),
   'g_V_outXcreatedX_groupXmX_byXlabelX_pageRankX1X_byXpageRankX_byXinEX_timesX1X_inXcreatedX_groupXmX_byXpageRankX_capXmX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_peerPressure': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_peerPressure_hasXclusterX': new IgnoreError(ignoreReason.computerNotSupported),
   'g_V_peerPressure_byXclusterX_byXoutEXknowsXX_pageRankX1X_byXrankX_byXoutEXknowsXX_timesX2X_group_byXclusterX_byXrank_sumX_limitX100X': new IgnoreError(ignoreReason.computerNotSupported),
   'g_V_hasXname_rippleX_inXcreatedX_peerPressure_byXoutEX_byXclusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX': new IgnoreError(ignoreReason.computerNotSupported),
 };

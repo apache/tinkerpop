@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.Pee
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -47,7 +48,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(GremlinProcessRunner.class)
 public abstract class PeerPressureTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_peerPressure();
+    public abstract Traversal<Vertex, Vertex> get_g_V_peerPressure_hasXclusterX();
 
     public abstract Traversal<Vertex, Map<Object, Number>> get_g_V_peerPressure_byXclusterX_byXoutEXknowsXX_pageRankX1X_byXrankX_byXoutEXknowsXX_timesX2X_group_byXclusterX_byXrank_sumX_limitX100X();
 
@@ -55,16 +56,10 @@ public abstract class PeerPressureTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_peerPressure() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_peerPressure();
+    public void g_V_peerPressure_hasXclusterX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_peerPressure_hasXclusterX();
         printTraversalForm(traversal);
-        int counter = 0;
-        while (traversal.hasNext()) {
-            final Vertex vertex = traversal.next();
-            counter++;
-            assertTrue(vertex.property(PeerPressureVertexProgram.CLUSTER).isPresent());
-        }
-        assertEquals(6, counter);
+        assertEquals(6, IteratorUtils.count(traversal));
     }
 
     @Test
@@ -106,8 +101,8 @@ public abstract class PeerPressureTest extends AbstractGremlinProcessTest {
     public static class Traversals extends PeerPressureTest {
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_peerPressure() {
-            return g.V().peerPressure();
+        public Traversal<Vertex, Vertex> get_g_V_peerPressure_hasXclusterX() {
+            return g.V().peerPressure().has(PeerPressureVertexProgram.CLUSTER);
         }
 
         @Override

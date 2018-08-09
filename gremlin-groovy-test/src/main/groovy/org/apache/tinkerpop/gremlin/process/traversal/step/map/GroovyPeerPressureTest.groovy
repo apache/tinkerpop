@@ -31,8 +31,8 @@ public abstract class GroovyPeerPressureTest {
     public static class Traversals extends PeerPressureTest {
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_peerPressure() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.peerPressure")
+        public Traversal<Vertex, Vertex> get_g_V_peerPressure_hasXclusterX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.peerPressure.has(PeerPressureVertexProgram.CLUSTER)")
         }
 
         @Override

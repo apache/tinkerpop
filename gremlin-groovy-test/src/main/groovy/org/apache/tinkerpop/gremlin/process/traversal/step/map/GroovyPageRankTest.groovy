@@ -31,8 +31,8 @@ public abstract class GroovyPageRankTest {
     public static class Traversals extends PageRankTest {
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_pageRank() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.pageRank")
+        public Traversal<Vertex, Vertex> get_g_V_pageRank_hasXpageRankX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.pageRank.has(PageRankVertexProgram.PAGE_RANK)")
         }
 
         @Override
