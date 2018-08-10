@@ -368,6 +368,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.2.10 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Fixed problem with Gremlin Server sometimes returning an additional message after a failure.
+* Allowed spaces in classpath for `gremlin-server.bat`.
 * Added an system error code for failed plugin installs for Gremlin Server `-i` option.
 * Match numbers in `choose()` options using `NumberHelper` (match values, ignore data type).
 * Added support for GraphSON serialization of `Date` in Javascript.
