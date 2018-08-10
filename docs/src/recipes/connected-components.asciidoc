@@ -61,10 +61,11 @@ Connected components in a small graph can be determined with either an OLTP trav
 described in more detail in the
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connectedcomponent-step[Reference Documentation].
 The traversal looks like:
+
 [gremlin-groovy,existing]
 ----
 g.withComputer().V().connectedComponent().
-    group().by(component).
+    group().by(ConnectedComponent.component).
     select(values).unfold()
 ----
 
@@ -81,6 +82,7 @@ g.V().emit(cyclicPath().or().not(both())).                                    <1
     by(path().unfold().dedup().fold()).                                       <4>
     select(values).unfold()                                                   <5>
 ----
+
 <1> The initial emit() step allows for output of isolated vertices, in addition to the discovery of
 components as described in (2).
 
