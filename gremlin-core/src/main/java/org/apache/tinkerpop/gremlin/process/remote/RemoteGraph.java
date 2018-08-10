@@ -48,6 +48,10 @@ import java.util.Iterator;
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
 @Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ShortestPathTest",
+        method = "*",
+        reason = "https://issues.apache.org/jira/browse/TINKERPOP-1976")
+@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ConnectedComponentTest",
         method = "*",
         reason = "https://issues.apache.org/jira/browse/TINKERPOP-1976")
@@ -73,6 +77,10 @@ import java.util.Iterator;
         reason = "RemoteGraph does not support PartitionStrategy at this time")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgramTest",
+        method = "*",
+        reason = "RemoteGraph does not support direct Graph.compute() access")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.computer.search.path.ShortestPathVertexProgramTest",
         method = "*",
         reason = "RemoteGraph does not support direct Graph.compute() access")
 @Graph.OptOut(

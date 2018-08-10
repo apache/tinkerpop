@@ -963,6 +963,16 @@ class GraphTraversal extends Traversal {
   }
   
   /**
+   * Graph traversal shortestPath method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  shortestPath(...args) {
+    this.bytecode.addStep('shortestPath', args);
+    return this;
+  }
+  
+  /**
    * Graph traversal sideEffect method.
    * @param {...Object} args
    * @returns {GraphTraversal}

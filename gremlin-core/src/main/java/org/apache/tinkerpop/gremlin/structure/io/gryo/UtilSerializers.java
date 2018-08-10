@@ -28,6 +28,7 @@ import org.apache.tinkerpop.shaded.kryo.Serializer;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
 
 import java.net.InetAddress;
 import java.net.URI;
@@ -213,6 +214,20 @@ final class UtilSerializers {
         @Override
         public <I extends InputShim> Pair read(final KryoShim<I, ?> kryo, final I input, final Class<Pair> pairClass) {
             return Pair.with(kryo.readClassAndObject(input), kryo.readClassAndObject(input));
+        }
+    }
+
+    static final class TripletSerializer implements SerializerShim<Triplet> {
+        @Override
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Triplet triplet) {
+            kryo.writeClassAndObject(output, triplet.getValue0());
+            kryo.writeClassAndObject(output, triplet.getValue1());
+            kryo.writeClassAndObject(output, triplet.getValue2());
+        }
+
+        @Override
+        public <I extends InputShim> Triplet read(final KryoShim<I, ?> kryo, final I input, final Class<Triplet> tripletClass) {
+            return Triplet.with(kryo.readClassAndObject(input), kryo.readClassAndObject(input), kryo.readClassAndObject(input));
         }
     }
 

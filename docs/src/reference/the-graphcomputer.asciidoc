@@ -409,6 +409,57 @@ g.V().peerPressure().by(outE('knows')).by('cluster').valueMap()
 The `ConnectedComponentVertexProgram` identifies link:https://en.wikipedia.org/wiki/Connected_component_(graph_theory)[Connected Component]
 instances in a graph. See <<connectedcomponent-step,`connectedComponent()`>>-step for more information.
 
+[[shortestpathvertexprogram]]
+=== ShortestPathVertexProgram
+
+The `ShortestPathVertexProram` provides an easy way to find shortest non-cyclic paths in the graph. It provides several options to configure
+the output format, the start- and end-vertices, the direction, a custom distance function, as well as a distance limitation. By default it just
+finds all undirected, shortest paths in the graph.
+
+[gremlin-groovy,modern]
+----
+spvp = ShortestPathVertexProgram.build().create() <1>
+result = graph.compute().program(spvp).submit().get() <2>
+result.memory().get(ShortestPathVertexProgram.SHORTEST_PATHS) <3>
+----
+
+<1> Create a `ShortestPathVertexProgram` with its default configuration.
+<2> Execute the `ShortestPathVertexProgram`.
+<3> Get all shortest paths from the results memory.
+
+[gremlin-groovy,modern]
+----
+spvp = ShortestPathVertexProgram.build().includeEdges(true).create() <1>
+result = graph.compute().program(spvp).submit().get() <2>
+result.memory().get(ShortestPathVertexProgram.SHORTEST_PATHS) <3>
+----
+
+<1> Create a `ShortestPathVertexProgram` as before, but configure it to include edges in the result.
+<2> Execute the `ShortestPathVertexProgram`.
+<3> Get all shortest paths from the results memory.
+
+The `ShortestPathVertexProgram.Builder` provides the following configuration methods:
+
+[width="100%",cols="3,15,5",options="header"]
+|=========================================================
+| Method | Description | Default
+| `source(Traversal)` | Sets a filter traversal for the start vertices (e.g. `__.has('name','marko')`). | all vertices (`__.identity()`)
+| `target(Traversal)` | Sets a filter traversal for the end vertices. | all vertices
+| `edgeDirection(Direction)` | Sets the direction to traverse during the shortest path discovery. | `Direction.BOTH`
+| `edgeTraversal(Traversal)` | Sets a traversal that emits the edges to traverse from the current vertex. | `__.bothE()`
+| `distanceProperty(String)` | Sets the edge property to use for the distance calculations. | none
+| `distanceTraversal(Traversal)` | Sets the traversal that calculates the distance for the current edge. | `__.constant(1)`
+| `maxDistance(Traversal)` | Limits the shortest path distance. | none
+| `includeEdges(Boolean)` | Whether to include edges in shortest paths or not. | `false`
+|=========================================================
+
+IMPORTANT: If a maximum distance is provided, the discovery process will only stop to follow a path at this distance if there was no
+custom distance property or traversal provided. Custom distances can be negative, hence exceeding the maximum distance doesn't mean that there
+can't be any more valid paths. However, paths will be filtered at the end, when no more non-cyclic paths can be found. The bottom line is that
+custom distance properties or traversals can lead to much longer runtimes and a much higher memory consumption.
+
+Note that `GraphTraversal` provides a <<shortestpath-step,`shortestPath()`>>-step.
+
 [[bulkdumpervertexprogram]]
 [[clonevertexprogram]]
 === CloneVertexProgram

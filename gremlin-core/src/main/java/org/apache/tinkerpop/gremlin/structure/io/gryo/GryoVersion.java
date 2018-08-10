@@ -114,10 +114,10 @@ import org.apache.tinkerpop.gremlin.util.function.MultiComparator;
 import org.apache.tinkerpop.shaded.kryo.ClassResolver;
 import org.apache.tinkerpop.shaded.kryo.KryoSerializable;
 import org.apache.tinkerpop.shaded.kryo.serializers.JavaSerializer;
-import org.javatuples.Pair;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.LabelledCounter;
 import org.apache.commons.collections.map.ReferenceMap;
-import java.util.Stack;
+import org.javatuples.Pair;
+import org.javatuples.Triplet;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -154,6 +154,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Stack;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -356,6 +357,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MapReduce.NullObject.class, 74));
             add(GryoTypeReg.of(AtomicLong.class, 79));
             add(GryoTypeReg.of(Pair.class, 88, new UtilSerializers.PairSerializer()));
+            add(GryoTypeReg.of(Triplet.class, 183, new UtilSerializers.TripletSerializer()));                 // ***LAST ID***
             add(GryoTypeReg.of(TraversalExplanation.class, 106, new JavaSerializer()));
 
             add(GryoTypeReg.of(Duration.class, 93, new JavaTimeSerializers.DurationSerializer()));
@@ -393,8 +395,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LP_NL_O_OB_P_S_SE_SL_Traverser.class, 179));
             add(GryoTypeReg.of(LabelledCounter.class, 180));
             add(GryoTypeReg.of(Stack.class, 181));
-            add(GryoTypeReg.of(ReferenceMap.class, 182));                        // ***LAST ID***
-
+            add(GryoTypeReg.of(ReferenceMap.class, 182));
 
             // placeholder serializers for classes that don't live here in core. this will allow them to be used if
             // present  or ignored if the class isn't available. either way the registration numbers are held as
@@ -520,6 +521,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MapReduce.NullObject.class, 74));
             add(GryoTypeReg.of(AtomicLong.class, 79));
             add(GryoTypeReg.of(Pair.class, 88, new UtilSerializers.PairSerializer()));
+            add(GryoTypeReg.of(Triplet.class, 183, new UtilSerializers.TripletSerializer()));                 // ***LAST ID***
             add(GryoTypeReg.of(TraversalExplanation.class, 106, new JavaSerializer()));
 
             add(GryoTypeReg.of(Duration.class, 93, new JavaTimeSerializers.DurationSerializer()));
@@ -583,7 +585,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LP_NL_O_OB_P_S_SE_SL_Traverser.class, 179));
             add(GryoTypeReg.of(LabelledCounter.class, 180));
             add(GryoTypeReg.of(Stack.class, 181));
-            add(GryoTypeReg.of(ReferenceMap.class, 182));                        // ***LAST ID***
+            add(GryoTypeReg.of(ReferenceMap.class, 182));
         }};
     }
 

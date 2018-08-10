@@ -41,4 +41,9 @@ public final class IdentityTraversal<S> extends AbstractLambdaTraversal<S, S> {
     public String toString() {
         return "identity";
     }
+
+    @Override
+    public boolean equals(final Object other) {
+        return other instanceof IdentityTraversal;
+    }
 }

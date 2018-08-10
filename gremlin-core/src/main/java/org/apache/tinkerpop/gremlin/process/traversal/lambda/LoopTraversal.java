@@ -55,4 +55,10 @@ public final class LoopTraversal<S> extends AbstractLambdaTraversal<S, S> {
     public int hashCode() {
         return this.getClass().hashCode() ^ Long.hashCode(this.maxLoops);
     }
+
+    @Override
+    public boolean equals(final Object other) {
+        return other instanceof LoopTraversal
+                && ((LoopTraversal) other).maxLoops == this.maxLoops;
+    }
 }

@@ -127,7 +127,7 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
 
     public static <T> void checkResults(final List<T> expectedResults, final Traversal<?, T> traversal) {
         final List<T> results = traversal.toList();
-        assertFalse(traversal.hasNext());
+        assertThat(traversal.hasNext(), is(false));
         if (expectedResults.size() != results.size()) {
             logger.error("Expected results: " + expectedResults);
             logger.error("Actual results:   " + results);
@@ -145,11 +145,10 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
         }
         final Map<T, Long> expectedResultsCount = new HashMap<>();
         final Map<T, Long> resultsCount = new HashMap<>();
+        expectedResults.forEach(t -> MapHelper.incr(expectedResultsCount, t, 1L));
+        results.forEach(t -> MapHelper.incr(resultsCount, t, 1L));
         assertEquals("Checking indexing is equivalent", expectedResultsCount.size(), resultsCount.size());
-        expectedResults.forEach(t -> MapHelper.incr(expectedResultsCount, t, 1l));
-        results.forEach(t -> MapHelper.incr(resultsCount, t, 1l));
         expectedResultsCount.forEach((k, v) -> assertEquals("Checking result group counts", v, resultsCount.get(k)));
-        assertThat(traversal.hasNext(), is(false));
     }
 
     public static <T> void checkResults(final Map<T, Long> expectedResults, final Traversal<?, T> traversal) {

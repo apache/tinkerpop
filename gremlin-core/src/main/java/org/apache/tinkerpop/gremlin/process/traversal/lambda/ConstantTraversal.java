@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.lambda;
 
+import java.util.Objects;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -43,5 +45,10 @@ public final class ConstantTraversal<S, E> extends AbstractLambdaTraversal<S, E>
     public int hashCode() {
         return this.getClass().hashCode() ^ this.end.hashCode();
     }
-}
 
+    @Override
+    public boolean equals(final Object other) {
+        return other instanceof ConstantTraversal
+                && Objects.equals(((ConstantTraversal) other).end, this.end);
+    }
+}

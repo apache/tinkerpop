@@ -1271,6 +1271,9 @@ limitations under the License.
                                             org/apache/tinkerpop/gremlin/process/computer/ranking/pagerank/PageRankVertexProgram.java
                                         </include>
                                         <include>
+                                            org/apache/tinkerpop/gremlin/process/computer/search/path/ShortestPathVertexProgram.java
+                                        </include>
+                                        <include>
                                             org/apache/tinkerpop/gremlin/process/computer/traversal/TraversalVertexProgram.java
                                         </include>
                                         <!-- traversal -->

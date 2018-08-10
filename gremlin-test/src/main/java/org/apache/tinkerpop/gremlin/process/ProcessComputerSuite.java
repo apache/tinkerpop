@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVerte
 import org.apache.tinkerpop.gremlin.process.computer.clone.CloneVertexProgramTest;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgramTest;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgramTest;
+import org.apache.tinkerpop.gremlin.process.computer.search.path.ShortestPathVertexProgramTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComplexTest;
@@ -72,6 +73,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProjectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ReadTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ShortestPathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldTest;
@@ -168,6 +170,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             ProgramTest.Traversals.class,
             PropertiesTest.Traversals.class,
             ReadTest.Traversals.class,
+            ShortestPathTest.Traversals.class,
             SelectTest.Traversals.class,
             UnfoldTest.Traversals.class,
             ValueMapTest.Traversals.class,
@@ -196,6 +199,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // algorithms
             PageRankVertexProgramTest.class,
             PeerPressureVertexProgramTest.class,
+            ShortestPathVertexProgramTest.class,
             BulkLoaderVertexProgramTest.class,
             BulkDumperVertexProgramTest.class,
             CloneVertexProgramTest.class,
@@ -260,6 +264,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             ProjectTest.class,
             ProgramTest.class,
             PropertiesTest.class,
+            ShortestPathTest.class,
             SelectTest.class,
             UnfoldTest.class,
             ValueMapTest.class,

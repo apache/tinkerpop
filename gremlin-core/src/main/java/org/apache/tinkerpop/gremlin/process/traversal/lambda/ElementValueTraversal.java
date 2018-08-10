@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Element;
 
+import java.util.Objects;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -61,5 +63,11 @@ public final class ElementValueTraversal<V> extends AbstractLambdaTraversal<Elem
     @Override
     public int hashCode() {
         return super.hashCode() ^ this.propertyKey.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return other instanceof ElementValueTraversal
+                && Objects.equals(((ElementValueTraversal) other).propertyKey, this.propertyKey);
     }
 }
