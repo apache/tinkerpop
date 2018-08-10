@@ -39,15 +39,14 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.security.auth.login.LoginException;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-
-
 /**
  * @author Marc de Lignie
- *
  */
 public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerIntegrationTest {
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(GremlinServerAuthKrb5IntegrateTest.class);
@@ -180,32 +179,17 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
 
     @Test
     public void shouldFailWithNonexistentServerPrincipal() throws Exception {
-
-        // wait for logger to flush - (don't think there is a way to detect this)
-        stopServer();
-        Thread.sleep(1000);
-
-        assertTrue(recordingAppender.logContainsAny("WARN - Failed to login to kdc"));
+        assertFailedLogin();
     }
 
     @Test
     public void shouldFailWithEmptyServerKeytab() throws Exception {
-
-        // wait for logger to flush - (don't think there is a way to detect this)
-        stopServer();
-        Thread.sleep(1000);
-
-        assertTrue(recordingAppender.logContainsAny("WARN - Failed to login to kdc"));
+        assertFailedLogin();
     }
 
     @Test
     public void shouldFailWithWrongServerKeytab() throws Exception {
-
-        // wait for logger to flush - (don't think there is a way to detect this)
-        stopServer();
-        Thread.sleep(1000);
-
-        assertTrue(recordingAppender.logContainsAny("WARN - Failed to login to kdc"));
+        assertFailedLogin();
     }
 
     @Test
@@ -241,8 +225,8 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
 
     @Test
     public void shouldAuthenticateWithSerializeResultToStringV1() throws Exception {
-        MessageSerializer serializer = new GryoMessageSerializerV1d0();
-        Map config = new HashMap<String, Object>();
+        final MessageSerializer serializer = new GryoMessageSerializerV1d0();
+        final Map<String,Object> config = new HashMap<>();
         config.put("serializeResultToString", true);
         serializer.configure(config, null);
         final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
@@ -259,8 +243,8 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
 
     @Test
     public void shouldAuthenticateWithSerializeResultToStringV3() throws Exception {
-        MessageSerializer serializer = new GryoMessageSerializerV3d0();
-        Map config = new HashMap<String, Object>();
+        final MessageSerializer serializer = new GryoMessageSerializerV3d0();
+        final Map<String, Object> config = new HashMap<>();
         config.put("serializeResultToString", true);
         serializer.configure(config, null);
         final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
@@ -273,5 +257,20 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
         } finally {
             cluster.close();
         }
+    }
+
+    /**
+     * Tries to force the logger to flush fully or at least wait until it does.
+     */
+    private void assertFailedLogin() throws Exception {
+        stopServer();
+
+        boolean logMessageIdentified = false;
+        for (int ix = 0; ix < 10 && !logMessageIdentified; ix++) {
+            logMessageIdentified = recordingAppender.logContainsAny("WARN - Failed to login to kdc");
+            if (!logMessageIdentified) Thread.sleep(1000);
+        }
+
+        assertThat(logMessageIdentified, is(true));
     }
 }
