@@ -110,11 +110,10 @@ import static org.junit.Assert.assertEquals;
  */
 public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegrationTest {
 
-    private static final String SERVER_KEY = "src/test/resources/server.key.pk8";
-    private static final String SERVER_CRT = "src/test/resources/server.crt";
-    private static final String KEY_PASS = "changeit";
-    private static final String CLIENT_KEY = "src/test/resources/client.key.pk8";
-    private static final String CLIENT_CRT = "src/test/resources/client.crt";
+    private static final String PEM_SERVER_KEY = "src/test/resources/server.key.pk8";
+    private static final String PEM_SERVER_CRT = "src/test/resources/server.crt";
+    private static final String PEM_CLIENT_KEY = "src/test/resources/client.key.pk8";
+    private static final String PEM_CLIENT_CRT = "src/test/resources/client.crt";
     private Level previousLogLevel;
 
     private Log4jRecordingAppender recordingAppender = null;
@@ -194,6 +193,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldEnableSslButFailIfClientConnectsWithoutIt":
                 settings.ssl = new Settings.SslSettings();
                 settings.ssl.enabled = true;
+                settings.ssl.keyStore = JKS_SERVER_KEY;
+                settings.ssl.keyStorePassword = KEY_PASS;
                 break;
             case "shouldEnableSslWithSslContextProgrammaticallySpecified":
                 settings.ssl = new Settings.SslSettings();
@@ -204,31 +205,31 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.ssl = new Settings.SslSettings();
                 settings.ssl.enabled = true;
                 settings.ssl.needClientAuth = ClientAuth.REQUIRE;
-                settings.ssl.keyCertChainFile = SERVER_CRT;
-                settings.ssl.keyFile = SERVER_KEY;
+                settings.ssl.keyCertChainFile = PEM_SERVER_CRT;
+                settings.ssl.keyFile = PEM_SERVER_KEY;
                 settings.ssl.keyPassword =KEY_PASS;
                 // Trust the client
-                settings.ssl.trustCertChainFile = CLIENT_CRT;
+                settings.ssl.trustCertChainFile = PEM_CLIENT_CRT;
             	break;
             case "shouldEnableSslAndClientCertificateAuthAndFailWithoutCert":
                 settings.ssl = new Settings.SslSettings();
                 settings.ssl.enabled = true;
                 settings.ssl.needClientAuth = ClientAuth.REQUIRE;
-                settings.ssl.keyCertChainFile = SERVER_CRT;
-                settings.ssl.keyFile = SERVER_KEY;
+                settings.ssl.keyCertChainFile = PEM_SERVER_CRT;
+                settings.ssl.keyFile = PEM_SERVER_KEY;
                 settings.ssl.keyPassword =KEY_PASS;
                 // Trust the client
-                settings.ssl.trustCertChainFile = CLIENT_CRT;
+                settings.ssl.trustCertChainFile = PEM_CLIENT_CRT;
             	break;
             case "shouldEnableSslAndClientCertificateAuthAndFailWithoutTrustedClientCert":
                 settings.ssl = new Settings.SslSettings();
                 settings.ssl.enabled = true;
                 settings.ssl.needClientAuth = ClientAuth.REQUIRE;
-                settings.ssl.keyCertChainFile = SERVER_CRT;
-                settings.ssl.keyFile = SERVER_KEY;
+                settings.ssl.keyCertChainFile = PEM_SERVER_CRT;
+                settings.ssl.keyFile = PEM_SERVER_KEY;
                 settings.ssl.keyPassword =KEY_PASS;
                 // Trust ONLY the server cert
-                settings.ssl.trustCertChainFile = SERVER_CRT;
+                settings.ssl.trustCertChainFile = PEM_SERVER_CRT;
             	break;
             case "shouldUseSimpleSandbox":
                 settings.scriptEngines.get("gremlin-groovy").config = getScriptEngineConfForSimpleSandbox();
@@ -485,7 +486,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldEnableSsl() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(true).create();
+        final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_SERVER_KEY).keyStorePassword(KEY_PASS).sslSkipCertValidation(true).create();
         final Client client = cluster.connect();
 
         try {
@@ -533,8 +534,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldEnableSslAndClientCertificateAuth() {
 		final Cluster cluster = TestClientFactory.build().enableSsl(true)
-				.keyCertChainFile(CLIENT_CRT).keyFile(CLIENT_KEY)
-				.keyPassword(KEY_PASS).trustCertificateChainFile(SERVER_CRT).create();
+				.keyCertChainFile(PEM_CLIENT_CRT).keyFile(PEM_CLIENT_KEY)
+				.keyPassword(KEY_PASS).trustCertificateChainFile(PEM_SERVER_CRT).create();
 		final Client client = cluster.connect();
 
         try {
@@ -546,7 +547,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldEnableSslAndClientCertificateAuthAndFailWithoutCert() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(true).create();
+        final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_SERVER_KEY).keyStorePassword(KEY_PASS).sslSkipCertValidation(true).create();
         final Client client = cluster.connect();
 
         try {
@@ -563,8 +564,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldEnableSslAndClientCertificateAuthAndFailWithoutTrustedClientCert() {
 		final Cluster cluster = TestClientFactory.build().enableSsl(true)
-				.keyCertChainFile(CLIENT_CRT).keyFile(CLIENT_KEY)
-				.keyPassword(KEY_PASS).trustCertificateChainFile(SERVER_CRT).create();
+				.keyCertChainFile(PEM_CLIENT_CRT).keyFile(PEM_CLIENT_KEY)
+				.keyPassword(KEY_PASS).trustCertificateChainFile(PEM_SERVER_CRT).create();
 		final Client client = cluster.connect();
 
         try {

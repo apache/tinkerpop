@@ -33,15 +33,25 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -172,6 +182,14 @@ public final class Cluster {
                 .keyCertChainFile(settings.connectionPool.keyCertChainFile)
                 .keyFile(settings.connectionPool.keyFile)
                 .keyPassword(settings.connectionPool.keyPassword)
+                .keyStore(settings.connectionPool.keyStore)
+                .keyStorePassword(settings.connectionPool.keyStorePassword)
+                .keyStoreType(settings.connectionPool.keyStoreType)
+                .trustStore(settings.connectionPool.trustStore)
+                .trustStorePassword(settings.connectionPool.trustStorePassword)
+                .sslCipherSuites(settings.connectionPool.sslCipherSuites)
+                .sslEnabledProtocols(settings.connectionPool.sslEnabledProtocols)
+                .sslSkipCertValidation(settings.connectionPool.sslSkipCertValidation)
                 .nioPoolSize(settings.nioPoolSize)
                 .workerPoolSize(settings.workerPoolSize)
                 .reconnectInterval(settings.connectionPool.reconnectInterval)
@@ -446,27 +464,79 @@ public final class Cluster {
         return manager.authProps;
     }
 
-    SslContext createSSLContext() throws Exception  {
+    SslContext createSSLContext() throws Exception {
         // if the context is provided then just use that and ignore the other settings
-        if (manager.sslContextOptional.isPresent()) return manager.sslContextOptional.get();
+        if (manager.sslContextOptional.isPresent())
+            return manager.sslContextOptional.get();
 
         final SslProvider provider = SslProvider.JDK;
         final Settings.ConnectionPoolSettings connectionPoolSettings = connectionPoolSettings();
         final SslContextBuilder builder = SslContextBuilder.forClient();
 
-        if (connectionPoolSettings.trustCertChainFile != null)
+        if (connectionPoolSettings.trustCertChainFile != null) {
+            logger.warn("Using deprecated SSL trustCertChainFile support");
             builder.trustManager(new File(connectionPoolSettings.trustCertChainFile));
-        else {
-            logger.warn("SSL configured without a trustCertChainFile and thus trusts all certificates without verification (not suitable for production)");
-            builder.trustManager(InsecureTrustManagerFactory.INSTANCE);
         }
 
         if (null != connectionPoolSettings.keyCertChainFile && null != connectionPoolSettings.keyFile) {
+            logger.warn("Using deprecated SSL keyFile support");
             final File keyCertChainFile = new File(connectionPoolSettings.keyCertChainFile);
             final File keyFile = new File(connectionPoolSettings.keyFile);
 
-            // note that keyPassword may be null here if the keyFile is not password-protected.
+            // note that keyPassword may be null here if the keyFile is not
+            // password-protected.
             builder.keyManager(keyCertChainFile, keyFile, connectionPoolSettings.keyPassword);
+        }
+
+        // Build JSSE SSLContext
+        try {
+
+            // Load private key/public cert for client auth
+            if (null != connectionPoolSettings.keyStore) {
+                final String keyStoreType = null == connectionPoolSettings.keyStoreType ? KeyStore.getDefaultType()
+                        : connectionPoolSettings.keyStoreType;
+                final KeyStore keystore = KeyStore.getInstance(keyStoreType);
+                final char[] password = null == connectionPoolSettings.keyStorePassword ? null
+                        : connectionPoolSettings.keyStorePassword.toCharArray();
+                try (final InputStream in = new FileInputStream(connectionPoolSettings.keyStore)) {
+                    keystore.load(in, password);
+                }
+                final KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                kmf.init(keystore, password);
+                builder.keyManager(kmf);
+            }
+
+            // Load custom truststore
+            if (null != connectionPoolSettings.trustStore) {
+                final String keystoreType = null == connectionPoolSettings.keyStoreType ? KeyStore.getDefaultType()
+                        : connectionPoolSettings.keyStoreType;
+                final KeyStore truststore = KeyStore.getInstance(keystoreType);
+                final char[] password = null == connectionPoolSettings.trustStorePassword ? null
+                        : connectionPoolSettings.trustStorePassword.toCharArray();
+                try (final InputStream in = new FileInputStream(connectionPoolSettings.trustStore)) {
+                    truststore.load(in, password);
+                }
+                final TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                tmf.init(truststore);
+                builder.trustManager(tmf);
+            }
+
+        } catch (UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException e) {
+            logger.error("There was an error enabling SSL.", e);
+            return null;
+        }
+
+        if (null != connectionPoolSettings.sslCipherSuites && !connectionPoolSettings.sslCipherSuites.isEmpty()) {
+            builder.ciphers(connectionPoolSettings.sslCipherSuites);
+        }
+
+        if (null != connectionPoolSettings.sslEnabledProtocols && !connectionPoolSettings.sslEnabledProtocols.isEmpty()) {
+            builder.protocols(connectionPoolSettings.sslEnabledProtocols.toArray(new String[] {}));
+        }
+
+        if (connectionPoolSettings.sslSkipCertValidation) {
+            logger.warn("SSL configured with sslSkipCertValidation thus trusts all certificates without verification (not suitable for production)");
+            builder.trustManager(InsecureTrustManagerFactory.INSTANCE);
         }
 
         builder.sslProvider(provider);
@@ -499,6 +569,14 @@ public final class Cluster {
         private String keyCertChainFile = null;
         private String keyFile = null;
         private String keyPassword = null;
+        private String keyStore;
+        private String keyStorePassword;
+        private String trustStore;
+        private String trustStorePassword;
+        private String keyStoreType;
+        private List<String> sslEnabledProtocols = new ArrayList<>();
+        private List<String> sslCipherSuites = new ArrayList<>();
+        private boolean sslSkipCertValidation = false;
         private SslContext sslContext = null;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
         private AuthProperties authProps = new AuthProperties();
@@ -579,7 +657,9 @@ public final class Cluster {
          * File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and
          * SSL is enabled, the {@link TrustManager} will be established with a self-signed certificate which is NOT
          * suitable for production purposes.
+         * @deprecated
          */
+        @Deprecated
         public Builder trustCertificateChainFile(final String certificateChainFile) {
             this.trustCertChainFile = certificateChainFile;
             return this;
@@ -597,7 +677,9 @@ public final class Cluster {
 
         /**
          * The X.509 certificate chain file in PEM format.
+         * @deprecated
          */
+        @Deprecated
         public Builder keyCertChainFile(final String keyCertChainFile) {
             this.keyCertChainFile = keyCertChainFile;
             return this;
@@ -605,7 +687,9 @@ public final class Cluster {
 
         /**
          * The PKCS#8 private key file in PEM format.
+         * @deprecated
          */
+        @Deprecated
         public Builder keyFile(final String keyFile) {
             this.keyFile = keyFile;
             return this;
@@ -613,9 +697,75 @@ public final class Cluster {
 
         /**
          * The password of the {@link #keyFile}, or {@code null} if it's not password-protected.
+         * @deprecated
          */
+        @Deprecated
         public Builder keyPassword(final String keyPassword) {
             this.keyPassword = keyPassword;
+            return this;
+        }
+        
+        /**
+         * 
+         */
+        public Builder keyStore(final String keyStore) {
+            this.keyStore = keyStore;
+            return this;
+        }
+        
+        /**
+         * 
+         */
+        public Builder keyStorePassword(final String keyStorePassword) {
+            this.keyStorePassword = keyStorePassword;
+            return this;
+        }
+        
+        /**
+         * 
+         */
+        public Builder trustStore(final String trustStore) {
+            this.trustStore = trustStore;
+            return this;
+        }
+        
+        /**
+         * 
+         */
+        public Builder trustStorePassword(final String trustStorePassword) {
+            this.trustStorePassword = trustStorePassword;
+            return this;
+        }
+        
+        /**
+         * 
+         */
+        public Builder keyStoreType(final String keyStoreType) {
+            this.keyStoreType = keyStoreType;
+            return this;
+        }
+        
+        /**
+         * 
+         */
+        public Builder sslEnabledProtocols(final List<String> sslEnabledProtocols) {
+            this.sslEnabledProtocols = sslEnabledProtocols;
+            return this;
+        }
+        
+        /**
+         * 
+         */
+        public Builder sslCipherSuites(final List<String> sslCipherSuites) {
+            this.sslCipherSuites = sslCipherSuites;
+            return this;
+        }
+        
+        /**
+         * 
+         */
+        public Builder sslSkipCertValidation(final boolean sslSkipCertValidation) {
+            this.sslSkipCertValidation = sslSkipCertValidation;
             return this;
         }
 
@@ -901,6 +1051,14 @@ public final class Cluster {
             connectionPoolSettings.keyCertChainFile = builder.keyCertChainFile;
             connectionPoolSettings.keyFile = builder.keyFile;
             connectionPoolSettings.keyPassword = builder.keyPassword;
+            connectionPoolSettings.keyStore = builder.keyStore;
+            connectionPoolSettings.keyStorePassword = builder.keyStorePassword;
+            connectionPoolSettings.trustStore = builder.trustStore;
+            connectionPoolSettings.trustStorePassword = builder.trustStorePassword;
+            connectionPoolSettings.keyStoreType = builder.keyStoreType;
+            connectionPoolSettings.sslCipherSuites = builder.sslCipherSuites;
+            connectionPoolSettings.sslEnabledProtocols = builder.sslEnabledProtocols;
+            connectionPoolSettings.sslSkipCertValidation = builder.sslSkipCertValidation;
             connectionPoolSettings.keepAliveInterval = builder.keepAliveInterval;
             connectionPoolSettings.channelizer = builder.channelizer;
 

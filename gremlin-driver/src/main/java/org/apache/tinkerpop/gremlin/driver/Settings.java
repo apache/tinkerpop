@@ -232,23 +232,80 @@ final class Settings {
 
         /**
          * The trusted certificate in PEM format.
+         * @deprecated Use JSSE-based settings
          */
+        @Deprecated
         public String trustCertChainFile = null;
 
         /**
          * The X.509 certificate chain file in PEM format.
+         * @deprecated Use JSSE-based settings
          */
+        @Deprecated
         public String keyCertChainFile = null;
 
         /**
          * The PKCS#8 private key file in PEM format.
+         * @deprecated Use JSSE-based settings
          */
+        @Deprecated
         public String keyFile = null;
 
         /**
          * The password of the {@link #keyFile}, or {@code null} if it's not password-protected.
+         * @deprecated Use JSSE-based settings
          */
+        @Deprecated
         public String keyPassword = null;
+
+        /**
+         * JSSE keystore file path. Similar to setting JSSE property
+         * {@code javax.net.ssl.keyStore}.
+         */
+        public String keyStore;
+
+        /**
+         * JSSE keystore password. Similar to setting JSSE property
+         * {@code javax.net.ssl.keyStorePassword}.
+         */
+        public String keyStorePassword;
+
+        /**
+         * JSSE truststore file path. Similar to setting JSSE property
+         * {@code javax.net.ssl.trustStore}.
+         */
+        public String trustStore;
+
+        /**
+         * JSSE truststore password. Similar to setting JSSE property
+         * {@code javax.net.ssl.trustStorePassword}.
+         */
+        public String trustStorePassword;
+
+        /**
+         * JSSE keystore format. Similar to setting JSSE property
+         * {@code javax.net.ssl.keyStoreType}.
+         */
+        public String keyStoreType;
+
+        /**
+         * @see <a href=
+         *      "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SunJSSE_Protocols">JSSE
+         *      Protocols</a>
+         */
+        public List<String> sslEnabledProtocols = new ArrayList<>();
+
+        /**
+         * @see <a href=
+         *      "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SupportedCipherSuites">Cipher
+         *      Suites</a>
+         */
+        public List<String> sslCipherSuites = new ArrayList<>();
+
+        /**
+         * 
+         */
+        public boolean sslSkipCertValidation = false;
 
         /**
          * The minimum size of a connection pool for a {@link Host}. By default this is set to 2.
