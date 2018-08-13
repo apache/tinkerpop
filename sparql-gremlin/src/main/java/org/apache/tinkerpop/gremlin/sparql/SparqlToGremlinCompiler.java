@@ -51,7 +51,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
- * The engine that transpiles SPARQL to Gremlin traversals thus enabling SPARQL to be executed on any TinkerPop-enabled
+ * The engine that compiles SPARQL to Gremlin traversals thus enabling SPARQL to be executed on any TinkerPop-enabled
  * graph system.
  */
 public class SparqlToGremlinCompiler {
@@ -75,23 +75,23 @@ public class SparqlToGremlinCompiler {
      * Converts SPARQL to a Gremlin traversal.
      *
      * @param graph       the {@link Graph} instance to execute the traversal from
-     * @param sparqlQuery the query to transpile to Gremlin
+     * @param sparqlQuery the query to compile to Gremlin
      */
-    public static GraphTraversal<Vertex, ?> transpile(final Graph graph, final String sparqlQuery) {
-        return transpile(graph.traversal(), sparqlQuery);
+    public static GraphTraversal<Vertex, ?> compile(final Graph graph, final String sparqlQuery) {
+        return compile(graph.traversal(), sparqlQuery);
     }
 
     /**
      * Converts SPARQL to a Gremlin traversal.
      *
      * @param g           the {@link GraphTraversalSource} instance to execute the traversal from
-     * @param sparqlQuery the query to transpile to Gremlin
+     * @param sparqlQuery the query to compile to Gremlin
      */
-    public static GraphTraversal<Vertex, ?> transpile(final GraphTraversalSource g, final String sparqlQuery) {
-        return transpile(g, QueryFactory.create(Prefixes.prepend(sparqlQuery), Syntax.syntaxSPARQL));
+    public static GraphTraversal<Vertex, ?> compile(final GraphTraversalSource g, final String sparqlQuery) {
+        return compile(g, QueryFactory.create(Prefixes.prepend(sparqlQuery), Syntax.syntaxSPARQL));
     }
 
-    private GraphTraversal<Vertex, ?> transpile(final Query query) {
+    private GraphTraversal<Vertex, ?> compile(final Query query) {
         final Op op = Algebra.compile(query);
         OpWalker.walk(op, new GremlinOpVisitor());
 
@@ -229,8 +229,8 @@ public class SparqlToGremlinCompiler {
         return orderingIndex;
     }
 
-    private static GraphTraversal<Vertex, ?> transpile(final GraphTraversalSource g, final Query query) {
-        return new SparqlToGremlinCompiler(g).transpile(query);
+    private static GraphTraversal<Vertex, ?> compile(final GraphTraversalSource g, final Query query) {
+        return new SparqlToGremlinCompiler(g).compile(query);
     }
 
     /**

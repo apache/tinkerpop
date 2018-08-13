@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * This {@link TraversalStrategy} is used in conjunction with the {@link SparqlTraversalSource} which has a single
  * {@code sparql()} start step. That step adds a {@link ConstantStep} to the traversal with the SPARQL query within
- * it as a string value. This strategy finds that step and transpiles it to a Gremlin traversal which then replaces
+ * it as a string value. This strategy finds that step and compiles it to a Gremlin traversal which then replaces
  * the {@link ConstantStep}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -69,7 +69,7 @@ public class SparqlStrategy extends AbstractTraversalStrategy<TraversalStrategy.
             final Object[] injections = stepWithSparql.getInjections();
             if (injections.length == 1 && injections[0] instanceof String) {
                 final String sparql = (String) injections[0];
-                final Traversal<Vertex, ?> sparqlTraversal = SparqlToGremlinCompiler.transpile(
+                final Traversal<Vertex, ?> sparqlTraversal = SparqlToGremlinCompiler.compile(
                         traversal.getGraph().get(), sparql);
                 TraversalHelper.removeAllSteps(traversal);
                 sparqlTraversal.asAdmin().getSteps().forEach(s -> traversal.addStep(s));
