@@ -37,6 +37,7 @@ public class App {
         } finally {
             service.close();
             logger.info("Service closed and resources released");
+            System.exit(0);
         }
     }
 }
