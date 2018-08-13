@@ -45,15 +45,23 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 {"g:Float", new FloatConverter()},
                 {"g:Double", new DoubleConverter()},
                 {"g:UUID", new UuidDeserializer()},
-                {"g:Date", new DateSerializer()},
-                {"g:Timestamp", new DateSerializer()},
+                {"g:Date", new DateDeserializer()},
+                {"g:Timestamp", new DateDeserializer()},
                 {"g:Vertex", new VertexDeserializer()},
                 {"g:Edge", new EdgeDeserializer()},
                 {"g:Property", new PropertyDeserializer()},
                 {"g:VertexProperty", new VertexPropertyDeserializer()},
                 {"g:Path", new PathDeserializer()},
                 {"g:T", new TDeserializer()},
-                {"gx:BigDecimal", new DecimalConverter()}
+
+                //Extended
+                {"gx:BigDecimal", new DecimalConverter()},
+                {"gx:Duration", new DurationDeserializer()},
+                {"gx:BigInteger", new BigIntegerDeserializer()},
+                {"gx:Byte", new ByteConverter()},
+                {"gx:ByteBuffer", new ByteBufferDeserializer()},
+                {"gx:Char", new CharConverter()},
+                {"gx:Int16", new Int16Converter() }
             };
 
         /// <summary>
