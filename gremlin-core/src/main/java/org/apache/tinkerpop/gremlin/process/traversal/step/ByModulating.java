@@ -57,6 +57,8 @@ public interface ByModulating {
     public default void modulateBy(final Function function) throws UnsupportedOperationException {
         if (function instanceof T)
             this.modulateBy((T) function);
+        else if (function instanceof Column)
+            this.modulateBy(new ColumnTraversal((Column) function));
         else
             this.modulateBy(__.map(new FunctionTraverser<>(function)).asAdmin());
     }
