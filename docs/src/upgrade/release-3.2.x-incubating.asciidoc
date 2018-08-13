@@ -49,7 +49,8 @@ The packaged `*-secure.yaml` files now restrict the protocol to `TLSv1.2` by def
 
 PEM-based configurations are deprecated and may be removed in a future release.
 
-See the section on configuring SSL.
+See also http://tinkerpop.apache.org/docs/current/reference/#_configuration[Connecting via Java Configuration],
+http://tinkerpop.apache.org/docs/current/reference/#_configuring_2[Gremlin Server Configuration].
 
 link:https://issues.apache.org/jira/browse/TINKERPOP-2022[TINKERPOP-2022]
 link:https://issues.apache.org/jira/browse/TINKERPOP-2023[TINKERPOP-2023]

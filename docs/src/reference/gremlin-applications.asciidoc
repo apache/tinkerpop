@@ -751,7 +751,7 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.sslCipherSuites |The list of JSSE ciphers to support for SSL connections. If specified, only the ciphers that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
 |connectionPool.sslEnabledProtocols |The list of SSL protocols to support for SSL connections. If specified, only the protocols that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
 |connectionPool.sslSkipCertValidation |Configures the `TrustManager` to trust all certs without any validation. Should not be used in production.|false
-|connectionPool.trustCertChainFile |File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and SSL is enabled, the default `TrustManager` will be uesd. |_none_
+|connectionPool.trustCertChainFile |File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and SSL is enabled, the default `TrustManager` will be used. |_none_
 |connectionPool.trustStore |File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and SSL is enabled, the default `TrustManager` will be used. |_none_
 |connectionPool.trustStorePassword |The password of the `trustStore` if it is password-protected |_none_
 |hosts |The list of hosts that the driver will connect to. |localhost
@@ -1161,7 +1161,7 @@ The following table describes the various configuration options that Gremlin Ser
 |ssl.keyPassword |The password of the `keyFile` if it is password-protected. |_none_
 |ssl.keyStore |The private key in JKS or PKCS#12 format.  |_none_
 |ssl.keyStorePassword |The password of the `keyStore` if it is password-protected. |_none_
-|ssl.keyStoreType |JKS (Java 8 default) or PKCS#12 (Java 9+ default) |_none_
+|ssl.keyStoreType |`JKS` (Java 8 default) or `PKCS12` (Java 9+ default) |_none_
 |ssl.needClientAuth | Optional. One of NONE, OPTIONAL, REQUIRE.  Enables client certificate authentication at the enforcement level specified. Can be used in combination with Authenticator. |_none_
 |ssl.sslCipherSuites |The list of JSSE ciphers to support for SSL connections. If specified, only the ciphers that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
 |ssl.sslEnabledProtocols |The list of SSL protocols to support for SSL connections. If specified, only the protocols that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
