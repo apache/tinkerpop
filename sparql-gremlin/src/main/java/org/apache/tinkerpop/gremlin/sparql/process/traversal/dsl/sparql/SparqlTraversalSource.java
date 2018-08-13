@@ -127,16 +127,10 @@ public class SparqlTraversalSource implements TraversalSource {
         final SparqlTraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(SparqlStrategy.instance());
 
-        // this is a bit of a hack to get remote traversals to work cleanly. on the remote side, we'd expect a
-        // GraphTraversalSource not a SparqlTraversalSource (given that sparql-gremlin is to be implemented in the
-        // DSL pattern). Instead of just sending the constant() step with the sparql query we also include an
-        // inject() step which will be recognized by a GraphTraversalSource on the remote side. Since SparqlStrategy
-        // wholly replaces both of these steps, the traversal bytecode can be read properly.
-        clone.bytecode.addStep(GraphTraversal.Symbols.inject);
-        clone.bytecode.addStep(GraphTraversal.Symbols.constant, query);
+        // the inject() holds the sparql which the SparqlStrategy then detects and converts to a traversal
+        clone.bytecode.addStep(GraphTraversal.Symbols.inject, query);
         final SparqlTraversal.Admin<S, S> traversal = new DefaultSparqlTraversal<>(clone);
-        traversal.addStep(new InjectStep<S>(traversal));
-        return traversal.addStep(new ConstantStep<S,String>(traversal, query));
+        return traversal.addStep(new InjectStep<>(traversal, query));
     }
 
     public Transaction tx() {

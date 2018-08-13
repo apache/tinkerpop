@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -63,22 +64,22 @@ public class SparqlStrategy extends AbstractTraversalStrategy<TraversalStrategy.
         if (!(traversal.getParent() instanceof EmptyStep))
             return;
 
-        if (traversal.getSteps().size() == 2 && traversal.getEndStep() instanceof ConstantStep) {
-            final ConstantStep stepWithSparql = (ConstantStep) traversal.getEndStep();
-            final Object constant = stepWithSparql.getConstant();
-            if (constant instanceof String) {
-                final String sparql = (String) constant;
+        if (traversal.getSteps().size() == 1 && traversal.getEndStep() instanceof InjectStep) {
+            final InjectStep stepWithSparql = (InjectStep) traversal.getEndStep();
+            final Object[] injections = stepWithSparql.getInjections();
+            if (injections.length == 1 && injections[0] instanceof String) {
+                final String sparql = (String) injections[0];
                 final Traversal<Vertex, ?> sparqlTraversal = SparqlToGremlinCompiler.transpile(
                         traversal.getGraph().get(), sparql);
                 TraversalHelper.removeAllSteps(traversal);
                 sparqlTraversal.asAdmin().getSteps().forEach(s -> traversal.addStep(s));
             } else {
                 // The ConstantStep expects a string value
-                throw new IllegalStateException("SparqlStrategy cannot be applied to a traversal that does not consist of a single ConstantStep<?,String>");
+                throw new IllegalStateException("SparqlStrategy cannot be applied to a traversal that does not consist of a single InjectStep<String> with one injection");
             }
         } else {
             // SparqlStrategy requires that there be one step and it be a ConstantStep that contains some SPARQL
-            throw new IllegalStateException("SparqlStrategy cannot be applied to a traversal that does not consist of a single ConstantStep<?,String>");
+            throw new IllegalStateException("SparqlStrategy cannot be applied to a traversal that does not consist of a single InjectStep<String> with one injection");
         }
     }
 }
