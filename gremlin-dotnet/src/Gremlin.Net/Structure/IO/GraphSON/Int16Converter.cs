@@ -29,5 +29,6 @@ namespace Gremlin.Net.Structure.IO.GraphSON
     {
         protected override string GraphSONTypeName => "Int16";
         protected override Type HandledType => typeof(short);
+        protected override string Prefix => "gx";
     }
 }

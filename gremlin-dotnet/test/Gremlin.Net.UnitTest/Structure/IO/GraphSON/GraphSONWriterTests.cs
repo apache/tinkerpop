@@ -409,7 +409,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 
             var graphSon = writer.WriteObject((short)100);
 
-            Assert.Equal("{\"@type\":\"g:Int16\",\"@value\":100}", graphSon);
+            Assert.Equal("{\"@type\":\"gx:Int16\",\"@value\":100}", graphSon);
         }
     }
 
