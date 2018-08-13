@@ -421,6 +421,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Match numbers in `choose()` options using `NumberHelper` (match values, ignore data type).
 * Added support for GraphSON serialization of `Date` in Javascript.
 * Added better internal processing of `Column` in `by(Function)`.
+* Added support for additional extended types in Gremlin.Net with `decimal`, `TimeSpan`, `BigInteger`, `byte`, `byte[]`, `char` and `short`.
 * Fixed bug in Java driver where an disorderly shutdown of the server would cause the client to hang.
 * Added a dotnet template project that should make it easier to get started with Gremlin.Net.
 * Removed `ThreadInterruptCustomizerProvider` from documentation as a way to timeout.

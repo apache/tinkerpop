@@ -25,6 +25,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Process.Traversal;
@@ -52,7 +53,6 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 {typeof(long), new Int64Converter()},
                 {typeof(float), new FloatConverter()},
                 {typeof(double), new DoubleConverter()},
-                {typeof(decimal), new DecimalConverter()},
                 {typeof(Guid), new UuidSerializer()},
                 {typeof(DateTimeOffset), new DateSerializer()},
                 {typeof(Type), new ClassSerializer()},
@@ -63,7 +63,16 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 {typeof(Property), new PropertySerializer()},
                 {typeof(VertexProperty), new VertexPropertySerializer()},
                 {typeof(AbstractTraversalStrategy), new TraversalStrategySerializer()},
-                {typeof(ILambda), new LambdaSerializer()}
+                {typeof(ILambda), new LambdaSerializer()},
+
+                //Extended
+                {typeof(decimal), new DecimalConverter()},
+                {typeof(TimeSpan), new DurationSerializer()},
+                {typeof(BigInteger), new BigIntegerSerializer()},
+                {typeof(byte), new ByteConverter()},
+                {typeof(byte[]), new ByteBufferSerializer()},
+                {typeof(char), new CharConverter() },
+                {typeof(short), new Int16Converter() }
             };
 
         /// <summary>

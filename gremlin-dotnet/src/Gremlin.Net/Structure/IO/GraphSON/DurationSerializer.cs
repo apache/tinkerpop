@@ -23,18 +23,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Xml;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class DateSerializer : IGraphSONSerializer
+    internal class DurationSerializer : IGraphSONSerializer
     {
-        private static readonly DateTimeOffset UnixStart = new DateTimeOffset(1970, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
-        
         public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
         {
-            DateTimeOffset value = objectData;
-            var ticks = (value - UnixStart).Ticks;
-            return GraphSONUtil.ToTypedValue("Date", ticks / TimeSpan.TicksPerMillisecond);
+            TimeSpan value = objectData;
+            return GraphSONUtil.ToTypedValue("Duration", XmlConvert.ToString(value), "gx");
         }
     }
 }

@@ -21,20 +21,17 @@
 
 #endregion
 
-using System;
-using System.Collections.Generic;
+using System.Xml;
+using Newtonsoft.Json.Linq;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class DateSerializer : IGraphSONSerializer
+    internal class DurationDeserializer : IGraphSONDeserializer
     {
-        private static readonly DateTimeOffset UnixStart = new DateTimeOffset(1970, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
-        
-        public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
+        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
         {
-            DateTimeOffset value = objectData;
-            var ticks = (value - UnixStart).Ticks;
-            return GraphSONUtil.ToTypedValue("Date", ticks / TimeSpan.TicksPerMillisecond);
+            var duration = graphsonObject.ToObject<string>();
+            return XmlConvert.ToTimeSpan(duration);
         }
     }
 }
