@@ -27,7 +27,7 @@ using System.Xml;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class TimeSpanSerializer : IGraphSONSerializer
+    internal class DurationSerializer : IGraphSONSerializer
     {
         public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
         {

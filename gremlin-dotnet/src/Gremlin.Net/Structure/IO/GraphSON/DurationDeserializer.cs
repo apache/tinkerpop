@@ -26,7 +26,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class TimeSpanDeserializer : IGraphSONDeserializer
+    internal class DurationDeserializer : IGraphSONDeserializer
     {
         public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
         {
