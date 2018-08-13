@@ -102,6 +102,7 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
                 settings.ssl.enabled = true;
                 settings.ssl.keyStore = JKS_SERVER_KEY;
                 settings.ssl.keyStorePassword = KEY_PASS;
+                settings.ssl.keyStoreType = KEYSTORE_TYPE_JKS;
                 break;
             case "shouldWorkWithAuth":
                 if (authSettings != null) {
@@ -113,6 +114,7 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
                 settings.ssl.enabled = true;
                 settings.ssl.keyStore = JKS_SERVER_KEY;
                 settings.ssl.keyStorePassword = KEY_PASS;
+                settings.ssl.keyStoreType = KEYSTORE_TYPE_JKS;
                 if (authSettings != null) {
                     settings.authentication = getAuthSettings();
                 }

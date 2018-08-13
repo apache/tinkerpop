@@ -181,6 +181,32 @@ final class Settings {
             if (connectionPoolConf.containsKey("trustCertChainFile"))
                 cpSettings.trustCertChainFile = connectionPoolConf.getString("trustCertChainFile");
 
+            if (connectionPoolConf.containsKey("keyStore"))
+                cpSettings.keyStore = connectionPoolConf.getString("keyStore");
+
+            if (connectionPoolConf.containsKey("keyStorePassword"))
+                cpSettings.keyStorePassword = connectionPoolConf.getString("keyStorePassword");
+
+            if (connectionPoolConf.containsKey("keyStoreType"))
+                cpSettings.keyStoreType = connectionPoolConf.getString("keyStoreType");
+
+            if (connectionPoolConf.containsKey("trustStore"))
+                cpSettings.trustStore = connectionPoolConf.getString("trustStore");
+
+            if (connectionPoolConf.containsKey("trustStorePassword"))
+                cpSettings.trustStorePassword = connectionPoolConf.getString("trustStorePassword");
+
+            if (connectionPoolConf.containsKey("sslEnabledProtocols"))
+                cpSettings.sslEnabledProtocols = connectionPoolConf.getList("sslEnabledProtocols").stream().map(Object::toString)
+                        .collect(Collectors.toList());
+
+            if (connectionPoolConf.containsKey("sslCipherSuites"))
+                cpSettings.sslCipherSuites = connectionPoolConf.getList("sslCipherSuites").stream().map(Object::toString)
+                        .collect(Collectors.toList());
+
+            if (connectionPoolConf.containsKey("sslSkipCertValidation"))
+                cpSettings.sslSkipCertValidation = connectionPoolConf.getBoolean("sslSkipCertValidation");
+
             if (connectionPoolConf.containsKey("minSize"))
                 cpSettings.minSize = connectionPoolConf.getInt("minSize");
 
@@ -283,7 +309,7 @@ final class Settings {
         public String trustStorePassword;
 
         /**
-         * JSSE keystore format. Similar to setting JSSE property
+         * JSSE keystore format. 'jks' or 'pkcs12'. Similar to setting JSSE property
          * {@code javax.net.ssl.keyStoreType}.
          */
         public String keyStoreType;

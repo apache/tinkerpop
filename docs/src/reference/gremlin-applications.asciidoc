@@ -735,7 +735,7 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.keyPassword |The password of the `keyFile` if it is password-protected. |_none_
 |connectionPool.keyStore |The private key in JKS or PKCS#12 format. |_none_
 |connectionPool.keyStorePassword |The password of the `keyStore` if it is password-protected. |_none_
-|connectionPool.keyStoreType |JKS (Java 8 default) or PKCS#12 (Java 9+ default)|_none_
+|connectionPool.keyStoreType |`JKS` (Java 8 default) or `PKCS12` (Java 9+ default)|_none_
 |connectionPool.maxContentLength |The maximum length in bytes that a message can be sent to the server. This number can be no greater than the setting of the same name in the server configuration. |65536
 |connectionPool.maxInProcessPerConnection |The maximum number of in-flight requests that can occur on a connection. |4
 |connectionPool.maxSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |16
