@@ -49,6 +49,7 @@ Please see the reference documentation at Apache TinkerPop for more information 
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'\$(TargetFramework)' == 'netstandard1.3'">
