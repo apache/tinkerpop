@@ -732,7 +732,10 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.keepAliveInterval |Length of time in milliseconds to wait on an idle connection before sending a keep-alive request. Set to zero to disable this feature. |1800000
 |connectionPool.keyCertChainFile |The X.509 certificate chain file in PEM format. |_none_
 |connectionPool.keyFile |The `PKCS#8` private key file in PEM format. |_none_
-|connectionPool.keyPassword |The password of the `keyFile` if it is password-protected |_none_
+|connectionPool.keyPassword |The password of the `keyFile` if it is password-protected. |_none_
+|connectionPool.keyStore |The private key in JKS or PKCS#12 format. |_none_
+|connectionPool.keyStorePassword |The password of the `keyStore` if it is password-protected. |_none_
+|connectionPool.keyStoreType |JKS (Java 8 default) or PKCS#12 (Java 9+ default)|_none_
 |connectionPool.maxContentLength |The maximum length in bytes that a message can be sent to the server. This number can be no greater than the setting of the same name in the server configuration. |65536
 |connectionPool.maxInProcessPerConnection |The maximum number of in-flight requests that can occur on a connection. |4
 |connectionPool.maxSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |16
@@ -745,7 +748,12 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.reconnectInitialDelay |The amount of time in milliseconds to wait before trying to reconnect to a dead host for the first time. |1000
 |connectionPool.reconnectInterval |The amount of time in milliseconds to wait before trying to reconnect to a dead host. This interval occurs after the time specified by the `reconnectInitialDelay`. |1000
 |connectionPool.resultIterationBatchSize |The override value for the size of the result batches to be returned from the server. |64
-|connectionPool.trustCertChainFile |File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and SSL is enabled, the `TrustManager` will be established with a self-signed certificate which is NOT suitable for production purposes. |_none_
+|connectionPool.sslCipherSuites |The list of JSSE ciphers to support for SSL connections. If specified, only the ciphers that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
+|connectionPool.sslEnabledProtocols |The list of SSL protocols to support for SSL connections. If specified, only the protocols that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
+|connectionPool.sslSkipCertValidation |Configures the `TrustManager` to trust all certs without any validation. Should not be used in production.|false
+|connectionPool.trustCertChainFile |File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and SSL is enabled, the default `TrustManager` will be uesd. |_none_
+|connectionPool.trustStore |File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and SSL is enabled, the default `TrustManager` will be used. |_none_
+|connectionPool.trustStorePassword |The password of the `trustStore` if it is password-protected |_none_
 |hosts |The list of hosts that the driver will connect to. |localhost
 |jaasEntry |Sets the `AuthProperties.Property.JAAS_ENTRY` properties for authentication to Gremlin Server. |_none_
 |nioPoolSize |Size of the pool for handling request/response operations. |available processors
@@ -1148,11 +1156,18 @@ The following table describes the various configuration options that Gremlin Ser
 |serializers[X].className |The full class name of the `MessageSerializer` implementation. |_none_
 |serializers[X].config |A `Map` containing `MessageSerializer` specific configurations. |_none_
 |ssl.enabled |Determines if SSL is turned on or not. |false
-|ssl.keyCertChainFile |The X.509 certificate chain file in PEM format. If this value is not present and `ssl.enabled` is `true` a self-signed certificate will be used (not suitable for production). |_none_
-|ssl.keyFile |The `PKCS#8` private key file in PEM format. If this value is not present and `ssl.enabled` is `true` a self-signed certificate will be used (not suitable for production). |_none_
-|ssl.keyPassword |The password of the `keyFile` if it is password-protected |_none_
+|ssl.keyCertChainFile |The X.509 certificate chain file in PEM format.|_none_
+|ssl.keyFile |The `PKCS#8` private key file in PEM format.|_none_
+|ssl.keyPassword |The password of the `keyFile` if it is password-protected. |_none_
+|ssl.keyStore |The private key in JKS or PKCS#12 format.  |_none_
+|ssl.keyStorePassword |The password of the `keyStore` if it is password-protected. |_none_
+|ssl.keyStoreType |JKS (Java 8 default) or PKCS#12 (Java 9+ default) |_none_
 |ssl.needClientAuth | Optional. One of NONE, OPTIONAL, REQUIRE.  Enables client certificate authentication at the enforcement level specified. Can be used in combination with Authenticator. |_none_
+|ssl.sslCipherSuites |The list of JSSE ciphers to support for SSL connections. If specified, only the ciphers that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
+|ssl.sslEnabledProtocols |The list of SSL protocols to support for SSL connections. If specified, only the protocols that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
 |ssl.trustCertChainFile | Required when needClientAuth is OPTIONAL or REQUIRE. Trusted certificates for verifying the remote endpoint's certificate. The file should contain an X.509 certificate chain in PEM format. |_none_
+|ssl.trustStore |Required when needClientAuth is OPTIONAL or REQUIRE. Trusted certificates for verifying the remote endpoint's certificate. If this value is not provided and SSL is enabled, the default `TrustManager` will be used. |_none_
+|ssl.trustStorePassword |The password of the `trustStore` if it is password-protected |_none_
 |strictTransactionManagement |Set to `true` to require `aliases` to be submitted on every requests, where the `aliases` become the scope of transaction management. |false
 |threadPoolBoss |The number of threads available to Gremlin Server for accepting connections. Should always be set to `1`. |1
 |threadPoolWorker |The number of threads available to Gremlin Server for processing non-blocking reads and writes. |1
@@ -1944,7 +1959,7 @@ The Gremlin Server can also be started as a link:https://hub.docker.com/r/tinker
 [source,text]
 ----
 $ docker run tinkerpop/gremlin-server:x.y.z
-[INFO] GremlinServer - 
+[INFO] GremlinServer -
          \,,,/
          (o o)
 -----oOOo-(3)-oOOo-----
