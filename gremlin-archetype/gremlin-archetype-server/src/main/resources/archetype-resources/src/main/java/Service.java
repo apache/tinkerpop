@@ -19,13 +19,11 @@
 package ${package};
 
 import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.driver.Client;
-import org.apache.tinkerpop.gremlin.driver.Result;
+import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Service implements AutoCloseable {
 
@@ -35,12 +33,12 @@ public class Service implements AutoCloseable {
     private final Cluster cluster = Cluster.build().port(45940).create();
 
     /**
-     * Use the Cluster instance to construct different Client instances (e.g. one for sessionless communication
-     * and one or more sessions). A sessionless Client should be thread-safe and typically no more than one is
-     * needed unless there is some need to divide connection pools across multiple Client instances. In this case
-     * there is just a single sessionless Client instance used for the entire App.
+     * Construct a remote GraphTraversalSource using the above created Cluster instance that will connect to Gremlin
+     * Server.
      */
-    private final Client client = cluster.connect();
+    private final GraphTraversalSource g = EmptyGraph.instance().
+                                                      traversal().
+                                                      withRemote(DriverRemoteConnection.using(cluster));
 
     /**
      * Create Service as a singleton given the simplicity of App.
@@ -53,18 +51,14 @@ public class Service implements AutoCloseable {
         return INSTANCE;
     }
 
-    public List<String> findCreatorsOfSoftware(String softwareName) throws Exception {
-        // it is very important from a performance perspective to parameterize queries
-        Map params = new HashMap();
-        params.put("n", softwareName);
-
-        return client.submit("g.V().hasLabel('software').has('name',n).in('created').values('name')", params)
-                .all().get().stream().map(r -> r.getString()).collect(Collectors.toList());
+    public List<Object> findCreatorsOfSoftware(String softwareName) throws Exception {
+        return g.V().has("software", "name", softwareName).
+                 in("created").
+                 values("name").toList();
     }
 
     @Override
     public void close() throws Exception {
-        client.close();
         cluster.close();
     }
 }
