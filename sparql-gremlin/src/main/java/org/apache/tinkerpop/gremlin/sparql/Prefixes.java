@@ -36,7 +36,7 @@ class Prefixes {
     static {
         final StringBuilder builder = new StringBuilder();
         for (final String prefix : PREFIXES) {
-            builder.append("PREFIX ").append(prefix.substring(0, 1)).append(": <").append(getURI(prefix)).
+            builder.append("PREFIX ").append(prefix, 0, 1).append(": <").append(getURI(prefix)).
                     append(">").append(System.lineSeparator());
         }
         PREFIX_DEFINITIONS = builder.toString();
