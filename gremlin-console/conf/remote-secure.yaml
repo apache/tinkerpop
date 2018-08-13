@@ -30,5 +30,5 @@ username: stephen
 password: password
 connectionPool: {
   enableSsl: true,
-  sslSkipCertValidation: true }
+  sslEnabledProtocols: [TLSv1.2] }
 serializer: { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { serializeResultToString: true }}

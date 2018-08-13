@@ -23,6 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-2-10]]
 === TinkerPop 3.2.10 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* SSL security enhancements
 * Fixed problem with Gremlin Server sometimes returning an additional message after a failure.
 * Allowed spaces in classpath for `gremlin-server.bat`.
 * Modified Maven archetype for Gremlin Server to use remote traversals rather than scripts.
