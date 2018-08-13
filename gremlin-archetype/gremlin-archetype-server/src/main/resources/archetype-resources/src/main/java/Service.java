@@ -27,10 +27,12 @@ import java.util.List;
 
 public class Service implements AutoCloseable {
 
+    private final int port = Integer.parseInt(System.getProperty("port", "45940"));
+
     /**
      * There typically needs to be only one Cluster instance in an application.
      */
-    private final Cluster cluster = Cluster.build().port(45940).create();
+    private final Cluster cluster = Cluster.build().port(port).create();
 
     /**
      * Construct a remote GraphTraversalSource using the above created Cluster instance that will connect to Gremlin

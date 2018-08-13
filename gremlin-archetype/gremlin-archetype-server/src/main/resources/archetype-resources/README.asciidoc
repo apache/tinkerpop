@@ -65,4 +65,4 @@ $ bin/gremlin-server.sh  conf/gremlin-server-modern.yaml
 Run this project as follows:
 
 [source,text]
-mvn exec:java -Dexec.mainClass="${package}.App" -Dlog4j.configuration=file:conf/log4j.properties
+mvn exec:java -Dexec.mainClass="${package}.App" -Dlog4j.configuration=file:conf/log4j.properties -Dport=8182
