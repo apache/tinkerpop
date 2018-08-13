@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 using Gremlin.Net.Structure;
@@ -345,6 +346,70 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             const string expected =
                 "{\"@type\":\"g:Lambda\",\"@value\":{\"script\":\"{ it.get() }\",\"language\":\"gremlin-groovy\",\"arguments\":-1}}";
             Assert.Equal(expected, graphSon);
+        }
+
+        [Fact]
+        public void ShouldSerializeTimeSpan()
+        {
+            var writer = CreateStandardGraphSONWriter();
+            var timeSpan = new TimeSpan(5, 4, 3, 2, 1);
+
+            var graphSon = writer.WriteObject(timeSpan);
+
+            const string expected = "{\"@type\":\"gx:Duration\",\"@value\":\"P5DT4H3M2.001S\"}";
+            Assert.Equal(expected, graphSon);
+        }
+
+        [Fact]
+        public void ShouldSerializeBigInteger()
+        {
+            var writer = CreateStandardGraphSONWriter();
+            var bigInteger = BigInteger.Parse("123456789987654321123456789987654321");
+
+            var graphSon = writer.WriteObject(bigInteger);
+
+            const string expected = "{\"@type\":\"gx:BigInteger\",\"@value\":\"123456789987654321123456789987654321\"}";
+            Assert.Equal(expected, graphSon);
+        }
+
+        [Fact]
+        public void ShouldSerializeByte()
+        {
+            var writer = CreateStandardGraphSONWriter();
+
+            var graphSon = writer.WriteObject((byte)1);
+
+            Assert.Equal("{\"@type\":\"gx:Byte\",\"@value\":1}", graphSon);
+        }
+
+        [Fact]
+        public void ShouldSerializeByteBuffer()
+        {
+            var writer = CreateStandardGraphSONWriter();
+
+            var graphSon = writer.WriteObject(Convert.FromBase64String("c29tZSBieXRlcyBmb3IgeW91"));
+
+            Assert.Equal("{\"@type\":\"gx:ByteBuffer\",\"@value\":\"c29tZSBieXRlcyBmb3IgeW91\"}", graphSon);
+        }
+
+        [Fact]
+        public void ShouldSerializeChar()
+        {
+            var writer = CreateStandardGraphSONWriter();
+
+            var graphSon = writer.WriteObject('x');
+
+            Assert.Equal("{\"@type\":\"gx:Char\",\"@value\":\"x\"}", graphSon);
+        }
+
+        [Fact]
+        public void ShouldSerializeInt16()
+        {
+            var writer = CreateStandardGraphSONWriter();
+
+            var graphSon = writer.WriteObject((short)100);
+
+            Assert.Equal("{\"@type\":\"gx:Int16\",\"@value\":100}", graphSon);
         }
     }
 

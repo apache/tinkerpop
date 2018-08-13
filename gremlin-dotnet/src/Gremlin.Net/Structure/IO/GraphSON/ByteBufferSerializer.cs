@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 #endregion
 
 using System;
@@ -26,15 +25,12 @@ using System.Collections.Generic;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class DateSerializer : IGraphSONSerializer
+    internal class ByteBufferSerializer : IGraphSONSerializer
     {
-        private static readonly DateTimeOffset UnixStart = new DateTimeOffset(1970, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
-        
         public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
         {
-            DateTimeOffset value = objectData;
-            var ticks = (value - UnixStart).Ticks;
-            return GraphSONUtil.ToTypedValue("Date", ticks / TimeSpan.TicksPerMillisecond);
+            byte[] value = objectData;
+            return GraphSONUtil.ToTypedValue("ByteBuffer", Convert.ToBase64String(value), "gx");
         }
     }
 }
