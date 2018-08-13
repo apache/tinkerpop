@@ -23,7 +23,7 @@ class SaslAuthenticator extends Authenticator {
    * @return {Object} A Promise that resolves to a valid sasl response object.
    */
   evaluateChallenge(challenge) {
-    return Promise.resolve(this._options.mechanism.evaluateChallenge(challenge));
+    return this._options.mechanism.evaluateChallenge(challenge);
   }
 }
 

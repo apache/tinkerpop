@@ -17,9 +17,6 @@
  *  under the License.
  */
 
-/**
- * @author Jorge Bay Gondra
- */
 'use strict';
 
 const assert = require('assert');
@@ -29,10 +26,10 @@ const helper = require('../helper');
 
 let connection;
 
-describe('DriverRemoteConnectionWithSaslAuthenticator', function () {
+describe('DriverRemoteConnectionWithPlainTextSaslAuthenticator', function () {
   before(function () {
     this.timeout(20000);
-    connection = helper.getSecureConnectionWithAuthenticator(null);
+    connection = helper.getSecureConnectionWithPlainTextSaslAuthenticator(null);
     return connection.open();
   });
   after(function () {
@@ -44,8 +41,6 @@ describe('DriverRemoteConnectionWithSaslAuthenticator', function () {
         .then(function (response) {
           assert.ok(response);
           assert.ok(response.traversers);
-          //assert.strictEqual(response.traversers.length, 1);
-          //assert.ok(response.traversers[0].object instanceof graphModule.Vertex);
         });
     });
     it('should send the request with invalid credentials and parse the response error', function () {
