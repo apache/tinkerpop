@@ -357,7 +357,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MapReduce.NullObject.class, 74));
             add(GryoTypeReg.of(AtomicLong.class, 79));
             add(GryoTypeReg.of(Pair.class, 88, new UtilSerializers.PairSerializer()));
-            add(GryoTypeReg.of(Triplet.class, 183, new UtilSerializers.TripletSerializer()));                 // ***LAST ID***
+            add(GryoTypeReg.of(Triplet.class, 183, new UtilSerializers.TripletSerializer()));
             add(GryoTypeReg.of(TraversalExplanation.class, 106, new JavaSerializer()));
 
             add(GryoTypeReg.of(Duration.class, 93, new JavaTimeSerializers.DurationSerializer()));
@@ -406,7 +406,7 @@ public enum GryoVersion {
                     "org.apache.tinkerpop.gremlin.driver.ser.ResponseMessageGryoSerializer", 169);
 
             tryAddDynamicType(this, "org.apache.tinkerpop.gremlin.sparql.process.traversal.strategy.SparqlStrategy",
-                    null, 183);   // ***LAST ID***
+                    null, 184);   // ***LAST ID***
         }};
     }
 
