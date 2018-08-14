@@ -21,6 +21,7 @@
 
 #endregion
 
+using System;
 using System.Collections.Generic;
 using Gremlin.Net.Driver.Exceptions;
 using Newtonsoft.Json;
@@ -44,7 +45,30 @@ namespace Gremlin.Net.Driver.Messages
         public static void ThrowIfStatusIndicatesError(this ResponseStatus status)
         {
             if (status.Code.IndicatesError())
-                throw new ResponseException($"{status.Code}: {status.Message}");
+            {
+                if (status.IsThrottled())
+                {
+                    if (status.Attributes.ContainsKey(AttributeKeys.CosmosDbRetryAfterMs))
+                    {
+                        var ex = new RequestRateTooLargeException($"{status.Code}: {status.Message}");
+                        TimeSpan retry = TimeSpan.Parse(status.Attributes[AttributeKeys.CosmosDbRetryAfterMs].ToString());
+                        ex.RetryAfterMs = retry.TotalMilliseconds;
+                        throw ex;
+                    }
+                }
+                else
+                    throw new ResponseException($"{status.Code}: {status.Message}");
+            }
+        }
+
+        public static bool IsThrottled(this ResponseStatus status)
+        {
+            if (status.Attributes.ContainsKey(AttributeKeys.CosmosDbStatusCode)
+                && (long)status.Attributes[AttributeKeys.CosmosDbStatusCode] == 429 
+                && status.Message.IndexOf(AttributeKeys.CosmosDbRequestRateException, StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+            else
+                return false;
         }
     }
 }
