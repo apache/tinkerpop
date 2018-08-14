@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Driver.ResultsAggregation;
 using Gremlin.Net.Structure.IO.GraphSON;
@@ -55,8 +56,16 @@ namespace Gremlin.Net.Driver
 
         public async Task<IReadOnlyCollection<T>> SubmitAsync<T>(RequestMessage requestMessage)
         {
-            await SendAsync(requestMessage).ConfigureAwait(false);
-            return await ReceiveAsync<T>().ConfigureAwait(false);
+            try
+            {
+                await SendAsync(requestMessage).ConfigureAwait(false);
+                return await ReceiveAsync<T>().ConfigureAwait(false);
+            }
+            catch (RequestRateTooLargeException ex)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(ex.RetryAfterMs));
+                return await SubmitAsync<T>(requestMessage);
+            }
         }
 
         public async Task ConnectAsync()
