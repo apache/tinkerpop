@@ -76,30 +76,47 @@ Feature: Step - pageRank()
       | lop    |
       | ripple |
 
-  Scenario: g_V_pageRank_byXoutEXknowsXX_byXfriendRankX_valueMapXname_friendRankX
+  Scenario: g_V_pageRank_byXoutEXknowsXX_byXfriendRankX_project_byXnameX_byXvaluesXfriendRankX_mathX
     Given the modern graph
-    Given an unsupported test
-    Then nothing should happen because
+    And the traversal of
       """
-      The result is not completely deterministic with respect to the decimals that pageRank() produces and the
-      GLV framework does not have a notion for asserting anything beyond an equals() sort of state.
+      g.withComputer().V().pageRank().by(__.outE("knows")).by("friendRank").project("name", "friendRank").by("name").by(__.values("friendRank").math("ceil(_ * 100)"))
       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"name": "marko", "friendRank": 15.0}] |
+      | m[{"name": "vadas", "friendRank": 21.0}] |
+      | m[{"name": "lop", "friendRank": 15.0}] |
+      | m[{"name": "josh", "friendRank": 21.0}] |
+      | m[{"name": "ripple", "friendRank": 15.0}] |
+      | m[{"name": "peter", "friendRank": 15.0}] |
 
-  Scenario: g_V_hasLabelXpersonX_pageRank_byXpageRankX_order_byXpageRankX_valueMapXname_pageRankX
-    Given an unsupported test
-    Then nothing should happen because
+  Scenario: g_V_hasLabelXpersonX_pageRank_byXpageRankX_project_byXnameX_byXvaluesXpageRankX_mathX
+    Given the modern graph
+    And the traversal of
       """
-      The result is not completely deterministic with respect to the decimals that pageRank() produces and the
-      GLV framework does not have a notion for asserting anything beyond an equals() sort of state.
+      g.withComputer().V().hasLabel("person").pageRank().by("pageRank").project("name", "pageRank").by("name").by(__.values("pageRank").math("ceil(_ * 100)"))
       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"name": "marko", "pageRank": 46.0}] |
+      | m[{"name": "vadas", "pageRank": 59.0}] |
+      | m[{"name": "josh", "pageRank": 59.0}] |
+      | m[{"name": "peter", "pageRank": 46.0}] |
 
-  Scenario: g_V_pageRank_byXpageRankX_asXaX_outXknowsX_pageRank_asXbX_selectXa_bX
-    Given an unsupported test
-    Then nothing should happen because
+  Scenario: g_V_pageRank_byXpageRankX_asXaX_outXknowsX_pageRank_asXbX_selectXa_bX_by_byXmathX
+    Given the modern graph
+    And the traversal of
       """
-      The result is not completely deterministic with respect to the decimals that pageRank() produces and the
-      GLV framework does not have a notion for asserting anything beyond an equals() sort of state.
+      g.withComputer().V().pageRank().by("pageRank").as("a").out("knows").values("pageRank").as("b").select("a", "b").by().by(__.math("ceil(_ * 100)"))
       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a": "v[marko]", "b": 15.0}] |
+      | m[{"a": "v[marko]", "b": 15.0}] |
 
   Scenario: g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_byXinEXcreatedXX_timesX1X_byXpriorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX
     Given the modern graph
