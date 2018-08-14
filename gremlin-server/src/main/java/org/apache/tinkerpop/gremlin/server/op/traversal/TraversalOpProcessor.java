@@ -353,8 +353,9 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         final Map<String, String> aliases = (Map<String, String>) msg.optionalArgs(Tokens.ARGS_ALIASES).get();
 
         // timeout override
-        final long seto = msg.getArgs().containsKey(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT) ?
-                Long.parseLong(msg.getArgs().get(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT).toString()) : context.getSettings().scriptEvaluationTimeout;
+        final long seto = msg.getArgs().containsKey(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT)
+            ? (long) msg.getArgs().get(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT)
+            : context.getSettings().scriptEvaluationTimeout;
 
         final GraphManager graphManager = context.getGraphManager();
         final String traversalSourceName = aliases.entrySet().iterator().next().getValue();
