@@ -78,19 +78,12 @@ Feature: Step - pageRank()
 
   Scenario: g_V_pageRank_byXoutEXknowsXX_byXfriendRankX_valueMapXname_friendRankX
     Given the modern graph
-    And the traversal of
+    Given an unsupported test
+    Then nothing should happen because
       """
-      g.withComputer().V().pageRank().by(__.outE("knows")).by("friendRank").valueMap("name", "friendRank")
+      The result is not completely deterministic with respect to the decimals that pageRank() produces and the
+      GLV framework does not have a notion for asserting anything beyond an equals() sort of state.
       """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | m[{"name": ["marko"], "friendRank": [0.14598537777608422]}] |
-      | m[{"name": ["vadas"], "friendRank": [0.20802924444783155]}] |
-      | m[{"name": ["lop"], "friendRank": [0.14598537777608422]}] |
-      | m[{"name": ["josh"], "friendRank": [0.20802924444783155]}] |
-      | m[{"name": ["ripple"], "friendRank": [0.14598537777608422]}] |
-      | m[{"name": ["peter"], "friendRank": [0.14598537777608422]}] |
 
   Scenario: g_V_hasLabelXpersonX_pageRank_byXpageRankX_order_byXpageRankX_valueMapXname_pageRankX
     Given an unsupported test
