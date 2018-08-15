@@ -102,7 +102,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
             using (var gremlinClient = new GremlinClient(gremlinServer))
             {
                 const int timeOutInMs = 1;
-                const int scriptSleepTimeInMs = 5000;
+                const long scriptSleepTimeInMs = 5000;
                 var sleepScript = _requestMessageProvider.GetSleepGremlinScript(scriptSleepTimeInMs);
 
                 var requestMsg =
