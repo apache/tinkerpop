@@ -354,7 +354,8 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
         // timeout override
         final long seto = msg.getArgs().containsKey(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT)
-            ? (long) msg.getArgs().get(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT)
+            // could be sent as an integer or long
+            ? ((Number) msg.getArgs().get(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT)).longValue()
             : context.getSettings().scriptEvaluationTimeout;
 
         final GraphManager graphManager = context.getGraphManager();
