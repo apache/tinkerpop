@@ -90,8 +90,15 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
     }
 
     @Test
-    public void shouldReturnResponseAttributes() throws Exception {
-        final ResultSet results = client.submit("g.V()");
+    public void shouldReturnResponseAttributesViaNoContent() throws Exception {
+        final ResultSet results = client.submit("[]");
+        final Map<String,Object> attr = results.statusAttributes().get(20000, TimeUnit.MILLISECONDS);
+        assertThat(attr.containsKey(Tokens.ARGS_HOST), is(true));
+    }
+
+    @Test
+    public void shouldReturnResponseAttributesViaSuccess() throws Exception {
+        final ResultSet results = client.submit("gmodern.V()");
         final Map<String,Object> attr = results.statusAttributes().get(20000, TimeUnit.MILLISECONDS);
         assertThat(attr.containsKey(Tokens.ARGS_HOST), is(true));
     }

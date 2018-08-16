@@ -99,6 +99,7 @@ public abstract class AbstractOpProcessor implements OpProcessor {
             if (managedTransactionsForRequest) attemptCommit(msg, context.getGraphManager(), settings.strictTransactionManagement);
             rhc.writeAndFlush(ResponseMessage.build(msg)
                     .code(ResponseStatusCode.NO_CONTENT)
+                    .statusAttributes(generateStatusAttributes(ctx, msg, ResponseStatusCode.NO_CONTENT, itty, settings))
                     .create());
             return;
         }
