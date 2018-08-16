@@ -256,7 +256,7 @@ final class Handler {
                         final List<String> exceptions = attributes.containsKey(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS) ?
                                 (List<String>) attributes.get(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS) : null;
                         queue.markError(new ResponseException(response.getStatus().getCode(), response.getStatus().getMessage(),
-                                exceptions, stackTrace));
+                                exceptions, stackTrace, cleanStatusAttributes(attributes)));
                     }
                 }
 
@@ -270,6 +270,7 @@ final class Handler {
 
                 // as this is a non-PARTIAL_CONTENT code - the stream is done.
                 if (statusCode != ResponseStatusCode.PARTIAL_CONTENT) {
+                    queue.statusAttributes = response.getStatus().getAttributes();
                     pending.remove(response.getRequestId()).markComplete();
                 }
             } finally {
@@ -293,6 +294,15 @@ final class Handler {
             // serialization exceptions should not close the channel - that's worth a retry
             if (!IteratorUtils.anyMatch(ExceptionUtils.getThrowableList(cause).iterator(), t -> t instanceof SerializationException))
                 if (ctx.channel().isActive()) ctx.close();
+        }
+
+        private Map<String,Object> cleanStatusAttributes(final Map<String,Object> statusAttributes) {
+            final Map<String,Object> m = new HashMap<>();
+            statusAttributes.forEach((k,v) -> {
+                if (!k.equals(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS) && !k.equals(Tokens.STATUS_ATTRIBUTE_STACK_TRACE))
+                    m.put(k,v);
+            });
+            return m;
         }
     }
 
