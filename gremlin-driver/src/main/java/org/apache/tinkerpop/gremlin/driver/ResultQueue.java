@@ -26,6 +26,7 @@ import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -56,7 +57,7 @@ final class ResultQueue {
 
     private final Queue<Pair<CompletableFuture<List<Result>>,Integer>> waiting = new ConcurrentLinkedQueue<>();
 
-    Map<String,Object> statusAttributes = null;
+    private Map<String,Object> statusAttributes = null;
 
     public ResultQueue(final LinkedBlockingQueue<Result> resultLinkedBlockingQueue, final CompletableFuture<Void> readComplete) {
         this.resultLinkedBlockingQueue = resultLinkedBlockingQueue;
@@ -165,11 +166,13 @@ final class ResultQueue {
         resultLinkedBlockingQueue.drainTo(collection);
     }
 
-    void markComplete() {
+    void markComplete(final Map<String,Object> statusAttributes) {
         // if there was some aggregation performed in the queue then the full object is hanging out waiting to be
         // added to the ResultSet
         if (aggregatedResult != null)
             add(new Result(aggregatedResult));
+
+        this.statusAttributes = null == statusAttributes ? Collections.emptyMap() : statusAttributes;
 
         this.readComplete.complete(null);
 
@@ -180,6 +183,10 @@ final class ResultQueue {
         error.set(throwable);
         this.readComplete.completeExceptionally(throwable);
         this.drainAllWaiting();
+    }
+
+    Map<String,Object> getStatusAttributes() {
+        return statusAttributes;
     }
 
     /**
