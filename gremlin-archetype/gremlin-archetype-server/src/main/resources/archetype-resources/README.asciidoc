@@ -18,8 +18,8 @@ limitations under the License.
 
 This is a starter project that demonstrates how a basic
 link:http://tinkerpop.apache.org/docs/${project.version}/reference/#gremlin-server[Gremlin Server] project is structured
-with Maven. This project demonstrates how to connect to Gremlin Server through Java using the
-link:http://tinkerpop.apache.org/docs/${project.version}/reference/#connecting-via-java[Gremlin Driver] that is
+with Maven. This project demonstrates how to connect to Gremlin Server with Java using remote traversals with the
+link:http://tinkerpop.apache.org/docs/${project.version}/reference/#connecting-via-remotegraph[Gremlin Driver] that is
 distributed by TinkerPop.
 
 == Prerequisites
@@ -65,4 +65,4 @@ $ bin/gremlin-server.sh  conf/gremlin-server-modern.yaml
 Run this project as follows:
 
 [source,text]
-mvn exec:java -Dexec.mainClass="${package}.App" -Dlog4j.configuration=file:conf/log4j.properties
+mvn exec:java -Dexec.mainClass="${package}.App" -Dlog4j.configuration=file:conf/log4j.properties -Dport=8182
