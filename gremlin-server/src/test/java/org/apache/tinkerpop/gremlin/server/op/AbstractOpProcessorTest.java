@@ -39,7 +39,7 @@ public class AbstractOpProcessorTest {
 
         try {
             // Induce a NullPointerException to validate error response message writing
-            AbstractOpProcessor.makeFrame(ctx, request, null, true, null, ResponseStatusCode.PARTIAL_CONTENT, null);
+            AbstractOpProcessor.makeFrame(ctx, request, null, true, null, ResponseStatusCode.PARTIAL_CONTENT, null, null);
             fail("Expected a NullPointerException");
         } catch (NullPointerException expected) {
             // nop
