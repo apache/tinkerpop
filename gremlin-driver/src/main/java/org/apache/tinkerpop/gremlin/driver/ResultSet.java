@@ -81,7 +81,7 @@ public final class ResultSet implements Iterable<Result> {
      */
     public CompletableFuture<Map<String,Object>> statusAttributes() {
         final CompletableFuture<Map<String,Object>> attrs = new CompletableFuture<>();
-        readCompleted.thenRun(() -> attrs.complete(null == resultQueue.statusAttributes ? Collections.emptyMap() : resultQueue.statusAttributes));
+        readCompleted.thenRun(() -> attrs.complete(null == resultQueue.getStatusAttributes() ? Collections.emptyMap() : resultQueue.getStatusAttributes()));
         return attrs;
     }
 
