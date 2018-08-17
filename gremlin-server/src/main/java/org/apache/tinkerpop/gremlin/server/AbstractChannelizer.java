@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import io.netty.channel.EventLoopGroup;
+import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
@@ -305,6 +306,8 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
                         keystore.load(in, password);
                     }
                     kmf.init(keystore, password);
+                } else {
+                    throw new IllegalStateException("keyStore must be configured when SSL is enabled.");
                 }
 
                 builder = SslContextBuilder.forServer(kmf);
@@ -323,8 +326,8 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
                 }
 
             } catch (UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException e) {
-                logger.error("There was an error enabling SSL.", e);
-                return null;
+                logger.error(e.getMessage());
+                throw new RuntimeException("There was an error enabling SSL.", e);
             }
 
         }
@@ -336,14 +339,19 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         if (null != sslSettings.sslEnabledProtocols && !sslSettings.sslEnabledProtocols.isEmpty()) {
             builder.protocols(sslSettings.sslEnabledProtocols.toArray(new String[] {}));
         }
+        
+        if (null != sslSettings.needClientAuth && ClientAuth.OPTIONAL == sslSettings.needClientAuth) {
+            logger.warn("needClientAuth = OPTIONAL is not a secure configuration. Setting to REQUIRE.");
+            sslSettings.needClientAuth = ClientAuth.REQUIRE;
+        }
 
         builder.clientAuth(sslSettings.needClientAuth).sslProvider(provider);
 
         try {
             return builder.build();
         } catch (SSLException ssle) {
-            logger.error("There was an error enabling SSL", ssle);
-            return null;
+            logger.error(ssle.getMessage());
+            throw new RuntimeException("There was an error enabling SSL.", ssle);
         }
     }
 }
