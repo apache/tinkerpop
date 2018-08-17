@@ -569,11 +569,11 @@ public final class Cluster {
         private String keyCertChainFile = null;
         private String keyFile = null;
         private String keyPassword = null;
-        private String keyStore;
-        private String keyStorePassword;
-        private String trustStore;
-        private String trustStorePassword;
-        private String keyStoreType;
+        private String keyStore = null;
+        private String keyStorePassword = null;
+        private String trustStore = null;
+        private String trustStorePassword = null;
+        private String keyStoreType = null;
         private List<String> sslEnabledProtocols = new ArrayList<>();
         private List<String> sslCipherSuites = new ArrayList<>();
         private boolean sslSkipCertValidation = false;
@@ -655,9 +655,8 @@ public final class Cluster {
 
         /**
          * File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and
-         * SSL is enabled, the {@link TrustManager} will be established with a self-signed certificate which is NOT
-         * suitable for production purposes.
-         * @deprecated
+         * SSL is enabled, the default {@link TrustManager} will be used.
+         * @deprecated As of release 3.2.10, replaced by {@link trustStore}
          */
         @Deprecated
         public Builder trustCertificateChainFile(final String certificateChainFile) {
@@ -677,7 +676,7 @@ public final class Cluster {
 
         /**
          * The X.509 certificate chain file in PEM format.
-         * @deprecated
+         * @deprecated As of release 3.2.10, replaced by {@link keyStore}
          */
         @Deprecated
         public Builder keyCertChainFile(final String keyCertChainFile) {
@@ -687,7 +686,7 @@ public final class Cluster {
 
         /**
          * The PKCS#8 private key file in PEM format.
-         * @deprecated
+         * @deprecated As of release 3.2.10, replaced by {@link keyStore}
          */
         @Deprecated
         public Builder keyFile(final String keyFile) {
@@ -697,7 +696,7 @@ public final class Cluster {
 
         /**
          * The password of the {@link #keyFile}, or {@code null} if it's not password-protected.
-         * @deprecated
+         * @deprecated As of release 3.2.10, replaced by {@link keyStorePassword}
          */
         @Deprecated
         public Builder keyPassword(final String keyPassword) {
@@ -706,7 +705,7 @@ public final class Cluster {
         }
         
         /**
-         * 
+         * The file location of the private key in JKS or PKCS#12 format.
          */
         public Builder keyStore(final String keyStore) {
             this.keyStore = keyStore;
@@ -714,7 +713,7 @@ public final class Cluster {
         }
         
         /**
-         * 
+         * The password of the {@link #keyStore}, or {@code null} if it's not password-protected.
          */
         public Builder keyStorePassword(final String keyStorePassword) {
             this.keyStorePassword = keyStorePassword;
@@ -722,7 +721,8 @@ public final class Cluster {
         }
         
         /**
-         * 
+         * The file location for a SSL Certificate Chain to use when SSL is enabled. If
+         * this value is not provided and SSL is enabled, the default {@link TrustManager} will be used.
          */
         public Builder trustStore(final String trustStore) {
             this.trustStore = trustStore;
@@ -730,7 +730,7 @@ public final class Cluster {
         }
         
         /**
-         * 
+         * The password of the {@link #trustStore}, or {@code null} if it's not password-protected.
          */
         public Builder trustStorePassword(final String trustStorePassword) {
             this.trustStorePassword = trustStorePassword;
@@ -738,7 +738,7 @@ public final class Cluster {
         }
         
         /**
-         * 
+         * The format of the {@link keyStore}, either {@code JKS} or {@code PKCS12} 
          */
         public Builder keyStoreType(final String keyStoreType) {
             this.keyStoreType = keyStoreType;
@@ -746,7 +746,9 @@ public final class Cluster {
         }
         
         /**
-         * 
+         * A list of SSL protocols to enable. @see <a href=
+         *      "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SunJSSE_Protocols">JSSE
+         *      Protocols</a>
          */
         public Builder sslEnabledProtocols(final List<String> sslEnabledProtocols) {
             this.sslEnabledProtocols = sslEnabledProtocols;
@@ -754,7 +756,9 @@ public final class Cluster {
         }
         
         /**
-         * 
+         * A list of cipher suites to enable. @see <a href=
+         *      "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SupportedCipherSuites">Cipher
+         *      Suites</a>
          */
         public Builder sslCipherSuites(final List<String> sslCipherSuites) {
             this.sslCipherSuites = sslCipherSuites;
@@ -762,7 +766,7 @@ public final class Cluster {
         }
         
         /**
-         * 
+         * If true, trust all certificates and do not perform any validation.
          */
         public Builder sslSkipCertValidation(final boolean sslSkipCertValidation) {
             this.sslSkipCertValidation = sslSkipCertValidation;

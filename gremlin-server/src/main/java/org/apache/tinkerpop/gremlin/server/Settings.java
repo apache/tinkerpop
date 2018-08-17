@@ -51,6 +51,8 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.UUID;
 
+import javax.net.ssl.TrustManager;
+
 /**
  * Server settings as configured by a YAML file.
  *
@@ -457,7 +459,7 @@ public class Settings {
         /**
          * The X.509 certificate chain file in PEM format.
          * 
-         * @deprecated Use JSSE-based settings
+         * @deprecated As of release 3.2.10, replaced by {@link keyStore}
          */
         @Deprecated
         public String keyCertChainFile = null;
@@ -465,7 +467,7 @@ public class Settings {
         /**
          * The PKCS#8 private key file in PEM format.
          * 
-         * @deprecated Use JSSE-based settings
+         * @deprecated As of release 3.2.10, replaced by {@link keyStore}
          */
         @Deprecated
         public String keyFile = null;
@@ -474,7 +476,7 @@ public class Settings {
          * The password of the {@link #keyFile}, or {@code null} if it's not
          * password-protected.
          * 
-         * @deprecated Use JSSE-based settings
+         * @deprecated As of release 3.2.10, replaced by {@link keyStorePassword}
          */
         @Deprecated
         public String keyPassword = null;
@@ -484,48 +486,48 @@ public class Settings {
          * file should contain an X.509 certificate chain in PEM format. {@code null}
          * uses the system default.
          * 
-         * @deprecated Use JSSE-based settings
+         * @deprecated As of release 3.2.10, replaced by {@link trustStore}
          */
         @Deprecated
         public String trustCertChainFile = null;
 
         /**
-         * JSSE keystore file path. Similar to setting JSSE property
-         * {@code javax.net.ssl.keyStore}.
+         * The file location of the private key in JKS or PKCS#12 format.
          */
         public String keyStore;
 
         /**
-         * JSSE keystore password. Similar to setting JSSE property
-         * {@code javax.net.ssl.keyStorePassword}.
+         * The password of the {@link #keyStore}, or {@code null} if it's not password-protected.
          */
         public String keyStorePassword;
 
         /**
-         * JSSE truststore file path. Similar to setting JSSE property
-         * {@code javax.net.ssl.trustStore}.
+         * Trusted certificates for verifying the remote client's certificate. If
+         * this value is not provided and SSL is enabled, the default {@link TrustManager} will be used.
          */
         public String trustStore;
 
         /**
-         * JSSE truststore password. Similar to setting JSSE property
-         * {@code javax.net.ssl.trustStorePassword}.
+         * The password of the {@link #trustStore}, or {@code null} if it's not password-protected.
          */
         public String trustStorePassword;
 
         /**
-         * JSSE keystore format. Similar to setting JSSE property
-         * {@code javax.net.ssl.keyStoreType}.
+         * The format of the {@link keyStore}, either {@code JKS} or {@code PKCS12}
          */
         public String keyStoreType;
 
         /**
-         * @see <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SunJSSE_Protocols">JSSE Protocols</a>
+         * A list of SSL protocols to enable. @see <a href=
+         *      "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SunJSSE_Protocols">JSSE
+         *      Protocols</a>
          */
         public List<String> sslEnabledProtocols = new ArrayList<>();
 
         /**
-         * @see <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SupportedCipherSuites">Cipher Suites</a>
+         * A list of cipher suites to enable. @see <a href=
+         *      "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SupportedCipherSuites">Cipher
+         *      Suites</a>
          */
         public List<String> sslCipherSuites = new ArrayList<>();
 

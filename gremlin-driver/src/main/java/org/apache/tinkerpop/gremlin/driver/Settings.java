@@ -258,28 +258,28 @@ final class Settings {
 
         /**
          * The trusted certificate in PEM format.
-         * @deprecated Use JSSE-based settings
+         * @deprecated As of release 3.2.10, replaced by {@link trustStore}
          */
         @Deprecated
         public String trustCertChainFile = null;
 
         /**
          * The X.509 certificate chain file in PEM format.
-         * @deprecated Use JSSE-based settings
+         * @deprecated As of release 3.2.10, replaced by {@link keyStore}
          */
         @Deprecated
         public String keyCertChainFile = null;
 
         /**
          * The PKCS#8 private key file in PEM format.
-         * @deprecated Use JSSE-based settings
+         * @deprecated As of release 3.2.10, replaced by {@link keyStore}
          */
         @Deprecated
         public String keyFile = null;
 
         /**
          * The password of the {@link #keyFile}, or {@code null} if it's not password-protected.
-         * @deprecated Use JSSE-based settings
+         * @deprecated As of release 3.2.10, replaced by {@link keyStorePassword}
          */
         @Deprecated
         public String keyPassword = null;
@@ -329,7 +329,7 @@ final class Settings {
         public List<String> sslCipherSuites = new ArrayList<>();
 
         /**
-         * 
+         * If true, trust all certificates and do not perform any validation.
          */
         public boolean sslSkipCertValidation = false;
 
