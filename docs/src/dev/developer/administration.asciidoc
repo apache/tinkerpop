@@ -77,7 +77,7 @@ established the PMC chair will then need to:
 
 . Validate that the iCLA is on file either through link:https://svn.apache.org/repos/private/foundation/officers/[svn]
 or through link:http://people.apache.org/committer-index.html[people.apache.org].
-. Request that the account be created. The PMC Chair may do this through the link:http://infra.apache.org/[Account Request Form].
+. Request that the account be created. The PMC Chair may do this through the link:https://whimsy.apache.org/officers/acreq[Account Request Form].
 . Once verified, provide the new committer access to the repository, which is most easily done through
 link:https://whimsy.apache.org/roster/committee/[Whimsy].
 . Send an announcement email to the developer and user mailing lists with the template below.
