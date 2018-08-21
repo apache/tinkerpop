@@ -57,7 +57,7 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
             graph.close();
         }
 
-        if (configuration.containsKey(Neo4jGraph.CONFIG_DIRECTORY)) {
+        if (null != configuration && configuration.containsKey(Neo4jGraph.CONFIG_DIRECTORY)) {
             // this is a non-in-sideEffects configuration so blow away the directory
             final File graphDirectory = new File(configuration.getString(Neo4jGraph.CONFIG_DIRECTORY));
             deleteDirectory(graphDirectory);
