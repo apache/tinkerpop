@@ -142,6 +142,7 @@ public abstract class AbstractGremlinTest {
             graphProvider.getTestListener().ifPresent(l -> l.onTestEnd(this.getClass(), name.getMethodName()));
 
             // GraphProvider that has implemented the clear method must check null for graph and config.
+            // If #assumeRequirementsAreMetForTest returns false in #setup, graph and config will be null.
             graphProvider.clear(graph, config);
 
             // All GraphProvider objects should be an instance of ManagedGraphProvider, as this is handled by GraphManager
