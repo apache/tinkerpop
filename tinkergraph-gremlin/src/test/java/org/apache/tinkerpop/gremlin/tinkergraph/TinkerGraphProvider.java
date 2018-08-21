@@ -85,7 +85,7 @@ public class TinkerGraphProvider extends AbstractGraphProvider {
             graph.close();
 
         // in the even the graph is persisted we need to clean up
-        final String graphLocation = configuration.getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null);
+        final String graphLocation = null != configuration ? configuration.getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null) : null;
         if (graphLocation != null) {
             final File f = new File(graphLocation);
             f.delete();
