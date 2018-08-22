@@ -109,12 +109,13 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
     private void appendMetrics(final Collection<? extends Metrics> metrics, final StringBuilder sb, final int indent) {
         // Append each StepMetric's row. indexToLabelMap values are ordered by index.
         for (Metrics m : metrics) {
-            final StringBuilder metricName = new StringBuilder(m.getName());
+            final StringBuilder metricName = new StringBuilder();
 
             // Handle indentation
             for (int ii = 0; ii < indent; ii++) {
-                metricName.insert(0, "  ");
+                metricName.append("  ");
             }
+            metricName.append(m.getName());
             // Abbreviate if necessary
             final StringBuilder rowName = new StringBuilder(StringUtils.abbreviate(metricName.toString(), 50));
 
@@ -187,10 +188,11 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
     private static String padLeft(final String text, final int amountToPad) {
         // not sure why this method needed to exist. stupid string format stuff and commons utilities wouldn't
         // work for some reason in the context this method was used above.
-        final StringBuilder newText = new StringBuilder(text);
+        final StringBuilder newText = new StringBuilder();
         for (int ix = 0; ix < amountToPad; ix++) {
-            newText.insert(0, " ");
+            newText.append(" ");
         }
+        newText.append(text);
         return newText.toString();
     }
 
