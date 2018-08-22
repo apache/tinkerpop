@@ -208,14 +208,15 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
     private void appendMetrics(final Collection<? extends Metrics> metrics, final StringBuilder sb, final int indent) {
         // Append each StepMetric's row. indexToLabelMap values are ordered by index.
         for (Metrics m : metrics) {
-            String rowName = m.getName();
+            final StringBuilder metricName = new StringBuilder();
 
             // Handle indentation
             for (int ii = 0; ii < indent; ii++) {
-                rowName = "  " + rowName;
+                metricName.append("  ");
             }
+            metricName.append(m.getName());
             // Abbreviate if necessary
-            rowName = StringUtils.abbreviate(rowName, 50);
+            final StringBuilder rowName = new StringBuilder(StringUtils.abbreviate(metricName.toString(), 50));
 
             // Grab the values
             final Long itemCount = m.getCount(ELEMENT_COUNT_ID);
@@ -224,7 +225,7 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
 
             // Build the row string
 
-            sb.append(String.format("%n%-50s", rowName));
+            sb.append(String.format("%n%-50s", rowName.toString()));
 
             if (itemCount != null) {
                 sb.append(String.format(" %21d", itemCount));
@@ -286,10 +287,11 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
     private static String padLeft(final String text, final int amountToPad) {
         // not sure why this method needed to exist. stupid string format stuff and commons utilities wouldn't
         // work for some reason in the context this method was used above.
-        String newText = text;
+        final StringBuilder newText = new StringBuilder();
         for (int ix = 0; ix < amountToPad; ix++) {
-            newText = " " + newText;
+            newText.append(" ");
         }
-        return newText;
+        newText.append(text);
+        return newText.toString();
     }
 }
