@@ -823,7 +823,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldReceiveFailureTimeOutOnScriptEvalUsingOverride() throws Exception {
         try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
             final RequestMessage msg = RequestMessage.build("eval")
-                    .addArg(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT, 100)
+                    .addArg(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT, 100L)
                     .addArg(Tokens.ARGS_GREMLIN, "Thread.sleep(3000);'some-stuff-that-should not return'")
                     .create();
             final List<ResponseMessage> responses = client.submit(msg);

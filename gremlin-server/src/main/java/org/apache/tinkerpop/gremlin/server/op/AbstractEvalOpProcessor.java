@@ -245,8 +245,10 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                 true : (Boolean) args.getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION, false);
 
         // timeout override
-        final long seto = args.containsKey(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT) ?
-                Long.parseLong(args.get(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT).toString()) : settings.scriptEvaluationTimeout;
+        final long seto = args.containsKey(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT)
+            // could be sent as an integer or long
+            ? ((Number) args.get(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT)).longValue()
+            : settings.scriptEvaluationTimeout;
 
         final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build()
                 .scriptEvaluationTimeoutOverride(seto)
