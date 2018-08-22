@@ -429,7 +429,7 @@ public class GremlinDslProcessor extends AbstractProcessor {
     private void addMethodBody(final MethodSpec.Builder methodToAdd, final ExecutableElement templateMethod,
                                final String startBody, final String endBody, final Object... statementArgs) {
         final List<? extends VariableElement> parameters = templateMethod.getParameters();
-        StringBuilder body = new StringBuilder(startBody);
+        final StringBuilder body = new StringBuilder(startBody);
 
         final int numberOfParams = parameters.size();
         for (int ix = 0; ix < numberOfParams; ix++) {

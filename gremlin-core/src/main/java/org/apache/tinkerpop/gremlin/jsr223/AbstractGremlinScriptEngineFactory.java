@@ -107,7 +107,7 @@ public abstract class AbstractGremlinScriptEngineFactory implements GremlinScrip
      */
     @Override
     public String getProgram(final String... statements) {
-        StringBuilder program = new StringBuilder();
+        final StringBuilder program = new StringBuilder();
 
         for (String statement : statements) {
             program.append(statement).append(System.lineSeparator());
