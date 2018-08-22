@@ -149,6 +149,7 @@ import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -1484,16 +1485,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         else {
             final List<Object> ids = new ArrayList<>();
             if (id instanceof Object[]) {
-                for (final Object i : (Object[]) id) {
-                    ids.add(i);
-                }
+                Collections.addAll(ids, (Object[]) id);
             } else
                 ids.add(id);
             for (final Object i : otherIds) {
                 if (i.getClass().isArray()) {
-                    for (final Object ii : (Object[]) i) {
-                        ids.add(ii);
-                    }
+                    Collections.addAll(ids, (Object[]) i);
                 } else
                     ids.add(i);
             }
@@ -1559,16 +1556,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         else {
             final List<Object> values = new ArrayList<>();
             if (value instanceof Object[]) {
-                for (final Object v : (Object[]) value) {
-                    values.add(v);
-                }
+                Collections.addAll(values, (Object[]) value);
             } else
                 values.add(value);
             for (final Object v : otherValues) {
                 if (v instanceof Object[]) {
-                    for (final Object vv : (Object[]) v) {
-                        values.add(vv);
-                    }
+                    Collections.addAll(values, (Object[]) v);
                 } else
                     values.add(v);
             }
