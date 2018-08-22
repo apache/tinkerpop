@@ -125,8 +125,8 @@ public interface GraphProvider {
     }
 
     /**
-     * Creates a new {@link Graph} instance from the Configuration object using {@link GraphFactory}. The assumption
-     * here is that the {@code Configuration} has been created by one of the
+     * Creates a new {@link Graph} instance from the {@link org.apache.commons.configuration.Configuration} object using {@link GraphFactory}.
+     * The assumption here is that the {@code Configuration} has been created by one of the
      * {@link #newGraphConfiguration(String, Class, String, LoadGraphWith.GraphData)} methods and has therefore
      * already been modified by the implementation as necessary for {@link Graph} creation.
      */
@@ -149,6 +149,9 @@ public interface GraphProvider {
      * to construct the graph.  The default implementation simply calls
      * {@link #clear(Graph, org.apache.commons.configuration.Configuration)} with
      * a null graph argument.
+     * <p/>
+     * Implementations should be able to accept an argument of null for the {@code org.apache.commons.configuration.Configuration}
+     * as well, and a proper handling is needed. Otherwise, a NullPointerException may be thrown.
      */
     public default void clear(final Configuration configuration) throws Exception {
         clear(null, configuration);
@@ -160,9 +163,12 @@ public interface GraphProvider {
      * For a brute force approach, implementers can simply delete data directories provided in the configuration.
      * Implementers may choose a more elegant approach if it exists.
      * <p/>
-     * Implementations should be able to accept an argument of null for the Graph, in which case the only action
+     * Implementations should be able to accept an argument of null for the {@code Graph}, in which case the only action
      * that can be performed is a clear given the configuration.  The method will typically be called this way
      * as clean up task on setup to ensure that a persisted graph has a clear space to create a test graph.
+     * <p/>
+     * Implementations should be able to accept an argument of null for the {@code org.apache.commons.configuration.Configuration}
+     * as well, and a proper handling is needed. Otherwise, a NullPointerException may be thrown.
      * <p/>
      * Calls to this method may occur multiple times for a specific test. Develop this method to be idempotent.
      */

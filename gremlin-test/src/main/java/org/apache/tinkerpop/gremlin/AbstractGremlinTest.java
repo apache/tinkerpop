@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.javatuples.Pair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,10 +40,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -143,6 +140,9 @@ public abstract class AbstractGremlinTest {
     public void tearDown() throws Exception {
         if (null != graphProvider) {
             graphProvider.getTestListener().ifPresent(l -> l.onTestEnd(this.getClass(), name.getMethodName()));
+
+            // GraphProvider that has implemented the clear method must check null for graph and config.
+            // If #assumeRequirementsAreMetForTest returns false in #setup, graph and config will be null.
             graphProvider.clear(graph, config);
 
             // All GraphProvider objects should be an instance of ManagedGraphProvider, as this is handled by GraphManager
@@ -154,6 +154,7 @@ public abstract class AbstractGremlinTest {
                 logger.warn("The {} is not of type ManagedGraphProvider and therefore graph instances may leak between test cases.", graphProvider.getClass());
 
             g = null;
+            graph = null;
             config = null;
             graphProvider = null;
         }
