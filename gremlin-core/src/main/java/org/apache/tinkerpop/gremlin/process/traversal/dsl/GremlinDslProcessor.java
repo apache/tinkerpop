@@ -429,23 +429,25 @@ public class GremlinDslProcessor extends AbstractProcessor {
     private void addMethodBody(final MethodSpec.Builder methodToAdd, final ExecutableElement templateMethod,
                                final String startBody, final String endBody, final Object... statementArgs) {
         final List<? extends VariableElement> parameters = templateMethod.getParameters();
-        String body = startBody;
+        StringBuilder body = new StringBuilder(startBody);
 
         final int numberOfParams = parameters.size();
         for (int ix = 0; ix < numberOfParams; ix++) {
             final VariableElement param = parameters.get(ix);
             methodToAdd.addParameter(ParameterSpec.get(param));
-            body = body + param.getSimpleName();
-            if (ix < numberOfParams - 1) body = body + ",";
+            body.append(param.getSimpleName());
+            if (ix < numberOfParams - 1) {
+                body.append(",");
+            }
         }
 
-        body = body + endBody;
+        body.append(endBody);
 
         // treat a final array as a varargs param
         if (!parameters.isEmpty() && parameters.get(parameters.size() - 1).asType().getKind() == TypeKind.ARRAY)
             methodToAdd.varargs(true);
 
-        methodToAdd.addStatement(body, statementArgs);
+        methodToAdd.addStatement(body.toString(), statementArgs);
     }
 
     private TypeName getOverridenReturnTypeDefinition(final ClassName returnClazz, final String[] typeValues) {
