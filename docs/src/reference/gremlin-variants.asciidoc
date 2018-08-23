@@ -484,13 +484,12 @@ const graph = new Graph();
 const g = graph.traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
 ----
 
-or for Gremlin Servers requiring SASL authentication
+Gremlin-JavaScript supports plain text SASL authentication, you can set it on the connection options.
 
 [source,javascript]
 ----
-const graph = new Graph();
-const Authenicator = gremlin.driver.auth.PlainTextSaslAuthenicator;
-const g = graph.traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin', { authenticator: new Authenticator(username, password, optionalAuthzid) });
+const authenticator = new gremlin.driver.auth.PlainTextSaslAuthenticator('myuser', 'mypassword');
+const g = graph.traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin', { authenticator });
 ----
 
 When a traversal from the `GraphTraversalSource` is iterated, the traversal’s `Bytecode` is sent over the wire via

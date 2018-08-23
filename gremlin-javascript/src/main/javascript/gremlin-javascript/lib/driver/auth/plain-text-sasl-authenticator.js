@@ -16,6 +16,7 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+
 'use strict';
 
 const Authenticator = require('./authenticator');
@@ -26,6 +27,7 @@ class PlainTextSaslAuthenticator extends Authenticator {
    * Creates a new instance of PlainTextSaslAuthenticator.
    * @param {string} username Username to log into the server.
    * @param {string} password Password for the user.
+   * @param {string} [authzid] Optional id
    * @constructor
    */
   constructor(username, password, authzid) {

@@ -33,7 +33,7 @@ const responseStatusCode = {
   partialContent: 206,
   authenticationChallenge:  407,
 };
-const defaultMimeType = 'application/vnd.gremlin-v3.0+json';
+const defaultMimeType = 'application/vnd.gremlin-v2.0+json';
 
 class DriverRemoteConnection extends RemoteConnection {
   /**
