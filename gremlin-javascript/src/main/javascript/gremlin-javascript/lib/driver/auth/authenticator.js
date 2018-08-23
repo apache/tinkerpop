@@ -17,40 +17,22 @@
  *  under the License.
  */
 
-/**
- * A module containing any utility functions.
- * @author Jorge Bay Gondra
- */
 'use strict';
 
-const crypto = require('crypto');
-
-exports.toLong = function toLong(value) {
-  return new Long(value);
-};
-
-const Long = exports.Long = function Long(value) {
-  if (typeof value !== 'string' && typeof value !== 'number') {
-    throw new TypeError('Ty')
+/** @abstract */
+class Authenticator {
+  constructor(options) {
+    this._options = options;
   }
-  this.value = value.toString();
-};
-
-exports.getUuid = function getUuid() {
-  const buffer = crypto.randomBytes(16);
-  //clear the version
-  buffer[6] &= 0x0f;
-  //set the version 4
-  buffer[6] |= 0x40;
-  //clear the variant
-  buffer[8] &= 0x3f;
-  //set the IETF variant
-  buffer[8] |= 0x80;
-  const hex = buffer.toString('hex');
-  return (
-    hex.substr(0, 8) + '-' +
-    hex.substr(8, 4) + '-' +
-    hex.substr(12, 4) + '-' +
-    hex.substr(16, 4) + '-' +
-    hex.substr(20, 12));
+  
+  /**
+   * @abstract
+   * Evaluates the challenge from the server and returns appropriate response.
+   * @param {String} challenge Challenge string presented by the server.
+   */
+  evaluateChallenge(challenge) {
+    throw new Error("evaluateChallenge should be implemented");
+  }
 }
+
+module.exports = Authenticator;

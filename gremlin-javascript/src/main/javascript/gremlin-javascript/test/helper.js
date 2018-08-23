@@ -21,9 +21,20 @@
  * @author Jorge Bay Gondra
  */
 'use strict';
+const os = require('os');
 
 const DriverRemoteConnection = require('../lib/driver/driver-remote-connection');
+const PlainTextSaslAuthenticator = require('../lib/driver/auth/plain-text-sasl-authenticator');
 
 exports.getConnection = function getConnection(traversalSource) {
   return new DriverRemoteConnection('ws://localhost:45940/gremlin', { traversalSource: traversalSource });
+};
+
+exports.getSecureConnectionWithPlainTextSaslAuthenticator = function getConnection(traversalSource) {
+  const authenticator = new PlainTextSaslAuthenticator('stephen', 'password');
+  return new DriverRemoteConnection('ws://localhost:45941/gremlin', { 
+    traversalSource: traversalSource, 
+    authenticator: authenticator, 
+    rejectUnauthorized: false 
+  });
 };
