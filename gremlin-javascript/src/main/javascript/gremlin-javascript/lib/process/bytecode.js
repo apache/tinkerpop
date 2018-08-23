@@ -91,8 +91,73 @@ class Bytecode {
       (this.stepInstructions.length   > 0 ? JSON.stringify(this.stepInstructions) : '')
     );
   }
+
+  /**
+   * Returns a script representations of the step instructions that can be used by standard eval operation.
+   * @returns {Object} An object containing a script string and bindings map.
+   */
+  toScript() {
+    let bindings = {};
+    let script = 'g';
+    let length = this.stepInstructions.length;
+
+    // if eval was passed a script then simply execute the given script.
+    if (this.stepInstructions[length - 1][0] === 'eval'
+      && this.stepInstructions[length - 1][1] !== undefined
+      && this.stepInstructions[length - 1][1] !== null
+    ) {
+      return {
+        script: this.stepInstructions[length - 1][1],
+        bindings: this.stepInstructions[length - 1][2]
+      }
+    }
+
+    if (this.stepInstructions[length - 1][0] === 'eval') {
+      this.stepInstructions.pop();
+      length = this.stepInstructions.length;
+    }
+
+    // build the script from the glv instructions.
+    let paramIdx = 1;
+    for (let i = 0; i < length; i++) {
+      const params = this.stepInstructions[i].slice(1);
+      script = script + '.' + this.stepInstructions[i][0] + '(';
+
+      if (params.length) {
+        for (let k = 0; k < params.length; k++) {
+          if (k > 0) {
+            script = script + ', ';
+          }
+
+          if (Object(params[k]) === params[k]) {
+            script = script + params[k].toString();
+          } else {
+            const prop = `p${paramIdx++}`;
+            script = script + prop;
+            
+            if (typeof params[k] === 'number') {
+              if (Number.isInteger(params[k])) {
+                bindings[prop] = Number.parseInt(params[k]);
+              } else {
+                bindings[prop] = Number.parseFloat(params[k]);
+              }
+            } else if (params[k] === undefined) {
+              bindings[prop] = null;
+            } else {
+              bindings[prop] = params[k];
+            }
+          }
+        }
+      }
+
+      script = script + ')';
+    }
+    
+    return {
+      script,
+      bindings
+    };
+  }
 }
-
-
 
 module.exports = Bytecode;

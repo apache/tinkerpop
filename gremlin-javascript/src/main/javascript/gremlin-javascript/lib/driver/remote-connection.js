@@ -34,11 +34,12 @@ class RemoteConnection {
    * @abstract
    * @param {Bytecode} bytecode
    * @param {String} op Operation to perform, defaults to bytecode.
-   * @param {Object} args The arguments for the operation. Defaults to an associative array containing values for "aliases" and "gremlin" keyss.
+   * @param {Object} args The arguments for the operation. Defaults to an associative array containing values for "aliases" and "gremlin" keys.
    * @param {String} requestId A requestId for the current request. If none provided then a requestId is generated internally.
+   * @param {String} processor The processor to use on the connection.
    * @returns {Promise}
    */
-  submit(bytecode, op, args, requestId) {
+  submit(bytecode, op, args, requestId, processor) {
     throw new Error('submit() was not implemented');
   };
 }
@@ -66,7 +67,28 @@ class RemoteStrategy extends TraversalStrategy {
     if (traversal.traversers) {
       return Promise.resolve();
     }
-    return this.connection.submit(traversal.getBytecode()).then(function (remoteTraversal) {
+
+    let instructions = traversal.getBytecode();
+    let op = 'bytecode';
+    let processor = 'traversal';
+    let args = null;
+
+    // check if the last instruction is an eval statement
+    const bytecode = traversal.getBytecode();
+    if (bytecode.stepInstructions.length && bytecode.stepInstructions[bytecode.stepInstructions.length-1][0] === 'eval') {
+      const script = traversal.getBytecode().toScript();
+      op = 'eval';
+      processor = '';
+      args = {
+        'gremlin': script.script,
+        'bindings': script.bindings,
+        'language': 'gremlin-groovy',
+        'accept': 'application/json',
+      };
+      instructions = null;
+    }
+
+    return this.connection.submit(instructions, op, args, null, processor).then(function (remoteTraversal) {
       traversal.sideEffects = remoteTraversal.sideEffects;
       traversal.traversers = remoteTraversal.traversers;
     });

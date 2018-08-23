@@ -105,7 +105,7 @@ class DriverRemoteConnection extends RemoteConnection {
   }
 
   /** @override */
-  submit(bytecode, op, args, requestId) {
+  submit(bytecode, op, args, requestId, processor) {
     return this.open().then(() => new Promise((resolve, reject) => {
       if (requestId === null || requestId === undefined) {
         requestId = utils.getUuid();
@@ -114,25 +114,36 @@ class DriverRemoteConnection extends RemoteConnection {
           result: null
         };
       }
-      const message = bufferFromString(this._header + JSON.stringify(this._getRequest(requestId, bytecode, op, args)));
+
+      const message = bufferFromString(this._header + JSON.stringify(this._getRequest(requestId, bytecode, op, args, processor)));
       this._ws.send(message);
     }));
   }
 
-  _getRequest(id, bytecode, op, args) {
+  _getRequest(id, bytecode, op, args, processor) {
     if (args) {
       args = this._adaptArgs(args);
     }
-
+    
     return ({
       'requestId': { '@type': 'g:UUID', '@value': id },
       'op': op || 'bytecode',
-      'processor': 'traversal',
-      'args': args || {
-        'gremlin': this._writer.adaptObject(bytecode),
-        'aliases': { 'g': this.traversalSource }
-      }
+      // if using op eval need to ensure processor stays unset if caller didn't set it.
+      'processor': (!processor && op !== 'eval') ? 'traversal' : processor,
+      'args': this._getArgs(args || {
+          'gremlin': this._writer.adaptObject(bytecode)
+        },
+        op
+      )
     });
+  }
+
+  _getArgs(args, op) {
+    if (args.aliases === undefined) {
+      args.aliases = { 'g': this.traversalSource };
+    }
+
+    return args;
   }
 
   _handleMessage(data) {

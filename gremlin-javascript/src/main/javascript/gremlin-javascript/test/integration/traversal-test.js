@@ -66,4 +66,22 @@ describe('Traversal', function () {
         });
     });
   });
+  describe('#eval()', function() {
+    it('should submit the traversal as a script and return a result', function() {
+      var g = new Graph().traversal().withRemote(connection);
+      return g.V().count().eval().then(function (item) {
+        assert.ok(item);
+        assert.strictEqual(item.done, true);
+        assert.strictEqual(typeof item.value, 'number');
+      });
+    });
+
+    it('should submit a script and bindings and return a result', function() {
+      var g = new Graph().traversal().withRemote(connection);
+      return g.V().eval('g.V().has(\'name\', name)', { name: 'marko' }).then(function (item) {
+        assert.ok(item);
+        assert.ok(item.value instanceof Vertex);
+      });
+    });
+  });
 });
