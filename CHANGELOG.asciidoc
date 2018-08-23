@@ -51,6 +51,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed a bug in `TinkerGraphCountStrategy`, which didn't consider that certain map steps may not emit an element.
 * Fixed a bug in JavaScript GLV where DriverRemoteConnection close() method didn't returned a Promise instance.
 * Bumped to Jackson 2.9.6.
+* Sasl Plain Text Authentication added to Gremlin Javascript.
 
 [[release-3-2-9]]
 === TinkerPop 3.2.9 (Release Date: May 8, 2018)

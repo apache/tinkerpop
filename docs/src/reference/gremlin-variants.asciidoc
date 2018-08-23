@@ -484,6 +484,15 @@ const graph = new Graph();
 const g = graph.traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
 ----
 
+or for Gremlin Servers requiring SASL authentication
+
+[source,javascript]
+----
+const graph = new Graph();
+const Authenicator = gremlin.driver.auth.PlainTextSaslAuthenicator;
+const g = graph.traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin', { authenticator: new Authenticator(username, password, optionalAuthzid) });
+----
+
 When a traversal from the `GraphTraversalSource` is iterated, the traversal’s `Bytecode` is sent over the wire via
 the registered `RemoteConnection`. The bytecode is used to construct the equivalent traversal at the remote
 traversal source.
