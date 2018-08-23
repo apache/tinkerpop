@@ -22,7 +22,6 @@
  */
 'use strict';
 
-const crypto = require('crypto');
 const WebSocket = require('ws');
 const util = require('util');
 const RemoteConnection = require('./remote-connection').RemoteConnection;
@@ -31,7 +30,8 @@ const serializer = require('../structure/io/graph-serializer');
 const responseStatusCode = {
   success: 200,
   noContent: 204,
-  partialContent: 206
+  partialContent: 206,
+  authenticationChallenge:  407,
 };
 const defaultMimeType = 'application/vnd.gremlin-v3.0+json';
 
@@ -48,6 +48,7 @@ class DriverRemoteConnection extends RemoteConnection {
    * @param {Boolean} [options.rejectUnauthorized] Determines whether to verify or not the server certificate.
    * @param {String} [options.traversalSource] The traversal source. Defaults to: 'g'.
    * @param {GraphSONWriter} [options.writer] The writer to use.
+   * @param {Authenticator} [options.authenticator] The authentication handler to use.
    * @constructor
    */
   constructor(url, options) {
@@ -77,6 +78,10 @@ class DriverRemoteConnection extends RemoteConnection {
     this._header = String.fromCharCode(mimeType.length) + mimeType;
     this.isOpen = false;
     this.traversalSource = options.traversalSource || 'g';
+
+    if (options.authenticator) {
+      this._authenticator = options.authenticator;
+    }
   }
 
   /**
@@ -100,24 +105,30 @@ class DriverRemoteConnection extends RemoteConnection {
   }
 
   /** @override */
-  submit(bytecode) {
+  submit(bytecode, op, args, requestId) {
     return this.open().then(() => new Promise((resolve, reject) => {
-      const requestId = getUuid();
-      this._responseHandlers[requestId] = {
-        callback: (err, result) => err ? reject(err) : resolve(result),
-        result: null
-      };
-      const message = bufferFromString(this._header + JSON.stringify(this._getRequest(requestId, bytecode)));
+      if (requestId === null || requestId === undefined) {
+        requestId = utils.getUuid();
+        this._responseHandlers[requestId] = {
+          callback: (err, result) => err ? reject(err) : resolve(result),
+          result: null
+        };
+      }
+      const message = bufferFromString(this._header + JSON.stringify(this._getRequest(requestId, bytecode, op, args)));
       this._ws.send(message);
     }));
   }
 
-  _getRequest(id, bytecode) {
+  _getRequest(id, bytecode, op, args) {
+    if (args) {
+      args = this._adaptArgs(args);
+    }
+
     return ({
       'requestId': { '@type': 'g:UUID', '@value': id },
-      'op': 'bytecode',
+      'op': op || 'bytecode',
       'processor': 'traversal',
-      'args': {
+      'args': args || {
         'gremlin': this._writer.adaptObject(bytecode),
         'aliases': { 'g': this.traversalSource }
       }
@@ -151,7 +162,14 @@ class DriverRemoteConnection extends RemoteConnection {
       return;
     }
 
-    if (response.status.code >= 400) {
+    if (response.status.code === responseStatusCode.authenticationChallenge && this._authenticator) {
+      this._authenticator.evaluateChallenge(response.result.data).then(res => {
+        return this.submit(null, 'authentication', res, response.requestId);
+      }).catch(handler.callback);
+
+      return;
+    }
+    else if (response.status.code >= 400) {
       // callback in error
       return handler.callback(
         new Error(util.format('Server error: %s (%d)', response.status.message, response.status.code)));
@@ -186,6 +204,28 @@ class DriverRemoteConnection extends RemoteConnection {
   }
 
   /**
+   * Takes the given args map and ensures all arguments are passed through to _write.adaptObject
+   * @param {Object} args Map of arguments to process
+   * @returns {Object}
+   * @private
+   */
+  _adaptArgs(args) {
+    if (Array.isArray(args)) {
+      return args.map(val => this._adaptArgs(val));
+    }
+
+    if (args instanceof Object) {
+      let newObj = {};
+      Object.keys(args).forEach((key) => {
+        newObj[key] = this._adaptArgs(args[key]);
+      });
+      return newObj;
+    }
+    
+    return this._writer.adaptObject(args);
+  }
+
+  /**
    * Closes the Connection.
    * @return {Promise}
    */
@@ -201,25 +241,6 @@ class DriverRemoteConnection extends RemoteConnection {
     }
     return this._closePromise;
   }
-}
-
-function getUuid() {
-  const buffer = crypto.randomBytes(16);
-  //clear the version
-  buffer[6] &= 0x0f;
-  //set the version 4
-  buffer[6] |= 0x40;
-  //clear the variant
-  buffer[8] &= 0x3f;
-  //set the IETF variant
-  buffer[8] |= 0x80;
-  const hex = buffer.toString('hex');
-  return (
-    hex.substr(0, 8) + '-' +
-    hex.substr(8, 4) + '-' +
-    hex.substr(12, 4) + '-' +
-    hex.substr(16, 4) + '-' +
-    hex.substr(20, 12));
 }
 
 const bufferFromString = (Int8Array.from !== Buffer.from && Buffer.from) || function newBuffer(text) {
