@@ -74,9 +74,8 @@ class RemoteStrategy extends TraversalStrategy {
     let args = null;
 
     // check if the last instruction is an eval statement
-    const bytecode = traversal.getBytecode();
-    if (bytecode.stepInstructions.length && bytecode.stepInstructions[bytecode.stepInstructions.length-1][0] === 'eval') {
-      const script = traversal.getBytecode().toScript();
+    if (instructions.stepInstructions.length && instructions.stepInstructions[instructions.stepInstructions.length-1][0] === 'eval') {
+      const script = instructions.toScript();
       op = 'eval';
       processor = '';
       args = {
