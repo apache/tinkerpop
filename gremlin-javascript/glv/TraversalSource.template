@@ -81,9 +81,8 @@ class Traversal {
   /**
    * Send a Gremlin-Groovy script to the server. If a script is not passed in 
    * then the bytecode instructions will be converted to a script and sent.
-   * @param {string} gremlinScript The script to send to server
+   * @param {string} script The script to send to server
    * @param {array} bindings Map of bindings
-   * @param {*} options Options to configure the script sending
    */
   eval(script, bindings) {
     this.bytecode.addStep('eval', [ script, bindings ]);
