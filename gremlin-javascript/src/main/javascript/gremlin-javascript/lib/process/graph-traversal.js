@@ -162,6 +162,17 @@ class GraphTraversalSource {
     return new GraphTraversal(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
   
+
+
+  /**
+   * Send a Gremlin-Groovy script to the server. If a script is not passed in 
+   * then the bytecode instructions will be converted to a script and sent.
+   * @param {string} script The script to send to server
+   * @param {array} bindings Map of bindings
+   */
+  eval(script, bindings) {
+    return (new GraphTraversal(this.graph, new TraversalStrategies(this.traversalStrategies), new Bytecode(this.bytecode))).eval(script, bindings);
+  }
 }
 
 /**
@@ -1152,19 +1163,6 @@ class GraphTraversal extends Traversal {
     return this;
   }
   
-
-
-  /**
-   * Send a Gremlin-Groovy script to the server. If a script is not passed in 
-   * then the bytecode instructions will be converted to a script and sent.
-   * @param {string} gremlinScript The script to send to server
-   * @param {array} bindings Map of bindings
-   * @param {*} options Options to configure the script sending
-   */
-  eval(script, bindings) {
-    this.bytecode.addStep('eval', [ script, bindings ]);
-    return this._applyStrategies().then(() => this._getNext());
-  }
 }
 
 function callOnEmptyTraversal(fnName, args) {
