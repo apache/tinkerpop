@@ -722,27 +722,24 @@ public class SerializationTest {
             assertEquals(vOut.label(), detachedVOut.label());
             assertEquals(vOut.id(), detachedVOut.id());
 
-            // TODO: dunno GraphSON seems to return properties - will make this more consistent here
             // this is a SimpleTraverser so no properties are present in detachment
-            //assertFalse(detachedVOut.properties().hasNext());
+            assertFalse(detachedVOut.properties().hasNext());
 
             final Edge e = p.get("b");
             final Edge detachedE = detached.get("b");
             assertEquals(e.label(), detachedE.label());
             assertEquals(e.id(), detachedE.id());
 
-            // TODO: dunno GraphSON seems to return properties - will make this more consistent here
             // this is a SimpleTraverser so no properties are present in detachment
-            //assertFalse(detachedE.properties().hasNext());
+            assertFalse(detachedE.properties().hasNext());
 
             final Vertex vIn = p.get("c");
             final Vertex detachedVIn = detached.get("c");
             assertEquals(vIn.label(), detachedVIn.label());
             assertEquals(vIn.id(), detachedVIn.id());
 
-            // TODO: dunno GraphSON seems to return properties - will make this more consistent here
             // this is a SimpleTraverser so no properties are present in detachment
-            //assertFalse(detachedVIn.properties().hasNext());
+            assertFalse(detachedVIn.properties().hasNext());
         }
 
         @Test
@@ -927,27 +924,24 @@ public class SerializationTest {
             assertEquals(vOut.label(), detachedVOut.label());
             assertEquals(vOut.id(), detachedVOut.id());
 
-            // TODO: dunno GraphSON seems to return properties - will make this more consistent here
             // this is a SimpleTraverser so no properties are present in detachment
-            //assertFalse(detachedVOut.properties().hasNext());
+            assertFalse(detachedVOut.properties().hasNext());
 
             final Edge e = p.get("b");
             final Edge detachedE = detached.get("b");
             assertEquals(e.label(), detachedE.label());
             assertEquals(e.id(), detachedE.id());
 
-            // TODO: dunno GraphSON seems to return properties - will make this more consistent here
             // this is a SimpleTraverser so no properties are present in detachment
-            //assertFalse(detachedE.properties().hasNext());
+            assertFalse(detachedE.properties().hasNext());
 
             final Vertex vIn = p.get("c");
             final Vertex detachedVIn = detached.get("c");
             assertEquals(vIn.label(), detachedVIn.label());
             assertEquals(vIn.id(), detachedVIn.id());
 
-            // TODO: dunno GraphSON seems to return properties - will make this more consistent here
             // this is a SimpleTraverser so no properties are present in detachment
-            //assertFalse(detachedVIn.properties().hasNext());
+            assertFalse(detachedVIn.properties().hasNext());
         }
 
         @Test
