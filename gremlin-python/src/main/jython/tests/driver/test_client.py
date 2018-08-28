@@ -20,6 +20,7 @@ import pytest
 
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.request import RequestMessage
+from gremlin_python.process.graph_traversal import __
 from gremlin_python.structure.graph import Graph
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
@@ -107,3 +108,46 @@ def test_multi_conn_pool(client):
     # with connection pool `future` may or may not be done here
     result_set = future.result()
     assert len(result_set.all().result()) == 6
+
+
+def test_big_result_set(client):
+    g = Graph().traversal()
+    t = g.inject(1).repeat(__.addV('person').property('name', __.loops())).times(20000).count()
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
+    result_set = client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 1
+
+    t = g.V().limit(10)
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
+    result_set = client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 10
+
+    t = g.V().limit(100)
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
+    result_set = client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 100
+
+    t = g.V().limit(1000)
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
+    result_set = client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 1000
+
+    t = g.V().limit(10000)
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
+    result_set = client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 10000
