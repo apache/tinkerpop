@@ -20,16 +20,12 @@ package org.apache.tinkerpop.gremlin.driver.ser;
 
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * Serialize results to JSON with version 3.0.x schema and the extended module.
@@ -49,12 +45,36 @@ public final class GraphSONMessageSerializerV3d0 extends AbstractGraphSONMessage
         header = buffer.array();
     }
 
+    /**
+     * Creates a default GraphSONMessageSerializer.
+     * <p>
+     * By default this will internally instantiate a {@link GraphSONMapper} and register
+     * a {@link GremlinServerModule} and {@link org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3d0} to the mapper.
+     *
+     * @see #GraphSONMessageSerializerV3d0(GraphSONMapper.Builder)
+     */
     public GraphSONMessageSerializerV3d0() {
         super();
     }
 
+    /**
+     * Create a GraphSONMessageSerializer from a {@link GraphSONMapper}. Deprecated, use
+     * {@link #GraphSONMessageSerializerV3d0(GraphSONMapper.Builder)} instead.
+     */
+    @Deprecated
     public GraphSONMessageSerializerV3d0(final GraphSONMapper mapper) {
         super(mapper);
+    }
+
+    /**
+     * Create a GraphSONMessageSerializer with a provided {@link GraphSONMapper.Builder}.
+     *
+     * Note that to make this mapper usable in the context of request messages and responses,
+     * this method will automatically register a {@link GremlinServerModule} to the provided
+     * mapper.
+     */
+    public GraphSONMessageSerializerV3d0(final GraphSONMapper.Builder mapperBuilder) {
+        super(mapperBuilder);
     }
 
     @Override
@@ -65,7 +85,7 @@ public final class GraphSONMessageSerializerV3d0 extends AbstractGraphSONMessage
     @Override
     GraphSONMapper.Builder configureBuilder(final GraphSONMapper.Builder builder) {
         // override the 2.0 in AbstractGraphSONMessageSerializerV2d0
-        return builder.version(GraphSONVersion.V3_0);
+        return builder.version(GraphSONVersion.V3_0).addCustomModule(new GremlinServerModule());
     }
 
     @Override

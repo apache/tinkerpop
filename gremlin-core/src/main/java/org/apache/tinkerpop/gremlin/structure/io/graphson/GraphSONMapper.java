@@ -161,6 +161,23 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         return new Builder();
     }
 
+    /**
+     * Create a new Builder from a given {@link GraphSONMapper}.
+     *
+     * @return a new builder, with properties taken from the original mapper already applied.
+     */
+    public static Builder build(final GraphSONMapper mapper) {
+        Builder builder = build();
+
+        builder.customModules = mapper.customModules;
+        builder.version = mapper.version;
+        builder.loadCustomModules = mapper.loadCustomSerializers;
+        builder.normalize = mapper.normalize;
+        builder.typeInfo = mapper.typeInfo;
+
+        return builder;
+    }
+
     public TypeInfo getTypeInfo() {
         return this.typeInfo;
     }
