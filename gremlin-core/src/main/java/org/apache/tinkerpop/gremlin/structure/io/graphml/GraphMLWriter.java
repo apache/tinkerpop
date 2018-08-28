@@ -18,6 +18,21 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphml;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import javax.xml.XMLConstants;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -29,21 +44,6 @@ import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.util.Comparators;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-
-import javax.xml.XMLConstants;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * GraphMLWriter writes a Graph to a GraphML OutputStream. Note that this format is lossy, in the sense that data
@@ -65,16 +65,18 @@ public final class GraphMLWriter implements GraphWriter {
     private final Optional<String> xmlSchemaLocation;
     private final String edgeLabelKey;
     private final String vertexLabelKey;
+    private Collection<String> intersection;
 
     private GraphMLWriter(final boolean normalize, final Map<String, String> vertexKeyTypes,
-                          final Map<String, String> edgeKeyTypes, final String xmlSchemaLocation,
-                          final String edgeLabelKey, final String vertexLabelKey) {
+            final Map<String, String> edgeKeyTypes, final String xmlSchemaLocation,
+            final String edgeLabelKey, final String vertexLabelKey) {
         this.normalize = normalize;
         this.vertexKeyTypes = Optional.ofNullable(vertexKeyTypes);
         this.edgeKeyTypes = Optional.ofNullable(edgeKeyTypes);
         this.xmlSchemaLocation = Optional.ofNullable(xmlSchemaLocation);
         this.edgeLabelKey = edgeLabelKey;
         this.vertexLabelKey = vertexLabelKey;
+        this.intersection = null;
     }
 
     /**
@@ -212,26 +214,39 @@ public final class GraphMLWriter implements GraphWriter {
             return writer;
         } else
             return utf8Writer;
-    }
+        }
 
     private void writeTypes(final Map<String, String> identifiedVertexKeyTypes,
-                            final Map<String, String> identifiedEdgeKeyTypes,
-                            final XMLStreamWriter writer) throws XMLStreamException {
+            final Map<String, String> identifiedEdgeKeyTypes,
+            final XMLStreamWriter writer) throws XMLStreamException {
         // <key id="weight" for="edge" attr.name="weight" attr.type="float"/>
         final Collection<String> vertexKeySet = getVertexKeysAndNormalizeIfRequired(identifiedVertexKeyTypes);
+        final Collection<String> edgeKeySet = getEdgeKeysAndNormalizeIfRequired(identifiedEdgeKeyTypes);
+        // in case vertex and edge may have the same attribute name, the key id in graphml have to be different
+        intersection = CollectionUtils.intersection(vertexKeySet, edgeKeySet);
+        // speeding-up later checks
+        if (intersection.isEmpty()) {
+            intersection = null;
+        }
         for (String key : vertexKeySet) {
             writer.writeStartElement(GraphMLTokens.KEY);
-            writer.writeAttribute(GraphMLTokens.ID, key);
+            if (intersection != null && intersection.contains(key)) {
+                writer.writeAttribute(GraphMLTokens.ID, key.concat(GraphMLTokens.VERTEX_SUFFIX));
+            } else {
+                writer.writeAttribute(GraphMLTokens.ID, key);
+            }
             writer.writeAttribute(GraphMLTokens.FOR, GraphMLTokens.NODE);
             writer.writeAttribute(GraphMLTokens.ATTR_NAME, key);
             writer.writeAttribute(GraphMLTokens.ATTR_TYPE, identifiedVertexKeyTypes.get(key));
             writer.writeEndElement();
         }
-
-        final Collection<String> edgeKeySet = getEdgeKeysAndNormalizeIfRequired(identifiedEdgeKeyTypes);
         for (String key : edgeKeySet) {
             writer.writeStartElement(GraphMLTokens.KEY);
-            writer.writeAttribute(GraphMLTokens.ID, key);
+            if (intersection != null && intersection.contains(key)) {
+                writer.writeAttribute(GraphMLTokens.ID, key.concat(GraphMLTokens.EDGE_SUFFIX));
+            } else {
+                writer.writeAttribute(GraphMLTokens.ID, key);
+            }
             writer.writeAttribute(GraphMLTokens.FOR, GraphMLTokens.EDGE);
             writer.writeAttribute(GraphMLTokens.ATTR_NAME, key);
             writer.writeAttribute(GraphMLTokens.ATTR_TYPE, identifiedEdgeKeyTypes.get(key));
@@ -260,7 +275,11 @@ public final class GraphMLWriter implements GraphWriter {
 
                 for (String key : keys) {
                     writer.writeStartElement(GraphMLTokens.DATA);
-                    writer.writeAttribute(GraphMLTokens.KEY, key);
+                    if (intersection != null && intersection.contains(key)) {
+                        writer.writeAttribute(GraphMLTokens.KEY, key + GraphMLTokens.EDGE_SUFFIX);
+                    } else {
+                        writer.writeAttribute(GraphMLTokens.KEY, key);
+                    }
                     // technically there can't be a null here as gremlin structure forbids that occurrence even if Graph
                     // implementations support it, but out to empty string just in case.
                     writer.writeCharacters(edge.property(key).orElse("").toString());
@@ -284,7 +303,11 @@ public final class GraphMLWriter implements GraphWriter {
 
                 for (String key : edge.keys()) {
                     writer.writeStartElement(GraphMLTokens.DATA);
-                    writer.writeAttribute(GraphMLTokens.KEY, key);
+                    if (intersection != null && intersection.contains(key)) {
+                        writer.writeAttribute(GraphMLTokens.KEY, key + GraphMLTokens.EDGE_SUFFIX);
+                    } else {
+                        writer.writeAttribute(GraphMLTokens.KEY, key);
+                    }
                     // technically there can't be a null here as gremlin structure forbids that occurrence even if Graph
                     // implementations support it, but out to empty string just in case.
                     writer.writeCharacters(edge.property(key).orElse("").toString());
@@ -309,7 +332,11 @@ public final class GraphMLWriter implements GraphWriter {
 
             for (String key : keys) {
                 writer.writeStartElement(GraphMLTokens.DATA);
-                writer.writeAttribute(GraphMLTokens.KEY, key);
+                if (intersection != null && intersection.contains(key)) {
+                    writer.writeAttribute(GraphMLTokens.KEY, key.concat(GraphMLTokens.VERTEX_SUFFIX));
+                } else {
+                    writer.writeAttribute(GraphMLTokens.KEY, key);
+                }
                 // technically there can't be a null here as gremlin structure forbids that occurrence even if Graph
                 // implementations support it, but out to empty string just in case.
                 writer.writeCharacters(vertex.property(key).orElse("").toString());
@@ -404,8 +431,8 @@ public final class GraphMLWriter implements GraphWriter {
             for (String key : edge.keys()) {
                 if (!edgeKeyTypes.containsKey(key))
                     edgeKeyTypes.put(key, GraphMLWriter.getStringType(edge.property(key).value()));
+                }
             }
-        }
 
         return edgeKeyTypes;
     }
@@ -425,7 +452,7 @@ public final class GraphMLWriter implements GraphWriter {
             return GraphMLTokens.BOOLEAN;
         else
             return GraphMLTokens.STRING;
-    }
+        }
 
     public static Builder build() {
         return new Builder();

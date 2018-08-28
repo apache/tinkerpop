@@ -98,6 +98,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 
+
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -238,8 +239,13 @@ public class IoTest {
         public void shouldWriteNormalizedGraphML() throws Exception {
             try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
                 final GraphMLWriter w = GraphMLWriter.build().normalize(true).create();
+                final Vertex v = graph.vertices().next();
+                // adding 'color' property to vertex
+                v.property(VertexProperty.Cardinality.single, "color", "#6495ed");
+                final Edge e = graph.edges().next();
+                // adding 'color' property to edge
+                e.property("color", "#ee0000");
                 w.writeGraph(bos, graph);
-
                 final String expected = streamToString(IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "tinkerpop-classic-normalized.xml"));
                 assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
             }
