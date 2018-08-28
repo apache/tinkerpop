@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +66,7 @@ public final class GraphMLWriter implements GraphWriter {
     private final Optional<String> xmlSchemaLocation;
     private final String edgeLabelKey;
     private final String vertexLabelKey;
-    private Collection<String> intersection;
+    private Collection<String> intersection = Collections.emptySet();
 
     private GraphMLWriter(final boolean normalize, final Map<String, String> vertexKeyTypes,
             final Map<String, String> edgeKeyTypes, final String xmlSchemaLocation,
@@ -76,7 +77,6 @@ public final class GraphMLWriter implements GraphWriter {
         this.xmlSchemaLocation = Optional.ofNullable(xmlSchemaLocation);
         this.edgeLabelKey = edgeLabelKey;
         this.vertexLabelKey = vertexLabelKey;
-        this.intersection = null;
     }
 
     /**
@@ -224,13 +224,10 @@ public final class GraphMLWriter implements GraphWriter {
         final Collection<String> edgeKeySet = getEdgeKeysAndNormalizeIfRequired(identifiedEdgeKeyTypes);
         // in case vertex and edge may have the same attribute name, the key id in graphml have to be different
         intersection = CollectionUtils.intersection(vertexKeySet, edgeKeySet);
-        // speeding-up later checks
-        if (intersection.isEmpty()) {
-            intersection = null;
-        }
+
         for (String key : vertexKeySet) {
             writer.writeStartElement(GraphMLTokens.KEY);
-            if (intersection != null && intersection.contains(key)) {
+            if (intersection.contains(key)) {
                 writer.writeAttribute(GraphMLTokens.ID, key.concat(GraphMLTokens.VERTEX_SUFFIX));
             } else {
                 writer.writeAttribute(GraphMLTokens.ID, key);
@@ -242,7 +239,7 @@ public final class GraphMLWriter implements GraphWriter {
         }
         for (String key : edgeKeySet) {
             writer.writeStartElement(GraphMLTokens.KEY);
-            if (intersection != null && intersection.contains(key)) {
+            if (intersection.contains(key)) {
                 writer.writeAttribute(GraphMLTokens.ID, key.concat(GraphMLTokens.EDGE_SUFFIX));
             } else {
                 writer.writeAttribute(GraphMLTokens.ID, key);

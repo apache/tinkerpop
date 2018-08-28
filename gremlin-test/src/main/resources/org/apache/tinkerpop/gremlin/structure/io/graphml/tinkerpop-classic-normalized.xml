@@ -1,18 +1,15 @@
 <?xml version="1.0" ?>
 <graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.1/graphml.xsd">
     <key id="age" for="node" attr.name="age" attr.type="int"></key>
-    <key id="colorV" for="node" attr.name="color" attr.type="string"></key>
     <key id="labelV" for="node" attr.name="labelV" attr.type="string"></key>
     <key id="lang" for="node" attr.name="lang" attr.type="string"></key>
     <key id="name" for="node" attr.name="name" attr.type="string"></key>
-    <key id="colorE" for="edge" attr.name="color" attr.type="string"></key>
     <key id="labelE" for="edge" attr.name="labelE" attr.type="string"></key>
     <key id="weight" for="edge" attr.name="weight" attr.type="float"></key>
     <graph id="G" edgedefault="directed">
         <node id="1">
             <data key="labelV">vertex</data>
             <data key="age">29</data>
-            <data key="colorV">#6495ed</data>
             <data key="name">marko</data>
         </node>
         <node id="2">
@@ -54,7 +51,6 @@
         </edge>
         <edge id="7" source="1" target="2">
             <data key="labelE">knows</data>
-            <data key="colorE">#ee0000</data>
             <data key="weight">0.5</data>
         </edge>
         <edge id="8" source="1" target="4">
