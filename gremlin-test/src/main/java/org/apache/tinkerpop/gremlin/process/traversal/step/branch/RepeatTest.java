@@ -50,10 +50,12 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.hamcrest.core.AnyOf.anyOf;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -350,7 +352,9 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         assertEquals(3, path.size());
         assertEquals("marko", path.get(0));
         assertEquals("josh", path.get(1));
-        assertEquals("ripple", path.get(2));
+
+        // could be lop or ripple depending on what the graph chooses to traverse first
+        assertThat(path.get(2), anyOf(equalTo("ripple"), equalTo("lop")));
 
         assertEquals(path, path_original);
     }
