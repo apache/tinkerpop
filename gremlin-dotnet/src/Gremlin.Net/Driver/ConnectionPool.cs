@@ -34,7 +34,7 @@ namespace Gremlin.Net.Driver
     {
         private readonly ConnectionFactory _connectionFactory;
         private readonly ConcurrentBag<Connection> _connections = new ConcurrentBag<Connection>();
-        private readonly AutoResetEvent _newConnectionAvailable = new AutoResetEvent(false);
+        private readonly AsyncAutoResetEvent _newConnectionAvailable = new AsyncAutoResetEvent();
         private readonly int _minPoolSize;
         private readonly int _maxPoolSize;
         private readonly TimeSpan _waitForConnectionTimeout;
@@ -72,7 +72,8 @@ namespace Gremlin.Net.Driver
         {
             if (TryGetConnectionFromPool(out var connection))
                 return ProxiedConnection(connection);
-            connection = await AddConnectionIfUnderMaximumAsync().ConfigureAwait(false) ?? WaitForConnection();
+            connection = await AddConnectionIfUnderMaximumAsync().ConfigureAwait(false) ??
+                         await WaitForConnectionAsync().ConfigureAwait(false);
             return ProxiedConnection(connection);
         }
 
@@ -115,13 +116,13 @@ namespace Gremlin.Net.Driver
             return newConnection;
         }
 
-        private Connection WaitForConnection()
+        private async Task<Connection> WaitForConnectionAsync()
         {
             var start = DateTimeOffset.Now;
             var remaining = _waitForConnectionTimeout;
             do
             {
-                if (_newConnectionAvailable.WaitOne(remaining))
+                if (await _newConnectionAvailable.WaitOneAsync(remaining).ConfigureAwait(false))
                 {
                     if (TryGetConnectionFromPool(out var connection))
                         return connection;

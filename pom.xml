@@ -401,6 +401,7 @@ limitations under the License.
                         <exclude>**/node/node_modules/**</exclude>
                         <exclude>**/node/node</exclude>
                         <exclude>**/npm-debug.log</exclude>
+                        <exclude>**/.idea/**</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
