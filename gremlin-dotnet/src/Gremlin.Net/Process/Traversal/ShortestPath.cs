@@ -32,20 +32,18 @@ namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
 
-    public class IO
+    public class ShortestPath
     {
         
-            public const String graphml = "graphml";
+            public const String distance = "~tinkerpop.shortestPath.distance";
         
-            public const String graphson = "graphson";
+            public const String edges = "~tinkerpop.shortestPath.edges";
         
-            public const String gryo = "gryo";
+            public const String includeEdges = "~tinkerpop.shortestPath.includeEdges";
         
-            public const String reader = "~tinkerpop.io.reader";
+            public const String maxDistance = "~tinkerpop.shortestPath.maxDistance";
         
-            public const String registry = "~tinkerpop.io.registry";
-        
-            public const String writer = "~tinkerpop.io.writer";
+            public const String target = "~tinkerpop.shortestPath.target";
         
     }
 

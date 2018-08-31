@@ -32,14 +32,15 @@ namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
 
-    /// <summary>
-    ///     <see cref="IO" /> keeps configuration options for the io() step.
-    /// </summary>
-    public class IO
+    public class PeerPressure
     {
-        <% io.each {k,v -> %>
-            public const String <%= k %> = "<%= v %>";
-        <% } %>
+        
+            public const String edges = "~tinkerpop.peerPressure.edges";
+        
+            public const String propertyName = "~tinkerpop.peerPressure.propertyName";
+        
+            public const String times = "~tinkerpop.peerPressure.times";
+        
     }
 
 #pragma warning restore 1591

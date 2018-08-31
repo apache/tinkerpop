@@ -32,20 +32,14 @@ namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
 
-    public class IO
+    public class ConnectedComponent
     {
         
-            public const String graphml = "graphml";
+            public const String component = "gremlin.connectedComponentVertexProgram.component";
         
-            public const String graphson = "graphson";
+            public const String edges = "~tinkerpop.connectedComponent.edges";
         
-            public const String gryo = "gryo";
-        
-            public const String reader = "~tinkerpop.io.reader";
-        
-            public const String registry = "~tinkerpop.io.registry";
-        
-            public const String writer = "~tinkerpop.io.writer";
+            public const String propertyName = "~tinkerpop.connectedComponent.propertyName";
         
     }
 

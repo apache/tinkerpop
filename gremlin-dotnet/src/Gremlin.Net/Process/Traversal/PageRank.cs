@@ -32,20 +32,14 @@ namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
 
-    public class IO
+    public class PageRank
     {
         
-            public const String graphml = "graphml";
+            public const String edges = "~tinkerpop.pageRank.edges";
         
-            public const String graphson = "graphson";
+            public const String propertyName = "~tinkerpop.pageRank.propertyName";
         
-            public const String gryo = "gryo";
-        
-            public const String reader = "~tinkerpop.io.reader";
-        
-            public const String registry = "~tinkerpop.io.registry";
-        
-            public const String writer = "~tinkerpop.io.writer";
+            public const String times = "~tinkerpop.pageRank.times";
         
     }
 

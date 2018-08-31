@@ -32,21 +32,11 @@ namespace Gremlin.Net.Process.Traversal
 {
 #pragma warning disable 1591
 
-    public class IO
+    public class <%= tokenName %>
     {
-        
-            public const String graphml = "graphml";
-        
-            public const String graphson = "graphson";
-        
-            public const String gryo = "gryo";
-        
-            public const String reader = "~tinkerpop.io.reader";
-        
-            public const String registry = "~tinkerpop.io.registry";
-        
-            public const String writer = "~tinkerpop.io.writer";
-        
+        <% tokenFields.each {k,v -> %>
+            public const String <%= k %> = "<%= v %>";
+        <% } %>
     }
 
 #pragma warning restore 1591

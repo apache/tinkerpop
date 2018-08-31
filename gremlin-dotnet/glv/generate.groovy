@@ -18,6 +18,10 @@
  */
 
 import org.apache.tinkerpop.gremlin.jsr223.CoreImports
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ConnectedComponent
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRank
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressure
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ShortestPath
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
@@ -225,6 +229,12 @@ def getGraphTraversalT2ForT2 = { t2 ->
     return t2
 }
 
+def gatherTokensFrom = { tokenClasses ->
+    def m = [:]
+    tokenClasses.each { tc -> m << [(tc.simpleName) : tc.getFields().sort{ a, b -> a.name <=> b.name }.collectEntries{ f -> [(f.name) : f.get(null)]}]}
+    return m
+}
+
 def binding = ["pmethods": P.class.getMethods().
         findAll { Modifier.isStatic(it.getModifiers()) }.
         findAll { P.class.isAssignableFrom(it.returnType) }.
@@ -304,9 +314,7 @@ def binding = ["pmethods": P.class.getMethods().
                             def graphTraversalT2 = getGraphTraversalT2ForT2(t2)
                             return ["methodName": javaMethod.name, "t2":t2, "tParam":tParam, "parameters":parameters, "paramNames":paramNames, "callGenericTypeArg":callGenericTypeArg, "graphTraversalT2":graphTraversalT2]
                         },
-               "io": IO.class.getFields().
-                       sort{ a, b -> a.name <=> b.name }.
-                       collectEntries{ f -> [(f.name) : f.get(null)]},
+               "tokens": gatherTokensFrom([IO, ConnectedComponent, ShortestPath, PageRank, PeerPressure]),
                "toCSharpMethodName": toCSharpMethodName]
 
 def engine = new groovy.text.GStringTemplateEngine()
@@ -326,10 +334,11 @@ def pTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/P.template
 def pFile = new File("${projectBaseDir}/src/Gremlin.Net/Process/Traversal/P.cs")
 pFile.newWriter().withWriter{ it << pTemplate }
 
-def ioTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/IO.template")).make(binding)
-def ioFile = new File("${projectBaseDir}/src/Gremlin.Net/Process/Traversal/IO.cs")
-ioFile.newWriter().withWriter{ it << ioTemplate }
-
+binding.tokens.each {k,v ->
+    def tokenTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/Token.template")).make([tokenFields: v, tokenName: k])
+    def tokenFile = new File("${projectBaseDir}/src/Gremlin.Net/Process/Traversal/${k}.cs")
+    tokenFile.newWriter().withWriter{ it << tokenTemplate }
+}
 
 def createEnum = { enumClass ->
     def b = ["enumClass": enumClass,
