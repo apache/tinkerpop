@@ -48,9 +48,36 @@ the length of the cycle is known to be three and there is no need to exceed that
 cycle. It returned three, because there was one for each vertex that started the cycle (i.e. one for `A`, one for `B`
 and one for `C`). This next line introduce deduplication to only return unique cycles.
 
-The above case assumed that the need was to only detect cycles over a path length of three. It also respected the
-directionality of the edges by only considering outgoing ones. What would need to change to detect cycles of
-arbitrary length over both incoming and outgoing edges in the modern graph?
+The above case assumed that the need was to only detect cycles over a path length of three.
+It also respected the directionality of the edges by only considering outgoing ones.
+
+Also note that the traversal above won't detect self-loops (vertices directly connected to
+themselves). To do so, you would need to `.emit()` a Traverser before the repeat()-loop.
+
+[gremlin-groovy]
+----
+g.addV().property(id,'a').as('a').
+  addV().property(id,'b').as('b').
+  addV().property(id,'c').as('c').
+  addV().property(id,'d').as('d').
+  addE('knows').from('a').to('b').
+  addE('knows').from('b').to('c').
+  addE('knows').from('c').to('a').
+  addE('knows').from('a').to('d').
+  addE('knows').from('c').to('d').
+  addE('self').from('a').to('a').iterate()
+g.V().as('a').
+  emit().
+    repeat(outE().inV().simplePath()).
+    times(2).
+  outE().inV().where(eq('a')).
+  path().
+    by(id).
+    by(label)
+----
+
+What would need to change to detect cycles of arbitrary length over both incoming and
+outgoing edges, in the modern graph?
 
 [gremlin-groovy,modern]
 ----
