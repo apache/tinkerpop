@@ -18,6 +18,10 @@
  */
 
 import org.apache.tinkerpop.gremlin.jsr223.CoreImports
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ConnectedComponent
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRank
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressure
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ShortestPath
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
@@ -25,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.P
 import org.apache.tinkerpop.gremlin.process.traversal.IO
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import java.lang.reflect.Modifier
+
 // this is a bit of a copy of what's in SymbolHelper - no way around it because this code generation task occurs
 // before the SymbolHelper is available to the plugin.
 def toPythonMap = ["global": "global_",
@@ -39,6 +44,13 @@ def toPythonMap = ["global": "global_",
                    "list": "list_",
                    "set": "set_",
                    "all": "all_"]
+
+def gatherTokensFrom = { tokenClasses ->
+    def m = [:]
+    tokenClasses.each { tc -> m << [(tc.simpleName) : tc.getFields().sort{ a, b -> a.name <=> b.name }.collectEntries{ f -> [(f.name) : f.get(null)]}]}
+    return m
+}
+
 def toJavaMap = toPythonMap.collectEntries{k,v -> [(v):k]}
 def toPython = { symbol -> toPythonMap.getOrDefault(symbol, symbol) }
 def toJava = { symbol -> toJavaMap.getOrDefault(symbol, symbol) }
@@ -79,9 +91,7 @@ def binding = ["enums": CoreImports.getClassImports()
                        collect { toPython(it.name) }.
                        unique().
                        sort { a, b -> a <=> b },
-               "io": IO.class.getFields().
-                       sort{ a, b -> a.name <=> b.name }.
-                       collectEntries{ f -> [(f.name) : f.get(null)]},
+               "tokens": gatherTokensFrom([IO, ConnectedComponent, ShortestPath, PageRank, PeerPressure]),
                "toPython": toPython,
                "toJava": toJava]
 

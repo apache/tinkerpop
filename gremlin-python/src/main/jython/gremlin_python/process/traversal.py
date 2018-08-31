@@ -304,10 +304,10 @@ def without(*args):
 statics.add_static('without',without)
 
 
+
 '''
 IO
 '''
-
 
 class IO(object):
 
@@ -322,6 +322,58 @@ class IO(object):
     registry = "~tinkerpop.io.registry"
 
     writer = "~tinkerpop.io.writer"
+
+'''
+ConnectedComponent
+'''
+
+class ConnectedComponent(object):
+
+    component = "gremlin.connectedComponentVertexProgram.component"
+
+    edges = "~tinkerpop.connectedComponent.edges"
+
+    propertyName = "~tinkerpop.connectedComponent.propertyName"
+
+'''
+ShortestPath
+'''
+
+class ShortestPath(object):
+
+    distance = "~tinkerpop.shortestPath.distance"
+
+    edges = "~tinkerpop.shortestPath.edges"
+
+    includeEdges = "~tinkerpop.shortestPath.includeEdges"
+
+    maxDistance = "~tinkerpop.shortestPath.maxDistance"
+
+    target = "~tinkerpop.shortestPath.target"
+
+'''
+PageRank
+'''
+
+class PageRank(object):
+
+    edges = "~tinkerpop.pageRank.edges"
+
+    propertyName = "~tinkerpop.pageRank.propertyName"
+
+    times = "~tinkerpop.pageRank.times"
+
+'''
+PeerPressure
+'''
+
+class PeerPressure(object):
+
+    edges = "~tinkerpop.peerPressure.edges"
+
+    propertyName = "~tinkerpop.peerPressure.propertyName"
+
+    times = "~tinkerpop.peerPressure.times"
 
 
 

@@ -134,15 +134,15 @@ def <%= method %>(*args):
 statics.add_static('<%= method %>',<%= method %>)
 <% } %>
 
+<% tokens.each { k,v -> %>
 '''
-IO
+<%= k %>
 '''
 
-
-class IO(object):
-<% io.each {k,v -> %>
-    <%= k %> = "<%= v %>"
-<% } %>
+class <%= k %>(object):
+<% v.each {a,b -> %>
+    <%= a %> = "<%= b %>"
+<% }} %>
 
 
 '''
