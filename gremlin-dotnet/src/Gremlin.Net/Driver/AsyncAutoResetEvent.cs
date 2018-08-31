@@ -25,7 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-// The implementation is based on this blog post by Stephen Toub:
+// The implementation of this class is inspired by this blog post from Stephen Toub:
 // https://blogs.msdn.microsoft.com/pfxteam/2012/02/11/building-async-coordination-primitives-part-2-asyncautoresetevent/
 
 namespace Gremlin.Net.Driver
@@ -42,25 +42,19 @@ namespace Gremlin.Net.Driver
         /// <summary>
         ///     Asynchronously waits for this event to be set or until a timeout occurs.
         /// </summary>
-        /// <param name="timeout">A <see cref="TimeSpan"/> that that represents the number of milliseconds to wait.</param>
+        /// <param name="timeout">A <see cref="TimeSpan"/> that represents the number of milliseconds to wait.</param>
         /// <returns>true if the current instance received a signal before timing out; otherwise, false.</returns>
         public async Task<bool> WaitOneAsync(TimeSpan timeout)
         {
             var tcs = new TaskCompletionSource<bool>();
             var waitTask = WaitForSignalAsync(tcs);
-            if (waitTask.IsCompleted) return true;
+            if (waitTask.IsCompleted) return waitTask.Result;
             
             await Task.WhenAny(waitTask, Task.Delay(timeout)).ConfigureAwait(false);
-            lock (_waitingTasks)
-            {
-                if (!waitTask.IsCompleted)
-                {
-                    // The wait timed out, so we need to remove the waiting task.
-                    _waitingTasks.Remove(tcs);
-                    tcs.SetResult(false);
-                }
-            }
+            if (waitTask.IsCompleted) return waitTask.Result;
             
+            StopWaiting(tcs);
+
             return waitTask.Result;
         }
 
@@ -76,6 +70,15 @@ namespace Gremlin.Net.Driver
                 _waitingTasks.Add(tcs);
             }
             return tcs.Task;
+        }
+
+        private void StopWaiting(TaskCompletionSource<bool> tcs)
+        {
+            lock (_waitingTasks)
+            {
+                _waitingTasks.Remove(tcs);
+                tcs.SetResult(false);
+            }
         }
         
         /// <summary>
