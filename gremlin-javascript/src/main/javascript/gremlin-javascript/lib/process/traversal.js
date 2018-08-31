@@ -111,33 +111,102 @@ class Traversal {
   };
 }
 
+
 class IO {
 
-    static get graphml() {
-        return "graphml"
-    }
+ static get graphml() {
+   return "graphml"
+ }
 
-    static get graphson() {
-        return "graphson"
-    }
+ static get graphson() {
+   return "graphson"
+ }
 
-    static get gryo() {
-        return "gryo"
-    }
+ static get gryo() {
+   return "gryo"
+ }
 
-    static get reader() {
-        return "~tinkerpop.io.reader"
-    }
+ static get reader() {
+   return "~tinkerpop.io.reader"
+ }
 
-    static get registry() {
-        return "~tinkerpop.io.registry"
-    }
+ static get registry() {
+   return "~tinkerpop.io.registry"
+ }
 
-    static get writer() {
-        return "~tinkerpop.io.writer"
-    }
-
+ static get writer() {
+   return "~tinkerpop.io.writer"
+ }
 }
+
+class ConnectedComponent {
+
+ static get component() {
+   return "gremlin.connectedComponentVertexProgram.component"
+ }
+
+ static get edges() {
+   return "~tinkerpop.connectedComponent.edges"
+ }
+
+ static get propertyName() {
+   return "~tinkerpop.connectedComponent.propertyName"
+ }
+}
+
+class ShortestPath {
+
+ static get distance() {
+   return "~tinkerpop.shortestPath.distance"
+ }
+
+ static get edges() {
+   return "~tinkerpop.shortestPath.edges"
+ }
+
+ static get includeEdges() {
+   return "~tinkerpop.shortestPath.includeEdges"
+ }
+
+ static get maxDistance() {
+   return "~tinkerpop.shortestPath.maxDistance"
+ }
+
+ static get target() {
+   return "~tinkerpop.shortestPath.target"
+ }
+}
+
+class PageRank {
+
+ static get edges() {
+   return "~tinkerpop.pageRank.edges"
+ }
+
+ static get propertyName() {
+   return "~tinkerpop.pageRank.propertyName"
+ }
+
+ static get times() {
+   return "~tinkerpop.pageRank.times"
+ }
+}
+
+class PeerPressure {
+
+ static get edges() {
+   return "~tinkerpop.peerPressure.edges"
+ }
+
+ static get propertyName() {
+   return "~tinkerpop.peerPressure.propertyName"
+ }
+
+ static get times() {
+   return "~tinkerpop.peerPressure.times"
+ }
+}
+
 
 class P {
   /**

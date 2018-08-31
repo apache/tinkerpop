@@ -111,13 +111,14 @@ class Traversal {
   };
 }
 
-class IO {
-<% io.each {k,v -> %>
-    static get <%= k %>() {
-        return "<%= v %>"
-    }
+<% tokens.each { k,v -> %>
+class <%= k %> {
+<% v.each {a,b -> %>
+ static get <%= a %>() {
+   return "<%= b %>"
+ }
+<% } %>}
 <% } %>
-}
 
 class P {
   /**

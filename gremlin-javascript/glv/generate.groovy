@@ -20,6 +20,10 @@
 
 import groovy.text.GStringTemplateEngine
 import org.apache.tinkerpop.gremlin.jsr223.CoreImports
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ConnectedComponent
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRank
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressure
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ShortestPath
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
@@ -48,6 +52,12 @@ def determineVersion = {
     def env = System.getenv()
     def mavenVersion = env.containsKey("TP_RELEASE_VERSION") ? env.get("JS_RELEASE_VERSION") : project.version
     return mavenVersion.replace("-SNAPSHOT", "-alpha1")
+}
+
+def gatherTokensFrom = { tokenClasses ->
+    def m = [:]
+    tokenClasses.each { tc -> m << [(tc.simpleName) : tc.getFields().sort{ a, b -> a.name <=> b.name }.collectEntries{ f -> [(f.name) : f.get(null)]}]}
+    return m
 }
 
 def binding = ["enums": CoreImports.getClassImports()
@@ -89,9 +99,7 @@ def binding = ["enums": CoreImports.getClassImports()
                        collect { it.name }.
                        unique().
                        sort { a, b -> a <=> b },
-               "io": IO.class.getFields().
-                       sort{ a, b -> a.name <=> b.name }.
-                       collectEntries{ f -> [(f.name) : f.get(null)]},
+               "tokens": gatherTokensFrom([IO, ConnectedComponent, ShortestPath, PageRank, PeerPressure]),
                "toJs": toJs,
                "version": determineVersion(),
                "decapitalize": decapitalize]
