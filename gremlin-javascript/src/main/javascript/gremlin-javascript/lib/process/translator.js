@@ -75,6 +75,8 @@ class Translator {
             }
           } else if (params[k] === undefined) {
             script += '';
+          } else if (typeof params[k] === 'number') {
+            script += params[k];
           } else {
             script += '\'' + params[k] + '\'';
           }

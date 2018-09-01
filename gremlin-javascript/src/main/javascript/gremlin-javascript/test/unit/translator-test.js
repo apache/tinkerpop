@@ -37,6 +37,13 @@ describe('Translator', function () {
       assert.strictEqual(script, 'g.V().out(\'created\')');
     });
 
+    it('should produce valid script representation from bytecode glv steps translating number and text correctly', function () {
+      const g = new graph.Graph().traversal();
+      const script = new Translator('g').translate(g.V(1).out('created').getBytecode());
+      assert.ok(script);
+      assert.strictEqual(script, 'g.V(1).out(\'created\')');
+    });
+
     it('should produce valid script representation from bytecode glv steps containing parameter bindings', function () {
       const g = new graph.Graph().traversal();
       const script = new Translator('g').translate(g.addV({'name': 'Lilac'}).getBytecode());
