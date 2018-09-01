@@ -68,26 +68,7 @@ class RemoteStrategy extends TraversalStrategy {
       return Promise.resolve();
     }
 
-    let instructions = traversal.getBytecode();
-    let op = 'bytecode';
-    let processor = 'traversal';
-    let args = null;
-
-    // check if the last instruction is an eval statement
-    if (instructions.stepInstructions.length && instructions.stepInstructions[instructions.stepInstructions.length-1][0] === 'eval') {
-      const script = instructions.toScript();
-      op = 'eval';
-      processor = '';
-      args = {
-        'gremlin': script.script,
-        'bindings': script.bindings,
-        'language': 'gremlin-groovy',
-        'accept': 'application/json',
-      };
-      instructions = null;
-    }
-
-    return this.connection.submit(instructions, op, args, null, processor).then(function (remoteTraversal) {
+    return this.connection.submit(traversal.getBytecode()).then(function (remoteTraversal) {
       traversal.sideEffects = remoteTraversal.sideEffects;
       traversal.traversers = remoteTraversal.traversers;
     });

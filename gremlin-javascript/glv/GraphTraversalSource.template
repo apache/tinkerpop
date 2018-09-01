@@ -84,17 +84,6 @@ class GraphTraversalSource {
     return new GraphTraversal(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
   <% } %>
-
-
-  /**
-   * Send a Gremlin-Groovy script to the server. If a script is not passed in 
-   * then the bytecode instructions will be converted to a script and sent.
-   * @param {string} script The script to send to server
-   * @param {array} bindings Map of bindings
-   */
-  eval(script, bindings) {
-    return (new GraphTraversal(this.graph, new TraversalStrategies(this.traversalStrategies), new Bytecode(this.bytecode))).eval(script, bindings);
-  }
 }
 
 /**

@@ -130,20 +130,11 @@ class DriverRemoteConnection extends RemoteConnection {
       'op': op || 'bytecode',
       // if using op eval need to ensure processor stays unset if caller didn't set it.
       'processor': (!processor && op !== 'eval') ? 'traversal' : processor,
-      'args': this._getArgs(args || {
-          'gremlin': this._writer.adaptObject(bytecode)
-        },
-        op
-      )
+      'args': args || {
+          'gremlin': this._writer.adaptObject(bytecode),
+          'aliases': { 'g': this.traversalSource }
+        }
     });
-  }
-
-  _getArgs(args, op) {
-    if (args.aliases === undefined) {
-      args.aliases = { 'g': this.traversalSource };
-    }
-
-    return args;
   }
 
   _handleMessage(data) {
