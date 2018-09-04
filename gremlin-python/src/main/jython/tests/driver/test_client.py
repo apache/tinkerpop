@@ -22,7 +22,7 @@ from gremlin_python.driver.client import Client
 from gremlin_python.driver.request import RequestMessage
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.structure.graph import Graph
-from gremlin_python.driver import serializer
+from unittest import skip
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
@@ -114,6 +114,7 @@ def test_multi_conn_pool(client):
     assert len(result_set.all().result()) == 6
 
 
+@skip("TINKERPOP-2021")
 def test_big_result_set(client):
     g = Graph().traversal()
     t = g.inject(1).repeat(__.addV('person').property('name', __.loops())).times(20000).count()
