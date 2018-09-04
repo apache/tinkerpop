@@ -36,6 +36,32 @@ The Gremlin Javascript Driver now supports SASL Plain Text authentication agains
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1977[TINKERPOP-1977],
 link:http://tinkerpop.apache.org/docs/3.2.10/reference#gremlin-javascript[Reference Documentation - Gremlin Javascript]
 
+==== SSL Security
+
+TinkerPop improves its security posture by removing insecure defaults and adding forward-looking standards support.
+
+Gremlin Server no longer supports automatically creating self-signed certificates.
+Self-signed certificates can still be created manually outside of Gremlin Server.
+If ssl is enabled, a key store must be configured.
+
+Cluster client no longer trusts all certs by default as this is an insecure configuration.
+Instead, if no trust store is configured, Cluster will use the default CA certs.
+To revert to the previous behavior and accept all certs, it must be explicitly configured.
+
+This release introduces JKS and PKCS12 support. JKS is the legacy Java Key Store. PKCS12 has better cross-platform support and is gaining in adoption.
+Be aware that JKS is the default on Java 8.  Java 9 and higher use PKCS12 as the default. Both Java keytool and OpenSSL tools can create, read, update PKCS12 files.
+
+Other new features include specifying SSL protocols and cipher suites.
+The packaged `*-secure.yaml` files now restrict the protocol to `TLSv1.2` by default.
+
+PEM-based configurations are deprecated and may be removed in a future release.
+
+See also http://tinkerpop.apache.org/docs/current/reference/#_configuration[Connecting via Java Configuration],
+http://tinkerpop.apache.org/docs/current/reference/#_configuring_2[Gremlin Server Configuration].
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-2022[TINKERPOP-2022]
+link:https://issues.apache.org/jira/browse/TINKERPOP-2023[TINKERPOP-2023]
+
 ==== Bulk Import and Export
 
 TinkerPop has provided some general methods for importing and exporting data, but more and more graph providers are

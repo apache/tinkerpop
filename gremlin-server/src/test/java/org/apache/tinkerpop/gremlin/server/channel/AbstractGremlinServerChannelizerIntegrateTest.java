@@ -100,6 +100,9 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
             case "shouldWorkWithSSL":
                 settings.ssl = new Settings.SslSettings();
                 settings.ssl.enabled = true;
+                settings.ssl.keyStore = JKS_SERVER_KEY;
+                settings.ssl.keyStorePassword = KEY_PASS;
+                settings.ssl.keyStoreType = KEYSTORE_TYPE_JKS;
                 break;
             case "shouldWorkWithAuth":
                 if (authSettings != null) {
@@ -109,6 +112,9 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
             case "shouldWorkWithSSLAndAuth":
                 settings.ssl = new Settings.SslSettings();
                 settings.ssl.enabled = true;
+                settings.ssl.keyStore = JKS_SERVER_KEY;
+                settings.ssl.keyStorePassword = KEY_PASS;
+                settings.ssl.keyStoreType = KEYSTORE_TYPE_JKS;
                 if (authSettings != null) {
                     settings.authentication = getAuthSettings();
                 }
@@ -304,7 +310,7 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
                                                 .with(Property.USERNAME, username)
                                                 .with(Property.PASSWORD, password);
 
-                nioCluster = nioBuilder.enableSsl(secure).authProperties(authProps).create();
+                nioCluster = nioBuilder.enableSsl(secure).sslSkipCertValidation(true).authProperties(authProps).create();
                 nioClient = nioCluster.connect();
             } else {
                 nioCluster = nioBuilder.enableSsl(secure).create();
@@ -318,10 +324,10 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
                                                 .with(Property.USERNAME, username)
                                                 .with(Property.PASSWORD, password);
 
-                wsCluster = wsBuilder.enableSsl(secure).authProperties(authProps).create();
+                wsCluster = wsBuilder.enableSsl(secure).sslSkipCertValidation(true).authProperties(authProps).create();
                 wsClient = wsCluster.connect();
             } else {
-                wsCluster = wsBuilder.enableSsl(secure).create();
+                wsCluster = wsBuilder.enableSsl(secure).sslSkipCertValidation(true).create();
                 wsClient = wsCluster.connect();
             }
         }
