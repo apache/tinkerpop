@@ -89,10 +89,7 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
             return status_code
         elif status_code in [200, 206]:
             result_set.stream.put_nowait(data)
-            if status_code == 206:
-                message = self._transport.read()
-                self.data_received(message, results_dict)
-            else:
+            if status_code == 200:
                 del results_dict[request_id]
             return status_code
         else:
