@@ -754,9 +754,9 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.channelizer |The fully qualified classname of the client `Channelizer` that defines how to connect to the server. |`Channelizer.WebSocketChannelizer`
 |connectionPool.enableSsl |Determines if SSL should be enabled or not. If enabled on the server then it must be enabled on the client. |false
 |connectionPool.keepAliveInterval |Length of time in milliseconds to wait on an idle connection before sending a keep-alive request. Set to zero to disable this feature. |1800000
-|connectionPool.keyCertChainFile |The X.509 certificate chain file in PEM format. |_none_
-|connectionPool.keyFile |The `PKCS#8` private key file in PEM format. |_none_
-|connectionPool.keyPassword |The password of the `keyFile` if it is password-protected |_none_
+|connectionPool.keyStore |The private key in JKS or PKCS#12 format. |_none_
+|connectionPool.keyStorePassword |The password of the `keyStore` if it is password-protected. |_none_
+|connectionPool.keyStoreType |`JKS` (Java 8 default) or `PKCS12` (Java 9+ default)|_none_
 |connectionPool.maxContentLength |The maximum length in bytes that a message can be sent to the server. This number can be no greater than the setting of the same name in the server configuration. |65536
 |connectionPool.maxInProcessPerConnection |The maximum number of in-flight requests that can occur on a connection. |4
 |connectionPool.maxSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |16
@@ -768,7 +768,11 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.minSize |The minimum size of a connection pool for a host. |2
 |connectionPool.reconnectInterval |The amount of time in milliseconds to wait before trying to reconnect to a dead host. |1000
 |connectionPool.resultIterationBatchSize |The override value for the size of the result batches to be returned from the server. |64
-|connectionPool.trustCertChainFile |File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and SSL is enabled, the `TrustManager` will be established with a self-signed certificate which is NOT suitable for production purposes. |_none_
+|connectionPool.sslCipherSuites |The list of JSSE ciphers to support for SSL connections. If specified, only the ciphers that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
+|connectionPool.sslEnabledProtocols |The list of SSL protocols to support for SSL connections. If specified, only the protocols that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
+|connectionPool.sslSkipCertValidation |Configures the `TrustManager` to trust all certs without any validation. Should not be used in production.|false
+|connectionPool.trustStore |File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and SSL is enabled, the default `TrustManager` will be used. |_none_
+|connectionPool.trustStorePassword |The password of the `trustStore` if it is password-protected |_none_
 |hosts |The list of hosts that the driver will connect to. |localhost
 |jaasEntry |Sets the `AuthProperties.Property.JAAS_ENTRY` properties for authentication to Gremlin Server. |_none_
 |nioPoolSize |Size of the pool for handling request/response operations. |available processors
@@ -1217,11 +1221,14 @@ The following table describes the various YAML configuration options that Gremli
 |serializers[X].className |The full class name of the `MessageSerializer` implementation. |_none_
 |serializers[X].config |A `Map` containing `MessageSerializer` specific configurations. |_none_
 |ssl.enabled |Determines if SSL is turned on or not. |false
-|ssl.keyCertChainFile |The X.509 certificate chain file in PEM format. If this value is not present and `ssl.enabled` is `true` a self-signed certificate will be used (not suitable for production). |_none_
-|ssl.keyFile |The `PKCS#8` private key file in PEM format. If this value is not present and `ssl.enabled` is `true` a self-signed certificate will be used (not suitable for production). |_none_
-|ssl.keyPassword |The password of the `keyFile` if it is password-protected |_none_
-|ssl.needClientAuth | Optional. One of NONE, OPTIONAL, REQUIRE.  Enables client certificate authentication at the enforcement level specified. Can be used in combination with Authenticator. |_none_
-|ssl.trustCertChainFile | Required when needClientAuth is OPTIONAL or REQUIRE. Trusted certificates for verifying the remote endpoint's certificate. The file should contain an X.509 certificate chain in PEM format. |_none_
+|ssl.keyStore |The private key in JKS or PKCS#12 format.  |_none_
+|ssl.keyStorePassword |The password of the `keyStore` if it is password-protected. |_none_
+|ssl.keyStoreType |`JKS` (Java 8 default) or `PKCS12` (Java 9+ default) |_none_
+|ssl.needClientAuth | Optional. One of NONE, REQUIRE.  Enables client certificate authentication at the enforcement level specified. Can be used in combination with Authenticator. |_none_
+|ssl.sslCipherSuites |The list of JSSE ciphers to support for SSL connections. If specified, only the ciphers that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
+|ssl.sslEnabledProtocols |The list of SSL protocols to support for SSL connections. If specified, only the protocols that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
+|ssl.trustStore |Required when needClientAuth is REQUIRE. Trusted certificates for verifying the remote endpoint's certificate. If this value is not provided and SSL is enabled, the default `TrustManager` will be used. |_none_
+|ssl.trustStorePassword |The password of the `trustStore` if it is password-protected |_none_
 |strictTransactionManagement |Set to `true` to require `aliases` to be submitted on every requests, where the `aliases` become the scope of transaction management. |false
 |threadPoolBoss |The number of threads available to Gremlin Server for accepting connections. Should always be set to `1`. |1
 |threadPoolWorker |The number of threads available to Gremlin Server for processing non-blocking reads and writes. |1
@@ -1329,7 +1336,47 @@ authentication: {
     credentialsDb: conf/tinkergraph-credentials.properties}}
 
 A quick way to get started with the `SimpleAuthenticator` is to use TinkerGraph for the "credentials graph" and the
-"sample" credential graph that is packaged with the server.
+"sample" credential graph that is packaged with the server.  To secure the transport for the credentials,
+SSL should be enabled. For this Quick Start, a self-signed certificate will be created but this should not
+be used in a production environment.
+
+Generate the self-signed SSL certificate:
+
+[source,text]
+----
+$ keytool -genkey -alias localhost -keyalg RSA -keystore server.jks
+Enter keystore password:
+Re-enter new password:
+What is your first and last name?
+  [Unknown]:  localhost
+What is the name of your organizational unit?
+  [Unknown]:
+What is the name of your organization?
+  [Unknown]:
+What is the name of your City or Locality?
+  [Unknown]:
+What is the name of your State or Province?
+  [Unknown]:
+What is the two-letter country code for this unit?
+  [Unknown]:
+Is CN=localhost, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct?
+  [no]:  yes
+
+Enter key password for <localhost>
+	(RETURN if same as keystore password):
+----
+
+Next, uncomment the `keyStore` and `keyStorePassword` lines in `conf/gremlin-server-secure.yaml`.
+
+[source,yaml]
+----
+ssl: {
+  enabled: true,
+  sslEnabledProtocols: [TLSv1.2],
+  keyStore: server.jks,
+  keyStorePassword: changeit
+}
+----
 
 [source,text]
 ----
@@ -1341,7 +1388,6 @@ $ bin/gremlin-server.sh conf/gremlin-server-secure.yaml
 
 [INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-secure.yaml
 ...
-[WARN] AbstractChannelizer - Enabling SSL with self-signed certificate (NOT SUITABLE FOR PRODUCTION)
 [INFO] AbstractChannelizer - SSL enabled
 [INFO] SimpleAuthenticator - Initializing authentication with the org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator
 [INFO] SimpleAuthenticator - CredentialGraph initialized at CredentialGraph{graph=tinkergraph[vertices:1 edges:0]}
@@ -1349,19 +1395,18 @@ $ bin/gremlin-server.sh conf/gremlin-server-secure.yaml
 [INFO] GremlinServer$1 - Channel started at port 8182.
 ----
 
-In addition to configuring the authenticator, `gremlin-server-secure.yaml` also enables SSL with a self-signed
-certificate.  As SSL is enabled on the server it must also be enabled on the client when connecting.  To connect to
-Gremlin Server with `gremlin-driver`, set the `credentials` and `enableSsl` when constructing the `Cluster`.
+As SSL is enabled on the server it must also be enabled on the client when connecting.  To connect to
+Gremlin Server with `gremlin-driver`, set the `credentials`, `enableSsl`, and `trustStore` when constructing the `Cluster`.
 
 [source,java]
 Cluster cluster = Cluster.build().credentials("stephen", "password")
-                                 .enableSsl(true).create();
+                                 .enableSsl(true).trustStore("server.jks").create();
 
 If connecting with Gremlin Console, which utilizes `gremlin-driver` for remote script execution, use the provided
 `conf/remote-secure.yaml` file when defining the remote.  That file contains configuration for the username and
-password as well as enablement of SSL from the client side.
+password as well as enablement of SSL from the client side. Be sure to configure the trustStore if using self-signed certificates.
 
-Similarly, Gremlin Server can be configured for HTTP and security.
+Similarly, Gremlin Server can be configured for REST and security. Follow the steps above for configuring the SSL certificate.
 
 [source,text]
 ----
@@ -1373,7 +1418,6 @@ $ bin/gremlin-server.sh conf/gremlin-server-rest-secure.yaml
 
 [INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-secure.yaml
 ...
-[WARN] AbstractChannelizer - Enabling SSL with self-signed certificate (NOT SUITABLE FOR PRODUCTION)
 [INFO] AbstractChannelizer - SSL enabled
 [INFO] SimpleAuthenticator - Initializing authentication with the org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator
 [INFO] SimpleAuthenticator - CredentialGraph initialized at CredentialGraph{graph=tinkergraph[vertices:1 edges:0]}
@@ -2138,7 +2182,7 @@ The Gremlin Server can also be started as a link:https://hub.docker.com/r/tinker
 [source,text]
 ----
 $ docker run tinkerpop/gremlin-server:x.y.z
-[INFO] GremlinServer - 
+[INFO] GremlinServer -
          \,,,/
          (o o)
 -----oOOo-(3)-oOOo-----

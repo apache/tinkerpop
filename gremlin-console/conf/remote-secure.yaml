@@ -29,5 +29,6 @@ port: 8182
 username: stephen
 password: password
 connectionPool: {
-  enableSsl: true}
+  enableSsl: true,
+  sslEnabledProtocols: [TLSv1.2] }
 serializer: { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0, config: { serializeResultToString: true }}

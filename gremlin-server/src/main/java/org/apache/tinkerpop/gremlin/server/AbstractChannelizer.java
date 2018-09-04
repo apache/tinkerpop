@@ -18,10 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import io.netty.channel.EventLoopGroup;
+import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
-import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.AbstractGryoMessageSerializerV1d0;
@@ -41,8 +42,18 @@ import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.TrustManagerFactory;
+
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -244,7 +255,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         }
     }
 
-    private SslContext createSSLContext(final Settings settings)  {
+    private SslContext createSSLContext(final Settings settings) {
         final Settings.SslSettings sslSettings = settings.ssl;
 
         if (sslSettings.getSslContext().isPresent()) {
@@ -256,25 +267,69 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
         final SslContextBuilder builder;
 
-        // if the config doesn't contain a cert or key then use a self signed cert - not suitable for production
-        if (null == sslSettings.keyCertChainFile || null == sslSettings.keyFile) {
-            try {
-                logger.warn("Enabling SSL with self-signed certificate (NOT SUITABLE FOR PRODUCTION)");
-                final SelfSignedCertificate ssc = new SelfSignedCertificate();
-                builder = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey());
-            } catch (CertificateException ce) {
-                logger.error("There was an error creating the self-signed certificate for SSL - SSL is not enabled", ce);
-                return null;
-            }
-        } else {
+        // DEPRECATED: If the config has the required, deprecated settings, then use it
+        if (null != sslSettings.keyCertChainFile && null != sslSettings.keyFile) {
+            logger.warn("Using deprecated SSL keyFile support");
             final File keyCertChainFile = new File(sslSettings.keyCertChainFile);
             final File keyFile = new File(sslSettings.keyFile);
             final File trustCertChainFile = null == sslSettings.trustCertChainFile ? null : new File(sslSettings.trustCertChainFile);
 
-            // note that keyPassword may be null here if the keyFile is not password-protected. passing null to
+            // note that keyPassword may be null here if the keyFile is not
+            // password-protected. passing null to
             // trustManager is also ok (default will be used)
-            builder = SslContextBuilder.forServer(keyCertChainFile, keyFile, sslSettings.keyPassword)
-                    .trustManager(trustCertChainFile);
+            builder = SslContextBuilder.forServer(keyCertChainFile, keyFile, sslSettings.keyPassword).trustManager(trustCertChainFile);
+        } else {
+
+            // Build JSSE SSLContext
+            try {
+                final KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+
+                // Load private key and signed cert
+                if (null != sslSettings.keyStore) {
+                    final String keyStoreType = null == sslSettings.keyStoreType ? KeyStore.getDefaultType() : sslSettings.keyStoreType;
+                    final KeyStore keystore = KeyStore.getInstance(keyStoreType);
+                    final char[] password = null == sslSettings.keyStorePassword ? null : sslSettings.keyStorePassword.toCharArray();
+                    try (final InputStream in = new FileInputStream(sslSettings.keyStore)) {
+                        keystore.load(in, password);
+                    }
+                    kmf.init(keystore, password);
+                } else {
+                    throw new IllegalStateException("keyStore must be configured when SSL is enabled.");
+                }
+
+                builder = SslContextBuilder.forServer(kmf);
+
+                // Load custom truststore for client auth certs
+                if (null != sslSettings.trustStore) {
+                    final String keystoreType = null == sslSettings.keyStoreType ? KeyStore.getDefaultType() : sslSettings.keyStoreType;
+                    final KeyStore truststore = KeyStore.getInstance(keystoreType);
+                    final char[] password = null == sslSettings.trustStorePassword ? null : sslSettings.trustStorePassword.toCharArray();
+                    try (final InputStream in = new FileInputStream(sslSettings.trustStore)) {
+                        truststore.load(in, password);
+                    }
+                    final TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                    tmf.init(truststore);
+                    builder.trustManager(tmf);
+                }
+
+            } catch (UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException e) {
+                logger.error(e.getMessage());
+                throw new RuntimeException("There was an error enabling SSL.", e);
+            }
+
+        }
+
+        if (null != sslSettings.sslCipherSuites && !sslSettings.sslCipherSuites.isEmpty()) {
+            builder.ciphers(sslSettings.sslCipherSuites);
+        }
+
+        if (null != sslSettings.sslEnabledProtocols && !sslSettings.sslEnabledProtocols.isEmpty()) {
+            builder.protocols(sslSettings.sslEnabledProtocols.toArray(new String[] {}));
+        }
+        
+        if (null != sslSettings.needClientAuth && ClientAuth.OPTIONAL == sslSettings.needClientAuth) {
+            logger.warn("needClientAuth = OPTIONAL is not a secure configuration. Setting to REQUIRE.");
+            sslSettings.needClientAuth = ClientAuth.REQUIRE;
         }
 
         builder.clientAuth(sslSettings.needClientAuth).sslProvider(provider);
@@ -282,8 +337,8 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         try {
             return builder.build();
         } catch (SSLException ssle) {
-            logger.error("There was an error enabling SSL", ssle);
-            return null;
+            logger.error(ssle.getMessage());
+            throw new RuntimeException("There was an error enabling SSL.", ssle);
         }
     }
 }
