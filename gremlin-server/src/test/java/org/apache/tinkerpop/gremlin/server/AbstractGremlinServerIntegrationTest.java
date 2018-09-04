@@ -38,6 +38,19 @@ import static org.junit.Assume.assumeThat;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractGremlinServerIntegrationTest {
+    
+    public static final String KEY_PASS = "changeit";
+    public static final String JKS_SERVER_KEY = "src/test/resources/server-key.jks";
+    public static final String JKS_SERVER_TRUST = "src/test/resources/server-trust.jks";
+    public static final String JKS_CLIENT_KEY = "src/test/resources/client-key.jks";
+    public static final String JKS_CLIENT_TRUST = "src/test/resources/client-trust.jks";
+    public static final String P12_SERVER_KEY = "src/test/resources/server-key.p12";
+    public static final String P12_SERVER_TRUST = "src/test/resources/server-trust.p12";
+    public static final String P12_CLIENT_KEY = "src/test/resources/client-key.p12";
+    public static final String P12_CLIENT_TRUST = "src/test/resources/client-trust.p12";
+    public static final String KEYSTORE_TYPE_JKS = "jks";
+    public static final String KEYSTORE_TYPE_PKCS12 = "pkcs12";
+
     protected GremlinServer server;
     private Settings overriddenSettings;
     private final static String epollOption = "gremlin.server.epoll";

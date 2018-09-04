@@ -181,6 +181,32 @@ final class Settings {
             if (connectionPoolConf.containsKey("trustCertChainFile"))
                 cpSettings.trustCertChainFile = connectionPoolConf.getString("trustCertChainFile");
 
+            if (connectionPoolConf.containsKey("keyStore"))
+                cpSettings.keyStore = connectionPoolConf.getString("keyStore");
+
+            if (connectionPoolConf.containsKey("keyStorePassword"))
+                cpSettings.keyStorePassword = connectionPoolConf.getString("keyStorePassword");
+
+            if (connectionPoolConf.containsKey("keyStoreType"))
+                cpSettings.keyStoreType = connectionPoolConf.getString("keyStoreType");
+
+            if (connectionPoolConf.containsKey("trustStore"))
+                cpSettings.trustStore = connectionPoolConf.getString("trustStore");
+
+            if (connectionPoolConf.containsKey("trustStorePassword"))
+                cpSettings.trustStorePassword = connectionPoolConf.getString("trustStorePassword");
+
+            if (connectionPoolConf.containsKey("sslEnabledProtocols"))
+                cpSettings.sslEnabledProtocols = connectionPoolConf.getList("sslEnabledProtocols").stream().map(Object::toString)
+                        .collect(Collectors.toList());
+
+            if (connectionPoolConf.containsKey("sslCipherSuites"))
+                cpSettings.sslCipherSuites = connectionPoolConf.getList("sslCipherSuites").stream().map(Object::toString)
+                        .collect(Collectors.toList());
+
+            if (connectionPoolConf.containsKey("sslSkipCertValidation"))
+                cpSettings.sslSkipCertValidation = connectionPoolConf.getBoolean("sslSkipCertValidation");
+
             if (connectionPoolConf.containsKey("minSize"))
                 cpSettings.minSize = connectionPoolConf.getInt("minSize");
 
@@ -229,23 +255,80 @@ final class Settings {
 
         /**
          * The trusted certificate in PEM format.
+         * @deprecated As of release 3.2.10, replaced by {@link trustStore}
          */
+        @Deprecated
         public String trustCertChainFile = null;
 
         /**
          * The X.509 certificate chain file in PEM format.
+         * @deprecated As of release 3.2.10, replaced by {@link keyStore}
          */
+        @Deprecated
         public String keyCertChainFile = null;
 
         /**
          * The PKCS#8 private key file in PEM format.
+         * @deprecated As of release 3.2.10, replaced by {@link keyStore}
          */
+        @Deprecated
         public String keyFile = null;
 
         /**
          * The password of the {@link #keyFile}, or {@code null} if it's not password-protected.
+         * @deprecated As of release 3.2.10, replaced by {@link keyStorePassword}
          */
+        @Deprecated
         public String keyPassword = null;
+
+        /**
+         * JSSE keystore file path. Similar to setting JSSE property
+         * {@code javax.net.ssl.keyStore}.
+         */
+        public String keyStore;
+
+        /**
+         * JSSE keystore password. Similar to setting JSSE property
+         * {@code javax.net.ssl.keyStorePassword}.
+         */
+        public String keyStorePassword;
+
+        /**
+         * JSSE truststore file path. Similar to setting JSSE property
+         * {@code javax.net.ssl.trustStore}.
+         */
+        public String trustStore;
+
+        /**
+         * JSSE truststore password. Similar to setting JSSE property
+         * {@code javax.net.ssl.trustStorePassword}.
+         */
+        public String trustStorePassword;
+
+        /**
+         * JSSE keystore format. 'jks' or 'pkcs12'. Similar to setting JSSE property
+         * {@code javax.net.ssl.keyStoreType}.
+         */
+        public String keyStoreType;
+
+        /**
+         * @see <a href=
+         *      "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SunJSSE_Protocols">JSSE
+         *      Protocols</a>
+         */
+        public List<String> sslEnabledProtocols = new ArrayList<>();
+
+        /**
+         * @see <a href=
+         *      "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SupportedCipherSuites">Cipher
+         *      Suites</a>
+         */
+        public List<String> sslCipherSuites = new ArrayList<>();
+
+        /**
+         * If true, trust all certificates and do not perform any validation.
+         */
+        public boolean sslSkipCertValidation = false;
 
         /**
          * The minimum size of a connection pool for a {@link Host}. By default this is set to 2.

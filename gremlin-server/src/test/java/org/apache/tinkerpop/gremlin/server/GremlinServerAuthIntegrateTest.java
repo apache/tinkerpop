@@ -68,6 +68,8 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
             case "shouldFailIfSslEnabledOnServerButNotClient":
                 final Settings.SslSettings sslConfig = new Settings.SslSettings();
                 sslConfig.enabled = true;
+                sslConfig.keyStore = JKS_SERVER_KEY;
+                sslConfig.keyStorePassword = KEY_PASS;
                 settings.ssl = sslConfig;
                 break;
         }
@@ -109,7 +111,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void shouldAuthenticateOverSslWithPlainText() throws Exception {
         final Cluster cluster = TestClientFactory.build()
-                .enableSsl(true)
+                .enableSsl(true).sslSkipCertValidation(true)
                 .credentials("stephen", "password").create();
         final Client client = cluster.connect();
 

@@ -124,6 +124,9 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
                 break;
             case "shouldAuthenticateWithSsl":
                 sslConfig.enabled = true;
+                sslConfig.keyStore = JKS_SERVER_KEY;
+                sslConfig.keyStorePassword = KEY_PASS;
+                sslConfig.keyStoreType = KEYSTORE_TYPE_JKS;
                 break;
             case "shouldAuthenticateWithQop":
                 break;
@@ -211,7 +214,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
 
     @Test
     public void shouldAuthenticateWithSsl() throws Exception {
-        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE).enableSsl(true)
+        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE).enableSsl(true).sslSkipCertValidation(true)
                 .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
         final Client client = cluster.connect();
         try {

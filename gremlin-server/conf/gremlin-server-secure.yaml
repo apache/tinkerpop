@@ -64,4 +64,9 @@ authentication: {
   config: {
     credentialsDb: conf/tinkergraph-credentials.properties}}
 ssl: {
-  enabled: true}
+  enabled: true,
+  sslEnabledProtocols: [TLSv1.2],
+  # You must configure a keyStore!
+  #keyStore: server.jks,
+  #keyStorePassword: changeit
+}
