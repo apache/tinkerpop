@@ -50,12 +50,36 @@ public final class GraphSONMessageSerializerV2d0 extends AbstractGraphSONMessage
         header = buffer.array();
     }
 
+        /**
+         * Creates a default GraphSONMessageSerializer.
+         *
+         * By default this will internally instantiate a {@link GraphSONMapper} and register
+         * a {@link GremlinServerModule} and {@link GraphSONXModuleV2d0} to the mapper.
+         *
+         * @see #GraphSONMessageSerializerV2d0(GraphSONMapper.Builder)
+         */
     public GraphSONMessageSerializerV2d0() {
         super();
     }
 
+    /**
+     * Create a GraphSONMessageSerializer from a {@link GraphSONMapper}. Deprecated, use
+     * {@link #GraphSONMessageSerializerV2d0(GraphSONMapper.Builder)} instead.
+     */
+    @Deprecated
     public GraphSONMessageSerializerV2d0(final GraphSONMapper mapper) {
         super(mapper);
+    }
+
+    /**
+     * Create a GraphSONMessageSerializer with a provided {@link GraphSONMapper.Builder}.
+     *
+     * Note that to make this mapper usable in the context of request messages and responses,
+     * this method will automatically register a {@link GremlinServerModule} to the provided
+     * mapper.
+     */
+    public GraphSONMessageSerializerV2d0(final GraphSONMapper.Builder mapperBuilder) {
+        super(mapperBuilder);
     }
 
     @Override
@@ -66,7 +90,7 @@ public final class GraphSONMessageSerializerV2d0 extends AbstractGraphSONMessage
     @Override
     GraphSONMapper.Builder configureBuilder(final GraphSONMapper.Builder builder) {
         // already set to 2.0 in AbstractGraphSONMessageSerializerV2d0
-        return builder.typeInfo(TypeInfo.PARTIAL_TYPES);
+        return builder.typeInfo(TypeInfo.PARTIAL_TYPES).addCustomModule(new GremlinServerModule());
     }
 
     @Override

@@ -18,6 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
+import org.apache.log4j.Level;
+import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
@@ -35,11 +40,13 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV2d0;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerationException;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
+import org.apache.tinkerpop.shaded.jackson.databind.JsonMappingException;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
@@ -64,6 +71,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -72,12 +80,17 @@ import static org.junit.Assert.fail;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@SuppressWarnings("unchecked")
 public class GraphSONMessageSerializerV2d0Test {
 
     public static final GraphSONMessageSerializerV2d0 SERIALIZER = new GraphSONMessageSerializerV2d0();
     private static final RequestMessage msg = RequestMessage.build("op")
             .overrideRequestId(UUID.fromString("2D62161B-9544-4F39-AF44-62EC49F9A595")).create();
     private static final ObjectMapper mapper = new ObjectMapper();
+
+    private final UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
+    private final ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
+    private final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
     @Test
     public void shouldConfigureIoRegistry() throws Exception {
@@ -363,7 +376,6 @@ public class GraphSONMessageSerializerV2d0Test {
 
     @Test
     public void shouldDeserializeRequestNicelyWithArgs() throws Exception {
-        final GraphSONMessageSerializerV2d0 serializer = new GraphSONMessageSerializerV2d0();
         final UUID request = UUID.fromString("011CFEE9-F640-4844-AC93-034448AC0E80");
         final RequestMessage m = SERIALIZER.deserializeRequest(String.format("{\"requestId\":\"%s\",\"op\":\"eval\",\"args\":{\"x\":\"y\"}}", request));
         assertEquals(request, m.getRequestId());
@@ -538,6 +550,47 @@ public class GraphSONMessageSerializerV2d0Test {
         assertEquals(responseMessage.getStatus().getCode().getValue(), responseMessageRead.getStatus().getCode().getValue());
         assertEquals(responseMessage.getStatus().getCode().isSuccess(), responseMessageRead.getStatus().getCode().isSuccess());
         assertEquals(responseMessage.getStatus().getMessage(), responseMessageRead.getStatus().getMessage());
+    }
+
+    @Test
+    public void shouldRegisterGremlinServerModuleAutomaticallyWithMapper() throws SerializationException {
+        GraphSONMapper.Builder builder = GraphSONMapper.build().addCustomModule(GraphSONXModuleV2d0.build().create(false));
+        GraphSONMessageSerializerV2d0 graphSONMessageSerializerV2d0 = new GraphSONMessageSerializerV2d0(builder);
+
+        ResponseMessage rm = convert("hello", graphSONMessageSerializerV2d0);
+        assertEquals(rm.getRequestId(), requestId);
+        assertEquals(rm.getResult().getData(), "hello");
+    }
+
+
+    @Test
+    @SuppressWarnings("deprecation")
+    public void shouldFailOnMessageSerializerWithMapperIfNoGremlinServerModule() {
+        org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(AbstractGraphSONMessageSerializerV2d0.class);
+        Level previousLevel = logger.getLevel();
+
+        // Disable temporarily logging for this test
+        logger.setLevel(Level.OFF);
+
+        GraphSONMapper.Builder builder = GraphSONMapper.build().addCustomModule(GraphSONXModuleV2d0.build().create(false));
+        GraphSONMessageSerializerV2d0 graphSONMessageSerializerV2d0 = new GraphSONMessageSerializerV2d0(builder.create());
+
+        try {
+            convert("hello", graphSONMessageSerializerV2d0);
+            fail("Serialization should have failed since no GremlinServerModule registered.");
+        } catch (SerializationException e) {
+            assertTrue(e.getMessage().contains("Could not find a type identifier for the class"));
+            assertTrue(e.getCause() instanceof JsonMappingException);
+            assertTrue(e.getCause().getCause() instanceof IllegalArgumentException);
+        }
+
+        // Put logger level back to its original value
+        logger.setLevel(previousLevel);
+    }
+
+    private ResponseMessage convert(final Object toSerialize, MessageSerializer serializer) throws SerializationException {
+        final ByteBuf bb = serializer.serializeResponseAsBinary(responseMessageBuilder.result(toSerialize).create(), allocator);
+        return serializer.deserializeResponse(bb);
     }
 
     private class FunObject {

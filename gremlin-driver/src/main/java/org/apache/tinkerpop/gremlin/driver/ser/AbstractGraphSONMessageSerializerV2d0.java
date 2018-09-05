@@ -54,16 +54,18 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
 
     protected ObjectMapper mapper;
 
-    protected final TypeReference<Map<String, Object>> mapTypeReference = new TypeReference<Map<String, Object>>() {
-    };
-
     public AbstractGraphSONMessageSerializerV2d0() {
         final GraphSONMapper.Builder builder = configureBuilder(initBuilder(null));
         mapper = builder.create().createMapper();
     }
 
+    @Deprecated
     public AbstractGraphSONMessageSerializerV2d0(final GraphSONMapper mapper) {
         this.mapper = mapper.createMapper();
+    }
+
+    public AbstractGraphSONMessageSerializerV2d0(final GraphSONMapper.Builder mapperBuilder) {
+        this.mapper = configureBuilder(mapperBuilder).create().createMapper();
     }
 
     abstract byte[] obtainHeader();
@@ -140,8 +142,7 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
 
     private GraphSONMapper.Builder initBuilder(final GraphSONMapper.Builder builder) {
         final GraphSONMapper.Builder b = null == builder ? GraphSONMapper.build() : builder;
-        return b.addCustomModule(new AbstractGraphSONMessageSerializerV2d0.GremlinServerModule())
-                .addCustomModule(GraphSONXModuleV2d0.build().create(false))
+        return b.addCustomModule(GraphSONXModuleV2d0.build().create(false))
                 .version(GraphSONVersion.V2_0);
     }
 
