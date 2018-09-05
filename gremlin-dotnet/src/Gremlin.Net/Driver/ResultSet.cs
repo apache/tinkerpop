@@ -21,7 +21,6 @@
 
 #endregion
 
-using Gremlin.Net.Driver.Exceptions;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -34,24 +33,21 @@ namespace Gremlin.Net.Driver
     /// <typeparam name="T">Type of the result elements</typeparam>
     public sealed class ResultSet<T> : IReadOnlyCollection<T>
     {
-        /// <summary>
-        ///  Gets or sets the data from the response
-        /// </summary>
-        public IReadOnlyCollection<T> Data { get; }
+        private readonly IReadOnlyCollection<T> _data;
 
         /// <summary>
         /// Gets or sets the status attributes from the gremlin response
         /// </summary>
-        public Dictionary<string, object> StatusAttributes { get; }
+        public IReadOnlyDictionary<string, object> StatusAttributes { get; }
 
         /// <summary>
         /// Initializes a new instance of the ResultSet class for the specified data and status attributes.
         /// </summary>
         /// <param name="data"></param>
         /// <param name="attributes"></param>
-        public ResultSet(IReadOnlyCollection<T> data, Dictionary<string, object> attributes)
+        public ResultSet(IReadOnlyCollection<T> data, IReadOnlyDictionary<string, object> attributes)
         {
-            this.Data = data;
+            _data = data;
             this.StatusAttributes = attributes;
         }
 
@@ -59,41 +55,18 @@ namespace Gremlin.Net.Driver
         /// <returns>An enumerator that can be used to iterate through the collection.</returns>
         public IEnumerator<T> GetEnumerator()
         {
-            return this.Data.GetEnumerator();
+            return _data.GetEnumerator();
         }
 
         /// <summary>Returns an enumerator that iterates through a collection.</summary>
         /// <returns>An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.</returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.GetEnumerator();
+            return _data.GetEnumerator();
         }
 
         /// <summary>Gets the number of elements in the collection.</summary>
         /// <returns>The number of elements in the collection. </returns>
-        public int Count => this.Data.Count;
+        public int Count => _data.Count;
     }
-
-    /// <summary>
-    /// Extension for IReadOnlyCollection 
-    /// </summary>
-    public static class ResultSetExtensions
-    {
-        /// <summary>
-        /// Casts a IReadOnlyCollection to ResultSet
-        /// </summary>
-        /// <typeparam name="T">Type of the result elements</typeparam>
-        /// <param name="data"> result data</param>
-        /// <returns>IReadOnlyCollection as ResultSet</returns>
-        public static ResultSet<T> AsResultSet<T>(this IReadOnlyCollection<T> data)
-        {
-            if (!(data is ResultSet<T> resultSet))
-            {
-                throw new ResponseException($"IReadOnlyCollection is not of type ResultSet");
-            }
-
-            return resultSet;
-        }
-    }
-
 }

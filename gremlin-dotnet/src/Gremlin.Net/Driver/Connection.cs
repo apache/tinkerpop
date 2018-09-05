@@ -53,7 +53,7 @@ namespace Gremlin.Net.Driver
             _messageSerializer = new JsonMessageSerializer(mimeType);
         }
 
-        public async Task<IReadOnlyCollection<T>> SubmitAsync<T>(RequestMessage requestMessage)
+        public async Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage)
         {
             await SendAsync(requestMessage).ConfigureAwait(false);
             return await ReceiveAsync<T>().ConfigureAwait(false);
