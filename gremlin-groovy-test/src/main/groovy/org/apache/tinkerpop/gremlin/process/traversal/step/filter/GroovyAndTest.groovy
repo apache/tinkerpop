@@ -48,5 +48,10 @@ public abstract class GroovyAndTest {
         public Traversal<Vertex, Vertex> get_g_V_asXaX_andXselectXaX_selectXaXX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V().as('a').and(__.select('a'), __.select('a'))");
         }
+
+        @Override
+        Traversal<Vertex, Vertex> get_g_V_hasXname_markoX_and_hasXname_markoX_and_hasXname_markoX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().has('name', 'marko').and().has('name', 'marko').and().has('name', 'marko')")
+        }
     }
 }

@@ -28,6 +28,9 @@ import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.V;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.filter;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -58,6 +61,7 @@ public class ConnectiveStrategyTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> generateTestParameters() {
         return Arrays.asList(new Traversal[][]{
+                {__.has("name", "marko").and().has("name", "marko").and().has("name", "marko"), __.and(has("name", "marko"), __.has("name", "marko"), __.has("name", "marko"))},
                 {__.has("name", "stephen").or().where(__.out("knows").has("name", "stephen")), __.or(__.has("name", "stephen"), __.where(__.out("knows").has("name", "stephen")))},
                 {__.out("a").out("b").and().out("c").or().out("d"), __.or(__.and(__.out("a").out("b"), __.out("c")), __.out("d"))},
                 {__.as("1").out("a").out("b").as("2").and().as("3").out("c").as("4").or().as("5").out("d").as("6"), __.or(__.and(__.as("1").out("a").out("b").as("2"), __.as("3").out("c").as("4")), __.as("5").out("d").as("6"))},

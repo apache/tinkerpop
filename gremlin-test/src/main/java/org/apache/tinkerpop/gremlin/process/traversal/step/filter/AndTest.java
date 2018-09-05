@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -52,6 +53,8 @@ public abstract class AndTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_asXaX_andXselectXaX_selectXaXX();
 
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_markoX_and_hasXname_markoX_and_hasXname_markoX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_andXhasXage_gt_27X__outE_count_gte_2X_name() {
@@ -73,7 +76,7 @@ public abstract class AndTest extends AbstractGremlinProcessTest {
     public void g_V_asXaX_outXknowsX_and_outXcreatedX_inXcreatedX_asXaX_name() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_asXaX_outXknowsX_and_outXcreatedX_inXcreatedX_asXaX_name();
         printTraversalForm(traversal);
-        checkResults(Arrays.asList(convertToVertex(graph, "marko")), traversal);
+        checkResults(Collections.singletonList(convertToVertex(graph, "marko")), traversal);
     }
 
     @Test
@@ -83,6 +86,14 @@ public abstract class AndTest extends AbstractGremlinProcessTest {
         printTraversalForm(traversal);
         final List<Vertex> actual = traversal.toList();
         assertEquals(6, actual.size());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXname_markoX_and_hasXname_markoX_and_hasXname_markoX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXname_markoX_and_hasXname_markoX_and_hasXname_markoX();
+        printTraversalForm(traversal);
+        checkResults(Collections.singletonList(convertToVertex(graph, "marko")), traversal);
     }
 
     public static class Traversals extends AndTest {
@@ -105,6 +116,11 @@ public abstract class AndTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_asXaX_andXselectXaX_selectXaXX() {
             return g.V().as("a").and(select("a"), select("a"));
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXname_markoX_and_hasXname_markoX_and_hasXname_markoX() {
+            return g.V().has("name", "marko").and().has("name", "marko").and().has("name", "marko");
         }
     }
 }
