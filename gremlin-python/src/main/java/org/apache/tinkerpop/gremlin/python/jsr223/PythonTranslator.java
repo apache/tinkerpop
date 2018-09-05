@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
@@ -122,10 +123,20 @@ public class PythonTranslator implements Translator.ScriptTranslator {
             else {
                 traversalScript.append(".");
                 String temp = resolveSymbol(methodName) + "(";
+
+                // jython has trouble with java varargs...wrapping in collection seems to solve the problem
+                final boolean varargsBeware = instruction.getOperator().equals(TraversalSource.Symbols.withStrategies)
+                            || instruction.getOperator().equals(TraversalSource.Symbols.withoutStrategies);
+                if (varargsBeware) temp = temp + "[";
+
                 for (final Object object : arguments) {
                     temp = temp + convertToString(object) + ",";
                 }
-                traversalScript.append(temp.substring(0, temp.length() - 1)).append(")");
+                temp = temp.substring(0, temp.length() - 1);
+
+                if (varargsBeware) temp = temp + "]";
+
+                traversalScript.append(temp).append(")");
             }
             // clip off __.
             if (this.importStatics && traversalScript.substring(0, 3).startsWith("__.")
