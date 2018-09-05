@@ -177,9 +177,8 @@ namespace Gremlin.Net.IntegrationTest.Driver
             using (var gremlinClient = new GremlinClient(gremlinServer))
             {
                 var requestMsg = _requestMessageProvider.GetDummyMessage();
-                var response = await gremlinClient.SubmitAsync<int>(requestMsg);
+                var resultSet = await gremlinClient.SubmitAsync<int>(requestMsg);
 
-                var resultSet = response.AsResultSet();
                 Assert.NotNull(resultSet.StatusAttributes);
 
                 var values= resultSet.StatusAttributes["@value"] as JArray;
