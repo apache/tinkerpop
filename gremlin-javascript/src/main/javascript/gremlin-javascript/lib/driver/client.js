@@ -21,7 +21,7 @@
 const DriverRemoteConnection = require('./driver-remote-connection');
 const Bytecode = require('../process/bytecode');
 
-class Client extends DriverRemoteConnection {
+class Client {
   /**
    * Creates a new instance of DriverRemoteConnection.
    * @param {String} url The resource uri.
@@ -38,10 +38,24 @@ class Client extends DriverRemoteConnection {
    * @constructor
    */
   constructor(url, options) {
-    super(url, options);
+    this._options = options;
+    this._connection = new DriverRemoteConnection(url, options);
   }
 
-  /** override */
+  /**
+   * Opens the underlying connection to the Gremlin Server, if it's not already opened.
+   * @returns {Promise}
+   */
+  open() {
+    return this._connection.open();
+  }
+
+  /**
+   * Send a request to the Gremlin Server, can send a script or bytecode steps.
+   * @param {Bytecode|string} message The bytecode or script to send
+   * @param {Object} bindings The script bindings, if any.
+   * @returns {Promise}
+   */
   submit(message, bindings) {
     if (typeof message === 'string' || message instanceof String) {
       const args = {
@@ -49,15 +63,23 @@ class Client extends DriverRemoteConnection {
         'bindings': bindings,
         'language': 'gremlin-groovy',
         'accept': 'application/json',
-        'aliases': { 'g': this.traversalSource }
+        'aliases': { 'g': this._options.traversalSource || 'g' }
       };
 
-      return super.submit(null, 'eval', args, null, '');
+      return this._connection.submit(null, 'eval', args, null, '');
     }
 
     if (message instanceof Bytecode) {
-      return super.submit(message);
+      return this._connection.submit(message);
     }
+  }
+
+  /**
+   * Closes the underlying connection
+   * @returns {Promise}
+   */
+  close() {
+    return this._connection.close();
   }
   
 }

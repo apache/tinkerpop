@@ -85,11 +85,9 @@ class Traversal {
   _getNext() {
     while (this.traversers && this._traversersIteratorIndex < this.traversers.length) {
       let traverser = this.traversers[this._traversersIteratorIndex];
-      if (traverser.bulk && traverser.bulk > 0) {
+      if (traverser.bulk > 0) {
         traverser.bulk--;
         return { value: traverser.object, done: false };
-      } else if (traverser.bulk === undefined) {
-        return { value: traverser, done: true }
       }
       this._traversersIteratorIndex++;
     }
