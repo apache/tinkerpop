@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
 import org.apache.tinkerpop.gremlin.server.util.ThreadFactoryUtil;
+import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -370,7 +371,7 @@ public class GremlinServer {
 
     public static String getHeader() {
         final StringBuilder builder = new StringBuilder();
-        builder.append("\r\n");
+        builder.append(Gremlin.version() + "\r\n");
         builder.append("         \\,,,/\r\n");
         builder.append("         (o o)\r\n");
         builder.append("-----oOOo-(3)-oOOo-----\r\n");
