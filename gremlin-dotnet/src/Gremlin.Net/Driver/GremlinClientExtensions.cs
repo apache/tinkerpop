@@ -121,12 +121,12 @@ namespace Gremlin.Net.Driver
         /// <param name="gremlinClient">The <see cref="IGremlinClient" /> that submits the request.</param>
         /// <param name="requestScript">The Gremlin request script to send.</param>
         /// <param name="bindings">Bindings for parameters used in the requestScript.</param>
-        /// <returns>A collection of the data returned from the server.</returns>
+        /// <returns>A <see cref="ResultSet{T}"/> containing the data and status attributes returned from the server.</returns>
         /// <exception cref="Exceptions.ResponseException">
         ///     Thrown when a response is received from Gremlin Server that indicates
         ///     that an error occurred.
         /// </exception>
-        public static async Task<IReadOnlyCollection<T>> SubmitAsync<T>(this IGremlinClient gremlinClient,
+        public static async Task<ResultSet<T>> SubmitAsync<T>(this IGremlinClient gremlinClient,
             string requestScript,
             Dictionary<string, object> bindings = null)
         {
