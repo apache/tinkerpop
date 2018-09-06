@@ -368,6 +368,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.2.10 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * SSL security enhancements
+* Added Gremlin version to Gremlin Server startup logging output.
 * Fixed problem with Gremlin Server sometimes returning an additional message after a failure.
 * Allowed spaces in classpath for `gremlin-server.bat`.
 * Fixed bug in traversals that used Python lambdas with strategies in `gremlin-python`.
