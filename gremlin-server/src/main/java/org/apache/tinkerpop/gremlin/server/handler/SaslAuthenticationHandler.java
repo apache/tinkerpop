@@ -21,8 +21,6 @@ package org.apache.tinkerpop.gremlin.server.handler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.base64.Base64Decoder;
 import io.netty.util.Attribute;
 
 import java.net.InetAddress;
@@ -32,6 +30,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.netty.util.AttributeMap;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -72,8 +71,8 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
         if (msg instanceof RequestMessage){
             final RequestMessage requestMessage = (RequestMessage) msg;
 
-            final Attribute<Authenticator.SaslNegotiator> negotiator = ctx.attr(StateKey.NEGOTIATOR);
-            final Attribute<RequestMessage> request = ctx.attr(StateKey.REQUEST_MESSAGE);
+            final Attribute<Authenticator.SaslNegotiator> negotiator = ((AttributeMap) ctx).attr(StateKey.NEGOTIATOR);
+            final Attribute<RequestMessage> request = ((AttributeMap) ctx).attr(StateKey.REQUEST_MESSAGE);
             if (negotiator.get() == null) {
                 // First time through so save the request and send an AUTHENTICATE challenge with no data
                 negotiator.set(authenticator.newSaslNegotiator(getRemoteInetAddress(ctx)));

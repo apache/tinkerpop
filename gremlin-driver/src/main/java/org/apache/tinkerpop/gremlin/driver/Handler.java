@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import io.netty.util.AttributeMap;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
@@ -85,8 +86,8 @@ final class Handler {
             // We are only interested in AUTHENTICATE responses here. Everything else can
             // get passed down the pipeline
             if (response.getStatus().getCode() == ResponseStatusCode.AUTHENTICATE) {
-                final Attribute<SaslClient> saslClient = channelHandlerContext.attr(saslClientKey);
-                final Attribute<Subject> subject = channelHandlerContext.attr(subjectKey);
+                final Attribute<SaslClient> saslClient = ((AttributeMap) channelHandlerContext).attr(saslClientKey);
+                final Attribute<Subject> subject = ((AttributeMap) channelHandlerContext).attr(subjectKey);
                 final RequestMessage.Builder messageBuilder = RequestMessage.build(Tokens.OPS_AUTHENTICATION);
                 // First time through we don't have a sasl client
                 if (saslClient.get() == null) {

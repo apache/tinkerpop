@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
-import org.apache.tinkerpop.gremlin.server.OpProcessor;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.Context;
@@ -39,7 +38,7 @@ import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import io.netty.channel.ChannelHandlerContext;
+
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +54,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 
 import static com.codahale.metrics.MetricRegistry.name;
 

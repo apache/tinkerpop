@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.server.handler;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
 import io.netty.handler.codec.TooLongFrameException;
+import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpUtil;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
@@ -80,9 +82,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.codahale.metrics.MetricRegistry.name;
-import static io.netty.handler.codec.http.HttpHeaders.Names.*;
-import static io.netty.handler.codec.http.HttpHeaders.is100ContinueExpected;
-import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
+import static io.netty.handler.codec.http.HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONNECTION;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpHeaderNames.ORIGIN;
 import static io.netty.handler.codec.http.HttpMethod.GET;
 import static io.netty.handler.codec.http.HttpMethod.POST;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -143,17 +147,17 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         if (msg instanceof FullHttpRequest) {
             final FullHttpRequest req = (FullHttpRequest) msg;
 
-            if ("/favicon.ico".equals(req.getUri())) {
+            if ("/favicon.ico".equals(req.uri())) {
                 sendError(ctx, NOT_FOUND, "Gremlin Server doesn't have a favicon.ico");
                 ReferenceCountUtil.release(msg);
                 return;
             }
 
-            if (is100ContinueExpected(req)) {
+            if (HttpUtil.is100ContinueExpected(req)) {
                 ctx.write(new DefaultFullHttpResponse(HTTP_1_1, CONTINUE));
             }
 
-            if (req.getMethod() != GET && req.getMethod() != POST) {
+            if (req.method() != GET && req.method() != POST) {
                 sendError(ctx, METHOD_NOT_ALLOWED, METHOD_NOT_ALLOWED.toString());
                 ReferenceCountUtil.release(msg);
                 return;
@@ -177,7 +181,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             }
 
             final String origin = req.headers().get(ORIGIN);
-            final boolean keepAlive = isKeepAlive(req);
+            final boolean keepAlive = HttpUtil.isKeepAlive(req);
 
             // not using the req any where below here - assume it is safe to release at this point.
             ReferenceCountUtil.release(msg);
@@ -208,7 +212,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                         if (!keepAlive) {
                             ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
                         } else {
-                            response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+                            response.headers().set(CONNECTION, HttpHeaderValues.KEEP_ALIVE);
                             ctx.writeAndFlush(response);
                         }
                     }
@@ -345,8 +349,8 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     }
 
     private static Quartet<String, Map<String, Object>, String, Map<String,String>> getRequestArguments(final FullHttpRequest request) {
-        if (request.getMethod() == GET) {
-            final QueryStringDecoder decoder = new QueryStringDecoder(request.getUri());
+        if (request.method() == GET) {
+            final QueryStringDecoder decoder = new QueryStringDecoder(request.uri());
             final List<String> gremlinParms = decoder.parameters().get(Tokens.ARGS_GREMLIN);
 
             if (null == gremlinParms || gremlinParms.size() == 0)
