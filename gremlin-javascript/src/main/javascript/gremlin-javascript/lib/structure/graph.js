@@ -35,7 +35,7 @@ class Graph {
   }
 
   toString() {
-    return 'graph[empty]';
+    return 'graph[]';
   }
 }
 

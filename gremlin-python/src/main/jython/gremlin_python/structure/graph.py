@@ -34,7 +34,7 @@ class Graph(object):
         return traversal_source_class(self, TraversalStrategies.global_cache[self.__class__])
 
     def __repr__(self):
-        return "graph[empty]"
+        return "graph[]"
 
 
 class Element(object):
