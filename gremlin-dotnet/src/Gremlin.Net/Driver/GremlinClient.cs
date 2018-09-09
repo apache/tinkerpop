@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.WebSockets;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Structure.IO.GraphSON;
@@ -42,12 +43,16 @@ namespace Gremlin.Net.Driver
         /// <param name="gremlinServer">The <see cref="GremlinServer" /> the requests should be sent to.</param>
         /// <param name="graphSONReader">A <see cref="GraphSONReader" /> instance to read received GraphSON data.</param>
         /// <param name="graphSONWriter">a <see cref="GraphSONWriter" /> instance to write GraphSON data.</param>
+        /// <param name="webSocketConfiguration">
+        ///     A delegate that will be invoked with the <see cref="ClientWebSocketOptions" />
+        ///     object used to configure WebSocket connections.
+        /// </param>
         public GremlinClient(GremlinServer gremlinServer, GraphSONReader graphSONReader = null,
-            GraphSONWriter graphSONWriter = null)
+            GraphSONWriter graphSONWriter = null, Action<ClientWebSocketOptions> webSocketConfiguration = null)
         {
             var reader = graphSONReader ?? new GraphSONReader();
             var writer = graphSONWriter ?? new GraphSONWriter();
-            var connectionFactory = new ConnectionFactory(gremlinServer, reader, writer);
+            var connectionFactory = new ConnectionFactory(gremlinServer, reader, writer, webSocketConfiguration);
             _connectionPool = new ConnectionPool(connectionFactory);
         }
 

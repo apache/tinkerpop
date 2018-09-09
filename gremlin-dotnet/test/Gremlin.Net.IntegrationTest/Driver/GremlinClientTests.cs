@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.WebSockets;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
@@ -206,6 +207,30 @@ namespace Gremlin.Net.IntegrationTest.Driver
                     await gremlinClient.SubmitWithSingleResultAsync<int>(requestMsg, bindings);
 
                 Assert.Equal(a + b, response);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldConfigureWebSocketOptionsAsSpecified()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            ClientWebSocketOptions optionsSet = null;
+            var expectedKeepAliveInterval = TimeSpan.FromMilliseconds(11);
+            var webSocketConfiguration =
+                new Action<ClientWebSocketOptions>(options =>
+                {
+                    options.UseDefaultCredentials = false;
+                    options.KeepAliveInterval = expectedKeepAliveInterval;
+                    optionsSet = options;
+                });
+            using (var gremlinClient = new GremlinClient(gremlinServer, webSocketConfiguration: webSocketConfiguration))
+            {
+                // send dummy message to create at least one connection
+                await gremlinClient.SubmitAsync(_requestMessageProvider.GetDummyMessage());
+                
+                Assert.NotNull(optionsSet);
+                Assert.False(optionsSet.UseDefaultCredentials);
+                Assert.Equal(expectedKeepAliveInterval, optionsSet.KeepAliveInterval);
             }
         }
     }
