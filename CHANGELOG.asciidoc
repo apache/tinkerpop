@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-3-3, 3.3.3>>.
 
+* Rewrote `ConnectiveStrategy` to support an arbitrary number of infix notations in a single traversal.
 * GraphSON `MessageSerializer`s will automatically register the GremlinServerModule to a provided GraphSONMapper.
 * Implemented `ShortestPathVertexProgram` and the `shortestPath()` step.
 * `AbstractGraphProvider` uses `g.io()` for loading test data.
