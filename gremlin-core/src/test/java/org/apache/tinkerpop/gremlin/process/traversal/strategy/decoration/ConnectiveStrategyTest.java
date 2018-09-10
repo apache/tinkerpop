@@ -87,43 +87,24 @@ public class ConnectiveStrategyTest {
                         // EXPECT:
                         __.or(
                                 __.as("a1").out("a").as("a2"),
-                                __.or(
-                                        __.and(
-                                                __.as("b1").out("b").as("b2"),
-                                                __.as("c1").out("c").as("c2")
-                                        ),
-                                        __.or(
-                                                __.as("d1").out("d").as("d2"),
+                                __.and(
+                                        __.as("b1").out("b").as("b2"),
+                                        __.as("c1").out("c").as("c2")),
+                                __.as("d1").out("d").as("d2"),
+                                __.and(
+                                        __.as("e1").out("e").as("e2"),
+                                        __.as("f1").out("f").as("f2"),
+                                        __.as("g1").out("g").as("g2")),
+                                __.and(
+                                        __.as("h1").out("h").as("h2").or(
                                                 __.or(
+                                                        __.as("i1").out("i").as("i2"),
                                                         __.and(
-                                                                __.as("e1").out("e").as("e2"),
-                                                                __.and(
-                                                                        __.as("f1").out("f").as("f2"),
-                                                                        __.as("g1").out("g").as("g2")
-                                                                )
-                                                        ),
-                                                        __.and(
-                                                                __.as("h1").out("h").as("h2").or(
-                                                                        __.or(
-                                                                                __.as("i1").out("i").as("i2"),
-                                                                                __.and(
-                                                                                        __.as("j1").out("j").as("j2"),
-                                                                                        __.as("k1").out("k").as("k2")
-                                                                                )
-                                                                        )
-                                                                ),
-                                                                __.and(
-                                                                        __.as("l1").out("l").as("l2"),
-                                                                        __.and(
-                                                                                __.as("m1").out("m").as("m2"),
-                                                                                __.as("n1").out("n").as("n2")
-                                                                        )
-                                                                )
-                                                        )
-                                                )
-                                        )
-                                )
-                        )
+                                                                __.as("j1").out("j").as("j2"),
+                                                                __.as("k1").out("k").as("k2")))),
+                                __.as("l1").out("l").as("l2"),
+                                __.as("m1").out("m").as("m2"),
+                                __.as("n1").out("n").as("n2")))
                 }
         });
     }

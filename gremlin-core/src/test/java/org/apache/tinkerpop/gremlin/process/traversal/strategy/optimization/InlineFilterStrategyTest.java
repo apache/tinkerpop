@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Connec
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -41,6 +42,7 @@ import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.gt;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.inside;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.lt;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.V;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.and;
@@ -96,6 +98,7 @@ public class InlineFilterStrategyTest {
                 {filter(has("age", gt(10)).as("b")).as("a"), has("age", gt(10)).as("b", "a"), Collections.emptyList()},
                 {filter(has("age", gt(10)).as("a")), has("age", gt(10)).as("a"), Collections.emptyList()},
                 {filter(and(has("age", gt(10)).as("a"), has("name", "marko"))), addHas(__.start(), "age", gt(10), "name", eq("marko")).as("a"), Collections.emptyList()},
+                {filter(out("created").and().out("knows").or().in("knows")), filter(or(and(out("created"), out("knows")), __.in("knows"))), Collections.singletonList(ConnectiveStrategy.instance())},
                 //
                 {or(has("name", "marko"), has("age", 32)), or(has("name", "marko"), has("age", 32)), Collections.emptyList()},
                 {or(has("name", "marko"), has("name", "bob")), has("name", eq("marko").or(eq("bob"))), Collections.emptyList()},
@@ -110,9 +113,10 @@ public class InlineFilterStrategyTest {
                 {V().has("name", "marko").and().has("name", "marko").and().has("name", "marko"), V().has("name", "marko").has("name", "marko").has("name", "marko"), Collections.emptyList()},
                 {V().filter(has("name", "marko")).and().filter(has("name", "marko")).and().filter(has("name", "marko")), V().has("name", "marko").has("name", "marko").has("name", "marko"), Collections.emptyList()},
                 {has("name", "marko").and().has("name", "marko").and().has("name", "marko"), has("name", "marko").has("name", "marko").has("name", "marko"), Collections.singletonList(ConnectiveStrategy.instance())},
-                {filter(has("name", "marko")).and().filter(has("name", "marko")).and().filter(has("name", "marko")), has("name", "marko").has("name", "marko").has("name", "marko"), Collections.singletonList(ConnectiveStrategy.instance())},
-                {V().has("name", "marko").and().has("name", "marko").and().has("name", "marko"), V().has("name", "marko").has("name", "marko").has("name", "marko"), Collections.singletonList(ConnectiveStrategy.instance())},
-                {V().filter(has("name", "marko")).and().filter(has("name", "marko")).and().filter(has("name", "marko")), V().has("name", "marko").has("name", "marko").has("name", "marko"), Collections.singletonList(ConnectiveStrategy.instance())},
+                {V().filter(has("name", "marko")).and().filter(has("name", "marko")).and().filter(has("name", "marko")), and(V().has("name", "marko"), has("name", "marko"), has("name", "marko")), Collections.singletonList(ConnectiveStrategy.instance())},
+                {V().has("name", "marko").and().has("name", "marko").and().has("name", "marko"), and(V().has("name", "marko"), has("name", "marko"), has("name", "marko")), Collections.singletonList(ConnectiveStrategy.instance())},
+                {EmptyGraph.instance().traversal().V().filter(has("name", "marko")).and().filter(has("name", "marko")).and().filter(has("name", "marko")), EmptyGraph.instance().traversal().V().has("name", "marko").has("name", "marko").has("name", "marko"), Collections.singletonList(ConnectiveStrategy.instance())},
+                {EmptyGraph.instance().traversal().V().has("name", "marko").and().has("name", "marko").and().has("name", "marko"), EmptyGraph.instance().traversal().V().has("name", "marko").has("name", "marko").has("name", "marko"), Collections.singletonList(ConnectiveStrategy.instance())},
                 //
                 {and(has("age", gt(10)), filter(has("age", 22))), addHas(__.start(), "age", gt(10), "age", eq(22)), Collections.emptyList()},
                 {and(has("age", gt(10)).as("a"), filter(has("age", 22).as("b")).as("c")).as("d"), addHas(__.start(), "age", gt(10), "age", eq(22)).as("a", "b", "c", "d"), Collections.emptyList()},
