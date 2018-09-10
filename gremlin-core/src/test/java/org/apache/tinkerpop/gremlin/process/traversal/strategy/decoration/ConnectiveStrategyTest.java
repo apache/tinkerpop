@@ -28,6 +28,9 @@ import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.V;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.filter;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -58,6 +61,7 @@ public class ConnectiveStrategyTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> generateTestParameters() {
         return Arrays.asList(new Traversal[][]{
+                {__.has("name", "marko").and().has("name", "marko").and().has("name", "marko"), __.and(has("name", "marko"), __.has("name", "marko"), __.has("name", "marko"))},
                 {__.has("name", "stephen").or().where(__.out("knows").has("name", "stephen")), __.or(__.has("name", "stephen"), __.where(__.out("knows").has("name", "stephen")))},
                 {__.out("a").out("b").and().out("c").or().out("d"), __.or(__.and(__.out("a").out("b"), __.out("c")), __.out("d"))},
                 {__.as("1").out("a").out("b").as("2").and().as("3").out("c").as("4").or().as("5").out("d").as("6"), __.or(__.and(__.as("1").out("a").out("b").as("2"), __.as("3").out("c").as("4")), __.as("5").out("d").as("6"))},
@@ -83,43 +87,24 @@ public class ConnectiveStrategyTest {
                         // EXPECT:
                         __.or(
                                 __.as("a1").out("a").as("a2"),
-                                __.or(
-                                        __.and(
-                                                __.as("b1").out("b").as("b2"),
-                                                __.as("c1").out("c").as("c2")
-                                        ),
-                                        __.or(
-                                                __.as("d1").out("d").as("d2"),
+                                __.and(
+                                        __.as("b1").out("b").as("b2"),
+                                        __.as("c1").out("c").as("c2")),
+                                __.as("d1").out("d").as("d2"),
+                                __.and(
+                                        __.as("e1").out("e").as("e2"),
+                                        __.as("f1").out("f").as("f2"),
+                                        __.as("g1").out("g").as("g2")),
+                                __.and(
+                                        __.as("h1").out("h").as("h2").or(
                                                 __.or(
+                                                        __.as("i1").out("i").as("i2"),
                                                         __.and(
-                                                                __.as("e1").out("e").as("e2"),
-                                                                __.and(
-                                                                        __.as("f1").out("f").as("f2"),
-                                                                        __.as("g1").out("g").as("g2")
-                                                                )
-                                                        ),
-                                                        __.and(
-                                                                __.as("h1").out("h").as("h2").or(
-                                                                        __.or(
-                                                                                __.as("i1").out("i").as("i2"),
-                                                                                __.and(
-                                                                                        __.as("j1").out("j").as("j2"),
-                                                                                        __.as("k1").out("k").as("k2")
-                                                                                )
-                                                                        )
-                                                                ),
-                                                                __.and(
-                                                                        __.as("l1").out("l").as("l2"),
-                                                                        __.and(
-                                                                                __.as("m1").out("m").as("m2"),
-                                                                                __.as("n1").out("n").as("n2")
-                                                                        )
-                                                                )
-                                                        )
-                                                )
-                                        )
-                                )
-                        )
+                                                                __.as("j1").out("j").as("j2"),
+                                                                __.as("k1").out("k").as("k2")))),
+                                __.as("l1").out("l").as("l2"),
+                                __.as("m1").out("m").as("m2"),
+                                __.as("n1").out("n").as("n2")))
                 }
         });
     }
