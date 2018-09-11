@@ -33,6 +33,7 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Added `GraphFeatures.supportsIoRead()` and `GraphFeatures.supportsIoWrite()`.
 * Deprecated `Graph.io()` and related infrastructure.
 * `GraphMLReader` better handles edge and vertex properties with the same name.
+* Maintained order of annotations in metrics returned from `profile()`-step.
 * Bumped to Netty 4.1.25.
 * Bumped to Spark 2.3.1.
 * Deprecated two `submit()`-related methods on the Java driver `Client` class.

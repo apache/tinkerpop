@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -427,7 +428,12 @@ public final class GryoSerializersV3d0 {
             output.writeString(object.getName());
             output.writeDouble(object.getDuration(TimeUnit.NANOSECONDS) / 1000000d);
             kryo.writeObject(output, object.getCounts());
-            kryo.writeObject(output, object.getAnnotations());
+
+            // annotations is a synchronized LinkedHashMap - get rid of the "synch" for serialization as gryo
+            // doesn't know how to deserialize that well and LinkedHashMap should work with 3.3.x and previous
+            final Map<String, Object> annotations = new LinkedHashMap<>();
+            object.getAnnotations().forEach(annotations::put);
+            kryo.writeObject(output, annotations);
 
             // kryo might have a problem with LinkedHashMap value collections. can't recreate it independently but
             // it gets fixed with standard collections for some reason.
