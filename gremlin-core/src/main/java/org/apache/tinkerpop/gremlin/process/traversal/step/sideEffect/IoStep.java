@@ -115,7 +115,7 @@ public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
         }
     }
 
-    private Traverser.Admin<S> write(final File file) {
+    protected Traverser.Admin<S> write(final File file) {
         try (final OutputStream stream = new FileOutputStream(file)) {
             final Graph graph = (Graph) this.traversal.getGraph().get();
             constructWriter().writeGraph(stream, graph);
@@ -126,7 +126,7 @@ public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
         }
     }
 
-    private Traverser.Admin<S> read(final File file) {
+    protected Traverser.Admin<S> read(final File file) {
         try (final InputStream stream = new FileInputStream(file)) {
             final Graph graph = (Graph) this.traversal.getGraph().get();
             constructReader().readGraph(stream, graph);
@@ -217,8 +217,8 @@ public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
     }
 
     private List<IoRegistry> detectRegistries() {
-        final List<Object> k = parameters.get(IO.registry, Collections::emptyList);
-        return parameters.get(IO.registry, null).stream().map(cn -> {
+        final List<Object> k = parameters.get(IO.registry, null);
+        return k.stream().map(cn -> {
             try {
                 if (cn instanceof IoRegistry)
                     return (IoRegistry) cn;
