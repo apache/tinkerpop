@@ -84,6 +84,7 @@ import org.apache.tinkerpop.gremlin.util.function.MultiComparator;
 import org.apache.tinkerpop.shaded.kryo.KryoSerializable;
 import org.apache.tinkerpop.shaded.kryo.serializers.JavaSerializer;
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -191,6 +192,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Collections.singleton(null).getClass(), 54));
             add(GryoTypeReg.of(Collections.singletonList(null).getClass(), 24));
             add(GryoTypeReg.of(Collections.singletonMap(null, null).getClass(), 23));
+            add(GryoTypeReg.of(Types.COLLECTIONS_SYNCHRONIZED_MAP, 185, new UtilSerializers.SynchronizedMapSerializer()));  // ***LAST ID***
             add(GryoTypeReg.of(Contains.class, 49));
             add(GryoTypeReg.of(Currency.class, 40));
             add(GryoTypeReg.of(Date.class, 38));
@@ -280,6 +282,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MapReduce.NullObject.class, 74));
             add(GryoTypeReg.of(AtomicLong.class, 79));
             add(GryoTypeReg.of(Pair.class, 88, new UtilSerializers.PairSerializer()));
+            add(GryoTypeReg.of(Triplet.class, 183, new UtilSerializers.TripletSerializer()));
             add(GryoTypeReg.of(TraversalExplanation.class, 106, new JavaSerializer()));
 
             add(GryoTypeReg.of(Duration.class, 93, new JavaTimeSerializers.DurationSerializer()));
@@ -308,7 +311,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(OrderGlobalStep.OrderBiOperator.class, 118, new JavaSerializer()));
             add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119));
             // skip 171, 172 to sync with tp33
-            add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));                 // ***LAST ID***
+            add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));
         }};
     }
 
@@ -332,6 +335,8 @@ public enum GryoVersion {
 
         private static final Class HASH_MAP_TREE_NODE;
 
+        private static final Class COLLECTIONS_SYNCHRONIZED_MAP;
+
         static {
             // have to instantiate this via reflection because it is a private inner class of HashMap
             String className = HashMap.class.getName() + "$Node";
@@ -344,6 +349,13 @@ public enum GryoVersion {
             className = HashMap.class.getName() + "$TreeNode";
             try {
                 HASH_MAP_TREE_NODE = Class.forName(className);
+            } catch (Exception ex) {
+                throw new RuntimeException("Could not access " + className, ex);
+            }
+
+            className = Collections.class.getName() + "$SynchronizedMap";
+            try {
+                COLLECTIONS_SYNCHRONIZED_MAP = Class.forName(className);
             } catch (Exception ex) {
                 throw new RuntimeException("Could not access " + className, ex);
             }

@@ -28,6 +28,7 @@ import org.apache.tinkerpop.shaded.kryo.Serializer;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
 
 import java.net.InetAddress;
 import java.net.URI;
@@ -35,6 +36,8 @@ import java.nio.ByteBuffer;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -216,6 +219,20 @@ final class UtilSerializers {
         }
     }
 
+    static final class TripletSerializer implements SerializerShim<Triplet> {
+        @Override
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Triplet triplet) {
+            kryo.writeClassAndObject(output, triplet.getValue0());
+            kryo.writeClassAndObject(output, triplet.getValue1());
+            kryo.writeClassAndObject(output, triplet.getValue2());
+        }
+
+        @Override
+        public <I extends InputShim> Triplet read(final KryoShim<I, ?> kryo, final I input, final Class<Triplet> tripletClass) {
+            return Triplet.with(kryo.readClassAndObject(input), kryo.readClassAndObject(input), kryo.readClassAndObject(input));
+        }
+    }
+
     static final class EntrySerializer extends Serializer<Map.Entry> {
         @Override
         public void write(final Kryo kryo, final Output output, final Map.Entry entry) {
@@ -226,6 +243,22 @@ final class UtilSerializers {
         @Override
         public Map.Entry read(final Kryo kryo, final Input input, final Class<Map.Entry> entryClass) {
             return new AbstractMap.SimpleEntry(kryo.readClassAndObject(input), kryo.readClassAndObject(input));
+        }
+    }
+
+    /**
+     * Serializer for {@code List} instances produced by {@code Arrays.asList()}.
+     */
+    final static class SynchronizedMapSerializer implements SerializerShim<Map> {
+        @Override
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Map map) {
+            final Map m = new LinkedHashMap();
+            map.forEach(m::put);
+            kryo.writeObject(output, m);
+        }
+        @Override
+        public <I extends InputShim> Map read(final KryoShim<I, ?> kryo, final I input, final Class<Map> clazz) {
+            return Collections.synchronizedMap(kryo.readObject(input, LinkedHashMap.class));
         }
     }
 }
