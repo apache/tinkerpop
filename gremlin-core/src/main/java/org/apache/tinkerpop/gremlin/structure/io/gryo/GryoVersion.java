@@ -235,6 +235,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Collections.singleton(null).getClass(), 54));
             add(GryoTypeReg.of(Collections.singletonList(null).getClass(), 24));
             add(GryoTypeReg.of(Collections.singletonMap(null, null).getClass(), 23));
+            add(GryoTypeReg.of(Types.COLLECTIONS_SYNCHRONIZED_MAP, 185, new UtilSerializers.SynchronizedMapSerializer()));  // ***LAST ID***
             add(GryoTypeReg.of(Contains.class, 49));
             add(GryoTypeReg.of(Currency.class, 40));
             add(GryoTypeReg.of(Date.class, 38));
@@ -374,7 +375,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(RangeGlobalStep.RangeBiOperator.class, 114));
             add(GryoTypeReg.of(OrderGlobalStep.OrderBiOperator.class, 118));
             add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119));
-            add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));                 // ***LAST ID***
+            add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));
 
             // placeholder serializers for classes that don't live here in core. this will allow them to be used if
             // present  or ignored if the class isn't available. either way the registration numbers are held as
