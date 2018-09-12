@@ -430,6 +430,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added an system error code for failed plugin installs for Gremlin Server `-i` option.
 * Match numbers in `choose()` options using `NumberHelper` (match values, ignore data type).
 * Added support for GraphSON serialization of `Date` in Javascript.
+* Added synchronized `Map` to Gryo 1.0 registrations.
+* Added `Triple` to Gryo 1.0 registrations.
 * Added better internal processing of `Column` in `by(Function)`.
 * Added support for additional extended types in Gremlin.Net with `decimal`, `TimeSpan`, `BigInteger`, `byte`, `byte[]`, `char` and `short`.
 * Fixed bug in Java driver where an disorderly shutdown of the server would cause the client to hang.
