@@ -51,19 +51,19 @@ namespace Gremlin.Net.Driver
             this.StatusAttributes = attributes;
         }
 
-        /// <inheritdoc cref="IReadOnlyCollection{T}"/>
+        /// <inheritdoc />
         public IEnumerator<T> GetEnumerator()
         {
             return _data.GetEnumerator();
         }
 
-        /// <inheritdoc cref="IReadOnlyCollection{T}"/>
+        /// <inheritdoc />
         IEnumerator IEnumerable.GetEnumerator()
         {
             return _data.GetEnumerator();
         }
 
-        /// <inheritdoc cref="IReadOnlyCollection{T}"/>
+        /// <inheritdoc />
         public int Count => _data.Count;
     }
 }
