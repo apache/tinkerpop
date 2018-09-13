@@ -79,6 +79,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-2-10, 3.2.10>>.
 
+* Added synchronized `Map` to Gryo 3.0 registrations.
 * Removed `timedInterrupt` from documentation as a way to timeout.
 * Deprecated `Order` for `incr` and `decr` in favor of `asc` and `desc`.
 * Fixed bug in `math()` for OLAP where `ComputerVerificationStrategy` was incorrectly detecting path label access and preventing execution.
