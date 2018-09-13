@@ -42,17 +42,17 @@ namespace Gremlin.Net.Driver.Exceptions
                                  IReadOnlyDictionary<string, object> statusAttributes,
                                  string message) : base(message)
         {
-            StatusAttributes = statusAttributes;
             StatusCode = statusCode;
+            StatusAttributes = statusAttributes;
         }
 
         /// <summary>
-        /// Gets the status code returned from the server.
+        ///     Gets the status code returned from the server.
         /// </summary>
         public ResponseStatusCode StatusCode { get; }
 
         /// <summary>
-        /// Gets the status attributes from the gremlin response
+        ///     Gets the status attributes from the gremlin response
         /// </summary>
         public IReadOnlyDictionary<string, object> StatusAttributes { get; }
     }
