@@ -27,8 +27,8 @@ using System.Collections.Generic;
 namespace Gremlin.Net.Driver
 {
     /// <summary>
-    /// A ResultSet is returned from the submission of a Gremlin script to the server and represents the results provided by the server
-    /// ResultSet includes enumerable data and status attributes.
+    ///     A ResultSet is returned from the submission of a Gremlin script to the server and represents the results
+    ///     provided by the server. ResultSet includes enumerable data and status attributes.
     /// </summary>
     /// <typeparam name="T">Type of the result elements</typeparam>
     public sealed class ResultSet<T> : IReadOnlyCollection<T>
@@ -36,12 +36,12 @@ namespace Gremlin.Net.Driver
         private readonly IReadOnlyCollection<T> _data;
 
         /// <summary>
-        /// Gets or sets the status attributes from the gremlin response
+        ///     Gets or sets the status attributes from the gremlin response
         /// </summary>
         public IReadOnlyDictionary<string, object> StatusAttributes { get; }
 
         /// <summary>
-        /// Initializes a new instance of the ResultSet class for the specified data and status attributes.
+        ///     Initializes a new instance of the ResultSet class for the specified data and status attributes.
         /// </summary>
         /// <param name="data"></param>
         /// <param name="attributes"></param>
@@ -51,22 +51,19 @@ namespace Gremlin.Net.Driver
             this.StatusAttributes = attributes;
         }
 
-        /// <summary>Returns an enumerator that iterates through the collection.</summary>
-        /// <returns>An enumerator that can be used to iterate through the collection.</returns>
+        /// <inheritdoc cref="IReadOnlyCollection{T}"/>
         public IEnumerator<T> GetEnumerator()
         {
             return _data.GetEnumerator();
         }
 
-        /// <summary>Returns an enumerator that iterates through a collection.</summary>
-        /// <returns>An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.</returns>
+        /// <inheritdoc cref="IReadOnlyCollection{T}"/>
         IEnumerator IEnumerable.GetEnumerator()
         {
             return _data.GetEnumerator();
         }
 
-        /// <summary>Gets the number of elements in the collection.</summary>
-        /// <returns>The number of elements in the collection. </returns>
+        /// <inheritdoc cref="IReadOnlyCollection{T}"/>
         public int Count => _data.Count;
     }
 }
