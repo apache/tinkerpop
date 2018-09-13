@@ -172,6 +172,13 @@ respond to them on any channel - websockets, nio or HTTP. Use the "aliases" opti
 
 link:https://issues.apache.org/jira/browse/TINKERPOP-1705[TINKERPOP-1705]
 
+==== gremlin-server.sh -i Removal
+
+The `-i` option for installing dependencies in Gremlin Server was long ago deprecated and has now been removed. Please
+use `install` as its replacement going forward.
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-2031[TINKERPOP-2031]
+
 ==== Improvements in `min()` and `max()`
 
 Previously `min()` and `max()` were only working for numeric values. This has been changed and these steps can now operate over any `Comparable` value. The common workaround was the combination
