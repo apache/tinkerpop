@@ -49,7 +49,7 @@ class DriverRemoteConnection extends RemoteConnection {
    * @param {String} [options.traversalSource] The traversal source. Defaults to: 'g'.
    * @param {GraphSONWriter} [options.writer] The writer to use.
    * @param {Authenticator} [options.authenticator] The authentication handler to use.
-   * @param {String} [options.headers] Add custom headers to the request.
+   * @param {Object} [options.headers] An associative array containing the additional header key/values for the initial request.
    * @constructor
    */
   constructor(url, options) {
