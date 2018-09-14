@@ -26,6 +26,7 @@ from gremlin_python.driver.driver_remote_connection import (
     DriverRemoteConnection)
 from gremlin_python.process.traversal import Traverser
 from gremlin_python.process.traversal import TraversalStrategy
+from gremlin_python.process.traversal import P
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.structure.graph import Graph
 from gremlin_python.structure.graph import Vertex
@@ -81,6 +82,44 @@ class TestDriverRemoteConnection(object):
         assert 2 == len(results)
         assert 'marko' in results
         assert 'vadas' in results
+
+    def test_iteration(self, remote_connection):
+        statics.load_statics(globals())
+        assert "remoteconnection[ws://localhost:45940/gremlin,gmodern]" == str(remote_connection)
+        g = Graph().traversal().withRemote(remote_connection)
+
+        t = g.V().count()
+        assert t.hasNext()
+        assert t.hasNext()
+        assert t.hasNext()
+        assert t.hasNext()
+        assert t.hasNext()
+        assert 6 == t.next()
+        assert not(t.hasNext())
+        assert not(t.hasNext())
+        assert not(t.hasNext())
+        assert not(t.hasNext())
+        assert not(t.hasNext())
+
+        t = g.V().has('name', P.within('marko', 'peter')).values('name').order()
+        assert "marko" == t.next()
+        assert t.hasNext()
+        assert t.hasNext()
+        assert t.hasNext()
+        assert t.hasNext()
+        assert t.hasNext()
+        assert "peter" == t.next()
+        assert not(t.hasNext())
+        assert not(t.hasNext())
+        assert not(t.hasNext())
+        assert not(t.hasNext())
+        assert not(t.hasNext())
+
+        try:
+            t.next()
+            assert False
+        except StopIteration:
+            assert True
 
     def test_strategies(self, remote_connection):
         statics.load_statics(globals())
