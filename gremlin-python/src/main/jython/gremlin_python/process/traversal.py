@@ -29,15 +29,19 @@ class Traversal(object):
         self.side_effects = TraversalSideEffects()
         self.traversers = None
         self.last_traverser = None
+
     def __repr__(self):
         return str(self.bytecode)
+
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             return self.bytecode == other.bytecode
         else:
             return False
+
     def __iter__(self):
         return self
+
     def __next__(self):
         if self.traversers is None:
             self.traversal_strategies.apply_strategies(self)
@@ -48,14 +52,18 @@ class Traversal(object):
         if self.last_traverser.bulk <= 0:
             self.last_traverser = None
         return object
+
     def toList(self):
         return list(iter(self))
+
     def toSet(self):
         return set(iter(self))
+
     def iterate(self):
         while True:
             try: self.nextTraverser()
             except StopIteration: return self
+
     def nextTraverser(self):
         if self.traversers is None:
             self.traversal_strategies.apply_strategies(self)
@@ -65,6 +73,15 @@ class Traversal(object):
             temp = self.last_traverser
             self.last_traverser = None
             return temp
+
+    def hasNext(self):
+        if self.traversers is None:
+            self.traversal_strategies.apply_strategies(self)
+        if self.last_traverser is None:
+            try: self.last_traverser = next(self.traversers)
+            except StopIteration: return False
+        return not(self.last_traverser is None) and self.last_traverser.bulk > 0
+
     def next(self, amount=None):
         if amount is None:
             return self.__next__()
@@ -77,6 +94,7 @@ class Traversal(object):
                 except StopIteration: return tempList
                 tempList.append(temp)
             return tempList
+
     def promise(self, cb=None):
         self.traversal_strategies.apply_async_strategies(self)
         future_traversal = self.remote_results
@@ -387,8 +405,10 @@ class Traverser(object):
             bulk = long(1)
         self.object = object
         self.bulk = bulk
+
     def __repr__(self):
         return str(self.object)
+
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.object == other.object
 
@@ -399,10 +419,13 @@ TRAVERSAL SIDE-EFFECTS
 class TraversalSideEffects(object):
     def keys(self):
         return set()
+
     def get(self, key):
         raise KeyError(key)
+
     def __getitem__(self, key):
         return self.get(key)
+
     def __repr__(self):
         return "sideEffects[size:" + str(len(self.keys())) + "]"
 
@@ -414,14 +437,18 @@ class TraversalStrategies(object):
     global_cache = {}
     def __init__(self, traversal_strategies=None):
         self.traversal_strategies = traversal_strategies.traversal_strategies if traversal_strategies is not None else []
+
     def add_strategies(self, traversal_strategies):
         self.traversal_strategies = self.traversal_strategies + traversal_strategies
+
     def apply_strategies(self, traversal):
         for traversal_strategy in self.traversal_strategies:
             traversal_strategy.apply(traversal)
+
     def apply_async_strategies(self, traversal):
         for traversal_strategy in self.traversal_strategies:
             traversal_strategy.apply_async(traversal)
+
     def __repr__(self):
         return str(self.traversal_strategies)
 
@@ -430,14 +457,19 @@ class TraversalStrategy(object):
     def __init__(self, strategy_name=None, configuration=None):
         self.strategy_name = type(self).__name__ if strategy_name is None else strategy_name
         self.configuration = {} if configuration is None else configuration
+
     def apply(self, traversal):
         return
+
     def apply_async(self, traversal):
         return
+
     def __eq__(self, other):
         return isinstance(other, self.__class__)
+
     def __hash__(self):
         return hash(self.strategy_name)
+
     def __repr__(self):
         return self.strategy_name
 
@@ -453,21 +485,25 @@ class Bytecode(object):
         if bytecode is not None:
             self.source_instructions = list(bytecode.source_instructions)
             self.step_instructions = list(bytecode.step_instructions)
+
     def add_source(self, source_name, *args):
         instruction = [source_name]
         for arg in args:
             instruction.append(self.__convertArgument(arg))
         self.source_instructions.append(instruction)
+
     def add_step(self, step_name, *args):
         instruction = [step_name]
         for arg in args:
             instruction.append(self.__convertArgument(arg))
         self.step_instructions.append(instruction)
+
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             return self.source_instructions == other.source_instructions and self.step_instructions == other.step_instructions
         else:
             return False
+
     def __convertArgument(self,arg):
         if isinstance(arg, Traversal):
             self.bindings.update(arg.bytecode.bindings)
@@ -492,6 +528,7 @@ class Bytecode(object):
             return Binding(arg[0],self.__convertArgument(arg[1]))
         else:
             return arg
+
     def __repr__(self):
         return (str(self.source_instructions) if len(self.source_instructions) > 0 else "") + \
                (str(self.step_instructions) if len(self.step_instructions) > 0 else "")
@@ -511,9 +548,12 @@ class Binding(object):
     def __init__(self,key,value):
         self.key = key
         self.value = value
+
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.key == other.key and self.value == other.value
+
     def __hash__(self):
         return hash(self.key) + hash(self.value)
+
     def __repr__(self):
         return "binding[" + self.key + "=" + str(self.value) + "]"
