@@ -36,10 +36,10 @@ The infix notation of `and()` and `or()` now supports an arbitrary number of tra
 ```
 Input: a.or.b.and.c.or.d.and.e.or.f.and.g.and.h.or.i
 
-## BEFORE
+*BEFORE*
 Output: or(a, or(and(b, c), or(and(d, e), or(and(and(f, g), h), i))))
 
-## NOW
+*NOW*
 Output: or(a, and(b, c), and(d, e), and(f, g, h), i)
 ```
 
