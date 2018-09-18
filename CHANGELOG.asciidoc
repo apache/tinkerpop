@@ -42,6 +42,7 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Modified remote traversals to retrieve status attributes from traversal side-effects.
 * Deprecated two `submit()`-related methods on the Java driver `Client` class.
 * Modified Java and Gremlin.Net `ResponseException` to include status code and status attributes.
+* Modified Python `GremlinServerError` to include status attributes.
 * Modified the return type for `IGremlinClient.SubmitAsync()` to be a `ResultSet` rather than an `IReadOnlyCollection`.
 * Added `Client.submit()` overloads that accept per-request `RequestOptions`.
 * Added sparql-gremlin.

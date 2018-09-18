@@ -52,6 +52,16 @@ def test_client_eval_traversal(client):
     assert len(client.submit('g.V()').all().result()) == 6
 
 
+def test_client_error(client):
+    try:
+        # should fire an exception
+        client.submit('1/0').all().result()
+        assert False
+    except GremlinServerError as ex:
+        assert 'exceptions' in ex.status_attributes
+        assert 'stackTrace' in ex.status_attributes
+
+
 def test_client_bytecode(client):
     g = Graph().traversal()
     t = g.V()
