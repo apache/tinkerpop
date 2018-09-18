@@ -90,6 +90,7 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
         elif status_code in [200, 206]:
             result_set.stream.put_nowait(data)
             if status_code == 200:
+                result_set.status_attributes = message['status']['attributes']
                 del results_dict[request_id]
             return status_code
         else:

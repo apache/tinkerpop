@@ -38,11 +38,10 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Bumped to Netty 4.1.25.
 * Bumped to Spark 2.3.1.
 * Modified Gremlin Server to return a "host" status attribute on responses.
-* Added ability to the Java driver to retrieve status attributes returned from the server on the `ResultSet` object.
-* Modified remote traversals to retreive status attributes from traversal side-effects.
+* Added ability to the Java, .NET and Python drivers to retrieve status attributes returned from the server on the `ResultSet` object.
+* Modified remote traversals to retrieve status attributes from traversal side-effects.
 * Deprecated two `submit()`-related methods on the Java driver `Client` class.
-* Modified Gremlin.Net `ResponseException` to include status code and status attributes.
-* Modified Java driver's `ResponseException` to include status code and status attributes.
+* Modified Java and Gremlin.Net `ResponseException` to include status code and status attributes.
 * Modified the return type for `IGremlinClient.SubmitAsync()` to be a `ResultSet` rather than an `IReadOnlyCollection`.
 * Added `Client.submit()` overloads that accept per-request `RequestOptions`.
 * Added sparql-gremlin.
