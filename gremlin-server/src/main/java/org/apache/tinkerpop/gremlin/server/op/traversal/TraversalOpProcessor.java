@@ -453,7 +453,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                                                    final ResponseStatusCode code, final Iterator itty) {
         // leaving this overriding the deprecated version of this method because it provides a decent test to those
         // who might have their own OpProcessor implementations that apply meta-data. leaving this alone helps validate
-        // that the upgrade path is clean. we can remove this in 3.4.0
+        // that the upgrade path is clean.  it can be removed at the next breaking change 3.5.0
         Map<String, Object> metaData = Collections.emptyMap();
         if (itty instanceof SideEffectIterator) {
             final SideEffectIterator traversalIterator = (SideEffectIterator) itty;

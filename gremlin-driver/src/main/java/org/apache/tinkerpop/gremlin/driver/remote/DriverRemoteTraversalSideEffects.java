@@ -57,7 +57,7 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
     private final CompletableFuture<Map<String,Object>> statusAttributes;
 
     /**
-     * @deprecated As of release 3.3.2, replaced by {@link #DriverRemoteTraversalSideEffects(Client, ResultSet)}
+     * @deprecated As of release 3.4.0, replaced by {@link #DriverRemoteTraversalSideEffects(Client, ResultSet)}
      */
     @Deprecated
     public DriverRemoteTraversalSideEffects(final Client client, final UUID serverSideEffect, final Host host,
