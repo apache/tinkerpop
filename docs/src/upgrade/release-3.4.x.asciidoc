@@ -29,6 +29,31 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.4.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Changed infix behavior
+
+The infix notation of `and()` and `or()` now supports an arbitrary number of traversals and `ConnectiveStrategy` produces a traversal with proper AND and OR semantics.
+
+```
+Input: a.or.b.and.c.or.d.and.e.or.f.and.g.and.h.or.i
+
+## BEFORE
+Output: or(a, or(and(b, c), or(and(d, e), or(and(and(f, g), h), i))))
+
+## NOW
+Output: or(a, and(b, c), and(d, e), and(f, g, h), i)
+```
+
+Furthermore, previous versions failed to apply 3 or more `and()` steps using the infix notation, this is now fixed.
+
+[source,groovy]
+----
+gremlin> g.V().has("name","marko").and().has("age", lt(30)).or().has("name","josh").and().has("age", gt(30)).and().out("created")
+==>v[1]
+==>v[4]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2029[TINKERPOP-2029]
+
 ==== sparql-gremlin
 
 The `sparql-gremlin` module is a link:https://en.wikipedia.org/wiki/SPARQL[SPARQL] to Gremlin compiler, which allows

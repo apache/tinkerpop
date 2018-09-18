@@ -339,8 +339,7 @@ g.V().and(
 The `and()`-step can take an arbitrary number of traversals. All traversals must produce at least one output for the
 original traverser to pass to the next step.
 
-An link:http://en.wikipedia.org/wiki/Infix_notation[infix notation] can be used as well. Though, with infix notation,
-only two traversals can be and'd together.
+An link:http://en.wikipedia.org/wiki/Infix_notation[infix notation] can be used as well.
 
 [gremlin-groovy,modern]
 ----
@@ -1864,8 +1863,7 @@ g.V().or(
 The `or()`-step can take an arbitrary number of traversals. At least one of the traversals must produce at least one
 output for the original traverser to pass to the next step.
 
-An link:http://en.wikipedia.org/wiki/Infix_notation[infix notation] can be used as well. Though, with infix notation,
-only two traversals can be or'd together.
+An link:http://en.wikipedia.org/wiki/Infix_notation[infix notation] can be used as well.
 
 [gremlin-groovy,modern]
 ----

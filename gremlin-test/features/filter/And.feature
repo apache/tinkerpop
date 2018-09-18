@@ -67,3 +67,14 @@ Feature: Step - and()
       | v[josh] |
       | v[ripple] |
       | v[peter]  |
+
+  Scenario: g_V_hasXname_markoX_and_hasXname_markoX_and_hasXname_markoX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("name", "marko").and().has("name", "marko").and().has("name", "marko")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
