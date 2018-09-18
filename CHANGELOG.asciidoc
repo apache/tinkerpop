@@ -39,7 +39,7 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Bumped to Spark 2.3.1.
 * Modified Gremlin Server to return a "host" status attribute on responses.
 * Added ability to the Java, .NET and Python drivers to retrieve status attributes returned from the server on the `ResultSet` object.
-* Modified remote traversals to retrieve status attributes from traversal side-effects.
+* Modified remote traversals to retrieve status attributes from traversal side-effects in Python and Java drivers.
 * Deprecated two `submit()`-related methods on the Java driver `Client` class.
 * Modified Java and Gremlin.Net `ResponseException` to include status code and status attributes.
 * Modified Python `GremlinServerError` to include status attributes.
