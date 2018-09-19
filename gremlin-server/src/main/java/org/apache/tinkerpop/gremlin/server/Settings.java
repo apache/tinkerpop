@@ -455,7 +455,7 @@ public class Settings {
         /**
          * The X.509 certificate chain file in PEM format.
          * 
-         * @deprecated As of release 3.2.10, replaced by {@link keyStore}
+         * @deprecated As of release 3.2.10, replaced by {@link #keyStore}
          */
         @Deprecated
         public String keyCertChainFile = null;
@@ -463,7 +463,7 @@ public class Settings {
         /**
          * The PKCS#8 private key file in PEM format.
          * 
-         * @deprecated As of release 3.2.10, replaced by {@link keyStore}
+         * @deprecated As of release 3.2.10, replaced by {@link #keyStore}
          */
         @Deprecated
         public String keyFile = null;
@@ -472,7 +472,7 @@ public class Settings {
          * The password of the {@link #keyFile}, or {@code null} if it's not
          * password-protected.
          * 
-         * @deprecated As of release 3.2.10, replaced by {@link keyStorePassword}
+         * @deprecated As of release 3.2.10, replaced by {@link #keyStorePassword}
          */
         @Deprecated
         public String keyPassword = null;
@@ -482,7 +482,7 @@ public class Settings {
          * file should contain an X.509 certificate chain in PEM format. {@code null}
          * uses the system default.
          * 
-         * @deprecated As of release 3.2.10, replaced by {@link trustStore}
+         * @deprecated As of release 3.2.10, replaced by {@link #trustStore}
          */
         @Deprecated
         public String trustCertChainFile = null;
@@ -509,7 +509,7 @@ public class Settings {
         public String trustStorePassword;
 
         /**
-         * The format of the {@link keyStore}, either {@code JKS} or {@code PKCS12}
+         * The format of the {@link #keyStore}, either {@code JKS} or {@code PKCS12}
          */
         public String keyStoreType;
 
