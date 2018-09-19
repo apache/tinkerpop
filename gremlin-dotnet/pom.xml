@@ -52,7 +52,7 @@ limitations under the License.
                         <groupId>org.codehaus.groovy</groupId>
                         <artifactId>groovy-all</artifactId>
                         <version>${groovy.version}</version>
-                        <classifier>indy</classifier>
+                        <type>pom</type>
                         <scope>runtime</scope>
                     </dependency>
                     <dependency>
