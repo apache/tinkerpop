@@ -39,11 +39,16 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
+import java.util.function.UnaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -53,13 +58,19 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
     private static final boolean IS_TESTING = Boolean.valueOf(System.getProperty("is.testing", "false"));
 
     private final String traversalSource;
+    private final TypeTranslator typeTranslator;
 
-    private GroovyTranslator(final String traversalSource) {
+    private GroovyTranslator(final String traversalSource, final TypeTranslator typeTranslator) {
         this.traversalSource = traversalSource;
+        this.typeTranslator = typeTranslator;
     }
 
     public static final GroovyTranslator of(final String traversalSource) {
-        return new GroovyTranslator(traversalSource);
+        return of(traversalSource, TypeTranslator.identity());
+    }
+
+    public static final GroovyTranslator of(final String traversalSource, final TypeTranslator typeTranslator) {
+        return new GroovyTranslator(traversalSource, Optional.ofNullable(typeTranslator).orElse(TypeTranslator.identity()));
     }
 
     ///////
@@ -108,8 +119,15 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
         return traversalScript.toString();
     }
 
-    private String convertToString(final Object object) {
-        if (object instanceof Bytecode.Binding)
+    private String convertToString(final Object o) {
+        // a TypeTranslator that returns Handled means that the typetranslator figure out how to convert the
+        // object to a string and it should be used as-is, otherwise it gets passed down the line through the normal
+        // process
+        final Object object = typeTranslator.apply(o);
+
+        if (object instanceof Handled)
+            return ((Handled) object).getTranslation();
+        else if (object instanceof Bytecode.Binding)
             return ((Bytecode.Binding) object).variable();
         else if (object instanceof Bytecode)
             return this.internalTranslate("__", (Bytecode) object);
@@ -155,6 +173,12 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
             return "(int) " + object;
         else if (object instanceof Class)
             return ((Class) object).getCanonicalName();
+        else if (object instanceof Timestamp)
+            return "new java.sql.Timestamp(" + ((Timestamp) object).getTime() + ")";
+        else if (object instanceof Date)
+            return "new java.util.Date(" + ((Date) object).getTime() + ")";
+        else if (object instanceof UUID)
+            return "java.util.UUID.fromString('" + object.toString() + "')";
         else if (object instanceof P)
             return convertPToString((P) object, new StringBuilder()).toString();
         else if (object instanceof SackFunctions.Barrier)

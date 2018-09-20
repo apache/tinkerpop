@@ -19,6 +19,8 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import java.util.function.UnaryOperator;
+
 /**
  * A Translator will translate {@link Bytecode} into another representation. That representation may be a
  * Java instance via {@link StepTranslator} or a String script in some language via {@link ScriptTranslator}.
@@ -55,10 +57,42 @@ public interface Translator<S, T> {
 
     ///
 
+    /**
+     * Translates bytecode to a string representation.
+     */
     public interface ScriptTranslator extends Translator<String, String> {
 
+        /**
+         * Provides a way to customize and override the standard translation process. A {@link ScriptTranslator}
+         * implementation can choose to expose a way to accept a {@code TypeTranslator} which will convert an incoming
+         * object to a different form which will then be normally processed or can return a {@link Handled} object
+         * with the already translated script.
+         */
+        public interface TypeTranslator extends UnaryOperator<Object> {
+            public static TypeTranslator identity() {
+                return t -> t;
+            }
+        }
+
+        /**
+         * Contains a completed type translation from the {@link TypeTranslator}.
+         */
+        public class Handled {
+            private final String translation;
+
+            public Handled(final String translation) {
+                this.translation = translation;
+            }
+
+            public String getTranslation() {
+                return translation;
+            }
+        }
     }
 
+    /**
+     * Translates bytecode to actual steps.
+     */
     public interface StepTranslator<S extends TraversalSource, T extends Traversal.Admin<?, ?>> extends Translator<S, T> {
 
     }
