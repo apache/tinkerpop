@@ -647,7 +647,7 @@ public final class Cluster {
         /**
          * File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and
          * SSL is enabled, the default {@link TrustManager} will be used.
-         * @deprecated As of release 3.2.10, replaced by {@link trustStore}
+         * @deprecated As of release 3.2.10, replaced by {@link #trustStore}
          */
         @Deprecated
         public Builder trustCertificateChainFile(final String certificateChainFile) {
@@ -667,7 +667,7 @@ public final class Cluster {
 
         /**
          * The X.509 certificate chain file in PEM format.
-         * @deprecated As of release 3.2.10, replaced by {@link keyStore}
+         * @deprecated As of release 3.2.10, replaced by {@link #keyStore}
          */
         @Deprecated
         public Builder keyCertChainFile(final String keyCertChainFile) {
@@ -677,7 +677,7 @@ public final class Cluster {
 
         /**
          * The PKCS#8 private key file in PEM format.
-         * @deprecated As of release 3.2.10, replaced by {@link keyStore}
+         * @deprecated As of release 3.2.10, replaced by {@link #keyStore}
          */
         @Deprecated
         public Builder keyFile(final String keyFile) {
@@ -687,7 +687,7 @@ public final class Cluster {
 
         /**
          * The password of the {@link #keyFile}, or {@code null} if it's not password-protected.
-         * @deprecated As of release 3.2.10, replaced by {@link keyStorePassword}
+         * @deprecated As of release 3.2.10, replaced by {@link #keyStorePassword}
          */
         @Deprecated
         public Builder keyPassword(final String keyPassword) {
@@ -729,7 +729,7 @@ public final class Cluster {
         }
         
         /**
-         * The format of the {@link keyStore}, either {@code JKS} or {@code PKCS12} 
+         * The format of the {@link #keyStore}, either {@code JKS} or {@code PKCS12}
          */
         public Builder keyStoreType(final String keyStoreType) {
             this.keyStoreType = keyStoreType;
