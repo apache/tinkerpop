@@ -46,6 +46,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in `branch()` where reducing steps as options would produce incorrect results.
 * Removed recursive handling of streaming results from Gremlin-Python driver to avoid max recursion depth errors.
 * Improved performance of `TraversalVertexProgram` and related infrastructure.
+* Checked web socket state before closing connection in the .NET driver.
 * Deprecated `BulkLoaderVertexProgram` and related infrastructure.
 * Deprecated `BulkDumperVertexProgram` with the more aptly named `CloneVertexProgram`.
 * Added `createGratefulDead()` to `TinkerFactory` to help make it easier to try to instantiate that toy graph.
