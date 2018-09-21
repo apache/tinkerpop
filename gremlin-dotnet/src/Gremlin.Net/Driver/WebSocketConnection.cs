@@ -43,10 +43,23 @@ namespace Gremlin.Net.Driver
 
         public async Task CloseAsync()
         {
-            await
-                _client.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None)
-                    .ConfigureAwait(false);
+            if (CloseAlreadyInitiated) return;
+
+            try
+            {
+                await
+                    _client.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None)
+                        .ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // Swallow exceptions silently as there is nothing to do when closing fails
+            }
         }
+
+        private bool CloseAlreadyInitiated => _client.State == WebSocketState.Closed ||
+                                            _client.State == WebSocketState.Aborted ||
+                                            _client.State == WebSocketState.CloseSent;
 
         public async Task SendMessageAsync(byte[] message)
         {
