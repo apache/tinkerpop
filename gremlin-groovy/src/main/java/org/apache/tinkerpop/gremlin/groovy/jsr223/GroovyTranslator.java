@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
+import groovy.json.StringEscapeUtils;
 import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -115,7 +116,8 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
         else if (object instanceof Traversal)
             return convertToString(((Traversal) object).asAdmin().getBytecode());
         else if (object instanceof String) {
-            return (((String) object).contains("\"") ? "\"\"\"" + object + "\"\"\"" : "\"" + object + "\"").replace("$", "\\$");
+            return (((String) object).contains("\"") ? "\"\"\"" + StringEscapeUtils.escapeJava((String) object) + "\"\"\"" : "\"" + StringEscapeUtils.escapeJava((String) object) + "\"")
+                    .replace("$", "\\$");
         } else if (object instanceof Set) {
             final Set<String> set = new HashSet<>(((Set) object).size());
             for (final Object item : (Set) object) {
