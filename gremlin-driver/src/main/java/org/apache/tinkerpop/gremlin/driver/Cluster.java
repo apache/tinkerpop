@@ -62,6 +62,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -694,7 +695,7 @@ public final class Cluster {
             this.keyPassword = keyPassword;
             return this;
         }
-        
+
         /**
          * The file location of the private key in JKS or PKCS#12 format.
          */
@@ -702,7 +703,7 @@ public final class Cluster {
             this.keyStore = keyStore;
             return this;
         }
-        
+
         /**
          * The password of the {@link #keyStore}, or {@code null} if it's not password-protected.
          */
@@ -710,7 +711,7 @@ public final class Cluster {
             this.keyStorePassword = keyStorePassword;
             return this;
         }
-        
+
         /**
          * The file location for a SSL Certificate Chain to use when SSL is enabled. If
          * this value is not provided and SSL is enabled, the default {@link TrustManager} will be used.
@@ -719,7 +720,7 @@ public final class Cluster {
             this.trustStore = trustStore;
             return this;
         }
-        
+
         /**
          * The password of the {@link #trustStore}, or {@code null} if it's not password-protected.
          */
@@ -727,7 +728,7 @@ public final class Cluster {
             this.trustStorePassword = trustStorePassword;
             return this;
         }
-        
+
         /**
          * The format of the {@link #keyStore}, either {@code JKS} or {@code PKCS12}
          */
@@ -735,7 +736,7 @@ public final class Cluster {
             this.keyStoreType = keyStoreType;
             return this;
         }
-        
+
         /**
          * A list of SSL protocols to enable. @see <a href=
          *      "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SunJSSE_Protocols">JSSE
@@ -745,7 +746,7 @@ public final class Cluster {
             this.sslEnabledProtocols = sslEnabledProtocols;
             return this;
         }
-        
+
         /**
          * A list of cipher suites to enable. @see <a href=
          *      "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SupportedCipherSuites">Cipher
@@ -755,7 +756,7 @@ public final class Cluster {
             this.sslCipherSuites = sslCipherSuites;
             return this;
         }
-        
+
         /**
          * If true, trust all certificates and do not perform any validation.
          */
@@ -1000,7 +1001,7 @@ public final class Cluster {
         private final AuthProperties authProps;
         private final Optional<SslContext> sslContextOptional;
 
-        private final ScheduledExecutorService executor;
+        private final ScheduledThreadPoolExecutor executor;
 
         private final int nioPoolSize;
         private final int workerPoolSize;
@@ -1053,8 +1054,10 @@ public final class Cluster {
 
             this.factory = new Factory(builder.nioPoolSize);
             this.serializer = builder.serializer;
-            this.executor = Executors.newScheduledThreadPool(builder.workerPoolSize,
+            
+            this.executor = new ScheduledThreadPoolExecutor(builder.workerPoolSize,
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-worker-%d").build());
+            this.executor.setRemoveOnCancelPolicy(true);
         }
 
         private void validateBuilder(final Builder builder) {
