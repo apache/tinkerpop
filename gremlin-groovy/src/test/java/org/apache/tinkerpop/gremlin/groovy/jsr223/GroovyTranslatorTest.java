@@ -30,10 +30,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Transl
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.junit.Test;
 
@@ -121,7 +121,8 @@ public class GroovyTranslatorTest {
         assertEquals(24, t.getSideEffects().<Number>get("lengthSum").intValue());
 
         final String script = GroovyTranslator.of("g").translate(t.getBytecode());
-        assertEquals("g.withSideEffect(\"lengthSum\",(int) 0).withSack((int) 1)" +
+        assertEquals("g.withStrategies(org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy.instance())" +
+                        ".withSideEffect(\"lengthSum\",(int) 0).withSack((int) 1)" +
                         ".V()" +
                         ".filter({it.get().label().equals('person')})" +
                         ".flatMap({it.get().vertices(Direction.OUT)})" +
@@ -211,6 +212,15 @@ public class GroovyTranslatorTest {
                         "\"customer:10:foo bar \\$100#90\",\"customer\"," +
                         "\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\",\"user\"))",
                 script3);
+
+        final String script4 = GroovyTranslator.of("g").translate(
+                g.addE("knows").from(vertex1).to(vertex2).property("when", "2018/09/21")
+                .asAdmin().getBytecode());
+        assertEquals("g.addE(\"knows\")" +
+                ".from(new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex(\"customer:10:foo bar \\$100#90\",\"customer\", Collections.emptyMap()))" +
+                ".to(new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex(\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\",\"user\", Collections.emptyMap()))" +
+                ".property(\"when\",\"2018/09/21\")",
+                script4);
     }
 
 }

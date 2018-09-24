@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
