@@ -183,6 +183,10 @@ class TestDriverRemoteConnection(object):
         assert 1 == m["ripple"]
         assert isinstance(m["lop"], long)
         assert isinstance(m["ripple"], long)
+
+        # check status attributes
+        assert "host" in t.side_effects.status_attributes
+
         ##
         t = g.V().out("created").groupCount("m").by("name").name.aggregate("n")
         results = t.toSet()

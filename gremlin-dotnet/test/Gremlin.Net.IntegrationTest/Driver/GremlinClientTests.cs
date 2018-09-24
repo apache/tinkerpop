@@ -29,6 +29,9 @@ using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.IntegrationTest.Util;
 using Xunit;
+using Gremlin.Net.Structure.IO.GraphSON;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace Gremlin.Net.IntegrationTest.Driver
 {
@@ -164,6 +167,22 @@ namespace Gremlin.Net.IntegrationTest.Driver
                 var response = await gremlinClient.SubmitAsync<int>(requestMsg, bindings);
 
                 Assert.Equal(expectedResult, response);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldReturnResponseAttributes()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using (var gremlinClient = new GremlinClient(gremlinServer))
+            {
+                var requestMsg = _requestMessageProvider.GetDummyMessage();
+                var resultSet = await gremlinClient.SubmitAsync<int>(requestMsg);
+
+                Assert.NotNull(resultSet.StatusAttributes);
+
+                var values= resultSet.StatusAttributes["@value"] as JArray;
+                Assert.True(values.First.ToString().Equals("host"));
             }
         }
 

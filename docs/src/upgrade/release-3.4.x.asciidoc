@@ -71,6 +71,16 @@ g.sparql("""SELECT ?name ?age
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1878[TINKERPOP-1878],
 link:http://tinkerpop.apache.org/docs/3.4.0/reference/#sparql-gremlin[Reference Documentation]
 
+==== Status Attributes
+
+The Gremlin Server protocol allows for status attributes to be returned in responses. These attributes were typically
+for internal use, but were designed with extensibility in mind so that providers could place return their own
+attributes to calling clients. Unfortunately, unless the client was being used with protocol level requests (which
+wasn't convenient) those attributes were essentially hidden from view. As of this version however, status attributes
+are fully retrievable for both successful requests and exceptions.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1913[TINKERPOP-1913]
+
 ==== with() Step
 
 This version of TinkerPop introduces the `with()`-step to Gremlin. It isn't really a step but is instead a step

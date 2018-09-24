@@ -52,8 +52,8 @@ class DriverRemoteConnection(RemoteConnection):
     def submit(self, bytecode):
         result_set = self._client.submit(bytecode)
         results = result_set.all().result()
-        side_effects = RemoteTraversalSideEffects(result_set.request_id,
-                                                  self._client)
+        side_effects = RemoteTraversalSideEffects(result_set.request_id, self._client,
+                                                  result_set.status_attributes)
         return RemoteTraversal(iter(results), side_effects)
 
     def submitAsync(self, bytecode):
@@ -64,8 +64,8 @@ class DriverRemoteConnection(RemoteConnection):
             try:
                 result_set = f.result()
                 results = result_set.all().result()
-                side_effects = RemoteTraversalSideEffects(result_set.request_id,
-                                                          self._client)
+                side_effects = RemoteTraversalSideEffects(result_set.request_id, self._client,
+                                                          result_set.status_attributes)
                 future.set_result(RemoteTraversal(iter(results), side_effects))
             except Exception as e:
                 future.set_exception(e)

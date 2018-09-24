@@ -21,8 +21,10 @@ package org.apache.tinkerpop.gremlin.driver;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -71,6 +73,16 @@ public final class ResultSet implements Iterable<Result> {
 
     public Host getHost() {
         return host;
+    }
+
+    /**
+     * Returns a future that will complete when {@link #allItemsAvailable()} is {@code true} and will contain the
+     * attributes from the response.
+     */
+    public CompletableFuture<Map<String,Object>> statusAttributes() {
+        final CompletableFuture<Map<String,Object>> attrs = new CompletableFuture<>();
+        readCompleted.thenRun(() -> attrs.complete(null == resultQueue.getStatusAttributes() ? Collections.emptyMap() : resultQueue.getStatusAttributes()));
+        return attrs;
     }
 
     /**

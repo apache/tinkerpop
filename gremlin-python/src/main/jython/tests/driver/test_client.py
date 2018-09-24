@@ -19,6 +19,7 @@ under the License.
 import pytest
 
 from gremlin_python.driver.client import Client
+from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver.request import RequestMessage
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.structure.graph import Graph
@@ -35,6 +36,8 @@ def test_connection(connection):
     results = future.result()
     assert len(results) == 6
     assert isinstance(results, list)
+    assert results_set.done.done()
+    assert 'host' in results_set.status_attributes
 
 
 def test_client_simple_eval(client):
@@ -47,6 +50,16 @@ def test_client_simple_eval_bindings(client):
 
 def test_client_eval_traversal(client):
     assert len(client.submit('g.V()').all().result()) == 6
+
+
+def test_client_error(client):
+    try:
+        # should fire an exception
+        client.submit('1/0').all().result()
+        assert False
+    except GremlinServerError as ex:
+        assert 'exceptions' in ex.status_attributes
+        assert 'stackTrace' in ex.status_attributes
 
 
 def test_client_bytecode(client):

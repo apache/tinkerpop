@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import org.junit.Before;
 
+import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -84,7 +85,7 @@ public abstract class AbstractResultQueueTest {
                 }
             }
 
-            if (markDone) resultQueue.markComplete();
+            if (markDone) resultQueue.markComplete(Collections.emptyMap());
 
         }, "ResultQueueTest-job-submitter");
 
