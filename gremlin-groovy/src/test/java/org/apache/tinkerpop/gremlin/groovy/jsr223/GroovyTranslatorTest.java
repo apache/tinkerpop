@@ -28,7 +28,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -116,6 +119,18 @@ public class GroovyTranslatorTest {
         assertEquals(7, sacks.get(5).intValue());
         //
         assertEquals(24, t.getSideEffects().<Number>get("lengthSum").intValue());
+
+        final String script = GroovyTranslator.of("g").translate(t.getBytecode());
+        assertEquals("g.withStrategies(org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy.instance())" +
+                        ".withSideEffect(\"lengthSum\",(int) 0).withSack((int) 1)" +
+                        ".V()" +
+                        ".filter({it.get().label().equals('person')})" +
+                        ".flatMap({it.get().vertices(Direction.OUT)})" +
+                        ".map({it.get().value('name').length()})" +
+                        ".sideEffect({ x -> x.sideEffects(\"lengthSum\", x.<Integer>sideEffects('lengthSum') + x.get()) })" +
+                        ".order().by({a,b -> a <=> b})" +
+                        ".sack({ a,b -> a + b })",
+                script);
     }
 
     @Test
@@ -142,4 +157,70 @@ public class GroovyTranslatorTest {
     public void shouldHaveValidToString() {
         assertEquals("translator[h:gremlin-groovy]", GroovyTranslator.of("h").toString());
     }
+
+    @Test
+    public void shouldEscapeStrings() {
+        final TinkerGraph graph = TinkerFactory.createModern();
+        final GraphTraversalSource g = graph.traversal();
+        final String script = GroovyTranslator.of("g").translate(g.addV("customer")
+                .property("customer_id", 501L)
+                .property("name", "Foo\u0020Bar")
+                .property("age", 25)
+                .property("special", "`~!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?")
+                .asAdmin().getBytecode());
+
+        assertEquals("g.addV(\"customer\")" +
+                        ".property(\"customer_id\",501L)" +
+                        ".property(\"name\",\"Foo Bar\")" +
+                        ".property(\"age\",(int) 25)" +
+                        ".property(\"special\",\"\"\"`~!@#\\$%^&*()-_=+[{]}\\\\|;:'\\\",<.>/?\"\"\")",
+                script);
+    }
+
+    @Test
+    public void shouldHandleVertexAndEdge() {
+        final TinkerGraph graph = TinkerFactory.createModern();
+        final GraphTraversalSource g = graph.traversal();
+
+        final Object id1 = "customer:10:foo\u0020bar\u0020\u0024100#90"; // customer:10:foo bar $100#90
+        final Vertex vertex1 = DetachedVertex.build().setLabel("customer").setId(id1)
+                .create();
+        final String script1 = GroovyTranslator.of("g").translate(g.V(vertex1).asAdmin().getBytecode());
+        assertEquals("g.V(new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex(" +
+                        "\"customer:10:foo bar \\$100#90\"," +
+                        "\"customer\", Collections.emptyMap()))",
+                script1);
+
+        final Object id2 = "user:20:foo\\u0020bar\\u005c\\u0022mr\\u005c\\u0022\\u00241000#50"; // user:20:foo\u0020bar\u005c\u0022mr\u005c\u0022\u00241000#50
+        final Vertex vertex2 = DetachedVertex.build().setLabel("user").setId(id2)
+                .create();
+        final String script2 = GroovyTranslator.of("g").translate(g.V(vertex2).asAdmin().getBytecode());
+        assertEquals("g.V(new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex(" +
+                        "\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\"," +
+                        "\"user\", Collections.emptyMap()))",
+                script2);
+
+        final Object id3 = "knows:30:foo\u0020bar\u0020\u0024100:\\u0020\\u0024500#70";
+        final Edge edge = DetachedEdge.build().setLabel("knows").setId(id3)
+                .setOutV((DetachedVertex) vertex1)
+                .setInV((DetachedVertex) vertex2)
+                .create();
+        final String script3 = GroovyTranslator.of("g").translate(g.E(edge).asAdmin().getBytecode());
+        assertEquals("g.E(new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge(" +
+                        "\"knows:30:foo bar \\$100:\\\\u0020\\\\u0024500#70\"," +
+                        "\"knows\",Collections.emptyMap()," +
+                        "\"customer:10:foo bar \\$100#90\",\"customer\"," +
+                        "\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\",\"user\"))",
+                script3);
+
+        final String script4 = GroovyTranslator.of("g").translate(
+                g.addE("knows").from(vertex1).to(vertex2).property("when", "2018/09/21")
+                .asAdmin().getBytecode());
+        assertEquals("g.addE(\"knows\")" +
+                ".from(new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex(\"customer:10:foo bar \\$100#90\",\"customer\", Collections.emptyMap()))" +
+                ".to(new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex(\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\",\"user\", Collections.emptyMap()))" +
+                ".property(\"when\",\"2018/09/21\")",
+                script4);
+    }
+
 }
