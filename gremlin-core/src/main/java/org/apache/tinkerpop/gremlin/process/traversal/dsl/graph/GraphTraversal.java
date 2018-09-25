@@ -1480,22 +1480,39 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.2.2
      */
     public default GraphTraversal<S, E> hasId(final Object id, final Object... otherIds) {
-        if (id instanceof P)
+        if (id instanceof P) {
             return this.hasId((P) id);
+        }
         else {
-            final List<Object> ids = new ArrayList<>();
+            Object[] ids;
             if (id instanceof Object[]) {
-                Collections.addAll(ids, (Object[]) id);
-            } else
-                ids.add(id);
+                ids = (Object[]) id;
+            } else {
+                ids = new Object[] {id};
+            }
+            int size = ids.length;
+            int capacity = size;
             for (final Object i : otherIds) {
                 if (i.getClass().isArray()) {
-                    Collections.addAll(ids, (Object[]) i);
-                } else
-                    ids.add(i);
+                    final Object[] tmp = (Object[]) i;
+                    int newLength = size + tmp.length;
+                    if (capacity < newLength) {
+                        ids = Arrays.copyOf(ids, capacity = size + tmp.length);
+                    }
+                    System.arraycopy(tmp, 0, ids, size, tmp.length);
+                    size = newLength;
+                } else {
+                    if (capacity == size) {
+                        ids = Arrays.copyOf(ids, capacity = size * 2);
+                    }
+                    ids[size++] = i;
+                }
             }
-            this.asAdmin().getBytecode().addStep(Symbols.hasId, ids.toArray());
-            return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.id.getAccessor(), ids.size() == 1 ? P.eq(ids.get(0)) : P.within(ids)));
+            if (capacity > size) {
+                ids = Arrays.copyOf(ids, size);
+            }
+            this.asAdmin().getBytecode().addStep(Symbols.hasId, ids);
+            return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.id.getAccessor(), ids.length == 1 ? P.eq(ids[0]) : P.within(ids)));
         }
     }
 
