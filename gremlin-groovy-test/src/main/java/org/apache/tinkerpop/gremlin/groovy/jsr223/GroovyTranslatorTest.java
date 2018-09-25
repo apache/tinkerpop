@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.groovy.jsr223;
 import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.jsr223.TranslatorCustomizer;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
@@ -59,9 +60,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 /**
@@ -224,7 +227,7 @@ public class GroovyTranslatorTest extends AbstractGremlinTest {
     }
 
     @Test
-    public void shouldIncludeCustomTypeTranslationForSomethingSilly() {
+    public void shouldIncludeCustomTypeTranslationForSomethingSilly() throws Exception {
         final SillyClass notSillyEnough = SillyClass.from("not silly enough", 100);
         final GraphTraversalSource g = graph.traversal();
 
@@ -241,6 +244,15 @@ public class GroovyTranslatorTest extends AbstractGremlinTest {
                 translate(g.inject(notSillyEnough).asAdmin().getBytecode());
         assertEquals(String.format("g.inject(org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslatorTest.SillyClass.from('%s', (int) %s))", notSillyEnough.getX(), notSillyEnough.getY()), scriptGood);
         assertThatScriptOk(scriptGood, "g", g);
+
+        final GremlinGroovyScriptEngine customEngine = new GremlinGroovyScriptEngine(new SillyClassTranslatorCustomizer());
+        final Bindings b = new SimpleBindings();
+        b.put("g", g);
+        final Traversal t = customEngine.eval(g.inject(notSillyEnough).asAdmin().getBytecode(), b, "g");
+        final SillyClass sc = (SillyClass) t.next();
+        assertEquals(notSillyEnough.getX(), sc.getX());
+        assertEquals(notSillyEnough.getY(), sc.getY());
+        assertThat(t.hasNext(), is(false));
     }
 
     @Test
@@ -344,4 +356,13 @@ public class GroovyTranslatorTest extends AbstractGremlinTest {
         }
     }
 
+    public static class SillyClassTranslatorCustomizer implements TranslatorCustomizer {
+
+        @Override
+        public Translator.ScriptTranslator.TypeTranslator createTypeTranslator() {
+            return x -> x instanceof SillyClass ?
+                    new Translator.ScriptTranslator.Handled(String.format("org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslatorTest.SillyClass.from('%s', (int) %s)",
+                            ((SillyClass) x).getX(), ((SillyClass) x).getY())) : x;
+        }
+    }
 }
