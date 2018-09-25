@@ -22,6 +22,9 @@ package org.apache.tinkerpop.gremlin.groovy.jsr223;
 import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -31,6 +34,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
+import org.apache.tinkerpop.gremlin.structure.Column;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -182,6 +187,31 @@ public class GroovyTranslatorTest extends AbstractGremlinTest {
     public void shouldHandleUuid() {
         final UUID uuid = UUID.fromString("ffffffff-fd49-1e4b-0000-00000d4b8a1d");
         assertTranslation(String.format("java.util.UUID.fromString('%s')", uuid), uuid);
+    }
+
+    @Test
+    public void shouldHandleColumn() {
+        assertTranslation("Column.keys", Column.keys);
+    }
+
+    @Test
+    public void shouldHandleDirection() {
+        assertTranslation("Direction.BOTH", Direction.BOTH);
+    }
+
+    @Test
+    public void shouldHandleOrder() {
+        assertTranslation("Order.decr", Order.decr);
+    }
+
+    @Test
+    public void shouldHandlePop() {
+        assertTranslation("Pop.last", Pop.last);
+    }
+
+    @Test
+    public void shouldHandleScope() {
+        assertTranslation("Scope.local", Scope.local);
     }
 
     @Test
