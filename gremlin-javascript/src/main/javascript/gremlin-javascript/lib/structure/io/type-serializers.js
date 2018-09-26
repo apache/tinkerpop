@@ -150,6 +150,28 @@ class PSerializer extends TypeSerializer {
   }
 }
 
+class TPSerializer extends TypeSerializer {
+  /** @param {TP} item */
+  serialize(item) {
+    const result = {};
+    result[typeKey] = 'g:TP';
+    const resultValue = result[valueKey] = {
+      'predicate': item.operator
+    };
+    if (item.other === undefined || item.other === null) {
+      resultValue['value'] = this.writer.adaptObject(item.value);
+    }
+    else {
+      resultValue['value'] = [ this.writer.adaptObject(item.value), this.writer.adaptObject(item.other) ];
+    }
+    return result;
+  }
+
+  canBeUsedFor(value) {
+    return (value instanceof t.TP);
+  }
+}
+
 class LambdaSerializer extends TypeSerializer {
   /** @param {Function} item */
   serialize(item) {

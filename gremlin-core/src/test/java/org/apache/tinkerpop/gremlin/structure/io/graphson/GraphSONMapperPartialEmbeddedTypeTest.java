@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.TP;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonMappingException;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -327,10 +328,19 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
                 P.without(1,2,3,4),
                 P.without(Arrays.asList(1,2,3,4)),
                 P.eq(1).and(P.eq(2)),
-                P.eq(1).or(P.eq(2)));
+                P.eq(1).or(P.eq(2)),
+                TP.contains("ark"),
+                TP.startsWith("mar"),
+                TP.endsWith("ko"),
+                TP.endsWith("ko").and(P.gte("mar")),
+                P.gte("mar").and(TP.endsWith("ko")));
 
         for (P p : variantsOfP) {
-            assertEquals(p, serializeDeserialize(mapper, p, P.class));
+            if (p instanceof TP) {
+                assertEquals(p, serializeDeserialize(mapper, p, TP.class));
+            } else {
+                assertEquals(p, serializeDeserialize(mapper, p, P.class));
+            }
         }
     }
 

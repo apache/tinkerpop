@@ -310,6 +310,73 @@ function createP(operator, args) {
   return new (Function.prototype.bind.apply(P, args));
 }
 
+class TP {
+  /**
+   * Represents an operation.
+   * @constructor
+   */
+  constructor(operator, value, other) {
+    this.operator = operator;
+    this.value = value;
+    this.other = other;
+  }
+
+  /**
+   * Returns the string representation of the instance.
+   * @returns {string}
+   */
+  toString() {
+    if (this.other === undefined) {
+      return this.operator + '(' + this.value + ')';
+    }
+    return this.operator + '(' + this.value + ', ' + this.other + ')';
+  }
+
+  and(arg) {
+    return new P('and', this, arg);
+  }
+
+  or(arg) {
+    return new P('or', this, arg);
+  }
+
+  /** @param {...Object} args */
+  static absent(...args) {
+    return createTP('absent', args);
+  }
+
+  /** @param {...Object} args */
+  static contains(...args) {
+    return createTP('contains', args);
+  }
+
+  /** @param {...Object} args */
+  static endsNotWith(...args) {
+    return createTP('endsNotWith', args);
+  }
+
+  /** @param {...Object} args */
+  static endsWith(...args) {
+    return createTP('endsWith', args);
+  }
+
+  /** @param {...Object} args */
+  static startsNotWith(...args) {
+    return createTP('startsNotWith', args);
+  }
+
+  /** @param {...Object} args */
+  static startsWith(...args) {
+    return createTP('startsWith', args);
+  }
+
+}
+
+function createTP(operator, args) {
+  args.unshift(null, operator);
+  return new (Function.prototype.bind.apply(TP, args));
+}
+
 class Traverser {
   constructor(object, bulk) {
     this.object = object;
@@ -347,6 +414,7 @@ class EnumValue {
 module.exports = {
   EnumValue,
   P,
+  TP,
   IO,
   Traversal,
   TraversalSideEffects,

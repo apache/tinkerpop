@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraver
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.TP;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
@@ -338,6 +339,26 @@ public final class GryoSerializersV3d0 {
                         return (P) P.class.getMethod(predicate, Collection.class).invoke(null, (Collection) value);
                 } else
                     return (P) P.class.getMethod(predicate, Object.class).invoke(null, value);
+            } catch (final Exception e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        }
+    }
+
+    public final static class TPSerializer implements SerializerShim<TP> {
+        @Override
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final TP p) {
+            output.writeString(p.getBiPredicate().toString());
+            kryo.writeObject(output, p.getValue());
+        }
+
+        @Override
+        public <I extends InputShim> TP read(final KryoShim<I, ?> kryo, final I input, final Class<TP> clazz) {
+            final String predicate = input.readString();
+            final String value = kryo.readObject(input, String.class);
+
+            try {
+                return (TP) TP.class.getMethod(predicate, String.class).invoke(null, value);
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }

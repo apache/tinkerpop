@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.TP;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -124,6 +125,16 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Long> get_g_V_hasXage_withoutX27X_count();
 
     public abstract Traversal<Vertex, Long> get_g_V_hasXage_withoutX27_29X_count();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_containsXarkXX();
+
+    public abstract Traversal<Vertex,Vertex> get_g_V_hasXname_startsWithXmarXX();
+
+    public abstract Traversal<Vertex,Vertex> get_g_V_hasXname_endsWithXasXX();
+
+    public abstract Traversal<Vertex,Vertex> get_g_V_hasXperson_name_containsXoX_andXltXmXXX();
+
+    public abstract Traversal<Vertex,Vertex> get_g_V_hasXname_gtXmX_andXcontainsXoXXX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -547,6 +558,56 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         assertEquals(2L, traversal.next().longValue());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXname_containsXarkXX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXname_containsXarkXX();
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        assertTrue(traversal.next().value("name").equals("marko"));
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXname_startsWithXmarXX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXname_startsWithXmarXX();
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        assertTrue(traversal.next().value("name").equals("marko"));
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXname_endsWithXasXX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXname_endsWithXasXX();
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        assertTrue(traversal.next().value("name").equals("vadas"));
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXperson_name_containsXoX_andXltXmXXX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXperson_name_containsXoX_andXltXmXXX();
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        assertTrue(traversal.next().value("name").equals("josh"));
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXname_gtXmX_andXcontainsXoXXX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXname_gtXmX_andXcontainsXoXXX();
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        assertTrue(traversal.next().value("name").equals("marko"));
+        assertFalse(traversal.hasNext());
+    }
+
     public static class Traversals extends HasTest {
         @Override
         public Traversal<Edge, Edge> get_g_EX11X_outV_outE_hasXid_10X(final Object e11Id, final Object e10Id) {
@@ -726,6 +787,31 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_hasXage_withoutX27_29X_count() {
             return g.V().has("age", P.without(27, 29)).count();
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXname_containsXarkXX() {
+            return g.V().has("name", TP.contains("ark"));
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXname_startsWithXmarXX() {
+            return g.V().has("name", TP.startsWith("mar"));
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXname_endsWithXasXX() {
+            return g.V().has("name", TP.endsWith("as"));
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXperson_name_containsXoX_andXltXmXXX() {
+            return g.V().has("person","name", TP.contains("o").and(P.lt("m")));
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXname_gtXmX_andXcontainsXoXXX() {
+            return g.V().has("name", P.gt("m").and(TP.contains("o")));
         }
     }
 }

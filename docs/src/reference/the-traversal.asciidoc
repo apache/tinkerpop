@@ -3356,24 +3356,32 @@ interface. Steps that allow for this type of modulation will explicitly state so
 [[a-note-on-predicates]]
 == A Note on Predicates
 
-A `P` is a predicate of the form `Function<Object,Boolean>`. That is, given some object, return true or false. The
-provided predicates are outlined in the table below and are used in various steps such as <<has-step,`has()`>>-step,
+A `P` is a predicate of the form `Function<Object,Boolean>`. That is, given some object, return true or false. As of
+the relase of TinkerPop 3.4.0, Gremlin also supports simple text predicates, which only work on `String` values. The `TP`
+text predicates extends the `P` predicates, but are specialized in that they are of the form `Function<String,Boolean>`.
+The provided predicates are outlined in the table below and are used in various steps such as <<has-step,`has()`>>-step,
 <<where-step,`where()`>>-step, <<is-step,`is()`>>-step, etc.
 
 [width="100%",cols="3,15",options="header"]
 |=========================================================
 | Predicate | Description
-| `eq(object)` | Is the incoming object equal to the provided object?
-| `neq(object)` | Is the incoming object not equal to the provided object?
-| `lt(number)` | Is the incoming number less than the provided number?
-| `lte(number)` | Is the incoming number less than or equal to the provided number?
-| `gt(number)` | Is the incoming number greater than the provided number?
-| `gte(number)` | Is the incoming number greater than or equal to the provided number?
-| `inside(number,number)` | Is the incoming number greater than the first provided number and less than the second?
-| `outside(number,number)` | Is the incoming number less than the first provided number or greater than the second?
-| `between(number,number)` | Is the incoming number greater than or equal to the first provided number and less than the second?
-| `within(objects...)` | Is the incoming object in the array of provided objects?
-| `without(objects...)` | Is the incoming object not in the array of the provided objects?
+| `P.eq(object)` | Is the incoming object equal to the provided object?
+| `P.neq(object)` | Is the incoming object not equal to the provided object?
+| `P.lt(number)` | Is the incoming number less than the provided number?
+| `P.lte(number)` | Is the incoming number less than or equal to the provided number?
+| `P.gt(number)` | Is the incoming number greater than the provided number?
+| `P.gte(number)` | Is the incoming number greater than or equal to the provided number?
+| `P.inside(number,number)` | Is the incoming number greater than the first provided number and less than the second?
+| `P.outside(number,number)` | Is the incoming number less than the first provided number or greater than the second?
+| `P.between(number,number)` | Is the incoming number greater than or equal to the first provided number and less than the second?
+| `P.within(objects...)` | Is the incoming object in the array of provided objects?
+| `P.without(objects...)` | Is the incoming object not in the array of the provided objects?
+| `TP.startsWith(string)` | Does the incoming `String` start with the provided `String`?
+| `TP.endsWith(string)` | Does the incoming `String` end with the provided `String`?
+| `TP.contains(string)` | Does the incoming `String` contain the provided `String`?
+| `TP.startsNotWith(string)` | TODO: find a better name
+| `TP.endsNotWith(string)` | TODO: find a better name
+| `TP.absent(string)` | TODO: find a better name
 |=========================================================
 
 [gremlin-groovy]

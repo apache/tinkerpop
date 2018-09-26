@@ -322,6 +322,65 @@ def without(*args):
 statics.add_static('without',without)
 
 
+class TP(P):
+    def __init__(self, operator, value, other=None):
+        P.__init__(self, operator, value, other)
+
+    @staticmethod
+    def absent(*args):
+        return TP("absent", *args)
+
+    @staticmethod
+    def contains(*args):
+        return TP("contains", *args)
+
+    @staticmethod
+    def endsNotWith(*args):
+        return TP("endsNotWith", *args)
+
+    @staticmethod
+    def endsWith(*args):
+        return TP("endsWith", *args)
+
+    @staticmethod
+    def startsNotWith(*args):
+        return TP("startsNotWith", *args)
+
+    @staticmethod
+    def startsWith(*args):
+        return TP("startsWith", *args)
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.operator == other.operator and self.value == other.value and self.other == other.other
+
+    def __repr__(self):
+        return self.operator + "(" + str(self.value) + ")" if self.other is None else self.operator + "(" + str(self.value) + "," + str(self.other) + ")"
+
+def absent(*args):
+    return TP.absent(*args)
+statics.add_static('absent',absent)
+
+def contains(*args):
+    return TP.contains(*args)
+statics.add_static('contains',contains)
+
+def endsNotWith(*args):
+    return TP.endsNotWith(*args)
+statics.add_static('endsNotWith',endsNotWith)
+
+def endsWith(*args):
+    return TP.endsWith(*args)
+statics.add_static('endsWith',endsWith)
+
+def startsNotWith(*args):
+    return TP.startsNotWith(*args)
+statics.add_static('startsNotWith',startsNotWith)
+
+def startsWith(*args):
+    return TP.startsWith(*args)
+statics.add_static('startsWith',startsWith)
+
+
 
 '''
 IO

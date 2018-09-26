@@ -21,7 +21,7 @@ import json
 import re
 from gremlin_python.structure.graph import Graph, Path
 from gremlin_python.process.graph_traversal import __
-from gremlin_python.process.traversal import Barrier, Cardinality, P, Pop, Scope, Column, Order, Direction, T, Pick, Operator, IO
+from gremlin_python.process.traversal import Barrier, Cardinality, P, TP, Pop, Scope, Column, Order, Direction, T, Pick, Operator, IO
 from radish import given, when, then
 from hamcrest import *
 
@@ -256,6 +256,7 @@ def _make_traversal(g, traversal_string, params):
          "Direction": Direction,
          "Order": Order,
          "P": P,
+         "TP": TP,
          "IO": IO,
          "Pick": Pick,
          "Pop": Pop,

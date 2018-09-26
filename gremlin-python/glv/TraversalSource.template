@@ -152,6 +152,25 @@ def <%= method %>(*args):
 statics.add_static('<%= method %>',<%= method %>)
 <% } %>
 
+class TP(P):
+    def __init__(self, operator, value, other=None):
+        P.__init__(self, operator, value, other)
+<% tpmethods.each { method -> %>
+    @staticmethod
+    def <%= method %>(*args):
+        return TP("<%= toJava.call(method) %>", *args)
+<% } %>
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.operator == other.operator and self.value == other.value and self.other == other.other
+
+    def __repr__(self):
+        return self.operator + "(" + str(self.value) + ")" if self.other is None else self.operator + "(" + str(self.value) + "," + str(self.other) + ")"
+<% tpmethods.findAll{!it.equals("clone")}.each { method -> %>
+def <%= method %>(*args):
+    return TP.<%= method %>(*args)
+statics.add_static('<%= method %>',<%= method %>)
+<% } %>
+
 <% tokens.each { k,v -> %>
 '''
 <%= k %>

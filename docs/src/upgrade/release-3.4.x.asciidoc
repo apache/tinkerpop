@@ -29,6 +29,21 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.4.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Added text predicates
+
+Gremlin now supports simple text predicates on top of the existing `P` predicates. Both, the new `TP` text predicates and the old `P` predicates, can be chained using `and()` and `or()`.
+
+[source,groovy]
+----
+gremlin> g.V().has("person","name", contains("o")).valueMap()
+==>[name:[marko],age:[29]]
+==>[name:[josh],age:[32]]
+gremlin> g.V().has("person","name", contains("o").and(gte("j").and(endsWith("ko")))).valueMap()
+==>[name:[marko],age:[29]]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2041[TINKERPOP-2041]
+
 ==== Changed infix behavior
 
 The infix notation of `and()` and `or()` now supports an arbitrary number of traversals and `ConnectiveStrategy` produces a traversal with proper AND and OR semantics.

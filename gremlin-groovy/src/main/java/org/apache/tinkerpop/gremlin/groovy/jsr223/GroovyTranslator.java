@@ -24,6 +24,7 @@ import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
+import org.apache.tinkerpop.gremlin.process.traversal.TP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -225,6 +226,7 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
     }
 
     private StringBuilder convertPToString(final P p, final StringBuilder current) {
+        if (p instanceof TP) return convertTPToString((TP) p, current);
         if (p instanceof ConnectiveP) {
             final List<P<?>> list = ((ConnectiveP) p).getPredicates();
             for (int i = 0; i < list.size(); i++) {
@@ -235,6 +237,11 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
             current.append(")");
         } else
             current.append("P.").append(p.getBiPredicate().toString()).append("(").append(convertToString(p.getValue())).append(")");
+        return current;
+    }
+
+    private StringBuilder convertTPToString(final TP p, final StringBuilder current) {
+        current.append("TP.").append(p.getBiPredicate().toString()).append("(").append(convertToString(p.getValue())).append(")");
         return current;
     }
 }

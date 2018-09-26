@@ -94,6 +94,21 @@ public class PTest {
                     {P.between("m", "n").or(P.eq("daniel")), "marko", true},
                     {P.between("m", "n").or(P.eq("daniel")), "daniel", true},
                     {P.between("m", "n").or(P.eq("daniel")), "stephen", false},
+                    // text predicates
+                    {TP.contains("ark"), "marko", true},
+                    {TP.contains("ark"), "josh", false},
+                    {TP.startsWith("jo"), "marko", false},
+                    {TP.startsWith("jo"), "josh", true},
+                    {TP.endsWith("ter"), "marko", false},
+                    {TP.endsWith("ter"), "peter", true},
+                    {TP.contains("o"), "marko", true},
+                    {TP.contains("o"), "josh", true},
+                    {TP.contains("o").and(P.gte("j")), "marko", true},
+                    {TP.contains("o").and(P.gte("j")), "josh", true},
+                    {TP.contains("o").and(P.gte("j")).and(TP.endsWith("ko")), "marko", true},
+                    {TP.contains("o").and(P.gte("j")).and(TP.endsWith("ko")), "josh", false},
+                    {TP.contains("o").and(P.gte("j").and(TP.endsWith("ko"))), "marko", true},
+                    {TP.contains("o").and(P.gte("j").and(TP.endsWith("ko"))), "josh", false},
             }));
         }
 
