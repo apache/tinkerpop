@@ -217,8 +217,9 @@ for generating javadoc and without that the binary distributions won't contain t
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-console/xx.yy.zz/gremlin-console-xx.yy.zz-distribution.zip* dev/xx.yy.zz`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-server/xx.yy.zz/gremlin-server-xx.yy.zz-distribution.zip* dev/xx.yy.zz`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/tinkerpop/xx.yy.zz/tinkerpop-xx.yy.zz-source-release.zip* dev/xx.yy.zz`
-.. `rm -f dev/*.md5`
 .. `cd dev/xx.yy.zz`
+.. `rm -f *.md5`
+.. `for file in *.sha1 ; do artifact=$(basename ${file} .sha1); sha512sum $artifact | awk '{print $1}' > ${artifact}.sha512; rm ${file}; done`
 .. pass:[<code>ls * | xargs -n1 -I {} echo "mv apache-tinkerpop-{} {}" | sed -e 's/distribution/bin/' -e 's/source-release/src/' -e 's/tinkerpop-tinkerpop/tinkerpop/' -e s'/^\(.*\) \(.*\) \(.*\)$/\1 \3 \2/' | /bin/bash</code>]
 .. `cd ..; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
 . Execute `bin/validate-distribution.sh` and any other relevant testing.
