@@ -186,10 +186,10 @@ limitations under the License.
                                         the "ConfigFile" option to nuget.
                                         -->
                                         <exec executable="mono" failonerror="true">
-                                            <arg line="${nugetExe} push Gremlin.Net/bin/Gremlin.Net.*.nupkg -Source https://www.nuget.org/api/v2/package -ConfigFile ${user.home}/.config/NuGet/NuGet.Config"/>
+                                            <arg line="${nugetExe} push Gremlin.Net/bin/Gremlin.Net.*.nupkg -Source https://api.nuget.org/v3/index.json -ConfigFile ${user.home}/.config/NuGet/NuGet.Config"/>
                                         </exec>
                                         <exec executable="mono" failonerror="true">
-                                            <arg line="${nugetExe} push Gremlin.Net.Template.*.nupkg -Source https://www.nuget.org/api/v2/package -ConfigFile ${user.home}/.config/NuGet/NuGet.Config"/>
+                                            <arg line="${nugetExe} push Gremlin.Net.Template.*.nupkg -Source https://api.nuget.org/v3/index.json -ConfigFile ${user.home}/.config/NuGet/NuGet.Config"/>
                                         </exec>
                                     </tasks>
                                 </configuration>
