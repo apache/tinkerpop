@@ -2564,6 +2564,23 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     //// WITH-MODULATOR
 
     /**
+     * Provides a configuration to a step in the form of a key which is the same as {@code with(key, true)}. The key
+     * of the configuration must be step specific and therefore a configuration could be supplied that is not known to
+     * be valid until execution.
+     *
+     * @param key the key of the configuration to apply to a step
+     * @return the traversal with a modulated step
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#with-step" target="_blank">Reference Documentation - With Step</a>
+     * @since 3.4.0
+     */
+    public default GraphTraversal<S,E> with(final String key) {
+        this.asAdmin().getBytecode().addStep(Symbols.with, key);
+        final Object[] configPair = { key, true };
+        ((Configuring) this.asAdmin().getEndStep()).configure(configPair);
+        return this;
+    }
+
+    /**
      * Provides a configuration to a step in the form of a key and value pair. The key of the configuration must be
      * step specific and therefore a configuration could be supplied that is not known to be valid until execution.
      *
