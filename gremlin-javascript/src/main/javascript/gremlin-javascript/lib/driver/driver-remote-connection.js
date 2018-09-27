@@ -49,12 +49,14 @@ class DriverRemoteConnection extends RemoteConnection {
    * @param {String} [options.traversalSource] The traversal source. Defaults to: 'g'.
    * @param {GraphSONWriter} [options.writer] The writer to use.
    * @param {Authenticator} [options.authenticator] The authentication handler to use.
+   * @param {Object} [options.headers] An associative array containing the additional header key/values for the initial request.
    * @constructor
    */
   constructor(url, options) {
     super(url);
     options = options || {};
     this._ws = new WebSocket(url, {
+      headers: options.headers,
       ca: options.ca,
       cert: options.cert,
       pfx: options.pfx,
