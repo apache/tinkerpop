@@ -406,6 +406,7 @@ module.exports = {
   PathSerializer,
   PropertySerializer,
   PSerializer,
+  TPSerializer,
   SetSerializer,
   TSerializer,
   TraverserSerializer,
