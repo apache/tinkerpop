@@ -18,10 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.console
 
+import groovy.cli.picocli.CliBuilder
+import groovy.cli.picocli.OptionAccessor
 import jline.TerminalFactory
 import jline.console.history.FileHistory
 
-import org.apache.commons.cli.Option
 import org.apache.tinkerpop.gremlin.console.commands.GremlinSetCommand
 import org.apache.tinkerpop.gremlin.console.commands.InstallCommand
 import org.apache.tinkerpop.gremlin.console.commands.PluginCommand
@@ -43,8 +44,8 @@ import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.IO
 import org.codehaus.groovy.tools.shell.InteractiveShellRunner
 import org.codehaus.groovy.tools.shell.commands.SetCommand
-import org.codehaus.groovy.tools.shell.util.HelpFormatter
 import org.fusesource.jansi.Ansi
+import picocli.CommandLine
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -400,21 +401,22 @@ class Console {
 
         IO io = new IO(System.in, System.out, System.err)
 
-        final CliBuilder cli = new CliBuilder(usage: 'gremlin.sh [options] [...]', formatter: new HelpFormatter(), stopAtNonOption: false)
+        final CliBuilder cli = new CliBuilder()
+        cli.stopAtNonOption = false
+        cli.name = "gremlin.sh"
 
         // note that the inclusion of -l is really a setting handled by gremlin.sh and not by Console class itself.
         // it is mainly listed here for informational purposes when the user starts things up with -h
-        cli.with {
-            h(longOpt: 'help', "Display this help message")
-            v(longOpt: 'version', "Display the version")
-            l("Set the logging level of components that use standard logging output independent of the Console")
-            V(longOpt: 'verbose', "Enable verbose Console output")
-            Q(longOpt: 'quiet', "Suppress superfluous Console output")
-            D(longOpt: 'debug', "Enabled debug Console output")
-            i(longOpt: 'interactive', argName: "SCRIPT ARG1 ARG2 ...", args: Option.UNLIMITED_VALUES, valueSeparator: ' ' as char, "Execute the specified script and leave the console open on completion")
-            e(longOpt: 'execute', argName: "SCRIPT ARG1 ARG2 ...", args: Option.UNLIMITED_VALUES, valueSeparator: ' ' as char, "Execute the specified script (SCRIPT ARG1 ARG2 ...) and close the console on completion")
-            C(longOpt: 'color', "Disable use of ANSI colors")
-        }
+        cli.h(type: Boolean, longOpt: 'help', "Display this help message")
+        cli.v(type: Boolean,longOpt: 'version', "Display the version")
+        cli.l("Set the logging level of components that use standard logging output independent of the Console")
+        cli.V(type: Boolean, longOpt: 'verbose', "Enable verbose Console output")
+        cli.Q(type: Boolean, longOpt: 'quiet', "Suppress superfluous Console output")
+        cli.D(type: Boolean, longOpt: 'debug', "Enabled debug Console output")
+        cli.i(type: List, longOpt: 'interactive', arity: "1..*", argName: "SCRIPT ARG1 ARG2 ...", "Execute the specified script and leave the console open on completion")
+        cli.e(type: List, longOpt: 'execute', argName: "SCRIPT ARG1 ARG2 ...", "Execute the specified script (SCRIPT ARG1 ARG2 ...) and close the console on completion")
+        cli.C(type: Boolean, longOpt: 'color', "Disable use of ANSI colors")
+        
         OptionAccessor options = cli.parse(args)
 
         if (options == null) {
@@ -450,7 +452,7 @@ class Console {
             println("-i and -e options are mutually exclusive - provide one or the other")
             System.exit(0)
         }
-
+        
         def scriptAndArgs = parseArgs(options.e ? ["-e", "--execute"] : ["-i", "--interactive"], args, cli)
         new Console(io, scriptAndArgs, !options.e)
     }
@@ -472,7 +474,7 @@ class Console {
                 def parsedSet = []
                 for (ix; ix < normalizedArgs.length; ix++) {
                     // this is a do nothing as there's no arguments to the option or it's the start of a new option
-                    if (cli.options.options.any { "-" + it.opt == normalizedArgs[ix] || "--" + it.longOpt == normalizedArgs[ix] }) {
+                    if (cli.savedTypeOptions.values().any { "-" + it.opt == normalizedArgs[ix] || "--" + it.longOpt == normalizedArgs[ix] }) {
                         // rollback the counter now that we hit the next option
                         ix--
                         break
