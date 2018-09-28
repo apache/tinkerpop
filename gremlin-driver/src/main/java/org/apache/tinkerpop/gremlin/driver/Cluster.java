@@ -25,11 +25,16 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
+import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,10 +65,10 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -204,7 +209,8 @@ public final class Cluster {
                 .maxSimultaneousUsagePerConnection(settings.connectionPool.maxSimultaneousUsagePerConnection)
                 .minSimultaneousUsagePerConnection(settings.connectionPool.minSimultaneousUsagePerConnection)
                 .maxConnectionPoolSize(settings.connectionPool.maxSize)
-                .minConnectionPoolSize(settings.connectionPool.minSize);
+                .minConnectionPoolSize(settings.connectionPool.minSize)
+                .validationRequest(settings.connectionPool.validationRequest);
 
         if (settings.username != null && settings.password != null)
             builder.credentials(settings.username, settings.password);
@@ -465,6 +471,10 @@ public final class Cluster {
         return manager.authProps;
     }
 
+    RequestMessage.Builder validationRequest() {
+        return manager.validationRequest.get();
+    }
+
     SslContext createSSLContext() throws Exception {
         // if the context is provided then just use that and ignore the other settings
         if (manager.sslContextOptional.isPresent())
@@ -575,6 +585,7 @@ public final class Cluster {
         private String trustStore = null;
         private String trustStorePassword = null;
         private String keyStoreType = null;
+        private String validationRequest = "''";
         private List<String> sslEnabledProtocols = new ArrayList<>();
         private List<String> sslCipherSuites = new ArrayList<>();
         private boolean sslSkipCertValidation = false;
@@ -889,6 +900,17 @@ public final class Cluster {
         }
 
         /**
+         * Specify a valid Gremlin script that can be used to test remote operations. This script should be designed
+         * to return quickly with the least amount of overhead possible. By default, the script sends an empty string.
+         * If the graph does not support that sort of script because it requires all scripts to include a reference
+         * to a graph then a good option might be {@code g.inject()}.
+         */
+        public Builder validationRequest(final String script) {
+            validationRequest = script;
+            return this;
+        }
+
+        /**
          * Time in milliseconds to wait before attempting to reconnect to a dead host after it has been marked dead.
          *
          * @deprecated As of release 3.2.3, the value of the initial delay is now the same as the {@link #reconnectInterval}.
@@ -1020,6 +1042,7 @@ public final class Cluster {
         private final LoadBalancingStrategy loadBalancingStrategy;
         private final AuthProperties authProps;
         private final Optional<SslContext> sslContextOptional;
+        private final Supplier<RequestMessage.Builder> validationRequest;
 
         private final ScheduledThreadPoolExecutor executor;
 
@@ -1066,6 +1089,7 @@ public final class Cluster {
             connectionPoolSettings.sslSkipCertValidation = builder.sslSkipCertValidation;
             connectionPoolSettings.keepAliveInterval = builder.keepAliveInterval;
             connectionPoolSettings.channelizer = builder.channelizer;
+            connectionPoolSettings.validationRequest = builder.validationRequest;
 
             sslContextOptional = Optional.ofNullable(builder.sslContext);
 
@@ -1079,6 +1103,8 @@ public final class Cluster {
             this.executor = new ScheduledThreadPoolExecutor(builder.workerPoolSize,
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-worker-%d").build());
             this.executor.setRemoveOnCancelPolicy(true);
+
+            validationRequest = () -> RequestMessage.build(Tokens.OPS_EVAL).add(Tokens.ARGS_GREMLIN, builder.validationRequest);
         }
 
         private void validateBuilder(final Builder builder) {

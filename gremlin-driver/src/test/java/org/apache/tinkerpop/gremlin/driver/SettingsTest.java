@@ -18,7 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -69,6 +71,7 @@ public class SettingsTest {
         conf.setProperty("connectionPool.reconnectInitialDelay", 1000);
         conf.setProperty("connectionPool.resultIterationBatchSize", 1100);
         conf.setProperty("connectionPool.channelizer", "channelizer0");
+        conf.setProperty("connectionPool.validationRequest", "g.inject()");
 
         final Settings settings = Settings.from(conf);
 
@@ -82,7 +85,7 @@ public class SettingsTest {
         assertEquals(Arrays.asList("255.0.0.1", "255.0.0.2", "255.0.0.3"), settings.hosts);
         assertEquals("my.serializers.MySerializer", settings.serializer.className);
         assertEquals("thing", settings.serializer.config.get("any"));
-        assertEquals(true, settings.connectionPool.enableSsl);
+        assertThat(settings.connectionPool.enableSsl, is(true));
         assertEquals("X.509", settings.connectionPool.keyCertChainFile);
         assertEquals("PKCS#8", settings.connectionPool.keyFile);
         assertEquals("password1", settings.connectionPool.keyPassword);
@@ -94,7 +97,7 @@ public class SettingsTest {
         assertEquals("password3", settings.connectionPool.trustStorePassword);
         assertEquals(Arrays.asList("TLSv1.1","TLSv1.2"), settings.connectionPool.sslEnabledProtocols);
         assertEquals(Arrays.asList("TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"), settings.connectionPool.sslCipherSuites);
-        assertEquals(true, settings.connectionPool.sslSkipCertValidation);
+        assertThat(settings.connectionPool.sslSkipCertValidation, is(true));
         assertEquals(100, settings.connectionPool.minSize);
         assertEquals(200, settings.connectionPool.maxSize);
         assertEquals(300, settings.connectionPool.minSimultaneousUsagePerConnection);
@@ -107,5 +110,6 @@ public class SettingsTest {
         assertEquals(1000, settings.connectionPool.reconnectInitialDelay);
         assertEquals(1100, settings.connectionPool.resultIterationBatchSize);
         assertEquals("channelizer0", settings.connectionPool.channelizer);
+        assertEquals("g.inject()", settings.connectionPool.validationRequest);
     }
 }
