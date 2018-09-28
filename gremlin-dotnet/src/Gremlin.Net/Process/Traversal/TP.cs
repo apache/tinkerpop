@@ -39,7 +39,7 @@ namespace Gremlin.Net.Process.Traversal
     public class TP : P
     {
         /// <summary>
-        ///     Initializes a new instance of the <see cref="P" /> class.
+        ///     Initializes a new instance of the <see cref="TP" /> class.
         /// </summary>
         /// <param name="operatorName">The name of the predicate.</param>
         /// <param name="value">The value of the predicate.</param>
