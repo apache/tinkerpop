@@ -563,7 +563,7 @@ Feature: Step - has()
     Given the modern graph
     And the traversal of
       """
-      g.V().has("name", TP.contains("ark"))
+      g.V().has("name", TextP.contains("ark"))
       """
     When iterated to list
     Then the result should be unordered
@@ -574,7 +574,7 @@ Feature: Step - has()
     Given the modern graph
     And the traversal of
       """
-      g.V().has("name", TP.startsWith("mar"))
+      g.V().has("name", TextP.startsWith("mar"))
       """
     When iterated to list
     Then the result should be unordered
@@ -585,7 +585,7 @@ Feature: Step - has()
     Given the modern graph
     And the traversal of
       """
-      g.V().has("name", TP.endsWith("as"))
+      g.V().has("name", TextP.endsWith("as"))
       """
     When iterated to list
     Then the result should be unordered
@@ -596,7 +596,7 @@ Feature: Step - has()
     Given the modern graph
     And the traversal of
       """
-      g.V().has("person", "name", TP.contains("o").and(P.lt("m")))
+      g.V().has("person", "name", TextP.contains("o").and(P.lt("m")))
       """
     When iterated to list
     Then the result should be unordered
@@ -607,7 +607,7 @@ Feature: Step - has()
     Given the modern graph
     And the traversal of
       """
-      g.V().has("name", P.gt("m").and(TP.contains("o")))
+      g.V().has("name", P.gt("m").and(TextP.contains("o")))
       """
     When iterated to list
     Then the result should be unordered

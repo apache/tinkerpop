@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.P
-import org.apache.tinkerpop.gremlin.process.traversal.TP
+import org.apache.tinkerpop.gremlin.process.traversal.TextP
 import org.apache.tinkerpop.gremlin.process.traversal.IO
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import java.lang.reflect.Modifier
@@ -64,9 +64,9 @@ def binding = ["enums": CoreImports.getClassImports()
                        collect { toPython(it.name) }.
                        unique().
                        sort { a, b -> a <=> b },
-               "tpmethods": TP.class.getMethods().
+               "tpmethods": TextP.class.getMethods().
                        findAll { Modifier.isStatic(it.getModifiers()) }.
-                       findAll { TP.class.isAssignableFrom(it.returnType) }.
+                       findAll { TextP.class.isAssignableFrom(it.returnType) }.
                        collect { toPython(it.name) }.
                        unique().
                        sort { a, b -> a <=> b },

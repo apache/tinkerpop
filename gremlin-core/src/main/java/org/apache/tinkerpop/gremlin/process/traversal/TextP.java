@@ -23,16 +23,16 @@ import java.util.function.BiPredicate;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class TP extends P<String> {
+public class TextP extends P<String> {
 
     @SuppressWarnings("WeakerAccess")
-    public TP(final BiPredicate<String, String> biPredicate, final String value) {
+    public TextP(final BiPredicate<String, String> biPredicate, final String value) {
         super(biPredicate, value);
     }
 
     @Override
     public boolean equals(final Object other) {
-        return other instanceof TP && super.equals(other);
+        return other instanceof TextP && super.equals(other);
     }
 
     @Override
@@ -41,12 +41,12 @@ public class TP extends P<String> {
     }
 
     @Override
-    public TP negate() {
-        return new TP(this.biPredicate.negate(), this.originalValue);
+    public TextP negate() {
+        return new TextP(this.biPredicate.negate(), this.originalValue);
     }
 
-    public TP clone() {
-        return (TP) super.clone();
+    public TextP clone() {
+        return (TextP) super.clone();
     }
 
     //////////////// statics
@@ -56,8 +56,8 @@ public class TP extends P<String> {
      *
      * @since 3.4.0
      */
-    public static TP startsWith(final String value) {
-        return new TP(Text.startsWith, value);
+    public static TextP startsWith(final String value) {
+        return new TextP(Text.startsWith, value);
     }
 
     /**
@@ -65,8 +65,8 @@ public class TP extends P<String> {
      *
      * @since 3.4.0
      */
-    public static TP startsNotWith(final String value) {
-        return new TP(Text.startsNotWith, value);
+    public static TextP startsNotWith(final String value) {
+        return new TextP(Text.startsNotWith, value);
     }
 
     /**
@@ -74,8 +74,8 @@ public class TP extends P<String> {
      *
      * @since 3.4.0
      */
-    public static TP endsWith(final String value) {
-        return new TP(Text.endsWith, value);
+    public static TextP endsWith(final String value) {
+        return new TextP(Text.endsWith, value);
     }
 
     /**
@@ -83,8 +83,8 @@ public class TP extends P<String> {
      *
      * @since 3.4.0
      */
-    public static TP endsNotWith(final String value) {
-        return new TP(Text.endsNotWith, value);
+    public static TextP endsNotWith(final String value) {
+        return new TextP(Text.endsNotWith, value);
     }
 
     /**
@@ -92,8 +92,8 @@ public class TP extends P<String> {
      *
      * @since 3.4.0
      */
-    public static TP contains(final String value) {
-        return new TP(Text.contains, value);
+    public static TextP contains(final String value) {
+        return new TextP(Text.contains, value);
     }
 
     /**
@@ -101,7 +101,7 @@ public class TP extends P<String> {
      *
      * @since 3.4.0
      */
-    public static TP absent(final String value) {
-        return new TP(Text.absent, value);
+    public static TextP absent(final String value) {
+        return new TextP(Text.absent, value);
     }
 }

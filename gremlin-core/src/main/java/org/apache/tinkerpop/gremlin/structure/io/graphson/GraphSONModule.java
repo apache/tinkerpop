@@ -28,7 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
-import org.apache.tinkerpop.gremlin.process.traversal.TP;
+import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -146,7 +146,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(AndP.class, "P");
                     put(OrP.class, "P");
                     put(P.class, "P");
-                    put(TP.class, "TP");
+                    put(TextP.class, "TextP");
                     Stream.of(
                             VertexProperty.Cardinality.class,
                             Column.class,
@@ -272,7 +272,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     TraversalOptionParent.Pick.values(),
                     T.values()).flatMap(Stream::of).forEach(e -> addDeserializer(e.getClass(), new TraversalSerializersV3d0.EnumJacksonDeserializer(e.getDeclaringClass())));
             addDeserializer(P.class, new TraversalSerializersV3d0.PJacksonDeserializer());
-            addDeserializer(TP.class, new TraversalSerializersV3d0.TPJacksonDeserializer());
+            addDeserializer(TextP.class, new TraversalSerializersV3d0.TextPJacksonDeserializer());
             addDeserializer(Lambda.class, new TraversalSerializersV3d0.LambdaJacksonDeserializer());
             addDeserializer(Traverser.class, new TraversalSerializersV3d0.TraverserJacksonDeserializer());
             Arrays.asList(
@@ -362,7 +362,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(AndP.class, "P");
                     put(OrP.class, "P");
                     put(P.class, "P");
-                    put(TP.class, "TP");
+                    put(TextP.class, "TextP");
                     Stream.of(
                             VertexProperty.Cardinality.class,
                             Column.class,
@@ -480,7 +480,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     TraversalOptionParent.Pick.values(),
                     T.values()).flatMap(Stream::of).forEach(e -> addDeserializer(e.getClass(), new TraversalSerializersV2d0.EnumJacksonDeserializer(e.getDeclaringClass())));
             addDeserializer(P.class, new TraversalSerializersV2d0.PJacksonDeserializer());
-            addDeserializer(TP.class, new TraversalSerializersV2d0.TPJacksonDeserializer());
+            addDeserializer(TextP.class, new TraversalSerializersV2d0.TextPJacksonDeserializer());
             addDeserializer(Lambda.class, new TraversalSerializersV2d0.LambdaJacksonDeserializer());
             addDeserializer(Traverser.class, new TraversalSerializersV2d0.TraverserJacksonDeserializer());
             Arrays.asList(

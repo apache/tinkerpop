@@ -26,11 +26,11 @@ using Gremlin.Net.Process.Traversal;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class TPSerializer : IGraphSONSerializer
+    internal class TextPSerializer : IGraphSONSerializer
     {
         public Dictionary<string, dynamic> Dictify(dynamic predicate, GraphSONWriter writer)
         {
-            TP p = predicate;
+            TextP p = predicate;
             var value = p.Other == null
                 ? writer.ToDict(p.Value)
                 : new List<dynamic> {writer.ToDict(p.Value), writer.ToDict(p.Other)};
@@ -39,7 +39,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 {"predicate", p.OperatorName},
                 {"value", value}
             };
-            return GraphSONUtil.ToTypedValue("TP", dict);
+            return GraphSONUtil.ToTypedValue("TextP", dict);
         }
     }
 }

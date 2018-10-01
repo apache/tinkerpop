@@ -150,11 +150,11 @@ class PSerializer extends TypeSerializer {
   }
 }
 
-class TPSerializer extends TypeSerializer {
-  /** @param {TP} item */
+class TextPSerializer extends TypeSerializer {
+  /** @param {TextP} item */
   serialize(item) {
     const result = {};
-    result[typeKey] = 'g:TP';
+    result[typeKey] = 'g:TextP';
     const resultValue = result[valueKey] = {
       'predicate': item.operator
     };
@@ -168,7 +168,7 @@ class TPSerializer extends TypeSerializer {
   }
 
   canBeUsedFor(value) {
-    return (value instanceof t.TP);
+    return (value instanceof t.TextP);
   }
 }
 
@@ -406,7 +406,7 @@ module.exports = {
   PathSerializer,
   PropertySerializer,
   PSerializer,
-  TPSerializer,
+  TextPSerializer,
   SetSerializer,
   TSerializer,
   TraverserSerializer,

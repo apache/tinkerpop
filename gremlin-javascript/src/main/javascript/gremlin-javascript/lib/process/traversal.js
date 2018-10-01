@@ -310,7 +310,7 @@ function createP(operator, args) {
   return new (Function.prototype.bind.apply(P, args));
 }
 
-class TP {
+class TextP {
   /**
    * Represents an operation.
    * @constructor
@@ -374,7 +374,7 @@ class TP {
 
 function createTP(operator, args) {
   args.unshift(null, operator);
-  return new (Function.prototype.bind.apply(TP, args));
+  return new (Function.prototype.bind.apply(TextP, args));
 }
 
 class Traverser {
@@ -414,7 +414,7 @@ class EnumValue {
 module.exports = {
   EnumValue,
   P,
-  TP,
+  TextP,
   IO,
   Traversal,
   TraversalSideEffects,

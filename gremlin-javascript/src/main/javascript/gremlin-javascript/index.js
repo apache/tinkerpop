@@ -49,7 +49,7 @@ module.exports = {
     Bytecode: Bytecode,
     EnumValue: t.EnumValue,
     P: t.P,
-    TP: t.TP,
+    TextP: t.TextP,
     Traversal: t.Traversal,
     TraversalSideEffects: t.TraversalSideEffects,
     TraversalStrategies: strategiesModule.TraversalStrategies,

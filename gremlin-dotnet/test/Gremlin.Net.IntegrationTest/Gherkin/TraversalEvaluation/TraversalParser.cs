@@ -406,9 +406,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 var tokens = ParseTokens(text, ref i);
                 return new StaticTraversalParameter(tokens, text.Substring(startIndex, i - startIndex));
             }
-            if (text.Length >= i + 3 && text.Substring(i, 3) == "TP.")
+            if (text.Length >= i + 6 && text.Substring(i, 6) == "TextP.")
             {
-                return new TPParameter(ParseTokens(text, ref i));
+                return new TextPParameter(ParseTokens(text, ref i));
             }
             if (text.Substring(i, 2).StartsWith("P."))
             {

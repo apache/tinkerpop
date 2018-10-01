@@ -31,7 +31,7 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.4.0/CHANGELOG.asc
 
 ==== Added text predicates
 
-Gremlin now supports simple text predicates on top of the existing `P` predicates. Both, the new `TP` text predicates and the old `P` predicates, can be chained using `and()` and `or()`.
+Gremlin now supports simple text predicates on top of the existing `P` predicates. Both, the new `TextP` text predicates and the old `P` predicates, can be chained using `and()` and `or()`.
 
 [source,groovy]
 ----

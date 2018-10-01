@@ -218,7 +218,7 @@ function getSandbox(g, parameters) {
     },
     Order: traversalModule.order,
     P: traversalModule.P,
-    TP: traversalModule.TP,
+    TextP: traversalModule.TextP,
     IO: traversalModule.IO,
     Pick: traversalModule.pick,
     Pop: traversalModule.pop,

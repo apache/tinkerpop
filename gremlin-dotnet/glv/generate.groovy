@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.P
-import org.apache.tinkerpop.gremlin.process.traversal.TP
+import org.apache.tinkerpop.gremlin.process.traversal.TextP
 import org.apache.tinkerpop.gremlin.process.traversal.IO
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.structure.Direction
@@ -60,7 +60,7 @@ def toCSharpTypeMap = ["Long": "long",
                        "Traversal[]": "ITraversal[]",
                        "Predicate": "IPredicate",
                        "P": "P",
-                       "TP": "TP",
+                       "TextP": "TextP",
                        "TraversalStrategy": "ITraversalStrategy",
                        "TraversalStrategy[]": "ITraversalStrategy[]",
                        "Function": "IFunction",
@@ -243,9 +243,9 @@ def binding = ["pmethods": P.class.getMethods().
         collect { it.name }.
         unique().
         sort { a, b -> a <=> b },
-               "tpmethods": TP.class.getMethods().
+               "tpmethods": TextP.class.getMethods().
                        findAll { Modifier.isStatic(it.getModifiers()) }.
-                       findAll { TP.class.isAssignableFrom(it.returnType) }.
+                       findAll { TextP.class.isAssignableFrom(it.returnType) }.
                        collect { it.name }.
                        unique().
                        sort { a, b -> a <=> b },
@@ -342,8 +342,8 @@ def pTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/P.template
 def pFile = new File("${projectBaseDir}/src/Gremlin.Net/Process/Traversal/P.cs")
 pFile.newWriter().withWriter{ it << pTemplate }
 
-def tpTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/TP.template")).make(binding)
-def tpFile = new File("${projectBaseDir}/src/Gremlin.Net/Process/Traversal/TP.cs")
+def tpTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/TextP.template")).make(binding)
+def tpFile = new File("${projectBaseDir}/src/Gremlin.Net/Process/Traversal/TextP.cs")
 tpFile.newWriter().withWriter{ it << tpTemplate }
 
 binding.tokens.each {k,v ->

@@ -27,7 +27,7 @@ from aenum import Enum
 
 from gremlin_python import statics
 from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, DictType, ListType, SetType
-from gremlin_python.process.traversal import Binding, Bytecode, P, TP, Traversal, Traverser, TraversalStrategy, T
+from gremlin_python.process.traversal import Binding, Bytecode, P, TextP, Traversal, Traverser, TraversalStrategy, T
 from gremlin_python.structure.graph import Edge, Property, Vertex, VertexProperty, Path
 
 # When we fall back to a superclass's serializer, we iterate over this map.
@@ -284,15 +284,15 @@ class PSerializer(_GraphSONTypeIO):
         return GraphSONUtil.typedValue("P", out)
 
 
-class TPSerializer(_GraphSONTypeIO):
-    python_type = TP
+class TextPSerializer(_GraphSONTypeIO):
+    python_type = TextP
 
     @classmethod
     def dictify(cls, p, writer):
         out = {"predicate": p.operator,
                "value": [writer.toDict(p.value), writer.toDict(p.other)] if p.other is not None else
                writer.toDict(p.value)}
-        return GraphSONUtil.typedValue("TP", out)
+        return GraphSONUtil.typedValue("TextP", out)
 
 
 class BindingSerializer(_GraphSONTypeIO):

@@ -3357,8 +3357,8 @@ interface. Steps that allow for this type of modulation will explicitly state so
 == A Note on Predicates
 
 A `P` is a predicate of the form `Function<Object,Boolean>`. That is, given some object, return true or false. As of
-the relase of TinkerPop 3.4.0, Gremlin also supports simple text predicates, which only work on `String` values. The `TP`
-text predicates extends the `P` predicates, but are specialized in that they are of the form `Function<String,Boolean>`.
+the relase of TinkerPop 3.4.0, Gremlin also supports simple text predicates, which only work on `String` values. The `TextP`
+text predicates extend the `P` predicates, but are specialized in that they are of the form `Function<String,Boolean>`.
 The provided predicates are outlined in the table below and are used in various steps such as <<has-step,`has()`>>-step,
 <<where-step,`where()`>>-step, <<is-step,`is()`>>-step, etc.
 
@@ -3376,12 +3376,12 @@ The provided predicates are outlined in the table below and are used in various 
 | `P.between(number,number)` | Is the incoming number greater than or equal to the first provided number and less than the second?
 | `P.within(objects...)` | Is the incoming object in the array of provided objects?
 | `P.without(objects...)` | Is the incoming object not in the array of the provided objects?
-| `TP.startsWith(string)` | Does the incoming `String` start with the provided `String`?
-| `TP.endsWith(string)` | Does the incoming `String` end with the provided `String`?
-| `TP.contains(string)` | Does the incoming `String` contain the provided `String`?
-| `TP.startsNotWith(string)` | TODO: find a better name
-| `TP.endsNotWith(string)` | TODO: find a better name
-| `TP.absent(string)` | TODO: find a better name
+| `TextP.startsWith(string)` | Does the incoming `String` start with the provided `String`?
+| `TextP.endsWith(string)` | Does the incoming `String` end with the provided `String`?
+| `TextP.contains(string)` | Does the incoming `String` contain the provided `String`?
+| `TextP.startsNotWith(string)` | TODO: find a better name
+| `TextP.endsNotWith(string)` | TODO: find a better name
+| `TextP.absent(string)` | TODO: find a better name
 |=========================================================
 
 [gremlin-groovy]

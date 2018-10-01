@@ -31,19 +31,19 @@ using Gremlin.Net.Process.Traversal;
 namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 {
     /// <summary>
-    /// Represents a parameter for a traversal predicate (ie: TP.contains())
+    /// Represents a parameter for a traversal predicate (ie: TextP.contains())
     /// </summary>
-    internal class TPParameter : ITokenParameter, IEquatable<TPParameter>
+    internal class TextPParameter : ITokenParameter, IEquatable<TextPParameter>
     {
         private IDictionary<string, object> _contextParameterValues;
         public IList<Token> Tokens { get; }
         
-        public TPParameter(IList<Token> tokens)
+        public TextPParameter(IList<Token> tokens)
         {
             Tokens = tokens;
         }
 
-        public bool Equals(TPParameter other)
+        public bool Equals(TextPParameter other)
         {
             return Tokens.SequenceEqual(other.Tokens);
         }
@@ -53,7 +53,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
-            return Equals((TPParameter) obj);
+            return Equals((TextPParameter) obj);
         }
 
         public override int GetHashCode()
@@ -63,7 +63,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 
         public object GetValue()
         {
-            var type = typeof(TP);
+            var type = typeof(TextP);
             object instance = null;
             for (var i = 1; i < Tokens.Count; i++)
             {
@@ -73,7 +73,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                     BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
                 if (method == null)
                 {
-                    throw new InvalidOperationException($"Predicate (TP) method '{token}' not found for testing");
+                    throw new InvalidOperationException($"Predicate (TextP) method '{token}' not found for testing");
                 }
                 
                 var parameters = method.IsStatic
@@ -86,7 +86,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 
         public Type GetParameterType()
         {
-            return typeof(TP);
+            return typeof(TextP);
         }
 
         public void SetContextParameterValues(IDictionary<string, object> parameterValues)

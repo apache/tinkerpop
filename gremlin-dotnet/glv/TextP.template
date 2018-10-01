@@ -33,25 +33,25 @@ namespace Gremlin.Net.Process.Traversal
 #pragma warning disable 1591
 
     /// <summary>
-    ///     A <see cref="TP" /> is a predicate of the form Func&lt;string, bool&gt;.
+    ///     A <see cref="TextP" /> is a predicate of the form Func&lt;string, bool&gt;.
     ///     That is, given some string, return true or false.
     /// </summary>
-    public class TP : P
+    public class TextP : P
     {
         /// <summary>
-        ///     Initializes a new instance of the <see cref="TP" /> class.
+        ///     Initializes a new instance of the <see cref="TextP" /> class.
         /// </summary>
         /// <param name="operatorName">The name of the predicate.</param>
         /// <param name="value">The value of the predicate.</param>
         /// <param name="other">An optional other predicate that is used as an argument for this predicate.</param>
-        public TP(string operatorName, string value, P other = null) : base(operatorName, value, other)
+        public TextP(string operatorName, string value, P other = null) : base(operatorName, value, other)
         {
         }
 
 <% tpmethods.each { method -> %>
-        public static TP <%= toCSharpMethodName.call(method) %>(string value)
+        public static TextP <%= toCSharpMethodName.call(method) %>(string value)
         {
-            return new TP("<%= method %>", value);
+            return new TextP("<%= method %>", value);
         }
 <% } %>
 

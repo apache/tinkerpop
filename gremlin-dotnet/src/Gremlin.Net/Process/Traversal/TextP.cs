@@ -33,50 +33,50 @@ namespace Gremlin.Net.Process.Traversal
 #pragma warning disable 1591
 
     /// <summary>
-    ///     A <see cref="TP" /> is a predicate of the form Func&lt;string, bool&gt;.
+    ///     A <see cref="TextP" /> is a predicate of the form Func&lt;string, bool&gt;.
     ///     That is, given some string, return true or false.
     /// </summary>
-    public class TP : P
+    public class TextP : P
     {
         /// <summary>
-        ///     Initializes a new instance of the <see cref="TP" /> class.
+        ///     Initializes a new instance of the <see cref="TextP" /> class.
         /// </summary>
         /// <param name="operatorName">The name of the predicate.</param>
         /// <param name="value">The value of the predicate.</param>
         /// <param name="other">An optional other predicate that is used as an argument for this predicate.</param>
-        public TP(string operatorName, string value, P other = null) : base(operatorName, value, other)
+        public TextP(string operatorName, string value, P other = null) : base(operatorName, value, other)
         {
         }
 
 
-        public static TP Absent(string value)
+        public static TextP Absent(string value)
         {
-            return new TP("absent", value);
+            return new TextP("absent", value);
         }
 
-        public static TP Contains(string value)
+        public static TextP Contains(string value)
         {
-            return new TP("contains", value);
+            return new TextP("contains", value);
         }
 
-        public static TP EndsNotWith(string value)
+        public static TextP EndsNotWith(string value)
         {
-            return new TP("endsNotWith", value);
+            return new TextP("endsNotWith", value);
         }
 
-        public static TP EndsWith(string value)
+        public static TextP EndsWith(string value)
         {
-            return new TP("endsWith", value);
+            return new TextP("endsWith", value);
         }
 
-        public static TP StartsNotWith(string value)
+        public static TextP StartsNotWith(string value)
         {
-            return new TP("startsNotWith", value);
+            return new TextP("startsNotWith", value);
         }
 
-        public static TP StartsWith(string value)
+        public static TextP StartsWith(string value)
         {
-            return new TP("startsWith", value);
+            return new TextP("startsWith", value);
         }
 
 

@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.TP;
+import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -791,27 +791,27 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXname_containsXarkXX() {
-            return g.V().has("name", TP.contains("ark"));
+            return g.V().has("name", TextP.contains("ark"));
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXname_startsWithXmarXX() {
-            return g.V().has("name", TP.startsWith("mar"));
+            return g.V().has("name", TextP.startsWith("mar"));
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXname_endsWithXasXX() {
-            return g.V().has("name", TP.endsWith("as"));
+            return g.V().has("name", TextP.endsWith("as"));
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXperson_name_containsXoX_andXltXmXXX() {
-            return g.V().has("person","name", TP.contains("o").and(P.lt("m")));
+            return g.V().has("person","name", TextP.contains("o").and(P.lt("m")));
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXname_gtXmX_andXcontainsXoXXX() {
-            return g.V().has("name", P.gt("m").and(TP.contains("o")));
+            return g.V().has("name", P.gt("m").and(TextP.contains("o")));
         }
     }
 }
