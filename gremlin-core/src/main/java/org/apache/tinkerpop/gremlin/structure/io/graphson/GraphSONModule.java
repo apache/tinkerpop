@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Connec
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
@@ -174,6 +175,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                             InlineFilterStrategy.class,
                             MatchPredicateStrategy.class,
                             OrderLimitStrategy.class,
+                            OptionsStrategy.class,
                             PathProcessorStrategy.class,
                             PathRetractionStrategy.class,
                             CountStrategy.class,
@@ -291,6 +293,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     InlineFilterStrategy.class,
                     MatchPredicateStrategy.class,
                     OrderLimitStrategy.class,
+                    OptionsStrategy.class,
                     PathProcessorStrategy.class,
                     PathRetractionStrategy.class,
                     CountStrategy.class,
@@ -390,6 +393,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                             InlineFilterStrategy.class,
                             MatchPredicateStrategy.class,
                             OrderLimitStrategy.class,
+                            OptionsStrategy.class,
                             PathProcessorStrategy.class,
                             PathRetractionStrategy.class,
                             CountStrategy.class,
@@ -499,6 +503,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     InlineFilterStrategy.class,
                     MatchPredicateStrategy.class,
                     OrderLimitStrategy.class,
+                    OptionsStrategy.class,
                     PathProcessorStrategy.class,
                     PathRetractionStrategy.class,
                     CountStrategy.class,
