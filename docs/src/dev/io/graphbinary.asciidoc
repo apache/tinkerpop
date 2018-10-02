@@ -26,23 +26,28 @@ It describes arbitrary object graphs with a fully-qualified format:
 
 [source]
 ----
-{type_code}{value}
+{type_code}{type_info}{value_flag}{value}
 ----
 
 Where:
 
-- `{type_code}` is a single byte representing the type number.
-- `{value}` is a sequence of bytes which content is determined by the type.
+* `{type_code}` is a single byte representing the type number.
+* `{type_info}` is an optional sequence of bytes providing additional information of the type represented. This is
+specially useful for representing complex and custom types.
+* `{value_flag}` is a single byte providing information about the value. Flags have the following meaning:
+** `0x01` The value is `null`. When this flag is set, no bytes for `{value}` will be provided.
+* `{value}` is a sequence of bytes which content is determined by the type.
 
 All encodings are big-endian.
 
 Quick examples, using hexadecimal notation to represent each byte:
 
-- `01 00 00 00 01`: a 32-bit integer number, that represents the decimal number 1. It’s composed by the
-type_code `0x01` and four bytes to describe the value.
-- `01 00 00 00 ff`: a 32-bit integer, representing the number 256.
-- `02 00 00 00 00 00 00 00 01`: a 64-bit integer number 1. It’s composed by the type_code `0x02` and eight bytes
-to describe the value.
+- `01 00 00 00 00 01`: a 32-bit integer number, that represents the decimal number 1. It’s composed by the
+type_code `0x01`, and empty flag value `0x00` and four bytes to describe the value.
+- `01 00 00 00 00 ff`: a 32-bit integer, representing the number 256.
+- `01 01`: a null value for a 32-bit integer. It’s composed by the type_code `0x01`, and a null flag value `0x01`.
+- `02 00 00 00 00 00 00 00 00 01`: a 64-bit integer number 1. It’s composed by the type_code `0x02`, empty flags and
+eight bytes to describe the value.
 
 == Version 1.0
 
@@ -60,7 +65,8 @@ Format: `{version}{request_id}{op}{processor}{args}`
 
 Where:
 
-- `{version}` is a `Byte` representing the protocol version, with the most significant bit set to one. For this version of the protocol, the value expected is `0x81` (`10000001`).
+- `{version}` is a `Byte` representing the protocol version, with the most significant bit set to one. For this version
+of the protocol, the value expected is `0x81` (`10000001`).
 - `{request_id}` is a `UUID`.
 - `{op}` is a `String`.
 - `{processor}` is a `String`.
@@ -75,7 +81,8 @@ Format: `{version}{id_present}{request_id}{status_code}{status_message}{status_a
 
 Where:
 
-- `{version}` is a `Byte` representing the protocol version, with the most significant bit set to one. For this version of the protocol, the value expected is `0x81` (`10000001`).
+- `{version}` is a `Byte` representing the protocol version, with the most significant bit set to one. For this version
+of the protocol, the value expected is `0x81` (`10000001`).
 - `{id_present}` is a single `Byte` representing whether a request id is present with only two possible values 0 and 1.
 - `{request_id}` is a `UUID`.
 - `{status_code}` is an `Int`.
@@ -176,13 +183,15 @@ Format: `{length}{text_value}`
 
 Where:
 
-- `{length}` is an `Int` describing the byte length of the text. Negative value -1 represents the null string.
+- `{length}` is an `Int` describing the byte length of the text. Length is a positive number or zero to represent
+the empty string.
 - `{text_value}` is a sequence of bytes representing the string value in UTF8 encoding.
 
 Example values
 
 - `00 00 00 03 61 62 63`: the string 'abc'.
 - `00 00 00 04 61 62 63 64`: the string 'abcd'.
+- `00 00 00 00`: the empty string ''.
 
 ==== Date
 
@@ -417,7 +426,8 @@ Where:
 
 ==== BigDecimal
 
-Represents an arbitrary-precision signed decimal number, consisting of an arbitrary precision integer unscaled value and a 32-bit integer scale.
+Represents an arbitrary-precision signed decimal number, consisting of an arbitrary precision integer unscaled value
+and a 32-bit integer scale.
 
 Format: `{scale}{unscaled_value}`
 
@@ -459,13 +469,20 @@ Format: 2-byte two's complement integer.
 
 ==== Custom
 
-A custom type, represented with a name and a blob value.
+A custom type, represented as a blob value.
 
-Format: `{name}{blob}`
+Type Info: `{name}{custom_type_info}`
 
 Where:
 
-- `{name}` is `String`.
+- `{name}` is a `String` containing the implementation specific text identifier of the custom type.
+- `{custom_type_info}` is an optional sequence of bytes representing the additional type information, specially useful
+for complex custom types.
+
+Value format: `{blob}`
+
+Where:
+
 - `{blob}` is a `ByteBuffer`.
 
 ==== Char
@@ -474,9 +491,11 @@ Format: one to four bytes representing a single UTF8 char, according to the Unic
 
 For characters `0x00`-`0x7F`, UTF-8 encodes the character as a single byte.
 
-For characters `0x80`-`0x7FF`, UTF-8 uses 2 bytes: the first byte is binary `110` followed by the 5 high bits of the character, while the second byte is binary 10 followed by the 6 low bits of the character.
+For characters `0x80`-`0x7FF`, UTF-8 uses 2 bytes: the first byte is binary `110` followed by the 5 high bits of the
+character, while the second byte is binary 10 followed by the 6 low bits of the character.
 
-The 3 and 4-byte encodings are similar to the 2-byte encoding, except that the first byte of the 3-byte encoding starts with `1110` and the first byte of the 4-byte encoding starts with `11110`.
+The 3 and 4-byte encodings are similar to the 2-byte encoding, except that the first byte of the 3-byte encoding starts
+with `1110` and the first byte of the 4-byte encoding starts with `11110`.
 
 Example values (hex bytes)
 
