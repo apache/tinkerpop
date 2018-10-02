@@ -21,6 +21,7 @@ import pytest
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver.request import RequestMessage
+from gremlin_python.process.strategies import OptionsStrategy
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.structure.graph import Graph
 
@@ -65,6 +66,16 @@ def test_client_error(client):
 def test_client_bytecode(client):
     g = Graph().traversal()
     t = g.V()
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
+    result_set = client.submit(message)
+    assert len(result_set.all().result()) == 6
+
+
+def test_client_bytecode_options(client):
+    # smoke test to validate serialization of OptionsStrategy. no way to really validate this from an integration
+    # test perspective because there's no way to access the internals of the strategy via bytecode
+    g = Graph().traversal()
+    t = g.withStrategies(OptionsStrategy(options={"x": "test", "y": True})).V()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
     result_set = client.submit(message)
     assert len(result_set.all().result()) == 6
