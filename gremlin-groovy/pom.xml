@@ -47,18 +47,39 @@ limitations under the License.
             <artifactId>groovy-groovysh</artifactId>
             <version>${groovy.version}</version>
             <classifier>indy</classifier>
+            <exclusions>
+                <!-- exclude non-indy type -->
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-json</artifactId>
             <version>${groovy.version}</version>
             <classifier>indy</classifier>
+            <exclusions>
+                <!-- exclude non-indy type -->
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-jsr223</artifactId>
             <version>${groovy.version}</version>
             <classifier>indy</classifier>
+            <exclusions>
+                <!-- exclude non-indy type -->
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

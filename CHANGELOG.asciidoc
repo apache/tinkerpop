@@ -23,6 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-2-10]]
 === TinkerPop 3.2.10 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Removed conflicting non-indy groovy core dependency
 * Bumped jython-standalone 2.7.1
 * SSL security enhancements
 * Added Gremlin version to Gremlin Server startup logging output.
