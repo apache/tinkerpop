@@ -483,6 +483,27 @@ All of the changes above basically mean, that if the `Mutating` interface was be
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1975[TINKERPOP-1975]
 
+===== OptionsStrategy
+
+`OptionsStrategy` is a `TraversalStrategy` that makes it possible for users to set arbitrary configurations on a
+`Traversal`. These configurations can be used by graph providers to allow for traversal-level configurations to be
+accessible to their custom steps. A user would write something like:
+
+[source,java]
+----
+g.withStrategies(OptionsStrategy.build().with("specialLimit", 10000).create());
+----
+
+The graph provider could then access that value of "specialLimit" in their custom step (or elsewhere) as follows:
+
+[source,java]
+----
+OptionsStrategy strategy = this.getTraversal().asAdmin().getStrategies().getStrategy(OptionsStrategy.class).get();
+int specialLimit = (int) strategy.getOptions().get("specialLimit");
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2053[TINKERPOP-2053]
+
 ===== Removed hadoop-gremlin Test Artifact
 
 The `hadoop-gremlin` module no longer generates a test jar that can be used as a test dependency in other modules.
