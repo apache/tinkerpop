@@ -21,97 +21,131 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 import java.util.function.BiPredicate;
 
 /**
+ * {@link Text} is a {@link java.util.function.BiPredicate} that determines whether the first string starts with, starts
+ * not with, ends with, ends not with, contains or does not contain the second string argument.
+ *
  * @author Daniel Kuppitz (http://gremlin.guru)
+ * @since 3.4.0
  */
 public enum Text implements BiPredicate<String, String> {
 
-    startsWith {
+    /**
+     * Evaluates if the first string starts with the second.
+     *
+     * @since 3.4.0
+     */
+    startingWith {
         @Override
         public boolean test(final String value, final String prefix) {
             return value.startsWith(prefix);
         }
 
         /**
-         * The negative of {@code startsWith} is {@link #startsNotWith}.
+         * The negative of {@code startsWith} is {@link #notStartingWith}.
          */
         @Override
         public Text negate() {
-            return startsNotWith;
+            return notStartingWith;
         }
     },
 
-    startsNotWith {
+    /**
+     * Evaluates if the first string does not start with the second.
+     *
+     * @since 3.4.0
+     */
+    notStartingWith {
         @Override
         public boolean test(final String value, final String prefix) {
-            return !startsWith.test(value, prefix);
+            return !startingWith.test(value, prefix);
         }
 
         /**
-         * The negative of {@code startsNotWith} is {@link #startsWith}.
+         * The negative of {@code startsNotWith} is {@link #startingWith}.
          */
         @Override
         public Text negate() {
-            return startsWith;
+            return startingWith;
         }
     },
 
-    endsWith {
+    /**
+     * Evaluates if the first string ends with the second.
+     *
+     * @since 3.4.0
+     */
+    endingWith {
         @Override
         public boolean test(final String value, final String suffix) {
             return value.endsWith(suffix);
         }
 
         /**
-         * The negative of {@code endsWith} is {@link #endsNotWith}.
+         * The negative of {@code endsWith} is {@link #notEndingWith}.
          */
         @Override
         public Text negate() {
-            return endsNotWith;
+            return notEndingWith;
         }
     },
 
-    endsNotWith {
+    /**
+     * Evaluates if the first string does not end with the second.
+     *
+     * @since 3.4.0
+     */
+    notEndingWith {
         @Override
         public boolean test(final String value, final String prefix) {
-            return !endsWith.test(value, prefix);
+            return !endingWith.test(value, prefix);
         }
 
         /**
-         * The negative of {@code endsNotWith} is {@link #endsWith}.
+         * The negative of {@code endsNotWith} is {@link #endingWith}.
          */
         @Override
         public Text negate() {
-            return endsWith;
+            return endingWith;
         }
     },
 
-    contains {
+    /**
+     * Evaluates if the first string contains the second.
+     *
+     * @since 3.4.0
+     */
+    containing {
         @Override
         public boolean test(final String value, final String search) {
             return value.contains(search);
         }
 
         /**
-         * The negative of {@code contains} is {@link #absent}.
+         * The negative of {@code contains} is {@link #notContaining}.
          */
         @Override
         public Text negate() {
-            return absent;
+            return notContaining;
         }
     },
 
-    absent{
+    /**
+     * Evaluates if the first string does not contain the second.
+     *
+     * @since 3.4.0
+     */
+    notContaining {
         @Override
         public boolean test(final String value, final String search) {
-            return !contains.test(value, search);
+            return !containing.test(value, search);
         }
 
         /**
-         * The negative of {@code absent} is {@link #contains}.
+         * The negative of {@code absent} is {@link #containing}.
          */
         @Override
         public Text negate() {
-            return contains;
+            return containing;
         }
     };
 

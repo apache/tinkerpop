@@ -327,28 +327,28 @@ class TextP(P):
         P.__init__(self, operator, value, other)
 
     @staticmethod
-    def absent(*args):
-        return TextP("absent", *args)
+    def containing(*args):
+        return TextP("containing", *args)
 
     @staticmethod
-    def contains(*args):
-        return TextP("contains", *args)
+    def endingWith(*args):
+        return TextP("endingWith", *args)
 
     @staticmethod
-    def endsNotWith(*args):
-        return TextP("endsNotWith", *args)
+    def notContaining(*args):
+        return TextP("notContaining", *args)
 
     @staticmethod
-    def endsWith(*args):
-        return TextP("endsWith", *args)
+    def notEndingWith(*args):
+        return TextP("notEndingWith", *args)
 
     @staticmethod
-    def startsNotWith(*args):
-        return TextP("startsNotWith", *args)
+    def notStartingWith(*args):
+        return TextP("notStartingWith", *args)
 
     @staticmethod
-    def startsWith(*args):
-        return TextP("startsWith", *args)
+    def startingWith(*args):
+        return TextP("startingWith", *args)
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.operator == other.operator and self.value == other.value and self.other == other.other
@@ -356,29 +356,29 @@ class TextP(P):
     def __repr__(self):
         return self.operator + "(" + str(self.value) + ")" if self.other is None else self.operator + "(" + str(self.value) + "," + str(self.other) + ")"
 
-def absent(*args):
-    return TextP.absent(*args)
-statics.add_static('absent',absent)
+def containing(*args):
+    return TextP.containing(*args)
+statics.add_static('containing',containing)
 
-def contains(*args):
-    return TextP.contains(*args)
-statics.add_static('contains',contains)
+def endingWith(*args):
+    return TextP.endingWith(*args)
+statics.add_static('endingWith',endingWith)
 
-def endsNotWith(*args):
-    return TextP.endsNotWith(*args)
-statics.add_static('endsNotWith',endsNotWith)
+def notContaining(*args):
+    return TextP.notContaining(*args)
+statics.add_static('notContaining',notContaining)
 
-def endsWith(*args):
-    return TextP.endsWith(*args)
-statics.add_static('endsWith',endsWith)
+def notEndingWith(*args):
+    return TextP.notEndingWith(*args)
+statics.add_static('notEndingWith',notEndingWith)
 
-def startsNotWith(*args):
-    return TextP.startsNotWith(*args)
-statics.add_static('startsNotWith',startsNotWith)
+def notStartingWith(*args):
+    return TextP.notStartingWith(*args)
+statics.add_static('notStartingWith',notStartingWith)
 
-def startsWith(*args):
-    return TextP.startsWith(*args)
-statics.add_static('startsWith',startsWith)
+def startingWith(*args):
+    return TextP.startingWith(*args)
+statics.add_static('startingWith',startingWith)
 
 
 

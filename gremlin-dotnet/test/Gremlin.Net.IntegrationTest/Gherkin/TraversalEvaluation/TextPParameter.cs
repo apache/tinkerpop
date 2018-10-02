@@ -31,7 +31,7 @@ using Gremlin.Net.Process.Traversal;
 namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 {
     /// <summary>
-    /// Represents a parameter for a traversal predicate (ie: TextP.contains())
+    /// Represents a parameter for a traversal predicate (ie: TextP.containing())
     /// </summary>
     internal class TextPParameter : ITokenParameter, IEquatable<TextPParameter>
     {

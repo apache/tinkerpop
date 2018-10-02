@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 import java.util.function.BiPredicate;
 
 /**
+ * Predefined {@code Predicate} values that can be used as {@code String} filters.
+ *
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public class TextP extends P<String> {
@@ -56,8 +58,8 @@ public class TextP extends P<String> {
      *
      * @since 3.4.0
      */
-    public static TextP startsWith(final String value) {
-        return new TextP(Text.startsWith, value);
+    public static TextP startingWith(final String value) {
+        return new TextP(Text.startingWith, value);
     }
 
     /**
@@ -65,8 +67,8 @@ public class TextP extends P<String> {
      *
      * @since 3.4.0
      */
-    public static TextP startsNotWith(final String value) {
-        return new TextP(Text.startsNotWith, value);
+    public static TextP notStartingWith(final String value) {
+        return new TextP(Text.notStartingWith, value);
     }
 
     /**
@@ -74,8 +76,8 @@ public class TextP extends P<String> {
      *
      * @since 3.4.0
      */
-    public static TextP endsWith(final String value) {
-        return new TextP(Text.endsWith, value);
+    public static TextP endingWith(final String value) {
+        return new TextP(Text.endingWith, value);
     }
 
     /**
@@ -83,8 +85,8 @@ public class TextP extends P<String> {
      *
      * @since 3.4.0
      */
-    public static TextP endsNotWith(final String value) {
-        return new TextP(Text.endsNotWith, value);
+    public static TextP notEndingWith(final String value) {
+        return new TextP(Text.notEndingWith, value);
     }
 
     /**
@@ -92,8 +94,8 @@ public class TextP extends P<String> {
      *
      * @since 3.4.0
      */
-    public static TextP contains(final String value) {
-        return new TextP(Text.contains, value);
+    public static TextP containing(final String value) {
+        return new TextP(Text.containing, value);
     }
 
     /**
@@ -101,7 +103,7 @@ public class TextP extends P<String> {
      *
      * @since 3.4.0
      */
-    public static TextP absent(final String value) {
-        return new TextP(Text.absent, value);
+    public static TextP notContaining(final String value) {
+        return new TextP(Text.notContaining, value);
     }
 }

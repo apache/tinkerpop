@@ -3376,12 +3376,12 @@ The provided predicates are outlined in the table below and are used in various 
 | `P.between(number,number)` | Is the incoming number greater than or equal to the first provided number and less than the second?
 | `P.within(objects...)` | Is the incoming object in the array of provided objects?
 | `P.without(objects...)` | Is the incoming object not in the array of the provided objects?
-| `TextP.startsWith(string)` | Does the incoming `String` start with the provided `String`?
-| `TextP.endsWith(string)` | Does the incoming `String` end with the provided `String`?
-| `TextP.contains(string)` | Does the incoming `String` contain the provided `String`?
-| `TextP.startsNotWith(string)` | TODO: find a better name
-| `TextP.endsNotWith(string)` | TODO: find a better name
-| `TextP.absent(string)` | TODO: find a better name
+| `TextP.startingWith(string)` | Does the incoming `String` start with the provided `String`?
+| `TextP.endingWith(string)` | Does the incoming `String` end with the provided `String`?
+| `TextP.containing(string)` | Does the incoming `String` contain the provided `String`?
+| `TextP.notStartingWith(string)` | Does the incoming `String` not start with the provided `String`?
+| `TextP.notEndingWith(string)` | Does the incoming `String` not end with the provided `String`?
+| `TextP.notContaining(string)` | Does the incoming `String` not contain the provided `String`?
 |=========================================================
 
 [gremlin-groovy]

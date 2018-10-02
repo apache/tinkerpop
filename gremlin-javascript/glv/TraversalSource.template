@@ -194,12 +194,12 @@ class TextP {
 <% tpmethods.each{ method -> %>
   /** @param {...Object} args */
   static <%= toJs.call(method) %>(...args) {
-    return createTP('<%= method %>', args);
+    return createTextP('<%= method %>', args);
   }
 <% } %>
 }
 
-function createTP(operator, args) {
+function createTextP(operator, args) {
   args.unshift(null, operator);
   return new (Function.prototype.bind.apply(TextP, args));
 }

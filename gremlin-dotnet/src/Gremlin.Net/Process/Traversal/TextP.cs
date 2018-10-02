@@ -49,34 +49,34 @@ namespace Gremlin.Net.Process.Traversal
         }
 
 
-        public static TextP Absent(string value)
+        public static TextP Containing(string value)
         {
-            return new TextP("absent", value);
+            return new TextP("containing", value);
         }
 
-        public static TextP Contains(string value)
+        public static TextP EndingWith(string value)
         {
-            return new TextP("contains", value);
+            return new TextP("endingWith", value);
         }
 
-        public static TextP EndsNotWith(string value)
+        public static TextP NotContaining(string value)
         {
-            return new TextP("endsNotWith", value);
+            return new TextP("notContaining", value);
         }
 
-        public static TextP EndsWith(string value)
+        public static TextP NotEndingWith(string value)
         {
-            return new TextP("endsWith", value);
+            return new TextP("notEndingWith", value);
         }
 
-        public static TextP StartsNotWith(string value)
+        public static TextP NotStartingWith(string value)
         {
-            return new TextP("startsNotWith", value);
+            return new TextP("notStartingWith", value);
         }
 
-        public static TextP StartsWith(string value)
+        public static TextP StartingWith(string value)
         {
-            return new TextP("startsWith", value);
+            return new TextP("startingWith", value);
         }
 
 

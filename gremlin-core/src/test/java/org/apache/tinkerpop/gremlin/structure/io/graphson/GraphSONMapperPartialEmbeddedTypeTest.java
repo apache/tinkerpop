@@ -329,11 +329,11 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
                 P.without(Arrays.asList(1,2,3,4)),
                 P.eq(1).and(P.eq(2)),
                 P.eq(1).or(P.eq(2)),
-                TextP.contains("ark"),
-                TextP.startsWith("mar"),
-                TextP.endsWith("ko"),
-                TextP.endsWith("ko").and(P.gte("mar")),
-                P.gte("mar").and(TextP.endsWith("ko")));
+                TextP.containing("ark"),
+                TextP.startingWith("mar"),
+                TextP.endingWith("ko"),
+                TextP.endingWith("ko").and(P.gte("mar")),
+                P.gte("mar").and(TextP.endingWith("ko")));
 
         for (P p : variantsOfP) {
             if (p instanceof TextP) {

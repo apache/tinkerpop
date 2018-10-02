@@ -35,10 +35,10 @@ Gremlin now supports simple text predicates on top of the existing `P` predicate
 
 [source,groovy]
 ----
-gremlin> g.V().has("person","name", contains("o")).valueMap()
+gremlin> g.V().has("person","name", containing("o")).valueMap()
 ==>[name:[marko],age:[29]]
 ==>[name:[josh],age:[32]]
-gremlin> g.V().has("person","name", contains("o").and(gte("j").and(endsWith("ko")))).valueMap()
+gremlin> g.V().has("person","name", containing("o").and(gte("j").and(endingWith("ko")))).valueMap()
 ==>[name:[marko],age:[29]]
 ----
 

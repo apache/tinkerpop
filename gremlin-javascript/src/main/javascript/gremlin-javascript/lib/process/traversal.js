@@ -341,38 +341,38 @@ class TextP {
   }
 
   /** @param {...Object} args */
-  static absent(...args) {
-    return createTP('absent', args);
+  static containing(...args) {
+    return createTextP('containing', args);
   }
 
   /** @param {...Object} args */
-  static contains(...args) {
-    return createTP('contains', args);
+  static endingWith(...args) {
+    return createTextP('endingWith', args);
   }
 
   /** @param {...Object} args */
-  static endsNotWith(...args) {
-    return createTP('endsNotWith', args);
+  static notContaining(...args) {
+    return createTextP('notContaining', args);
   }
 
   /** @param {...Object} args */
-  static endsWith(...args) {
-    return createTP('endsWith', args);
+  static notEndingWith(...args) {
+    return createTextP('notEndingWith', args);
   }
 
   /** @param {...Object} args */
-  static startsNotWith(...args) {
-    return createTP('startsNotWith', args);
+  static notStartingWith(...args) {
+    return createTextP('notStartingWith', args);
   }
 
   /** @param {...Object} args */
-  static startsWith(...args) {
-    return createTP('startsWith', args);
+  static startingWith(...args) {
+    return createTextP('startingWith', args);
   }
 
 }
 
-function createTP(operator, args) {
+function createTextP(operator, args) {
   args.unshift(null, operator);
   return new (Function.prototype.bind.apply(TextP, args));
 }
