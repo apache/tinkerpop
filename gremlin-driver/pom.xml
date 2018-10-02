@@ -56,19 +56,6 @@ limitations under the License.
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-sql</artifactId>
-            <version>${groovy.version}</version>
-            <classifier>indy</classifier>
-            <exclusions>
-                <!-- exclude non-indy type -->
-                <exclusion>
-                    <groupId>org.codehaus.groovy</groupId>
-                    <artifactId>groovy</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>

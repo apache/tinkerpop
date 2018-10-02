@@ -44,6 +44,25 @@ gremlin> g.V().has("person","name", containing("o").and(gte("j").and(endingWith(
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2041[TINKERPOP-2041]
 
+==== Removed groovy-sql dependency
+
+Gremlin Console and Gremlin Server no longer include groovy-sql.  If you depend on groovy-sql,
+you can install it in Gremlin Console or Gremlin Server using the plugin system.
+
+Console:
+```
+:install org.codehaus.groovy groovy-sql 2.5.2
+```
+
+Server:
+```
+bin/gremlin-server.sh install org.codehaus.groovy groovy-sql 2.5.2
+```
+
+If your project depended on groovy-sql transitively, simply include it in your project's build file (e.g. maven: pom.xml).
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2037[TINKERPOP-2037]
+
 ==== Changed infix behavior
 
 The infix notation of `and()` and `or()` now supports an arbitrary number of traversals and `ConnectiveStrategy` produces a traversal with proper AND and OR semantics.
