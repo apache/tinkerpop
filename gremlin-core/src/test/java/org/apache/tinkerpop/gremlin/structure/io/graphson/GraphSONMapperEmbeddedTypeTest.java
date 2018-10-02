@@ -42,7 +42,9 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
@@ -70,6 +72,19 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Parameterized.Parameter(0)
     public String version;
+
+    @Test
+    public void shouldHandleNumberConstants() throws Exception {
+        assumeThat(version, startsWith("v2"));
+
+        final List<Object> o = new ArrayList<>();
+        o.add(123.321d);
+        o.add(Double.NaN);
+        o.add(Double.NEGATIVE_INFINITY);
+        o.add(Double.POSITIVE_INFINITY);
+
+        assertEquals(o, serializeDeserialize(mapper, o, List.class));
+    }
 
     @Test
     public void shouldHandleBiFunctionLambda() throws Exception {
