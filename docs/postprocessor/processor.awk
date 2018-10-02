@@ -42,7 +42,7 @@ BEGIN {
 
 /<span class="comment">/ {
   if (firstMatch || !isHeader) {
-    print gensub(/<span class="comment">\/\/<\/span>(<b class="conum">)\(([0-9]+)\)(<\/b>)/,
+    print gensub(/<span class="comment">\/\/<\/span>[ ]*(<b class="conum">)\(([0-9]+)\)(<\/b>)/,
                  "<span class=\"invisible\">//</span>\\1\\2\\3<span class=\"invisible\">\\\\<\/span>", "g")
   }
 }
