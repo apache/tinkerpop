@@ -27,6 +27,7 @@ using System.Threading.Tasks;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
 using Xunit;
+using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 
 namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 {
@@ -181,6 +182,26 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var count = g.V().Has(b.Of("propertyKey", "name"), b.Of("propertyValue", "marko")).OutE().Count().Next();
 
             Assert.Equal(3, count);
+        }  
+
+        [Fact]
+        public void ShouldUseOptionsInTraversal()
+        {
+            // smoke test to validate serialization of OptionsStrategy. no way to really validate this from an integration
+            // test perspective because there's no way to access the internals of the strategy via bytecode
+            var graph = new Graph();
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var options = new Dictionary<string,object>
+            {
+                {"x", "test"},
+                {"y", true}
+            };
+            var g = graph.Traversal().WithRemote(connection);
+
+            var b = new Bindings();
+            var count = g.WithStrategies(new OptionsStrategy(options)).V().Count().Next();
+
+            Assert.Equal(6, count);
         }
 
         [Fact]
