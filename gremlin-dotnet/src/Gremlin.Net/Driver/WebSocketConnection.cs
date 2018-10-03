@@ -33,11 +33,16 @@ namespace Gremlin.Net.Driver
     {
         private const int ReceiveBufferSize = 1024;
         private const WebSocketMessageType MessageType = WebSocketMessageType.Binary;
-        private ClientWebSocket _client;
+        private readonly ClientWebSocket _client;
+
+        public WebSocketConnection(Action<ClientWebSocketOptions> webSocketConfiguration)
+        {
+            _client = new ClientWebSocket();
+            webSocketConfiguration?.Invoke(_client.Options);
+        }
 
         public async Task ConnectAsync(Uri uri)
         {
-            _client = new ClientWebSocket();
             await _client.ConnectAsync(uri, CancellationToken.None).ConfigureAwait(false);
         }
 

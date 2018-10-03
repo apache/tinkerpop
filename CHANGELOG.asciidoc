@@ -370,6 +370,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Removed conflicting non-indy groovy core dependency
 * Bumped jython-standalone 2.7.1
+* Added a delegate to the Gremlin.Net driver that can be used to configure the WebSocket connection.
 * SSL security enhancements
 * Added Gremlin version to Gremlin Server startup logging output.
 * Fixed problem with Gremlin Server sometimes returning an additional message after a failure.
