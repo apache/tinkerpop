@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.star;
 
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,7 +34,7 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.shaded.ShadedSeri
  */
 public final class StarGraphGryoSerializer extends ShadedSerializerAdapter<StarGraph>  {
 
-    private static final Map<Direction, StarGraphGryoSerializer> CACHE = new EnumMap<>(Direction.class);
+    private static final Map<Direction, StarGraphGryoSerializer> CACHE = new HashMap<>();
 
     static {
         CACHE.put(Direction.BOTH, new StarGraphGryoSerializer(Direction.BOTH));
