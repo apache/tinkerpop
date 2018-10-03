@@ -3014,6 +3014,19 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 }
 ----
 
+==== TextP
+
+[source,json]
+----
+{
+  "@type" : "g:TextP",
+  "@value" : {
+    "predicate" : "containing",
+    "value" : "ark"
+  }
+}
+----
+
 ==== TraversalMetrics
 
 [source,json]
@@ -5389,6 +5402,19 @@ Please see <<_p,P>> for additional information on `within`.
 {
   "@type" : "g:T",
   "@value" : "label"
+}
+----
+
+==== TextP
+
+[source,json]
+----
+{
+  "@type" : "g:TextP",
+  "@value" : {
+    "predicate" : "containing",
+    "value" : "ark"
+  }
 }
 ----
 

@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
@@ -106,6 +107,12 @@ public class Model {
         final Compatibility[] noTypeGraphSONPlusGryo3_2_3 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.2.4").join(Compatibilities.UNTYPED_GRAPHSON).matchToArray();
         final Compatibility[] noTypeGraphSONPlusGryo3_3_0 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.3.0").join(Compatibilities.UNTYPED_GRAPHSON).matchToArray();
 
+        // the inverse of this definition is basically 3.4.0 or better for both GraphSON and Gryo with no support for
+        // untyped GraphSON anywhere along the way
+        final Compatibility[] before3_4_0 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.4.0")
+                .join(Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*no-types|v1d0")
+                .join(Compatibilities.with(GraphSONCompatibility.class).beforeRelease("3.4.0"))).matchToArray();
+
         // there is no point to testing gryo for list/map/set as they are kryo primitives essentially
         final Compatibility[] noGraphSONBeforeV3AndNoGryo = Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*v2d0-partial|v1d0|v2d0-no-types").join(Compatibilities.GRYO_ONLY).matchToArray();
 
@@ -164,6 +171,8 @@ public class Model {
         addGraphProcessEntry(P.gt(0).or(P.within(-1, -10, -100)), "P or", "", noTypeGraphSONPlusGryo3_2_3);
         addGraphProcessEntry(Scope.local, "Scope", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(T.label, "T", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        // TextP was only added at 3.4.0 and is not supported with untyped GraphSON of any sort
+        addGraphProcessEntry(TextP.containing("ark"), "TextP", "", before3_4_0);
         addGraphProcessEntry(createStaticTraversalMetrics(), "TraversalMetrics", "", noTypeGraphSONPlusGryo3_3_0);
         addGraphProcessEntry(g.V().hasLabel("person").asAdmin().nextTraverser(), "Traverser", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
 
