@@ -38,7 +38,9 @@ import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptContext;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineFactory;
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
+import org.apache.tinkerpop.gremlin.jsr223.TranslatorCustomizer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.codehaus.groovy.ast.ClassHelper;
@@ -224,6 +226,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
 
     private final boolean interpreterModeEnabled;
     private final long expectedCompilationTime;
+    private final Translator.ScriptTranslator.TypeTranslator typeTranslator;
 
     /**
      * There is no need to require type checking infrastructure if type checking is not enabled.
@@ -273,6 +276,12 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         interpreterModeEnabled = groovyCustomizers.stream()
                 .anyMatch(p -> p.getClass().equals(InterpreterModeGroovyCustomizer.class));
 
+        final Optional<TranslatorCustomizer> translatorCustomizer = listOfCustomizers.stream().
+                filter(p -> p instanceof TranslatorCustomizer).
+                map(p -> (TranslatorCustomizer) p).findFirst();
+        typeTranslator = translatorCustomizer.isPresent() ? translatorCustomizer.get().createTypeTranslator() :
+                Translator.ScriptTranslator.TypeTranslator.identity();
+
         createClassLoader();
     }
 
@@ -306,7 +315,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         inner.putAll(bytecode.getBindings());
         inner.put(HIDDEN_G, b);
 
-        return (Traversal.Admin) this.eval(GroovyTranslator.of(HIDDEN_G).translate(bytecode), inner);
+        return (Traversal.Admin) this.eval(GroovyTranslator.of(HIDDEN_G, typeTranslator).translate(bytecode), inner);
     }
 
     /**

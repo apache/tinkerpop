@@ -384,6 +384,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added synchronized `Map` to Gryo 1.0 registrations.
 * Added `Triple` to Gryo 1.0 registrations.
 * Improved escaping of special characters in strings passed to the `GroovyTranslator`.
+* Improved ability of `GroovyTranslator` to handle more types supported by GraphSON.
+* Improved ability of `GroovyTranslator` to handle custom types.
 * Added better internal processing of `Column` in `by(Function)`.
 * Added `hasNext()` support on `Traversal` for `gremlin-python`.
 * Added support for additional extended types in Gremlin.Net with `decimal`, `TimeSpan`, `BigInteger`, `byte`, `byte[]`, `char` and `short`.
