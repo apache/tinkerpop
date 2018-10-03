@@ -46,9 +46,7 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
         super(traversal);
         this.sideEffectKeys = new ArrayList<>(1 + sideEffectKeys.length);
         this.sideEffectKeys.add(sideEffectKey);
-        for (final String key : sideEffectKeys) {
-            this.sideEffectKeys.add(key);
-        }
+        Collections.addAll(this.sideEffectKeys, sideEffectKeys);
     }
 
     @Override
