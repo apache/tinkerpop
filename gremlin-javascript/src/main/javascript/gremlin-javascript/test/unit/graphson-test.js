@@ -46,6 +46,30 @@ describe('GraphSONReader', function () {
       assert.strictEqual(result, item[1]);
     });
   });
+  it('should parse GraphSON Nan from GraphSON', function () {
+      const reader = new GraphSONReader();
+      var result = reader.read({
+                "@type": "g:Double",
+                "@value": "NaN"
+              });
+      assert.ok(isNaN(result));
+  });
+  it('should parse GraphSON -Infinity and Nan from GraphSON', function () {
+      const reader = new GraphSONReader();
+      var result = reader.read({
+                "@type": "g:Double",
+                "@value": "-Infinity"
+              });
+      assert.strictEqual(result, Number.NEGATIVE_INFINITY);
+  });
+  it('should parse GraphSON Infinity and Nan from GraphSON', function () {
+      const reader = new GraphSONReader();
+      var result = reader.read({
+                "@type": "g:Double",
+                "@value": "Infinity"
+              });
+      assert.strictEqual(result, Number.POSITIVE_INFINITY);
+  });
   it('should parse Date', function() {
     const obj = { "@type" : "g:Date", "@value" : 1481750076295 };
     const reader = new GraphSONReader();
@@ -101,6 +125,21 @@ describe('GraphSONWriter', function () {
   it('should write numbers', function () {
     const writer = new GraphSONWriter();
     assert.strictEqual(writer.write(2), '2');
+  });
+  it('should write NaN', function () {
+    const writer = new GraphSONWriter();
+    const expected = JSON.stringify({ "@type" : "g:Double", "@value" : "NaN" });
+    assert.strictEqual(writer.write(NaN), expected);
+  });
+  it('should write Infinity', function () {
+    const writer = new GraphSONWriter();
+    const expected = JSON.stringify({ "@type" : "g:Double", "@value" : "Infinity" });
+    assert.strictEqual(writer.write(Number.POSITIVE_INFINITY), expected);
+  });
+  it('should write -Infinity', function () {
+    const writer = new GraphSONWriter();
+    const expected = JSON.stringify({ "@type" : "g:Double", "@value" : "-Infinity" });
+    assert.strictEqual(writer.write(Number.NEGATIVE_INFINITY), expected);
   });
   it('should write Date', function() {
     const writer = new GraphSONWriter();
