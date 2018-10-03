@@ -30,7 +30,6 @@ import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Script;
 import groovy.lang.Tuple;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.EmptyImportCustomizerProvider;
@@ -49,7 +48,9 @@ import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptContext;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineFactory;
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
+import org.apache.tinkerpop.gremlin.jsr223.TranslatorCustomizer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.codehaus.groovy.ast.ClassHelper;
@@ -241,6 +242,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     private final Set<Artifact> artifactsToUse = new HashSet<>();
     private final boolean interpreterModeEnabled;
     private final long expectedCompilationTime;
+    private final Translator.ScriptTranslator.TypeTranslator typeTranslator;
 
     /**
      * Creates a new instance using the {@link DefaultImportCustomizerProvider}.
@@ -287,6 +289,12 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         interpreterModeEnabled = groovyCustomizers.stream()
                 .anyMatch(p -> p.getClass().equals(InterpreterModeGroovyCustomizer.class));
 
+        final Optional<TranslatorCustomizer> translatorCustomizer = listOfCustomizers.stream().
+                filter(p -> p instanceof TranslatorCustomizer).
+                map(p -> (TranslatorCustomizer) p).findFirst();
+        typeTranslator = translatorCustomizer.isPresent() ? translatorCustomizer.get().createTypeTranslator() :
+                Translator.ScriptTranslator.TypeTranslator.identity();
+
         // not using the old provider model so set that to empty list so that when createClassLoader is called
         // it knows to use groovyCustomizers instead
         customizerProviders = Collections.emptyList();
@@ -329,6 +337,9 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         // in createClassLoader
         groovyCustomizers = Collections.emptyList();
         importGroovyCustomizer = null;
+
+        // TypeTranslator can only be set by a Customizer - use this old deprecated stuff and you're outta luck
+        typeTranslator = Translator.ScriptTranslator.TypeTranslator.identity();
 
         createClassLoader();
     }
@@ -464,7 +475,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         inner.putAll(bytecode.getBindings());
         inner.put(HIDDEN_G, b);
 
-        return (Traversal.Admin) this.eval(GroovyTranslator.of(HIDDEN_G).translate(bytecode), inner);
+        return (Traversal.Admin) this.eval(GroovyTranslator.of(HIDDEN_G, typeTranslator).translate(bytecode), inner);
     }
 
     /**
