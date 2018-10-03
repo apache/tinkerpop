@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
@@ -38,12 +39,12 @@ namespace Gremlin.Net.Driver
         private readonly GraphSONWriter _graphSONWriter;
         private readonly JsonMessageSerializer _messageSerializer;
         private readonly Uri _uri;
-        private readonly WebSocketConnection _webSocketConnection = new WebSocketConnection();
+        private readonly WebSocketConnection _webSocketConnection;
         private readonly string _username;
         private readonly string _password;
 
         public Connection(Uri uri, string username, string password, GraphSONReader graphSONReader,
-                          GraphSONWriter graphSONWriter, string mimeType)
+            GraphSONWriter graphSONWriter, string mimeType, Action<ClientWebSocketOptions> webSocketConfiguration)
         {
             _uri = uri;
             _username = username;
@@ -51,6 +52,7 @@ namespace Gremlin.Net.Driver
             _graphSONReader = graphSONReader;
             _graphSONWriter = graphSONWriter;
             _messageSerializer = new JsonMessageSerializer(mimeType);
+            _webSocketConnection = new WebSocketConnection(webSocketConfiguration);
         }
 
         public async Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage)
