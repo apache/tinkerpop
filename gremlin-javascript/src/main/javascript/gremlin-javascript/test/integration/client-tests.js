@@ -23,6 +23,7 @@ const assert = require('assert');
 const Bytecode = require('../../lib/process/bytecode');
 const graphModule = require('../../lib/structure/graph');
 const helper = require('../helper');
+const t = require('../../lib/process/traversal');
 
 let connection;
 
@@ -54,11 +55,24 @@ describe('Client', function () {
         });
     });
     it('should send and parse a script with bindings', function () {
-      return connection.submit('x + x', {x: 3})
+      return connection.submit('x + x', { x: 3 })
         .then(function (response) {
           assert.ok(response);
           assert.ok(response.traversers);
           assert.strictEqual(response.traversers[0], 6);
+        });
+    });
+    it('should send and parse a script with non-native javascript bindings', function () {
+      /*return connection.submit('card.toString()', { card: t.cardinality.set })
+        .then(function (response) {
+          console.log(response);
+          assert.ok(response);
+          assert.ok(response.traversers);
+        });*/
+      return connection.submit('g.addV().property(card, nm, val)', { card: t.cardinality.set, nm: 'test', val: 12 } )
+        .then(function (response) {
+          assert.ok(response);
+          assert.ok(response.traversers);
         });
     });
   });

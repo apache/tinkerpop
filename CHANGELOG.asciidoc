@@ -52,6 +52,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed a bug in JavaScript GLV where DriverRemoteConnection close() method didn't returned a Promise instance.
 * Bumped to Jackson 2.9.6.
 * Sasl Plain Text Authentication added to Gremlin Javascript.
+* Ability to send scripts to server added to Gremlin Javascript.
+* Translator class added to Gremlin Javascript to translate bytecode to script clientside.
 
 [[release-3-2-9]]
 === TinkerPop 3.2.9 (Release Date: May 8, 2018)

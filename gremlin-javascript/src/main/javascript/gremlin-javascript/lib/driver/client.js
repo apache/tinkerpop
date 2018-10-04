@@ -60,9 +60,9 @@ class Client {
     if (typeof message === 'string' || message instanceof String) {
       const args = {
         'gremlin': message,
-        'bindings': bindings,
+        'bindings': bindings, 
         'language': 'gremlin-groovy',
-        'accept': 'application/json',
+        'accept': 'application/vnd.gremlin-v2.0+json',
         'aliases': { 'g': this._options.traversalSource || 'g' }
       };
 
