@@ -288,10 +288,35 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldEventuallySucceedOnSameServer() throws Exception {
+    public void shouldEventuallySucceedOnSameServerWithDefault() throws Exception {
         stopServer();
 
         final Cluster cluster = TestClientFactory.open();
+        final Client client = cluster.connect();
+
+        try {
+            client.submit("1+1").all().join().get(0).getInt();
+            fail("Should not have gone through because the server is not running");
+        } catch (Exception i) {
+            final Throwable root = ExceptionUtils.getRootCause(i);
+            assertThat(root, instanceOf(TimeoutException.class));
+        }
+
+        startServer();
+
+        // default reconnect time is 1 second so wait some extra time to be sure it has time to try to bring it
+        // back to life
+        TimeUnit.SECONDS.sleep(3);
+        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldEventuallySucceedOnSameServerWithScript() throws Exception {
+        stopServer();
+
+        final Cluster cluster = TestClientFactory.build().validationRequest("g.inject()").create();
         final Client client = cluster.connect();
 
         try {
