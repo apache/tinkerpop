@@ -23,6 +23,7 @@ import datetime
 import time
 import json
 import uuid
+import math
 
 from mock import Mock
 
@@ -96,6 +97,27 @@ class TestGraphSONReader(object):
         }))
         assert isinstance(x, float)
         assert 31.2 == x
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "g:Double",
+            "@value": "NaN"
+        }))
+        assert isinstance(x, float)
+        assert math.isnan(x)
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "g:Double",
+            "@value": "Infinity"
+        }))
+        assert isinstance(x, float)
+        assert math.isinf(x) and x > 0
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "g:Double",
+            "@value": "-Infinity"
+        }))
+        assert isinstance(x, float)
+        assert math.isinf(x) and x < 0
 
     def test_graph(self):
         vertex = self.graphson_reader.readObject("""
