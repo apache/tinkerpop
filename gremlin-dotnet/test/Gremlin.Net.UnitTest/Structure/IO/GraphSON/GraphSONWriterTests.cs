@@ -43,7 +43,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             new object[] { 2 },
             new object[] { 3 }
         };
-        
+
         /// <summary>
         /// Parameters for each collections test supporting multiple versions of GraphSON
         /// </summary>
@@ -99,6 +99,36 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var graphSon = writer.WriteObject(3.2);
 
             Assert.Equal("{\"@type\":\"g:Double\",\"@value\":3.2}", graphSon);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeNaN(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+
+            var graphSon = writer.WriteObject(Double.NaN);
+
+            Assert.Equal("{\"@type\":\"g:Double\",\"@value\":\"NaN\"}", graphSon);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializePositiveInfinity(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+
+            var graphSon = writer.WriteObject(Double.PositiveInfinity);
+
+            Assert.Equal("{\"@type\":\"g:Double\",\"@value\":\"Infinity\"}", graphSon);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeNegativeInfinity(int version)
+        {
+            var writer = CreateGraphSONWriter();
+
+            var graphSon = writer.WriteObject(Double.NegativeInfinity);
+
+            Assert.Equal("{\"@type\":\"g:Double\",\"@value\":\"-Infinity\"}", graphSon);
         }
 
         [Theory, MemberData(nameof(Versions))]

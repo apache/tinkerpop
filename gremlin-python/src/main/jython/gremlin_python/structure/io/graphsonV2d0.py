@@ -20,6 +20,7 @@ import datetime
 import json
 import time
 import uuid
+import math
 from collections import OrderedDict
 
 import six
@@ -394,6 +395,31 @@ class FloatIO(_NumberIO):
     python_type = FloatType
     graphson_type = "g:Float"
     graphson_base_type = "Float"
+
+    @classmethod
+    def dictify(cls, n, writer):
+        if isinstance(n, bool):  # because isinstance(False, int) and isinstance(True, int)
+            return n
+        elif math.isnan(n):
+            return GraphSONUtil.typedValue(cls.graphson_base_type, "NaN")
+        elif math.isinf(n) and n > 0:
+            return GraphSONUtil.typedValue(cls.graphson_base_type, "Infinity")
+        elif math.isinf(n) and n < 0:
+            return GraphSONUtil.typedValue(cls.graphson_base_type, "-Infinity")
+        else:
+            return GraphSONUtil.typedValue(cls.graphson_base_type, n)
+
+    @classmethod
+    def objectify(cls, v, _):
+        if isinstance(v, str):
+            if v == 'NaN':
+                return float('nan')
+            elif v == "Infinity":
+                return float('inf')
+            elif v == "-Infinity":
+                return float('-inf')
+
+        return cls.python_type(v)
 
 
 class DoubleIO(FloatIO):

@@ -23,6 +23,7 @@ import datetime
 import time
 import json
 import uuid
+import math
 
 from mock import Mock
 
@@ -68,6 +69,27 @@ class TestGraphSONReader(object):
         }))
         assert isinstance(x, float)
         assert 31.2 == x
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "g:Double",
+            "@value": "NaN"
+        }))
+        assert isinstance(x, float)
+        assert math.isnan(x)
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "g:Double",
+            "@value": "Infinity"
+        }))
+        assert isinstance(x, float)
+        assert math.isinf(x) and x > 0
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "g:Double",
+            "@value": "-Infinity"
+        }))
+        assert isinstance(x, float)
+        assert math.isinf(x) and x < 0
 
     def test_graph(self):
         vertex = self.graphson_reader.readObject("""
@@ -202,6 +224,9 @@ class TestGraphSONWriter(object):
         assert {"@type": "g:Int64", "@value": 2} == json.loads(self.graphson_writer.writeObject(long(2)))
         assert {"@type": "g:Int32", "@value": 1} == json.loads(self.graphson_writer.writeObject(1))
         assert {"@type": "g:Double", "@value": 3.2} == json.loads(self.graphson_writer.writeObject(3.2))
+        assert {"@type": "g:Double", "@value": "NaN"} == json.loads(self.graphson_writer.writeObject(float('nan')))
+        assert {"@type": "g:Double", "@value": "Infinity"} == json.loads(self.graphson_writer.writeObject(float('inf')))
+        assert {"@type": "g:Double", "@value": "-Infinity"} == json.loads(self.graphson_writer.writeObject(float('-inf')))
         assert """true""" == self.graphson_writer.writeObject(True)
 
     def test_P(self):
