@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -80,7 +81,7 @@ public final class GraphFilter implements Cloneable, Serializable {
 
     private Traversal.Admin<Vertex, Vertex> vertexFilter = null;
     private Traversal.Admin<Vertex, Edge> edgeFilter = null;
-    private Map<Direction, Map<String, Legal>> edgeLegality = new HashMap<>();
+    private Map<Direction, Map<String, Legal>> edgeLegality = new EnumMap<>(Direction.class);
     private boolean allowNoEdges = false;
 
     public GraphFilter() {
@@ -118,7 +119,7 @@ public final class GraphFilter implements Cloneable, Serializable {
             throw GraphComputer.Exceptions.edgeFilterAccessesAdjacentVertices(edgeFilter);
         this.edgeFilter = edgeFilter.asAdmin().clone();
         ////
-        this.edgeLegality = new HashMap<>();
+        this.edgeLegality = new EnumMap<>(Direction.class);
         this.edgeLegality.put(Direction.OUT, new HashMap<>());
         this.edgeLegality.put(Direction.IN, new HashMap<>());
         this.edgeLegality.put(Direction.BOTH, new HashMap<>());
