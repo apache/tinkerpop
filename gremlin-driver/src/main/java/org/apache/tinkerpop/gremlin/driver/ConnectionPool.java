@@ -387,7 +387,6 @@ final class ConnectionPool {
 
         // let the load-balancer know that the host is acting poorly
         this.cluster.loadBalancingStrategy().onUnavailable(host);
-
     }
 
     /**
@@ -400,7 +399,7 @@ final class ConnectionPool {
         Connection connection = null;
         try {
             connection = borrowConnection(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
-            final RequestMessage ping = RequestMessage.build(Tokens.OPS_EVAL).add(Tokens.ARGS_GREMLIN, "''").create();
+            final RequestMessage ping = client.buildMessage(cluster.validationRequest()).create();
             final CompletableFuture<ResultSet> f = new CompletableFuture<>();
             connection.write(ping, f);
             f.get().all().get();

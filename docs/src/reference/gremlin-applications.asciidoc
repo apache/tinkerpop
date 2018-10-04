@@ -773,6 +773,7 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.sslSkipCertValidation |Configures the `TrustManager` to trust all certs without any validation. Should not be used in production.|false
 |connectionPool.trustStore |File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and SSL is enabled, the default `TrustManager` will be used. |_none_
 |connectionPool.trustStorePassword |The password of the `trustStore` if it is password-protected |_none_
+|connectionPool.validationRequest |A script that is used to test server connectivity. A good script to use is one that evaluates quickly and returns no data. The default simply returns an empty string, but if a graph is required by a particular provider, a good traversal might be `g.inject()`. |_''_
 |hosts |The list of hosts that the driver will connect to. |localhost
 |jaasEntry |Sets the `AuthProperties.Property.JAAS_ENTRY` properties for authentication to Gremlin Server. |_none_
 |nioPoolSize |Size of the pool for handling request/response operations. |available processors
