@@ -124,7 +124,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         [Theory, MemberData(nameof(Versions))]
         public void ShouldSerializeNegativeInfinity(int version)
         {
-            var writer = CreateGraphSONWriter();
+            var writer = CreateGraphSONWriter(version);
 
             var graphSon = writer.WriteObject(Double.NegativeInfinity);
 
