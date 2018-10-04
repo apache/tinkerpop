@@ -46,7 +46,7 @@ describe('GraphSONReader', function () {
       assert.strictEqual(result, item[1]);
     });
   });
-  it('should parse GraphSON Nan from GraphSON', function () {
+  it('should parse GraphSON NaN from GraphSON', function () {
       const reader = new GraphSONReader();
       var result = reader.read({
                 "@type": "g:Double",
@@ -54,7 +54,7 @@ describe('GraphSONReader', function () {
               });
       assert.ok(isNaN(result));
   });
-  it('should parse GraphSON -Infinity and Nan from GraphSON', function () {
+  it('should parse GraphSON -Infinity from GraphSON', function () {
       const reader = new GraphSONReader();
       var result = reader.read({
                 "@type": "g:Double",
@@ -62,7 +62,7 @@ describe('GraphSONReader', function () {
               });
       assert.strictEqual(result, Number.NEGATIVE_INFINITY);
   });
-  it('should parse GraphSON Infinity and Nan from GraphSON', function () {
+  it('should parse GraphSON Infinity from GraphSON', function () {
       const reader = new GraphSONReader();
       var result = reader.read({
                 "@type": "g:Double",
