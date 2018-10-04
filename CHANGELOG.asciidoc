@@ -38,6 +38,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added support for GraphSON serialization of `Date` in Javascript.
 * Added synchronized `Map` to Gryo 1.0 registrations.
 * Added `Triple` to Gryo 1.0 registrations.
+* Added support for `Double.NaN`, `Double.POSITIVE_INFINITY` and `Double.NEGATIVE_INFINITY`.
 * Improved escaping of special characters in strings passed to the `GroovyTranslator`.
 * Added `Cluster` configuration option to set a custom validation script to use to test server connectivity in the Java driver.
 * Improved ability of `GroovyTranslator` to handle more types supported by GraphSON.

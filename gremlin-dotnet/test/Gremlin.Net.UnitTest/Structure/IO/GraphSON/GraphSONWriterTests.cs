@@ -81,6 +81,36 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         }
 
         [Fact]
+        public void ShouldSerializeNaN()
+        {
+            var writer = CreateStandardGraphSONWriter();
+
+            var graphSon = writer.WriteObject(Double.NaN);
+
+            Assert.Equal("{\"@type\":\"g:Double\",\"@value\":\"NaN\"}", graphSon);
+        }
+
+        [Fact]
+        public void ShouldSerializePositiveInfinity()
+        {
+            var writer = CreateStandardGraphSONWriter();
+
+            var graphSon = writer.WriteObject(Double.PositiveInfinity);
+
+            Assert.Equal("{\"@type\":\"g:Double\",\"@value\":\"Infinity\"}", graphSon);
+        }
+
+        [Fact]
+        public void ShouldSerializeNegativeInfinity()
+        {
+            var writer = CreateStandardGraphSONWriter();
+
+            var graphSon = writer.WriteObject(Double.NegativeInfinity);
+
+            Assert.Equal("{\"@type\":\"g:Double\",\"@value\":\"-Infinity\"}", graphSon);
+        }
+
+        [Fact]
         public void ShouldSerializeDecimal()
         {
             var writer = CreateStandardGraphSONWriter();

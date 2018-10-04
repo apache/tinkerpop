@@ -49,11 +49,37 @@ class TypeSerializer {
 
 class NumberSerializer extends TypeSerializer {
   serialize(item) {
-    return item;
+    if (isNaN(item)) {
+      return {
+        [typeKey]: 'g:Double',
+        [valueKey]: 'NaN'
+      };
+    } else if (item === Number.POSITIVE_INFINITY) {
+      return {
+        [typeKey]: 'g:Double',
+        [valueKey]: 'Infinity'
+      };
+    } else if (item === Number.NEGATIVE_INFINITY) {
+      return {
+        [typeKey]: 'g:Double',
+        [valueKey]: '-Infinity'
+      };
+    } else {
+      return item;
+    }
   }
 
   deserialize(obj) {
-    return parseFloat(obj[valueKey]);
+    var val = obj[valueKey];
+    if (val === 'NaN') {
+      return NaN;
+    } else if (val === 'Infinity') {
+      return Number.POSITIVE_INFINITY;
+    } else if (val === '-Infinity') {
+      return Number.NEGATIVE_INFINITY;
+    } else {
+      return parseFloat(val);
+    }
   }
 
   canBeUsedFor(value) {

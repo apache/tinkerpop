@@ -24,11 +24,9 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
 using Gremlin.Net.Structure.IO.GraphSON;
 using Moq;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -175,6 +173,42 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var deserializedValue = reader.ToObject(jObject);
 
             Assert.Equal(31.2, deserializedValue);
+        }
+
+        [Fact]
+        public void ShouldDeserializeNaN()
+        {
+            var serializedValue = "{\"@type\":\"g:Double\",\"@value\":'NaN'}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(Double.NaN, deserializedValue);
+        }
+
+        [Fact]
+        public void ShouldDeserializePositiveInfinity()
+        {
+            var serializedValue = "{\"@type\":\"g:Double\",\"@value\":'Infinity'}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(Double.PositiveInfinity, deserializedValue);
+        }
+
+        [Fact]
+        public void ShouldDeserializeNegativeInfinity()
+        {
+            var serializedValue = "{\"@type\":\"g:Double\",\"@value\":'-Infinity'}";
+            var reader = CreateStandardGraphSONReader();
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(Double.NegativeInfinity, deserializedValue);
         }
 
         [Fact]
