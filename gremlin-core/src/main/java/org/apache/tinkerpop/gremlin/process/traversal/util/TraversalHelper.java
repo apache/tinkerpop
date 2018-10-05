@@ -51,6 +51,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -594,7 +595,7 @@ public final class TraversalHelper {
     }
 
     public static Set<Scoping.Variable> getVariableLocations(final Traversal.Admin<?, ?> traversal) {
-        return TraversalHelper.getVariableLocations(new HashSet<>(), traversal);
+        return TraversalHelper.getVariableLocations(EnumSet.noneOf(Scoping.Variable.class), traversal);
     }
 
     private static Set<Scoping.Variable> getVariableLocations(final Set<Scoping.Variable> variables, final Traversal.Admin<?, ?> traversal) {
