@@ -38,7 +38,8 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.SystemColor;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -263,36 +264,6 @@ public class GremlinGroovyScriptEngineTest {
         engine.addImports(new HashSet<>(Arrays.asList("import " + IteratorUtils.class.getCanonicalName())));
         assertEquals(Vertex.class.getName(), engine.eval("Vertex.class.getName()"));
         assertEquals(IteratorUtils.class.getName(), engine.eval("IteratorUtils.class.getName()"));
-    }
-
-    @Test
-    public void shouldLoadImportsViaDependencyManagerFromDependencyGatheredByUse() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine((CompilerCustomizerProvider) NoImportCustomizerProvider.INSTANCE);
-        try {
-            engine.eval("org.apache.commons.math3.util.FastMath.abs(-1235)");
-            fail("Should have thrown an exception because no imports were supplied");
-        } catch (Exception se) {
-            assertTrue(se instanceof ScriptException);
-        }
-
-        engine.addImports(new HashSet<>(Arrays.asList("import org.apache.commons.math3.util.FastMath")));
-        engine.use("org.apache.commons", "commons-math3", "3.2");
-        assertEquals(1235, engine.eval("org.apache.commons.math3.util.FastMath.abs(-1235)"));
-    }
-
-    @Test
-    public void shouldAllowsUseToBeExecutedAfterImport() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine((CompilerCustomizerProvider) NoImportCustomizerProvider.INSTANCE);
-        try {
-            engine.eval("org.apache.commons.math3.util.FastMath.abs(-1235)");
-            fail("Should have thrown an exception because no imports were supplied");
-        } catch (Exception se) {
-            assertTrue(se instanceof ScriptException);
-        }
-
-        engine.use("org.apache.commons", "commons-math3", "3.2");
-        engine.addImports(new HashSet<>(Arrays.asList("import org.apache.commons.math3.util.FastMath")));
-        assertEquals(1235, engine.eval("org.apache.commons.math3.util.FastMath.abs(-1235)"));
     }
 
     @Test

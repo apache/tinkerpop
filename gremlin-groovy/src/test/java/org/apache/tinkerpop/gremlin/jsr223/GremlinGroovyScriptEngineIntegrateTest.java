@@ -18,16 +18,23 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
+import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.javatuples.Pair;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import javax.script.ScriptException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -51,5 +58,35 @@ public class GremlinGroovyScriptEngineIntegrateTest {
                 assertEquals(p.getValue1().intValue(), (int) engine.eval(p.getValue0()));
             }
         }
+    }
+
+    @Test
+    public void shouldLoadImportsViaDependencyManagerFromDependencyGatheredByUse() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine((CompilerCustomizerProvider) NoImportCustomizerProvider.INSTANCE);
+        try {
+            engine.eval("org.apache.commons.math3.util.FastMath.abs(-1235)");
+            fail("Should have thrown an exception because no imports were supplied");
+        } catch (Exception se) {
+            assertTrue(se instanceof ScriptException);
+        }
+
+        engine.addImports(new HashSet<>(Arrays.asList("import org.apache.commons.math3.util.FastMath")));
+        engine.use("org.apache.commons", "commons-math3", "3.2");
+        assertEquals(1235, engine.eval("org.apache.commons.math3.util.FastMath.abs(-1235)"));
+    }
+
+    @Test
+    public void shouldAllowsUseToBeExecutedAfterImport() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine((CompilerCustomizerProvider) NoImportCustomizerProvider.INSTANCE);
+        try {
+            engine.eval("org.apache.commons.math3.util.FastMath.abs(-1235)");
+            fail("Should have thrown an exception because no imports were supplied");
+        } catch (Exception se) {
+            assertTrue(se instanceof ScriptException);
+        }
+
+        engine.use("org.apache.commons", "commons-math3", "3.2");
+        engine.addImports(new HashSet<>(Arrays.asList("import org.apache.commons.math3.util.FastMath")));
+        assertEquals(1235, engine.eval("org.apache.commons.math3.util.FastMath.abs(-1235)"));
     }
 }
