@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Gremlin.Net.Process.Remote;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 using Gremlin.Net.Structure;
@@ -131,8 +132,8 @@ namespace Gremlin.Net.Process.Traversal
         {
             var traversal = new GraphTraversal<$method.typeNameString>(TraversalStrategies, new Bytecode(Bytecode));
             <%  if (method.parameters.contains("params ")) {
-          %>var args = new List<$method.argsListType>(<%= method.paramNames.init().size() %> + <%= method.paramNames.last() %>.Length) {<%= method.paramNames.init().join(", ") %>};
-            args.AddRange(<%= method.paramNames.last() %>);
+          %>var args = new List<object>(<%= method.paramNames.init().size() %> + <%= method.paramNames.last() %>.Length) {<%= method.paramNames.init().join(", ") %>};
+            args.AddRange(<%= method.paramNames.last() %><% if (method.isArgsCastNecessary) { %>.Cast<object>()<% } %>);
             traversal.Bytecode.AddStep("<%= method.methodName %>", args.ToArray());<%
             }
             else {
