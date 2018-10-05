@@ -125,9 +125,9 @@ class DriverRemoteConnection extends RemoteConnection {
 
   _getRequest(id, bytecode, op, args, processor) {
     if (args) {
-      args = this._adaptArgs(args);
+      args = this._adaptArgs(args, true);
     }
-    
+
     return ({
       'requestId': { '@type': 'g:UUID', '@value': id },
       'op': op || 'bytecode',
@@ -214,24 +214,23 @@ class DriverRemoteConnection extends RemoteConnection {
    * @returns {Object}
    * @private
    */
-  _adaptArgs(args) {
-    if (Array.isArray(args)) {
-      return args.map(val => this._adaptArgs(val));
-    }
-
-    if (args instanceof t.EnumValue) {
-       return this._writer.adaptObject(args);
-    }
-
+  _adaptArgs(args, protocolLevel) {
     if (args instanceof Object) {
       let newObj = {};
       Object.keys(args).forEach((key) => {
-        newObj[key] = this._adaptArgs(args[key]);
+        // bindings key (at the protocol-level needs special handling. without this, it wraps the generated Map
+        // in another map for types like EnumValue. Could be a nicer way to do this but for now it's solving the
+        // problem with script submission of non JSON native types
+        if (protocolLevel && key === 'bindings')
+          newObj[key] = this._adaptArgs(args[key], false);
+        else
+          newObj[key] = this._writer.adaptObject(args[key]);
       });
+
       return newObj;
     }
 
-    return this._writer.adaptObject(args);
+    return args;
   }
 
   /**
