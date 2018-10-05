@@ -29,6 +29,7 @@ import org.junit.runners.Parameterized;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Random;
 import java.util.function.Predicate;
 
@@ -124,8 +125,13 @@ public class PTest {
         @Test
         public void shouldTest() {
             assertEquals(expected, predicate.test(value));
-            assertEquals(!expected, predicate.clone().negate().test(value));
-            assertEquals(!expected, P.not(predicate).test(value));
+            assertNotEquals(expected, predicate.clone().negate().test(value));
+            assertNotEquals(expected, P.not(predicate.clone()).test(value));
+            if (value instanceof Number && !(predicate.biPredicate instanceof Contains)) {
+                assertEquals(expected, predicate.test(((Number) value).longValue()));
+                assertNotEquals(expected, predicate.clone().negate().test(((Number) value).longValue()));
+                assertNotEquals(expected, P.not(predicate).test(((Number) value).longValue()));
+            }
         }
 
         @Before
