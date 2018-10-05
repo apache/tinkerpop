@@ -24,6 +24,7 @@
 const os = require('os');
 
 const DriverRemoteConnection = require('../lib/driver/driver-remote-connection');
+const Client = require('../lib/driver/client');
 const PlainTextSaslAuthenticator = require('../lib/driver/auth/plain-text-sasl-authenticator');
 
 exports.getConnection = function getConnection(traversalSource) {
@@ -37,4 +38,8 @@ exports.getSecureConnectionWithPlainTextSaslAuthenticator = function getConnecti
     authenticator: authenticator, 
     rejectUnauthorized: false 
   });
+};
+
+exports.getClient = function getClient(traversalSource) {
+  return new Client('ws://localhost:45940/gremlin', { traversalSource: traversalSource });
 };
