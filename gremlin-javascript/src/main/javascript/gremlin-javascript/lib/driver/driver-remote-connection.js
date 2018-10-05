@@ -24,6 +24,7 @@
 
 const WebSocket = require('ws');
 const util = require('util');
+const t = require('../process/traversal');
 const RemoteConnection = require('./remote-connection').RemoteConnection;
 const utils = require('../utils');
 const serializer = require('../structure/io/graph-serializer');
@@ -218,6 +219,10 @@ class DriverRemoteConnection extends RemoteConnection {
       return args.map(val => this._adaptArgs(val));
     }
 
+    if (args instanceof t.EnumValue) {
+       return this._writer.adaptObject(args);
+    }
+
     if (args instanceof Object) {
       let newObj = {};
       Object.keys(args).forEach((key) => {
@@ -225,7 +230,7 @@ class DriverRemoteConnection extends RemoteConnection {
       });
       return newObj;
     }
-    
+
     return this._writer.adaptObject(args);
   }
 
