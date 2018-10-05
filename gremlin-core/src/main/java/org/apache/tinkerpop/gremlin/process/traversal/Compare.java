@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.util.NumberHelper;
+
 import java.util.function.BiPredicate;
 
 /**
