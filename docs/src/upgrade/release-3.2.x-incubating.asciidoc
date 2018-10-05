@@ -107,7 +107,8 @@ via that same method as the other toy graphs with `TinkerFactory.createGratefulD
 
 ==== Gremlin Javascript Script Submission
 
-Gremlin Javascript can now submit script, with optional bindings, using the Client class:
+Gremlin Javascript can now submit script, with optional bindings, using the `Client` class:
+
 [source,javascript]
 ----
 const gremlin = require('gremlin');
@@ -126,7 +127,7 @@ connection.submit('g.V(vid)', {vid: 1})
     });
 ----
 
-and you can also translate bytecode steps into script
+and also allows translation of bytecode steps into script:
 
 [source,javascript]
 ----
