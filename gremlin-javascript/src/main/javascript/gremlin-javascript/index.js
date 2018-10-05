@@ -29,8 +29,10 @@ const graph = require('./lib/structure/graph');
 const gs = require('./lib/structure/io/graph-serializer');
 const rc = require('./lib/driver/remote-connection');
 const Bytecode = require('./lib/process/bytecode');
+const Translator = require('./lib/process/translator');
 const utils = require('./lib/utils');
 const DriverRemoteConnection = require('./lib/driver/driver-remote-connection');
+const Client = require('./lib/driver/client');
 const Authenticator = require('./lib/driver/auth/authenticator');
 const PlainTextSaslAuthenticator = require('./lib/driver/auth/plain-text-sasl-authenticator');
 
@@ -40,6 +42,7 @@ module.exports = {
     RemoteStrategy: rc.RemoteStrategy,
     RemoteTraversal: rc.RemoteTraversal,
     DriverRemoteConnection: DriverRemoteConnection,
+    Client: Client,
     auth: {
       Authenticator: Authenticator,
       PlainTextSaslAuthenticator: PlainTextSaslAuthenticator
@@ -66,7 +69,8 @@ module.exports = {
     t: t.t,
     GraphTraversal: gt.GraphTraversal,
     GraphTraversalSource: gt.GraphTraversalSource,
-    statics: gt.statics
+    statics: gt.statics,
+    Translator: Translator
   },
   structure: {
     io: {
