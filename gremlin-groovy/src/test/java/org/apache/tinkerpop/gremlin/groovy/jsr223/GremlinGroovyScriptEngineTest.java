@@ -22,13 +22,9 @@ import groovy.lang.Closure;
 import groovy.lang.MissingPropertyException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -61,8 +57,6 @@ import static org.junit.Assert.fail;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinGroovyScriptEngineTest {
-    private static final Logger logger = LoggerFactory.getLogger(GremlinGroovyScriptEngineTest.class);
-
     private static final Object[] EMPTY_ARGS = new Object[0];
 
     @Test
@@ -162,7 +156,6 @@ public class GremlinGroovyScriptEngineTest {
         engine.eval("assert 1==0");
     }
 
-
     @Test
     public void shouldClearEngineScopeOnReset() throws Exception {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
@@ -177,7 +170,7 @@ public class GremlinGroovyScriptEngineTest {
             engine.eval("x(1)");
             fail("Bindings should have been cleared.");
         } catch (Exception ex) {
-
+            // do nothing = expected
         }
 
         b = engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
@@ -198,6 +191,7 @@ public class GremlinGroovyScriptEngineTest {
             scriptEngine.eval("addOne(1)");
             fail("Should have tossed ScriptException since addOne is not yet defined.");
         } catch (ScriptException se) {
+            // do nothing = expected
         }
 
         // validate that the addOne function works
@@ -211,6 +205,7 @@ public class GremlinGroovyScriptEngineTest {
             scriptEngine.eval("addOne(1)");
             fail("Should have tossed ScriptException since addOne is no longer defined after reset.");
         } catch (ScriptException se) {
+            // do nothing = expected
         }
     }
 
