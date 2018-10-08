@@ -37,13 +37,13 @@ link:https://cwiki.apache.org/confluence/display/SPARK/Contributing+to+Spark["Co
 TinkerPop has two mailing lists: link:https://groups.google.com/forum/#!forum/gremlin-users[gremlin-users] and
 pass:[<a href="https://lists.apache.org/list.html?dev@tinkerpop.apache.org">dev</a>]. Subscribing to and
 participating on one or both of these mailing lists is a great way to contribute to TinkerPop. Helping users with their
-problems by answering their questions on gremlin-users is a great help to the community and an easy way for
+problems by answering their questions on gremlin-users is a massive help to the community and an easy way for
 the community to become familiar with the contributor.
 
 The dev@tinkerpop.apache.org mailing list is where all design discussion, early feature announcements, release
 discussions and other similar communication takes place. Having insight into the project at this level, will yield a
-lot of information about the day-to-day course of TinkerPop and many of the other ways contributors can be involved
-require a subscription to this list.
+lot of information about the day-to-day course of TinkerPop and provides a way to help shape the direction of the
+project.
 
 === Testing Releases
 
@@ -55,18 +55,19 @@ that votes of non-PMC members are considered non-binding, but are certainly cons
 === Reviewing Changes
 
 Virtually all changes to TinkerPop's source code are performed via GitHub
-link:https://github.com/apache/tinkerpop/pulls[pull requests]. When a pull request is issue it undergoes a
-<<rtc,review process>> prior to be merged to a release branch. Anyone is free to comment and provide a vote (+1/+0/-1)
-on a pull request. Note that votes of non-committers are considered non-binding, but are certainly considered in the
-review process.
+link:https://github.com/apache/tinkerpop/pulls[pull requests]. When a pull request is issued it undergoes a
+<<rtc,review process>> prior to being merged to a release branch. Anyone is free to comment and provide a vote
+(+1/+0/-1) on a pull request. Note that votes of non-committers are considered non-binding, but are certainly
+considered in the review process.
 
 === Writing Documentation
 
 Proposing a documentation change is quite similar to providing a source code change, which is described below in more
-detail. Note that there is a difference between project documentation and the TinkerPop web site. The project
-documentation refers to the documentation that is published per release like, tutorials, reference documentation, and
-other similar pages. This content is not updated after release and remains static bound to that version. The TinkerPop
-web site refers to the static home page and its related content, such as link:http://tinkerpop.apache.org/gremlin.html[Understanding Gremlin],
+detail. Note that there is a difference between project documentation and the
+link:http://tinkerpop.apache.org/[TinkerPop web site]. The project documentation refers to the documentation that is
+published per release like, tutorials, reference documentation, and other similar pages. This content is not updated
+after release and remains static bound to that version. The TinkerPop web site refers to the static home page and its
+related content, such as link:http://tinkerpop.apache.org/gremlin.html[Understanding Gremlin],
 link:http://tinkerpop.apache.org/policy.html[Provider Listing and Graphic Usage Policies] and other similar pages.
 This content is not bound to any particular version and can be published at any time where new content simply replaces
 old content.
@@ -82,7 +83,7 @@ For web site changes, the process is largely the same except that the documentat
 Asciidoc. The content can be found in the source control tree at link:https://github.com/apache/tinkerpop/tree/master/docs/site[docs/site].
 The web site is always published from the `master` branch as it is not bound to a version, so there is no need to
 submit a pull request to any other branches besides that one. If the change to this documentation involves changing
-provider listings in some way, first propose the those changes on the dev@tinkerpop.apache.org mailing list and achieve
+provider listings in some way, first propose those changes on the dev@tinkerpop.apache.org mailing list and achieve
 consensus (wait time is 72 hours as usual). At that point, pull requests or direct changes can be submitted.
 Again, see the <<documentation-environment,Documentation Environment>> section for more information on how to generate
 the site locally.
@@ -105,7 +106,8 @@ itself, however, it is very much encouraged that such a project stand on its own
 this that meet the TinkerPop link:http://tinkerpop.apache.org/policy.html[listing policy] can be added to the
 TinkerPop web site and promoted there. Please see the current listing of such libraries on the TinkerPop
 link:http://tinkerpop.apache.org/#graph-systems[home page] to get an idea as to what kinds of libraries are available
-from the community.
+from the community. When in doubt about whether a library might be a good fit for hosting and ongoing maintenance in
+the TinkerPop project itself, please ask on the dev@tinkerpop.apache.org mailing list.
 
 == Considering Code Changes
 
@@ -188,9 +190,10 @@ link:https://github.com/apache/tinkerpop[GitHub repository] if not already done.
 . Make changes in the fork
 .. It is typically best to create a branch for the changes. Consider naming that branch after the JIRA issue number
 to easily track what that branch is for.
-.. Consider which release branch (e.g. `master`, `tp31` etc) to create the development branch from in the first place.
-In other words, is the change to be targeted at a specific TinkerPop version (e.g. a patch to an older version)? When
-in doubt, please ask on dev@tinkerpop.apache.org.
+.. Consider which release branch (e.g. `master`, `tp33` - consult the
+link:http://tinkerpop.apache.org/docs/x.y.z/dev/developer/#branches[Branches Section] for more information) to create
+the development branch from in the first place. In other words, is the change to be targeted at a specific TinkerPop
+version (e.g. a patch to an older version)? When in doubt, please ask on dev@tinkerpop.apache.org.
 . Build the project and run tests.
 .. A simple build can be accomplished with maven: `mvn clean install`.
 .. Often, a "simple build" isn't sufficient and integration tests are required:
@@ -199,10 +202,10 @@ tests to execute.
 .. Docker can help simplify building and testing: `docker/build.sh -t -i -n`
 .. Please see the <<building-testing,Building and Testing>> section for more building and testing options.
 . Consider whether documentation or tests need to be added or updated as part of the change, and add them as needed.
-.. Nearly all changes should include a modification to the `CHANGELOG.asciidoc` file - one more entries to
+.. Nearly all changes should include a modification to the `CHANGELOG.asciidoc` file - one or more entries to
 help summarize the change.
-.. Some changes will require updates to the "upgrade documentation" - usually reserved for major new features and
-breaking changes.
+.. Some changes will require updates to the link:http://tinkerpop.apache.org/docs/x.y.z/upgrade/[Upgrade Documentation].
+Updates to this documentation are usually reserved for major new features and breaking changes.
 .. Docker can help simplify documentation generation: `docker/build.sh -d`
 .. Please see the <<building-testing,Building and Testing>> section for more documentation generation options.
 . Open the link:https://help.github.com/articles/using-pull-requests/[pull request] against the appropriate branch
@@ -225,9 +228,10 @@ of the entire change.
 . Reviewers can indicate that a change looks suitable for merging with by providing a "+1". Please see the
 <<rtc, Review then Commit>> process for more details.
 . Sometimes, other changes will be merged which conflict with your pull request's changes. The PR can't be merged
-until the conflict is resolved. This can be resolved with "git fetch origin" followed by "git merge origin/master"
-and resolving the conflicts by hand, then pushing the result to your branch. Or more nicely, consider rebasing changes
-and force pushing the branch.
-. Try to be responsive to the discussion rather than let days pass between replies
+until the conflict is resolved. In these cases the PR must be rebased, conflicts resolved and the resulting changes
+force pushed back to the branch.
+. Try to be responsive to the discussion rather than let days pass between replies.
+. Reviewers may request additional pull requests (e.g. one for each release branch that it may be related to) if
+the changes brings extensive conflict between branches.
 
 On successful review, the *pull request will be merged* to the main repository and the JIRA issue will be closed.
