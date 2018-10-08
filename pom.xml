@@ -132,9 +132,9 @@ limitations under the License.
         <module>gremlin-tools</module>
     </modules>
     <scm>
-        <connection>scm:git:git@git-wip-us.apache.org:repos/asf/tinkerpop.git</connection>
-        <developerConnection>scm:git:git@git-wip-us.apache.org:repos/asf/tinkerpop.git</developerConnection>
-        <url>https://git-wip-us.apache.org/repos/asf?p=tinkerpop.git</url>
+        <connection>scm:git:git@github.com:apache/tinkerpop.git</connection>
+        <developerConnection>scm:git:git@github.com:apache/tinkerpop.git</developerConnection>
+        <url>https://github.com/apache/tinkerpop</url>
     </scm>
     <properties>
         <commons.configuration.version>1.10</commons.configuration.version>
