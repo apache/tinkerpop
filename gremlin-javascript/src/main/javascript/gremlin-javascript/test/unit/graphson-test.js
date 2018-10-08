@@ -151,6 +151,10 @@ describe('GraphSONWriter', function () {
     assert.strictEqual(writer.write(true), 'true');
     assert.strictEqual(writer.write(false), 'false');
   });
+  it('should write enum values', function () {
+    const writer = new GraphSONWriter();
+    assert.strictEqual(writer.write(t.cardinality.set), '{"@type":"g:Cardinality","@value":"set"}');
+  });
   it('should write P', function () {
     const writer = new GraphSONWriter();
     const expected = JSON.stringify({"@type":"g:P","@value":{"predicate":"and","value":[

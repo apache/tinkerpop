@@ -24,6 +24,7 @@
 
 const WebSocket = require('ws');
 const util = require('util');
+const t = require('../process/traversal');
 const RemoteConnection = require('./remote-connection').RemoteConnection;
 const utils = require('../utils');
 const serializer = require('../structure/io/graph-serializer');
@@ -107,7 +108,7 @@ class DriverRemoteConnection extends RemoteConnection {
   }
 
   /** @override */
-  submit(bytecode, op, args, requestId) {
+  submit(bytecode, op, args, requestId, processor) {
     return this.open().then(() => new Promise((resolve, reject) => {
       if (requestId === null || requestId === undefined) {
         requestId = utils.getUuid();
@@ -116,20 +117,22 @@ class DriverRemoteConnection extends RemoteConnection {
           result: null
         };
       }
-      const message = bufferFromString(this._header + JSON.stringify(this._getRequest(requestId, bytecode, op, args)));
+
+      const message = bufferFromString(this._header + JSON.stringify(this._getRequest(requestId, bytecode, op, args, processor)));
       this._ws.send(message);
     }));
   }
 
-  _getRequest(id, bytecode, op, args) {
+  _getRequest(id, bytecode, op, args, processor) {
     if (args) {
-      args = this._adaptArgs(args);
+      args = this._adaptArgs(args, true);
     }
 
     return ({
       'requestId': { '@type': 'g:UUID', '@value': id },
       'op': op || 'bytecode',
-      'processor': 'traversal',
+      // if using op eval need to ensure processor stays unset if caller didn't set it.
+      'processor': (!processor && op !== 'eval') ? 'traversal' : processor,
       'args': args || {
         'gremlin': this._writer.adaptObject(bytecode),
         'aliases': { 'g': this.traversalSource }
@@ -211,20 +214,23 @@ class DriverRemoteConnection extends RemoteConnection {
    * @returns {Object}
    * @private
    */
-  _adaptArgs(args) {
-    if (Array.isArray(args)) {
-      return args.map(val => this._adaptArgs(val));
-    }
-
+  _adaptArgs(args, protocolLevel) {
     if (args instanceof Object) {
       let newObj = {};
       Object.keys(args).forEach((key) => {
-        newObj[key] = this._adaptArgs(args[key]);
+        // bindings key (at the protocol-level needs special handling. without this, it wraps the generated Map
+        // in another map for types like EnumValue. Could be a nicer way to do this but for now it's solving the
+        // problem with script submission of non JSON native types
+        if (protocolLevel && key === 'bindings')
+          newObj[key] = this._adaptArgs(args[key], false);
+        else
+          newObj[key] = this._writer.adaptObject(args[key]);
       });
+
       return newObj;
     }
-    
-    return this._writer.adaptObject(args);
+
+    return args;
   }
 
   /**
