@@ -37,6 +37,12 @@ import java.util.Map;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class OptionsStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
+
+    /**
+     * An empty {@code OptionsStrategy} with no configuration values inside.
+     */
+    public static final OptionsStrategy EMPTY = OptionsStrategy.build().create();
+
     private final Map<String, Object> options;
 
     private OptionsStrategy(final Builder builder) {

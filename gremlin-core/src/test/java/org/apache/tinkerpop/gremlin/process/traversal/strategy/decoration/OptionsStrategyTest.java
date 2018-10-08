@@ -35,4 +35,9 @@ public class OptionsStrategyTest {
         assertEquals("test", strategy.getOptions().get("a"));
         assertThat(strategy.getOptions().get("b"), is(true));
     }
+
+    @Test
+    public void shouldHaveNoEntriesInEmptyOptionsStrategy() {
+        assertThat(OptionsStrategy.EMPTY.getOptions().isEmpty(), is(true));
+    }
 }
