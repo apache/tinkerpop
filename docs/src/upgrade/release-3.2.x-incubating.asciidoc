@@ -137,8 +137,7 @@ const connection = new gremlin.driver.Client('ws://localhost:8182/gremlin', { tr
 const translator = new gremlin.process.Translator('g');
 
 const g = graph.traversal();
-g.V().tail();
-const script = translator.translate(g.getBytecode());
+const script = translator.translate(g.V().tail().getBytecode());
 
 connection.submit(script)
     .then(response => {
