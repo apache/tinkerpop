@@ -48,6 +48,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
@@ -340,6 +341,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LazyBarrierStrategy.class, 150));
             add(GryoTypeReg.of(MatchPredicateStrategy.class, 151));
             add(GryoTypeReg.of(OrderLimitStrategy.class, 152));
+            add(GryoTypeReg.of(OptionsStrategy.class, 187));                            // ***LAST ID***
             add(GryoTypeReg.of(PathProcessorStrategy.class, 153));
             add(GryoTypeReg.of(PathRetractionStrategy.class, 154));
             add(GryoTypeReg.of(CountStrategy.class, 155));
@@ -573,6 +575,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LazyBarrierStrategy.class, 150));
             add(GryoTypeReg.of(MatchPredicateStrategy.class, 151));
             add(GryoTypeReg.of(OrderLimitStrategy.class, 152));
+            add(GryoTypeReg.of(OptionsStrategy.class, 187));                            // ***LAST ID***
             add(GryoTypeReg.of(PathProcessorStrategy.class, 153));
             add(GryoTypeReg.of(PathRetractionStrategy.class, 154));
             add(GryoTypeReg.of(CountStrategy.class, 155));

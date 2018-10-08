@@ -90,7 +90,7 @@ class TestTraversalStrategies(object):
             bytecode.source_instructions[0][1])  # even though different confs, same strategy
         assert 0 == len(g.traversal_strategies.traversal_strategies)  # these strategies are proxies
         ###
-        bytecode = g.withStrategies(SubgraphStrategy(vertices=__.has("name","marko"))).bytecode
+        bytecode = g.withStrategies(SubgraphStrategy(vertices=__.has("name", "marko"))).bytecode
         assert 1 == len(bytecode.source_instructions)
         assert 2 == len(bytecode.source_instructions[0])
         assert "withStrategies" == bytecode.source_instructions[0][0]
@@ -98,3 +98,13 @@ class TestTraversalStrategies(object):
         strategy = bytecode.source_instructions[0][1]
         assert 1 == len(strategy.configuration)
         assert __.has("name","marko") == strategy.configuration["vertices"]
+        ###
+        bytecode = g.withStrategies(OptionsStrategy(options={"x": "test", "y": True})).bytecode
+        assert 1 == len(bytecode.source_instructions)
+        assert 2 == len(bytecode.source_instructions[0])
+        assert "withStrategies" == bytecode.source_instructions[0][0]
+        assert OptionsStrategy() == bytecode.source_instructions[0][1]
+        strategy = bytecode.source_instructions[0][1]
+        assert 2 == len(strategy.configuration)
+        assert "test" == strategy.configuration["x"]
+        assert strategy.configuration["y"]
