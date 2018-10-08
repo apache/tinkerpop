@@ -105,6 +105,47 @@ packaged dataset that needed to be loaded through the various IO options availab
 benefit of `TinkerFactory` to help get them bootstrapped. For 3.2.10, Grateful Dead is now more conveniently loaded
 via that same method as the other toy graphs with `TinkerFactory.createGratefulDead()`.
 
+==== Gremlin Javascript Script Submission
+
+Gremlin Javascript can now submit script, with optional bindings, using the `Client` class:
+
+[source,javascript]
+----
+const gremlin = require('gremlin');
+const connection = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traversalSource: 'g' });
+
+connection.submit('g.V().tail()')
+    .then(response => {
+        console.log(response.traversers.length);
+        console.log(response.traversers[0]);
+    });
+
+connection.submit('g.V(vid)', {vid: 1})
+    .then(response => {
+        console.log(response.traversers.length);
+        console.log(response.traversers[0]);
+    });
+----
+
+and also allows translation of bytecode steps into script:
+
+[source,javascript]
+----
+const gremlin = require('gremlin');
+const graph = new gremlin.process.Graph();
+const connection = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traversalSource: 'g' });
+const translator = new gremlin.process.Translator('g');
+
+const g = graph.traversal();
+const script = translator.translate(g.V().tail().getBytecode());
+
+connection.submit(script)
+    .then(response => {
+        console.log(response.traversers.length);
+        console.log(response.traversers[0]);
+    });
+----
+
 === Upgrading for Providers
 
 ==== Graph Database Providers
