@@ -311,10 +311,10 @@ The online docs can be found here:
 	http://tinkerpop.apache.org/javadocs/xx.yy.zz/full/ (full javadoc)
 
 The tag in Apache Git can be found here:
-	https://git-wip-us.apache.org/repos/asf?p=tinkerpop.git;XXXXXXXXXXXXXXXXXX
+	https://github.com/apache/tinkerpop/tree/x.y.z
 
 The release notes are available here:
-	https://github.com/apache/tinkerpop/blob/master/CHANGELOG.asciidoc#XXXXXXXXXXXXXXXXXX
+	https://github.com/apache/tinkerpop/blob/x.y.z/CHANGELOG.asciidoc
 
 The [VOTE] will be open for the next 72 hours --- closing <DayOfTheWeek> (<Month> <Day> <Year>) at <Time> <TimeZone>.
 
