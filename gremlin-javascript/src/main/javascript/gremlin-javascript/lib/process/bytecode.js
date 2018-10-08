@@ -93,6 +93,4 @@ class Bytecode {
   }
 }
 
-
-
 module.exports = Bytecode;
