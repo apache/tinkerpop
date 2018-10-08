@@ -125,7 +125,23 @@ The vote result is available here:
 
 If the candidate does not (yet) have an Apache account, then please note that fact in the notification email. Provide
 the board 72 hours to respond with objection before extending the invite to the new PMC member. Once that time has
-elapsed, the invite may be sent to the new PMC member. If they accept, then the PMC chair should refer to the
+elapsed, the invite may be sent to the new PMC member. The following template may be used for the invitation (be sure
+to copy private@ when sending the email):
+
+[source,text]
+----
+Subject Invitation to join the Apache TinkerPop PMC: [name of PMC new member]
+
+In recognition of your contributions to Apache TinkerPop, the TinkerPop PMC has voted to make you a PMC member. If you are unfamiliar with what the PMC does, please see this link to be sure you are comfortable with the responsibilities:
+
+https://www.apache.org/dev/pmc.html
+
+As you have already signed an ICLA and have an Apache account no additional paperwork is required by you other than replying to this email (ensuring to include private@ which is CC'd) to say if you accept or reject the invitation. Obviously there is no requirement to accept - you maybe simply choose to continue working in the capacity of a committer as you are now. We're happy to answer any questions you might have.
+
+Thank you for your efforts on the project.
+----
+
+If they accept, then the PMC chair should refer to the
 link:http://www.apache.org/dev/pmc.html#newpmc[How to Add a New PMC Member] section in the Apache docs for how to
 complete the process. Use link:https://whimsy.apache.org/roster/committee/[Whimsy] to update PMC membership.
 
