@@ -77,6 +77,18 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         }
 
         [Fact]
+        public void g_InjectX1_2_3X()
+        {
+            var g = new Graph().Traversal();
+
+            var bytecode = g.Inject(1, 2, 3).Bytecode;
+
+            Assert.Equal(1, bytecode.StepInstructions.Count);
+            Assert.Equal("inject", bytecode.StepInstructions[0].OperatorName);
+            Assert.Equal(3, bytecode.StepInstructions[0].Arguments.Length);
+        }
+
+        [Fact]
         public void AnonymousTraversal_Start_EmptyBytecode()
         {
             var bytecode = __.Start().Bytecode;
