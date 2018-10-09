@@ -247,6 +247,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                         // if we have the type of value we have the type of E2. 
                         genericParameterTypes.Add(info.ParameterType.Name, tokenParameter.GetParameterType());
                     }
+                    else if (IsParamsArray(info) && info.ParameterType.GetElementType().IsGenericParameter)
+                    {
+                        // Its a method where the type parameter comes from an params Array
+                        // e.g., Inject<S>(params S[] value)
+                        genericParameterTypes.Add(info.ParameterType.GetElementType().Name,
+                            tokenParameter.GetParameterType());
+                    }
+
                     if (info.ParameterType != tokenParameter.GetParameterType() && IsNumeric(info.ParameterType) &&
                         IsNumeric(tokenParameter.GetParameterType()))
                     {
@@ -254,6 +262,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                         value = Convert.ChangeType(value, info.ParameterType);
                     }
                 }
+
                 if (IsParamsArray(info))
                 {
                     // For `params type[] value` we should provide an empty array
@@ -266,11 +275,19 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                     {
                         // An array with the parameter values
                         // No more method parameters after this one
-                        var arr = Array.CreateInstance(info.ParameterType.GetElementType(), token.Parameters.Count - i);
+                        var elementType = info.ParameterType.GetElementType();
+
+                        if (elementType.IsGenericParameter)
+                        {
+                            // The Array element type is generic, so we use type of the value to specify it
+                            elementType = value.GetType();
+                        }
+
+                        var arr = Array.CreateInstance(elementType, token.Parameters.Count - i);
                         arr.SetValue(value, 0);
                         for (var j = 1; j < token.Parameters.Count - i; j++)
                         {
-                            arr.SetValue(token.Parameters[i + j].GetValue(), j);   
+                            arr.SetValue(token.Parameters[i + j].GetValue(), j);
                         }
                         value = arr;
                     }
