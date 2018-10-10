@@ -64,7 +64,7 @@ TinkerPop has several release branches:
 
 * `tp30` - 3.0.x (no longer maintained)
 * `tp31` - 3.1.x (no longer maintained)
-* `tp32` - 3.2.x (bug fixes and documentation updates only)
+* `tp32` - 3.2.x (major bug fixes only)
 * `tp33` - 3.3.x (current development)
 * `master` - 3.4.x (future development)
 
