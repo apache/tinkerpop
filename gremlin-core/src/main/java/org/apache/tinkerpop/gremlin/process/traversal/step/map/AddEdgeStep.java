@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.step.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
@@ -46,7 +45,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class AddEdgeStep<S> extends MapStep<S, Edge>
+public class AddEdgeStep<S> extends MapStep<S, Edge>
         implements Mutating<Event.EdgeAddedEvent>, TraversalParent, Scoping, FromToModulating {
 
     private static final String FROM = Graph.Hidden.hide("from");
