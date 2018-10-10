@@ -63,6 +63,16 @@ class GraphTraversalSource {
   }
   
   /**
+   * Graph Traversal Source with method.
+   * @param {...Object} args
+   * @returns {GraphTraversalSource}
+   */
+  with_(...args) {
+    const b = new Bytecode(this.bytecode).addSource('with', args);
+    return new GraphTraversalSource(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+  }
+  
+  /**
    * Graph Traversal Source withBulk method.
    * @param {...Object} args
    * @returns {GraphTraversalSource}

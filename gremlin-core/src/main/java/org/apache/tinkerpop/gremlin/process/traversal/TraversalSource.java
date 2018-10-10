@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -48,6 +49,7 @@ import java.util.function.UnaryOperator;
  * {@code TraversalSource(Graph)} and {@code TraversalSource(Graph,TraversalStrategies)}
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface TraversalSource extends Cloneable, AutoCloseable {
 
@@ -83,6 +85,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
             // static fields only
         }
 
+        public static final String with = "with";
         public static final String withSack = "withSack";
         public static final String withStrategies = "withStrategies";
         public static final String withoutStrategies = "withoutStrategies";
@@ -92,6 +95,38 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     }
 
     /////////////////////////////
+
+    /**
+     * Provides a configuration to a traversal in the form of a key which is the same as {@code with(key, true)}. The
+     * key of the configuration must be graph provider specific and therefore a configuration could be supplied that
+     * is not known to be valid until execution.
+     *
+     * @param key the key of the configuration to apply to a traversal
+     * @return a new traversal source with the included configuration
+     * @since 3.4.0
+     */
+    public default TraversalSource with(final String key) {
+        return with(key, true);
+    }
+
+    /**
+     * Provides a configuration to a traversal in the form of a key value pair. The  key of the configuration must be
+     * graph provider specific and therefore a configuration could be supplied that is not known to be valid until
+     * execution. This is a handy shortcut for building an {@link OptionsStrategy} manually and then add with
+     * {@link #withStrategies(TraversalStrategy[])}.
+     *
+     * @param key the key of the configuration to apply to a traversal
+     * @param value the value of the configuration to apply to a traversal
+     * @return a new traversal source with the included configuration
+     * @since 3.4.0
+     */
+    public default TraversalSource with(final String key, final Object value) {
+        final OptionsStrategy.Builder builder = OptionsStrategy.build();
+        getStrategies().getStrategy(OptionsStrategy.class)
+                .ifPresent(optionsStrategy -> optionsStrategy.getOptions().forEach(builder::with));
+        builder.with(key, value);
+        return withStrategies(builder.create());
+    }
 
     /**
      * Add an arbitrary collection of {@link TraversalStrategy} instances to the traversal source.

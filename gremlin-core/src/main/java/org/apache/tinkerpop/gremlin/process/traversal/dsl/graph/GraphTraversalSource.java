@@ -52,6 +52,7 @@ import java.util.function.UnaryOperator;
  * Any DSL can be constructed based on the methods of both {@code GraphTraversalSource} and {@link GraphTraversal}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphTraversalSource implements TraversalSource {
     protected transient RemoteConnection connection;
@@ -116,6 +117,22 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     //// CONFIGURATIONS
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversalSource with(final String key) {
+        return (GraphTraversalSource) TraversalSource.super.with(key);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversalSource with(final String key, final Object value) {
+        return (GraphTraversalSource) TraversalSource.super.with(key, value);
+    }
 
     /**
      * {@inheritDoc}

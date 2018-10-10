@@ -199,9 +199,11 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var g = graph.Traversal().WithRemote(connection);
 
             var b = new Bindings();
-            var count = g.WithStrategies(new OptionsStrategy(options)).V().Count().Next();
+            var countWithStrategy = g.WithStrategies(new OptionsStrategy(options)).V().Count().Next();
+            Assert.Equal(6, countWithStrategy);
 
-            Assert.Equal(6, count);
+            var countWith = g.With("x", "test").With("y", true).V().Count().Next();
+            Assert.Equal(6, countWith);
         }
 
         [Fact]

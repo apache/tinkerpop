@@ -42,11 +42,22 @@ public class OptionsStrategyTest {
     public void shouldAddOptionsToTraversal() {
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource optionedG = graph.traversal().withStrategies(OptionsStrategy.build().with("a", "test").with("b").create());
+        assertOptions(optionedG);
+    }
+
+    @Test
+    public void shouldAddOptionsToTraversalUsingWith() {
+        final Graph graph = TinkerGraph.open();
+        final GraphTraversalSource optionedG = graph.traversal().with("a", "test").with("b");
+        assertOptions(optionedG);
+    }
+
+    private static void assertOptions(final GraphTraversalSource optionedG) {
         GraphTraversal t = optionedG.inject(1);
         t = t.asAdmin().addStep(new MapStep<Object, Object>(t.asAdmin()) {
             @Override
             protected Object map(final Traverser.Admin<Object> traverser) {
-                final OptionsStrategy strategy = this.getTraversal().asAdmin().getStrategies().getStrategy(OptionsStrategy.class).get();
+                final OptionsStrategy strategy = traversal.asAdmin().getStrategies().getStrategy(OptionsStrategy.class).get();
                 return Arrays.asList(strategy.getOptions().get("a"), strategy.getOptions().get("b"));
             }
         });

@@ -536,7 +536,15 @@ accessible to their custom steps. A user would write something like:
 
 [source,java]
 ----
-g.withStrategies(OptionsStrategy.build().with("specialLimit", 10000).create());
+g.withStrategies(OptionsStrategy.build().with("specialLimit", 10000).create()).V();
+----
+
+The `OptionsStrategy` is really only the carrier for the configurations and while users can choose to utilize that
+more verbose method for constructing it shown above, it is more elegantly constructed as follows using `with()`-step:
+
+[source,java]
+----
+g.with("specialLimit", 10000)).V();
 ----
 
 The graph provider could then access that value of "specialLimit" in their custom step (or elsewhere) as follows:

@@ -73,6 +73,22 @@ namespace Gremlin.Net.Process.Traversal
         }
 
 
+        public GraphTraversalSource With(string key)
+        {
+            var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
+                                                  new Bytecode(Bytecode));
+            source.Bytecode.AddSource("with", key);
+            return source;
+        }
+
+        public GraphTraversalSource With(string key, object value)
+        {
+            var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
+                                                  new Bytecode(Bytecode));
+            source.Bytecode.AddSource("with", key, value);
+            return source;
+        }
+
         public GraphTraversalSource WithBulk(bool useBulk)
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
