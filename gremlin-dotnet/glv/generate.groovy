@@ -196,14 +196,12 @@ def getParamNames = { parameters ->
         }
 }
 
-def getArgsListType = { parameterString ->
-    def argsListType = "object"
+def isParamsArgCastNecessary = { parameterString ->
     if (parameterString.contains("params ")) {
         def paramsType = parameterString.substring(parameterString.indexOf("params ") + "params ".length(), parameterString.indexOf("[]"))
-        if (paramsType == "E" || paramsType == "S")
-            argsListType = paramsType
+        return paramsType == "E" || paramsType == "S" 
     }
-    argsListType
+    return false
 }
 
 def hasMethodNoGenericCounterPartInGraphTraversal = { method ->
@@ -256,8 +254,8 @@ def binding = ["pmethods": P.class.getMethods().
                             def tParam = getCSharpGenericTypeParam(t2)
                             def parameters = getCSharpParamString(javaMethod, true)
                             def paramNames = getParamNames(javaMethod.parameters)
-                            def argsListType = getArgsListType(parameters)
-                            return ["methodName": javaMethod.name, "typeNameString": typeNameString, "tParam":tParam, "parameters":parameters, "paramNames":paramNames, "argsListType":argsListType]
+                            def isArgsCastNecessary = isParamsArgCastNecessary(parameters)
+                            return ["methodName": javaMethod.name, "typeNameString": typeNameString, "tParam":tParam, "parameters":parameters, "paramNames":paramNames, "isArgsCastNecessary":isArgsCastNecessary]
                         },
                "graphStepMethods": GraphTraversal.getMethods().
                         findAll { GraphTraversal.class.equals(it.returnType) }.
@@ -277,8 +275,8 @@ def binding = ["pmethods": P.class.getMethods().
                             }
                             def parameters = getCSharpParamString(javaMethod, true)
                             def paramNames = getParamNames(javaMethod.parameters)
-                            def argsListType = getArgsListType(parameters)
-                            return ["methodName": javaMethod.name, "t1":t1, "t2":t2, "tParam":tParam, "parameters":parameters, "paramNames":paramNames, "argsListType":argsListType]
+                            def isArgsCastNecessary = isParamsArgCastNecessary(parameters)
+                            return ["methodName": javaMethod.name, "t1":t1, "t2":t2, "tParam":tParam, "parameters":parameters, "paramNames":paramNames, "isArgsCastNecessary":isArgsCastNecessary]
                         },
                "anonStepMethods": __.class.getMethods().
                         findAll { GraphTraversal.class.equals(it.returnType) }.
