@@ -76,7 +76,7 @@ The machines, simply moving algorithmically through Gremlin's world, endorsed hi
 more efficient, more expressive, better capable of reasoning upon his thoughts. Faster, quickly, now towards the
 world's end, where there would be forever currently, emanatingly engulfing that which is -- The TinkerPop.
 
-== TinkerPop
+== TinkerPop3
 
 image::tinkerpop3-splash.png[width=450]
 
