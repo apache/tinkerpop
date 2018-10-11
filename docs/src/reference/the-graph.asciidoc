@@ -47,9 +47,6 @@ TIP: To ensure provider agnostic code, always check feature support prior to usa
 way, the application can behave gracefully in case a particular implementation is provided at runtime that does not
 support a function being accessed.
 
-WARNING: Assignments of a `GraphStrategy` can alter the base features of a `Graph` in dynamic ways, such that checks
-against a `Feature` may not always reflect the behavior exhibited when the `GraphStrategy` is in use.
-
 [[vertex-properties]]
 == Vertex Properties
 
@@ -901,8 +898,8 @@ stakeholders do not conflict.
 Data keyed as such is only accessible via the graph system implementation and no other stakeholders are granted read
 nor write access to data prefixed with "~" (see `Graph.Hidden`). Test coverage and exceptions exist to ensure that
 graph systems respect this hard boundary.
-* <<vertexprogram,`VertexProgram`>> and <<mapreduce,`MapReduce`>> developers should, like `GraphStrategy` developers,
-leverage _qualified namespaces_ particular to their domain (e.g. `mydomain.myvertexprogram.computedata`).
+* <<vertexprogram,`VertexProgram`>> and <<mapreduce,`MapReduce`>> developers should leverage _qualified namespaces_
+particular to their domain (e.g. `mydomain.myvertexprogram.computedata`).
 * `GremlinPlugin` creators should prefix their plugin name with their domain (e.g. `mydomain.myplugin`).
 
 IMPORTANT: TinkerPop uses `tinkerpop.` and `gremlin.` as the prefixes for provided strategies, vertex programs, map
