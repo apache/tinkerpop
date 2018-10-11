@@ -189,11 +189,10 @@ out of the right of the traversal (e.g. "vadas" and "josh").
 
 image::traversal-mechanics.png[width=500]
 
-In TinkerPop, the objects propagating through the traversal are wrapped in a `Traverser<T>`. The traverser concept
-is new to TinkerPop and provides the means by which steps remain stateless. A traverser maintains all the metadata
-about the traversal -- e.g., how many times the traverser has gone through a loop, the path history of the traverser,
-the current object being traversed, etc. Traverser metadata may be accessed by a step. A classic example is the
-<<path-step,`path()`>>-step.
+The objects propagating through the traversal are wrapped in a `Traverser<T>`. The traverser provides the means by
+which steps remain stateless. A traverser maintains all the metadata about the traversal -- e.g., how many times the
+traverser has gone through a loop, the path history of the traverser, the current object being traversed, etc.
+Traverser metadata may be accessed by a step. A classic example is the <<path-step,`path()`>>-step.
 
 [gremlin-groovy,modern]
 ----
@@ -212,9 +211,10 @@ has gone through a particular section of the traversal expression (i.e. a loop).
 g.V(marko).repeat(out()).times(2).values('name')
 ----
 
-WARNING: A Traversal's result are never ordered unless explicitly by means of <<order-step,`order()`>>-step. Thus,
-never rely on the iteration order between TinkerPop releases and even within a release (as traversal optimizations
-may alter the flow).
+WARNING: TinkerPop does not guarantee the order of results returned from a traversal. It only guarantees not to modify
+the iteration order provided by the underlying graph. Therefore it is important to understand the order guarantees of
+the graph database being used. A traversal's result is never ordered by TinkerPop unless performed explicitly by means
+of <<order-step,`order()`>>-step.
 
 == On Gremlin Language Variants
 
