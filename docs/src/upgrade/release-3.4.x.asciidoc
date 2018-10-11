@@ -29,6 +29,32 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.4.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Changed number comparison behavior of within()/without() predicates
+
+In previous versions `within()` and `without()` performed strict number comparisons; that means these predicates did not only compare number values, but also the time. This was inconsistent with
+how other predicates (like `eq, `gt`, etc.) work. All predicates will now ignore the number type and instead compare numbers only based on their value.
+
+Old behavior:
+
+```
+gremlin> g.V().has("age", eq(32L))
+==>v[4]
+gremlin> g.V().has("age", within(32L, 35L))
+gremlin>
+```
+
+New behavior:
+
+```
+gremlin> g.V().has("age", eq(32L))
+==>v[4]
+gremlin> g.V().has("age", within(32L, 35L))
+==>v[4]
+==>v[6]
+```
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2058[TINKERPOP-2058]
+
 ==== Added text predicates
 
 Gremlin now supports simple text predicates on top of the existing `P` predicates. Both, the new `TextP` text predicates and the old `P` predicates, can be chained using `and()` and `or()`.
