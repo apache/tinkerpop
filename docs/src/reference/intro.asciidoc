@@ -191,11 +191,10 @@ out of the right of the traversal (e.g. "vadas" and "josh").
 
 image::traversal-mechanics.png[width=500]
 
-In TinkerPop3, the objects propagating through the traversal are wrapped in a `Traverser<T>`. The traverser concept
-is new to TinkerPop3 and provides the means by which steps remain stateless. A traverser maintains all the metadata
-about the traversal -- e.g., how many times the traverser has gone through a loop, the path history of the traverser,
-the current object being traversed, etc. Traverser metadata may be accessed by a step. A classic example is the
-<<path-step,`path()`>>-step.
+The objects propagating through the traversal are wrapped in a `Traverser<T>`. The traverser provides the means by
+which steps remain stateless. A traverser maintains all the metadata about the traversal -- e.g., how many times the
+traverser has gone through a loop, the path history of the traverser, the current object being traversed, etc.
+Traverser metadata may be accessed by a step. A classic example is the <<path-step,`path()`>>-step.
 
 [gremlin-groovy,modern]
 ----
