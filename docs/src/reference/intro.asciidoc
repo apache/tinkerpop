@@ -213,9 +213,10 @@ has gone through a particular section of the traversal expression (i.e. a loop).
 g.V(marko).repeat(out()).times(2).values('name')
 ----
 
-WARNING: A Traversal's result are never ordered unless explicitly by means of <<order-step,`order()`>>-step. Thus,
-never rely on the iteration order between TinkerPop3 releases and even within a release (as traversal optimizations
-may alter the flow).
+WARNING: TinkerPop does not guarantee the order of results returned from a traversal. It only guarantees not to modify
+the iteration order provided by the underlying graph. Therefore it is important to understand the order guarantees of
+the graph database being used. A traversal's result is never ordered by TinkerPop unless performed explicitly by means
+of <<order-step,`order()`>>-step.
 
 == On Gremlin Language Variants
 
