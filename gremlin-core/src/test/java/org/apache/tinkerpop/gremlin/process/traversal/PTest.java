@@ -127,7 +127,7 @@ public class PTest {
             assertEquals(expected, predicate.test(value));
             assertNotEquals(expected, predicate.clone().negate().test(value));
             assertNotEquals(expected, P.not(predicate.clone()).test(value));
-            if (value instanceof Number && !(predicate.biPredicate instanceof Contains)) {
+            if (value instanceof Number) {
                 assertEquals(expected, predicate.test(((Number) value).longValue()));
                 assertNotEquals(expected, predicate.clone().negate().test(((Number) value).longValue()));
                 assertNotEquals(expected, P.not(predicate).test(((Number) value).longValue()));
