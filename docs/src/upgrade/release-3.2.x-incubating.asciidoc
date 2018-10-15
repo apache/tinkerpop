@@ -23,7 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 == TinkerPop 3.2.10
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: October 15, 2018*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.2.10/CHANGELOG.asciidoc#release-3-2-10[changelog] for a complete list of all the modifications that are part of this release.
 

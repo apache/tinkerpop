@@ -25,7 +25,7 @@ limitations under the License.
   </PropertyGroup>
 
   <PropertyGroup Label="Package">
-    <Version>3.2.10-SNAPSHOT</Version>
+    <Version>3.2.10</Version>
     <FileVersion>3.2.10.0</FileVersion>
     <AssemblyVersion>3.2.0.0</AssemblyVersion>
     <Title>Gremlin.Net</Title>
