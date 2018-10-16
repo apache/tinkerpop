@@ -1394,7 +1394,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             client.submit(script, b).all().get();
             fail("Should have tanked out because of number of parameters used and size of the compile script");
         } catch (Exception ex) {
-            assertThat(ex.getMessage(), containsString("The Gremlin statement that was submitted exceed the maximum compilation size allowed by the JVM"));
+            assertThat(ex.getMessage(), containsString("The Gremlin statement that was submitted exceeds the maximum compilation size allowed by the JVM"));
         }
     }
 }
