@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.3.4-SNAPSHOT</version>
+        <version>3.3.4</version>
     </parent>
     <artifactId>spark-gremlin</artifactId>
     <name>Apache TinkerPop :: Spark Gremlin</name>
