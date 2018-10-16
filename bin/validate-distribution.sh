@@ -123,9 +123,9 @@ echo "OK"
 #[ "$ACTUAL" = "${EXPECTED}" ] || { echo "failed"; exit 1; }
 #echo "OK"
 
-echo -n "  * SHA1 checksum ... "
-EXPECTED=`cat ${ZIP_FILENAME}.sha1`
-ACTUAL=`sha1sum ${ZIP_FILENAME} | awk '{print $1}'`
+echo -n "  * SHA512 checksum ... "
+EXPECTED=`cat ${ZIP_FILENAME}.sha512`
+ACTUAL=`sha512sum ${ZIP_FILENAME} | awk '{print $1}'`
 [ "$ACTUAL" = "${EXPECTED}" ] || { echo "failed"; exit 1; }
 echo "OK"
 
