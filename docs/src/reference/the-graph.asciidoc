@@ -46,7 +46,7 @@ possible:
 
 * The application is being developed on the JVM and the developer is using <<connecting-embedded, Embedded>> mode
 * The architecture includes Gremlin Server and the user is sending Gremlin scripts to the server
-* The graph system chosen is a <<connecting-gsp, Gremlin Service Provider>> and they expose the Graph API via scripts
+* The graph system chosen is a <<connecting-rgp, Remote Gremlin Provider>> and they expose the Graph API via scripts
 
 Note that Gremlin Language Variants force developers to use the Graph API by reference. There is no `addVertex()`
 method available to GLVs on their respective `Graph` instances, nor are their graph elements filled with data at the
@@ -214,7 +214,7 @@ image:gremlin-coins.png[width=100,float=right] A link:http://en.wikipedia.org/wi
 represents a unit of work to execute against the database. Transactions in TinkerPop can be considered in several
 contexts: transactions for <<connecting-embedded,embedded graphs>> via the Graph API,
 transactions for <<connecting-gremlin-server,Gremlin Server>> and transactions within
-<<connecting-gsp,Graph Service Providers>>. For those following recommended patterns, the concepts presented in the
+<<connecting-rgp,Remote Gremlin Providers>>. For those following recommended patterns, the concepts presented in the
 embedded section should generally be of little interest and are present mainly for reference. Utilizing those
 transactional features will greatly reduce the portability of an application's Gremlin code.
 
@@ -425,14 +425,15 @@ the <<sessions,Considering Sessions>> Section.
 While those sections provide some additional details, the short advice is to avoid scripts when possible and prefer
 bytecode based requests.
 
-[[tx-gsp]]
-=== Gremlin Service Providers
+[[tx-rgp]]
+=== Remote Gremlin Providers
 
-At this time, transactional patterns for Gremlin Service Providers are largely in line with Gremlin Server. Most
+At this time, transactional patterns for Remote Gremlin Providers are largely in line with Gremlin Server. Most
 offer bytecode or script based sessionless requests, which have automatic transaction management, such that a
-successful traversal will commit on success and a failing traversal will rollback. As most of these GSPs do not
+successful traversal will commit on success and a failing traversal will rollback. As most of these RGPs do not
 expose a `Graph` instances, access to lower level transactional functions even in a sessionless fashion are not
-typically allowed.           
+typically allowed. The nature of what a "transaction" means will be dependent on the RGP as is the case with any
+TinkerPop-enabled graph system, so it is important to consult that systems documentation for more details.
 
 == Namespace Conventions
 

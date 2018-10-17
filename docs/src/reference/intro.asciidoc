@@ -317,7 +317,7 @@ of the following places:
 
 * Embedded in a Java application
 * Hosted in Gremlin Server
-* Exposed by a remote Gremlin Service Provider
+* Exposed by a remote Remote Gremlin Provider
 
 The following sections outline each of these models and what they impact they have to using Gremlin.
 
@@ -442,18 +442,18 @@ IMPORTANT: Most SQL developers would not write a query as `SELECT * FROM table`.
 individual names of the fields they wanted in place of the wildcard. Writing "good" Gremlin is no different with this
 regard. Prefer explicit property key names in Gremlin unless it is completely impossible to do so.
 
-[[connecting-gsp]]
-=== Gremlin Service Provider
+[[connecting-rgp]]
+=== Remote Gremlin Provider
 
-Gremlin Service Providers (GSPs) are showing up more and more often in the graph database space. In TinkerPop terms,
+Gremlin Service Providers (RGPs) are showing up more and more often in the graph database space. In TinkerPop terms,
 this category of graph providers are ones who simply support the Gremlin language. Typically, these are server-based
 graphs, often cloud-based, which accept Gremlin scripts or bytecode as a request and return results. They will often
 implement Gremlin Server protocols, which enables TinkerPop drivers to connect to them as they would with Gremlin
 Server. Therefore, the typical connection approach is identical to the method of connection presented in the
 <<connecting-gremlin-server,previous section>> with the exact same caveats pointed out toward the end.
 
-Despite leveraging TinkerPop protocols and drivers as being typical, GSPs are not required to do so to be considered
-TinkerPop-enabled. GSPs may well have their own drivers and protocols that may plug into GLVs and may allow for more
+Despite leveraging TinkerPop protocols and drivers as being typical, RGPs are not required to do so to be considered
+TinkerPop-enabled. RGPs may well have their own drivers and protocols that may plug into GLVs and may allow for more
 advanced options like better security, cluster awareness, batched requests or other features. The details of these
 different systems are outside the scope of this documentation so be sure to consult their documentation for more
 information.
@@ -463,7 +463,7 @@ information.
 
 The `GraphTraversalSource` is basically the connection to a graph instance. That graph instance might be
 <<connecting-embedded,embedded>>, hosted in <<connecting-gremlin-server,Gremlin Server>> or hosted in a
-<<connecting-gsp,GSP>>, but the `GraphTraversalSource` is agnostic to that, because this object allows users to write
+<<connecting-rgp,RGP>>, but the `GraphTraversalSource` is agnostic to that, because this object allows users to write
 Gremlin. Assuming "g" is the `GraphTraversalSource`, getting data into the graph regardless of programming language
 or mode of operation is just some Gremlin:
 
@@ -566,7 +566,7 @@ link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlins-anatomy/#_express
 certain features of that specific graph shine in powerful ways. Using those options is probably recommended, but users
 should be aware that doing so ties them more tightly to that graph.
 * Graph specific semantics - TinkerPop tries to enforce specific semantics through its test suite which is quite
-extensive, but some <<connecting-gsp,Graph Service Providers>> may not completely respect all the semantics
+extensive, but some <<connecting-rgp,Remote Gremlin Providers>> may not completely respect all the semantics
 of the Gremlin language. For the most part, that doesn't disqualify them from being any less TinkerPop-enabled than
 another provider that might meet the semantics perfectly. Take care when considering a new graph and pay attention to
 what it supports and does not support.
@@ -577,7 +577,7 @@ use of Gremlin with `g.addV()` or `g.V(1).properties()`.
 
 Outside of considering these points, the best practice for ensuring the greatest level of compatibility across graphs
 is to avoid <<connecting-embedded,embedded>> mode and stick to the bytecode based approaches explained in the
-<<connecting-gremlin-server,Gremlin Server>> and the <<connecting-gsp,GSP>> sections above. It creates the least
+<<connecting-gremlin-server,Gremlin Server>> and the <<connecting-rgp,RGP>> sections above. It creates the least
 opportunity to stray from the agnostic path as anything that can be done with those two modes also works in embedded
 mode. If using embedded mode, simply write code as though the `Graph` instance is "remote" and not local to the JVM.
 In other words, write code as though the GVM is not available locally. Taking that approach and isolating the points
