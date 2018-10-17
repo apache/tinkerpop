@@ -72,7 +72,7 @@ tutorial.
  *** `GraphTraversal`: a traversal DSL that is oriented towards the semantics of the raw graph (i.e. vertices, edges, etc.).
  * `GraphComputer`: a system that processes the graph in parallel and potentially, distributed over a multi-machine cluster.
  ** `VertexProgram`: code executed at all vertices in a logically parallel manner with intercommunication via message passing.
- ** `MapReduce`: a computations that analyzes all vertices in the graph in parallel and yields a single reduced result.
+ ** `MapReduce`: a computation that analyzes all vertices in the graph in parallel and yields a single reduced result.
 
 IMPORTANT: TinkerPop3 is licensed under the popular link:http://www.apache.org/licenses/LICENSE-2.0.html[Apache2]
 free software license. However, note that the underlying graph engine used with TinkerPop3 may have a different
