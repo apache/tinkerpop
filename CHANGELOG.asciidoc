@@ -28,6 +28,7 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Added `OptionsStrategy` to allow traversals to take arbitrary traversal-wide configurations.
 * Added text predicates.
 * Removed groovy-sql
+* Modified `Mutating` steps so that they are no longer marked as `final`.
 * Rewrote `ConnectiveStrategy` to support an arbitrary number of infix notations in a single traversal.
 * GraphSON `MessageSerializer`s will automatically register the GremlinServerModule to a provided GraphSONMapper.
 * Removed support for `-i` option in Gremlin Server which was previously deprecated.

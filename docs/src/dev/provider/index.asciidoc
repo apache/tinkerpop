@@ -821,7 +821,11 @@ can be used to alter a traversal prior to its execution. A typical example is co
 lookup becomes an `O(log(|V|))`. Please review `TinkerGraphStepStrategy` for ideas.
 * Step Implementations: Every link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graph-traversal-steps[step] is
 ultimately referenced by the `GraphTraversal` interface. It is possible to extend `GraphTraversal` to use a graph
-system specific step implementation.
+system specific step implementation. Note that while it is sometimes possible to develop custom step implementations
+by extending from a TinkerPop step (typically, `AddVertexStep` and other `Mutating` steps), it's important to
+consider that doing so introduces some greater risk for code breaks on upgrades as opposed to other areas of the code
+base. As steps are more internal features of TinkerPop, they might be subject to breaking API and behavioral changes
+that would be less likely to be accepted by more public facing interfaces.
 
 == Graph Driver Provider Requirements
 
