@@ -37,7 +37,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class DropStep<S> extends FilterStep<S> implements Mutating<Event> {
+public class DropStep<S> extends FilterStep<S> implements Mutating<Event> {
 
     private CallbackRegistry<Event> callbackRegistry;
 
