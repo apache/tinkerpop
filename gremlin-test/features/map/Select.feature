@@ -724,6 +724,6 @@ Feature: Step - select()
     When iterated next
     Then the result should be ordered
       | result |
-      | l[a,b] |
-      | l[c]   |
+      | s[a,b] |
+      | s[c]   |
     And the graph should return 6 for count of "g.V().as(\"a\", \"b\").out().as(\"c\").path().select(Column.keys)"
