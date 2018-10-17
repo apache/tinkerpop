@@ -154,6 +154,7 @@ then a concise name is provided (e.g. `out()`, `path()`, `repeat()`). If the met
 providers, then the standard Java naming convention is followed (e.g. `getNextStep()`, `getSteps()`,
 `getElementComputeKeys()`).
 
+[[graph-structure]]
 === The Graph Structure
 
 image:gremlin-standing.png[width=125,float=left] A graph's structure is the topology formed by the explicit references
@@ -569,6 +570,10 @@ extensive, but some <<connecting-gsp,Graph Service Providers>> may not completel
 of the Gremlin language. For the most part, that doesn't disqualify them from being any less TinkerPop-enabled than
 another provider that might meet the semantics perfectly. Take care when considering a new graph and pay attention to
 what it supports and does not support.
+* <<graph,Graph API>> - The <<graph-structure, Graph API>> (also referred to as the Structure API) is not always accessible to
+users. Its accessibility is dependent on the choice of graph system and programming language. It is therefore
+recommended that users avoid usage of methods like `Graph.addVertex()` or `Vertex.properties()` and instead prefer
+use of Gremlin with `g.addV()` or `g.V(1).properties()`.
 
 Outside of considering these points, the best practice for ensuring the greatest level of compatibility across graphs
 is to avoid <<connecting-embedded,embedded>> mode and stick to the bytecode based approaches explained in the
