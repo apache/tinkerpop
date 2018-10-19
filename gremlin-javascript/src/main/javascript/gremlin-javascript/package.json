@@ -1,6 +1,6 @@
 {
   "name": "gremlin",
-  "version": "3.3.4",
+  "version": "3.3.5-alpha1",
   "description": "JavaScript Gremlin Language Variant",
   "author": "Apache TinkerPop team",
   "keywords": [
