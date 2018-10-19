@@ -278,7 +278,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
                 filter(p -> p instanceof TranslatorCustomizer).
                 map(p -> (TranslatorCustomizer) p).findFirst();
         typeTranslator = translatorCustomizer.isPresent() ? translatorCustomizer.get().createTypeTranslator() :
-                Translator.ScriptTranslator.TypeTranslator.identity();
+                new GroovyTranslator.DefaultTypeTranslator();
 
         createClassLoader();
     }

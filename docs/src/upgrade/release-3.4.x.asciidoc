@@ -608,3 +608,19 @@ The extent to which TinkerPop tests "upsert" is fairly narrow. Graph providers t
 should consider their own test suites carefully to ensure appropriate coverage.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1685[TINKERPOP-1685]
+
+==== TypeTranslator Changes
+
+The `TypeTranslator` experienced a change in its API and `GroovyTranslator` a change in expectations.
+
+`TypeTranslator` now implements `BiFunction` and takes the graph traversal source name as an argument along with the
+object to translate. This interface is implemented by default for Groovy with `GroovyTranslator.DefaultTypeTranslator`
+which encapsulates all the functionality of what `GroovyTranslator` formerly did by default. To provide customize
+translation, simply extend the `DefaultTypeTranslator` and override the methods.
+
+`GroovyTranslator` now expects that the `TypeTranslator` provide to it as part of its `of()` static method overload
+is "complete" - i.e. that it provides all the functionality to translate the types passed to it. Thus, a "complete"
+`TypeTranslator` is one that does everything that `DefaultTypeTranslator` does as a minimum requirement. Therefore,
+the extension model described above is the easiest way to get going with a custom `TypeTranslator` approach.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2072[TINKERPOP-2072]

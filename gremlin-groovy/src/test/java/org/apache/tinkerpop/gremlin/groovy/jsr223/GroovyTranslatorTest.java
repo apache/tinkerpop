@@ -20,7 +20,6 @@
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import org.apache.commons.configuration.MapConfiguration;
-import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.jsr223.TranslatorCustomizer;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
@@ -225,17 +224,6 @@ public class GroovyTranslatorTest {
     }
 
     @Test
-    public void shouldOverrideDefaultTypeTranslationWithSomethingBonkers() {
-        final TinkerGraph graph = TinkerGraph.open();
-        final GraphTraversalSource g = graph.traversal();
-        final String thingToSuffixAllStringsWith = "-why-would-anyone-do-this";
-        final String script = GroovyTranslator.of("g", x -> x instanceof String ? x + thingToSuffixAllStringsWith : x).
-                translate(g.inject("yyy", "xxx").asAdmin().getBytecode());
-        assertEquals(String.format("g.inject(\"yyy%s\",\"xxx%s\")", thingToSuffixAllStringsWith, thingToSuffixAllStringsWith), script);
-        assertThatScriptOk(script, "g", g);
-    }
-
-    @Test
     public void shouldIncludeCustomTypeTranslationForSomethingSilly() throws Exception {
         final TinkerGraph graph = TinkerGraph.open();
         final SillyClass notSillyEnough = SillyClass.from("not silly enough", 100);
@@ -247,10 +235,7 @@ public class GroovyTranslatorTest {
         assertEquals(String.format("g.inject(%s)", "not silly enough:100"), scriptBad);
 
         // with type translation we get valid gremlin
-        final String scriptGood = GroovyTranslator.of("g",
-                x -> x instanceof SillyClass ?
-                        new Translator.ScriptTranslator.Handled(String.format("org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslatorTest.SillyClass.from('%s', (int) %s)",
-                        ((SillyClass) x).getX(), ((SillyClass) x).getY())) : x).
+        final String scriptGood = GroovyTranslator.of("g", new SillyClassTranslator()).
                 translate(g.inject(notSillyEnough).asAdmin().getBytecode());
         assertEquals(String.format("g.inject(org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslatorTest.SillyClass.from('%s', (int) %s))", notSillyEnough.getX(), notSillyEnough.getY()), scriptGood);
         assertThatScriptOk(scriptGood, "g", g);
@@ -389,13 +374,23 @@ public class GroovyTranslatorTest {
         }
     }
 
+    public static class SillyClassTranslator extends GroovyTranslator.DefaultTypeTranslator {
+
+        @Override
+        protected String convertToString(final Object object) {
+            if (object instanceof SillyClass)
+                return String.format("org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslatorTest.SillyClass.from('%s', (int) %s)",
+                        ((SillyClass) object).getX(), ((SillyClass) object).getY());
+            else
+                return super.convertToString(object);
+        }
+    }
+
     public static class SillyClassTranslatorCustomizer implements TranslatorCustomizer {
 
         @Override
         public Translator.ScriptTranslator.TypeTranslator createTypeTranslator() {
-            return x -> x instanceof SillyClass ?
-                    new Translator.ScriptTranslator.Handled(String.format("org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslatorTest.SillyClass.from('%s', (int) %s)",
-                            ((SillyClass) x).getX(), ((SillyClass) x).getY())) : x;
+            return new SillyClassTranslator();
         }
     }
 }
