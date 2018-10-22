@@ -25,19 +25,19 @@ const graphModule = require('../../lib/structure/graph');
 const helper = require('../helper');
 const t = require('../../lib/process/traversal');
 
-let connection;
+let client;
 
 describe('Client', function () {
   before(function () {
-    connection = helper.getClient('gmodern');
-    return connection.open();
+    client = helper.getClient('gmodern');
+    return client.open();
   });
   after(function () {
-    return connection.close();
+    return client.close();
   });
   describe('#submit()', function () {
     it('should send bytecode', function () {
-      return connection.submit(new Bytecode().addStep('V', []).addStep('tail', []))
+      return client.submit(new Bytecode().addStep('V', []).addStep('tail', []))
         .then(function (response) {
           assert.ok(response);
           assert.ok(response.traversers);
@@ -46,7 +46,7 @@ describe('Client', function () {
         });
     });
     it('should send and parse a script', function () {
-      return connection.submit('g.V().tail()')
+      return client.submit('g.V().tail()')
         .then(function (response) {
           assert.ok(response);
           assert.ok(response.traversers);
@@ -55,7 +55,7 @@ describe('Client', function () {
         });
     });
     it('should send and parse a script with bindings', function () {
-      return connection.submit('x + x', { x: 3 })
+      return client.submit('x + x', { x: 3 })
         .then(function (response) {
           assert.ok(response);
           assert.ok(response.traversers);
@@ -63,7 +63,7 @@ describe('Client', function () {
         });
     });
     it('should send and parse a script with non-native javascript bindings', function () {
-      return connection.submit('card.class.simpleName + ":" + card', { card: t.cardinality.set } )
+      return client.submit('card.class.simpleName + ":" + card', { card: t.cardinality.set } )
         .then(function (response) {
           assert.ok(response);
           assert.strictEqual(response.traversers[0], 'Cardinality:set');

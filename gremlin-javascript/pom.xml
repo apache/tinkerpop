@@ -179,37 +179,37 @@ limitations under the License.
                         </goals>
                     </execution>
                     <execution>
-                        <id>npm install</id>
-                        <phase>generate-test-resources</phase>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>install</arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>npm test</id>
-                        <phase>integration-test</phase>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>test</arguments>
-                            <failOnError>true</failOnError>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>npm test gherkin features</id>
-                        <phase>integration-test</phase>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>run-script features</arguments>
-                            <failOnError>true</failOnError>
-                        </configuration>
-                    </execution>
+                    <id>npm install</id>
+                    <phase>generate-test-resources</phase>
+                    <goals>
+                        <goal>npm</goal>
+                    </goals>
+                    <configuration>
+                        <arguments>install</arguments>
+                    </configuration>
+                </execution>
+                <execution>
+                    <id>npm test</id>
+                    <phase>integration-test</phase>
+                    <goals>
+                        <goal>npm</goal>
+                    </goals>
+                    <configuration>
+                        <arguments>test --exit</arguments>
+                        <failOnError>true</failOnError>
+                    </configuration>
+                </execution>
+                <execution>
+                    <id>npm test gherkin features</id>
+                    <phase>integration-test</phase>
+                    <goals>
+                        <goal>npm</goal>
+                    </goals>
+                    <configuration>
+                        <arguments>run-script features</arguments>
+                        <failOnError>true</failOnError>
+                    </configuration>
+                </execution>
                 </executions>
                 <configuration>
                     <skip>${skipTests}</skip>
