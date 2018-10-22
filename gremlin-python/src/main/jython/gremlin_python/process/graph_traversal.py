@@ -67,6 +67,11 @@ class GraphTraversalSource(object):
         source.bytecode.add_source("withStrategies", *args)
         return source
 
+    def with_(self, *args):
+        source = self.get_graph_traversal_source()
+        source.bytecode.add_source("with", *args)
+        return source
+
     def withoutStrategies(self, *args):
         source = self.get_graph_traversal_source()
         source.bytecode.add_source("withoutStrategies", *args)

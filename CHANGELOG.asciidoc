@@ -56,6 +56,8 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Replaced `Parameterizing.addPropertyMutations()` with `Configuring.configure()`.
 * Changed interface hierarchy for `Parameterizing` and `Mutating` interfaces as they are tightly related.
 * Introduced the `with(k,v)` and `with(k)` step modulators which can supply configuration options to `Configuring` steps.
+* Added `OptionsStrategy` to allow traversals to take arbitrary traversal-wide configurations.
+* Introduced the `with(k,v)` and `with(k)` traveral source configuration options which can supply configuration options to the traversal.
 * Added `connectedComponent()` step and related `VertexProgram`.
 * Added `supportsUpsert()` option to `VertexFeatures` and `EdgeFeatures`.
 * `min()` and `max()` now support all types implementing `Comparable`.
@@ -560,7 +562,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * TINKERPOP-1988	minor error in documentation
 * TINKERPOP-1999	[Java][gremlin-driver] Query to a remote server via the websocket client hangs indefinitely if the server becomes unavailable
 * TINKERPOP-2005	Intermittent NullPointerException in response handling
-* TINKERPOP-2009	Pick.any and Pick.none should be exposed in Gremlin-JavaScript 
+* TINKERPOP-2009	Pick.any and Pick.none should be exposed in Gremlin-JavaScript
 * TINKERPOP-2030	KeepAlive task executed for every Connection.write call
 * TINKERPOP-2032	Update jython-standalone
 * TINKERPOP-2044	Cannot reconnect to Azure cosmos host that becomes available again

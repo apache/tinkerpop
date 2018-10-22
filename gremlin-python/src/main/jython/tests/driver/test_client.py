@@ -79,6 +79,11 @@ def test_client_bytecode_options(client):
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
     result_set = client.submit(message)
     assert len(result_set.all().result()) == 6
+    ##
+    t = g.with_("x", "test").with_("y", True).V()
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
+    result_set = client.submit(message)
+    assert len(result_set.all().result()) == 6
 
 
 def test_iterate_result_set(client):

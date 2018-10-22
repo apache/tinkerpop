@@ -170,6 +170,7 @@ import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
