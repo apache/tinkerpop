@@ -22,10 +22,10 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 
 = TinkerPop 4.x Design Ideas
 
-TinkerPop 4.x is not a version considered on the immediate horizon, but there are often points in the day to day
-development of TinkerPop 3.x where there are changes of importance, novelty and usefulness that are so big that they
-could only be implemented under a major new version. This document is meant to track these concepts as they develop,
-so that at some point in the future they can be referenced in a single place.
+Apache TinkerPop™ 4.x is not a version considered on the immediate horizon, but there are often points in the day to
+day development of TinkerPop 3.x where there are changes of importance, novelty and usefulness that are so big that
+they could only be implemented under a major new version. This document is meant to track these concepts as they
+develop, so that at some point in the future they can be referenced in a single place.
 
 There is no particular layout or style to this document. Simple bullet points, open questions posed as single
 sentences, or fully structured document headers and content are all acceptable. The main point is to capture ideas
