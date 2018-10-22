@@ -177,7 +177,9 @@ validity into question.
 . Update `CHANGELOG.asciidoc`:
 .. Update the release date - the release date is the date of the vote. Double check the header to be sure that it is
 formatted properly - the easiest way to is to view the `CHANGELOG.asciidoc` to be sure that it produces a link in the
-GitHub viewer.
+GitHub viewer. The release date for all versions should be the same as the first release of the set even if the
+release vote does not begin on the same day. In other words if 3.2.x has a vote date of "October, 1 2018" then 3.3.x
+should also have that date even if the vote thread for 3.3.x doesn't start until the day after.
 .. Generate the JIRA release notes report for the current version and append them to the `CHANGELOG.asciidoc`.
 ... Use an "advanced" search to filter out JIRA issues already released on other versions. For example:
 `project = TINKERPOP and status = Closed AND fixVersion = 3.2.0 ORDER BY type, Id ASC`.
