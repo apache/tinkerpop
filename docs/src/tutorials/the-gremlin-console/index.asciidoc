@@ -22,7 +22,7 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 == The Gremlin Console
 
 In link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/#_the_first_five_minutes["The First Five Minutes"]
-of the link:http://tinkerpop.apache.org[Apache TinkerPop] tutorial on how to
+of the link:http://tinkerpop.apache.org[Apache TinkerPop™] tutorial on how to
 link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/[get started] with TinkerPop and graphs, the
 importance of the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-console[Gremlin Console] was
 introduced. This tutorial further explores the usage of the console in the daily work of Gremlin developers delving

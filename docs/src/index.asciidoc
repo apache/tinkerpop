@@ -23,7 +23,7 @@ image::apache-tinkerpop-logo.png[width=500]
 
 image::tinkerpop-reading.png[width=800,align="center"]
 
-Apache TinkerPop has an extensive set of documentation that covers virtually all aspects of usage. This documentation
+Apache TinkerPop™ has an extensive set of documentation that covers virtually all aspects of usage. This documentation
 tends to fall into the following categories:
 
 1. link:http://tinkerpop.apache.org/docs/x.y.z/reference[Reference Documentation] - The primary documentation for
