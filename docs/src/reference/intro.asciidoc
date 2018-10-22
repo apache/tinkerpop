@@ -44,11 +44,11 @@ link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/#toy-g
 .TinkerPop Modern
 image::tinkerpop-modern.png[width=500]
 
-TinkerPop 3.x is the third incarnation of the TinkerPop graph computing framework. Similar to computing in general, graph
-computing makes a distinction between *structure* (graph) and *process* (traversal). The structure of the graph is the
-data model defined by a vertex/edge/property link:http://en.wikipedia.org/wiki/Network_topology[topology]. The process
-of the graph is the means by which the structure is analyzed. The typical form of graph processing is called a
-link:http://en.wikipedia.org/wiki/Graph_traversal[traversal].
+TinkerPop 3.x is the third incarnation of the Apache TinkerPop™ graph computing framework. Similar to computing in
+general, graph computing makes a distinction between *structure* (graph) and *process* (traversal). The structure of
+the graph is the data model defined by a vertex/edge/property link:http://en.wikipedia.org/wiki/Network_topology[topology].
+The process of the graph is the means by which the structure is analyzed. The typical form of graph processing is
+called a link:http://en.wikipedia.org/wiki/Graph_traversal[traversal].
 
 Generally speaking, the structure or "graph" API is meant for link:http://tinkerpop.apache.org/providers.html[graph providers]
 who are implementing the TinkerPop interfaces and the process or "traversal" API (i.e. Gremlin) is meant for end-users

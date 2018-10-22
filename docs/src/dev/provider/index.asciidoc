@@ -22,10 +22,10 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 
 = Provider Documentation
 
-TinkerPop exposes a set of interfaces, protocols, and tests that make it possible for third-parties to build libraries
-and systems that plug-in to the TinkerPop stack.  TinkerPop refers to those third-parties as "providers" and this
-documentation is designed to help providers understand what is involved in developing code on these lower levels of
-the TinkerPop API.
+Apache TinkerPop™ exposes a set of interfaces, protocols, and tests that make it possible for third-parties to build
+libraries and systems that plug-in to the TinkerPop stack.  TinkerPop refers to those third-parties as "providers" and
+this documentation is designed to help providers understand what is involved in developing code on these lower levels
+of the TinkerPop API.
 
 This document attempts to address the needs of the different providers that have been identified:
 
