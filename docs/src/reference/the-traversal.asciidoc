@@ -833,7 +833,7 @@ means by which they are added. The general pattern is `step().from()`. See <<to-
 The list of steps that support `from()`-modulation are: <<simplepath-step,`simplePath()`>>, <<cyclicpath-step,`cyclicPath()`>>,
  <<path-step,`path()`>>, and <<addedge-step,`addE()`>>.
 
-[NOTE, caption=Javasacript]
+[NOTE, caption=Javascript]
 ====
 The term `from` is a reserved word in Javascript, and therefore must be referred to in Gremlin with `from_()`.
 ====
