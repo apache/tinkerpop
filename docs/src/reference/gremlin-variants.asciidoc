@@ -311,11 +311,9 @@ which allow Gremlin Server to cache traversals that will be reused over and over
 parameterization may change. Thus, instead of translating, compiling, and then executing each submitted bytecode,
 it is possible to simply execute. To express bindings in Java, use `Bindings`.
 
-[gremlin-groovy]
+[source,java]
 ----
-cluster = Cluster.open('conf/remote-objects.yaml')
 b = Bindings.instance()
-g = EmptyGraph.instance().traversal().withRemote(DriverRemoteConnection.using(cluster, "g"))
 g.V(b.of('id',1)).out('created').values('name').map{t -> "name: " + t.get() }
 g.V(b.of('id',4)).out('created').values('name').map{t -> "name: " + t.get() }
 g.V(b.of('id',4)).out('created').values('name').getBytecode()
