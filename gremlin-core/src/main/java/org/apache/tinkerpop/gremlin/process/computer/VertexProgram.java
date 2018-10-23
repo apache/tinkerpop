@@ -242,7 +242,7 @@ public interface VertexProgram<M> extends Cloneable {
 
         public <P extends VertexProgram> P create(final Graph graph);
         
-        default <P extends VertexProgram> P create() {
+        default public <P extends VertexProgram> P create() {
           return this.create(null);
         }
 
