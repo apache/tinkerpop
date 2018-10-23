@@ -383,7 +383,12 @@ and function. As with the embedded approach, the means of connection is based on
 followed by construction of a `GraphTraversalSource` with some "remote" options that describe the location of the
 Gremlin Server they wish to connect to:
 
-[gremlin-groovy]
+[source,java,tab]
+----
+Graph graph = EmptyGraph.instance();
+GraphTraversalSource g = graph.traversal().withRemote('conf/remote-graph.properties');
+----
+[source,groovy]
 ----
 graph = EmptyGraph.instance()
 g = graph.traversal().withRemote('conf/remote-graph.properties')
@@ -392,11 +397,6 @@ g = graph.traversal().withRemote('conf/remote-graph.properties')
 ----
 var graph = new Graph();
 var g = graph.Traversal().WithRemote(new DriverRemoteConnection(new GremlinClient(new GremlinServer("localhost", 8182))));
-----
-[source,java]
-----
-Graph graph = EmptyGraph.instance();
-GraphTraversalSource g = graph.traversal().withRemote('conf/remote-graph.properties');
 ----
 [source,javascript]
 ----

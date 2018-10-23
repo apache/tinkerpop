@@ -14,57 +14,406 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
+[[gremlin-drivers-variants]]
 [[gremlin-variants]]
-= Gremlin Variants
+= Gremlin Drivers and Variants
 
 image::gremlin-house-of-mirrors.png[width=1024]
 
-Gremlin is a graph traversal language that makes use of two fundamental programming constructs:
-link:https://en.wikipedia.org/wiki/Function_composition[function composition] and
-link:https://en.wikipedia.org/wiki/Nested_function[function nesting]. Given this generality, it is possible to embed
-Gremlin in any modern programming language.
+The <<connecting-gremlin,Connecting Gremlin>> Section described the different ways in which a developer can use
+Gremlin in their applications. Two of those methods <<connecting-gremlin-server,Gremlin Server>> and
+<<connecting-rgp,Remote Gremlin Providers>> placed the Traversal Machine on a remote system separate from the client.
+It is in these cases that developers must select a driver to utilize Gremlin.
 
-IMPORTANT: Gremlin-Java is the canonical representation of Gremlin and any (proper) Gremlin language variant will emulate its
-structure as best as possible given the constructs of the host language. A strong correspondence between variants ensures
-that the general Gremlin reference documentation is applicable to all variants and that users moving between development
-languages can easily adopt the Gremlin variant for that language.
+TinkerPop provides and array of drivers in different programming languages as a way to connect to a remote Gremlin
+Server or Remote Gremlin Provider. Drivers allow the developer to make requests to that remote system and get back
+results from the TinkerPop-enabled graphs hosted within. A driver can submit Gremlin strings and Gremlin bytecode
+over this subprotocol. Gremlin strings are written in the scripting language made available by the remote system that
+the driver is connecting to (typically, Groovy-based). This connection approach is quite similar to what developers
+are likely familiar with when using JDBC and SQL. While it is familiar, it is not recommended and for TinkerPop it is
+considered an out-dated concept and is largely still present to support applications that might still be using that
+method of interaction.
+
+The preferred approach is to use bytecode based requests, which essentially allows the ability to craft Gremlin
+directly in the programming language of choice. As Gremlin makes use of two fundamental programming constructs:
+link:https://en.wikipedia.org/wiki/Function_composition[function composition] and
+link:https://en.wikipedia.org/wiki/Nested_function[function nesting]. it is possible to embed the Gremlin language
+in any modern programming language.It is a far more natural way to program, because it enables IDE interaction,
+compile time checks, and language level checks that can help prevent errors prior to execution. The differences
+between these two approaches were outlined in the <<connecting-via-drivers,Connecting Via Drivers>> Section.
+
+TinkerPop natively supports drivers and variants of Gremlin in a number of different programming languages. They are
+all described in the following sections. There are also third-party implementations of drivers and Gremlin, as well
+as extensions to the Gremlin language that might be specific to a particular graph provider. That listing can be
+found on the TinkerPop link:http://tinkerpop.apache.org/#graph-systems[home page]. Their description is beyond the
+scope of this documentation.
+
+IMPORTANT: Gremlin-Java is the canonical representation of Gremlin and any (proper) Gremlin language variant will
+emulate its structure as best as possible given the constructs of the host language. A strong correspondence between
+variants ensures that the general Gremlin reference documentation is applicable to all variants and that users moving
+between development languages can easily adopt the Gremlin variant for that language.
 
 image::gremlin-variant-architecture.png[width=650,float=left]
 
 NOTE: The information herein describes how to use the Gremlin language variants distributed
-with Apache TinkerPop. For information on how to build a Gremlin language variant,
-please review the link:http://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[Gremlin Language Variants]
-tutorial.
+with Apache TinkerPop. For information on how to build a Gremlin language variant, please review the
+link:http://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[Gremlin Language Variants] tutorial.
 
+[[connecting-via-remotegraph]]
+[[connecting-via-java]]
 [[gremlin-java]]
 == Gremlin-Java
 
-image:gremlin-java-drawing.png[width=130,float=right] Apache TinkerPop's Gremlin-Java implements Gremlin within the Java8
-language and can be used by any Java8 compliant virtual machine. Gremlin-Java is considered the canonical, reference
+image:gremlin-java-drawing.png[width=130,float=right] Apache TinkerPop's Gremlin-Java implements Gremlin within the
+Java language and can be used by any Java Virtual Machine. Gremlin-Java is considered the canonical, reference
 implementation of Gremlin and serves as the foundation by which all other Gremlin language variants should emulate.
+As the Traversal Machine that processes Gremlin queries is also written in Java, it can be used in all three connection
+methods described in the <<connecting-gremlin,Connecting Gremlin>> Section.
+
+[source,xml]
+----
+<dependency>
+   <groupId>org.apache.tinkerpop</groupId>
+   <artifactId>gremlin-core</artifactId>
+   <version>x.y.z</version>
+</dependency>
+
+<!-- when using Gremlin Server or Remote Gremlin Provider a driver is required -->
+<dependency>
+   <groupId>org.apache.tinkerpop</groupId>
+   <artifactId>gremlin-driver</artifactId>
+   <version>x.y.z</version>
+</dependency>
+----
+
+=== Static Enums and Methods
+
+Gremlin has various tokens (e.g. `T`, `P`, `Order`, `Direction`, etc.) that in most examples are short-handed by way
+of static imports. To get this same short-handed effect, the typical list of imports that users should have when
+utilizing Gremlin Java are:
+
+[source,java]
+----
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
+import org.apache.tinkerpop.gremlin.process.traversal.IO;
+import static org.apache.tinkerpop.gremlin.process.traversal.Operator.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.Order.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.Pop.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.SackFunctions.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.Scope.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.TextP.*;
+import static org.apache.tinkerpop.gremlin.structure.Column.*;
+import static org.apache.tinkerpop.gremlin.structure.Direction.*;
+import static org.apache.tinkerpop.gremlin.structure.T.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
+----
+
+=== Connecting
+
+The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down to
+creating a `Graph` instance and then spawning a `GraphTraversalSource`.
+
+[source,java]
+----
+Graph graph = ...;
+GraphTraversalSource g = graph.traversal();
+----
+
+Using "g" it is then possible to start writing Gremlin. The "g" allows for the setting of many configuration options
+which affect traversal execution. The <<traversal, Traversal>> Section describes some of these options and some are
+only suitable with <<connecting-embedded,embedded>> style usage. For remote options however there are some added
+setup and configurations to consider and this section looks to address those.
+
+The most basic way to connect to <<connecting-gremlin-server,Gremlin Server>> or
+<<connecting-rgp,Remote Gremlin Providers>> uses the following two lines of code:
+
+[source,java]
+----
+Graph graph = EmptyGraph.instance();
+GraphTraversalSource g = graph.traversal().withRemote('conf/remote-graph.properties');
+----
+
+The `remote-graph.properties` file simply provides connection information to the `GraphTraversalSource` which is used
+to configure a `RemoteConnection`. That file looks like this:
+
+[source,text]
+----
+gremlin.remote.remoteConnectionClass=org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection
+gremlin.remote.driver.clusterFile=conf/remote-objects.yaml
+gremlin.remote.driver.sourceName=g
+----
+
+The `RemoteConnection` is an interface that provides the transport mechanism for "g" and makes it possible to for
+that mechanism to be altered (typically by graph providers who have their own protocols). TinkerPop provides one such
+implementation called the `DriverRemoteConnection` which enables transport over Gremlin Server protocols using the
+TinkerPop driver. The driver is configured by the specified `gremlin.remote.driver.clusterFile` and the local "g" is
+bound to the `GraphTraversalSource` on the remote end with `gremlin.remote.driver.sourceName` which in this case is
+also "g".
+
+There are other ways to configure the traversal using `withRemote()` as it has other overloads. It can also take an
+Apache Commons `Configuration` object which would have keys similar to those shown in the properties file and it
+can also take a `RemoteConnection` instance directly. The latter is interesting in that it means it is possible to
+programmatically construct all aspects of the `RemoteConnection`. For TinkerPop usage, that might mean directly
+constructing the `DriverRemoteConnection` and the driver instance that supplies the transport mechanism. For example,
+the command shown above could be re-written using programmatic construction as follows:
+
+[source,java]
+----
+Cluster cluster = Cluster.open();
+Graph graph = EmptyGraph.instance();
+GraphTraversalSource g = graph.traversal().withRemote(DriverRemoteConnection.using(cluster, "g"));
+----
+
+Please consider the following example:
+
+[gremlin-groovy]
+----
+graph = EmptyGraph.instance()
+g = graph.traversal().withRemote('conf/remote-graph.properties')
+g.V().valueMap(true)
+g.close()
+----
+[java]
+----
+Graph graph = EmptyGraph.instance();
+GraphTraversalSource g = graph.traversal().withRemote("conf/remote-graph.properties");
+List<Map> list = g.V().valueMap(true);
+g.close()
+----
+
+Note the call to `close()` above. The call to `withRemote()` internally instantiates a connection via the driver that
+can only be released by "closing" the `GraphTraversalSource`. It is important to take that step to release resources
+created in that step.
+
+If working with multiple remote `TraversalSource` instances it is more efficient to construct a `Cluster` object and
+then re-use it.
+
+[gremlin-groovy]
+----
+cluster = Cluster.open('conf/remote-objects.yaml')
+graph = EmptyGraph.instance()
+g = graph.traversal().withRemote(DriverRemoteConnection.using(cluster, "g"))
+g.V().valueMap(true)
+g.close()
+cluster.close()
+----
+
+If the `Cluster` instance is supplied externally, as is shown above, then it is not closed implicitly by the close of
+"g".  Closing "g" will only close the connection associated with that `TraversalSource`. In this case, the
+`Cluster` must also be closed explicitly. Closing "g" and the "cluster" aren't actually both necessary - the close of
+a `Cluster` will close all connections spawned by the `Cluster`.
+
+IMPORTANT: Bytecode-based traversals use the `TraversalOpProcessor` in Gremlin Server which requires a cache to enable
+the retrieval of side-effects (if the `Traversal` produces any). That cache can be configured (e.g. controlling
+eviction times and sizing) in the Gremlin Server configuration file as described <<traversalopprocessor, here>>.
+
+=== Configuration
+
+The following table describes the various configuration options for the Gremlin Driver:
+
+[width="100%",cols="3,10,^2",options="header"]
+|=========================================================
+|Key |Description |Default
+|connectionPool.channelizer |The fully qualified classname of the client `Channelizer` that defines how to connect to the server. |`Channelizer.WebSocketChannelizer`
+|connectionPool.enableSsl |Determines if SSL should be enabled or not. If enabled on the server then it must be enabled on the client. |false
+|connectionPool.keepAliveInterval |Length of time in milliseconds to wait on an idle connection before sending a keep-alive request. Set to zero to disable this feature. |1800000
+|connectionPool.keyStore |The private key in JKS or PKCS#12 format. |_none_
+|connectionPool.keyStorePassword |The password of the `keyStore` if it is password-protected. |_none_
+|connectionPool.keyStoreType |`JKS` (Java 8 default) or `PKCS12` (Java 9+ default)|_none_
+|connectionPool.maxContentLength |The maximum length in bytes that a message can be sent to the server. This number can be no greater than the setting of the same name in the server configuration. |65536
+|connectionPool.maxInProcessPerConnection |The maximum number of in-flight requests that can occur on a connection. |4
+|connectionPool.maxSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |16
+|connectionPool.maxSize |The maximum size of a connection pool for a host. |8
+|connectionPool.maxWaitForConnection |The amount of time in milliseconds to wait for a new connection before timing out. |3000
+|connectionPool.maxWaitForSessionClose |The amount of time in milliseconds to wait for a session to close before timing out (does not apply to sessionless connections). |3000
+|connectionPool.minInProcessPerConnection |The minimum number of in-flight requests that can occur on a connection. |1
+|connectionPool.minSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |8
+|connectionPool.minSize |The minimum size of a connection pool for a host. |2
+|connectionPool.reconnectInterval |The amount of time in milliseconds to wait before trying to reconnect to a dead host. |1000
+|connectionPool.resultIterationBatchSize |The override value for the size of the result batches to be returned from the server. |64
+|connectionPool.sslCipherSuites |The list of JSSE ciphers to support for SSL connections. If specified, only the ciphers that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
+|connectionPool.sslEnabledProtocols |The list of SSL protocols to support for SSL connections. If specified, only the protocols that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
+|connectionPool.sslSkipCertValidation |Configures the `TrustManager` to trust all certs without any validation. Should not be used in production.|false
+|connectionPool.trustStore |File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and SSL is enabled, the default `TrustManager` will be used. |_none_
+|connectionPool.trustStorePassword |The password of the `trustStore` if it is password-protected |_none_
+|connectionPool.validationRequest |A script that is used to test server connectivity. A good script to use is one that evaluates quickly and returns no data. The default simply returns an empty string, but if a graph is required by a particular provider, a good traversal might be `g.inject()`. |_''_
+|hosts |The list of hosts that the driver will connect to. |localhost
+|jaasEntry |Sets the `AuthProperties.Property.JAAS_ENTRY` properties for authentication to Gremlin Server. |_none_
+|nioPoolSize |Size of the pool for handling request/response operations. |available processors
+|password |The password to submit on requests that require authentication. |_none_
+|port |The port of the Gremlin Server to connect to. The same port will be applied for all hosts. |8192
+|protocol |Sets the `AuthProperties.Property.PROTOCOL` properties for authentication to Gremlin Server. |_none_
+|serializer.className |The fully qualified class name of the `MessageSerializer` that will be used to communicate with the server. Note that the serializer configured on the client should be supported by the server configuration. |_none_
+|serializer.config |A `Map` of configuration settings for the serializer. |_none_
+|username |The username to submit on requests that require authentication. |_none_
+|workerPoolSize |Size of the pool for handling background work. |available processors * 2
+|=========================================================
+
+Please see the link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/driver/Cluster.Builder.html[Cluster.Builder javadoc] to get more information on these settings.
+
+=== Serialization
+
+Serialization applies when using the driver to submit Gremlin to a remote system in some way. TinkerPop has two
+options for serialization built into it for JVM-based languages: Gryo and GraphSON. When using Gryo serialization
+(the default serializer for the Java driver), it is important that the client and server have the same serializers
+configured or else one or the other will experience serialization exceptions and fail to always communicate.
+Discrepancy in serializer registration between client and server can happen fairly easily as graphs will automatically
+include serializers on the server-side, thus leaving the client to be configured manually. This can be done manually
+as follows:
+
+[source,java]
+----
+IoRegistry registry = ...; // an IoRegistry instance exposed by a specific graph provider
+GryoMapper kryo = GryoMapper.build().addRegistry(registry).create();
+MessageSerializer serializer = new GryoMessageSerializerV3d0(kryo);
+Cluster cluster = Cluster.build().
+                          serializer(serializer).
+                          create();
+Graph graph = EmptyGraph.instance();
+GraphTraversalSource g = graph.traversal().withRemote(DriverRemoteConnection.using(cluster, "g"));
+----
+
+The `IoRegistry` tells the serializer what classes from the graph provider to auto-register during serialization.
+Gremlin Server roughly uses this same approach when it configures it's serializers, so using this same model will
+ensure compatibility when making requests. Obviously, it is possible to switch to GraphSON by building a
+`GraphSONMessageSerializerV3d0` in the same way and building that into the `Cluster` object
 
 === The Lambda Solution
 
 Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
-most languages do not support lambda introspection and thus, code analysis. In Gremlin-Java, Java8 lambdas can be leveraged.
+most languages do not support lambda introspection and thus, code analysis. In Gremlin-Java and with
+<<connecting-embedded,embedded>> usage, lambdas can be leveraged directly:
 
 [source,java]
 g.V().out("knows").map(t -> t.get().value("name") + " is the friend name") <1>
 g.V().out("knows").sideEffect(System.out::println) <2>
 g.V().as("a").out("knows").as("b").select("b").by((Function<Vertex, Integer>) v -> v.<String>value("name").length()) <3>
 
-<1> A Java8 function is used to map a `Traverser<S>` to an object `E`.
-<2> Gremlin steps that take consumer arguments can be passed Java8 method references.
+<1> A Java `Function` is used to map a `Traverser<S>` to an object `E`.
+<2> Gremlin steps that take consumer arguments can be passed Java method references.
 <3> Gremlin-Java may sometimes require explicit lambda typing when types can not be automatically inferred.
 
-When sending traversals over the wire via a `RemoteConnection`, the static methods of `Lambda` should be used
-and should denote a particular JSR-223 `ScriptEngine`. `Lambda` creates a string-based lambda that is then converted
-into a lambda/closure/anonymous-function/etc. by the respective lambda language's JSR-223 `ScriptEngine` implementation.
+When sending traversals remotely to <<connecting-gremlin-server,Gremlin Server>> or
+<<connecting-rgp,Remote Gremlin Providers>>, the static methods of `Lambda` should be used and should denote a
+particular JSR-223 `ScriptEngine`. `Lambda` creates a string-based lambda that is then converted into a
+lambda/closure/anonymous-function/etc. by the respective lambda language's JSR-223 `ScriptEngine` implementation.
 
 [source,java]
 g.V().out("knows").map(Lambda.function("it.get().value('name') + ' is the friend name'"))
 g.V().out("knows").sideEffect(Lambda.consumer("println it"))
 g.V().as("a").out("knows").as("b").select("b").by(Lambda.<Vertex,Integer>function("it.value('name').length()"))
+
+Finally, Gremlin `Bytecode` that includes lambdas requires that the traversal be processed by the
+`GremlinScriptEngine`. To avoid continued recompilation costs, it supports the encoding of bindings,
+which allow Gremlin Server to cache traversals that will be reused over and over again save that some
+parameterization may change. Thus, instead of translating, compiling, and then executing each submitted bytecode,
+it is possible to simply execute. To express bindings in Java, use `Bindings`.
+
+[gremlin-groovy]
+----
+cluster = Cluster.open('conf/remote-objects.yaml')
+b = Bindings.instance()
+g = EmptyGraph.instance().traversal().withRemote(DriverRemoteConnection.using(cluster, "g"))
+g.V(b.of('id',1)).out('created').values('name').map{t -> "name: " + t.get() }
+g.V(b.of('id',4)).out('created').values('name').map{t -> "name: " + t.get() }
+g.V(b.of('id',4)).out('created').values('name').getBytecode()
+g.V(b.of('id',4)).out('created').values('name').getBytecode().getBindings()
+cluster.close()
+----
+
+Both traversals are abstractly defined as `g.V(id).out('created').values('name')` and thus, the first submission
+can be cached for faster evaluation on the next submission.
+
+WARNING: It is generally advised to avoid lambda usage. Please consider <<a-note-on-lambdas,A Note On Lambdas>> for
+more information.
+
+=== Submitting Scripts
+
+WARNING: TinkerPop does not recommend submitting script-based requests and generally continues to support this feature
+for legacy reasons and corner use cases which are still not completely addressed by the Gremlin language. Please
+consider using bytecode-based requests instead when possible.
+
+image:gremlin-java.png[width=175,float=left] TinkerPop comes equipped with a reference client for Java-based
+applications.  It is referred to as Gremlin Driver, which enables applications to send requests to Gremlin Server
+and get back results.
+
+Gremlin code is sent to the server from a `Client` instance.  A `Client` is created as follows:
+
+[source,java]
+----
+Cluster cluster = Cluster.open();  <1>
+Client client = cluster.connect(); <2>
+----
+
+<1> Opens a reference to `localhost` - note that there are many configuration options available in defining a `Cluster` object.
+<2> Creates a `Client` given the configuration options of the `Cluster`.
+
+Once a `Client` instance is ready, it is possible to issue some Gremlin:
+
+[source,java]
+----
+ResultSet results = client.submit("[1,2,3,4]");  <1>
+results.stream().map(i -> i.get(Integer.class) * 2);       <2>
+
+CompletableFuture<List<Result>> results = client.submit("[1,2,3,4]").all();  <3>
+
+CompletableFuture<ResultSet> future = client.submitAsync("[1,2,3,4]"); <4>
+
+Map<String,Object> params = new HashMap<>();
+params.put("x",4);
+client.submit("[1,2,3,x]", params); <5>
+----
+
+<1> Submits a script that simply returns a `List` of integers.  This method blocks until the request is written to
+the server and a `ResultSet` is constructed.
+<2> Even though the `ResultSet` is constructed, it does not mean that the server has sent back the results (or even
+evaluated the script potentially).  The `ResultSet` is just a holder that is awaiting the results from the server.
+In this case, they are streamed from the server as they arrive.
+<3> Submit a script, get a `ResultSet`, then return a `CompletableFuture` that will be called when all results have been returned.
+<4> Submit a script asynchronously without waiting for the request to be written to the server.
+<5> Parameterized request are considered the most efficient way to send Gremlin to the server as they can be cached,
+which will boost performance and reduce resources required on the server.
+
+==== Per Request Settings
+
+There are a number of overloads to `Client.submit()` that accept a `RequestOptions` object. The `RequestOptions`
+provide a way to include options that are specific to the request made with the call to `submit()`. A good use-case for
+this feature is to set a per-request override to the `scriptEvaluationTimeout` so that it only applies to the current
+request.
+
+[source,java]
+----
+Cluster cluster = Cluster.open();
+Client client = cluster.connect();
+RequestOptions options = RequestOptions.build().timeout(500).create();
+List<Result> result = client.submit("g.V()", options).all().get();
+----
+
+==== Aliases
+
+Scripts submitted to Gremlin Server automatically have the globally configured `Graph` and `TraversalSource` instances
+made available to them.  Therefore, if Gremlin Server configures two `TraversalSource` instances called "g1" and "g2"
+a script can simply reference them directly as:
+
+[source,java]
+client.submit("g1.V()")
+client.submit("g2.V()")
+
+While this is an acceptable way to submit scripts, it has the downside of forcing the client to encode the server-side
+variable name directly into the script being sent.  If the server configuration ever changed such that "g1" became
+"g100", the client-side code might have to see a significant amount of change.  Decoupling the script code from the
+server configuration can be managed by the `alias` method on `Client` as follows:
+
+[source,java]
+Client g1Client = client.alias("g1")
+Client g2Client = client.alias("g2")
+g1Client.submit("g.V()")
+g2Client.submit("g.V()")
+
+The above code demonstrates how the `alias` method can be used such that the script need only contain a reference
+to "g" and "g1" and "g2" are automatically rebound into "g" on the server-side.
 
 [[gremlin-groovy]]
 == Gremlin-Groovy
@@ -170,6 +519,23 @@ Likewise, if it has lambdas represented in Python, it will use Gremlin-Python (e
 
 IMPORTANT: Gremlin-Python's `Traversal` class supports the standard Gremlin methods such as `next()`, `nextTraverser()`,
 `toSet()`, `toList()`, etc. Such "terminal" methods trigger the evaluation of the traversal.
+
+==== Configuration
+
+The following table describes the various configuration options for the Gremlin-Python Driver. They
+can be passed to the `Client` or `DriverRemoteConnection` instance as keyword arguments:
+
+[width="100%",cols="3,10,^2",options="header"]
+|=========================================================
+|Key |Description |Default
+|protocol_factory |A callable that returns an instance of `AbstractBaseProtocol`. |`gremlin_python.driver.protocol.GremlinServerWSProtocol`
+|transport_factory |A callable that returns an instance of `AbstractBaseTransport`. |`gremlin_python.driver.tornado.transport.TornadoTransport`
+|pool_size |The number of connections used by the pool. |4
+|max_workers |Maximum number of worker threads. |Number of CPUs * 5
+|message_serializer |The message serializer implementation.|`gremlin_python.driver.serializer.GraphSONMessageSerializer`
+|password |The password to submit on requests that require authentication. |""
+|username |The username to submit on requests that require authentication. |""
+|=========================================================
 
 === RemoteConnection Submission
 
@@ -312,6 +678,60 @@ is different from JVM languages which produces different `Set` results when thos
 is detected during deserialization, the `Set` is coerced to a `List` so that traversals return consistent
 results within a collection across different languages. If a `Set` is needed then convert `List` results
 to `Set` manually.
+* Gremlin is capable of returning Dictionary results that use non-hashable keys (e.g. Dictionary as a key) and Python
+does not support that at a language level. Gremlin that returns such results will need to be re-written to avoid that.
+
+=== Submitting Scripts
+
+WARNING: TinkerPop does not recommend submitting script-based requests and generally continues to support this feature
+for legacy reasons and corner use cases which are still not completely addressed by the Gremlin language. Please
+consider using bytecode-based requests instead when possible.
+
+The `Client` class implementation/interface is based on the Java Driver, with some restrictions. Most notably,
+Gremlin-Python does not yet implement the `Cluster` class. Instead, `Client` is instantiated directly.
+Usage is as follows:
+
+[source,python]
+----
+from gremlin_python.driver import client <1>
+client = client.Client('ws://localhost:8182/gremlin', 'g') <2>
+----
+
+<1> Import the Gremlin-Python `client` module.
+<2> Opens a reference to `localhost` - note that there are various configuration options that can be passed
+to the `Client` object upon instantiation as keyword arguments.
+
+Once a `Client` instance is ready, it is possible to issue some Gremlin:
+
+[source,python]
+----
+result_set = client.submit("[1,2,3,4]")  <1>
+future_results = result_set.all()  <2>
+results = future_results.result() <3>
+assert results == [1, 2, 3, 4] <4>
+
+future_result_set = client.submitAsync("[1,2,3,4]") <5>
+result_set = future_result_set.result() <6>
+result = result_set.one() <7>
+assert results == [1, 2, 3, 4] <8>
+assert result_set.done.done() <9>
+
+client.close() <10>
+----
+
+<1> Submit a script that simply returns a `List` of integers.  This method blocks until the request is written to
+the server and a `ResultSet` is constructed.
+<2> Even though the `ResultSet` is constructed, it does not mean that the server has sent back the results (or even
+evaluated the script potentially).  The `ResultSet` is just a holder that is awaiting the results from the server. The `all` method
+returns a `concurrent.futures.Future` that resolves to a list when it is complete.
+<3> Block until the the script is evaluated and results are sent back by the server.
+<4> Verify the result.
+<5> Submit the same script to the server but don't block.
+<6> Wait until request is written to the server and `ResultSet` is constructed.
+<7> Read a single result off the result stream.
+<8> Again, verify the result.
+<9> Verify that the all results have been read and stream is closed.
+<10> Close client and underlying pool connections.
 
 [[gremlin-DotNet]]
 == Gremlin.Net
