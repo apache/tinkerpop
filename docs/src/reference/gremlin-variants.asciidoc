@@ -261,13 +261,13 @@ In order to add and remove <<traversalstrategy,traversal strategies>> from a tra
 ----
 g = g.withStrategies(SubgraphStrategy(vertices=hasLabel('person'),edges=has('weight',gt(0.5))))
 g.V().name.toList()
-g.V().outE().valueMap(True).toList()
+g.V().outE().valueMap().with_(WithOptions.tokens).toList()
 g = g.withoutStrategies(SubgraphStrategy)
 g.V().name.toList()
-g.V().outE().valueMap(True).toList()
+g.V().outE().valueMap().with_(WithOptions.tokens).toList()
 g = g.withComputer(workers=2,vertices=has('name','marko'))
 g.V().name.toList()
-g.V().outE().valueMap(True).toList()
+g.V().outE().valueMap().with_(WithOptions.tokens).toList()
 ----
 
 NOTE: Many of the `TraversalStrategy` classes in Gremlin-Python are proxies to the respective strategy on
@@ -433,14 +433,14 @@ var names = g.V().Values("name").ToList();  // names: [marko, vadas, josh, peter
 g = g.WithoutStrategies(typeof(SubgraphStrategy));
 names = g.V().Values("name").ToList(); // names: [marko, vadas, lop, josh, ripple, peter]
 
-var edgeValueMaps = g.V().OutE().ValueMap(true).ToList();
+var edgeValueMaps = g.V().OutE().ValueMap().With(WithOptions.Tokens).ToList();
 // edgeValueMaps: [[label:created, id:9, weight:0.4], [label:knows, id:7, weight:0.5], [label:knows, id:8, weight:1.0],
 //     [label:created, id:10, weight:1.0], [label:created, id:11, weight:0.4], [label:created, id:12, weight:0.2]]
 
 g = g.WithComputer(workers: 2, vertices: Has("name", "marko"));
 names = g.V().Values("name").ToList();  // names: [marko]
 
-edgeValueMaps = g.V().OutE().ValueMap(true).ToList();
+edgeValueMaps = g.V().OutE().ValueMap().With(WithOptions.Tokens).ToList();
 // edgeValueMaps: [[label:created, id:9, weight:0.4], [label:knows, id:7, weight:0.5], [label:knows, id:8, weight:1.0]]
 ----
 

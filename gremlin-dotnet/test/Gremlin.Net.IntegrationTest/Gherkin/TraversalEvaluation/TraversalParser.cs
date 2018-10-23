@@ -46,6 +46,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 
         private static readonly Regex RegexIO = new Regex(@"IO.\w+", RegexOptions.Compiled);
 
+        private static readonly Regex RegexWithOptions = new Regex(@"WithOptions.\w+", RegexOptions.Compiled);
+
         private static readonly Regex RegexParam = new Regex(@"\w+", RegexOptions.Compiled);
         
         private static readonly HashSet<Type> NumericTypes = new HashSet<Type>
@@ -126,7 +128,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             var compatibleMethods = new Dictionary<int, MethodInfo>();
             foreach (var method in ordered)
             {
-                lastMethod = method;
                 var methodParameters = method.GetParameters();
                 var requiredParameters = methodParameters.Length;
                 if (requiredParameters > 0 && IsParamsArray(methodParameters.Last()))
@@ -138,6 +139,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 {
                     continue;
                 }
+                lastMethod = method;
                 var matched = true;
                 var exactMatches = 0;
                 for (var i = 0; i < tokenParameters.Count; i++)
@@ -451,6 +453,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             {
                 i += parameterText.Length - 1;
                 return new IOParameter(parameterText);
+            }
+            if (RegexWithOptions.IsMatch(parameterText))
+            {
+                i += parameterText.Length - 1;
+                return new WithOptionsParameter(parameterText);
             }
             if (RegexEnum.IsMatch(parameterText))
             {

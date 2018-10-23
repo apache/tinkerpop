@@ -19,18 +19,14 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
-import org.apache.tinkerpop.gremlin.process.traversal.IO;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
 import org.apache.tinkerpop.gremlin.structure.*;
-import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -38,15 +34,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.Operator.sum;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -123,92 +118,33 @@ public class TinkerGraphPlayTest {
     @Test
     @Ignore
     public void testPlayDK() throws Exception {
+        TinkerGraph graph = TinkerFactory.createTheCrew();
+        GraphTraversalSource g = graph.traversal().withStrategies(
+                SubgraphStrategy.build().vertexProperties(hasNot("endTime")).create());
 
-        final Map<String, String> aliases = new HashMap<>();
-        aliases.put("marko","okram");
-        final GraphTraversalSource g = TinkerFactory.createModern().traversal();
-        /*g.withSideEffect("a", aliases).V().hasLabel("person").
-                values("name").as("n").
-                optional(select("a").select(select("n"))).
-                forEachRemaining(System.out::println);*/
+        System.out.println("\n--- valueMap().by(unfold()) ---");
+        g.V().valueMap().forEachRemaining(System.out::println);
 
-        // shortest path lengths (by summed weight)
-        g.withSack(0.0).V().has("person", "name", "marko").
-                repeat(__.bothE().
-                        sack(sum).
-                            by("weight").
-                        otherV().
-                        group("m").
-                            by().
-                            by(sack().min()).as("x").
-                        // where(P.eq("m")).by(sack()).by(select(select("x"))). // could be that easy, but "x" is unknown here
-                        filter(project("s","x").
-                                    by(sack()).
-                                    by(select("m").select(select("x"))).
-                                where("s", P.eq("x"))).
-                        group("p").
-                            by().
-                            by(project("path","length").
-                                    by(path().by("name").by("weight")).
-                                    by(sack()))
-                        ).
-                cap("p").unfold().
-                group().
-                    by(select(Column.keys).values("name")).
-                    by(Column.values).next().entrySet().
-                forEach(System.out::println);
+        System.out.println("\n--- valueMap().by(unfold()) ---");
+        g.V().valueMap().by(unfold()).forEachRemaining(System.out::println);
 
-        System.out.println("---");
+        System.out.println("\n--- valueMap().by(unfold()).with(tokens) ---");
+        g.V().valueMap().by(unfold()).with(tokens).forEachRemaining(System.out::println);
 
-        // longest path lengths (by summed weight)
-        g.withSack(0.0).V().has("person", "name", "marko").
-                repeat(__.bothE().simplePath().
-                        sack(sum).
-                          by("weight").
-                        otherV().
-                        group("m").
-                            by().
-                            by(sack().max()).as("x").
-                        filter(project("s","x").
-                                by(sack()).
-                                by(select("m").select(select("x"))).
-                                where("s", P.eq("x"))).
-                        group("p").
-                                by().
-                                by(project("path","length").
-                                        by(path().by("name").by("weight")).
-                                        by(sack()))
-                        ).
-                cap("p").unfold().
-                group().
-                    by(select(Column.keys).values("name")).
-                    by(Column.values).next().entrySet().
-                forEach(System.out::println);
+        System.out.println("\n--- valueMap().by(unfold()).with(tokens, false) ---");
+        g.V().valueMap().by(unfold()).with(tokens, false).forEachRemaining(System.out::println);
 
-        System.out.println("---");
+        System.out.println("\n--- valueMap().by(unfold()).with(tokens, ids) ---");
+        g.V().valueMap().by(unfold()).with(tokens, ids).forEachRemaining(System.out::println);
 
-        // all shortest paths (by summed weight)
-        g.withSack(0.0).V().as("a").
-                repeat(__.bothE().
-                        sack(sum).
-                            by("weight").
-                        otherV().as("b").
-                        group("m").
-                            by(select("a","b").by("name")).
-                            by(sack().min()).
-                        filter(project("s","x").
-                                by(sack()).
-                                by(select("m").select(select("a", "b").by("name"))).
-                               where("s", P.eq("x"))).
-                        group("p").
-                            by(select("a","b").by("name")).
-                            by(map(union(path().by("name").by("weight"), sack()).fold()))
-                ).
-                cap("p").unfold().
-                order().
-                    by(select(Column.keys).select("a")).
-                    by(select(Column.keys).select("b")).
-                forEachRemaining(System.out::println);
+        System.out.println("\n--- valueMap().by(unfold()).with(tokens, labels) ---");
+        g.V().valueMap().by(unfold()).with(tokens, labels).forEachRemaining(System.out::println);
+
+        System.out.println("\n--- valueMap().by(unfold()).with(tokens, all) ---");
+        g.V().valueMap().by(unfold()).with(tokens, all).forEachRemaining(System.out::println);
+
+        System.out.println("\n--- valueMap().by(unfold()).with(tokens, ids | labels) ---");
+        g.V().valueMap().by(unfold()).with(tokens, ids | labels).forEachRemaining(System.out::println);
     }
 
     @Test

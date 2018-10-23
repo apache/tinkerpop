@@ -1062,7 +1062,7 @@ to allow for syntax as follows:
 [gremlin-groovy]
 ----
 g = traversal().withRemote('conf/remote-graph.properties')
-g.V().valueMap(true)
+g.V().valueMap().with(WithOptions.tokens)
 g.close()
 ----
 
@@ -1077,7 +1077,7 @@ then re-use it.
 ----
 cluster = Cluster.open('conf/remote-objects.yaml')
 g = traversal().withRemote(DriverRemoteConnection.using(cluster, "g"))
-g.V().valueMap(true)
+g.V().valueMap().with(WithOptions.tokens)
 g.close()
 cluster.close()
 ----
@@ -1892,7 +1892,7 @@ may still be consumed after the timeout if interruption does not succeed on the 
 possible existence of multi-properties and meta-properties. When returning data from Gremlin Server only return the
 data that is required. For example, if only two properties of a `Vertex` are needed then simply return the two rather
 than returning the entire `Vertex` object itself. Even with an entire `Vertex`, it is typically much faster to issue
-the query as `g.V(1).valueMap(true)` than `g.V(1)`, as the former returns a `Map` of the same data as a `Vertex`, but
+the query as `g.V(1).valueMap().with(WithOptions.tokens)` than `g.V(1)`, as the former returns a `Map` of the same data as a `Vertex`, but
 without all the associated structure which can slow the response.
 
 [[parameterized-scripts]]
@@ -1978,10 +1978,10 @@ There is no difference if re-written using the best practice of requesting only 
 ----
 Cluster cluster = Cluster.open();
 Client client = cluster.connect();
-ResultSet results = client.submit("g.V().hasLabel('person').valueMap(true,'name')");
+ResultSet results = client.submit("g.V().hasLabel('person').valueMap('name').with(WithOptions.tokens)");
 
 GraphTraversalSource g = traversal().withRemote('conf/remote-graph.properties');
-List<Vertex> results = g.V().hasLabel("person").valueMap(true,'name').toList();
+List<Vertex> results = g.V().hasLabel("person").valueMap('name').with(WithOptions.tokens).toList();
 ----
 
 Both of the above requests return a list of `Map` instances that contain the `id`, `label` and the "name" property.

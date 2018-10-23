@@ -49,6 +49,22 @@ Feature: Step - valueMap()
       | m[{"t[id]": "v[lop].id", "t[label]": "software", "name": ["lop"], "lang": ["java"]}] |
       | m[{"t[id]": "v[ripple].id", "t[label]": "software", "name": ["ripple"], "lang": ["java"]}] |
 
+  Scenario: g_V_valueMap_withXtokensX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().valueMap().with(WithOptions.tokens)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[id]": "v[marko].id", "t[label]": "person", "name": ["marko"], "age": [29]}] |
+      | m[{"t[id]": "v[josh].id", "t[label]": "person", "name": ["josh"], "age": [32]}] |
+      | m[{"t[id]": "v[peter].id", "t[label]": "person", "name": ["peter"], "age": [35]}] |
+      | m[{"t[id]": "v[vadas].id", "t[label]": "person", "name": ["vadas"], "age": [27]}] |
+      | m[{"t[id]": "v[lop].id", "t[label]": "software", "name": ["lop"], "lang": ["java"]}] |
+      | m[{"t[id]": "v[ripple].id", "t[label]": "software", "name": ["ripple"], "lang": ["java"]}] |
+
   Scenario: g_V_valueMapXname_ageX
     Given the modern graph
     And the traversal of
@@ -81,6 +97,38 @@ Feature: Step - valueMap()
       | m[{"t[id]": "v[lop].id", "t[label]": "software", "name": ["lop"]}] |
       | m[{"t[id]": "v[ripple].id", "t[label]": "software", "name": ["ripple"]}] |
 
+  Scenario: g_V_valueMapXname_ageX_withXtokensX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().valueMap("name", "age").with(WithOptions.tokens)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[id]": "v[marko].id", "t[label]": "person", "name": ["marko"], "age": [29]}] |
+      | m[{"t[id]": "v[josh].id", "t[label]": "person", "name": ["josh"], "age": [32]}] |
+      | m[{"t[id]": "v[peter].id", "t[label]": "person", "name": ["peter"], "age": [35]}] |
+      | m[{"t[id]": "v[vadas].id", "t[label]": "person", "name": ["vadas"], "age": [27]}] |
+      | m[{"t[id]": "v[lop].id", "t[label]": "software", "name": ["lop"]}] |
+      | m[{"t[id]": "v[ripple].id", "t[label]": "software", "name": ["ripple"]}] |
+
+  Scenario: g_V_valueMapXname_ageX_withXtokens_labelsX_byXunfoldX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().valueMap("name", "age").with(WithOptions.tokens, WithOptions.labels).by(__.unfold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[label]": "person", "name": "marko", "age": 29}] |
+      | m[{"t[label]": "person", "name": "josh", "age": 32}] |
+      | m[{"t[label]": "person", "name": "peter", "age": 35}] |
+      | m[{"t[label]": "person", "name": "vadas", "age": 27}] |
+      | m[{"t[label]": "software", "name": "lop"}] |
+      | m[{"t[label]": "software", "name": "ripple"}] |
+
   Scenario: g_VX1X_outXcreatedX_valueMap
     Given the modern graph
     And using the parameter v1Id defined as "v[marko].id"
@@ -105,3 +153,29 @@ Feature: Step - valueMap()
       | m[{"name": ["marko"], "age": [29], "t[label]":"person", "t[id]":"v[marko].id"}] |
       | m[{"name": ["josh"], "age": [32], "t[label]":"person", "t[id]":"v[josh].id"}] |
       | m[{"name": ["peter"], "age": [35], "t[label]":"person", "t[id]":"v[peter].id"}] |
+
+  Scenario: g_V_hasLabelXpersonX_filterXoutEXcreatedXX_valueMap_withXtokensX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").filter(__.outE("created")).valueMap().with(WithOptions.tokens)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"name": ["marko"], "age": [29], "t[label]":"person", "t[id]":"v[marko].id"}] |
+      | m[{"name": ["josh"], "age": [32], "t[label]":"person", "t[id]":"v[josh].id"}] |
+      | m[{"name": ["peter"], "age": [35], "t[label]":"person", "t[id]":"v[peter].id"}] |
+
+  Scenario: g_VX1X_valueMapXname_locationX_byXunfoldX_by
+    Given the crew graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(v1Id).valueMap("name", "location").by(__.unfold()).by()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"name": "marko", "location": ["san diego", "santa cruz", "brussels", "santa fe"]}] |
+

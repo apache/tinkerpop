@@ -2495,7 +2495,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         try {
             g.V().repeat(__.out()).emit().program(vp).dedup()
-                    .valueMap("name", "pl").forEachRemaining((Map<String, Object> map) -> {
+                    .valueMap("name", "pl").forEachRemaining((Map<Object, Object> map) -> {
 
                 final String name = (String) ((List) map.get("name")).get(0);
                 final List<Integer> pathLengths = (List<Integer>) map.get("pl");

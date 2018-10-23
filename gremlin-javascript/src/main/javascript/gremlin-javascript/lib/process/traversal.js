@@ -389,6 +389,16 @@ class TraversalSideEffects {
 
 }
 
+const withOptions = {
+  tokens: "~tinkerpop.valueMap.tokens",
+  none: 0,
+  ids: 1,
+  labels: 2,
+  keys: 4,
+  values: 8,
+  all: 15
+};
+
 function toEnum(typeName, keys) {
   const result = {};
   keys.split(' ').forEach(k => {
@@ -416,6 +426,7 @@ module.exports = {
   EnumValue,
   P,
   TextP,
+  withOptions,
   IO,
   Traversal,
   TraversalSideEffects,
