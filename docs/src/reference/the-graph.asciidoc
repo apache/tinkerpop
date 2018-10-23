@@ -21,9 +21,9 @@ image::gremlin-standing.png[width=125]
 
 The <<intro,Introduction>> discussed the diversity of TinkerPop-enabled graphs, with special attention paid to the
 different <<connecting-gremlin,connection models>>, and how TinkerPop makes it possible to bridge that diversity in
-an <<staying-agnostic,agnostic> manner. This particular section deals with elements of the Graph API which was noted
+an <<staying-agnostic,agnostic>> manner. This particular section deals with elements of the Graph API which was noted
 as an API to avoid when trying to build an agnostic system. The Graph API refers to the core elements of what composes
-the <<graph-computing,structure of a graph>> within the Gremlin Virtual Machine (GVM), such as the `Graph`, `Vertex`
+the <<graph-computing,structure of a graph>> within the Gremlin Traversal Machine (GTM), such as the `Graph`, `Vertex`
 and `Edge` Java interfaces.
 
 To maintain the most portable code, users should only reference these interfaces. To "reference", simply means to
@@ -44,7 +44,7 @@ instance. Note that while the end intent of the code is to create a "person" ver
 Even if the developer desired to use the `graph.addVertex()` method there are only a handful of scenarios where it is
 possible:
 
-* The application is being developed on the JVM and the developer is using <<connecting-embedded, Embedded>> mode
+* The application is being developed on the JVM and the developer is using <<connecting-embedded, embedded>> mode
 * The architecture includes Gremlin Server and the user is sending Gremlin scripts to the server
 * The graph system chosen is a <<connecting-rgp, Remote Gremlin Provider>> and they expose the Graph API via scripts
 

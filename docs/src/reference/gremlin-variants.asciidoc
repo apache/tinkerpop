@@ -25,14 +25,14 @@ Gremlin in their applications. Two of those methods <<connecting-gremlin-server,
 <<connecting-rgp,Remote Gremlin Providers>> placed the Traversal Machine on a remote system separate from the client.
 It is in these cases that developers must select a driver to utilize Gremlin.
 
-TinkerPop provides and array of drivers in different programming languages as a way to connect to a remote Gremlin
+TinkerPop provides an array of drivers in different programming languages as a way to connect to a remote Gremlin
 Server or Remote Gremlin Provider. Drivers allow the developer to make requests to that remote system and get back
 results from the TinkerPop-enabled graphs hosted within. A driver can submit Gremlin strings and Gremlin bytecode
 over this subprotocol. Gremlin strings are written in the scripting language made available by the remote system that
 the driver is connecting to (typically, Groovy-based). This connection approach is quite similar to what developers
 are likely familiar with when using JDBC and SQL. While it is familiar, it is not recommended and for TinkerPop it is
-considered an out-dated concept and is largely still present to support applications that might still be using that
-method of interaction.
+considered an out-dated concept and is largely still present for the purpose of supporting applications that might
+still be using that method of interaction.
 
 The preferred approach is to use bytecode based requests, which essentially allows the ability to craft Gremlin
 directly in the programming language of choice. As Gremlin makes use of two fundamental programming constructs:
@@ -152,7 +152,7 @@ TinkerPop driver. The driver is configured by the specified `gremlin.remote.driv
 bound to the `GraphTraversalSource` on the remote end with `gremlin.remote.driver.sourceName` which in this case is
 also "g".
 
-There are other ways to configure the traversal using `withRemote()` as it has other overloads. It can also take an
+There are other ways to configure the traversal using `withRemote()` as it has other overloads. It can take an
 Apache Commons `Configuration` object which would have keys similar to those shown in the properties file and it
 can also take a `RemoteConnection` instance directly. The latter is interesting in that it means it is possible to
 programmatically construct all aspects of the `RemoteConnection`. For TinkerPop usage, that might mean directly
@@ -175,7 +175,7 @@ g = graph.traversal().withRemote('conf/remote-graph.properties')
 g.V().valueMap(true)
 g.close()
 ----
-[java]
+[source,java]
 ----
 Graph graph = EmptyGraph.instance();
 GraphTraversalSource g = graph.traversal().withRemote("conf/remote-graph.properties");
@@ -297,8 +297,9 @@ g.V().as("a").out("knows").as("b").select("b").by((Function<Vertex, Integer>) v 
 
 When sending traversals remotely to <<connecting-gremlin-server,Gremlin Server>> or
 <<connecting-rgp,Remote Gremlin Providers>>, the static methods of `Lambda` should be used and should denote a
-particular JSR-223 `ScriptEngine`. `Lambda` creates a string-based lambda that is then converted into a
-lambda/closure/anonymous-function/etc. by the respective lambda language's JSR-223 `ScriptEngine` implementation.
+particular JSR-223 `ScriptEngine` that is available on the remote end (typically, this is Groovy). `Lambda` creates a
+string-based lambda that is  then converted into a lambda/closure/anonymous-function/etc. by the respective lambda
+language's JSR-223 `ScriptEngine` implementation.
 
 [source,java]
 g.V().out("knows").map(Lambda.function("it.get().value('name') + ' is the friend name'"))
@@ -306,10 +307,10 @@ g.V().out("knows").sideEffect(Lambda.consumer("println it"))
 g.V().as("a").out("knows").as("b").select("b").by(Lambda.<Vertex,Integer>function("it.value('name').length()"))
 
 Finally, Gremlin `Bytecode` that includes lambdas requires that the traversal be processed by the
-`GremlinScriptEngine`. To avoid continued recompilation costs, it supports the encoding of bindings,
-which allow Gremlin Server to cache traversals that will be reused over and over again save that some
-parameterization may change. Thus, instead of translating, compiling, and then executing each submitted bytecode,
-it is possible to simply execute. To express bindings in Java, use `Bindings`.
+`ScriptEngine`. To avoid continued recompilation costs, it supports the encoding of bindings, which allow Gremlin
+Server to cache traversals that will be reused over and over again save that some parameterization may change. Thus,
+instead of translating, compiling, and then executing each submitted bytecode, it is possible to simply execute.
+To express bindings in Java, use `Bindings`.
 
 [source,java]
 ----
@@ -321,8 +322,8 @@ g.V(b.of('id',4)).out('created').values('name').getBytecode().getBindings()
 cluster.close()
 ----
 
-Both traversals are abstractly defined as `g.V(id).out('created').values('name')` and thus, the first submission
-can be cached for faster evaluation on the next submission.
+Both traversals are abstractly defined as `g.V(id).out('created').values('name').map{t -> "name: " + t.get() }` and
+thus, the first submission can be cached for faster evaluation on the next submission.
 
 WARNING: It is generally advised to avoid lambda usage. Please consider <<a-note-on-lambdas,A Note On Lambdas>> for
 more information.

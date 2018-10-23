@@ -22,7 +22,7 @@ users when working with graphs.  There are two key applications:
 
 . Gremlin Console - A link:http://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop[REPL] environment for
 interactive development and analysis
-. Gremlin Server - A server that hosts a Gremlin Virtual Machine thus enabling remote Gremlin execution
+. Gremlin Server - A server that hosts a Gremlin Traversal Machine thus enabling remote Gremlin execution
 
 image:gremlin-lab-coat.png[width=310,float=left] Gremlin is designed to be extensible, making it possible for users
 and graph system/language providers to customize it to their needs.  Such extensibility is also found in the Gremlin
@@ -426,7 +426,7 @@ or more `Graph` instances hosted within it.  The benefits of using Gremlin Serve
 * Allows any Gremlin Structure-enabled graph to exist as a standalone server, which in turn enables the ability for
 multiple clients to communicate with the same graph database.
 * Enables execution of ad-hoc queries through remotely submitted Gremlin.
-* Provides a method for non-JVM languages which may not have a Gremlin Virtual Machine (e.g. Python, Javascript, etc.)
+* Provides a method for non-JVM languages which may not have a Gremlin Traversal Machine (e.g. Python, Javascript, etc.)
 to communicate with the TinkerPop stack on the JVM.
 * Exposes numerous methods for extension and customization to include serialization options, remote commands, etc.
 
