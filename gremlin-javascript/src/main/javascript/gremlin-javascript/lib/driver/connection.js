@@ -26,6 +26,7 @@ const WebSocket = require('ws');
 const util = require('util');
 const utils = require('../utils');
 const serializer = require('../structure/io/graph-serializer');
+const ResultSet = require('./result-set');
 
 const responseStatusCode = {
   success: 200,
@@ -192,7 +193,7 @@ class Connection {
     switch (response.status.code) {
       case responseStatusCode.noContent:
         this._clearHandler(response.requestId);
-        return handler.callback(null, { traversers: []});
+        return handler.callback(null, new ResultSet(utils.emptyArray));
       case responseStatusCode.partialContent:
         handler.result = handler.result || [];
         handler.result.push.apply(handler.result, response.result.data);
@@ -205,7 +206,7 @@ class Connection {
           handler.result = response.result.data;
         }
         this._clearHandler(response.requestId);
-        return handler.callback(null, { traversers: handler.result });
+        return handler.callback(null, new ResultSet(handler.result));
     }
   }
 

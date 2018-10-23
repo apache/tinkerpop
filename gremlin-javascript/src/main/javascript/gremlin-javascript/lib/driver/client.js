@@ -61,7 +61,7 @@ class Client {
    * @returns {Promise}
    */
   submit(message, bindings) {
-    if (typeof message === 'string' || message instanceof String) {
+    if (typeof message === 'string') {
       const args = {
         'gremlin': message,
         'bindings': bindings, 

@@ -22,7 +22,9 @@
  */
 'use strict';
 
-const RemoteConnection = require('./remote-connection').RemoteConnection;
+const rcModule = require('./remote-connection');
+const RemoteConnection = rcModule.RemoteConnection;
+const RemoteTraversal = rcModule.RemoteTraversal;
 const Client = require('./client');
 
 /**
@@ -58,7 +60,7 @@ class DriverRemoteConnection extends RemoteConnection {
 
   /** @override */
   submit(bytecode) {
-    return this._client.submit(bytecode);
+    return this._client.submit(bytecode).then(result => new RemoteTraversal(result.toArray()));
   }
 
   /** @override */

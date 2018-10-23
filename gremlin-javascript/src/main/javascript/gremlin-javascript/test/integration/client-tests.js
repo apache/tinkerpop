@@ -38,35 +38,32 @@ describe('Client', function () {
   describe('#submit()', function () {
     it('should send bytecode', function () {
       return client.submit(new Bytecode().addStep('V', []).addStep('tail', []))
-        .then(function (response) {
-          assert.ok(response);
-          assert.ok(response.traversers);
-          assert.strictEqual(response.traversers.length, 1);
-          assert.ok(response.traversers[0].object instanceof graphModule.Vertex);
+        .then(function (result) {
+          assert.ok(result);
+          assert.strictEqual(result.length, 1);
+          assert.ok(result.first().object instanceof graphModule.Vertex);
         });
     });
     it('should send and parse a script', function () {
       return client.submit('g.V().tail()')
-        .then(function (response) {
-          assert.ok(response);
-          assert.ok(response.traversers);
-          assert.strictEqual(response.traversers.length, 1);
-          assert.ok(response.traversers[0] instanceof graphModule.Vertex);
+        .then(function (result) {
+          assert.ok(result);
+          assert.strictEqual(result.length, 1);
+          assert.ok(result.first() instanceof graphModule.Vertex);
         });
     });
     it('should send and parse a script with bindings', function () {
       return client.submit('x + x', { x: 3 })
-        .then(function (response) {
-          assert.ok(response);
-          assert.ok(response.traversers);
-          assert.strictEqual(response.traversers[0], 6);
+        .then(function (result) {
+          assert.ok(result);
+          assert.strictEqual(result.first(), 6);
         });
     });
     it('should send and parse a script with non-native javascript bindings', function () {
       return client.submit('card.class.simpleName + ":" + card', { card: t.cardinality.set } )
-        .then(function (response) {
-          assert.ok(response);
-          assert.strictEqual(response.traversers[0], 'Cardinality:set');
+        .then(function (result) {
+          assert.ok(result);
+          assert.strictEqual(result.first(), 'Cardinality:set');
         });
     });
   });

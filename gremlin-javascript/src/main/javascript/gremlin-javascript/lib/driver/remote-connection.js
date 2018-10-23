@@ -61,6 +61,9 @@ class RemoteConnection {
   }
 }
 
+/**
+ * Represents a traversal as a result of a {@link RemoteConnection} submission.
+ */
 class RemoteTraversal extends t.Traversal {
   constructor(traversers, sideEffects) {
     super(null, null, null);
