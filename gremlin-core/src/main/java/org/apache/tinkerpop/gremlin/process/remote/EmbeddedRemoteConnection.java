@@ -40,8 +40,7 @@ import java.util.Iterator;
  * GraphTraversalSource g = graph.traversal();
  *
  * // setup the remote as normal but give it the embedded "g" so that it executes against that
- * final Graph remote = EmptyGraph.instance();
- * GraphTraversalSource simulatedRemoteG = remote.traversal().withRemote(new EmbeddedRemoteConnection(g));
+ * GraphTraversalSource simulatedRemoteG = TraversalSourceFactory.traversal(new EmbeddedRemoteConnection(g));
  * assertEquals(6, simulatedRemoteG.V().count().next().intValue());
  * }
  * </pre>

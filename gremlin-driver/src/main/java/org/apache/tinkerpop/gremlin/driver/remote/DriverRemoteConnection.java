@@ -102,6 +102,24 @@ public class DriverRemoteConnection implements RemoteConnection {
     }
 
     /**
+     * Creates a {@link DriverRemoteConnection} using a new {@link Cluster} instance created from the supplied
+     * configuration file. When {@link #close()} is called, this new {@link Cluster} is also closed. By default,
+     * this method will bind the {@link RemoteConnection} to a graph on the server named "graph".
+     */
+    public static DriverRemoteConnection using(final String host, final int port) {
+        return using(Cluster.build(host).port(port).create(), DEFAULT_TRAVERSAL_SOURCE);
+    }
+
+    /**
+     * Creates a {@link DriverRemoteConnection} using a new {@link Cluster} instance created from the supplied
+     * configuration file. When {@link #close()} is called, this new {@link Cluster} is also closed. By default,
+     * this method will bind the {@link RemoteConnection} to the specified graph traversal source name.
+     */
+    public static DriverRemoteConnection using(final String host, final int port, final String remoteTraversalSourceName) {
+        return using(Cluster.build(host).port(port).create(), remoteTraversalSourceName);
+    }
+
+    /**
      * Creates a {@link DriverRemoteConnection} from an existing {@link Cluster} instance. When {@link #close()} is
      * called, the {@link Cluster} is left open for the caller to close. By default, this method will bind the
      * {@link RemoteConnection} to a graph on the server named "graph".

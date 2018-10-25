@@ -1001,12 +1001,13 @@ WebSocket configuration, which supports streaming, if that type of use case is r
 </dependency>
 ----
 
-image:remote-graph.png[width=145,float=left] A `TraversalSource` has several `withRemote()` methods which provide an
-interesting alternative to the other methods for connecting to Gremlin Server. It is interesting in that all other
-methods involve construction of a `String` representation of the `Traversal` which is then submitted as a script
-to Gremlin Server (via driver or HTTP). This approach is quite akin to SQL, where query strings are embedded into code
-and submitted to a database server. While there are patterns for taking this approach that can lead to maintainable
-application code, using `withRemote()` could be a better method as it brings some good benefits with it:
+image:remote-graph.png[width=145,float=left] A `TraversalSource` can be configured for "remote" execution which
+provides an interesting alternative to the other methods for connecting to Gremlin Server. It is interesting in that
+all other methods involve construction of a `String` representation of the `Traversal` which is then submitted as a
+script to Gremlin Server (via driver or HTTP). This approach is quite akin to SQL, where query strings are embedded
+into code and submitted to a database server. While there are patterns for taking this approach that can lead to
+maintainable application code, using a "remote" traversal could be a better method as it brings some good benefits
+with it:
 
 * Get auto-complete when writing traversals in an IDE.
 * Get compile-time errors in traversal writing.
@@ -1030,31 +1031,29 @@ connecting to Gremlin Server. Please see the <<connecting-via-java, "Connecting 
 information on those classes and their usage. Finally, the `gremlin.remote.driver.sourceName` setting tells the
 `DriverRemoteConnection` the name of the `TraversalSource` in Gremlin Server to connect to.
 
-IMPORTANT: Gremlin Server supports configurable serialization options. The `withRemote()` feature works best with
-Gryo serialization. While it is compatible with GraphSON, unknown incompatibilities may arise
-
 Gremlin Server needs to be running for this example to work. Use the following configuration:
 
 [source,bourne]
 $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 
-To configure a "remote" traversal, there first needs to be a `TraversalSource`. A `TraversalSource` can be generated
-from any `Graph` instance with the `traversal()` method. Of course, any traversals generated from this source using the
-`withRemote()` configuration option will not execute against the local graph. That could be confusing and it may be
-easier to think of the local graph as being "empty". To that end, it is recommended that when using `withRemote()`,
-the `TraversalSource` be generated with `EmptyGraph` as follows:
+There are several ways to configure a "remote" traversal, but the most direct way is to use the helper methods on
+`AnonymousTraversalSource`. These methods can be statically imported:
+
+[source,java]
+import static org.apache.tinkerpop.gremlin.process.traversal.TraversalSourceFactory.traversal;
+
+to allow for syntax as follows:
 
 [gremlin-groovy]
 ----
-graph = EmptyGraph.instance()
-g = graph.traversal().withRemote('conf/remote-graph.properties')
+g = traversal().withRemote('conf/remote-graph.properties')
 g.V().valueMap(true)
 g.close()
 ----
 
-Note the call to `close()` above. The call to `withRemote()` internally instantiates a `Client` instance that can only
-be released by "closing" the `GraphTraversalSource`. It is important to take that step to release resources created
-in that step.
+Note the call to `close()` above. The construction of "g" using the properties file internally instantiates a
+`Client` instance that can only be released by "closing" the `GraphTraversalSource`. It is important to take that
+step to release resources created in that step.
 
 If working with multiple remote `TraversalSource` instances it is more efficient to construct a `Cluster` object and
 then re-use it.
@@ -1062,8 +1061,7 @@ then re-use it.
 [gremlin-groovy]
 ----
 cluster = Cluster.open('conf/remote-objects.yaml')
-graph = EmptyGraph.instance()
-g = graph.traversal().withRemote(DriverRemoteConnection.using(cluster, "g"))
+g = traversal().withRemote(DriverRemoteConnection.using(cluster, "g"))
 g.V().valueMap(true)
 g.close()
 cluster.close()
@@ -1087,7 +1085,7 @@ Gremlin-Groovy, use `Bindings`.
 ----
 cluster = Cluster.open('conf/remote-objects.yaml')
 b = Bindings.instance()
-g = EmptyGraph.instance().traversal().withRemote(DriverRemoteConnection.using(cluster, "g"))
+g = traversal().withRemote(DriverRemoteConnection.using(cluster, "g"))
 g.V(b.of('id',1)).out('created').values('name')
 g.V(b.of('id',4)).out('created').values('name')
 g.V(b.of('id',4)).out('created').values('name').getBytecode()
@@ -1955,9 +1953,7 @@ ResultSet results = client.submit("g.V().hasLabel('person')");
 
 // no properties returned from g.V().hasLabel("person") because this is using
 // Bytecode API with reference detachment
-Graph graph = EmptyGraph.instance();
-GraphTraversalSource g = graph.traversal().
-                               withRemote('conf/remote-graph.properties');
+GraphTraversalSource g = traversal().withRemote('conf/remote-graph.properties');
 List<Vertex> results = g.V().hasLabel("person").toList();
 ----
 
@@ -1969,9 +1965,7 @@ Cluster cluster = Cluster.open();
 Client client = cluster.connect();
 ResultSet results = client.submit("g.V().hasLabel('person').valueMap(true,'name')");
 
-Graph graph = EmptyGraph.instance();
-GraphTraversalSource g = graph.traversal().
-                               withRemote('conf/remote-graph.properties');
+GraphTraversalSource g = traversal().withRemote('conf/remote-graph.properties');
 List<Vertex> results = g.V().hasLabel("person").valueMap(true,'name').toList();
 ----
 

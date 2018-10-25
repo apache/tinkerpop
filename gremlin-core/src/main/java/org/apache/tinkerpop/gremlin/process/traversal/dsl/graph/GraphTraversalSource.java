@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -271,24 +272,36 @@ public class GraphTraversalSource implements TraversalSource {
 
     /**
      * {@inheritDoc}
+     *
+     * @deprecated As of release 3.3.5, replaced by {@link AnonymousTraversalSource#withRemote(Configuration)}.
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2078">TINKERPOP-2078</a>
      */
     @Override
+    @Deprecated
     public GraphTraversalSource withRemote(final Configuration conf) {
         return (GraphTraversalSource) TraversalSource.super.withRemote(conf);
     }
 
     /**
      * {@inheritDoc}
+     *
+     * @deprecated As of release 3.3.5, replaced by {@link AnonymousTraversalSource#withRemote(String)}.
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2078">TINKERPOP-2078</a>
      */
     @Override
+    @Deprecated
     public GraphTraversalSource withRemote(final String configFile) throws Exception {
         return (GraphTraversalSource) TraversalSource.super.withRemote(configFile);
     }
 
     /**
      * {@inheritDoc}
+     *
+     * @deprecated As of release 3.3.5, replaced by {@link AnonymousTraversalSource#withRemote(RemoteConnection)}.
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2078">TINKERPOP-2078</a>
      */
     @Override
+    @Deprecated
     public GraphTraversalSource withRemote(final RemoteConnection connection) {
         // check if someone called withRemote() more than once, so just release resources on the initial
         // connection as you can't have more than one. maybe better to toss IllegalStateException??

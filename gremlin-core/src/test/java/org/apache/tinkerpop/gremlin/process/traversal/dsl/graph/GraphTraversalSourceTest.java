@@ -25,9 +25,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.Read
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.HashMap;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -41,7 +41,7 @@ public class GraphTraversalSourceTest {
     @Test
     public void shouldCloseRemoteConnectionOnWithRemote() throws Exception {
         final RemoteConnection mock = mock(RemoteConnection.class);
-        final GraphTraversalSource g = EmptyGraph.instance().traversal().withRemote(mock);
+        final GraphTraversalSource g = traversal().withRemote(mock);
         g.close();
 
         verify(mock, times(1)).close();
@@ -51,7 +51,7 @@ public class GraphTraversalSourceTest {
     public void shouldNotAllowLeakRemoteConnectionsIfMultipleAreCreated() throws Exception {
         final RemoteConnection mock1 = mock(RemoteConnection.class);
         final RemoteConnection mock2 = mock(RemoteConnection.class);
-        EmptyGraph.instance().traversal().withRemote(mock1).withRemote(mock2);
+        traversal().withRemote(mock1).withRemote(mock2);
     }
 
     @Test

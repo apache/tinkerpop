@@ -344,7 +344,11 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
      * Expects key for {@link #GREMLIN_REMOTE_CONNECTION_CLASS} as well as any configuration required by
      * the underlying {@link RemoteConnection} which will be instantiated. Note that the {@code Configuration} object
      * is passed down without change to the creation of the {@link RemoteConnection} instance.
+     *
+     * @deprecated As of release 3.3.5, replaced by {@link AnonymousTraversalSource#withRemote(Configuration)}.
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2078">TINKERPOP-2078</a>
      */
+    @Deprecated
     public default TraversalSource withRemote(final Configuration conf) {
         if (!conf.containsKey(GREMLIN_REMOTE_CONNECTION_CLASS))
             throw new IllegalArgumentException("Configuration must contain the '" + GREMLIN_REMOTE_CONNECTION_CLASS + "' key");
@@ -364,7 +368,11 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     /**
      * Configures the {@code TraversalSource} as a "remote" to issue the {@link Traversal} for execution elsewhere.
      * Calls {@link #withRemote(Configuration)} after reading the properties file specified.
+     *
+     * @deprecated As of release 3.3.5, replaced by {@link AnonymousTraversalSource#withRemote(String)}.
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2078">TINKERPOP-2078</a>
      */
+    @Deprecated
     public default TraversalSource withRemote(final String configFile) throws Exception {
         return withRemote(new PropertiesConfiguration(configFile));
     }
@@ -375,7 +383,10 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
      * {@link RemoteConnection#close()} on them when the {@code TraversalSource} itself is closed.
      *
      * @param connection the {@link RemoteConnection} instance to use to submit the {@link Traversal}.
+     * @deprecated As of release 3.3.5, replaced by {@link AnonymousTraversalSource#withRemote(RemoteConnection)}.
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2078">TINKERPOP-2078</a>
      */
+    @Deprecated
     public TraversalSource withRemote(final RemoteConnection connection);
 
     public default Optional<Class> getAnonymousTraversalClass() {

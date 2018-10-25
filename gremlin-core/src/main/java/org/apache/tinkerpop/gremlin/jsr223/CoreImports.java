@@ -62,6 +62,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -239,6 +240,7 @@ public final class CoreImports {
         CLASS_IMPORTS.add(ReadOnlyStrategy.class);
         CLASS_IMPORTS.add(StandardVerificationStrategy.class);
         // graph traversal
+        CLASS_IMPORTS.add(AnonymousTraversalSource.class);
         CLASS_IMPORTS.add(__.class);
         CLASS_IMPORTS.add(GraphTraversal.class);
         CLASS_IMPORTS.add(GraphTraversalSource.class);
@@ -279,6 +281,7 @@ public final class CoreImports {
 
         uniqueMethods(IoCore.class).forEach(METHOD_IMPORTS::add);
         uniqueMethods(P.class).forEach(METHOD_IMPORTS::add);
+        uniqueMethods(AnonymousTraversalSource.class).forEach(METHOD_IMPORTS::add);
         uniqueMethods(__.class).filter(m -> !m.getName().equals("__")).forEach(METHOD_IMPORTS::add);
         uniqueMethods(Computer.class).forEach(METHOD_IMPORTS::add);
         uniqueMethods(TimeUtil.class).forEach(METHOD_IMPORTS::add);

@@ -27,6 +27,31 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.3.5/CHANGELOG.asciidoc#release-3-3-5[changelog] for a complete list of all the modifications that are part of this release.
 
+=== Upgrading for Users
+
+==== AnonymousTraversalSource
+
+The `AnonymousTraversalSource` provides for a more unified syntax for `TraversalSource` construction by placing greater
+user emphasis on the creation of the source rather than the `Graph` it is connected to. It has a number of different
+static `traversal()` methods available and when imported as:
+
+[source,java]
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+
+allows `TraversalSource` construction syntax such as:
+
+[source,text]
+----
+gremlin> g = traversal().withGraph(TinkerFactory.createModern())
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+gremlin> g = traversal().withRemote('conf/remote-graph.properties')
+==>graphtraversalsource[emptygraph[empty], standard]
+gremlin> g = traversal().withRemote(DriverRemoteConnection.using('localhost',8182))
+==>graphtraversalsource[emptygraph[empty], standard]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2078[TINKERPOP-2078]
+
 == TinkerPop 3.3.4
 
 *Release Date: October 15, 2018*
