@@ -21,6 +21,7 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 from gremlin_python.process.graph_traversal import GraphTraversalSource
 from gremlin_python.process.traversal import TraversalStrategies
+from .. import statics
 
 
 class Graph(object):
@@ -127,3 +128,17 @@ class Path(object):
 
     def __len__(self):
         return len(self.objects)
+
+
+'''
+ANONYMOUS TRAVERSAL SOURCE
+'''
+
+
+def traversal(traversal_source_class=None):
+    if not traversal_source_class:
+        traversal_source_class = GraphTraversalSource
+    return traversal_source_class(Graph(), TraversalStrategies.global_cache[Graph])
+
+
+statics.add_static('traversal', traversal)

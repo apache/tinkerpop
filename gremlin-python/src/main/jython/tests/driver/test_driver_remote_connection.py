@@ -28,7 +28,7 @@ from gremlin_python.process.traversal import Traverser
 from gremlin_python.process.traversal import TraversalStrategy
 from gremlin_python.process.traversal import P
 from gremlin_python.process.graph_traversal import __
-from gremlin_python.structure.graph import Graph
+from gremlin_python.structure.graph import traversal
 from gremlin_python.structure.graph import Vertex
 from gremlin_python.process.strategies import SubgraphStrategy
 
@@ -39,7 +39,7 @@ class TestDriverRemoteConnection(object):
     def test_traversals(self, remote_connection):
         statics.load_statics(globals())
         assert "remoteconnection[ws://localhost:45940/gremlin,gmodern]" == str(remote_connection)
-        g = Graph().traversal().withRemote(remote_connection)
+        g = traversal().withRemote(remote_connection)
 
         assert long(6) == g.V().count().toList()[0]
         # #
@@ -86,7 +86,7 @@ class TestDriverRemoteConnection(object):
     def test_iteration(self, remote_connection):
         statics.load_statics(globals())
         assert "remoteconnection[ws://localhost:45940/gremlin,gmodern]" == str(remote_connection)
-        g = Graph().traversal().withRemote(remote_connection)
+        g = traversal().withRemote(remote_connection)
 
         t = g.V().count()
         assert t.hasNext()
@@ -124,7 +124,7 @@ class TestDriverRemoteConnection(object):
     def test_strategies(self, remote_connection):
         statics.load_statics(globals())
         #
-        g = Graph().traversal().withRemote(remote_connection). \
+        g = traversal().withRemote(remote_connection). \
             withStrategies(TraversalStrategy("SubgraphStrategy",
                                              {"vertices": __.hasLabel("person"),
                                               "edges": __.hasLabel("created")}))
@@ -134,14 +134,14 @@ class TestDriverRemoteConnection(object):
         assert 4 == g.V().filter(lambda: ("lambda x: True", "gremlin-python")).count().next()
         assert "person" == g.V().label().dedup().next()
         #
-        g = Graph().traversal().withRemote(remote_connection). \
+        g = traversal().withRemote(remote_connection). \
             withStrategies(SubgraphStrategy(vertices=__.hasLabel("person"), edges=__.hasLabel("created")))
         assert 4 == g.V().count().next()
         assert 0 == g.E().count().next()
         assert 1 == g.V().label().dedup().count().next()
         assert "person" == g.V().label().dedup().next()
         #
-        g = Graph().traversal().withRemote(remote_connection). \
+        g = traversal().withRemote(remote_connection). \
             withStrategies(SubgraphStrategy(edges=__.hasLabel("created")))
         assert 6 == g.V().count().next()
         assert 4 == g.E().count().next()
@@ -155,14 +155,14 @@ class TestDriverRemoteConnection(object):
         assert "person" == g.V().label().next()
         assert "marko" == g.V().name.next()
         #
-        g = Graph().traversal().withRemote(remote_connection).withComputer()
+        g = traversal().withRemote(remote_connection).withComputer()
         assert 6 == g.V().count().next()
         assert 6 == g.E().count().next()
 
     def test_side_effects(self, remote_connection):
         statics.load_statics(globals())
         #
-        g = Graph().traversal().withRemote(remote_connection)
+        g = traversal().withRemote(remote_connection)
         ###
         t = g.V().hasLabel("project").name.iterate()
         assert 0 == len(t.side_effects.keys())
@@ -224,7 +224,7 @@ class TestDriverRemoteConnection(object):
         g.V().has("name", "marko").outE("knows").where(__.inV().has("name", "peter")).drop().iterate()
 
     def test_side_effect_close(self, remote_connection):
-        g = Graph().traversal().withRemote(remote_connection)
+        g = traversal().withRemote(remote_connection)
         t = g.V().aggregate('a').aggregate('b')
         t.toList()
 
@@ -256,7 +256,7 @@ class TestDriverRemoteConnection(object):
             t.side_effects.value_lambda('b')
 
     def test_promise(self, remote_connection):
-        g = Graph().traversal().withRemote(remote_connection)
+        g = traversal().withRemote(remote_connection)
         future = g.V().aggregate('a').promise()
         t = future.result()
         assert len(t.toList()) == 6
@@ -274,7 +274,7 @@ def test_in_tornado_app(remote_connection):
     def go():
         conn = DriverRemoteConnection(
             'ws://localhost:45940/gremlin', 'gmodern', pool_size=4)
-        g = Graph().traversal().withRemote(conn)
+        g = traversal().withRemote(conn)
         yield gen.sleep(0)
         assert len(g.V().toList()) == 6
         conn.close()

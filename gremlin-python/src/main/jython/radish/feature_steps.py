@@ -19,7 +19,8 @@ under the License.
 
 import json
 import re
-from gremlin_python.structure.graph import Graph, Path
+from gremlin_python.structure.graph import Path
+from gremlin_python.structure.graph import traversal
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.traversal import Barrier, Cardinality, P, Pop, Scope, Column, Order, Direction, T, Pick, Operator
 from radish import given, when, then
@@ -49,7 +50,7 @@ ignores = []
 @given("the {graph_name:w} graph")
 def choose_graph(step, graph_name):
     step.context.graph_name = graph_name
-    step.context.g = Graph().traversal().withRemote(step.context.remote_conn[graph_name])
+    step.context.g = traversal().withRemote(step.context.remote_conn[graph_name])
 
 
 @given("the graph initializer of")
@@ -266,14 +267,14 @@ def _make_traversal(g, traversal_string, params):
 
 
 def __create_lookup_v(remote):
-    g = Graph().traversal().withRemote(remote)
+    g = traversal().withRemote(remote)
 
     # hold a map of name/vertex for use in asserting results
     return g.V().group().by('name').by(tail()).next()
 
 
 def __create_lookup_e(remote):
-    g = Graph().traversal().withRemote(remote)
+    g = traversal().withRemote(remote)
 
     # hold a map of the "name"/edge for use in asserting results - "name" in this context is in the form of
     # outgoingV-label->incomingV
