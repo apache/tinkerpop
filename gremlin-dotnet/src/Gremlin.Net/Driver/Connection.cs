@@ -100,7 +100,10 @@ namespace Gremlin.Net.Driver
                 }
                 else if (status.Code != ResponseStatusCode.NoContent)
                 {
-                    var receivedData = _graphSONReader.ToObject(receivedMsg.Result.Data);
+                    var receivedData = typeof(T) == typeof(JToken)
+                        ? new[] { receivedMsg.Result.Data }
+                        : _graphSONReader.ToObject(receivedMsg.Result.Data);
+
                     foreach (var d in receivedData)
                         if (receivedMsg.Result.Meta.ContainsKey(Tokens.ArgsSideEffectKey))
                         {

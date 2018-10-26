@@ -29,6 +29,7 @@ using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.IntegrationTest.Util;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Gremlin.Net.IntegrationTest.Driver
@@ -65,6 +66,34 @@ namespace Gremlin.Net.IntegrationTest.Driver
                 var response = await gremlinClient.SubmitWithSingleResultAsync<string>(requestMsg);
 
                 Assert.Equal(responseMsgSize, response.Length);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldReturnResultWithoutDeserializingItForJTokenType()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using (var gremlinClient = new GremlinClient(gremlinServer))
+            {
+                var gremlinScript = "'someString'";
+                
+                var response = await gremlinClient.SubmitWithSingleResultAsync<JToken>(gremlinScript);
+
+                //Expected:
+                /* {
+                  "@type": "g:List",
+                  "@value": [
+                    "someString"
+                  ]
+                }*/
+
+                Assert.IsType<JObject>(response);
+                Assert.Equal("g:List", response["@type"]);
+
+                var jArray = response["@value"] as JArray;
+                Assert.NotNull(jArray);
+                Assert.Equal(1, jArray.Count);
+                Assert.Equal("someString", (jArray[0] as JValue)?.Value);
             }
         }
 
