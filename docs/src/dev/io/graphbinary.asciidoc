@@ -89,7 +89,7 @@ of the protocol, the value expected is `0x81` (`10000001`).
 - `{status_message}` is a `String`.
 - `{status_attributes}` is a `Map`.
 - `{result_meta}` is a `Map`.
-- `{result_data}` is a fully qualified typed value composed of `{type_code}{value}`.
+- `{result_data}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
 
 The total length is not part of the message as the transport layer will provide it.
 
@@ -238,7 +238,7 @@ Format: `{length}{item_0}...{item_n}`
 Where:
 
 - `{length}` is an unsigned 4-byte two's complement integer describing the length of the list.
-- `{item_0}...{item_n}` are the items of the list. `{item_i}` is a fully qualified typed value composed of `{type_code}{value}`.
+- `{item_0}...{item_n}` are the items of the list. `{item_i}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
 
 ==== Set
 
@@ -255,7 +255,7 @@ Format: `{length}{item_0}...{item_n}`
 Where:
 
 - `{length}` is an unsigned 4-byte two's complement integer describing the length of the map.
-- `{item_0}...{item_n}` are the items of the map. `{item_i}` is sequence of 2 fully qualified typed values one representing the key and the following representing the value, each composed composed of `{type_code}{value}`.
+- `{item_0}...{item_n}` are the items of the map. `{item_i}` is sequence of 2 fully qualified typed values one representing the key and the following representing the value, each composed composed of `{type_code}{type_info}{value_flag}{value}`.
 
 ==== UUID
 
@@ -273,12 +273,12 @@ Format: `{id}{label}{inVLabel}{outVLabel}{inV}{outV}{properties}`
 
 Where:
 
-- `{id}` is a fully qualified typed value composed of `{type_code}{value}`.
+- `{id}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
 - `{label}` is a `String` value.
 - `{inVLabel}` is a `String` value.
 - `{outVLabel}` is a `String` value.
-- `{inV}` is a fully qualified typed value composed of `{type_code}{value}`.
-- `{outV}` is a fully qualified typed value composed of `{type_code}{value}`.
+- `{inV}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{outV}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
 - `{properties}` is a `List` of `VertexProperty` items.
 
 ==== Path
@@ -297,7 +297,7 @@ Format: `{key}{value}`
 Where:
 
 - `{key}` is a `String` value.
-- `{value}`  is a fully qualified typed value composed of `{type_code}{value}`.
+- `{value}`  is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
 
 ==== TinkerGraph
 
@@ -316,7 +316,7 @@ Format: `{id}{label}{properties}`
 
 Where:
 
-- `{id}` is a fully qualified typed value composed of `{type_code}{value}`.
+- `{id}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
 - `{label}` is a `String` value.
 - `{properties}` is a `List` of `VertexProperty` items.
 
@@ -326,9 +326,9 @@ Format: `{id}{label}{value}`
 
 Where:
 
-- `{id}` is a fully qualified typed value composed of `{type_code}{value}`.
+- `{id}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
 - `{label}` is a `String` value.
-- `{value}` is a fully qualified typed value composed of `{type_code}{value}`.
+- `{value}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
 
 ==== Barrier
 
@@ -341,7 +341,7 @@ Format: `{key}{value}`
 Where:
 
 - `{key}` is a `String` value.
-- `{value}` is a fully qualified typed value composed of `{type_code}{value}`.
+- `{value}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
 
 ==== Bytecode
 
@@ -353,12 +353,12 @@ Where:
 * `{step_i}` is composed of `{name}{values_length}{value_0}...{value_n}`, where:
 ** `{name}` is a String.
 ** `{values_length}` is an `Int` describing the amount values.
-** `{value_i}` is a fully qualified typed value composed of `{type_code}{value}` describing the step argument.
+** `{value_i}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` describing the step argument.
 * `{sources_length}` is an `Int` value describing the amount of source instructions.
 * `{source_i}` is composed of `{name}{values_length}{value_0}...{value_n}`, where:
 ** `{name}` is a `String`.
 ** `{values_length}` is an `Int` describing the amount values.
-** `{value_i}`  is a fully qualified typed value composed of `{type_code}{value}`.
+** `{value_i}`  is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
 
 ==== Cardinality
 
@@ -405,7 +405,7 @@ Where:
 
 - `{name}` is a String.
 - `{values_length}` is an `Int` describing the amount values.
-- `{value_i}` is a fully qualified typed value composed of `{type_code}{value}`.
+- `{value_i}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
 
 ==== Scope
 
@@ -422,7 +422,7 @@ Format: `{bulk}{value}`
 Where:
 
 - `{name}` is an `Int`.
-- `{value}` is a fully qualified typed value composed of `{type_code}{value}`.
+- `{value}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
 
 ==== BigDecimal
 
