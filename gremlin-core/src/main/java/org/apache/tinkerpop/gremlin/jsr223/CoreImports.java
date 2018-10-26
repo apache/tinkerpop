@@ -69,6 +69,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -251,6 +252,7 @@ public final class CoreImports {
         CLASS_IMPORTS.add(__.class);
         CLASS_IMPORTS.add(GraphTraversal.class);
         CLASS_IMPORTS.add(GraphTraversalSource.class);
+        CLASS_IMPORTS.add(Traversal.class);
         CLASS_IMPORTS.add(TraversalMetrics.class);
         CLASS_IMPORTS.add(Translator.class);
         CLASS_IMPORTS.add(Bindings.class);
