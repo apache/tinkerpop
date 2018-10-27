@@ -26,8 +26,8 @@ const defineSupportCode = require('cucumber').defineSupportCode;
 const helper = require('../helper');
 const graphModule = require('../../lib/structure/graph');
 const graphTraversalModule = require('../../lib/process/graph-traversal');
-const Graph = graphModule.Graph;
 const __ = graphTraversalModule.statics;
+const traversal = graphModule.traversal;
 
 defineSupportCode(function (methods) {
   const cache = {};
@@ -51,7 +51,7 @@ defineSupportCode(function (methods) {
 
   TinkerPopWorld.prototype.cleanEmptyGraph = function () {
     const connection = this.cache['empty'].connection;
-    const g = new Graph().traversal().withRemote(connection);
+    const g = traversal().withRemote(connection);
     return g.V().drop().toList();
   };
 
@@ -99,12 +99,12 @@ defineSupportCode(function (methods) {
 });
 
 function getVertices(connection) {
-  const g = new Graph().traversal().withRemote(connection);
+  const g = traversal().withRemote(connection);
   return g.V().group().by('name').by(__.tail()).next().then(it => it.value);
 }
 
 function getEdges(connection) {
-  const g = new Graph().traversal().withRemote(connection);
+  const g = traversal().withRemote(connection);
   return g.E().group()
     .by(__.project("o", "l", "i").by(__.outV().values("name")).by(__.label()).by(__.inV().values("name")))
     .by(__.tail())
