@@ -539,12 +539,13 @@ as "objects":
 m = result[0].object <4>
 m.sort {it.value}
 script = """
-         g.addV('person',).property('name','matthias').as('matthias').
-           V().has('person','name','marko').as('marko').
-           addE('co-creator').from('matthias').to('marko')
+         g.V().hasLabel('person').
+           out('knows').
+           out('created').
+           group().
+             by('name')
          """
 :> @script   <5>
-:> g.V().has('name','matthias').out('co-creator').values('name')
 :remote close
 ----
 
