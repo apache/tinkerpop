@@ -307,9 +307,10 @@ g.V().out().map(lambda: "x: len(x.get().value('name'))").sum().toList()         
 
 === Limitations
 
-* Traversals that return a `Set` will be coerced to a `List` in Python so that traversals return consistent results
-within a collection across different languages. In the case of Python, number equality is different from JVM languages
-which produces different `Set` results when those types are in use. If a `Set` is needed then convert `List` results
+* Traversals that return a `Set` *might* be coerced to a `List` in Python. In the case of Python, number equality 
+is different from JVM languages which produces different `Set` results when those types are in use. When this case
+is detected during deserialization, the `Set` is coerced to a `List` so that traversals return consistent
+results within a collection across different languages. If a `Set` is needed then convert `List` results
 to `Set` manually.
 
 [[gremlin-DotNet]]
