@@ -22,6 +22,7 @@ import time
 import uuid
 import math
 from collections import OrderedDict
+import logging
 
 import six
 from aenum import Enum
@@ -30,6 +31,8 @@ from gremlin_python import statics
 from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, DictType, ListType, SetType
 from gremlin_python.process.traversal import Binding, Bytecode, P, TextP, Traversal, Traverser, TraversalStrategy, T
 from gremlin_python.structure.graph import Edge, Property, Vertex, VertexProperty, Path
+
+log = logging.getLogger(__name__)
 
 # When we fall back to a superclass's serializer, we iterate over this map.
 # We want that iteration order to be consistent, so we use an OrderedDict,
@@ -440,11 +443,20 @@ class SetIO(_GraphSONTypeIO):
 
     @classmethod
     def objectify(cls, s, reader):
-        # coerce to list here because Java might return numerics of different types which python won't recognize
-        # see comments of TINKERPOP-1844 for more details
-        new_set = []
-        for obj in s:
-            new_set.append(reader.toObject(obj))
+        """
+        By default, returns a python set
+
+        In case Java returns numeric values of different types which
+        python don't recognize, coerce and return a list.
+        See comments of TINKERPOP-1844 for more details
+        """
+        new_list = [reader.toObject(obj) for obj in s]
+        new_set = set(new_list)
+        if len(new_list) != len(new_set):
+            log.warning("Coercing g:Set to list due to java numeric values. "
+                        "See TINKERPOP-1844 for more details.")
+            return new_list
+
         return new_set
 
 
