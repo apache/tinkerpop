@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-2-11, 3.2.11>>.
 
+* Fixed `PersistedOutputRDD` to eager persist RDD by adding `count()` action calls.
 
 [[release-3-3-4]]
 === TinkerPop 3.3.4 (Release Date: October 15, 2018)
