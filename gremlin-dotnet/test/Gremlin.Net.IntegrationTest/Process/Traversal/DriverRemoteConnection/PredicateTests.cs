@@ -22,8 +22,9 @@
 #endregion
 
 using Gremlin.Net.Process.Traversal;
-using Gremlin.Net.Structure;
 using Xunit;
+
+using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
 
 namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 {
@@ -34,9 +35,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         [Fact]
         public void ShouldUsePredicatesCombinedWithPAndInHasStep()
         {
-            var graph = new Graph();
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = graph.Traversal().WithRemote(connection);
+            var g = Traversal_().WithRemote(connection);
 
             var count = g.V().Has("age", P.Gt(30).And(P.Lt(35))).Count().Next();
 
@@ -46,9 +46,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         [Fact]
         public void ShouldUsePWithinInHasStep()
         {
-            var graph = new Graph();
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = graph.Traversal().WithRemote(connection);
+            var g = Traversal_().WithRemote(connection);
 
             var count = g.V().Has("name", P.Within("josh", "vadas")).Count().Next();
 

@@ -23,8 +23,9 @@
 
 using System.Collections.Generic;
 using Gremlin.Net.Process.Traversal;
-using Gremlin.Net.Structure;
 using Xunit;
+
+using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
 
 namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 {
@@ -35,9 +36,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         [Fact]
         public void ShouldUseOrderDecrInByStep()
         {
-            var graph = new Graph();
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = graph.Traversal().WithRemote(connection);
+            var g = Traversal_().WithRemote(connection);
 
             var orderedAges = g.V().Values<int>("age").Order().By(Order.Desc).ToList();
 
@@ -47,9 +47,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         [Fact]
         public void ShouldUseTLabelInHasStep()
         {
-            var graph = new Graph();
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = graph.Traversal().WithRemote(connection);
+            var g = Traversal_().WithRemote(connection);
 
             var personsCount = g.V().Has(T.Label, "person").Count().Next();
 

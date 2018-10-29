@@ -21,8 +21,9 @@
 
 #endregion
 
-using Gremlin.Net.Structure;
 using Xunit;
+
+using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
 
 namespace Gremlin.Net.UnitTest.Process.Traversal
 {
@@ -31,8 +32,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void ShouldBeIndependentFromReturnedGraphTraversalModififyingBytecode()
         {
-            var graph = new Graph();
-            var g = graph.Traversal();
+            var g = Traversal_();
 
             g.V().Has("someKey", "someValue").Drop();
 
@@ -43,8 +43,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void ShouldBeIndependentFromReturnedGraphTraversalSourceModififyingBytecode()
         {
-            var graph = new Graph();
-            var g1 = graph.Traversal();
+            var g1 = Traversal_();
 
             var g2 = g1.WithSideEffect("someSideEffectKey", "someSideEffectValue");
 
@@ -56,8 +55,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void ShouldBeIndependentFromReturnedGraphTraversalSourceModififyingTraversalStrategies()
         {
-            var graph = new Graph();
-            var gLocal = graph.Traversal();
+            var gLocal = Traversal_();
 
             var gRemote = gLocal.WithRemote(null);
 

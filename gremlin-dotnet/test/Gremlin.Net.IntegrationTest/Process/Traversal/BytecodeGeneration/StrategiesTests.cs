@@ -27,8 +27,9 @@ using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 using Gremlin.Net.Process.Traversal.Strategy.Finalization;
 using Gremlin.Net.Process.Traversal.Strategy.Optimization;
 using Gremlin.Net.Process.Traversal.Strategy.Verification;
-using Gremlin.Net.Structure;
 using Xunit;
+
+using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
 
 namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
 {
@@ -37,8 +38,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void TraversalWithoutStrategies_AfterWithStrategiesWasCalled_WithStrategiesNotAffected()
         {
-            var graph = new Graph();
-            var g = graph.Traversal().WithStrategies(new ReadOnlyStrategy(), new IncidentToAdjacentStrategy());
+            var g = Traversal_().WithStrategies(new ReadOnlyStrategy(), new IncidentToAdjacentStrategy());
 
             var bytecode = g.WithoutStrategies(typeof(ReadOnlyStrategy)).Bytecode;
 
@@ -56,8 +56,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void ShouldIncludeMultipleStrategiesInBytecodeWhenGivenToWithoutStrategies()
         {
-            var graph = new Graph();
-            var g = graph.Traversal();
+            var g = Traversal_();
 
             var bytecode = g.WithoutStrategies(typeof(ReadOnlyStrategy), typeof(LazyBarrierStrategy)).Bytecode;
 
@@ -71,8 +70,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void ShouldIncludeOneStrategyInBytecodeWhenGivenToWithoutStrategies()
         {
-            var graph = new Graph();
-            var g = graph.Traversal();
+            var g = Traversal_();
 
             var bytecode = g.WithoutStrategies(typeof(ReadOnlyStrategy)).Bytecode;
 
@@ -85,8 +83,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void ShouldIncludeConfigurationInBytecodeWhenGivenToWithStrategies()
         {
-            var graph = new Graph();
-            var g = graph.Traversal();
+            var g = Traversal_();
 
             var bytecode = g.WithStrategies(new MatchAlgorithmStrategy("greedy")).Bytecode;
 
@@ -101,8 +98,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void ShouldIncludeMultipleStrategiesInBytecodeWhenGivenToWithStrategies()
         {
-            var graph = new Graph();
-            var g = graph.Traversal();
+            var g = Traversal_();
 
             var bytecode = g.WithStrategies(new ReadOnlyStrategy(), new IncidentToAdjacentStrategy()).Bytecode;
 
@@ -116,8 +112,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void ShouldIncludeOneStrategyInBytecodeWhenGivenToWithStrategies()
         {
-            var graph = new Graph();
-            var g = graph.Traversal();
+            var g = Traversal_();
 
             var bytecode = g.WithStrategies(new ReadOnlyStrategy()).Bytecode;
 
@@ -133,8 +128,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void TraversalWithStrategies_Strategies_ApplyToReusedGraphTraversalSource()
         {
-            var graph = new Graph();
-            var g = graph.Traversal().WithStrategies(new ReadOnlyStrategy(), new IncidentToAdjacentStrategy());
+            var g = Traversal_().WithStrategies(new ReadOnlyStrategy(), new IncidentToAdjacentStrategy());
 
             var bytecode = g.V().Bytecode;
 
@@ -150,8 +144,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void TraversalWithStrategies_StrategyWithTraversalInConfig_IncludeTraversalInInConfigInBytecode()
         {
-            var graph = new Graph();
-            var g = graph.Traversal();
+            var g = Traversal_();
 
             var bytecode = g.WithStrategies(new SubgraphStrategy(__.Has("name", "marko"))).Bytecode;
 

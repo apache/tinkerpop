@@ -26,7 +26,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using Gherkin.Ast;
 using Gremlin.Net.IntegrationTest.Gherkin.Attributes;
@@ -35,6 +34,8 @@ using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
 using Newtonsoft.Json.Linq;
 using Xunit;
+
+using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin
 {
@@ -83,7 +84,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             }
             var data = ScenarioData.GetByGraphName(graphName);
             _graphName = graphName;
-            _g = new Graph().Traversal().WithRemote(data.Connection);
+            _g = Traversal_().WithRemote(data.Connection);
         }
 
         [Given("using the parameter (\\w+) defined as \"(.*)\"")]
