@@ -55,9 +55,13 @@ public final class PersistedOutputRDD implements OutputRDD, PersistResultGraphAw
             graphRDD.mapValues(vertex -> {
                 vertex.get().dropEdges(Direction.BOTH);
                 return vertex;
-            }).setName(Constants.getGraphLocation(configuration.getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION))).persist(storageLevel);
+            }).setName(Constants.getGraphLocation(configuration.getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION))).persist(storageLevel)
+                    // call action to eager store rdd
+                    .count();
         else
-            graphRDD.setName(Constants.getGraphLocation(configuration.getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION))).persist(storageLevel);
+            graphRDD.setName(Constants.getGraphLocation(configuration.getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION))).persist(storageLevel)
+                    // call action to eager store rdd
+                    .count();
         Spark.refresh(); // necessary to do really fast so the Spark GC doesn't clear out the RDD
     }
 
@@ -69,7 +73,9 @@ public final class PersistedOutputRDD implements OutputRDD, PersistResultGraphAw
             throw new IllegalArgumentException("There is no provided " + Constants.GREMLIN_HADOOP_OUTPUT_LOCATION + " to write the persisted RDD to");
         final String memoryRDDName = Constants.getMemoryLocation(configuration.getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), memoryKey);
         Spark.removeRDD(memoryRDDName);
-        memoryRDD.setName(memoryRDDName).persist(StorageLevel.fromString(configuration.getString(Constants.GREMLIN_SPARK_PERSIST_STORAGE_LEVEL, "MEMORY_ONLY")));
+        memoryRDD.setName(memoryRDDName).persist(StorageLevel.fromString(configuration.getString(Constants.GREMLIN_SPARK_PERSIST_STORAGE_LEVEL, "MEMORY_ONLY")))
+                // call action to eager store rdd
+                .count();
         Spark.refresh(); // necessary to do really fast so the Spark GC doesn't clear out the RDD
         return IteratorUtils.map(memoryRDD.collect().iterator(), tuple -> new KeyValue<>(tuple._1(), tuple._2()));
     }
