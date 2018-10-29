@@ -20,6 +20,11 @@ limitations under the License.
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
 
+[[release-3-2-11]]
+=== TinkerPop 3.2.11 (Release Date: NOT OFFICIALLY RELEASED YET)
+
+
+
 [[release-3-2-10]]
 === TinkerPop 3.2.10 (Release Date: October 15, 2018)
 
