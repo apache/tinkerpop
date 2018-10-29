@@ -25,7 +25,7 @@ limitations under the License.
     <artifactId>gremlin-core</artifactId>
     <name>Apache TinkerPop :: Gremlin Core</name>
     <properties>
-        <revapi.skip>false</revapi.skip>
+        <revapi.skip>true</revapi.skip>
     </properties>
     <dependencies>
         <dependency>
