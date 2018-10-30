@@ -2562,10 +2562,6 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
                 return (VertexProgramQ) VertexProgram.createVertexProgram(graph, configuration);
             }
 
-            public VertexProgramQ create() {
-                return create(null);
-            }
-
             public Builder property(final String name) {
                 configuration.setProperty(PROPERTY_CFG_KEY, name);
                 return this;
@@ -2863,10 +2859,6 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
                     ConfigurationUtils.append(graph.configuration().subset(SIMPLE_VERTEX_PROGRAM_CFG_PREFIX), configuration);
                 }
                 return (VertexProgramR) VertexProgram.createVertexProgram(graph, configuration);
-            }
-
-            public VertexProgramR create() {
-                return create(null);
             }
 
             public Builder direction(final Direction direction) {
