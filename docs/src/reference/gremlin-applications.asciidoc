@@ -1040,7 +1040,7 @@ There are several ways to configure a "remote" traversal, but the most direct wa
 `AnonymousTraversalSource`. These methods can be statically imported:
 
 [source,java]
-import static org.apache.tinkerpop.gremlin.process.traversal.TraversalSourceFactory.traversal;
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 
 to allow for syntax as follows:
 

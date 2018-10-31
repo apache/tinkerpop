@@ -335,12 +335,20 @@ When Gremlin Server is running, Gremlin.Net can communicate with Gremlin Server 
 
 IMPORTANT: Gremlin.Net is not compatible with GraphSON 1.0.
 
-A traversal source can be spawned with `RemoteStrategy` from an empty `Graph`.
+A traversal source can be spawned anonymously using an `AnonymousTraversalSource` which can be statically imported as
+follows:
 
 [source,csharp]
 ----
-var graph = new Graph();
-var g = graph.Traversal().WithRemote(new DriverRemoteConnection(new GremlinClient(new GremlinServer("localhost", 8182))));
+using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
+----
+
+which will expose a static `traversal()` method which can be used as follows to yield a `GraphTraversalSource` assigned
+to "g" and configured to connect to Gremlin Server at "localhost:8182":
+
+[source,csharp]
+----
+var g = Traversal().WithRemote(new DriverRemoteConnection(new GremlinClient(new GremlinServer("localhost", 8182))));
 ----
 
 When a traversal from the `GraphTraversalSource` is iterated, the traversal’s `Bytecode` is sent over the wire via the registered
@@ -474,7 +482,7 @@ in Gremlin-Java. The `GraphTraversalSource` requires a RemoteConnection implemen
 [source,javascript]
 ----
 const gremlin = require('gremlin');
-const Graph = gremlin.structure.Graph;
+const traversal = gremlin.structure.Graph.traversal;
 const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
 ----
 
@@ -482,8 +490,7 @@ A traversal source can be spawned with `RemoteStrategy` from an empty `Graph`.
 
 [source,javascript]
 ----
-const graph = new Graph();
-const g = graph.traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
+const g = traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
 ----
 
 Gremlin-JavaScript supports plain text SASL authentication, you can set it on the connection options.
@@ -491,7 +498,7 @@ Gremlin-JavaScript supports plain text SASL authentication, you can set it on th
 [source,javascript]
 ----
 const authenticator = new gremlin.driver.auth.PlainTextSaslAuthenticator('myuser', 'mypassword');
-const g = graph.traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin', { authenticator });
+const g = traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin', { authenticator });
 ----
 
 When a traversal from the `GraphTraversalSource` is iterated, the traversal’s `Bytecode` is sent over the wire via

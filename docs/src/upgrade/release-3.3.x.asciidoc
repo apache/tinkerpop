@@ -50,6 +50,10 @@ gremlin> g = traversal().withRemote(DriverRemoteConnection.using('localhost',818
 ==>graphtraversalsource[emptygraph[empty], standard]
 ----
 
+Typically, this syntax is used for "remote" traversal construction for bytecode based requests, but has the option to
+bind a local `Graph` instance to it as well. It doesn't save much typing to do so obviously, so it may not be best
+used in that situation. Python, Javascript and .NET have similar syntax.
+
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2078[TINKERPOP-2078]
 
 == TinkerPop 3.3.4
