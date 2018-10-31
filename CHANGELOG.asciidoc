@@ -27,6 +27,7 @@ This release also includes changes from <<release-3-2-11, 3.2.11>>.
 
 * Fixed `PersistedOutputRDD` to eager persist RDD by adding `count()` action calls.
 * gremlin-python: the graphson deserializer for g:Set should return a python set
+* Display the remote stack trace in the Gremlin Console when scripts sent to the server fail.
 
 [[release-3-3-4]]
 === TinkerPop 3.3.4 (Release Date: October 15, 2018)
