@@ -41,7 +41,7 @@ namespace Gremlin.Net.Template.IntegrationTest
         {
             using (var client = CreateClient())
             {
-                var g = Traversal_().WithRemote(new DriverRemoteConnection(client, TestTraversalSource));
+                var g = Traversal().WithRemote(new DriverRemoteConnection(client, TestTraversalSource));
                 var service = new Service(g);
             
                 var creators = service.FindCreatorsOfSoftware("lop");

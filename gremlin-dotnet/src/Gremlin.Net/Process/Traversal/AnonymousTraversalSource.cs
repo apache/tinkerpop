@@ -39,7 +39,7 @@ namespace Gremlin.Net.Process.Traversal
         ///     Generates a reusable <see cref="GraphTraversalSource" /> instance.
         /// </summary>
         /// <returns>A graph traversal source.</returns>
-        public static GraphTraversalSource Traversal_()
+        public static GraphTraversalSource Traversal()
         {
             return new GraphTraversalSource();
         }

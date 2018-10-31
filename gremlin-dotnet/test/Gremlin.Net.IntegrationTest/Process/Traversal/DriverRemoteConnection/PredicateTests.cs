@@ -24,8 +24,6 @@
 using Gremlin.Net.Process.Traversal;
 using Xunit;
 
-using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
-
 namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 {
     public class PredicateTests
@@ -36,7 +34,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void ShouldUsePredicatesCombinedWithPAndInHasStep()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = Traversal_().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
 
             var count = g.V().Has("age", P.Gt(30).And(P.Lt(35))).Count().Next();
 
@@ -47,7 +45,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void ShouldUsePWithinInHasStep()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = Traversal_().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
 
             var count = g.V().Has("name", P.Within("josh", "vadas")).Count().Next();
 

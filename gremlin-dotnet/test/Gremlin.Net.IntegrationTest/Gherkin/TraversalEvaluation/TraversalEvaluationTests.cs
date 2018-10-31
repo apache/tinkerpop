@@ -103,7 +103,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 Tuple.Create("g.V().as(\"a\").out().as(\"a\").out().as(\"a\").select(\"a\").by(__.unfold().values(\"name\").fold()).tail(Scope.local, 2)", 9),
                 Tuple.Create("g.V().coin(1.0)", 2)
             };
-            var g = Traversal_();
+            var g = Traversal();
             foreach (var tuple in traversalTexts)
             {
                 var traversal = TraversalParser.GetTraversal(tuple.Item1, g, null);

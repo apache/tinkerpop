@@ -25,8 +25,6 @@ using System.Collections.Generic;
 using Gremlin.Net.Process.Traversal;
 using Xunit;
 
-using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
-
 namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 {
     public class EnumTests
@@ -37,7 +35,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void ShouldUseOrderDecrInByStep()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = Traversal_().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
 
             var orderedAges = g.V().Values<int>("age").Order().By(Order.Desc).ToList();
 
@@ -48,7 +46,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void ShouldUseTLabelInHasStep()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = Traversal_().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
 
             var personsCount = g.V().Has(T.Label, "person").Count().Next();
 

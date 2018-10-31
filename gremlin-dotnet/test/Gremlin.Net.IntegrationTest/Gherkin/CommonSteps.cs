@@ -84,7 +84,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             }
             var data = ScenarioData.GetByGraphName(graphName);
             _graphName = graphName;
-            _g = Traversal_().WithRemote(data.Connection);
+            _g = Traversal().WithRemote(data.Connection);
         }
 
         [Given("using the parameter (\\w+) defined as \"(.*)\"")]

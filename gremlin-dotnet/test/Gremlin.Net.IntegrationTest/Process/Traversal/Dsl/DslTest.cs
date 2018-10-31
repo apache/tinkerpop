@@ -26,8 +26,6 @@ using Gremlin.Net.Structure;
 using Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection;
 using Xunit;
 
-using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
-
 namespace Gremlin.Net.IntegrationTest.Process.Traversal.Dsl 
 {
 
@@ -90,7 +88,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.Dsl
         public void ShouldUseDsl() 
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var social = Traversal_().WithRemote(connection);
+            var social = AnonymousTraversalSource.Traversal().WithRemote(connection);
 
             Assert.NotNull(social.Persons("marko").Knows("josh").Next());
             Assert.Equal(27, social.Persons("marko").YoungestFriendsAge().Next());

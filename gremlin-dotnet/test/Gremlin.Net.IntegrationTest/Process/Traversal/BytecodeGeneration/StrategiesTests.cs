@@ -29,8 +29,6 @@ using Gremlin.Net.Process.Traversal.Strategy.Optimization;
 using Gremlin.Net.Process.Traversal.Strategy.Verification;
 using Xunit;
 
-using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
-
 namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
 {
     public class StrategiesTests
@@ -38,7 +36,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void TraversalWithoutStrategies_AfterWithStrategiesWasCalled_WithStrategiesNotAffected()
         {
-            var g = Traversal_().WithStrategies(new ReadOnlyStrategy(), new IncidentToAdjacentStrategy());
+            var g = AnonymousTraversalSource.Traversal().WithStrategies(new ReadOnlyStrategy(), new IncidentToAdjacentStrategy());
 
             var bytecode = g.WithoutStrategies(typeof(ReadOnlyStrategy)).Bytecode;
 
@@ -56,7 +54,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void ShouldIncludeMultipleStrategiesInBytecodeWhenGivenToWithoutStrategies()
         {
-            var g = Traversal_();
+            var g = AnonymousTraversalSource.Traversal();
 
             var bytecode = g.WithoutStrategies(typeof(ReadOnlyStrategy), typeof(LazyBarrierStrategy)).Bytecode;
 
@@ -70,7 +68,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void ShouldIncludeOneStrategyInBytecodeWhenGivenToWithoutStrategies()
         {
-            var g = Traversal_();
+            var g = AnonymousTraversalSource.Traversal();
 
             var bytecode = g.WithoutStrategies(typeof(ReadOnlyStrategy)).Bytecode;
 
@@ -83,7 +81,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void ShouldIncludeConfigurationInBytecodeWhenGivenToWithStrategies()
         {
-            var g = Traversal_();
+            var g = AnonymousTraversalSource.Traversal();
 
             var bytecode = g.WithStrategies(new MatchAlgorithmStrategy("greedy")).Bytecode;
 
@@ -98,7 +96,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void ShouldIncludeMultipleStrategiesInBytecodeWhenGivenToWithStrategies()
         {
-            var g = Traversal_();
+            var g = AnonymousTraversalSource.Traversal();
 
             var bytecode = g.WithStrategies(new ReadOnlyStrategy(), new IncidentToAdjacentStrategy()).Bytecode;
 
@@ -112,7 +110,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void ShouldIncludeOneStrategyInBytecodeWhenGivenToWithStrategies()
         {
-            var g = Traversal_();
+            var g = AnonymousTraversalSource.Traversal();
 
             var bytecode = g.WithStrategies(new ReadOnlyStrategy()).Bytecode;
 
@@ -128,7 +126,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void TraversalWithStrategies_Strategies_ApplyToReusedGraphTraversalSource()
         {
-            var g = Traversal_().WithStrategies(new ReadOnlyStrategy(), new IncidentToAdjacentStrategy());
+            var g = AnonymousTraversalSource.Traversal().WithStrategies(new ReadOnlyStrategy(), new IncidentToAdjacentStrategy());
 
             var bytecode = g.V().Bytecode;
 
@@ -144,7 +142,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void TraversalWithStrategies_StrategyWithTraversalInConfig_IncludeTraversalInInConfigInBytecode()
         {
-            var g = Traversal_();
+            var g = AnonymousTraversalSource.Traversal();
 
             var bytecode = g.WithStrategies(new SubgraphStrategy(__.Has("name", "marko"))).Bytecode;
 
