@@ -31,5 +31,4 @@ tools/
 .vs/
 *nupkg
 NuGet.Config
-nuget*.exe
 /Dockerfile

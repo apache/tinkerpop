@@ -378,7 +378,7 @@ def csprojTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/Greml
 def csprojFile = new File("${projectBaseDir}/src/Gremlin.Net/Gremlin.Net.csproj")
 csprojFile.newWriter().withWriter{ it << csprojTemplate }
 def templateCsprojTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/Gremlin.Net.Template.csproj.template")).make(["projectVersion":versionToUse])
-def templateCsprojFile = new File("${projectBaseDir}/src/Gremlin.Net.Template/Gremlin.Net.Template.csproj")
+def templateCsprojFile = new File("${projectBaseDir}/src/Gremlin.Net.Template/content/Gremlin.Net.Template.csproj")
 templateCsprojFile.newWriter().withWriter{ it << templateCsprojTemplate }
 def nuspecTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/Gremlin.Net.Template.nuspec.template")).make(["projectVersion":versionToUse])
 def nuspecFile = new File("${projectBaseDir}/src/Gremlin.Net.Template/Gremlin.Net.Template.nuspec")

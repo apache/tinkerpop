@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gremlin.Net.UnitTest", "tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gremlin.Net.IntegrationTest", "test\Gremlin.Net.IntegrationTest\Gremlin.Net.IntegrationTest.csproj", "{CC54ABE3-13D2-491C-81E2-4D0355ABFA93}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gremlin.Net.Template", "src\Gremlin.Net.Template\Gremlin.Net.Template.csproj", "{A9D2567A-6FD0-452B-A2F9-4256FE513ADD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gremlin.Net.Template", "src\Gremlin.Net.Template\content\Gremlin.Net.Template.csproj", "{A9D2567A-6FD0-452B-A2F9-4256FE513ADD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gremlin.Net.Template.IntegrationTest", "test\Gremlin.Net.Template.IntegrationTest\Gremlin.Net.Template.IntegrationTest.csproj", "{3BFC3559-E317-4327-AFB7-CFBB31E1C868}"
 EndProject

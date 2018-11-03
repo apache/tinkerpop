@@ -14,8 +14,8 @@
         </packageTypes>
     </metadata>
     <files>
-        <file src=".template.config/template.json" target="content/.template.config" />
-        <file src="Gremlin.Net.Template.csproj" target="content" />
-        <file src="*.cs" target="content" />
+        <file src="content/.template.config/template.json" target="content/.template.config" />
+        <file src="content/Gremlin.Net.Template.csproj" target="content" />
+        <file src="content/*.cs" target="content" />
 </files>
 </package>

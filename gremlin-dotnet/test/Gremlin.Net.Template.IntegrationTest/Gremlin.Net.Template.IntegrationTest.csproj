@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Gremlin.Net.Template\Gremlin.Net.Template.csproj" />
+    <ProjectReference Include="..\..\src\Gremlin.Net.Template\content\Gremlin.Net.Template.csproj" />
   </ItemGroup>
 
 </Project>

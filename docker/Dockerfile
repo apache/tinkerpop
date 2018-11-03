@@ -25,12 +25,10 @@ RUN apt-get update \
     && add-apt-repository -y ppa:webupd8team/java \
     && sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-trusty-prod trusty main" > /etc/apt/sources.list.d/dotnetdev.list' \
     && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893 \
-    && sh -c 'echo "deb https://download.mono-project.com/repo/ubuntu stable-trusty main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list' \
-    && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF \
     && apt-get update \
     && apt-get install -y oracle-java8-installer curl gawk git maven openssh-server subversion zip \
     && sh -c 'curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /etc/apt/trusted.gpg.d/microsoft.gpg' \
-    && apt-get install -y --force-yes dotnet-sdk-2.1.101 python python-dev python3-dev python-pip build-essential mono-devel \
+    && apt-get install -y --force-yes dotnet-sdk-2.1.101 python python-dev python3-dev python-pip build-essential \
     && pip install virtualenv virtualenvwrapper \
     && pip install --upgrade pip \
     && rm -rf /var/lib/apt/lists/* /var/cache/oracle-jdk8-installer
