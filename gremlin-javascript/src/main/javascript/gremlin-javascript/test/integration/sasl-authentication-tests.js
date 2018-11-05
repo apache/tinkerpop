@@ -21,43 +21,38 @@
 
 const assert = require('assert');
 const Bytecode = require('../../lib/process/bytecode');
-const graphModule = require('../../lib/structure/graph');
 const helper = require('../helper');
 
 let connection;
 
-describe('DriverRemoteConnectionWithPlainTextSaslAuthenticator', function () {
-  before(function () {
+describe('DriverRemoteConnection', function () {
+  context('with PlainTextSaslAuthenticator', function () {
     this.timeout(20000);
-    connection = helper.getSecureConnectionWithPlainTextSaslAuthenticator(null);
-    return connection.open();
-  });
-  after(function () {
-    return connection.close();
-  });
-  describe('#submit()', function () {
-    it('should send the request with valid credentials and parse the response', function () {
-      return connection.submit(new Bytecode().addStep('V', []).addStep('tail', []))
-        .then(function (response) {
-          assert.ok(response);
-          assert.ok(response.traversers);
-        });
+
+    afterEach(function () {
+      return connection.close();
     });
-    it('should send the request with invalid credentials and parse the response error', function () {
-      connection._authenticator._options.mechanism._options.username = 'Bob';
-      return connection.submit(new Bytecode().addStep('V', []).addStep('tail', []))
-        .catch(function (err) {
-          assert.ok(err);
-          assert.ok(err.message.indexOf('401') > 0);
-        });
-    });
-    it('should send incorrect configuration to the authenticator and parse the response error', function () {
-      delete connection._authenticator._options.mechanism._options.username;
-      delete connection._authenticator._options.mechanism._options.password;
-      return connection.submit(new Bytecode().addStep('V', []).addStep('tail', []))
-        .catch(function (err) {
-          assert.ok(err);
-        });
+
+    describe('#submit()', function () {
+      it('should send the request with valid credentials and parse the response', function () {
+        connection = helper.getSecureConnectionWithPlainTextSaslAuthenticator(null, 'stephen', 'password');
+
+        return connection.submit(new Bytecode().addStep('V', []).addStep('tail', []))
+          .then(function (response) {
+            assert.ok(response);
+            assert.ok(response.traversers);
+          });
+      });
+
+      it('should send the request with invalid credentials and parse the response error', function () {
+        connection = helper.getSecureConnectionWithPlainTextSaslAuthenticator(null, 'Bob', 'password');
+
+        return connection.submit(new Bytecode().addStep('V', []).addStep('tail', []))
+          .catch(function (err) {
+            assert.ok(err);
+            assert.ok(err.message.indexOf('401') > 0);
+          });
+      });
     });
   });
 });

@@ -37,6 +37,7 @@ describe('DriverRemoteConnection', function () {
   after(function () {
     return connection.close();
   });
+
   describe('#submit()', function () {
     it('should send the request and parse the response', function () {
       return connection.submit(new Bytecode().addStep('V', []).addStep('tail', []))

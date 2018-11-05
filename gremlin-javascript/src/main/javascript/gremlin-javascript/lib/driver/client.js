@@ -18,12 +18,16 @@
  */
 'use strict';
 
-const DriverRemoteConnection = require('./driver-remote-connection');
+const Connection = require('./connection');
 const Bytecode = require('../process/bytecode');
 
+/**
+ * A {@link Client} contains methods to send messages to a Gremlin Server.
+ */
 class Client {
+
   /**
-   * Creates a new instance of DriverRemoteConnection.
+   * Creates a new instance of {@link Client}.
    * @param {String} url The resource uri.
    * @param {Object} [options] The connection options.
    * @param {Array} [options.ca] Trusted certificates.
@@ -39,7 +43,7 @@ class Client {
    */
   constructor(url, options) {
     this._options = options;
-    this._connection = new DriverRemoteConnection(url, options);
+    this._connection = new Connection(url, options);
   }
 
   /**
@@ -53,16 +57,16 @@ class Client {
   /**
    * Send a request to the Gremlin Server, can send a script or bytecode steps.
    * @param {Bytecode|string} message The bytecode or script to send
-   * @param {Object} bindings The script bindings, if any.
+   * @param {Object} [bindings] The script bindings, if any.
    * @returns {Promise}
    */
   submit(message, bindings) {
-    if (typeof message === 'string' || message instanceof String) {
+    if (typeof message === 'string') {
       const args = {
         'gremlin': message,
         'bindings': bindings, 
         'language': 'gremlin-groovy',
-        'accept': 'application/vnd.gremlin-v2.0+json',
+        'accept': this._connection.mimeType,
         'aliases': { 'g': this._options.traversalSource || 'g' }
       };
 
