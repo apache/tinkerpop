@@ -26,6 +26,8 @@ using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Remote;
 using Gremlin.Net.Structure;
 
+using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
+
 namespace Gremlin.Net.Template
 {
     internal class Program
@@ -37,7 +39,7 @@ namespace Gremlin.Net.Template
         {
             using (var client = new GremlinClient(new GremlinServer(GremlinServerHostname, GremlinServerPort)))
             {
-                var g = new Graph().Traversal().WithRemote(new DriverRemoteConnection(client));
+                var g = Traversal().WithRemote(new DriverRemoteConnection(client));
                 var service = new Service(g);
                 var creators = service.FindCreatorsOfSoftware("lop");
                 foreach (var c in creators)
