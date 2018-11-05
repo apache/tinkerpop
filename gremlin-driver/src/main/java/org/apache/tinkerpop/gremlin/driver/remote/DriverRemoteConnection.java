@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -102,18 +103,20 @@ public class DriverRemoteConnection implements RemoteConnection {
     }
 
     /**
-     * Creates a {@link DriverRemoteConnection} using a new {@link Cluster} instance created from the supplied
-     * configuration file. When {@link #close()} is called, this new {@link Cluster} is also closed. By default,
-     * this method will bind the {@link RemoteConnection} to a graph on the server named "graph".
+     * Creates a {@link DriverRemoteConnection} using a new {@link Cluster} instance created from the supplied host
+     * and port and binds it to a remote {@link GraphTraversalSource} named "g". When {@link #close()} is called,
+     * this new {@link Cluster} is also closed. By default, this method will bind the {@link RemoteConnection} to a
+     * graph on the server named "graph".
      */
     public static DriverRemoteConnection using(final String host, final int port) {
         return using(Cluster.build(host).port(port).create(), DEFAULT_TRAVERSAL_SOURCE);
     }
 
     /**
-     * Creates a {@link DriverRemoteConnection} using a new {@link Cluster} instance created from the supplied
-     * configuration file. When {@link #close()} is called, this new {@link Cluster} is also closed. By default,
-     * this method will bind the {@link RemoteConnection} to the specified graph traversal source name.
+     * Creates a {@link DriverRemoteConnection} using a new {@link Cluster} instance created from the supplied host
+     * port and aliases it to the specified remote {@link GraphTraversalSource}. When {@link #close()} is called, this
+     * new {@link Cluster} is also closed. By default, this method will bind the {@link RemoteConnection} to the
+     * specified graph traversal source name.
      */
     public static DriverRemoteConnection using(final String host, final int port, final String remoteTraversalSourceName) {
         return using(Cluster.build(host).port(port).create(), remoteTraversalSourceName);

@@ -155,6 +155,9 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern-py.yaml
 NOTE: The command to use `install` need only be executed once to gather `gremlin-python` dependencies into Gremlin Servers'
 path. Future starts of Gremlin Server will not require that command.
 
+Within CPython console, a `GraphTraversalSource` is created from the anonymous `traversal()` method where the "g"
+provided to the `DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on the remote end.
+
 [source,python]
 >>> g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
 
@@ -343,7 +346,7 @@ follows:
 using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
 ----
 
-which will expose a static `traversal()` method which can be used as follows to yield a `GraphTraversalSource` assigned
+which will expose a static `Traversal()` method which can be used as follows to yield a `GraphTraversalSource` assigned
 to "g" and configured to connect to Gremlin Server at "localhost:8182":
 
 [source,csharp]
