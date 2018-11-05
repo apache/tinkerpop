@@ -70,6 +70,7 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Nested loop support added allowing `repeat()` steps to be nested.
 * Events from `EventStrategy` raised from "new" mutations will now return a `KeyedVertexProperty` or `KeyedProperty` as is appropriate.
 * `MutationListener#vertexPropertyChanged(Vertex, VertexProperty, Object, Object...)` no longer has a default implementation.
+* Deprecated `GraphSONMessageSerializerV2d0` as it is now analogous to `GraphSONMessageSerializerGremlinV2d0`.
 * Removed previously deprecated methods in `SubgraphStrategy` and `PartitionStrategy` builders.
 * Removed previously deprecated Credentials DSL infrastructure.
 * Removed previously deprecated `MutationListener#vertexPropertyChanged(Vertex, Property, Object, Object...)`.

@@ -27,7 +27,9 @@ import java.nio.ByteBuffer;
  * Serialize results to JSON with version 2.0.x schema and the extended module.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As for release 3.4.0, replaced by {@link GraphSONMessageSerializerV2d0}.
  */
+@Deprecated
 public final class GraphSONMessageSerializerGremlinV2d0 extends AbstractGraphSONMessageSerializerV2d0 {
 
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHSON_V2D0;
@@ -75,7 +77,7 @@ public final class GraphSONMessageSerializerGremlinV2d0 extends AbstractGraphSON
 
     @Override
     public String[] mimeTypesSupported() {
-        return new String[]{MIME_TYPE};
+        return new String[]{SerTokens.MIME_GRAPHSON_V2D0, SerTokens.MIME_JSON};
     }
 
     @Override

@@ -241,7 +241,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
             final String mimeType = pair.getValue0();
             final MessageSerializer serializer = pair.getValue1();
             if (serializers.containsKey(mimeType))
-                logger.info("{} already has {} configured - it will not be replaced by {}.",
+                logger.info("{} already has {} configured - it will not be replaced by {}, change order of serialization configuration if this is not desired.",
                         mimeType, serializers.get(mimeType).getClass().getName(), serializer.getClass().getName());
             else {
                 logger.info("Configured {} with {}", mimeType, pair.getValue1().getClass().getName());
