@@ -22,6 +22,7 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 from gremlin_python.process.graph_traversal import GraphTraversalSource
 from gremlin_python.process.traversal import TraversalStrategies
 from .. import statics
+import warnings
 
 
 class Graph(object):
@@ -30,6 +31,8 @@ class Graph(object):
             TraversalStrategies.global_cache[self.__class__] = TraversalStrategies()
 
     def traversal(self, traversal_source_class=None):
+        warnings.warn("As of release 3.3.5, replaced by the anonymous traversal() function.", DeprecationWarning)
+
         if not traversal_source_class:
             traversal_source_class = GraphTraversalSource
         return traversal_source_class(self, TraversalStrategies.global_cache[self.__class__])

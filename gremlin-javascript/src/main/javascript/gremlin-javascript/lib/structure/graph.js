@@ -29,6 +29,7 @@ class Graph {
   /**
    * Returns the graph traversal source.
    * @returns {GraphTraversalSource}
+   * @deprecated As of release 3.3.5, replaced by the traversal() anonymous function.
    */
   traversal() {
     return new gt.GraphTraversalSource(this, new TraversalStrategies());

@@ -34,7 +34,9 @@ namespace Gremlin.Net.Structure
         /// <summary>
         ///     Generates a reusable <see cref="GraphTraversalSource" /> instance.
         /// </summary>
+        /// <
         /// <returns>A graph traversal source.</returns>
+        [ObsoleteAttribute("As of release 3.3.5, replaced by AnonymousTraversalSource.Traversal() called statically.", false)]
         public GraphTraversalSource Traversal()
         {
             return new GraphTraversalSource();
