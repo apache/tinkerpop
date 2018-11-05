@@ -96,7 +96,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 This release also includes changes from <<release-3-2-11, 3.2.11>>.
 
 * Fixed `PersistedOutputRDD` to eager persist RDD by adding `count()` action calls.
-* gremlin-python: the graphson deserializer for g:Set should return a python set
+* Changed behavior of GraphSON deserializer in gremlin-python such that `g:Set` returns a Python `Set`.
+* Changed behavior of `iterate()` in Python, Javascript and .NET to send `none()` thus avoiding unnecessary results being returned.
 
 [[release-3-3-4]]
 === TinkerPop 3.3.4 (Release Date: October 15, 2018)
