@@ -563,3 +563,26 @@ const __ = gremlin.process.statics;
 
 g.V().repeat(__.out()).times(2).values("name").fold().toList();
 ----
+
+=== Submit Gremlin Scripts
+
+Additionally, you can also send parametrized Gremlin scripts to the server as strings, using the
+`Client` class in Gremlin-JavaScript.
+
+
+[source,javascript]
+----
+const gremlin = require('gremlin');
+const client = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traversalSource: 'g' });
+
+const result1 = await client.submit('g.V(vid)', { vid: 1 });
+const vertex = result1.first();
+
+const result2 = await client.submit('g.V().hasLabel(label).tail(n)', { label: 'person', n: 3 });
+
+// ResultSet is an iterable
+for (const vertex of result2) {
+  console.log(vertex.id);
+}
+
+----

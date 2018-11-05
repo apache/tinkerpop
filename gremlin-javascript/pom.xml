@@ -195,7 +195,7 @@ limitations under the License.
                             <goal>npm</goal>
                         </goals>
                         <configuration>
-                            <arguments>test</arguments>
+                            <arguments>test --exit</arguments>
                             <failOnError>true</failOnError>
                         </configuration>
                     </execution>
