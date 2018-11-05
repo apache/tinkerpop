@@ -46,7 +46,8 @@ class BytecodeCommand extends ComplexCommandSupport {
     
     def Object do_from = { List<String> arguments ->
         mediator.showShellEvaluationOutput(false)
-        def traversal = shell.execute(arguments.join(""))
+        def args = arguments.join("")
+        def traversal = args.startsWith("@") ? shell.interp.context.getVariable(args.substring(1)) : shell.execute(args)
         if (!(traversal instanceof Traversal))
             return "Argument does not resolve to a Traversal instance, was: " + traversal.class.simpleName
 
@@ -66,6 +67,8 @@ class BytecodeCommand extends ComplexCommandSupport {
 
     def Object do_translate = { List<String> arguments ->
         def g = arguments[0]
-        return GroovyTranslator.of(g).translate(mapper.readValue(arguments.drop(1).join(""), Bytecode.class))
+        def args = arguments.drop(1).join("")
+        def graphson = args.startsWith("@") ? shell.interp.context.getVariable(args.substring(1)) : args
+        return GroovyTranslator.of(g).translate(mapper.readValue(graphson, Bytecode.class))
     }
 }
