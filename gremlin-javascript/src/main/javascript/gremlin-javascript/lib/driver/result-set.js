@@ -24,6 +24,8 @@
 
 const util = require('util');
 const inspect = util.inspect.custom || 'inspect';
+const utils = require('../utils');
+const emptyMap = Object.freeze(new utils.ImmutableMap());
 
 /**
  * Represents the response returned from the execution of a Gremlin traversal or script.
@@ -33,8 +35,9 @@ class ResultSet {
   /**
    * Creates a new instance of {@link ResultSet}.
    * @param {Array} items
+   * @param {Map} [attributes]
    */
-  constructor(items) {
+  constructor(items, attributes) {
     if (!Array.isArray(items)) {
       throw new TypeError('items must be an Array instance');
     }
@@ -42,18 +45,16 @@ class ResultSet {
     this._items = items;
 
     /**
+     * Gets a Map representing the attributes of the response.
+     * @type {Map}
+     */
+    this.attributes = attributes || emptyMap;
+
+    /**
      * Gets the amount of items in the result.
      * @type {Number}
      */
     this.length = items.length;
-
-    /**
-     * Access the raw result items via a property.
-     * @deprecated It will be removed in Apache TinkerPop version 3.4.
-     * Use <code>toArray()</code> or iterate directly from the <code>ResultSet</code>.
-     * @type {Array}
-     */
-    this.traversers = items;
   }
 
   /**

@@ -56,3 +56,21 @@ exports.getUuid = function getUuid() {
 };
 
 exports.emptyArray = Object.freeze([]);
+
+class ImmutableMap extends Map {
+  constructor(iterable) {
+    super(iterable);
+  }
+
+  set(){
+    return this;
+  }
+
+  ['delete'](){
+    return false;
+  }
+
+  clear() { }
+}
+
+exports.ImmutableMap = ImmutableMap;

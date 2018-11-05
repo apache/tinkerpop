@@ -76,11 +76,18 @@ describe('ResultSet', function () {
     });
   });
 
-  describe('#traversers', () => {
-    it('should expose deprecated property', () => {
-      const items = [ 'a', 'b' ];
-      // Traversers property is going to be removed in upcoming versions
-      assert.strictEqual(new ResultSet(items).traversers, items);
+  describe('#attributes', () => {
+    it('should default to an empty Map when not defined', () => {
+      const rs = new ResultSet([]);
+      assert.ok(rs.attributes instanceof Map);
+      assert.strictEqual(rs.attributes.size, 0);
+    });
+
+    it('should return the attributes when defined', () => {
+      const attributes = new Map([['a', 1], ['b', 1]]);
+      const rs = new ResultSet([], attributes);
+      assert.ok(rs.attributes instanceof Map);
+      assert.strictEqual(rs.attributes, attributes);
     });
   });
 });

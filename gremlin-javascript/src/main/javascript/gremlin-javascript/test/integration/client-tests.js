@@ -66,5 +66,13 @@ describe('Client', function () {
           assert.strictEqual(result.first(), 'Cardinality:set');
         });
     });
+
+    it('should retrieve the attributes', () => {
+      return client.submit(new Bytecode().addStep('V', []).addStep('tail', []))
+        .then(rs => {
+          assert.ok(rs.attributes instanceof Map);
+          assert.ok(rs.attributes.get('host'));
+        });
+    });
   });
 });

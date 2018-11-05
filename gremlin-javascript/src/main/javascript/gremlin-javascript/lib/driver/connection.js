@@ -193,7 +193,7 @@ class Connection {
     switch (response.status.code) {
       case responseStatusCode.noContent:
         this._clearHandler(response.requestId);
-        return handler.callback(null, new ResultSet(utils.emptyArray));
+        return handler.callback(null, new ResultSet(utils.emptyArray, response.status.attributes));
       case responseStatusCode.partialContent:
         handler.result = handler.result || [];
         handler.result.push.apply(handler.result, response.result.data);
@@ -206,7 +206,7 @@ class Connection {
           handler.result = response.result.data;
         }
         this._clearHandler(response.requestId);
-        return handler.callback(null, new ResultSet(handler.result));
+        return handler.callback(null, new ResultSet(handler.result, response.status.attributes));
     }
   }
 
