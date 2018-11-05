@@ -980,7 +980,8 @@ evaluated and is committed when the script completes (or rolled back if an error
 !=========================================================
 |=========================================================
 
-'`authentication` operation arguments'
+**`authentication` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
@@ -988,7 +989,8 @@ evaluated and is committed when the script completes (or rolled back if an error
 |saslMechanism |String | The SASL mechanism: `PLAIN` or `GSSAPI`. Note that it is up to the server implementation to use or disregard this setting (default implementation in Gremlin Server ignores it).
 |=========================================================
 
-'`eval` operation arguments'
+**`eval` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
@@ -1025,7 +1027,8 @@ Gremlin Server are deployed, session state is not shared among them.
 !`close` !Close the specified session. Will return a `NO CONTENT` message as confirmation of the close being completed.
 |=========================================================
 
-'`authentication` operation arguments'
+**`authentication` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
@@ -1033,7 +1036,8 @@ Gremlin Server are deployed, session state is not shared among them.
 |sasl |String | *Required* The response to the server authentication challenge.  This value is dependent on the SASL authentication mechanism required by the server and is Base64 encoded.
 |=========================================================
 
-'`eval` operation arguments'
+**`eval` operation arguments**
+
 [width="100%",options="header"]
 |=========================================================
 |Key |Type |Description
@@ -1050,7 +1054,7 @@ example, if the Gremlin Server defines two `TraversalSource` instances named `g1
 to send an alias pair with key of "g" and value of "g2" and thus allow the script to refer to "g2" simply as "g".
 |=========================================================
 
-'`close` operation arguments'
+**`close` operation arguments**
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
@@ -1126,14 +1130,16 @@ operation is available to clear the cache of a specific side-effect.
 !`keys` !Gets all the keys of all side-effects as produced by a previously executed `Traversal`.
 |=========================================================
 
-'`authentication` operation arguments'
+**`authentication` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
 |sasl |String | *Required* The response to the server authentication challenge.  This value is dependent on the SASL authentication mechanism required by the server and is Base64 encoded.
 |=========================================================
 
-'`bytecode` operation arguments'
+**`bytecode` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
@@ -1148,14 +1154,16 @@ one key value pair present (since only one `Traversal` is being submitted, there
 single alias).
 |=========================================================
 
-'`close` operation arguments'
+**`close` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
 |sideEffect |UUID | *Required* The unique identifier for the request that original submitted the traversal (side-effects are keyed by that value)
 |=========================================================
 
-'`gather` operation arguments'
+**`gather` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
@@ -1177,7 +1185,8 @@ streamed side-effect data should be treated on the client. It provides a hint as
 rolled back up into a single object or simply left as-is. There are four values for "aggregateTo": `bulkset`, `list`,
 `map`, `set` and `none`.
 
-'`keys` operation arguments'
+**`keys` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
