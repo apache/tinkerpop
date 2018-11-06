@@ -21,6 +21,7 @@
 
 #endregion
 
+using System;
 using Gremlin.Net.Process.Traversal;
 
 namespace Gremlin.Net.Structure
