@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader
 import org.apache.tinkerpop.gremlin.jsr223.CoreGremlinPlugin
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer
+import org.apache.tinkerpop.gremlin.jsr223.console.RemoteException
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.T
@@ -317,7 +318,12 @@ class Console {
                     io.err.print(line.trim())
                     io.err.println()
                     if (line.trim().equals("y") || line.trim().equals("Y")) {
-                        e.printStackTrace(io.err)
+                        if (err instanceof RemoteException && err.remoteStackTrace.isPresent()) {
+                            io.err.print(err.remoteStackTrace.get())
+                            io.err.flush()
+                        } else {
+                            e.printStackTrace(io.err)
+                        }
                     }
                 } else {
                     e.printStackTrace(io.err)
