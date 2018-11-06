@@ -40,7 +40,7 @@ class BytecodeCommand extends ComplexCommandSupport {
     private final ObjectMapper mapper = GraphSONMapper.build().version(GraphSONVersion.V3_0).create().createMapper()
 
     public BytecodeCommand(final Groovysh shell, final Mediator mediator) {
-        super(shell, ":bytecode", ":bc", ["eval", "from", "submit", "translate"])
+        super(shell, ":bytecode", ":bc", ["from", "translate"])
         this.mediator = mediator
     }
     
@@ -54,16 +54,6 @@ class BytecodeCommand extends ComplexCommandSupport {
         mediator.showShellEvaluationOutput(true)
         return mapper.writeValueAsString(traversal.asAdmin().bytecode)
     }
-    
-    def Object do_eval = { List<String> arguments ->
-        return shell.execute(do_translate(arguments))
-    }
-
-    def Object do_submit = { List<String> arguments ->
-        if (mediator.remotes.size() == 0) return "No remotes are configured.  Use :remote command."
-        return mediator.currentRemote().submit([do_translate(arguments)])
-    }
-
 
     def Object do_translate = { List<String> arguments ->
         def g = arguments[0]
