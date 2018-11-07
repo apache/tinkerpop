@@ -41,9 +41,9 @@ help with both of these issues:
 ----
 gremlin> g = TinkerFactory.createModern().traversal()
 ==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
-gremlin> :bytecode from g.V().out('knows')  <1>
+gremlin> :bytecode from g.V().out('knows')
 ==>{"@type":"g:Bytecode","@value":{"step":[["V"],["out","knows"]]}}
-gremlin> :bytecode translate g {"@type":"g:Bytecode","@value":{"step":[["V"],["out","knows"]]}} <2>
+gremlin> :bytecode translate g {"@type":"g:Bytecode","@value":{"step":[["V"],["out","knows"]]}}
 ==>g.V().out("knows")
 ----
 
