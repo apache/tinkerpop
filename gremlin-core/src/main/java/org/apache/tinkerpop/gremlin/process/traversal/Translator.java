@@ -19,7 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import java.util.function.UnaryOperator;
+import java.util.function.BiFunction;
 
 /**
  * A Translator will translate {@link Bytecode} into another representation. That representation may be a
@@ -63,31 +63,10 @@ public interface Translator<S, T> {
     public interface ScriptTranslator extends Translator<String, String> {
 
         /**
-         * Provides a way to customize and override the standard translation process. A {@link ScriptTranslator}
-         * implementation can choose to expose a way to accept a {@code TypeTranslator} which will convert an incoming
-         * object to a different form which will then be normally processed or can return a {@link Handled} object
-         * with the already translated script.
+         * Provides a way for the {@link ScriptTranslator} to convert various data types to their string
+         * representations in their target language.
          */
-        public interface TypeTranslator extends UnaryOperator<Object> {
-            public static TypeTranslator identity() {
-                return t -> t;
-            }
-        }
-
-        /**
-         * Contains a completed type translation from the {@link TypeTranslator}.
-         */
-        public class Handled {
-            private final String translation;
-
-            public Handled(final String translation) {
-                this.translation = translation;
-            }
-
-            public String getTranslation() {
-                return translation;
-            }
-        }
+        public interface TypeTranslator extends BiFunction<String, Object, Object> { }
     }
 
     /**

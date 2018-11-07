@@ -40,6 +40,7 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Deprecated `Graph.io()` and related infrastructure.
 * `GraphMLReader` better handles edge and vertex properties with the same name.
 * Maintained order of annotations in metrics returned from `profile()`-step.
+* Refactored `TypeTranslator` to be directly extensible for `ScriptTranslator` functions.
 * Bumped to Netty 4.1.25.
 * Bumped to Spark 2.3.1.
 * Bumped to Groovy 2.5.2.
