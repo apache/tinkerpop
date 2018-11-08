@@ -36,6 +36,7 @@ const Client = require('./lib/driver/client');
 const ResultSet = require('./lib/driver/result-set');
 const Authenticator = require('./lib/driver/auth/authenticator');
 const PlainTextSaslAuthenticator = require('./lib/driver/auth/plain-text-sasl-authenticator');
+const AnonymousTraversalSource = require('./lib/process/anonymous-traversal');
 
 module.exports = {
   driver: {
@@ -73,7 +74,8 @@ module.exports = {
     GraphTraversalSource: gt.GraphTraversalSource,
     statics: gt.statics,
     Translator,
-    traversal: gt.traversal
+    traversal: AnonymousTraversalSource.traversal,
+    AnonymousTraversalSource
   },
   structure: {
     io: {

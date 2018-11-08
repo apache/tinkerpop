@@ -24,10 +24,9 @@
 
 const defineSupportCode = require('cucumber').defineSupportCode;
 const helper = require('../helper');
-const graphModule = require('../../lib/structure/graph');
+const traversal = require('../../lib/process/anonymous-traversal').traversal;
 const graphTraversalModule = require('../../lib/process/graph-traversal');
 const __ = graphTraversalModule.statics;
-const traversal = graphModule.traversal;
 
 defineSupportCode(function (methods) {
   const cache = {};

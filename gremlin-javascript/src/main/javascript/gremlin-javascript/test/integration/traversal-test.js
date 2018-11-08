@@ -25,7 +25,7 @@
 const assert = require('assert');
 const graphModule = require('../../lib/structure/graph');
 const Vertex = graphModule.Vertex;
-const traversal = require('../../lib/structure/graph').traversal;
+const traversal = require('../../lib/process/anonymous-traversal').traversal;
 const utils = require('../../lib/utils');
 const helper = require('../helper');
 

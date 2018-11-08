@@ -30,9 +30,9 @@ const graphModule = require('../../lib/structure/graph');
 const graphTraversalModule = require('../../lib/process/graph-traversal');
 const traversalModule = require('../../lib/process/traversal');
 const utils = require('../../lib/utils');
+const traversal = require('../../lib/process/anonymous-traversal').traversal;
 const Path = graphModule.Path;
 const __ = graphTraversalModule.statics;
-const traversal = graphModule.traversal;
 const t = traversalModule.t;
 
 // Determines whether the feature maps (m[]), are deserialized as objects (true) or maps (false).

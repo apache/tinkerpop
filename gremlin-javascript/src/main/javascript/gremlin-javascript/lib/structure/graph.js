@@ -159,20 +159,11 @@ function areEqual(obj1, obj2) {
   return false;
 }
 
-/**
-* Returns an anonymous traversal source.
-* @returns {GraphTraversalSource}
-*/
-function traversal() {
-  return new gt.GraphTraversalSource(new Graph(), new TraversalStrategies());
-}
-
 module.exports = {
   Edge: Edge,
   Graph: Graph,
   Path: Path,
   Property: Property,
   Vertex: Vertex,
-  VertexProperty: VertexProperty,
-  traversal
+  VertexProperty: VertexProperty
 };
