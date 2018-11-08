@@ -100,7 +100,7 @@ Gremlin-Python users will typically make use of the following classes.
 
 [source,python]
 >>> from gremlin_python import statics
->>> from gremlin_python.structure.graph import traversal
+>>> from gremlin_python.process.anonymous_traversal_source import traversal
 >>> from gremlin_python.process.graph_traversal import __
 >>> from gremlin_python.process.strategies import *
 >>> from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
@@ -485,11 +485,11 @@ in Gremlin-Java. The `GraphTraversalSource` requires a RemoteConnection implemen
 [source,javascript]
 ----
 const gremlin = require('gremlin');
-const traversal = gremlin.structure.Graph.traversal;
+const traversal = gremlin.process.AnonymousTraversalSource.traversal;
 const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
 ----
 
-A traversal source can be spawned with `RemoteStrategy` from an empty `Graph`.
+A traversal source can be spawned with `RemoteStrategy` from an `AnonymousTraversalSource`.
 
 [source,javascript]
 ----

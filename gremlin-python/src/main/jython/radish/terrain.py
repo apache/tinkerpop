@@ -17,7 +17,7 @@ specific language governing permissions and limitations
 under the License.
 '''
 
-from gremlin_python.structure.graph import traversal
+from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.driver import serializer
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection

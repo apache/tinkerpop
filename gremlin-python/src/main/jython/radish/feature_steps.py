@@ -20,7 +20,7 @@ under the License.
 import json
 import re
 from gremlin_python.structure.graph import Path
-from gremlin_python.structure.graph import traversal
+from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.traversal import Barrier, Cardinality, P, Pop, Scope, Column, Order, Direction, T, Pick, Operator
 from radish import given, when, then
@@ -55,12 +55,12 @@ def choose_graph(step, graph_name):
 
 @given("the graph initializer of")
 def initialize_graph(step):
-    traversal = _make_traversal(step.context.g, step.text, {})
+    t = _make_traversal(step.context.g, step.text, {})
 
     # just be sure that the traversal returns something to prove that it worked to some degree. probably
     # is overkill to try to assert the complete success of this init operation. presumably the test
     # suite would fail elsewhere if this didn't work which would help identify a problem.
-    result = traversal.toList()
+    result = t.toList()
     assert len(result) > 0
 
     # add the first result - if a map - to the bindings. this is useful for cases when parameters for
@@ -231,8 +231,8 @@ def _table_assertion(data, result, ctx, ordered):
         assert_that(len(results_to_test), is_(0))
 
 
-def _translate(traversal):
-    replaced = traversal.replace("\n", "")
+def _translate(traversal_):
+    replaced = traversal_.replace("\n", "")
     replaced = regex_all.sub(r"Pop.all_", replaced)
     replaced = regex_and.sub(r"\1and_(", replaced)
     replaced = regex_from.sub(r"\1from_(", replaced)

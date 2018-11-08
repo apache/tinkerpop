@@ -18,13 +18,11 @@ under the License.
 '''
 import sys
 from threading import Thread
-
-import pytest
 from six.moves import queue
 
 from gremlin_python.driver.driver_remote_connection import (
     DriverRemoteConnection)
-from gremlin_python.structure.graph import traversal
+from gremlin_python.process.anonymous_traversal import traversal
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
