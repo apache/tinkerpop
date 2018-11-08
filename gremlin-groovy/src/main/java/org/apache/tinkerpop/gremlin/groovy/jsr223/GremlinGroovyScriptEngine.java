@@ -29,7 +29,6 @@ import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Script;
 import groovy.lang.Tuple;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import org.apache.tinkerpop.gremlin.jsr223.ConcurrentBindings;
 import org.apache.tinkerpop.gremlin.jsr223.CoreGremlinPlugin;
@@ -155,36 +154,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     /**
      * Script to generated Class map.
      */
-    private final LoadingCache<String, Future<Class>> classMap = Caffeine.newBuilder().
-            softValues().
-            recordStats().
-            build(new CacheLoader<String, Future<Class>>() {
-        @Override
-        public Future<Class> load(final String script) throws Exception {
-            final long start = System.currentTimeMillis();
-
-            return CompletableFuture.supplyAsync(() -> {
-                try {
-                    return loader.parseClass(script, generateScriptName());
-                } catch (CompilationFailedException e) {
-                    final long finish = System.currentTimeMillis();
-                    log.error("Script compilation FAILED {} took {}ms {}", script, finish - start, e);
-                    failedCompilationCount.incrementAndGet();
-                    throw e;
-                } finally {
-                    final long time = System.currentTimeMillis() - start;
-                    if (time > expectedCompilationTime) {
-                        //We warn if a script took longer than a few seconds. Repeatedly seeing these warnings is a sign that something is wrong.
-                        //Scripts with a large numbers of parameters often trigger this and should be avoided.
-                        log.warn("Script compilation {} took {}ms", script, time);
-                        longRunCompilationCount.incrementAndGet();
-                    } else {
-                        log.debug("Script compilation {} took {}ms", script, time);
-                    }
-                }
-            }, Runnable::run);
-        }
-    });
+    private final LoadingCache<String, Future<Class>> classMap;
 
     /**
      * Global closures map - this is used to simulate a single global functions namespace
@@ -269,6 +239,11 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         expectedCompilationTime = compilationOptionsCustomizerProvider.isPresent() ?
                 compilationOptionsCustomizerProvider.get().getExpectedCompilationTime() : 5000;
 
+        classMap = Caffeine.from(compilationOptionsCustomizerProvider.isPresent() ?
+                compilationOptionsCustomizerProvider.get().getClassMapCacheSpecification() : "softValues").
+                recordStats().
+                build(new GroovyCacheLoader());
+
         typeCheckingEnabled = listOfCustomizers.stream()
                 .anyMatch(p -> p instanceof TypeCheckedGroovyCustomizer || p instanceof CompileStaticGroovyCustomizer);
 
@@ -298,7 +273,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
         // extract the named traversalsource prior to that happening so that bytecode bindings can share the same
         // namespace as global bindings (e.g. traversalsources and graphs).
         if (traversalSource.equals(HIDDEN_G))
-            throw new IllegalArgumentException("The traversalSource cannot have the name " + HIDDEN_G+ " - it is reserved");
+            throw new IllegalArgumentException("The traversalSource cannot have the name " + HIDDEN_G + " - it is reserved");
 
         if (bindings.containsKey(HIDDEN_G))
             throw new IllegalArgumentException("Bindings cannot include " + HIDDEN_G + " - it is reserved");
@@ -832,5 +807,34 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
             throw new ScriptException(exp);
         }
         return buf.toString();
+    }
+
+    private final class GroovyCacheLoader implements CacheLoader<String, Future<Class>> {
+        @Override
+        public Future<Class> load(final String script) throws Exception {
+            final long start = System.currentTimeMillis();
+
+            return CompletableFuture.supplyAsync(() -> {
+                try {
+                    return loader.parseClass(script, generateScriptName());
+                } catch (CompilationFailedException e) {
+                    final long finish = System.currentTimeMillis();
+                    log.error("Script compilation FAILED {} took {}ms {}", script, finish - start, e);
+                    failedCompilationCount.incrementAndGet();
+                    throw e;
+                } finally {
+                    final long time = System.currentTimeMillis() - start;
+                    if (time > expectedCompilationTime) {
+                        //We warn if a script took longer than a few seconds. Repeatedly seeing these warnings is a sign that something is wrong.
+                        //Scripts with a large numbers of parameters often trigger this and should be avoided.
+                        log.warn("Script compilation {} took {}ms", script, time);
+                        longRunCompilationCount.incrementAndGet();
+                    } else {
+                        log.debug("Script compilation {} took {}ms", script, time);
+                    }
+                }
+            }, Runnable::run);
+
+        }
     }
 }
