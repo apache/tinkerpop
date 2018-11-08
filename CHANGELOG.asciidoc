@@ -45,7 +45,7 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Bumped to Spark 2.3.1.
 * Bumped to Groovy 2.5.2.
 * Modified Gremlin Server to return a "host" status attribute on responses.
-* Added ability to the Java, .NET and Python drivers to retrieve status attributes returned from the server.
+* Added ability to the Java, .NET, Python and JavaScript drivers to retrieve status attributes returned from the server.
 * Modified Java and Gremlin.Net `ResponseException` to include status code and status attributes.
 * Modified Python `GremlinServerError` to include status attributes.
 * Modified the return type for `IGremlinClient.SubmitAsync()` to be a `ResultSet` rather than an `IReadOnlyCollection`.
@@ -86,6 +86,7 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Removed previously deprecated `LambdaCollectingBarrierStep.Consumers` enum.
 * Removed previously deprecated `HasContainer#makeHasContainers(String, P)`
 * Removed support for Giraph.
+* Removed previously deprecated JavaScript Driver property `traversers` of the `ResultSet`.
 
 == TinkerPop 3.3.0 (Gremlin Symphony #40 in G Minor)
 
