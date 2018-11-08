@@ -27,6 +27,16 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.3.5/CHANGELOG.asciidoc#release-3-3-5[changelog] for a complete list of all the modifications that are part of this release.
 
+=== Upgrading for Users
+
+==== Configurable Class Map Cache
+
+The "class map" cache in Gremlin Server (specifically the `GremlinGroovyScriptEngine`) that holds compiled scripts is
+now fully configurable via the `GroovyCompilerGremlinPlugin.classMapCacheSpecification`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2038[TINKERPOP-2038],
+link:http://tinkerpop.apache.org/docs/3.3.2/reference/#gremlin-server-cache[Reference Documentation - Cache Management]
+
 == TinkerPop 3.3.4
 
 *Release Date: October 15, 2018*

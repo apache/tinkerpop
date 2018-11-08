@@ -30,6 +30,7 @@ This release also includes changes from <<release-3-2-11, 3.2.11>>.
 * Display the remote stack trace in the Gremlin Console when scripts sent to the server fail.
 * Changed behavior of GraphSON deserializer in gremlin-python such that `g:Set` returns a Python `Set`.
 * Changed behavior of `iterate()` in Python, Javascript and .NET to send `none()` thus avoiding unnecessary results being returned.
+* Provided for a configurable class map cache in the `GremlinGroovyScriptEngine` and exposed that in Gremlin Server.
 
 [[release-3-3-4]]
 === TinkerPop 3.3.4 (Release Date: October 15, 2018)
