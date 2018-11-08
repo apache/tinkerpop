@@ -366,7 +366,7 @@ public class PropertyTest {
                     {PropertyFeatures.FEATURE_LONG_VALUES, -10000l},
                     {PropertyFeatures.FEATURE_MAP_VALUES, testMap},
                     {PropertyFeatures.FEATURE_MIXED_LIST_VALUES, mixedList},
-                    {PropertyFeatures.FEATURE_STRING_ARRAY_VALUES, new boolean[]{true, false}},
+                    {PropertyFeatures.FEATURE_BOOLEAN_ARRAY_VALUES, new boolean[]{true, false}},
                     {PropertyFeatures.FEATURE_DOUBLE_ARRAY_VALUES, new double[]{1d, 2d}},
                     {PropertyFeatures.FEATURE_FLOAT_ARRAY_VALUES, new float[]{1f, 2f}},
                     {PropertyFeatures.FEATURE_INTEGER_ARRAY_VALUES, new int[]{1, 2}},
