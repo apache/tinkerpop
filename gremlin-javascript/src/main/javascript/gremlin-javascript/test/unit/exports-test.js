@@ -51,6 +51,8 @@ describe('API', function () {
     assert.strictEqual(typeof glvModule.process.scope, 'object');
     assert.strictEqual(typeof glvModule.process.t, 'object');
     assert.ok(glvModule.process.statics);
+    validateConstructor(glvModule.process, 'AnonymousTraversalSource');
+    assert.strictEqual(typeof glvModule.process.traversal, 'function');
   });
   it('should expose fields under structure', function () {
     assert.ok(glvModule.structure);

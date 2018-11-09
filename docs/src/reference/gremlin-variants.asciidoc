@@ -100,7 +100,7 @@ Gremlin-Python users will typically make use of the following classes.
 
 [source,python]
 >>> from gremlin_python import statics
->>> from gremlin_python.structure.graph import Graph
+>>> from gremlin_python.process.anonymous_traversal_source import traversal
 >>> from gremlin_python.process.graph_traversal import __
 >>> from gremlin_python.process.strategies import *
 >>> from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
@@ -155,11 +155,11 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern-py.yaml
 NOTE: The command to use `install` need only be executed once to gather `gremlin-python` dependencies into Gremlin Servers'
 path. Future starts of Gremlin Server will not require that command.
 
-Within the CPython console, an empty `Graph` is created and a traversal source is spawned with `RemoteStrategy`.
+Within CPython console, a `GraphTraversalSource` is created from the anonymous `traversal()` method where the "g"
+provided to the `DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on the remote end.
 
 [source,python]
->>> graph = Graph()
->>> g = graph.traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
+>>> g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
 
 When a traversal from the `GraphTraversalSource` is iterated, the traversal's `Bytecode` is sent over the wire
 via the registered `RemoteConnection`. The bytecode is used to construct the equivalent traversal at the remote traversal source.
@@ -338,12 +338,20 @@ When Gremlin Server is running, Gremlin.Net can communicate with Gremlin Server 
 
 IMPORTANT: Gremlin.Net is not compatible with GraphSON 1.0.
 
-A traversal source can be spawned with `RemoteStrategy` from an empty `Graph`.
+A traversal source can be spawned anonymously using an `AnonymousTraversalSource` which can be statically imported as
+follows:
 
 [source,csharp]
 ----
-var graph = new Graph();
-var g = graph.Traversal().WithRemote(new DriverRemoteConnection(new GremlinClient(new GremlinServer("localhost", 8182))));
+using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
+----
+
+which will expose a static `Traversal()` method which can be used as follows to yield a `GraphTraversalSource` assigned
+to "g" and configured to connect to Gremlin Server at "localhost:8182":
+
+[source,csharp]
+----
+var g = Traversal().WithRemote(new DriverRemoteConnection(new GremlinClient(new GremlinServer("localhost", 8182))));
 ----
 
 When a traversal from the `GraphTraversalSource` is iterated, the traversal’s `Bytecode` is sent over the wire via the registered
@@ -477,16 +485,15 @@ in Gremlin-Java. The `GraphTraversalSource` requires a RemoteConnection implemen
 [source,javascript]
 ----
 const gremlin = require('gremlin');
-const Graph = gremlin.structure.Graph;
+const traversal = gremlin.process.AnonymousTraversalSource.traversal;
 const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
 ----
 
-A traversal source can be spawned with `RemoteStrategy` from an empty `Graph`.
+A traversal source can be spawned with `RemoteStrategy` from an `AnonymousTraversalSource`.
 
 [source,javascript]
 ----
-const graph = new Graph();
-const g = graph.traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
+const g = traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
 ----
 
 Gremlin-JavaScript supports plain text SASL authentication, you can set it on the connection options.
@@ -494,7 +501,7 @@ Gremlin-JavaScript supports plain text SASL authentication, you can set it on th
 [source,javascript]
 ----
 const authenticator = new gremlin.driver.auth.PlainTextSaslAuthenticator('myuser', 'mypassword');
-const g = graph.traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin', { authenticator });
+const g = traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin', { authenticator });
 ----
 
 When a traversal from the `GraphTraversalSource` is iterated, the traversal’s `Bytecode` is sent over the wire via

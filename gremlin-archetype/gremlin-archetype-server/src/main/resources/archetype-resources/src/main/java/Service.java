@@ -25,6 +25,8 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.List;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+
 public class Service implements AutoCloseable {
 
     private final int port = Integer.parseInt(System.getProperty("port", "45940"));
@@ -38,9 +40,7 @@ public class Service implements AutoCloseable {
      * Construct a remote GraphTraversalSource using the above created Cluster instance that will connect to Gremlin
      * Server.
      */
-    private final GraphTraversalSource g = EmptyGraph.instance().
-                                                      traversal().
-                                                      withRemote(DriverRemoteConnection.using(cluster));
+    private final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
 
     /**
      * Create Service as a singleton given the simplicity of App.

@@ -59,7 +59,7 @@ import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.hamcrest.CoreMatchers;
@@ -72,7 +72,6 @@ import java.lang.reflect.Field;
 import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -90,6 +89,7 @@ import java.util.stream.IntStream;
 
 import static org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin.Compilation.COMPILE_STATIC;
 import static org.apache.tinkerpop.gremlin.process.traversal.TraversalSource.GREMLIN_REMOTE_CONNECTION_CLASS;
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -392,8 +392,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldTimeOutRemoteTraversal() throws Exception {
-        final Graph graph = EmptyGraph.instance();
-        final GraphTraversalSource g = graph.traversal().withRemote(conf);
+        final GraphTraversalSource g = traversal().withRemote(conf);
 
         try {
             // tests sleeping thread
@@ -1166,8 +1165,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldSupportLambdasUsingWithRemote() throws Exception {
-        final Graph graph = EmptyGraph.instance();
-        final GraphTraversalSource g = graph.traversal().withRemote(conf);
+        final GraphTraversalSource g = traversal().withRemote(conf);
         g.addV("person").property("age", 20).iterate();
         g.addV("person").property("age", 10).iterate();
         assertEquals(50L, g.V().hasLabel("person").map(Lambda.function("it.get().value('age') + 10")).sum().next());
@@ -1175,8 +1173,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldGetSideEffectKeysAndStatusUsingWithRemote() throws Exception {
-        final Graph graph = EmptyGraph.instance();
-        final GraphTraversalSource g = graph.traversal().withRemote(conf);
+        final GraphTraversalSource g = traversal().withRemote(conf);
         g.addV("person").property("age", 20).iterate();
         g.addV("person").property("age", 10).iterate();
         final GraphTraversal traversal = g.V().aggregate("a").aggregate("b");
@@ -1214,8 +1211,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldCloseSideEffectsUsingWithRemote() throws Exception {
-        final Graph graph = EmptyGraph.instance();
-        final GraphTraversalSource g = graph.traversal().withRemote(conf);
+        final GraphTraversalSource g = traversal().withRemote(conf);
         g.addV("person").property("age", 20).iterate();
         g.addV("person").property("age", 10).iterate();
         final GraphTraversal traversal = g.V().aggregate("a").aggregate("b");
@@ -1265,8 +1261,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldBlockWhenGettingSideEffectKeysUsingWithRemote() throws Exception {
-        final Graph graph = EmptyGraph.instance();
-        final GraphTraversalSource g = graph.traversal().withRemote(conf);
+        final GraphTraversalSource g = traversal().withRemote(conf);
         g.addV("person").property("age", 20).iterate();
         g.addV("person").property("age", 10).iterate();
         final GraphTraversal traversal = g.V().aggregate("a")
@@ -1308,8 +1303,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldBlockWhenGettingSideEffectValuesUsingWithRemote() throws Exception {
-        final Graph graph = EmptyGraph.instance();
-        final GraphTraversalSource g = graph.traversal().withRemote(conf);
+        final GraphTraversalSource g = traversal().withRemote(conf);
         g.addV("person").property("age", 20).iterate();
         g.addV("person").property("age", 10).iterate();
         final GraphTraversal traversal = g.V().aggregate("a")
@@ -1351,8 +1345,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldDoNonBlockingPromiseWithRemote() throws Exception {
-        final Graph graph = EmptyGraph.instance();
-        final GraphTraversalSource g = graph.traversal().withRemote(conf);
+        final GraphTraversalSource g = traversal().withRemote(conf);
         g.addV("person").property("age", 20).promise(Traversal::iterate).join();
         g.addV("person").property("age", 10).promise(Traversal::iterate).join();
         assertEquals(50L, g.V().hasLabel("person").map(Lambda.function("it.get().value('age') + 10")).sum().promise(t -> t.next()).join());

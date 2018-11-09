@@ -19,7 +19,8 @@ under the License.
 
 import json
 import re
-from gremlin_python.structure.graph import Graph, Path
+from gremlin_python.structure.graph import Path
+from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.traversal import Barrier, Cardinality, P, TextP, Pop, Scope, Column, Order, Direction, T, Pick, Operator, IO
 from radish import given, when, then
@@ -50,17 +51,17 @@ ignores = []
 @given("the {graph_name:w} graph")
 def choose_graph(step, graph_name):
     step.context.graph_name = graph_name
-    step.context.g = Graph().traversal().withRemote(step.context.remote_conn[graph_name])
+    step.context.g = traversal().withRemote(step.context.remote_conn[graph_name])
 
 
 @given("the graph initializer of")
 def initialize_graph(step):
-    traversal = _make_traversal(step.context.g, step.text, {})
+    t = _make_traversal(step.context.g, step.text, {})
 
     # just be sure that the traversal returns something to prove that it worked to some degree. probably
     # is overkill to try to assert the complete success of this init operation. presumably the test
     # suite would fail elsewhere if this didn't work which would help identify a problem.
-    result = traversal.toList()
+    result = t.toList()
     assert len(result) > 0
 
     # add the first result - if a map - to the bindings. this is useful for cases when parameters for
@@ -231,8 +232,8 @@ def _table_assertion(data, result, ctx, ordered):
         assert_that(len(results_to_test), is_(0))
 
 
-def _translate(traversal):
-    replaced = traversal.replace("\n", "")
+def _translate(traversal_):
+    replaced = traversal_.replace("\n", "")
     replaced = regex_all.sub(r"Pop.all_", replaced)
     replaced = regex_and.sub(r"\1and_(", replaced)
     replaced = regex_from.sub(r"\1from_(", replaced)
@@ -270,14 +271,14 @@ def _make_traversal(g, traversal_string, params):
 
 
 def __create_lookup_v(remote):
-    g = Graph().traversal().withRemote(remote)
+    g = traversal().withRemote(remote)
 
     # hold a map of name/vertex for use in asserting results
     return g.V().group().by('name').by(tail()).next()
 
 
 def __create_lookup_e(remote):
-    g = Graph().traversal().withRemote(remote)
+    g = traversal().withRemote(remote)
 
     # hold a map of the "name"/edge for use in asserting results - "name" in this context is in the form of
     # outgoingV-label->incomingV

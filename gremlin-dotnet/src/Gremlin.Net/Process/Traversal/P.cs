@@ -22,11 +22,8 @@
 #endregion
 
 // THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace Gremlin.Net.Process.Traversal
 {
@@ -169,9 +166,9 @@ namespace Gremlin.Net.Process.Traversal
         }
 
 
-        private static T[] ToGenericArray<T>(ICollection<T> collection)
+        private static TT[] ToGenericArray<TT>(ICollection<TT> collection)
         {
-            return collection?.ToArray() ?? new T[0];;
+            return collection?.ToArray() ?? new TT[0];
         }
 
         /// <inheritdoc />

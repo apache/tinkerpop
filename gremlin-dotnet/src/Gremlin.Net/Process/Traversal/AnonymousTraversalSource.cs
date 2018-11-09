@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,32 +21,28 @@
 
 #endregion
 
-using System;
-using Gremlin.Net.Driver;
-using Gremlin.Net.Driver.Remote;
 using Gremlin.Net.Structure;
 
-using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
-
-namespace Gremlin.Net.Template
+namespace Gremlin.Net.Process.Traversal
 {
-    internal class Program
-    {
-        private const string GremlinServerHostname = "localhost";
-        private const int GremlinServerPort = 45940;
+    /// <summary>
+    ///     Provides a method for creating a <see cref="GraphTraversalSource"/> that does not spawn from a
+    ///     <see cref="Graph"/> instance. 
+    /// </summary>
+    public class AnonymousTraversalSource {
 
-        private static void Main()
+        private AnonymousTraversalSource()
         {
-            using (var client = new GremlinClient(new GremlinServer(GremlinServerHostname, GremlinServerPort)))
-            {
-                var g = Traversal().WithRemote(new DriverRemoteConnection(client));
-                var service = new Service(g);
-                var creators = service.FindCreatorsOfSoftware("lop");
-                foreach (var c in creators)
-                {
-                    Console.WriteLine(c);
-                }
-            }
+        }
+
+        /// <summary>
+        ///     Generates a reusable <see cref="GraphTraversalSource" /> instance.
+        /// </summary>
+        /// <returns>A graph traversal source.</returns>
+        public static GraphTraversalSource Traversal()
+        {
+            return new GraphTraversalSource();
         }
     }
+
 }

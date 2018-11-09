@@ -30,7 +30,7 @@ const graphModule = require('../../lib/structure/graph');
 const graphTraversalModule = require('../../lib/process/graph-traversal');
 const traversalModule = require('../../lib/process/traversal');
 const utils = require('../../lib/utils');
-const Graph = graphModule.Graph;
+const traversal = require('../../lib/process/anonymous-traversal').traversal;
 const Path = graphModule.Path;
 const __ = graphTraversalModule.statics;
 const t = traversalModule.t;
@@ -104,7 +104,7 @@ defineSupportCode(function(methods) {
     }
     this.graphName = graphName;
     const data = this.getData();
-    this.g = new Graph().traversal().withRemote(data.connection);
+    this.g = traversal().withRemote(data.connection);
     if (graphName === 'empty') {
       return this.cleanEmptyGraph();
     }

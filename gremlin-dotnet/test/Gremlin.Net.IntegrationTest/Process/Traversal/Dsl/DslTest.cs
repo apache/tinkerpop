@@ -21,7 +21,6 @@
 
 #endregion
 
-using System.Collections.Generic;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
 using Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection;
@@ -88,9 +87,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.Dsl
         [Fact]
         public void ShouldUseDsl() 
         {
-            var graph = new Graph();
             var connection = _connectionFactory.CreateRemoteConnection();
-            var social = graph.Traversal().WithRemote(connection);
+            var social = AnonymousTraversalSource.Traversal().WithRemote(connection);
 
             Assert.NotNull(social.Persons("marko").Knows("josh").Next());
             Assert.Equal(27, social.Persons("marko").YoungestFriendsAge().Next());
