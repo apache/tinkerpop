@@ -520,7 +520,7 @@ executing.  It is up to the script to properly commit or rollback transactions i
 [[connecting-via-drivers]]
 === Connecting via Drivers
 
-TinkerPop offers drivers for the Gremlin Server websocket subprotocol in a variety of languages:
+TinkerPop offers client-side drivers for the Gremlin Server websocket subprotocol in a variety of languages:
 
 * C#
 * Java
@@ -542,21 +542,19 @@ params.put("name","marko");
 List<Result> list = client.submit("g.V().has('person','name',name).out('knows')", params).all().get();
 
 // bytecode
-Graph graph = EmptyGraph.instance();
-GraphTraversalSource g = graph.traversal().withRemote('conf/remote-graph.properties');
+GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using("localhost",8182,"g"));
 List<Vertex> list = g.V().has("person","name","marko").out("knows").toList();
 ----
 [source,groovy]
 ----
 // script
-cluster = Cluster.open()
-client = cluster.connect()
-list = client.submit("g.V().has('person','name',name).out('knows')", [name: "marko"]).all().get();
+def cluster = Cluster.open()
+def client = cluster.connect()
+def list = client.submit("g.V().has('person','name',name).out('knows')", [name: "marko"]).all().get();
 
 // bytecode
-graph = EmptyGraph.instance()
-g = graph.traversal().withRemote('conf/remote-graph.properties')
-list = g.V().has('person','name','marko').out('knows').toList()
+def g = traversal().withRemote(DriverRemoteConnection.using("localhost",8182,"g"))
+def list = g.V().has('person','name','marko').out('knows').toList()
 ----
 [source,csharp]
 ----
@@ -574,8 +572,7 @@ using (var gremlinClient = new GremlinClient(gremlinServer))
 }
 
 // bytecode
-var graph = new Graph();
-var g = graph.Traversal().WithRemote(new DriverRemoteConnection(new GremlinClient(new GremlinServer("localhost", 8182))));
+var g = Traversal().WithRemote(new DriverRemoteConnection(new GremlinClient(new GremlinServer("localhost", 8182))));
 var list = g.V().Has("person","name","marko").Out("knows").toList();
 ----
 [source,javascript]
@@ -586,8 +583,7 @@ const conn = client.open();
 const list = conn.submit("g.V().has('person','name',name).out('knows')",{name: 'marko'}).then(function (response) { ... });
 
 // bytecode
-const graph = new Graph();
-const g = graph.traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
+const g = gtraversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
 const list = g.V().has("person","name","marko").out("knows").toList();
 ----
 [source,python]
@@ -597,8 +593,7 @@ client = Client('ws://localhost:8182/gremlin', 'g')
 list = client.submit("g.V().has('person','name',name).out('knows')",{'name': 'marko'}).all()
 
 # bytecode
-graph = Graph()
-g = graph.traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
+g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
 list = g.V().has("person","name","marko").out("knows").toList()
 ----
 

@@ -365,37 +365,44 @@ multiple methods for clients to interface with it:
 * HTTP for string-based scripts
 
 Users are encouraged to use the bytecode based approach with websockets because it allows them to write Gremlin
-in the language of their choice, which looks quite similar to the <<connecting-embedded, embedded>> approach in style
-and function. As with the embedded approach, the means of connection is based on some form of `Graph` creation
-followed by construction of a `GraphTraversalSource` with some "remote" options that describe the location of the
-Gremlin Server they wish to connect to:
+in the language of their choice, which looks somewhat similar to the <<connecting-embedded, embedded>> approach in that
+there is a need to create a `GraphTraversalSource`. In the embedded approach, the means for that object's creation is
+derived from a `Graph` object which spawns it. In this case, however, the `Graph` instance exists only on the server
+which means that there is no `Graph` instance to create locally. The approach is to instead create a
+`GraphTraversalSource` anonymously with `AnonymousTraversalSource` and then apply some "remote" options that describe
+the location of the Gremlin Server to connect to:
 
 [source,java,tab]
 ----
-Graph graph = EmptyGraph.instance();
-GraphTraversalSource g = graph.traversal().withRemote('conf/remote-graph.properties');
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+
+GraphTraversalSource g = traversal().withRemote('conf/remote-graph.properties');
 ----
 [source,groovy]
 ----
-graph = EmptyGraph.instance()
-g = graph.traversal().withRemote('conf/remote-graph.properties')
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+
+def g = traversal().withRemote('conf/remote-graph.properties')
 ----
 [source,csharp]
 ----
-var graph = new Graph();
-var g = graph.Traversal().WithRemote(
+using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
+
+var g = Traversal().WithRemote(
               new DriverRemoteConnection(new GremlinClient(new GremlinServer("localhost", 8182))));
 ----
 [source,javascript]
 ----
-const graph = new Graph();
-const g = graph.traversal().withRemote(
+const traversal = gremlin.process.AnonymousTraversalSource.traversal;
+
+const g = traversal().withRemote(
                 new DriverRemoteConnection('ws://localhost:8182/gremlin'));
 ----
 [source,python]
 ----
-graph = Graph()
-g = graph.traversal().withRemote(
+from gremlin_python.process.anonymous_traversal_source import traversal
+
+g = traversal().withRemote(
           DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
 ----
 

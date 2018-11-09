@@ -97,6 +97,7 @@ utilizing Gremlin Java are:
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.apache.tinkerpop.gremlin.process.traversal.Operator.*;
 import static org.apache.tinkerpop.gremlin.process.traversal.Order.*;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.*;
@@ -113,7 +114,8 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 === Connecting
 
 The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down to
-creating a `Graph` instance and then spawning a `GraphTraversalSource`.
+creating a `GraphTraversalSource`. For <<connecting-embedded,embedded>> mode, this involves first creating a `Graph`
+and then spawning the `GraphTraversalSource`:
 
 [source,java]
 ----
@@ -126,13 +128,20 @@ which affect traversal execution. The <<traversal, Traversal>> Section describes
 only suitable with <<connecting-embedded,embedded>> style usage. For remote options however there are some added
 setup and configurations to consider and this section looks to address those.
 
-The most basic way to connect to <<connecting-gremlin-server,Gremlin Server>> or
-<<connecting-rgp,Remote Gremlin Providers>> uses the following two lines of code:
+When connecting to <<connecting-gremlin-server,Gremlin Server>> or <<connecting-rgp,Remote Gremlin Providers>>  it
+is possible to configure the `DriverRemoteConnection` manually as shown in earlier examples where the host and port
+are provided as follows:
 
 [source,java]
 ----
-Graph graph = EmptyGraph.instance();
-GraphTraversalSource g = graph.traversal().withRemote('conf/remote-graph.properties');
+GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using("localhost",8182,"g"));
+----
+
+It is also possible to create it from a configuration. The most basic way to do so involves the following line of code:
+
+[source,java]
+----
+GraphTraversalSource g = traversal().withRemote('conf/remote-graph.properties');
 ----
 
 The `remote-graph.properties` file simply provides connection information to the `GraphTraversalSource` which is used
@@ -162,25 +171,22 @@ the command shown above could be re-written using programmatic construction as f
 [source,java]
 ----
 Cluster cluster = Cluster.open();
-Graph graph = EmptyGraph.instance();
-GraphTraversalSource g = graph.traversal().withRemote(DriverRemoteConnection.using(cluster, "g"));
+GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "g"));
 ----
 
 Please consider the following example:
 
 [gremlin-groovy]
 ----
-graph = EmptyGraph.instance()
-g = graph.traversal().withRemote('conf/remote-graph.properties')
+def g = traversal().withRemote('conf/remote-graph.properties')
 g.V().valueMap(true)
 g.close()
 ----
 [source,java]
 ----
-Graph graph = EmptyGraph.instance();
-GraphTraversalSource g = graph.traversal().withRemote("conf/remote-graph.properties");
+GraphTraversalSource g = traversal().withRemote("conf/remote-graph.properties");
 List<Map> list = g.V().valueMap(true);
-g.close()
+g.close();
 ----
 
 Note the call to `close()` above. The call to `withRemote()` internally instantiates a connection via the driver that
@@ -193,8 +199,7 @@ then re-use it.
 [gremlin-groovy]
 ----
 cluster = Cluster.open('conf/remote-objects.yaml')
-graph = EmptyGraph.instance()
-g = graph.traversal().withRemote(DriverRemoteConnection.using(cluster, "g"))
+g = traversal().withRemote(DriverRemoteConnection.using(cluster, "g"))
 g.V().valueMap(true)
 g.close()
 cluster.close()
@@ -271,8 +276,7 @@ MessageSerializer serializer = new GryoMessageSerializerV3d0(kryo);
 Cluster cluster = Cluster.build().
                           serializer(serializer).
                           create();
-Graph graph = EmptyGraph.instance();
-GraphTraversalSource g = graph.traversal().withRemote(DriverRemoteConnection.using(cluster, "g"));
+GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "g"));
 ----
 
 The `IoRegistry` tells the serializer what classes from the graph provider to auto-register during serialization.
