@@ -66,14 +66,15 @@ learning process.
 
 * <<graph-computing,Graph Computing>> is an introduction to what "graph computing" means to TinkerPop and describes
 many of the provider and user-facing TinkerPop APIs and concepts that enable Gremlin.
-* <<connecting-gremlin,Connecting Gremlin>> provides descriptions for the different modes by which users will connect to graphs
-depending on their environment.
+* <<connecting-gremlin,Connecting Gremlin>> provides descriptions for the different modes by which users will connect
+to graphs depending on their environment.
 * <<basic-gremlin, Basic Gremlin>> describes how to use a connection to start writing Gremlin.
-* <<staying-agnostic, Staying Agnostic>> explains the extent to which working with Gremlin protects agnosticism.
+* <<staying-agnostic, Staying Agnostic>> provides tips on ways to keep Gremlin as portable as possible among different
+graph providers.
 
 New users should not ignore TinkerPop's link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/[Getting Started]
 tutorial or link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[The Gremlin Console] tutorial.
-Both contain a large number of basic information and tips that can help readers avoid some basic pitfalls early on.
+Both contain a large set of basic information and tips that can help readers avoid some general pitfalls early on.
 Both also focus on Gremlin usage in the Gremlin Console, which tends to be a critical tool for Gremlin developers of
 any development background.
 
@@ -287,11 +288,12 @@ of <<order-step,`order()`>>-step.
 
 It was established in the initial introductory section that _Gremlin is Gremlin is Gremlin_, meaning that irrespective
 of programming language, graph system, etc. the Gremlin written is always of the same general construct making it
-possible for users to move between development languages easily. This quality of Gremlin generally applies to the
-traversal language itself. It applies less to the way in which the user connects to a graph to utilize Gremlin, which
-might differ considerably depending on the programming language or graph database chosen.
+possible for users to move between development languages and TinkerPop-enabled graph technology easily. This quality
+of Gremlin generally applies to the traversal language itself. It applies less to the way in which the user connects
+to a graph to utilize Gremlin, which might differ considerably depending on the programming language or graph database
+chosen.
 
-How one connects to a graph is a fairly wide subject that essentially divides along a simple line determined by the
+How one connects to a graph is a multi-faceted subject that essentially divides along a simple lines determined by the
 answer to this question: Where is the Gremlin Traversal Machine (GTM)? The reason that this question is so important is
 because the GTM is responsible for processing traversals. One can write Gremlin traversals in any language, but without
 a GTM there will be no way to execute that traversal against a TinkerPop-enabled graph. The GTM is typically in one
@@ -316,7 +318,7 @@ and link:http://ogre.clojurewerkz.org/[Ogre] (for Clojure).
 
 In this mode, users will start by creating a `Graph` instance, followed by a `GraphTraversalSource` which is the class
 from which Gremlin traversals are spawned. Graphs that allow this sort of direct instantiation are obviously ones
-that are JVM-based and directly implement TinkerPop interfaces.
+that are JVM-based (or have a JVM-based connector) and directly implement TinkerPop interfaces.
 
 [source,java]
 Graph graph = TinkerGraph.open();
@@ -340,9 +342,9 @@ JVM language. The following list outlines a number of these available options:
 * Lambdas can be written in the native language which is convenient, however, it will reduce the portability of Gremlin
 to do so should the need arise to switch away from the embedded mode. See more in the
 <<a-note-on-lambdas,Note on Lambdas>> Section.
-* Any features that involve extending TinkerPop Java interfaces - e.g. `VertexProgram`, `TraversalStrategy`, etc. In
-some cases, these features can be made accessible to non-JVM languages, but they obviously must be initially developed
-for the JVM.
+* Any features that involve extending TinkerPop Java interfaces - e.g. `VertexProgram`, `TraversalStrategy`, etc. are
+bound to the JVM. In some cases, these features can be made accessible to non-JVM languages, but they obviously must
+be initially developed for the JVM.
 * Certain built-in `TraversalStrategy` implementations that rely on lambdas or other JVM-only configurations may not
 be available for use any other way.
 * There are no boundaries put in place by serialization (e.g. GraphSON) as embedded graphs are only dealing with
@@ -365,10 +367,10 @@ multiple methods for clients to interface with it:
 * HTTP for string-based scripts
 
 Users are encouraged to use the bytecode based approach with websockets because it allows them to write Gremlin
-in the language of their choice, which looks somewhat similar to the <<connecting-embedded, embedded>> approach in that
-there is a need to create a `GraphTraversalSource`. In the embedded approach, the means for that object's creation is
-derived from a `Graph` object which spawns it. In this case, however, the `Graph` instance exists only on the server
-which means that there is no `Graph` instance to create locally. The approach is to instead create a
+in the language of their choice. Connecting looks somewhat similar to the <<connecting-embedded, embedded>> approach
+in that there is a need to create a `GraphTraversalSource`. In the embedded approach, the means for that object's
+creation is derived from a `Graph` object which spawns it. In this case, however, the `Graph` instance exists only on
+the server which means that there is no `Graph` instance to create locally. The approach is to instead create a
 `GraphTraversalSource` anonymously with `AnonymousTraversalSource` and then apply some "remote" options that describe
 the location of the Gremlin Server to connect to:
 
@@ -445,7 +447,7 @@ and there is no way in TinkerPop to string together multiple traversals into the
 [[connecting-rgp]]
 === Remote Gremlin Provider
 
-Gremlin Service Providers (RGPs) are showing up more and more often in the graph database space. In TinkerPop terms,
+Remote Gremlin Providers (RGPs) are showing up more and more often in the graph database space. In TinkerPop terms,
 this category of graph providers is defined by those who simply support the Gremlin language. Typically, these are
 server-based graphs, often cloud-based, which accept Gremlin scripts or bytecode as a request and return results.
 They will often implement Gremlin Server protocols, which enables TinkerPop drivers to connect to them as they would
@@ -456,7 +458,7 @@ Despite leveraging TinkerPop protocols and drivers as being typical, RGPs are no
 TinkerPop-enabled. RGPs may well have their own drivers and protocols that may plug into
 <<gremlin-drivers-variants,Gremlin Language Variants> and may allow for more advanced options like better security,
 cluster awareness, batched requests or other features. The details of these different systems are outside the scope
-of this documentation so be sure to consult their documentation for more information.
+of this documentation, so be sure to consult their documentation for more information.
 
 [[basic-gremlin]]
 == Basic Gremlin

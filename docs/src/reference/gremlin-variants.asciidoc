@@ -1044,5 +1044,4 @@ const result2 = await client.submit('g.V().hasLabel(label).tail(n)', { label: 'p
 for (const vertex of result2) {
   console.log(vertex.id);
 }
-
 ----
