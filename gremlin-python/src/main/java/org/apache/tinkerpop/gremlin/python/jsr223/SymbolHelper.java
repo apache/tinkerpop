@@ -42,6 +42,7 @@ public final class SymbolHelper {
         TO_PYTHON_MAP.put("list", "list_");
         TO_PYTHON_MAP.put("set", "set_");
         TO_PYTHON_MAP.put("all", "all_");
+        TO_PYTHON_MAP.put("with", "with_");
         //
         TO_PYTHON_MAP.forEach((k, v) -> FROM_PYTHON_MAP.put(v, k));
     }

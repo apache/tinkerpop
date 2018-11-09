@@ -76,7 +76,8 @@ module.exports = {
     statics: gt.statics,
     Translator,
     traversal: AnonymousTraversalSource.traversal,
-    AnonymousTraversalSource
+    AnonymousTraversalSource,
+    withOptions: t.withOptions
   },
   structure: {
     io: {

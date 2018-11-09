@@ -53,9 +53,9 @@ public abstract class PeerPressureTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<Object, Number>> get_g_V_peerPressure_byXclusterX_byXoutEXknowsXX_pageRankX1X_byXrankX_byXoutEXknowsXX_timesX2X_group_byXclusterX_byXrank_sumX_limitX100X();
 
-    public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasXname_rippleX_inXcreatedX_peerPressure_byXoutEX_byXclusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX();
+    public abstract Traversal<Vertex, Map<Object, List<Object>>> get_g_V_hasXname_rippleX_inXcreatedX_peerPressure_byXoutEX_byXclusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX();
 
-    public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasXname_rippleX_inXcreatedX_peerPressure_withXedges_outEX_withXpropertyName_clusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX();
+    public abstract Traversal<Vertex, Map<Object, List<Object>>> get_g_V_hasXname_rippleX_inXcreatedX_peerPressure_withXedges_outEX_withXpropertyName_clusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -83,9 +83,9 @@ public abstract class PeerPressureTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_hasXname_rippleX_inXcreatedX_peerPressure_byXoutEX_byXclusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX() {
         TestHelper.assumeNonDeterministic();
-        final Traversal<Vertex, Map<String, List<Object>>> traversal = get_g_V_hasXname_rippleX_inXcreatedX_peerPressure_byXoutEX_byXclusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX();
+        final Traversal<Vertex, Map<Object, List<Object>>> traversal = get_g_V_hasXname_rippleX_inXcreatedX_peerPressure_byXoutEX_byXclusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX();
         printTraversalForm(traversal);
-        final List<Map<String, List<Object>>> results = traversal.toList();
+        final List<Map<Object, List<Object>>> results = traversal.toList();
         assertEquals(6, results.size());
         final Map<String, Object> clusters = new HashMap<>();
         results.forEach(m -> clusters.put((String) m.get("name").get(0), m.get("cluster").get(0)));
@@ -105,9 +105,9 @@ public abstract class PeerPressureTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_hasXname_rippleX_inXcreatedX_peerPressure_withXEDGES_outEX_withXPROPERTY_NAME_clusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX() {
         TestHelper.assumeNonDeterministic();
-        final Traversal<Vertex, Map<String, List<Object>>> traversal = get_g_V_hasXname_rippleX_inXcreatedX_peerPressure_withXedges_outEX_withXpropertyName_clusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX();
+        final Traversal<Vertex, Map<Object, List<Object>>> traversal = get_g_V_hasXname_rippleX_inXcreatedX_peerPressure_withXedges_outEX_withXpropertyName_clusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX();
         printTraversalForm(traversal);
-        final List<Map<String, List<Object>>> results = traversal.toList();
+        final List<Map<Object, List<Object>>> results = traversal.toList();
         assertEquals(6, results.size());
         final Map<String, Object> clusters = new HashMap<>();
         results.forEach(m -> clusters.put((String) m.get("name").get(0), m.get("cluster").get(0)));
@@ -136,12 +136,12 @@ public abstract class PeerPressureTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasXname_rippleX_inXcreatedX_peerPressure_byXoutEX_byXclusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX() {
+        public Traversal<Vertex, Map<Object, List<Object>>> get_g_V_hasXname_rippleX_inXcreatedX_peerPressure_byXoutEX_byXclusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX() {
             return g.V().has("name", "ripple").in("created").peerPressure().by(__.outE()).by("cluster").repeat(__.union(__.identity(), __.both())).times(2).dedup().valueMap("name", "cluster");
         }
 
         @Override
-        public Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasXname_rippleX_inXcreatedX_peerPressure_withXedges_outEX_withXpropertyName_clusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX() {
+        public Traversal<Vertex, Map<Object, List<Object>>> get_g_V_hasXname_rippleX_inXcreatedX_peerPressure_withXedges_outEX_withXpropertyName_clusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX() {
             return g.V().has("name", "ripple").in("created").peerPressure().with(PeerPressure.edges,__.outE()).with(PeerPressure.propertyName, "cluster").repeat(__.union(__.identity(), __.both())).times(2).dedup().valueMap("name", "cluster");
         }
     }

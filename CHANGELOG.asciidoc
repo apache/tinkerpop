@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-3-3, 3.3.3>>.
 
+* Made `valueMap()` aware of `by` and `with` modulators and deprecated `valueMap(boolean)` overloads.
 * Use `Compare.eq` in `Contains` predicates to ensure the same filter behavior for numeric values.
 * Added `OptionsStrategy` to allow traversals to take arbitrary traversal-wide configurations.
 * Added text predicates.

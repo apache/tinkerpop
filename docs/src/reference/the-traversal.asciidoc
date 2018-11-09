@@ -758,7 +758,7 @@ has been seen or not.
 
 [gremlin-groovy,modern]
 ----
-g.V().valueMap(true, 'name')
+g.V().valueMap('name').with(WithOptions.tokens)
 g.V().dedup().by(label).values('name')
 ----
 
@@ -1792,7 +1792,7 @@ The term `not` is a reserved word in Python, and therefore must be referred to i
 
 [gremlin-groovy,modern]
 ----
-g.V().not(hasLabel('person')).valueMap(true)
+g.V().not(hasLabel('person')).valueMap().with(WithOptions.tokens)
 g.V().hasLabel('person').
   not(out('created').count().is(gt(1))).values('name')   <1>
 ----
@@ -3170,7 +3170,7 @@ g.E().valueMap()
 
 It is important to note that the map of a vertex maintains a list of values for each key. The map of an edge or
 vertex-property represents a single property (not a list). The reason is that vertices in TinkerPop leverage
-<<vertex-properties,vertex properties>> which are support multiple values per key. Using the <<the-crew-toy-graph,
+<<vertex-properties,vertex properties>> which support multiple values per key. Using the <<the-crew-toy-graph,
 "The Crew">> toy graph, the point is made explicit.
 
 [gremlin-groovy,theCrew]
@@ -3180,19 +3180,26 @@ g.V().has('name','marko').properties('location')
 g.V().has('name','marko').properties('location').valueMap()
 ----
 
-If the `id`, `label`, `key`, and `value` of the `Element` is desired, then a boolean triggers its insertion into the
-returned map.
+To turn list of values into single items, the `by()` modulator can be used as shown below.
 
 [gremlin-groovy,theCrew]
 ----
-g.V().hasLabel('person').valueMap(true)
-g.V().hasLabel('person').valueMap(true,'name')
-g.V().hasLabel('person').properties('location').valueMap(true)
+g.V().valueMap().by(unfold())
+g.V().valueMap('name','location').by().by(unfold())
+----
+
+If the `id`, `label`, `key`, and `value` of the `Element` is desired, then the `with()` modulator can be used to
+trigger its insertion into the returned map.
+
+[gremlin-groovy,theCrew]
+----
+g.V().hasLabel('person').valueMap().with(WithOptions.tokens)
+g.V().hasLabel('person').valueMap('name').with(WithOptions.tokens, WithOptions.labels)
+g.V().hasLabel('person').properties('location').valueMap().with(WithOptions.tokens, WithOptions.values)
 ----
 
 *Additional References*
 
-link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#valueMap-boolean-java.lang.String...-++[`valueMap(boolean,String...)`],
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#valueMap-java.lang.String...-++[`valueMap(String...)`]
 
 [values-step]]
@@ -3860,8 +3867,8 @@ g = graph.traversal().withStrategies(SubgraphStrategy.build().
   vertices(or(hasNot('location'),properties('location').count().is(gt(3)))).
   edges(hasLabel('develops')).
   vertexProperties(or(hasLabel(neq('location')),hasNot('endTime'))).create())
-g.V().valueMap(true)
-g.E().valueMap(true)
+g.V().valueMap().with(WithOptions.tokens)
+g.E().valueMap().with(WithOptions.tokens)
 g.V().outE().inV().
   path().
     by('name').

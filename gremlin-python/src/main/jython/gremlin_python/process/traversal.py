@@ -617,3 +617,23 @@ class Binding(object):
 
     def __repr__(self):
         return "binding[" + self.key + "=" + str(self.value) + "]"
+
+'''
+WITH OPTIONS
+'''
+class WithOptions(object):
+
+    tokens = "~tinkerpop.valueMap.tokens"
+
+    none = 0
+
+    ids = 1
+
+    labels = 2
+
+    keys = 4
+
+    values = 8
+
+    all = 15
+

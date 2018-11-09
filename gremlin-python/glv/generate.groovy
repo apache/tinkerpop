@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.P
 import org.apache.tinkerpop.gremlin.process.traversal.TextP
 import org.apache.tinkerpop.gremlin.process.traversal.IO
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions
 import java.lang.reflect.Modifier
 
 // this is a bit of a copy of what's in SymbolHelper - no way around it because this code generation task occurs
@@ -50,6 +51,10 @@ def gatherTokensFrom = { tokenClasses ->
     def m = [:]
     tokenClasses.each { tc -> m << [(tc.simpleName) : tc.getFields().sort{ a, b -> a.name <=> b.name }.collectEntries{ f -> [(f.name) : f.get(null)]}]}
     return m
+}
+
+def toPythonValue = { type, value ->
+  type == String.class && value != null ? ('"' + value + '"') : value
 }
 
 def toJavaMap = toPythonMap.collectEntries{k,v -> [(v):k]}
@@ -100,7 +105,9 @@ def binding = ["enums": CoreImports.getClassImports()
                        sort { a, b -> a <=> b },
                "tokens": gatherTokensFrom([IO, ConnectedComponent, ShortestPath, PageRank, PeerPressure]),
                "toPython": toPython,
-               "toJava": toJava]
+               "toJava": toJava,
+               "withOptions": WithOptions.getDeclaredFields().
+                        collect {["name": it.name, "value": toPythonValue(it.type, it.get(null))]}]
 
 def engine = new groovy.text.GStringTemplateEngine()
 def traversalTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/TraversalSource.template")).make(binding)

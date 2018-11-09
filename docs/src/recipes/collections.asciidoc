@@ -352,14 +352,14 @@ g.V().
   has('name','marko').
   union(project('degree').         <1>
           by(bothE().count()),
-        valueMap(true)).
+        valueMap().with(WithOptions.tokens)).
   unfold().                        <2>
   group().
     by(keys).
     by(select(values).unfold())
 ----
 
-<1> The `valueMap(true)` of a `Vertex` can be extended with the "degree" of the `Vertex` by performing a `union()` of
+<1> The `valueMap().with(WithOptions.tokens)` of a `Vertex` can be extended with the "degree" of the `Vertex` by performing a `union()` of
 the two traversals that produce that output (both produce `Map` objects).
 <2> The `unfold()`-step is used to decompose the `Map` objects into key/value entries that are then constructed back
 into a single new `Map` given the patterns shown earlier. The `Map` objects of both traversals in the `union()` are
@@ -375,7 +375,7 @@ a `List` back for all the values of the new `Map`. With some added logic the `Ma
 ----
 g.V().
   has('name','marko').
-  union(valueMap(true),
+  union(valueMap().with(WithOptions.tokens),
         project('age').
           by(constant(100))).
   unfold().

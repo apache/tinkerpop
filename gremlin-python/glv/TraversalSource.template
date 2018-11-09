@@ -345,3 +345,11 @@ class Binding(object):
 
     def __repr__(self):
         return "binding[" + self.key + "=" + str(self.value) + "]"
+
+'''
+WITH OPTIONS
+'''
+class WithOptions(object):
+<% withOptions.each { %>
+    <%= it.name %> = <%= it.value %>
+<% } %>

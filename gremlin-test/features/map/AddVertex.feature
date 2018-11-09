@@ -336,7 +336,7 @@ Feature: Step - addV()
       | marko |
     And the graph should return 2 for count of "g.V().has(\"name\",\"marko\")"
 
-  Scenario: g_V_asXaX_hasXname_markoX_outXcreatedX_asXbX_addVXselectXaX_labelX_propertyXtest_selectXbX_labelX_valueMapXtrueX
+  Scenario: g_V_asXaX_hasXname_markoX_outXcreatedX_asXbX_addVXselectXaX_labelX_propertyXtest_selectXbX_labelX_valueMap_withXtokensX
     Given the empty graph
     And the graph initializer of
       """
@@ -355,7 +355,7 @@ Feature: Step - addV()
       """
     And the traversal of
       """
-      g.V().as("a").has("name", "marko").out("created").as("b").addV(__.select("a").label()).property("test", __.select("b").label()).valueMap(true)
+      g.V().as("a").has("name", "marko").out("created").as("b").addV(__.select("a").label()).property("test", __.select("b").label()).valueMap().with(WithOptions.tokens)
       """
     When iterated to list
     Then the result should have a count of 1

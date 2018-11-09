@@ -29,6 +29,76 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.4.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Modulation of valueMap()
+
+The `valueMap()` step now supports `by` and `with` modulation, which also led to the deprecation of `valueMap(true)` overloads.
+
+===== by() modulation
+
+With the help of the `by()` modulator `valueMap()` result values can now be adjusted, which is particularly useful to turn multi-/list-values into single values.
+
+```
+gremlin> g.V().hasLabel("person").valueMap()
+==>[name:[marko],age:[29]]
+==>[name:[vadas],age:[27]]
+==>[name:[josh],age:[32]]
+==>[name:[peter],age:[35]]
+gremlin> g.V().hasLabel("person").valueMap().by(unfold())
+==>[name:marko,age:29]
+==>[name:vadas,age:27]
+==>[name:josh,age:32]
+==>[name:peter,age:35]
+```
+
+===== with() modulation
+
+The `with()` modulator can be used to include certain tokens (`id`, `label`, `key` and/or `value`).
+
+The old way (still valid, but deprecated):
+
+```
+gremlin> g.V().hasLabel("software").valueMap(true)
+==>[id:10,label:software,name:[gremlin]]
+==>[id:11,label:software,name:[tinkergraph]]
+gremlin> g.V().has("person","name","marko").properties("location").valueMap(true)
+==>[id:6,key:location,value:san diego,startTime:1997,endTime:2001]
+==>[id:7,key:location,value:santa cruz,startTime:2001,endTime:2004]
+==>[id:8,key:location,value:brussels,startTime:2004,endTime:2005]
+==>[id:9,key:location,value:santa fe,startTime:2005]
+```
+
+The new way:
+
+```
+gremlin> g.V().hasLabel("software").valueMap().with(WithOptions.tokens)
+==>[id:10,label:software,name:[gremlin]]
+==>[id:11,label:software,name:[tinkergraph]]
+gremlin> g.V().has("person","name","marko").properties("location").valueMap().with(WithOptions.tokens)
+==>[id:6,key:location,value:san diego,startTime:1997,endTime:2001]
+==>[id:7,key:location,value:santa cruz,startTime:2001,endTime:2004]
+==>[id:8,key:location,value:brussels,startTime:2004,endTime:2005]
+==>[id:9,key:location,value:santa fe,startTime:2005]
+```
+
+Furthermore, now there's a finer control over which of the tokens should be included:
+
+```
+gremlin> g.V().hasLabel("software").valueMap().with(WithOptions.tokens, WithOptions.labels)
+==>[label:software,name:[gremlin]]
+==>[label:software,name:[tinkergraph]]
+gremlin> g.V().has("person","name","marko").properties("location").valueMap().with(WithOptions.tokens, WithOptions.values)
+==>[value:san diego,startTime:1997,endTime:2001]
+==>[value:santa cruz,startTime:2001,endTime:2004]
+==>[value:brussels,startTime:2004,endTime:2005]
+==>[value:santa fe,startTime:2005]
+```
+
+As shown above, the support of the `with()` modulator for `valueMap()` makes the `valueMap(boolean)` overload superfluous, hence this overload is now deprecated. This is a breaking API change, since
+`valueMap()` will now always yield instances of type `Map<Object, Object>`. Prior this change only the `valueMap(boolean)` overload yielded `Map<Object, Object>` objects, `valueMap()` without the
+boolean parameter used to yield instances of type `Map<String, Object>`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2059[TINKERPOP-2059]
+
 ==== Changed number comparison behavior of within()/without() predicates
 
 In previous versions `within()` and `without()` performed strict number comparisons; that means these predicates did not only compare number values, but also the time. This was inconsistent with

@@ -225,7 +225,8 @@ function getSandbox(g, parameters) {
     Scope: traversalModule.scope,
     Operator: traversalModule.operator,
     T: traversalModule.t,
-    toLong: utils.toLong
+    toLong: utils.toLong,
+    WithOptions: traversalModule.withOptions
   };
   // Pass the parameter to the sandbox
   Object.keys(parameters).forEach(paramName => sandbox[paramName] = parameters[paramName]);

@@ -133,7 +133,7 @@ demonstration, an additional edge is added to the "modern" graph:
 ----
 g.V(1).as("a").V(3).addE("created").property("weight",0.4d).from("a").iterate()
 g.V(1).as("a").V(3).addE("created").property("weight",0.5d).from("a").iterate()
-g.V(1).outE("created").valueMap(true)
+g.V(1).outE("created").valueMap().with(WithOptions.tokens)
 ----
 
 To identify the duplicate with this revised definition, the previous traversal can be modified to:
@@ -147,5 +147,5 @@ g.withoutStrategies(LazyBarrierStrategy, PathRetractionStrategy).V().as("ov").
   where(neq("e1")).
   where(outV().as("ov")).as("e2").
   where("e1", eq("e2")).by(label).
-  where("e1", eq("e2")).by("weight").valueMap(true)
+  where("e1", eq("e2")).by("weight").valueMap().with(WithOptions.tokens)
 ----
