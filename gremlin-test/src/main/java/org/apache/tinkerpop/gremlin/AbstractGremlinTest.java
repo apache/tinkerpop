@@ -187,7 +187,7 @@ public abstract class AbstractGremlinTest {
 
     public Vertex convertToVertex(final Graph graph, final String vertexName) {
         // all test graphs have "name" as a unique id which makes it easy to hardcode this...works for now
-        return graph.traversal().V().has("name", vertexName).next();
+        return graphProvider.traversal(graph).V().has("name", vertexName).next();
     }
 
     public GraphTraversal<Vertex, Object> convertToVertexPropertyId(final String vertexName, final String vertexPropertyKey) {
@@ -200,7 +200,7 @@ public abstract class AbstractGremlinTest {
 
     public GraphTraversal<Vertex, VertexProperty<Object>> convertToVertexProperty(final Graph graph, final String vertexName, final String vertexPropertyKey) {
         // all test graphs have "name" as a unique id which makes it easy to hardcode this...works for now
-        return (GraphTraversal<Vertex, VertexProperty<Object>>) graph.traversal().V().has("name", vertexName).properties(vertexPropertyKey);
+        return (GraphTraversal<Vertex, VertexProperty<Object>>) graphProvider.traversal(graph).V().has("name", vertexName).properties(vertexPropertyKey);
     }
 
     public Object convertToEdgeId(final String outVertexName, String edgeLabel, final String inVertexName) {
@@ -208,7 +208,7 @@ public abstract class AbstractGremlinTest {
     }
 
     public Object convertToEdgeId(final Graph graph, final String outVertexName, String edgeLabel, final String inVertexName) {
-        return graph.traversal().V().has("name", outVertexName).outE(edgeLabel).as("e").inV().has("name", inVertexName).<Edge>select("e").next().id();
+        return graphProvider.traversal(graph).V().has("name", outVertexName).outE(edgeLabel).as("e").inV().has("name", inVertexName).<Edge>select("e").next().id();
     }
 
     /**

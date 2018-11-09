@@ -322,6 +322,15 @@ List<Result> result = client.submit("g.V()", options).all().get();
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1342[TINKERPOP-1342]
 
+==== Moving of RemoteGraph
+
+`RemoteGraph` was long ago deprecated in favor of `withRemote()`. It became even less useful with the introduction of
+the `AnonymousTraversalSource` concept in 3.3.5. It's only real use was for testing remote bytecode based traversals
+in the test suite as the test suite requires an actual `Graph` object to function properly. As such, `RemoteGraph` has
+been moved to `gremlin-test`. It should no longer be used in any capacity besides that.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2079[TINKERPOP-2079]
+
 ==== Removal of Giraph Support
 
 Support for Giraph has been removed as of this version. There were a number of reasons for this decision which were
@@ -420,6 +429,8 @@ The following deprecated classes, methods or fields have been removed in this ve
 
 * `gremlin-core`
 ** `org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer#GREMLIN_CORE`
+** `org.apache.tinkerpop.gremlin.process.remote.RemoteGraph` - moved to `gremlin-test`.
+** `org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy#identity()`
 ** `org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine`
 ** `org.apache.tinkerpop.gremlin.process.traversal.engine.*`
 ** `org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy.Builder#addReadPartition(String)`
@@ -456,7 +467,8 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-1296[TINKERPOP-1296],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1705[TINKERPOP-1705],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1707[TINKERPOP-1707],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1954[TINKERPOP-1954],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1986[TINKERPOP-1986]
+link:https://issues.apache.org/jira/browse/TINKERPOP-1986[TINKERPOP-1986],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2079[TINKERPOP-2079]
 
 ==== Deprecated GraphSONMessageSerializerGremlinV2d0
 
