@@ -86,31 +86,6 @@ methods described in the <<connecting-gremlin,Connecting Gremlin>> Section.
 </dependency>
 ----
 
-=== Static Enums and Methods
-
-Gremlin has various tokens (e.g. `T`, `P`, `Order`, `Direction`, etc.) that in most examples are short-handed by way
-of static imports. To get this same short-handed effect, the typical list of imports that users should have when
-utilizing Gremlin Java are:
-
-[source,java]
-----
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
-import org.apache.tinkerpop.gremlin.process.traversal.IO;
-import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
-import static org.apache.tinkerpop.gremlin.process.traversal.Operator.*;
-import static org.apache.tinkerpop.gremlin.process.traversal.Order.*;
-import static org.apache.tinkerpop.gremlin.process.traversal.P.*;
-import static org.apache.tinkerpop.gremlin.process.traversal.Pop.*;
-import static org.apache.tinkerpop.gremlin.process.traversal.SackFunctions.*;
-import static org.apache.tinkerpop.gremlin.process.traversal.Scope.*;
-import static org.apache.tinkerpop.gremlin.process.traversal.TextP.*;
-import static org.apache.tinkerpop.gremlin.structure.Column.*;
-import static org.apache.tinkerpop.gremlin.structure.Direction.*;
-import static org.apache.tinkerpop.gremlin.structure.T.*;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
-----
-
 === Connecting
 
 The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down to
@@ -178,7 +153,7 @@ Please consider the following example:
 
 [gremlin-groovy]
 ----
-def g = traversal().withRemote('conf/remote-graph.properties')
+g = traversal().withRemote('conf/remote-graph.properties')
 g.V().valueMap(true)
 g.close()
 ----
@@ -213,6 +188,29 @@ a `Cluster` will close all connections spawned by the `Cluster`.
 IMPORTANT: Bytecode-based traversals use the `TraversalOpProcessor` in Gremlin Server which requires a cache to enable
 the retrieval of side-effects (if the `Traversal` produces any). That cache can be configured (e.g. controlling
 eviction times and sizing) in the Gremlin Server configuration file as described <<traversalopprocessor, here>>.
+
+=== Common Imports
+
+There are a number of classes, functions and tokens that are typically used with Gremlin. The following imports
+provide most of the typical functionality required to use Gremlin:
+
+[source,java]
+----
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.IO;
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+import static org.apache.tinkerpop.gremlin.process.traversal.Operator.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.Order.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.Pop.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.SackFunctions.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.Scope.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.TextP.*;
+import static org.apache.tinkerpop.gremlin.structure.Column.*;
+import static org.apache.tinkerpop.gremlin.structure.Direction.*;
+import static org.apache.tinkerpop.gremlin.structure.T.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
+----
 
 === Configuration
 
@@ -552,6 +550,12 @@ link:http://groovy.apache.org[Apache Groovy] language. As a JVM-based language v
 Gremlin-Java constructs. Moreover, given its scripting nature, Gremlin-Groovy serves as the language of
 <<gremlin-console,Gremlin Console>>.
 
+[source,groovy]
+----
+compile group: 'org.apache.tinkerpop', name: 'gremlin-core', version: '3.3.4'
+compile group: 'org.apache.tinkerpop', name: 'gremlin-driver', version: '3.3.4'
+----
+
 WARNING: In Groovy, `as`, `in`, and `not` are reserved words. Gremlin-Groovy does not allow these steps to be called
 statically from the anonymous traversal `__` and therefore, must always be prefixed with `__.` For instance:
 `g.V().as('a').in().as('b').where(__.not(__.as('a').out().as('b')))`
@@ -566,144 +570,43 @@ link:https://en.wikipedia.org/wiki/CPython[CPython] machine. Python's syntax has
 namespaces (`a(b())` vs `a(__.b())`). As such, anyone familiar with Gremlin-Java will immediately be able to work
 with Gremlin-Python. Moreover, there are a few added constructs to Gremlin-Python that make traversals a bit more succinct.
 
-WARNING: In Python, `and`, `as`, `from`, `global`, `in`, `is`, `not`, and `or` are reserved words. Gremlin-Python simply
-postfixes `_` to the end of these terms for their use with graph traversal. For instance: `g.V().as_('a').in_().as_('b').select('a','b')`.
-
 To install Gremlin-Python, use Python's link:https://en.wikipedia.org/wiki/Pip_(package_manager)[pip] package manager.
 
 [source,bash]
 pip install gremlinpython
 
-Gremlin-Python users will typically make use of the following classes.
+=== Connecting
+
+The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down to
+creating a `GraphTraversalSource`. A `GraphTraversalSource` is created from the anonymous `traversal()` method where
+the "g" provided to the `DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on the remote end.
 
 [source,python]
->>> from gremlin_python import statics
->>> from gremlin_python.process.anonymous_traversal_source import traversal
->>> from gremlin_python.process.graph_traversal import __
->>> from gremlin_python.process.strategies import *
->>> from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
+g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
 
-In Gremlin-Python there exists `GraphTraversalSource`, `GraphTraversal`, and `__` which mirror the respective classes in Gremlin-Java.
-The `GraphTraversalSource` requires a driver in order to communicate with <<gremlin-server,GremlinServer>> (or any
-<<connecting-via-remotegraph,`RemoteConnection`>>-enabled server). The `gremlin_python.driver.driver_remote_connection`
-is provided with Apache TinkerPop's Gremlin-Python distribution.
+=== Common Imports
 
-IMPORTANT: For developers wishing to provide another *driver implementation*, be sure to extend `RemoteConnection` in
-`gremlin_python.driver` so it can then be used by Gremlin-Python's `GraphTraversal`.
-
-When Gremlin Server is running, Gremlin-Python can communicate with Gremlin Server. The `conf/gremlin-server-modern-py.yaml`
-configuration maintains a `GremlinJythonScriptEngine` as well as the appropriate serializers for communicating `Bytecode`.
-
-IMPORTANT: Gremlin-Python is not compatible with GraphSON 1.0.
-
-[source,bash]
-----
-$ bin/gremlin-server.sh install org.apache.tinkerpop gremlin-python x.y.z
-$ bin/gremlin-server.sh conf/gremlin-server-modern-py.yaml
-[INFO] GremlinServer -
-       \,,,/
-       (o o)
----oOOo-(3)-oOOo---
-
-[INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-modern-py.yaml
-[INFO] MetricManager - Configured Metrics Slf4jReporter configured with interval=180000ms and loggerName=org.apache.tinkerpop.gremlin.server.Settings$Slf4jReporterMetrics
-[INFO] GraphManager - Graph [graph] was successfully configured via [conf/tinkergraph-empty.properties].
-[INFO] ServerGremlinExecutor - Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*
-[INFO] Logger - 51 attributes loaded from 40 stream(s) in 16ms, 51 saved, 614 ignored: ["Ant-Version", "Archiver-Version", "Bnd-LastModified", "Boot-Class-Path", "Build-Jdk", "Build-Version", "Built-By", "Bundle-ClassPath", "Bundle-Description", "Bundle-DocURL", "Bundle-License", "Bundle-ManifestVersion", "Bundle-Name", "Bundle-RequiredExecutionEnvironment", "Bundle-SymbolicName", "Bundle-Vendor", "Bundle-Version", "Can-Redefine-Classes", "Created-By", "DynamicImport-Package", "Eclipse-BuddyPolicy", "Export-Package", "Extension-Name", "Extension-name", "Fragment-Host", "Ignore-Package", "Implementation-Build", "Implementation-Title", "Implementation-URL", "Implementation-Vendor", "Implementation-Vendor-Id", "Implementation-Version", "Import-Package", "Include-Resource", "JCabi-Build", "JCabi-Date", "JCabi-Version", "Main-Class", "Main-class", "Manifest-Version", "Originally-Created-By", "Private-Package", "Require-Capability", "Specification-Title", "Specification-Vendor", "Specification-Version", "Tool", "X-Compile-Source-JDK", "X-Compile-Target-JDK", "hash", "version"]
-[INFO] ScriptEngines - Loaded gremlin-jython ScriptEngine
-[INFO] ScriptEngines - Loaded gremlin-python ScriptEngine
-[INFO] ScriptEngines - Loaded gremlin-groovy ScriptEngine
-[INFO] GremlinExecutor - Initialized gremlin-groovy ScriptEngine with scripts/generate-modern.groovy
-[INFO] ServerGremlinExecutor - Initialized GremlinExecutor and configured ScriptEngines.
-[INFO] ServerGremlinExecutor - A GraphTraversalSource is now bound to [g] with graphtraversalsource[tinkergraph[vertices:0 edges:0], standard]
-[INFO] OpLoader - Adding the standard OpProcessor.
-[INFO] OpLoader - Adding the session OpProcessor.
-[INFO] OpLoader - Adding the traversal OpProcessor.
-[INFO] TraversalOpProcessor - Initialized cache for TraversalOpProcessor with size 1000 and expiration time of 600000 ms
-[INFO] GremlinServer - Executing start up LifeCycleHook
-[INFO] Logger$info - Loading 'modern' graph data.
-[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v3.0+gryo with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0
-[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v3.0+gryo-stringd with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0
-[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v3.0+json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0
-[INFO] AbstractChannelizer - Configured application/json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0
-[INFO] GremlinServer$1 - Gremlin Server configured with worker thread pool of 1, gremlin pool of 4 and boss thread pool of 1.
-[INFO] GremlinServer$1 - Channel started at port 8182.
-----
-
-NOTE: The command to use `install` need only be executed once to gather `gremlin-python` dependencies into Gremlin Servers'
-path. Future starts of Gremlin Server will not require that command.
-
-Within CPython console, a `GraphTraversalSource` is created from the anonymous `traversal()` method where the "g"
-provided to the `DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on the remote end.
+There are a number of classes, functions and tokens that are typically used with Gremlin. The following imports
+provide most of the typical functionality required to use Gremlin:
 
 [source,python]
->>> g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
-
-When a traversal from the `GraphTraversalSource` is iterated, the traversal's `Bytecode` is sent over the wire
-via the registered `RemoteConnection`. The bytecode is used to construct the equivalent traversal at the remote traversal source.
-Moreover, typically the bytecode is analyzed to determine which language the bytecode should be translated to. If the traversal
-does not contain lambdas, the remote location (e.g. Gremlin Server) will typically
-use Gremlin-Java. If it has lambdas written in Groovy, it will use Gremlin-Groovy (e.g. `GremlinGroovyScriptEngine`).
-Likewise, if it has lambdas represented in Python, it will use Gremlin-Python (e.g. `GremlinJythonScriptEngine`).
-
-IMPORTANT: Gremlin-Python's `Traversal` class supports the standard Gremlin methods such as `next()`, `nextTraverser()`,
-`toSet()`, `toList()`, etc. Such "terminal" methods trigger the evaluation of the traversal.
-
-==== Configuration
-
-The following table describes the various configuration options for the Gremlin-Python Driver. They
-can be passed to the `Client` or `DriverRemoteConnection` instance as keyword arguments:
-
-[width="100%",cols="3,10,^2",options="header"]
-|=========================================================
-|Key |Description |Default
-|protocol_factory |A callable that returns an instance of `AbstractBaseProtocol`. |`gremlin_python.driver.protocol.GremlinServerWSProtocol`
-|transport_factory |A callable that returns an instance of `AbstractBaseTransport`. |`gremlin_python.driver.tornado.transport.TornadoTransport`
-|pool_size |The number of connections used by the pool. |4
-|max_workers |Maximum number of worker threads. |Number of CPUs * 5
-|message_serializer |The message serializer implementation.|`gremlin_python.driver.serializer.GraphSONMessageSerializer`
-|password |The password to submit on requests that require authentication. |""
-|username |The username to submit on requests that require authentication. |""
-|=========================================================
-
-=== RemoteConnection Submission
-
-There are various ways to submit a traversal to a `RemoteConnection`. Just as in Gremlin-Java, there are various
-"terminal/action methods" off of `Traversal`.
-
-* `Traversal.next()`
-* `Traversal.nextTraverser()`
-* `Traversal.toList()`
-* `Traversal.toSet()`
-* `Traversal.iterate()`
-
-=== Gremlin-Python Sugar
-
-Python supports meta-programming and operator overloading. There are three uses of these techniques in Gremlin-Python that
-makes traversals a bit more concise.
-
-[gremlin-python,modern]
 ----
-g.V().both()[1:3].toList()
-g.V().both()[1].toList()
-g.V().both().name.toList()
+from gremlin_python import statics
+from gremlin_python.process.anonymous_traversal_source import traversal
+from gremlin_python.process.graph_traversal import __
+from gremlin_python.process.strategies import *
+from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
+from gremlin_python.process.traversal import T
+from gremlin_python.process.traversal import Order
+from gremlin_python.process.traversal import Cardinality
+from gremlin_python.process.traversal import Column
+from gremlin_python.process.traversal import Direction
+from gremlin_python.process.traversal import Operator
+from gremlin_python.process.traversal import P
+from gremlin_python.process.traversal import Pop
+from gremlin_python.process.traversal import Scope
+from gremlin_python.process.traversal import Barrier
 ----
-
-=== Static Enums and Methods
-
-Gremlin has various tokens (e.g. `T`, `P`, `Order`, `Operator`, etc.) that are represented in Gremlin-Python as Python `Enums`.
-
-[source,python]
->>> from gremlin_python.process.traversal import T
->>> from gremlin_python.process.traversal import Order
->>> from gremlin_python.process.traversal import Cardinality
->>> from gremlin_python.process.traversal import Column
->>> from gremlin_python.process.traversal import Direction
->>> from gremlin_python.process.traversal import Operator
->>> from gremlin_python.process.traversal import P
->>> from gremlin_python.process.traversal import Pop
->>> from gremlin_python.process.traversal import Scope
->>> from gremlin_python.process.traversal import Barrier
 
 These can be used analogously to how they are used in Gremlin-Java.
 
@@ -732,20 +635,22 @@ That is, without the `__.`-prefix.
 g.V().repeat(out()).times(2).name.fold().toList()
 ----
 
-=== Bindings
+=== Configuration
 
-When a traversal bytecode is sent over a `RemoteConnection` (e.g. Gremlin Server), it will be translated, compiled, and then executed.
-If the same traversal is sent again, translation and compilation can be skipped as the previously compiled version should be cached.
-Many traversals are unique up to some parameterization. For instance, `g.V(1).out('created').name` is considered different
-from `g.V(4).out('created').name'` as they have different script "string" representations. However, `g.V(x).out('created').name` with bindings of `{x : 1}` and
-`{x : 4}` are considered the same. If a traversal is going to be executed repeatedly, but with different parameters, then bindings should be used.
-In Gremlin-Python, bindings are 2-tuples and used as follows.
+The following table describes the various configuration options for the Gremlin-Python Driver. They
+can be passed to the `Client` or `DriverRemoteConnection` instance as keyword arguments:
 
-[gremlin-python,modern]
-----
-g.V(('id',1)).out('created').name.toList()
-g.V(('id',4)).out('created').name.toList()
-----
+[width="100%",cols="3,10,^2",options="header"]
+|=========================================================
+|Key |Description |Default
+|protocol_factory |A callable that returns an instance of `AbstractBaseProtocol`. |`gremlin_python.driver.protocol.GremlinServerWSProtocol`
+|transport_factory |A callable that returns an instance of `AbstractBaseTransport`. |`gremlin_python.driver.tornado.transport.TornadoTransport`
+|pool_size |The number of connections used by the pool. |4
+|max_workers |Maximum number of worker threads. |Number of CPUs * 5
+|message_serializer |The message serializer implementation.|`gremlin_python.driver.serializer.GraphSONMessageSerializer`
+|password |The password to submit on requests that require authentication. |""
+|username |The username to submit on requests that require authentication. |""
+|=========================================================
 
 === Traversal Strategies
 
@@ -800,15 +705,62 @@ g.V().out().map(lambda: "x: len(x.get().value('name'))").sum().toList()         
 <7> The default lambda language is changed back to Gremlin-Python.
 <8> If the `lambda`-prefix is not provided, then it is appended automatically in order to give a more natural look to the expression.
 
-=== Limitations
+Finally, Gremlin `Bytecode` that includes lambdas requires that the traversal be processed by the
+`ScriptEngine`. To avoid continued recompilation costs, it supports the encoding of bindings, which allow a remote
+engine to to cache traversals that will be reused over and over again save that some parameterization may change. Thus,
+instead of translating, compiling, and then executing each submitted bytecode, it is possible to simply execute.
 
-* Traversals that return a `Set` *might* be coerced to a `List` in Python. In the case of Python, number equality 
-is different from JVM languages which produces different `Set` results when those types are in use. When this case
-is detected during deserialization, the `Set` is coerced to a `List` so that traversals return consistent
-results within a collection across different languages. If a `Set` is needed then convert `List` results
-to `Set` manually.
-* Gremlin is capable of returning Dictionary results that use non-hashable keys (e.g. Dictionary as a key) and Python
-does not support that at a language level. Gremlin that returns such results will need to be re-written to avoid that.
+[gremlin-python,modern]
+----
+g.V(('id',1)).out('created').values('name').map(lambda: ("'name: ' + it.get().value('name').length()", "gremlin-groovy")).toList()
+g.V(('id',4)).out('created').values('name').map(lambda: ("'name: ' + it.get().value('name').length()", "gremlin-groovy")).toList()
+----
+
+==== Native Python Lambdas
+
+To process lambdas in Python, the `GremlinJythonScriptEngine` must be enabled on the remote end. If that remote is
+Gremlin Server, then these instructions can help configuration it. As an example, the
+`conf/gremlin-server-modern-py.yaml` configuration maintains a `GremlinJythonScriptEngine`.
+
+[source,bash]
+----
+$ bin/gremlin-server.sh install org.apache.tinkerpop gremlin-python x.y.z
+$ bin/gremlin-server.sh conf/gremlin-server-modern-py.yaml
+[INFO] GremlinServer -
+       \,,,/
+       (o o)
+---oOOo-(3)-oOOo---
+
+[INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-modern-py.yaml
+[INFO] MetricManager - Configured Metrics Slf4jReporter configured with interval=180000ms and loggerName=org.apache.tinkerpop.gremlin.server.Settings$Slf4jReporterMetrics
+[INFO] GraphManager - Graph [graph] was successfully configured via [conf/tinkergraph-empty.properties].
+[INFO] ServerGremlinExecutor - Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*
+[INFO] ScriptEngines - Loaded gremlin-jython ScriptEngine
+[INFO] ScriptEngines - Loaded gremlin-python ScriptEngine
+[INFO] ScriptEngines - Loaded gremlin-groovy ScriptEngine
+[INFO] GremlinExecutor - Initialized gremlin-groovy ScriptEngine with scripts/generate-modern.groovy
+[INFO] ServerGremlinExecutor - Initialized GremlinExecutor and configured ScriptEngines.
+[INFO] ServerGremlinExecutor - A GraphTraversalSource is now bound to [g] with graphtraversalsource[tinkergraph[vertices:0 edges:0], standard]
+[INFO] OpLoader - Adding the standard OpProcessor.
+[INFO] OpLoader - Adding the session OpProcessor.
+[INFO] OpLoader - Adding the traversal OpProcessor.
+[INFO] TraversalOpProcessor - Initialized cache for TraversalOpProcessor with size 1000 and expiration time of 600000 ms
+[INFO] GremlinServer - Executing start up LifeCycleHook
+[INFO] Logger$info - Loading 'modern' graph data.
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v3.0+gryo with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v3.0+gryo-stringd with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v3.0+json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0
+[INFO] AbstractChannelizer - Configured application/json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0
+[INFO] GremlinServer$1 - Gremlin Server configured with worker thread pool of 1, gremlin pool of 4 and boss thread pool of 1.
+[INFO] GremlinServer$1 - Channel started at port 8182.
+----
+
+NOTE: The command to use `install` need only be executed once to gather `gremlin-python` dependencies into Gremlin Servers'
+path. Future starts of Gremlin Server will not require that command.
+
+WARNING: As explained throughout the documentation, when possible <<a-note-on-lambdas,avoid>> lambdas. If lambdas
+must be used, the consider submitting Groovy lambdas as opposed to Python-based ones. The `GremlinGroovyScriptEngine`
+is far more featured and performant than its Jython sibling and will likely yield better results.
 
 === Submitting Scripts
 
@@ -934,6 +886,28 @@ social.persons("marko").youngestFriendsAge()
 social.persons().filter(__.createdAtLeast(2)).count()
 ----
 
+=== Syntactic Sugar
+
+Python supports meta-programming and operator overloading. There are three uses of these techniques in Gremlin-Python
+that makes traversals a bit more concise.
+
+[gremlin-python,modern]
+----
+g.V().both()[1:3].toList()
+g.V().both()[1].toList()
+g.V().both().name.toList()
+----
+
+=== Limitations
+
+* Traversals that return a `Set` *might* be coerced to a `List` in Python. In the case of Python, number equality
+is different from JVM languages which produces different `Set` results when those types are in use. When this case
+is detected during deserialization, the `Set` is coerced to a `List` so that traversals return consistent
+results within a collection across different languages. If a `Set` is needed then convert `List` results
+to `Set` manually.
+* Gremlin is capable of returning Dictionary results that use non-hashable keys (e.g. Dictionary as a key) and Python
+does not support that at a language level. Gremlin that returns such results will need to be re-written to avoid that.
+
 [[gremlin-DotNet]]
 == Gremlin.Net
 
@@ -946,29 +920,12 @@ use PascalCase as opposed to camelCase in Gremlin-Java in order to comply with .
 [source,powershell]
 nuget install Gremlin.Net
 
-In Gremlin.Net there exists `GraphTraversalSource`, `GraphTraversal`, and `__` which mirror the respective classes
-in Gremlin-Java. The `GraphTraversalSource` requires a driver in order to communicate with <<gremlin-server,GremlinServer>> (or any
-RemoteConnection-enabled server).
+=== Connecting
 
-The `Gremlin.Net.Driver.Remote.DriverRemoteConnection` is provided as part of Apache TinkerPop’s Gremlin.Net.
-
-IMPORTANT: For developers wishing to provide another driver implementation, be sure to implement `IRemoteConnection` in
-`Gremlin.Net.Process.Remote` so it can then be used by Gremlin.Net’s `GraphTraversal`.
-
-When Gremlin Server is running, Gremlin.Net can communicate with Gremlin Server by sending traversals serialized as `Bytecode`.
-
-IMPORTANT: Gremlin.Net is not compatible with GraphSON 1.0.
-
-A traversal source can be spawned anonymously using an `AnonymousTraversalSource` which can be statically imported as
-follows:
-
-[source,csharp]
-----
-using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
-----
-
-which will expose a static `Traversal()` method which can be used as follows to yield a `GraphTraversalSource` assigned
-to "g" and configured to connect to Gremlin Server at "localhost:8182":
+The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down to
+creating a `GraphTraversalSource`. A `GraphTraversalSource` is created from the `AnonymousTraversalSource.traversal()`
+method where the "g" provided to the `DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on
+the remote end.
 
 [source,csharp]
 ----
@@ -976,32 +933,27 @@ var remoteConnection = new DriverRemoteConnection(new GremlinClient(new GremlinS
 var g = Traversal().WithRemote(remoteConnection);
 ----
 
-When a traversal from the `GraphTraversalSource` is iterated, the traversal’s `Bytecode` is sent over the wire via the registered
-`IRemoteConnection`. The bytecode is used to construct the equivalent traversal at the remote traversal source.
-Moreover, typically the bytecode is analyzed to determine which language the bytecode should be translated to. If the traversal
-does not contain lambdas, the remote location (e.g. Gremlin Server) will typically
-use Gremlin-Java. If it has lambdas written in Groovy, it will use Gremlin-Groovy (e.g. `GremlinGroovyScriptEngine`).
-Likewise, if it has lambdas represented in Python, it will use Gremlin-Python (e.g. `GremlinJythonScriptEngine`).
+=== Common Imports
 
-IMPORTANT: Gremlin.Net’s `ITraversal` interface supports the standard Gremlin methods such as `Next()`, `NextTraverser()`, `ToSet()`,
-`ToList()`, etc. Such "terminal" methods trigger the evaluation of the traversal.
+There are a number of classes, functions and tokens that are typically used with Gremlin. The following imports
+provide most of the typical functionality required to use Gremlin:
 
-=== RemoteConnection Submission
-
-Very similar to Gremlin-Python and Gremlin-Java, there are various ways to submit a traversal to a `IRemoteConnection` using
-terminal/action methods off of `ITraversal`.
-
-* `ITraversal.Next()`
-* `ITraversal.NextTraverser()`
-* `ITraversal.ToList()`
-* `ITraversal.ToSet()`
-* `ITraversal.Iterate()`
+[source,csharp]
+----
+using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
+using static Gremlin.Net.Process.Traversal.P;
+using static Gremlin.Net.Process.Traversal.Order;
+using static Gremlin.Net.Process.Traversal.Operator.*;
+using static Gremlin.Net.Process.Traversal.Order.*;
+using static Gremlin.Net.Process.Traversal.Pop.*;
+using static Gremlin.Net.Process.Traversal.Scope.*;
+using static Gremlin.Net.Process.Traversal.TextP.*;
+using static Gremlin.Net.Process.Traversal.Column.*;
+using static Gremlin.Net.Process.Traversal.Direction.*;
+using static Gremlin.Net.Process.Traversal.T.*;
+----
 
 === Configuration
-
-The following sections describe how the Gremlin.Net driver can be configured.
-
-==== Gremlin Server
 
 The connection properties for the Gremlin.Net driver can be passed to the `GremlinServer` instance as keyword arguments:
 
@@ -1015,7 +967,7 @@ The connection properties for the Gremlin.Net driver can be passed to the `Greml
 |password |The password to submit on requests that require authentication. |_none_
 |=========================================================
 
-==== GraphSON Serialization
+==== Serialization
 
 The Gremlin.Net driver uses by default GraphSON 3.0 but it is also possible to use GraphSON 2.0 which can be necessary
 when the server does not support GraphSON 3.0 yet:
@@ -1024,50 +976,6 @@ when the server does not support GraphSON 3.0 yet:
 ----
 var client = new GremlinClient(new GremlinServer("localhost", 8182), new GraphSON2Reader(),
     new GraphSON2Writer(), GremlinClient.GraphSON2MimeType);
-----
-
-=== Static Enums and Methods
-
-Gremlin has various tokens (e.g. `T`, `P`, `Order`, `Operator`, etc.) that are represented in Gremlin.Net as classes.
-
-These can be used analogously to how they are used in Gremlin-Java.
-
-[source,csharp]
-g.V().HasLabel("person").Has("age",P.Gt(30)).Order().By("age",Order.desc).ToList()
-
-Moreover, the class prefixes can be omitted with a `using static`.
-
-[source,csharp]
-----
-using static Gremlin.Net.Process.Traversal.P;
-using static Gremlin.Net.Process.Traversal.Order;
-----
-
-Then it is possible to represent the above traversal as below.
-
-[source,csharp]
-g.V().HasLabel("person").Has("age",Gt(30)).Order().By("age",desc).ToList()
-
-Finally, with using static `__`, anonymous traversals like `__.Out()` can be expressed as below. That is, without the `__.`-prefix.
-
-[source,csharp]
-g.V().Repeat(Out()).Times(2).Values("name").Fold().ToList()
-
-=== Bindings
-
-When a traversal bytecode is sent over a `IRemoteConnection` (e.g. Gremlin Server), it will be translated, compiled,
-and then executed. If the same traversal is sent again, translation and compilation can be skipped as the previously
-compiled version should be cached. Many traversals are unique up to some parameterization. For instance,
-`g.V(1).Out("created").Values("name")` is considered different from `g.V(4).Out("created").Values("Name")`
-as they have different script "string" representations. However, `g.V(x).Out("created").Values("name")` with bindings of 
-`{x : 1}` and `{x : 4}` are considered the same. If a traversal is going to be executed repeatedly, but with different 
-parameters, then bindings should be used. In Gremlin.Net, bindings are objects that can be created as follows.
-
-[source,csharp]
-----
-var b = new Bindings();
-g.V(b.Of("id", 1)).Out("created").Values("name").toList()
-g.V(b.Of("id", 4)).Out("created").Values("name").toList()
 ----
 
 === Traversal Strategies
@@ -1222,18 +1130,12 @@ between Gremlin-Java and Gremlin-JavaScript.
 [source,bash]
 npm install gremlin
 
-The Gremlin-JavaScript provides `GraphTraversalSource`, `GraphTraversal`, and `__` which mirror the respective classes
-in Gremlin-Java. The `GraphTraversalSource` requires a RemoteConnection implementation in order to communicate with
-<<gremlin-server,GremlinServer>>.
+=== Connecting
 
-[source,javascript]
-----
-const gremlin = require('gremlin');
-const traversal = gremlin.process.AnonymousTraversalSource.traversal;
-const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
-----
-
-A traversal source can be spawned with `RemoteStrategy` from an `AnonymousTraversalSource`.
+The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down to
+creating a `GraphTraversalSource`. A `GraphTraversalSource` is created from the `AnonymousTraversalSource.traversal()`
+method where the "g" provided to the `DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on
+the remote end.
 
 [source,javascript]
 ----
@@ -1248,30 +1150,12 @@ const authenticator = new gremlin.driver.auth.PlainTextSaslAuthenticator('myuser
 const g = traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin', { authenticator });
 ----
 
-When a traversal from the `GraphTraversalSource` is iterated, the traversal’s `Bytecode` is sent over the wire via
-the registered `RemoteConnection`. The bytecode is used to construct the equivalent traversal at the remote
-traversal source.
-
-Since Gremlin-JavaScript currently doesn't support lambda expressions, all traversals can be translated to
-Gremlin-Java on the remote location (e.g. Gremlin Server).
-
-WARNING: In Javascript, `from` and `in` are reserved words. Gremlin-Javascript simply postfixes `_` to the end of
-these terms for their use with graph traversal. For instance: `g.V().in_().out()`
-
-IMPORTANT: Gremlin-JavaScript’s `Traversal` base class supports the standard Gremlin methods such as `next()` and
-`toList()` Such "terminal" methods trigger the evaluation of the traversal.
-
-=== RemoteConnection Submission
-
-In a similar way as in other GLVs, there are various ways to submit a traversal to a
-`RemoteConnection` using terminal/action methods off of `Traversal`. Given that I/O operations in Node.js are
-asynchronous by default, this terminal methods return a `Promise`.
+Given that I/O operations in Node.js are asynchronous by default, <<terminal-steps,Terminal Steps>> return a `Promise`:
 
 * `Traversal.toList()`: Returns a `Promise` with an `Array` as result value.
 * `Traversal.next()`: Returns a `Promise` with a `{ value, done }` tuple as result value, according to the
 link:https://github.com/tc39/proposal-async-iteration[async iterator proposal].
 * `Traversal.iterate()`: Returns a `Promise` without a value.
-
 
 For example:
 
@@ -1289,37 +1173,33 @@ const names = await g.V().hasLabel('person').values('name').toList();
 console.log(names);
 ----
 
-=== Static Enums and Methods
+=== Common Imports
 
-Gremlin has various tokens (e.g. `t`, `P`, `order`, `direction`, etc.) that are represented in Gremlin-JavaScript as
-objects.
-
-[source,javascript]
-g.V().hasLabel('person').has('age', P.gt(30)).order().by('age', order.desc).toList()
-
-These objects must be required manually from the `process` namespace:
+There are a number of classes, functions and tokens that are typically used with Gremlin. The following imports
+provide most of the typical functionality required to use Gremlin:
 
 [source,javascript]
 ----
 const gremlin = require('gremlin');
-const P = gremlin.process.P;
+const traversal = gremlin.process.AnonymousTraversalSource.traversal;
+const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
+const column = gremlin.process.traversal.column
+const direction = gremlin.process.traversal.direction
+const p = gremlin.process.traversal.P
+const pick = gremlin.process.traversal.pick
+const pop = gremlin.process.traversal.pop
+const order = gremlin.process.traversal.order
+const scope = gremlin.process.traversal.scope
+const t = gremlin.process.traversal.t
 ----
 
-Finally, using static `__` anonymous traversals like `__.out()` can be expressed as below:
+=== Submitting Scripts
 
-[source,javascript]
-----
-const gremlin = require('gremlin');
-const __ = gremlin.process.statics;
+WARNING: TinkerPop does not recommend submitting script-based requests and generally continues to support this feature
+for legacy reasons and corner use cases which are still not completely addressed by the Gremlin language. Please
+consider using bytecode-based requests instead when possible.
 
-g.V().repeat(__.out()).times(2).values("name").fold().toList();
-----
-
-=== Submit Gremlin Scripts
-
-Additionally, you can also send parametrized Gremlin scripts to the server as strings, using the
-`Client` class in Gremlin-JavaScript.
-
+It is possible to submit parametrized Gremlin scripts to the server as strings, using the `Client` class:
 
 [source,javascript]
 ----
