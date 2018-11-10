@@ -576,9 +576,9 @@ internal class MyTypeReader : IGraphSONDeserializer
     }
 }
 
-var graphsonReader = new GraphSONReader(
+var graphsonReader = new GraphSON3Reader(
     new Dictionary<string, IGraphSONDeserializer> {{MyType.GraphsonType, new MyTypeReader()}});
-var graphsonWriter = new GraphSONWriter(
+var graphsonWriter = new GraphSON3Writer(
     new Dictionary<Type, IGraphSONSerializer> {{typeof(MyType), new MyClassWriter()}});
 
 var gremlinClient = new GremlinClient(new GremlinServer("localhost", 8182), graphsonReader, graphsonWriter);

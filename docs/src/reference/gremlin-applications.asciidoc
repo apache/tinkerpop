@@ -1300,6 +1300,7 @@ Gremlin-Console |PLAIN SASL (username/password) |3.0.0-incubating
 |Pluggable SASL |3.0.0-incubating
 |GSSAPI SASL (Kerberos) |3.3.0
 |Gremlin-Python |PLAIN SASL |3.2.2
+|Gremlin.Net |PLAIN SASL |3.2.7
 |Gremlin-Javascript |PLAIN SASL |3.3.0
 |=========================================================
 
