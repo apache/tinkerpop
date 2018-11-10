@@ -38,7 +38,8 @@ namespace Gremlin.Net.Driver
         /// <param name="enableSsl">Specifies whether SSL should be enabled.</param>
         /// <param name="username">The username to submit on requests that require authentication.</param>
         /// <param name="password">The password to submit on requests that require authentication.</param>
-        public GremlinServer(string hostname, int port = 8182, bool enableSsl = false, string username = null, string password = null)
+        public GremlinServer(string hostname = "localhost", int port = 8182, bool enableSsl = false,
+            string username = null, string password = null)
         {
             Uri = CreateUri(hostname, port, enableSsl);
             Username = username;
