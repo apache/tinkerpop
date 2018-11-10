@@ -438,7 +438,11 @@ public final class ElementHelper {
      * @return true if ids are equal and false otherwise
      */
     public static boolean haveEqualIds(final Element a, final Element b) {
-        return a.id().equals(b.id());
+        return a.id().equals(b.id()) && (!(a instanceof Property) || haveEqualParentIds((Property) a, (Property) b));
+    }
+
+    private static boolean haveEqualParentIds(final Property a, final Property b) {
+        return a.element() == null || b.element() == null || haveEqualIds(a.element(), b.element());
     }
 
     /**

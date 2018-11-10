@@ -1,3 +1,5 @@
 {"id":2000,"label":"message","inE":{"link":[{"id":2003,"outV":2000}]},"outE":{"link":[{"id":2002,"inV":2001},{"id":2003,"inV":2000}]},"properties":{"name":[{"id":1,"value":"a"}]}}
 {"id":2001,"label":"message","inE":{"link":[{"id":2002,"outV":2000}]},"properties":{"name":[{"id":2,"value":"b"}]}}
 {"id":1000,"label":"loops","inE":{"self":[{"id":1001,"outV":1000}]},"outE":{"self":[{"id":1001,"inV":1000}]},"properties":{"name":[{"id":0,"value":"loop"}]}}
+{"id":3000,"label":"person","outE":{"knows":[{"id":3002,"inV":3001}]},"properties":{"name":[{"id":3010,"value":"alice"}],"age":[{"id":3011,"value":30}]}}
+{"id":3001,"label":"person","inE":{"knows":[{"id":3002,"outV":3000}]},"properties":{"name":[{"id":3010,"value":"bob"}],"age":[{"id":3011,"value":30}]}}

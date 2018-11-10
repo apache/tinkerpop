@@ -36,6 +36,7 @@ import java.util.Map;
  */
 public class DetachedVertexProperty<V> extends DetachedElement<VertexProperty<V>> implements VertexProperty<V> {
 
+    private Object vertexId;
     protected V value;
     protected transient DetachedVertex vertex;
 
@@ -45,6 +46,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<VertexProperty<V>
         super(vertexProperty);
         this.value = vertexProperty.value();
         this.vertex = DetachedFactory.detach(vertexProperty.element(), false);
+        this.vertexId = this.vertex.id;
 
         // only serialize properties if requested, the graph supports it and there are meta properties present.
         // this prevents unnecessary object creation of a new HashMap which will just be empty.  it will use
@@ -64,6 +66,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<VertexProperty<V>
         super(id, label);
         this.value = value;
         this.vertex = DetachedFactory.detach(vertex, true);
+        this.vertexId = this.vertex.id;
 
         if (null != properties && !properties.isEmpty()) {
             this.properties = new HashMap<>();
@@ -102,6 +105,9 @@ public class DetachedVertexProperty<V> extends DetachedElement<VertexProperty<V>
 
     @Override
     public Vertex element() {
+        if (this.vertex == null && this.vertexId != null) {
+            this.vertex = DetachedVertex.build().setId(this.vertexId).create();
+        }
         return this.vertex;
     }
 
@@ -134,6 +140,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<VertexProperty<V>
 
     public void internalSetVertex(final DetachedVertex vertex) {
         this.vertex = vertex;
+        this.vertexId = this.vertex.id;
     }
 
     /**

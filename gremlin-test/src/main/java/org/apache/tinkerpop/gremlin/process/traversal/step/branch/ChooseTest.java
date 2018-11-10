@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
@@ -85,13 +86,14 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
         final Map<String, Long> counts = new HashMap<>();
         int counter = 0;
         while (traversal.hasNext()) {
-            MapHelper.incr(counts, traversal.next().toString(), 1l);
+            MapHelper.incr(counts, traversal.next().toString(), 1L);
             counter++;
         }
         assertFalse(traversal.hasNext());
         assertEquals(2, counter);
         assertEquals(2, counts.size());
-        assertEquals(Long.valueOf(1), counts.get("{name=[marko], age=[29]}"));
+        assertEquals(Long.valueOf(1), Optional.ofNullable(counts.get("{name=[marko], age=[29]}"))
+                .orElse(counts.get("{age=[29], name=[marko]}")));
         assertEquals(Long.valueOf(1), counts.get("josh"));
     }
 

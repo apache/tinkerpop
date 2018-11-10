@@ -87,3 +87,17 @@ Feature: Step - properties()
       """
       GLV suite doesn't support property identifiers and related assertions
       """
+
+  Scenario: g_V_hasLabelXpersonX_properties_dedup_value
+    Given the sink graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").properties().dedup().value()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | alice |
+      | d[30].i |
+      | bob |
+      | d[30].i |

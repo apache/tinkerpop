@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -35,6 +34,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.SINK;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -53,6 +53,8 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, VertexProperty<String>> get_g_V_hasXageX_propertiesXnameX();
 
     public abstract Traversal<VertexProperty<String>, String> get_g_injectXg_VX1X_propertiesXnameX_nextX_value(final Object v1Id);
+
+    public abstract Traversal<Vertex, Object> get_g_V_hasLabelXpersonX_properties_dedup_value();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -129,6 +131,14 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
         checkResults(Collections.singletonList("marko"), traversal);
     }
 
+    @Test
+    @LoadGraphWith(SINK)
+    public void g_V_hasLabelXpersonX_properties_dedup_value() {
+        final Traversal<Vertex, Object> traversal = get_g_V_hasLabelXpersonX_properties_dedup_value();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("alice", 30, "bob", 30), traversal);
+    }
+
     public static class Traversals extends PropertiesTest {
         @Override
         public Traversal<Vertex, Object> get_g_V_hasXageX_propertiesXname_ageX_value() {
@@ -154,6 +164,10 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
         public Traversal<VertexProperty<String>, String> get_g_injectXg_VX1X_propertiesXnameX_nextX_value(final Object v1Id) {
             return g.<VertexProperty<String>>inject((VertexProperty) g.V(v1Id).properties("name").next()).value();
         }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_V_hasLabelXpersonX_properties_dedup_value() {
+            return g.V().hasLabel("person").properties().dedup().value();
+        }
     }
 }
-

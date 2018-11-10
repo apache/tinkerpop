@@ -188,6 +188,13 @@ public final class TinkerFactory {
           addV("message").property(T.id, 2001).property("name", "b").as("b").
           addE("link").from("a").to("b").property(T.id, 2002).
           addE("link").from("a").to("a").property(T.id, 2003).iterate();
+        g.addV("person").property(T.id, 3000).
+                property("name", "alice", T.id, 3010).
+                property("age", 30, T.id, 3011).as("a").
+          addV("person").property(T.id, 3001).
+                property("name", "bob", T.id, 3010).
+                property("age", 30, T.id, 3011).
+          addE("knows").from("a").property(T.id, 3002).iterate();
     }
 
     /**

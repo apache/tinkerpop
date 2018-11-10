@@ -42,6 +42,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
+import org.apache.tinkerpop.shaded.kryo.KryoException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -110,11 +111,21 @@ public final class GryoSerializersV1d0 {
         @Override
         public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final VertexProperty vertexProperty) {
             kryo.writeClassAndObject(output, DetachedFactory.detach(vertexProperty, true));
+            if (vertexProperty.element() != null)
+                kryo.writeClassAndObject(output, vertexProperty.element().id());
         }
 
         @Override
         public <I extends InputShim> VertexProperty read(final KryoShim<I, ?> kryo, final I input, final Class<VertexProperty> vertexPropertyClass) {
-            return (VertexProperty) kryo.readClassAndObject(input);
+            final VertexProperty vp = (VertexProperty) kryo.readClassAndObject(input);
+            if (vp instanceof DetachedVertexProperty) {
+                try {
+                    final Object id = kryo.readClassAndObject(input);
+                    ((DetachedVertexProperty) vp).internalSetVertex(DetachedVertex.build().setId(id).create());
+                } catch (KryoException ignored) {
+                }
+            }
+            return vp;
         }
     }
 
