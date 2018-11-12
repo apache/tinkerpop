@@ -18,22 +18,22 @@
  */
 package org.apache.tinkerpop.gremlin.server.handler;
 
-import io.netty.handler.codec.http.HttpMessage;
-
-import static io.netty.handler.codec.http.HttpHeaders.Names.UPGRADE;
-import static io.netty.handler.codec.http.HttpHeaders.Names.CONNECTION;
+import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0;
+import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 
 /**
- * A class to handle common WebSocket operations.
- *
- * @author Keith Lohnes lohnesk@gmail.com
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-final class WebSocketHandlerUtil {
+final class ServerSerializers {
 
-    static boolean isWebSocket(final HttpMessage msg) {
-        final String connectionHeader = msg.headers().get(CONNECTION);
-        final String upgradeHeader = msg.headers().get(UPGRADE);
-        return (null != connectionHeader && connectionHeader.equalsIgnoreCase("Upgrade")) ||
-               (null != upgradeHeader && upgradeHeader.equalsIgnoreCase("WebSocket"));
-    }
+    private ServerSerializers() {}
+
+    /**
+     * Default serializer used by the server when the serializer requested does not match what is on the server.
+     * Using GraphSON 1.0 on 3.3.5 because that's what it has long been set to in previous versions on
+     * {@link Serializers#DEFAULT_RESULT_SERIALIZER} which is now deprecated.
+     */
+    static final MessageSerializer DEFAULT_SERIALIZER = new GraphSONMessageSerializerV1d0();
+
 }
