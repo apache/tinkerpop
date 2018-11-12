@@ -542,6 +542,30 @@ social.persons("marko").knows("josh");
 NOTE: Using Maven, as shown in the `gremlin-archetype-dsl` module, makes developing DSLs with the annotation processor
 straightforward in that it sets up appropriate paths to the generated code automatically.
 
+[[gremlin-archetypes]]
+[[java-application-examples]]
+=== Application Examples
+
+The available link:https://maven.apache.org/guides/introduction/introduction-to-archetypes.html[Maven archetypes] are
+as follows:
+
+* `gremlin-archetype-dsl` - An example project that demonstrates how to build Domain Specific Languages with Gremlin
+in Java.
+* `gremlin-archetype-server` - An example project that demonstrates the basic structure of a
+<<gremlin-server,Gremlin Server>> project, how to connect with the Gremlin Driver, and how to embed Gremlin Server in
+a testing framework.
+* `gremlin-archetype-tinkergraph` - A basic example of how to structure a TinkerPop project with Maven.
+
+Use Maven to generate these example projects with a command like:
+
+[source,shell]
+$ mvn archetype:generate -DarchetypeGroupId=org.apache.tinkerpop -DarchetypeArtifactId=gremlin-archetype-server \
+      -DarchetypeVersion=x.y.z -DgroupId=com.my -DartifactId=app -Dversion=0.1 -DinteractiveMode=false
+
+This command will generate a new Maven project in a directory called "app" with a `pom.xml` specifying a `groupId` of
+`com.my`. Please see the `README.asciidoc` in the root of each generated project for information on how to build and
+execute it.
+
 [[gremlin-groovy]]
 == Gremlin-Groovy
 
@@ -1118,6 +1142,28 @@ social.Persons("marko").Knows("josh");
 social.Persons("marko").YoungestFriendsAge();
 social.Persons().Filter(CreatedAtLeast(2)).Count();
 ----
+
+[[gremlin-dotnet-template]]
+[[dotnet-application-examples]]
+=== Application Examples
+
+This link:https://docs.microsoft.com/dotnet/core/tools/custom-templates[dotnet template] helps getting started with
+<<gremlin-DotNet,Gremlin.Net>>. It creates a new C# console project that shows how to connect to a
+<<gremlin-server,Gremlin Server>> with Gremlin.Net.
+
+You can install the template with the dotnet CLI tool:
+[source,shell]
+dotnet new -i Gremlin.Net.Template
+
+After the template is installed, a new project based on this template can be installed:
+
+[source,shell]
+dotnet new gremlin
+
+Specify the output directory for the new project which will then also be used as the name of the created project:
+
+[source,shell]
+dotnet new gremlin -o MyFirstGremlinProject
 
 [[gremlin-javascript]]
 == Gremlin-JavaScript
