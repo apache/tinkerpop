@@ -56,6 +56,27 @@ used in that situation. Python, Javascript and .NET have similar syntax.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2078[TINKERPOP-2078]
 
+==== Bytecode Command
+
+The Gremlin Console now has a new `:bytecode` command to help users work more directly with Gremlin bytecode. The
+command is more of a debugging tool than something that would be used for every day purposes. It is sometimes helpful
+to look at Gremlin bytecode directly and the process for viewing it in human readable format is not a single step
+process. It is also not immediately clear how to convert bytecode to a Gremlin string. The `:bytecode` command aims to
+help with both of these issues:
+
+[source,text]
+----
+gremlin> g = TinkerFactory.createModern().traversal()
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+gremlin> :bytecode from g.V().out('knows')  <1>
+==>{"@type":"g:Bytecode","@value":{"step":[["V"],["out","knows"]]}}
+gremlin> :bytecode translate g {"@type":"g:Bytecode","@value":{"step":[["V"],["out","knows"]]}} <2>
+==>g.V().out("knows")
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2050[TINKERPOP-2050],
+link:http://tinkerpop.apache.org/docs/3.3.5/reference/#_console_commands[Reference Documentation - Console Commands]
+
 == TinkerPop 3.3.4
 
 *Release Date: October 15, 2018*

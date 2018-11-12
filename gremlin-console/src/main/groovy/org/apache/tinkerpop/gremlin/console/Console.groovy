@@ -23,6 +23,7 @@ import groovy.cli.picocli.OptionAccessor
 import jline.TerminalFactory
 import jline.console.history.FileHistory
 
+import org.apache.tinkerpop.gremlin.console.commands.BytecodeCommand
 import org.apache.tinkerpop.gremlin.console.commands.GremlinSetCommand
 import org.apache.tinkerpop.gremlin.console.commands.InstallCommand
 import org.apache.tinkerpop.gremlin.console.commands.PluginCommand
@@ -92,6 +93,7 @@ class Console {
         groovy.register(new PluginCommand(groovy, mediator))
         groovy.register(new RemoteCommand(groovy, mediator))
         groovy.register(new SubmitCommand(groovy, mediator))
+        groovy.register(new BytecodeCommand(groovy, mediator))
 
         // hide output temporarily while imports execute
         showShellEvaluationOutput(false)
@@ -422,7 +424,7 @@ class Console {
         cli.i(type: List, longOpt: 'interactive', arity: "1..*", argName: "SCRIPT ARG1 ARG2 ...", "Execute the specified script and leave the console open on completion")
         cli.e(type: List, longOpt: 'execute', argName: "SCRIPT ARG1 ARG2 ...", "Execute the specified script (SCRIPT ARG1 ARG2 ...) and close the console on completion")
         cli.C(type: Boolean, longOpt: 'color', "Disable use of ANSI colors")
-        
+
         OptionAccessor options = cli.parse(args)
 
         if (options == null) {
@@ -458,7 +460,7 @@ class Console {
             println("-i and -e options are mutually exclusive - provide one or the other")
             System.exit(0)
         }
-        
+
         def scriptAndArgs = parseArgs(options.e ? ["-e", "--execute"] : ["-i", "--interactive"], args, cli)
         new Console(io, scriptAndArgs, !options.e)
     }
