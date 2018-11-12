@@ -159,7 +159,22 @@ some other useful operations.  The following table outlines the most commonly us
 |:plugin |:pin |Plugin management functions to list, activate and deactivate available plugins.
 |:remote |:rem |Configures a "remote" context where Gremlin or results of Gremlin will be processed via usage of `:submit`.
 |:submit |:> |Submit Gremlin to the currently active context defined by `:remote`.
+|:bytecode |:bc |Provides options for translating and evaluating `Bytecode` for debugging purposes.
 |=========================================================
+
+Many of the above commands are described elsewhere or are generally self explanatory, but the `:bytecode` command
+could use some additional explanation. The following code shows example usage:
+
+[source,text]
+----
+gremlin> :bytecode from g.V().out('knows')  <1>
+==>{"@type":"g:Bytecode","@value":{"step":[["V"],["out","knows"]]}}
+gremlin> :bytecode translate g {"@type":"g:Bytecode","@value":{"step":[["V"],["out","knows"]]}} <2>
+==>g.V().out("knows")
+----
+
+<1> Generates a GraphSON 3.0 representation of the traversal as bytecode.
+<2> Converts bytecode in GraphSON 3.0 format to a traversal string.
 
 [[console-preferences]]
 === Console Preferences
