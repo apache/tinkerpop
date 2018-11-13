@@ -520,7 +520,7 @@ executing.  It is up to the script to properly commit or rollback transactions i
 [[connecting-via-drivers]]
 === Connecting via Drivers
 
-image:rexster-connect.png[width=400,float=right] TinkerPop offers client-side drivers for the Gremlin Server websocket
+image:rexster-connect.png[width=180,float=right] TinkerPop offers client-side drivers for the Gremlin Server websocket
 sub-protocol in a variety of languages:
 
 * <<gremlin-dotnet,C#>>

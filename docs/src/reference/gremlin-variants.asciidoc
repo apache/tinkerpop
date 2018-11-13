@@ -100,10 +100,9 @@ connection methods described in the <<connecting-gremlin,Connecting Gremlin>> Se
 
 === Connecting
 
-image:rexster-connect.png[width=400,float=left] The pattern for connecting is described in
-<<connecting-gremlin,Connecting Gremlin>> and it basically distills down to creating a `GraphTraversalSource`.
-For <<connecting-embedded,embedded>> mode, this involves first creating a `Graph` and then spawning the
-`GraphTraversalSource`:
+The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down
+to creating a `GraphTraversalSource`. For <<connecting-embedded,embedded>> mode, this involves first creating a
+`Graph` and then spawning the `GraphTraversalSource`:
 
 [source,java]
 ----
@@ -616,10 +615,9 @@ pip install gremlinpython
 
 === Connecting
 
-image:rexster-connect.png[width=400,float=left] The pattern for connecting is described in
-<<connecting-gremlin,Connecting Gremlin>> and it basically distills down to creating a `GraphTraversalSource`. A
-`GraphTraversalSource` is created from the anonymous `traversal()` method where the "g" provided to the
-`DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on the remote end.
+The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down to
+creating a `GraphTraversalSource`. A `GraphTraversalSource` is created from the anonymous `traversal()` method where
+the "g" provided to the `DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on the remote end.
 
 [source,python]
 g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
@@ -965,10 +963,10 @@ nuget install Gremlin.Net
 
 === Connecting
 
-image:rexster-connect.png[width=400,float=left] The pattern for connecting is described in
-<<connecting-gremlin,Connecting Gremlin>> and it basically distills down to creating a `GraphTraversalSource`. A
-`GraphTraversalSource` is created from the `AnonymousTraversalSource.traversal()` method where the "g" provided to
-the `DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on the remote end.
+The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down to
+creating a `GraphTraversalSource`. A `GraphTraversalSource` is created from the `AnonymousTraversalSource.traversal()`
+method where the "g" provided to the `DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on
+the remote end.
 
 [source,csharp]
 ----
@@ -1223,10 +1221,10 @@ npm install gremlin
 
 === Connecting
 
-image:rexster-connect.png[width=400,float=left] The pattern for connecting is described in
-<<connecting-gremlin,Connecting Gremlin>> and it basically distills down to creating a `GraphTraversalSource`.
-A `GraphTraversalSource` is created from the `AnonymousTraversalSource.traversal()` method where the "g" provided to
-the `DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on the remote end.
+The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down to
+creating a `GraphTraversalSource`. A `GraphTraversalSource` is created from the `AnonymousTraversalSource.traversal()`
+method where the "g" provided to the `DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on
+the remote end.
 
 [source,javascript]
 ----
