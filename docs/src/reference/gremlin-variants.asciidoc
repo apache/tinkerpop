@@ -100,9 +100,10 @@ connection methods described in the <<connecting-gremlin,Connecting Gremlin>> Se
 
 === Connecting
 
-The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down to
-creating a `GraphTraversalSource`. For <<connecting-embedded,embedded>> mode, this involves first creating a `Graph`
-and then spawning the `GraphTraversalSource`:
+image:rexster-connect.png[width=400,float=left] The pattern for connecting is described in
+<<connecting-gremlin,Connecting Gremlin>> and it basically distills down to creating a `GraphTraversalSource`.
+For <<connecting-embedded,embedded>> mode, this involves first creating a `Graph` and then spawning the
+`GraphTraversalSource`:
 
 [source,java]
 ----
@@ -350,7 +351,7 @@ for legacy reasons and corner use cases which are still not completely addressed
 consider using bytecode-based requests instead when possible.
 
 image:gremlin-java.png[width=175,float=left] TinkerPop comes equipped with a reference client for Java-based
-applications.  It is referred to as Gremlin Driver, which enables applications to send requests to Gremlin Server
+applications.  It is referred to as `gremlin-driver`, which enables applications to send requests to Gremlin Server
 and get back results.
 
 Gremlin scripts are sent to the server from a `Client` instance.  A `Client` is created as follows:
@@ -615,9 +616,10 @@ pip install gremlinpython
 
 === Connecting
 
-The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down to
-creating a `GraphTraversalSource`. A `GraphTraversalSource` is created from the anonymous `traversal()` method where
-the "g" provided to the `DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on the remote end.
+image:rexster-connect.png[width=400,float=left] The pattern for connecting is described in
+<<connecting-gremlin,Connecting Gremlin>> and it basically distills down to creating a `GraphTraversalSource`. A
+`GraphTraversalSource` is created from the anonymous `traversal()` method where the "g" provided to the
+`DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on the remote end.
 
 [source,python]
 g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
@@ -947,6 +949,7 @@ to `Set` manually.
 * Gremlin is capable of returning `Dictionary` results that use non-hashable keys (e.g. Dictionary as a key) and Python
 does not support that at a language level. Gremlin that returns such results will need to be re-written to avoid that.
 
+[[gremlin-dotnet]]
 [[gremlin-DotNet]]
 == Gremlin.Net
 
@@ -962,10 +965,10 @@ nuget install Gremlin.Net
 
 === Connecting
 
-The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down to
-creating a `GraphTraversalSource`. A `GraphTraversalSource` is created from the `AnonymousTraversalSource.traversal()`
-method where the "g" provided to the `DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on
-the remote end.
+image:rexster-connect.png[width=400,float=left] The pattern for connecting is described in
+<<connecting-gremlin,Connecting Gremlin>> and it basically distills down to creating a `GraphTraversalSource`. A
+`GraphTraversalSource` is created from the `AnonymousTraversalSource.traversal()` method where the "g" provided to
+the `DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on the remote end.
 
 [source,csharp]
 ----
@@ -1065,6 +1068,32 @@ g.V().Out().Map<int>(Lambda.Python("lambda x: len(x.get().value('name'))")).Sum<
 
 The `ILambda` interface returned by these two methods inherits interfaces like `IFunction` and `IPredicate` that mirror
 their Java counterparts which makes it possible to use lambdas with Gremlin.Net for the same steps as in Gremlin-Java.
+
+=== Submitting Scripts
+
+WARNING: TinkerPop does not recommend submitting script-based requests and generally continues to support this feature
+for legacy reasons and corner use cases which are still not completely addressed by the Gremlin language. Please
+consider using bytecode-based requests instead when possible.
+
+Gremlin scripts are sent to the server from a `IGremlinClient` instance.  A `IGremlinClient` is created as follows:
+
+[source,csharp]
+----
+var gremlinServer = new GremlinServer("localhost", 8182);
+using (var gremlinClient = new GremlinClient(gremlinServer))
+{
+    var response = await gremlinClient.SubmitWithSingleResultAsync<string>("g.V().has('person','name','marko')");
+}
+----
+
+If the remote system has authentication and SSL enabled, then the `GremlinServer` object can be configured as follows:
+
+[source,csharp]
+----
+var username = "username";
+var password = "password";
+var gremlinServer = new GremlinServer(TestHost, TestPort, enableSsl: true username: username, password: password);
+----
 
 === Domain Specific Languages
 
@@ -1194,10 +1223,10 @@ npm install gremlin
 
 === Connecting
 
-The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down to
-creating a `GraphTraversalSource`. A `GraphTraversalSource` is created from the `AnonymousTraversalSource.traversal()`
-method where the "g" provided to the `DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on
-the remote end.
+image:rexster-connect.png[width=400,float=left] The pattern for connecting is described in
+<<connecting-gremlin,Connecting Gremlin>> and it basically distills down to creating a `GraphTraversalSource`.
+A `GraphTraversalSource` is created from the `AnonymousTraversalSource.traversal()` method where the "g" provided to
+the `DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on the remote end.
 
 [source,javascript]
 ----

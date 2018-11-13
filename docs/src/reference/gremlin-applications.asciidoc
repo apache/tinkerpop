@@ -520,12 +520,13 @@ executing.  It is up to the script to properly commit or rollback transactions i
 [[connecting-via-drivers]]
 === Connecting via Drivers
 
-TinkerPop offers client-side drivers for the Gremlin Server websocket subprotocol in a variety of languages:
+image:rexster-connect.png[width=400,float=right] TinkerPop offers client-side drivers for the Gremlin Server websocket
+sub-protocol in a variety of languages:
 
-* C#
-* Java
-* Javascript
-* Python
+* <<gremlin-dotnet,C#>>
+* <<gremlin-java,Java>>
+* <<gremlin-javascript,Javascript>>
+* <<gremlin-python,Python>>
 
 These drivers provide methods to send Gremlin based requests and get back traversal results as a response. The requests
 may be script-based or bytecode-based. As discussed earlier in the <<connecting-gremlin-server,introduction>> the
@@ -600,7 +601,7 @@ list = g.V().has("person","name","marko").out("knows").toList()
 The advantage of bytecode over scripts should be apparent from the above examples. Scripts are just strings that are
 embedded in code (in the above examples, the strings are Groovy-based) whereas bytecode based requests are themselves
 code written in the native language of use. Obviously, the advantage of the Gremlin being actual code is that there
-are checks (e.g. compile-time, intellisense and other IDE support, language level checks, etc.) that help validate the
+are checks (e.g. compile-time, auto-complete and other IDE support, language level checks, etc.) that help validate the
 Gremlin during the development process.
 
 TinkerPop makes an effort to ensure a high-level of consistency among the drivers and their features, but there are
@@ -1088,7 +1089,8 @@ mechanisms are accessible, see the table below.
 1.3+v|Gremlin-Java/
 Gremlin-Console |PLAIN SASL (username/password) |3.0.0-incubating
 |Pluggable SASL |3.0.0-incubating
-|GSSAPI SASL (Kerberos) |3.3.0
+|GSSAPI SASL (Kerberos) |3.3.0   
+|Gremlin.NET |PLAIN SASL |3.3.0
 |Gremlin-Python |PLAIN SASL |3.2.2
 |Gremlin.Net |PLAIN SASL |3.2.7
 |Gremlin-Javascript |PLAIN SASL |3.3.0
@@ -1171,7 +1173,7 @@ $ bin/gremlin-server.sh conf/gremlin-server-secure.yaml
 [INFO] GremlinServer$1 - Channel started at port 8182.
 ----
 
-As SSL is enabled on the server it must also be enabled on the client when connecting.  To connect to
+When SSL is enabled on the server, it must also be enabled on the client when connecting.  To connect to
 Gremlin Server with the <<gremlin-java,`gremlin-driver`>>, set the `credentials`, `enableSsl`, and `trustStore`
 when constructing the `Cluster`.
 
