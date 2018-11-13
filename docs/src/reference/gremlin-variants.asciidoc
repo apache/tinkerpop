@@ -20,33 +20,42 @@ limitations under the License.
 
 image::gremlin-house-of-mirrors.png[width=1024]
 
-The <<connecting-gremlin,Connecting Gremlin>> Section described the different ways in which a developer can use
-Gremlin in their applications. Two of those methods <<connecting-gremlin-server,Gremlin Server>> and
-<<connecting-rgp,Remote Gremlin Providers>> placed the Traversal Machine on a remote system separate from the client.
-It is in these cases that developers must select a driver to utilize Gremlin.
+At this point, readers should be well familiar with the <<intro,Introduction>> to this Reference Documentation and
+will likely be thinking about implementation details specific to the graph provider they have selected as well as
+the programming language they intend to use. The choice of programming language could have implications to the
+architecture and design of the application and the choice itself may have limits imposed upon it by the chosen graph
+provider. For example, a <<connecting-rgp,Remote Gremlin Provider>> will require the selection of a driver to interact
+with it. On the other hand, a graph system that is designed for embedded use, like TinkerGraph, needs the Java
+Virtual Machine (JVM) environment so will require <<connecting-gremlin-server,Gremlin Server>>, if using a programming
+language that is not on the JVM and will further require driver selection.
 
 TinkerPop provides an array of drivers in different programming languages as a way to connect to a remote Gremlin
 Server or Remote Gremlin Provider. Drivers allow the developer to make requests to that remote system and get back
 results from the TinkerPop-enabled graphs hosted within. A driver can submit Gremlin strings and Gremlin bytecode
-over this subprotocol. Gremlin strings are written in the scripting language made available by the remote system that
+over this sub-protocol. Gremlin strings are written in the scripting language made available by the remote system that
 the driver is connecting to (typically, Groovy-based). This connection approach is quite similar to what developers
 are likely familiar with when using JDBC and SQL. While it is familiar, it is not recommended and for TinkerPop it is
 considered an out-dated concept and is largely still present for the purpose of supporting applications that might
 still be using that method of interaction.
 
-The preferred approach is to use bytecode based requests, which essentially allows the ability to craft Gremlin
+The preferred approach is to use bytecode-based requests, which essentially allows the ability to craft Gremlin
 directly in the programming language of choice. As Gremlin makes use of two fundamental programming constructs:
 link:https://en.wikipedia.org/wiki/Function_composition[function composition] and
 link:https://en.wikipedia.org/wiki/Nested_function[function nesting]. it is possible to embed the Gremlin language
-in any modern programming language.It is a far more natural way to program, because it enables IDE interaction,
+in any modern programming language. It is a far more natural way to program, because it enables IDE interaction,
 compile time checks, and language level checks that can help prevent errors prior to execution. The differences
-between these two approaches were outlined in the <<connecting-via-drivers,Connecting Via Drivers>> Section.
+between these two approaches were outlined in the <<connecting-via-drivers,Connecting Via Drivers>> Section, which
+applies to Gremlin Server, but also to Remote Gremlin Providers.
 
-TinkerPop natively supports drivers and variants of Gremlin in a number of different programming languages. They are
-all described in the following sections. There are also third-party implementations of drivers and Gremlin, as well
+In addition to the languages and drivers that TinkerPop supports, there are also third-party implementations, as well
 as extensions to the Gremlin language that might be specific to a particular graph provider. That listing can be
 found on the TinkerPop link:http://tinkerpop.apache.org/#graph-systems[home page]. Their description is beyond the
 scope of this documentation.
+
+TIP: When possible, it is typically best to align the version of TinkerPop used on the client with the version
+supported on the server. While it is not impossible to have a different version between client and server, it may
+require additional configuration and/or a deeper knowledge of that changes introduced between versions. It's simply
+safer to avoid the conflict, when allowed to do so.
 
 IMPORTANT: Gremlin-Java is the canonical representation of Gremlin and any (proper) Gremlin language variant will
 emulate its structure as best as possible given the constructs of the host language. A strong correspondence between
@@ -57,7 +66,10 @@ image::gremlin-variant-architecture.png[width=650,float=left]
 
 NOTE: The information herein describes how to use the Gremlin language variants distributed
 with Apache TinkerPop. For information on how to build a Gremlin language variant, please review the
-link:http://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[Gremlin Language Variants] tutorial.
+link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlin-language-variants/[Gremlin Language Variants] tutorial.
+
+The following sections describe each language variant and driver that is officially TinkerPop a part of the project,
+provided more detailed information about usage, configuration and known limitations.
 
 [[connecting-via-remotegraph]]
 [[connecting-via-java]]
@@ -67,8 +79,8 @@ link:http://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variant
 image:gremlin-java-drawing.png[width=130,float=right] Apache TinkerPop's Gremlin-Java implements Gremlin within the
 Java language and can be used by any Java Virtual Machine. Gremlin-Java is considered the canonical, reference
 implementation of Gremlin and serves as the foundation by which all other Gremlin language variants should emulate.
-As the Traversal Machine that processes Gremlin queries is also written in Java, it can be used in all three connection
-methods described in the <<connecting-gremlin,Connecting Gremlin>> Section.
+As the Gremlin Traversal Machine that processes Gremlin queries is also written in Java, it can be used in all three
+connection methods described in the <<connecting-gremlin,Connecting Gremlin>> Section.
 
 [source,xml]
 ----
@@ -101,7 +113,7 @@ GraphTraversalSource g = graph.traversal();
 Using "g" it is then possible to start writing Gremlin. The "g" allows for the setting of many configuration options
 which affect traversal execution. The <<traversal, Traversal>> Section describes some of these options and some are
 only suitable with <<connecting-embedded,embedded>> style usage. For remote options however there are some added
-setup and configurations to consider and this section looks to address those.
+configurations to consider and this section looks to address those.
 
 When connecting to <<connecting-gremlin-server,Gremlin Server>> or <<connecting-rgp,Remote Gremlin Providers>>  it
 is possible to configure the `DriverRemoteConnection` manually as shown in earlier examples where the host and port
@@ -189,10 +201,11 @@ IMPORTANT: Bytecode-based traversals use the `TraversalOpProcessor` in Gremlin S
 the retrieval of side-effects (if the `Traversal` produces any). That cache can be configured (e.g. controlling
 eviction times and sizing) in the Gremlin Server configuration file as described <<traversalopprocessor, here>>.
 
+[[java-imports]]
 === Common Imports
 
 There are a number of classes, functions and tokens that are typically used with Gremlin. The following imports
-provide most of the typical functionality required to use Gremlin:
+provide most of the common functionality required to use Gremlin:
 
 [source,java]
 ----
@@ -258,13 +271,13 @@ Please see the link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/t
 
 === Serialization
 
-Serialization applies when using the driver to submit Gremlin to a remote system in some way. TinkerPop has two
-options for serialization built into it for JVM-based languages: Gryo and GraphSON. When using Gryo serialization
-(the default serializer for the Java driver), it is important that the client and server have the same serializers
-configured or else one or the other will experience serialization exceptions and fail to always communicate.
-Discrepancy in serializer registration between client and server can happen fairly easily as graphs will automatically
-include serializers on the server-side, thus leaving the client to be configured manually. This can be done manually
-as follows:
+Remote systems like Gremlin Server and Remote Gremlin Providers respond to requests made in a particular serialization
+format and respond by serializing results to some format to be interpreted by the client. For JVM-based languages,
+there are two options for serialization: Gryo and GraphSON. When using Gryo serialization (the default serializer for
+the Java driver), it is important that the client and server have the same serializers configured or else one or
+the other will experience serialization exceptions and fail to always communicate. Discrepancy in serializer
+registration between client and server can happen fairly easily as graphs will automatically include serializers on
+the server-side, thus leaving the client to be configured manually. This can be done manually as follows:
 
 [source,java]
 ----
@@ -280,7 +293,7 @@ GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(clu
 The `IoRegistry` tells the serializer what classes from the graph provider to auto-register during serialization.
 Gremlin Server roughly uses this same approach when it configures it's serializers, so using this same model will
 ensure compatibility when making requests. Obviously, it is possible to switch to GraphSON by building a
-`GraphSONMessageSerializerV3d0` in the same way and building that into the `Cluster` object
+`GraphSONMessageSerializerV3d0` in the same way and building that into the `Cluster` object.
 
 === The Lambda Solution
 
@@ -311,8 +324,8 @@ g.V().as("a").out("knows").as("b").select("b").by(Lambda.<Vertex,Integer>functio
 Finally, Gremlin `Bytecode` that includes lambdas requires that the traversal be processed by the
 `ScriptEngine`. To avoid continued recompilation costs, it supports the encoding of bindings, which allow Gremlin
 Server to cache traversals that will be reused over and over again save that some parameterization may change. Thus,
-instead of translating, compiling, and then executing each submitted bytecode, it is possible to simply execute.
-To express bindings in Java, use `Bindings`.
+instead of translating, compiling, and then executing each submitted bytecode request, it is possible to simply
+execute. To express bindings in Java, use `Bindings`.
 
 [source,java]
 ----
@@ -340,7 +353,7 @@ image:gremlin-java.png[width=175,float=left] TinkerPop comes equipped with a ref
 applications.  It is referred to as Gremlin Driver, which enables applications to send requests to Gremlin Server
 and get back results.
 
-Gremlin code is sent to the server from a `Client` instance.  A `Client` is created as follows:
+Gremlin scripts are sent to the server from a `Client` instance.  A `Client` is created as follows:
 
 [source,java]
 ----
@@ -351,7 +364,7 @@ Client client = cluster.connect(); <2>
 <1> Opens a reference to `localhost` - note that there are many configuration options available in defining a `Cluster` object.
 <2> Creates a `Client` given the configuration options of the `Cluster`.
 
-Once a `Client` instance is ready, it is possible to issue some Gremlin:
+Once a `Client` instance is ready, it is possible to issue some Gremlin Groovy scripts:
 
 [source,java]
 ----
@@ -419,8 +432,8 @@ to "g" and "g1" and "g2" are automatically rebound into "g" on the server-side.
 [[gremlin-java-dsl]]
 === Domain Specific Languages
 
-Creating a <<dsl,Domain Specific Language>> (DSL) in Java requires the `@GremlinDsl` Java annotation in `gremlin-core`. This
-annotation should be applied to a "DSL interface" that extends `GraphTraversal.Admin`.
+Creating a <<dsl,Domain Specific Language>> (DSL) in Java requires the `@GremlinDsl` Java annotation in `gremlin-core`.
+This annotation should be applied to a "DSL interface" that extends `GraphTraversal.Admin`:
 
 [source,java]
 ----
@@ -572,7 +585,7 @@ execute it.
 image:gremlin-groovy-drawing.png[width=130,float=right] Apache TinkerPop's Gremlin-Groovy implements Gremlin within the
 link:http://groovy.apache.org[Apache Groovy] language. As a JVM-based language variant, Gremlin-Groovy is backed by
 Gremlin-Java constructs. Moreover, given its scripting nature, Gremlin-Groovy serves as the language of
-<<gremlin-console,Gremlin Console>>.
+<<gremlin-console,Gremlin Console>> and <<gremlin-server,Gremlin Server>>.
 
 [source,groovy]
 ----
@@ -592,7 +605,8 @@ the link:https://www.python.org/[Python] language and can be used on any Python 
 link:https://en.wikipedia.org/wiki/CPython[CPython] machine. Python's syntax has the same constructs as Java including
 "dot notation" for function chaining (`a.b.c`), round bracket function arguments (`a(b,c)`), and support for global
 namespaces (`a(b())` vs `a(__.b())`). As such, anyone familiar with Gremlin-Java will immediately be able to work
-with Gremlin-Python. Moreover, there are a few added constructs to Gremlin-Python that make traversals a bit more succinct.
+with Gremlin-Python. Moreover, there are a few added constructs to Gremlin-Python that make traversals a bit more
+succinct.
 
 To install Gremlin-Python, use Python's link:https://en.wikipedia.org/wiki/Pip_(package_manager)[pip] package manager.
 
@@ -608,6 +622,7 @@ the "g" provided to the `DriverRemoteConnection` corresponds to the name of a `G
 [source,python]
 g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
 
+[[python-imports]]
 === Common Imports
 
 There are a number of classes, functions and tokens that are typically used with Gremlin. The following imports
@@ -703,10 +718,10 @@ re-construction machine-side.
 
 Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
 most languages do not support lambda introspection and thus, code analysis. In Gremlin-Python,
-a link:https://docs.python.org/2/reference/expressions.html#lambda[Python lambda] should be represented as a zero-arg callable
-that returns a string representation of a lambda. The default lambda language is `gremlin-python` and can be changed via
-`gremlin_python.statics.default_lambda_language`. When the lambda is represented in `Bytecode` its language is encoded
-such that the remote connection host can infer which translator and ultimate execution engine to use.
+a link:https://docs.python.org/2/reference/expressions.html#lambda[Python lambda] should be represented as a zero-arg
+callable that returns a string representation of a lambda. The default lambda language is `gremlin-python` and can be
+changed via `gremlin_python.statics.default_lambda_language`. When the lambda is represented in `Bytecode` its language
+is encoded such that the remote connection host can infer which translator and ultimate execution engine to use.
 
 [gremlin-python,modern]
 ----
@@ -783,7 +798,7 @@ NOTE: The command to use `install` need only be executed once to gather `gremlin
 path. Future starts of Gremlin Server will not require that command.
 
 WARNING: As explained throughout the documentation, when possible <<a-note-on-lambdas,avoid>> lambdas. If lambdas
-must be used, the consider submitting Groovy lambdas as opposed to Python-based ones. The `GremlinGroovyScriptEngine`
+must be used, then consider submitting Groovy lambdas as opposed to Python-based ones. The `GremlinGroovyScriptEngine`
 is far more featured and performant than its Jython sibling and will likely yield better results.
 
 === Submitting Scripts
@@ -929,17 +944,18 @@ is different from JVM languages which produces different `Set` results when thos
 is detected during deserialization, the `Set` is coerced to a `List` so that traversals return consistent
 results within a collection across different languages. If a `Set` is needed then convert `List` results
 to `Set` manually.
-* Gremlin is capable of returning Dictionary results that use non-hashable keys (e.g. Dictionary as a key) and Python
+* Gremlin is capable of returning `Dictionary` results that use non-hashable keys (e.g. Dictionary as a key) and Python
 does not support that at a language level. Gremlin that returns such results will need to be re-written to avoid that.
 
 [[gremlin-DotNet]]
 == Gremlin.Net
 
-image:gremlin-dotnet-logo.png[width=371,float=right] Apache TinkerPop's Gremlin.Net implements Gremlin within the C# language. It targets .NET Standard and can
-therefore be used on different operating systems and with different .NET frameworks, such as .NET Framework
-and link:https://www.microsoft.com/net/core[.NET Core]. Since the C# syntax is very similar to that of Java, it should be very easy to switch between
-Gremlin-Java and Gremlin.Net. The only major syntactical difference is that all method names in Gremlin.Net
-use PascalCase as opposed to camelCase in Gremlin-Java in order to comply with .NET conventions.
+image:gremlin-dotnet-logo.png[width=371,float=right] Apache TinkerPop's Gremlin.Net implements Gremlin within the C#
+language. It targets .NET Standard and can therefore be used on different operating systems and with different .NET
+frameworks, such as .NET Framework and link:https://www.microsoft.com/net/core[.NET Core]. Since the C# syntax is very
+similar to that of Java, it should be very easy to switch between Gremlin-Java and Gremlin.Net. The only major
+syntactical difference is that all method names in Gremlin.Net use PascalCase as opposed to camelCase in Gremlin-Java
+in order to comply with .NET conventions.
 
 [source,powershell]
 nuget install Gremlin.Net
@@ -1211,7 +1227,7 @@ g.V().hasLabel('person').values('name').toList()
   .then(names => console.log(names));
 ----
 
-You can `await` the promises if you are using `async` functions.
+When using `async` functions it is possible to `await` the promises:
 
 [source,javascript]
 ----

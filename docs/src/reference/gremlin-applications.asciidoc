@@ -423,8 +423,8 @@ v[6]
 image:gremlin-server.png[width=400,float=right] Gremlin Server provides a way to remotely execute Gremlin against one
 or more `Graph` instances hosted within it.  The benefits of using Gremlin Server include:
 
-* Allows any Gremlin Structure-enabled graph to exist as a standalone server, which in turn enables the ability for
-multiple clients to communicate with the same graph database.
+* Allows any Gremlin Structure-enabled graph (i.e. implements the `Graph` API on the JVM) to exist as a standalone
+server, which in turn enables the ability for multiple clients to communicate with the same graph database.
 * Enables execution of ad-hoc queries through remotely submitted Gremlin.
 * Provides a method for non-JVM languages which may not have a Gremlin Traversal Machine (e.g. Python, Javascript, etc.)
 to communicate with the TinkerPop stack on the JVM.
@@ -457,7 +457,7 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
          (o o)
 -----oOOo-(3)-oOOo-----
 
-[INFO] GremlinServer - Configuring Gremlin Server from /home/smallette/git/apache/incubator-tinkerpop/gremlin-server/target/apache-tinkerpop-gremlin-server-3.3.0-SNAPSHOT-standalone/conf/gremlin-server.yaml
+[INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server.yaml
 [INFO] MetricManager - Configured Metrics ConsoleReporter configured with report interval=180000ms
 [INFO] MetricManager - Configured Metrics CsvReporter configured with report interval=180000ms to fileName=/tmp/gremlin-server-metrics.csv
 [INFO] MetricManager - Configured Metrics JmxReporter configured with domain= and agentId=
@@ -931,15 +931,16 @@ The `bin/gremlin-server.sh` script can be customized with environment variables 
 |=========================================================
 
 As mentioned earlier, Gremlin Server is configured though a YAML file.  By default, Gremlin Server will look for a
-file called `conf/gremlin-server.yaml` to configure itself on startup.  To override this default, set GREMLIN_YAML in `bin/gemlin-server.conf` or supply the file
-to use to `bin/gremlin-server.sh` as in:
+file called `conf/gremlin-server.yaml` to configure itself on startup.  To override this default, set GREMLIN_YAML in
+`bin/gemlin-server.conf` or supply the file to use to `bin/gremlin-server.sh` as in:
 
 [source,text]
 ----
 bin/gremlin-server.sh conf/gremlin-server-min.yaml
 ----
 
-WARNING: On Windows, gremlin-server.bat will always start in the foreground. When no parameter is provided, it will start with the default `conf/gremlin-server.yaml` file.
+WARNING: On Windows, gremlin-server.bat will always start in the foreground. When no parameter is provided, it will
+start with the default `conf/gremlin-server.yaml` file.
 
 The following table describes the various YAML configuration options that Gremlin Server expects:
 
@@ -1069,11 +1070,11 @@ The `TraversalOpProcessor` provides a way to use <<connecting-via-remotegraph,Re
 ==== Security
 
 image:gremlin-server-secure.png[width=175,float=right] Gremlin Server provides for several features that aid in the
-security of the graphs that it exposes.  In particular it supports SSL for transport layer security, protective measures against
-malicious script execution, and authentication.  SSL options are described in the configuration settings table in the
-<<connecting-via-java, "Connecting via Java">> section. Script execution options are covered
-<<script-execution, "at the end of this section">>. This section starts with authentication.
-
+security of the graphs that it exposes.  In particular it supports SSL for transport layer security, protective
+measures against malicious script execution, and authentication.  Client SSL options are described in the
+<<gremlin-drivers-variants, Gremlin Drivers and Variants">> sections with varying capability depending on the driver
+chosen. Script execution options are covered <<script-execution, "at the end of this section">>. This section
+starts with authentication.
 
 Gremlin Server supports a pluggable authentication framework using
 link:https://en.wikipedia.org/wiki/Simple_Authentication_and_Security_Layer[SASL] (Simple Authentication and
@@ -1095,8 +1096,8 @@ Gremlin-Console |PLAIN SASL (username/password) |3.0.0-incubating
 
 By default, Gremlin Server is configured to allow all requests to be processed (i.e. no authentication).  To enable
 authentication, Gremlin Server must be configured with an `Authenticator` implementation in its YAML file.  Gremlin
-Server comes packaged with two implementations called `SimpleAuthenticator` for plain text authentication using HTTP BASIC or
-PLAIN SASL and `Krb5Authenticator` for Kerberos authentication using GSSAPI SASL.
+Server comes packaged with two implementations called `SimpleAuthenticator` for plain text authentication using HTTP
+BASIC or PLAIN SASL and `Krb5Authenticator` for Kerberos authentication using GSSAPI SASL.
 
 ===== Plain text authentication
 
@@ -1171,7 +1172,8 @@ $ bin/gremlin-server.sh conf/gremlin-server-secure.yaml
 ----
 
 As SSL is enabled on the server it must also be enabled on the client when connecting.  To connect to
-Gremlin Server with `gremlin-driver`, set the `credentials`, `enableSsl`, and `trustStore` when constructing the `Cluster`.
+Gremlin Server with the <<gremlin-java,`gremlin-driver`>>, set the `credentials`, `enableSsl`, and `trustStore`
+when constructing the `Cluster`.
 
 [source,java]
 Cluster cluster = Cluster.build().credentials("stephen", "password")
@@ -1179,9 +1181,11 @@ Cluster cluster = Cluster.build().credentials("stephen", "password")
 
 If connecting with Gremlin Console, which utilizes `gremlin-driver` for remote script execution, use the provided
 `conf/remote-secure.yaml` file when defining the remote.  That file contains configuration for the username and
-password as well as enablement of SSL from the client side. Be sure to configure the trustStore if using self-signed certificates.
+password as well as enablement of SSL from the client side. Be sure to configure the trustStore if using self-signed
+certificates.
 
-Similarly, Gremlin Server can be configured for REST and security. Follow the steps above for configuring the SSL certificate.
+Similarly, Gremlin Server can be configured for REST and security. Follow the steps above for configuring the SSL
+certificate.
 
 [source,text]
 ----

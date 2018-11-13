@@ -366,7 +366,7 @@ multiple methods for clients to interface with it:
 ** Bytecode-based Gremlin traversals
 * HTTP for string-based scripts
 
-Users are encouraged to use the bytecode based approach with websockets because it allows them to write Gremlin
+Users are encouraged to use the bytecode-based approach with websockets because it allows them to write Gremlin
 in the language of their choice. Connecting looks somewhat similar to the <<connecting-embedded, embedded>> approach
 in that there is a need to create a `GraphTraversalSource`. In the embedded approach, the means for that object's
 creation is derived from a `Graph` object which spawns it. In this case, however, the `Graph` instance exists only on
@@ -410,6 +410,8 @@ g = traversal().withRemote(
 
 As shown in the embedded approach in the previous section, once "g" is defined, writing Gremlin is structurally and
 conceptually the same irrespective of programming language.
+
+
 
 [[connecting-gremlin-server-limitations]]
 ==== Limitations
