@@ -751,8 +751,8 @@ instead of translating, compiling, and then executing each submitted bytecode, i
 
 [gremlin-python,modern]
 ----
-g.V(('id',1)).out('created').values('name').map(lambda: ("'name: ' + it.get().value('name').length()", "gremlin-groovy")).toList()
-g.V(('id',4)).out('created').values('name').map(lambda: ("'name: ' + it.get().value('name').length()", "gremlin-groovy")).toList()
+g.V(('id',1)).out('created').map(lambda: ("it.get().value('name').length()", "gremlin-groovy")).sum().toList()
+g.V(('id',4)).out('created').map(lambda: ("it.get().value('name').length()", "gremlin-groovy")).sum().toList()
 ----
 
 ==== Native Python Lambdas
