@@ -47,7 +47,6 @@ class GraphTraversalSource {
   /**
    * @param remoteConnection
    * @returns {GraphTraversalSource}
-   * @deprecated As of release 3.3.5, replaced by {@link AnonymousTraversalSource#withRemote(Configuration)}.
    */
   withRemote(remoteConnection) {
     const traversalStrategy = new TraversalStrategies(this.traversalStrategies);
