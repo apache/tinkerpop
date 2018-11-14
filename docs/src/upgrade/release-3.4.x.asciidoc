@@ -458,6 +458,22 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-1707[TINKERPOP-1707],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1954[TINKERPOP-1954],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1986[TINKERPOP-1986]
 
+==== Deprecated GraphSONMessageSerializerGremlinV2d0
+
+The `GraphSONMessageSerializerGremlinV2d0` serializer is now analogous to `GraphSONMessageSerializerV2d0` and therefore
+redundant. It has technically always been equivalent in terms of functionality as both serialized to the same format
+(i.e. GraphSON 2.0 with embedded types). It is no longer clear why these two classes were established this way, but
+it does carry the negative effect where multiple serializer versions could not be bound to Gremlin Server's HTTP
+endpoint as the MIME types conflicted on `application/json`. By simply making both message serializers support
+`application/json` and `application/vnd.gremlin-v2.0+json`, it then became possible to overcome that limitation. In
+short, prefer use of `GraphSONMessageSerializerV2d0` when possible.
+
+Note that this is a breaking change in the sense that `GraphSONMessageSerializerV2d0` will no longer set the header of
+requests messages to `application/json`. As a result, older versions of Gremlin Server not configured with
+`GraphSONMessageSerializerGremlinV2d0` will not find a deserializer to match the request.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1984[TINKERPOP-1984]
+
 ==== Modifications to reducing barrier steps
 
 The behavior of `min()`, `max()`, `mean()` and `sum()` has been modified to return no result if there's no input. Previously these steps yielded the internal seed value:
