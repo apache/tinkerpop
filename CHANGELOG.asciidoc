@@ -102,6 +102,7 @@ This release also includes changes from <<release-3-2-11, 3.2.11>>.
 * Added `:bytecode` command to help developers debugging `Bytecode`-based traversals.
 * Fixed `PersistedOutputRDD` to eager persist RDD by adding `count()` action calls.
 * Deserialized `g:Set` to a Python `Set` in GraphSON in `gremlin-python`.
+* Changed Java driver to expect a generic `RemoteTraverser` object rather than the specific `DefaultRemoteTraverser`.
 * Display the remote stack trace in the Gremlin Console when scripts sent to the server fail.
 * Added `AnonymousTraversalSource` which provides a more unified means of constructing a `TraversalSource`.
 * Changed behavior of GraphSON deserializer in gremlin-python such that `g:Set` returns a Python `Set`.
