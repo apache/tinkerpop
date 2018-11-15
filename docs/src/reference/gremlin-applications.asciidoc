@@ -1594,6 +1594,7 @@ The `GroovyCompilerGremlinPlugin` has a number of configuration options:
 |`compilerConfigurationOptions` |Allows configuration of the Groovy `CompilerConfiguration` object by taking a `Map` of key/value pairs where the "key" is a property to set on the `CompilerConfiguration`.
 |`enableThreadInterrupt` |Injects checks for thread interruption, thus allowing the script to potentially respect calls to `Thread.interrupt()`
 |`expectedCompilationTime` |The amount of time in milliseconds a script is allowed to compile before a warning message is sent to the logs.
+|`classMapCacheSpecification` |The cache specification for the `GremlinGroovyScriptEngine` class map cache - described in more detail in the <<gremlin-server-cache,Cache Management>> Section.
 |`extensions` | This setting is for use when `compilation` is configured with `COMPILE_STATIC` or `TYPE_CHECKED` and accepts a comma separated list of link:http://docs.groovy-lang.org/latest/html/documentation/#Typecheckingextensions-Workingwithextensions[type checking extensions] that can have the effect of securing calls to various methods.
 |=========================================================
 
@@ -2002,6 +2003,7 @@ List<Vertex> results = g.V().hasLabel("person").valueMap('name').with(WithOption
 
 Both of the above requests return a list of `Map` instances that contain the `id`, `label` and the "name" property.
 
+[[gremlin-server-cache]]
 ==== Cache Management
 
 If Gremlin Server processes a large number of unique scripts, the global function cache will grow beyond the memory
@@ -2032,6 +2034,25 @@ params.put("x",4);
 params.put("#jsr223.groovy.engine.keep.globals", "soft");
 client.submit("[1,2,3,x]", params);
 ----
+
+Gremlin Server also has a "class map" cache which holds compiled scripts which helps avoid recompilation costs on
+future requests. This cache can be tuned in the Gremlin Server configuration with the `GroovyCompilerGremlinPlugin`
+in the following fashion:
+
+[source,yaml]
+----
+scriptEngines: {
+  gremlin-groovy: {
+    plugins: { ...
+               org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin: {classMapCacheSpecification: "initialCapacity=1000,maximumSize=10000"},
+               ...}
+----
+
+The specifics for this comma delimited format can be found
+link:https://static.javadoc.io/com.github.ben-manes.caffeine/caffeine/2.6.2/com/github/benmanes/caffeine/cache/CaffeineSpec.html[here].
+By default, the cache is set to `softValues` which means they are garbage collected in a globally least-recently-used
+manner as memory gets low. For production systems, it is likely that a more predictable strategy be taken as shown
+above with the use of the `maximumSize`.
 
 [[sessions]]
 ==== Considering Sessions
