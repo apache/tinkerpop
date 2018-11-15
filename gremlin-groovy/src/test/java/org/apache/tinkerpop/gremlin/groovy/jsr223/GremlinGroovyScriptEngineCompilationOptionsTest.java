@@ -32,7 +32,8 @@ public class GremlinGroovyScriptEngineCompilationOptionsTest {
 
     @Test
     public void shouldRegisterLongCompilation() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new CompilationOptionsCustomizer(10));
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(
+                CompilationOptionsCustomizer.build().setExpectedCompilationTime(10).create());
 
         final int numberOfParameters = 3000;
         final Bindings b = new SimpleBindings();
