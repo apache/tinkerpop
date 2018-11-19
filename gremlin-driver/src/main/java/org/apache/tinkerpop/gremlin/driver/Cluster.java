@@ -610,9 +610,9 @@ public final class Cluster {
         }
 
         /**
-         * Set the {@link MessageSerializer} to use given its MIME type.  Note that setting this value this way
-         * will not allow specific configuration of the serializer itself.  If specific configuration is required
-         * please use {@link #serializer(MessageSerializer)}.
+         * Set the {@link MessageSerializer} to use given the exact name of a {@link Serializers} enum.  Note that
+         * setting this value this way will not allow specific configuration of the serializer itself.  If specific
+         * configuration is required * please use {@link #serializer(MessageSerializer)}.
          */
         public Builder serializer(final String mimeType) {
             serializer = Serializers.valueOf(mimeType).simpleInstance();
