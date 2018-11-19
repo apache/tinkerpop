@@ -96,13 +96,13 @@ public class SerializationBenchmark extends AbstractBenchmarkBase {
     @Benchmark
     public RequestMessage testReadMessage1Binary() throws SerializationException {
         RequestMessageBinaryBuffer1.readerIndex(0);
-        return binaryReader.readValue(RequestMessageBinaryBuffer1, RequestMessage.class);
+        return binaryReader.readValue(RequestMessageBinaryBuffer1, RequestMessage.class, false);
     }
 
     @Benchmark
     public RequestMessage testReadMessage2Binary() throws SerializationException {
         RequestMessageBinaryBuffer2.readerIndex(0);
-        return binaryReader.readValue(RequestMessageBinaryBuffer2, RequestMessage.class);
+        return binaryReader.readValue(RequestMessageBinaryBuffer2, RequestMessage.class, false);
     }
 
     @Benchmark
