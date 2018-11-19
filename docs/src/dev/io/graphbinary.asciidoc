@@ -135,6 +135,7 @@ The total length is not part of the message as the transport layer will provide 
 - `0x24`: Byte
 - `0x25`: ByteBuffer
 - `0x26`: Short
+- `0xff`: Unspecified null object
 - `0x00`: Custom
 
 ==== Extended Types
@@ -154,6 +155,19 @@ The total length is not part of the message as the transport layer will provide 
 - `0x8c`: YearMonth
 - `0x8d`: ZonedDateTime
 - `0x8e`: ZoneOffset
+
+=== Null handling
+
+The serialization format defines two ways to represent null values:
+
+- Unspecified null object
+- Fully-qualified null
+
+When a parent type can contain any subtype e.g., a object collection, a `null` value must be represented using the
+"Unspecified Null Object" type code and the null value flag.
+
+In contrast, when the parent type contains a type parameter that must be specified, a `null` value is represented using
+a fully-qualified object using the appropriate type code and type information.
 
 === Data Type Formats
 
@@ -485,6 +499,12 @@ Where:
 
 - `{blob}` is a `ByteBuffer`.
 
+==== Unspecified Null Object
+
+A `null` value for an unspecified Object value.
+
+It's represented using the null `{value_flag}` set and no sequence of bytes.
+
 ==== Char
 
 Format: one to four bytes representing a single UTF8 char, according to the Unicode standard.
@@ -516,7 +536,7 @@ Where:
 
 ==== InetAddress
 
-Format: Same as `ByteBuffer`.
+Format: Same as `ByteBuffer`, having only 4 byte or 16 byte sequences allowed.
 
 ==== Instant
 

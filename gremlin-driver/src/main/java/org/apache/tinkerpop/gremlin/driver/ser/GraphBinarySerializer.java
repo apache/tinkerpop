@@ -24,29 +24,30 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 
 public class GraphBinarySerializer extends AbstractMessageSerializer {
-  @Override
-  public ByteBuf serializeResponseAsBinary(ResponseMessage responseMessage, ByteBufAllocator allocator) throws SerializationException {
-    return null;
-  }
+    @Override
+    public ByteBuf serializeResponseAsBinary(ResponseMessage responseMessage, ByteBufAllocator allocator) throws SerializationException {
+        return null;
+    }
 
-  @Override
-  public ByteBuf serializeRequestAsBinary(RequestMessage requestMessage, ByteBufAllocator allocator) throws SerializationException {
-    return null;
-  }
+    @Override
+    public ByteBuf serializeRequestAsBinary(RequestMessage requestMessage, ByteBufAllocator allocator) throws SerializationException {
 
-  @Override
-  public RequestMessage deserializeRequest(ByteBuf msg) throws SerializationException {
-    //TODO: Use BinaryReader
-    return null;
-  }
+        return null;
+    }
 
-  @Override
-  public ResponseMessage deserializeResponse(ByteBuf msg) throws SerializationException {
-    return null;
-  }
+    @Override
+    public RequestMessage deserializeRequest(ByteBuf msg) throws SerializationException {
+        //TODO: Use BinaryReader
+        return null;
+    }
 
-  @Override
-  public String[] mimeTypesSupported() {
+    @Override
+    public ResponseMessage deserializeResponse(ByteBuf msg) throws SerializationException {
+        return null;
+    }
+
+    @Override
+    public String[] mimeTypesSupported() {
     return new String[0];
   }
 }

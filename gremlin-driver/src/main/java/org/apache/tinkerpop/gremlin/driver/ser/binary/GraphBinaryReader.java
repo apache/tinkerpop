@@ -30,9 +30,8 @@ public class GraphBinaryReader {
 
     /**
      * Reads a value for an specific type.
-     * @throws SerializationException
      */
-    public <T> T readValue(ByteBuf buffer, Class<T> type) throws SerializationException {
+    public <T> T readValue(ByteBuf buffer, Class<T> type, boolean nullable) throws SerializationException {
         if(buffer == null) {
             throw new IllegalArgumentException("input cannot be null.");
         } else if(type == null) {
@@ -40,14 +39,13 @@ public class GraphBinaryReader {
         }
 
         TypeSerializer<T> serializer = registry.getSerializer(type);
-        return serializer.readValue(buffer, this);
+        return serializer.readValue(buffer, this, nullable);
     }
 
     /**
-     * Reads the type information and value of a given buffer from fully qualified format.
-     * @throws SerializationException
+     * Reads the type code, information and value of a given buffer with fully-qualified format.
      */
-    public <T> T readFullyQualifiedObject(ByteBuf buffer) throws SerializationException {
+    public <T> T read(ByteBuf buffer) throws SerializationException {
         // Fully-qualified format: {type_code}{type_info}{value_flag}{value}
         DataType type = DataType.get(buffer.readByte());
         TypeSerializer<T> serializer = registry.getSerializer(type);

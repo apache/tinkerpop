@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.*;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 
@@ -38,7 +39,7 @@ public class TypeSerializerRegistry {
 
         put(String.class, DataType.STRING, new StringSerializer());
         put(UUID.class, DataType.UUID, new UUIDSerializer());
-        put(Map.class, DataType.MAP, new MapSerializer());
+        put(HashMap.class, DataType.MAP, new MapSerializer());
 
         put(Integer.class, DataType.INT, SingleTypeSerializer.IntSerializer);
         put(Long.class, DataType.LONG, SingleTypeSerializer.LongSerializer);
@@ -58,13 +59,19 @@ public class TypeSerializerRegistry {
         return this;
     }
 
-    public <T> TypeSerializer<T> getSerializer(Class<T> type) {
-        //TODO: Check null
-        return (TypeSerializer<T>) serializers.get(type);
+    public <T> TypeSerializer<T> getSerializer(Class<T> type) throws SerializationException {
+        return validateInstance(serializers.get(type), type.getTypeName());
     }
 
-    public <T> TypeSerializer<T> getSerializer(DataType dataType) {
-        //TODO: Check null
-        return (TypeSerializer<T>) serializersByDataType.get(dataType);
+    public <T> TypeSerializer<T> getSerializer(DataType dataType) throws SerializationException {
+        return validateInstance(serializersByDataType.get(dataType), dataType.toString());
+    }
+
+    private static TypeSerializer validateInstance(TypeSerializer serializer, String typeName) throws SerializationException {
+        if (serializer == null) {
+            throw new SerializationException(String.format("Serializer for type %s not found", typeName));
+        }
+
+        return serializer;
     }
 }

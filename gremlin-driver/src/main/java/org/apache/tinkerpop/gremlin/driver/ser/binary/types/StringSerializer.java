@@ -19,10 +19,12 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 public class StringSerializer extends SimpleTypeSerializer<String> {
@@ -30,5 +32,16 @@ public class StringSerializer extends SimpleTypeSerializer<String> {
     public String readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
         final int length = buffer.readInt();
         return buffer.readCharSequence(length, StandardCharsets.UTF_8).toString();
+    }
+
+    @Override
+    DataType getDataType() {
+        return DataType.STRING;
+    }
+
+    @Override
+    public ByteBuf writeValueSequence(String value, ByteBufAllocator allocator, GraphBinaryWriter context) {
+        final byte[] stringBytes = value.getBytes(StandardCharsets.UTF_8);
+        return allocator.buffer(4 + stringBytes.length).writeInt(stringBytes.length).writeBytes(stringBytes);
     }
 }

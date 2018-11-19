@@ -19,20 +19,43 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.CompositeByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 
 import java.util.HashMap;
-import java.util.Map;
 
-public class MapSerializer extends SimpleTypeSerializer<Map> {
+public class MapSerializer extends SimpleTypeSerializer<HashMap> {
     @Override
-    public Map readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
-        final Long length = buffer.readUnsignedInt();
+    public HashMap readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
+        final long length = buffer.readUnsignedInt();
 
-        Map result = new HashMap<>();
-        for (int i = 0; i < length; i++) {
-            result.put(context.readFullyQualifiedObject(buffer), context.readFullyQualifiedObject(buffer));
+        HashMap result = new HashMap<>();
+        for (long i = 0; i < length; i++) {
+            result.put(context.read(buffer), context.read(buffer));
+        }
+
+        return result;
+    }
+
+    @Override
+    DataType getDataType() {
+        return DataType.MAP;
+    }
+
+    @Override
+    public ByteBuf writeValueSequence(HashMap value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
+        CompositeByteBuf result = allocator.compositeBuffer(1 + value.size() * 2);
+        result.addComponent(true, allocator.buffer(4).writeInt(value.size()));
+
+        for (Object key : value.keySet()) {
+            result.addComponents(
+                    true,
+                    context.write(key, allocator),
+                    context.write(value.get(key), allocator));
         }
 
         return result;

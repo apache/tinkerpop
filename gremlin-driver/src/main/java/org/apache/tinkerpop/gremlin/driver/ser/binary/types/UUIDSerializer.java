@@ -19,8 +19,11 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 
 import java.util.UUID;
 
@@ -28,5 +31,17 @@ public class UUIDSerializer extends SimpleTypeSerializer<UUID> {
     @Override
     public UUID readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
         return new UUID(buffer.readLong(), buffer.readLong());
+    }
+
+    @Override
+    DataType getDataType() {
+        return DataType.UUID;
+    }
+
+    @Override
+    public ByteBuf writeValueSequence(UUID value, ByteBufAllocator allocator, GraphBinaryWriter context) {
+        return allocator.buffer(16)
+                .writeLong(value.getMostSignificantBits())
+                .writeLong(value.getLeastSignificantBits());
     }
 }

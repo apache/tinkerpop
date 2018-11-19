@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 
 public interface TypeSerializer<T> {
@@ -29,8 +30,20 @@ public interface TypeSerializer<T> {
 
     /**
      * Reads the value from the buffer (not the type information) and returns an instance of T.
-     * <p>Implementors should throw an exception when a complex type doesn't support </p>
+     * <p>
+     *     Implementors should throw an exception when a complex type doesn't support reading without the type
+     *     information
+     * </p>
      */
-    T readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException;
+    T readValue(ByteBuf buffer, GraphBinaryReader context, boolean nullable) throws SerializationException;
 
+    /**
+     * Writes the type code, information and value to buffer.
+     */
+    ByteBuf write(T value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException;
+
+    /**
+     * Writes the value to buffer, composed by the value flag and the sequence of bytes.
+     */
+    ByteBuf writeValue(T value, ByteBufAllocator allocator, GraphBinaryWriter context, boolean nullable)throws SerializationException;
 }

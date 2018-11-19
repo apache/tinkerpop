@@ -19,25 +19,56 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+/**
+ * Represents a serializer for types that be represented as a single value and that can be read and write
+ * in a single operation.
+ */
 public class SingleTypeSerializer<T> extends SimpleTypeSerializer<T> {
-    public static final SingleTypeSerializer<Integer> IntSerializer = new SingleTypeSerializer<>(ByteBuf::readInt);
-    public static final SingleTypeSerializer<Long> LongSerializer = new SingleTypeSerializer<>(ByteBuf::readLong);
-    public static final SingleTypeSerializer<Double> DoubleSerializer = new SingleTypeSerializer<>(ByteBuf::readDouble);
-    public static final SingleTypeSerializer<Float> FloatSerializer = new SingleTypeSerializer<>(ByteBuf::readFloat);
+    public static final SingleTypeSerializer<Integer> IntSerializer =
+            new SingleTypeSerializer<>(4, DataType.INT, ByteBuf::readInt, (v, b) -> b.writeInt(v));
+    public static final SingleTypeSerializer<Long> LongSerializer =
+            new SingleTypeSerializer<>(8, DataType.LONG, ByteBuf::readLong, (v, b) -> b.writeLong(v));
+    public static final SingleTypeSerializer<Double> DoubleSerializer =
+            new SingleTypeSerializer<>(8, DataType.DOUBLE, ByteBuf::readDouble, (v, b) -> b.writeDouble(v));
+    public static final SingleTypeSerializer<Float> FloatSerializer =
+            new SingleTypeSerializer<>(4, DataType.FLOAT, ByteBuf::readFloat, (v, b) -> b.writeFloat(v));
 
-    private final Function<ByteBuf, T> func;
+    private final int byteLength;
+    private final DataType dataType;
+    private final Function<ByteBuf, T> readFunc;
+    private final BiConsumer<T, ByteBuf> writeFunc;
 
-
-    public SingleTypeSerializer(Function<ByteBuf, T> func) {
-        this.func = func;
+    private SingleTypeSerializer(int byteLength, DataType dataType, Function<ByteBuf, T> readFunc,
+                                 BiConsumer<T, ByteBuf> writeFunc) {
+        this.byteLength = byteLength;
+        this.dataType = dataType;
+        this.readFunc = readFunc;
+        this.writeFunc = writeFunc;
     }
 
     @Override
     public T readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
-        return func.apply(buffer);
+        return readFunc.apply(buffer);
+    }
+
+    @Override
+    DataType getDataType() {
+        return dataType;
+    }
+
+    @Override
+    public ByteBuf writeValueSequence(T value, ByteBufAllocator allocator, GraphBinaryWriter context) {
+        ByteBuf buffer = allocator.buffer(byteLength);
+        writeFunc.accept(value, buffer);
+        return buffer;
     }
 }

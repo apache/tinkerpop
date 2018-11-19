@@ -42,7 +42,8 @@ public enum DataType {
     VERTEXPROPERTY(0X12),
     BARRIER(0X13),
     BINDING(0X14),
-    BYTECODE(0X15);
+    BYTECODE(0X15),
+    UNSPECIFIED_NULL(0xFF);
 
     private final int code;
     private static final Map<Integer, DataType> typeByCode = new HashMap<>();

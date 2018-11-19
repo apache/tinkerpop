@@ -19,9 +19,11 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.TypeSerializer;
 
 import java.util.HashMap;
@@ -29,20 +31,33 @@ import java.util.Map;
 import java.util.UUID;
 
 public class RequestMessageSerializer implements TypeSerializer<RequestMessage> {
-    public RequestMessage readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
-        final byte version = buffer.readByte();
-        assert version >>> 7 == 1;
+    public RequestMessage readValue(ByteBuf buffer, GraphBinaryReader context, boolean nullable) throws SerializationException {
+        final int version = buffer.readByte();
+        assert version >>> 31 == 1;
 
-        final UUID id = context.readValue(buffer, UUID.class);
-        final String op = context.readValue(buffer, String.class);
-        final String processor = context.readValue(buffer, String.class);
+        final UUID id = context.readValue(buffer, UUID.class, false);
+        final String op = context.readValue(buffer, String.class, false);
+        final String processor = context.readValue(buffer, String.class, false);
 
         final RequestMessage.Builder builder = RequestMessage.build(op).overrideRequestId(id).processor(processor);
 
-        final Map<String, Object> args = context.readValue(buffer, Map.class);
+        final Map<String, Object> args = context.readValue(buffer, Map.class, false);
         args.forEach(builder::addArg);
 
         return builder.create();
+    }
+
+    @Override
+    public ByteBuf write(RequestMessage value, ByteBufAllocator allocator, GraphBinaryWriter context) {
+        //TODO: Implement
+        return null;
+    }
+
+    @Override
+    public ByteBuf writeValue(RequestMessage value, ByteBufAllocator allocator, GraphBinaryWriter context,
+                              boolean nullable) {
+        //TODO: Implement
+        return null;
     }
 
     @Override
