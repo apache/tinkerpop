@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
-import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -33,7 +32,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Iterator;
@@ -161,8 +159,7 @@ public class DriverRemoteConnection implements RemoteConnection {
     }
 
     /**
-     * Creates a {@link DriverRemoteConnection} using an Apache {@code Configuration} object. This method of creation
-     * is typically used by {@link RemoteGraph} when being constructed via {@link GraphFactory}. The
+     * Creates a {@link DriverRemoteConnection} using an Apache {@code Configuration} object. The
      * {@code Configuration} object should contain one of two required keys, either: {@code clusterConfigurationFile}
      * or {@code clusterConfiguration}. The {@code clusterConfigurationFile} key is a pointer to a file location
      * containing a configuration for a {@link Cluster}. The {@code clusterConfiguration} should contain the actual

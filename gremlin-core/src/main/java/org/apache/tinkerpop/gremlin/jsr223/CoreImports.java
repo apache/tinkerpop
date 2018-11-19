@@ -58,7 +58,6 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.Shortest
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
-import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
@@ -189,7 +188,6 @@ public final class CoreImports {
         CLASS_IMPORTS.add(WithOptions.class);
         // remote
         CLASS_IMPORTS.add(RemoteConnection.class);
-        CLASS_IMPORTS.add(RemoteGraph.class);
         CLASS_IMPORTS.add(EmptyGraph.class);
         // io
         CLASS_IMPORTS.add(GraphReader.class);
