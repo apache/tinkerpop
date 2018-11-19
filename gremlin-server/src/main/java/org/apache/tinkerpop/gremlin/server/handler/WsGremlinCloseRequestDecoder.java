@@ -22,7 +22,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
-import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
@@ -65,7 +64,7 @@ public class WsGremlinCloseRequestDecoder extends MessageToMessageDecoder<CloseW
         try {
             messageBytes.readBytes(contentTypeBytes);
             final String contentType = contentTypeBytes.toString(UTF8);
-            final MessageSerializer serializer = select(contentType, Serializers.DEFAULT_REQUEST_SERIALIZER);
+            final MessageSerializer serializer = select(contentType, ServerSerializers.DEFAULT_SERIALIZER);
 
             // it's important to re-initialize these channel attributes as they apply globally to the channel. in
             // other words, the next request to this channel might not come with the same configuration and mixed
