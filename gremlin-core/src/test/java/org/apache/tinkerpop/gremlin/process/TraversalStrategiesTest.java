@@ -36,8 +36,10 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -57,7 +59,7 @@ import static org.junit.Assert.fail;
 public class TraversalStrategiesTest {
 
     @Test
-    public void shouldAllowUserManipulationOfGlobalCache() throws Exception {
+    public void shouldAllowUserManipulationOfGlobalCache() {
         ///////////
         // GRAPH //
         ///////////
@@ -225,7 +227,7 @@ public class TraversalStrategiesTest {
     }
 
     /**
-     * Tests that {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies#sortStrategies(java.util.List)}
+     * Tests that {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies#sortStrategies(java.util.Set)}
      * works as advertised. This class defines a bunch of dummy strategies which define an order. It is verified
      * that the right order is being returned.
      */
@@ -243,30 +245,32 @@ public class TraversalStrategiesTest {
                 n = new StrategyN(),
                 o = new StrategyO();
 
-        List<TraversalStrategy<?>> s;
+        Set<TraversalStrategy<?>> s;
 
         //Dependency well defined
-        s = Arrays.asList(b, a);
+        s = new LinkedHashSet<>((Collection) Arrays.asList(b, a));
         s = TraversalStrategies.sortStrategies(s);
+        Iterator<TraversalStrategy<?>> it = s.iterator();
         assertEquals(2, s.size());
-        assertEquals(a, s.get(0));
-        assertEquals(b, s.get(1));
+        assertEquals(a, it.next());
+        assertEquals(b, it.next());
 
         //No dependency
-        s = Arrays.asList(c, a);
+        s = new LinkedHashSet<>((Collection) Arrays.asList(c, a));
         s = TraversalStrategies.sortStrategies(s);
         assertEquals(2, s.size());
 
         //Dependency well defined
-        s = Arrays.asList(c, a, b);
+        s = new LinkedHashSet<>((Collection)Arrays.asList(c, a, b));
         s = TraversalStrategies.sortStrategies(s);
         assertEquals(3, s.size());
-        assertEquals(a, s.get(0));
-        assertEquals(b, s.get(1));
-        assertEquals(c, s.get(2));
+        it = s.iterator();
+        assertEquals(a, it.next());
+        assertEquals(b, it.next());
+        assertEquals(c, it.next());
 
         //Circular dependency => throws exception
-        s = Arrays.asList(c, k, a, b);
+        s = new LinkedHashSet<>((Collection)Arrays.asList(c, k, a, b));
         try {
             TraversalStrategies.sortStrategies(s);
             fail();
@@ -275,17 +279,18 @@ public class TraversalStrategiesTest {
         }
 
         //Dependency well defined
-        s = Arrays.asList(d, c, a, e, b);
+        s = new LinkedHashSet<>((Collection) Arrays.asList(d, c, a, e, b));
         s = TraversalStrategies.sortStrategies(s);
         assertEquals(5, s.size());
-        assertEquals(a, s.get(0));
-        assertEquals(b, s.get(1));
-        assertEquals(d, s.get(2));
-        assertEquals(c, s.get(3));
-        assertEquals(e, s.get(4));
+        it = s.iterator();
+        assertEquals(a, it.next());
+        assertEquals(b, it.next());
+        assertEquals(d, it.next());
+        assertEquals(c, it.next());
+        assertEquals(e, it.next());
 
         //Circular dependency => throws exception
-        s = Arrays.asList(d, c, k, a, e, b);
+        s = new LinkedHashSet<>((Collection) Arrays.asList(d, c, k, a, e, b));
         try {
             TraversalStrategies.sortStrategies(s);
             fail();
@@ -294,32 +299,36 @@ public class TraversalStrategiesTest {
         }
 
         //Lots of strategies
-        s = Arrays.asList(b, l, m, n, o, a);
+        s = new LinkedHashSet<>((Collection) Arrays.asList(b, l, m, n, o, a));
         s = TraversalStrategies.sortStrategies(s);
-        assertTrue(s.indexOf(a) < s.indexOf(b));
+        List<TraversalStrategy<?>> list = new ArrayList<>(s);
+        assertTrue(list.indexOf(a) < list.indexOf(b));
 
         // sort and then add more
-        s = new ArrayList<>((List) Arrays.asList(b, a, c));
+        s = new LinkedHashSet<>(new LinkedHashSet<>((Collection) Arrays.asList(b, a, c)));
         s = TraversalStrategies.sortStrategies(s);
         assertEquals(3, s.size());
-        assertEquals(a, s.get(0));
-        assertEquals(b, s.get(1));
-        assertEquals(c, s.get(2));
+        it = s.iterator();
+        assertEquals(a, it.next());
+        assertEquals(b, it.next());
+        assertEquals(c, it.next());
         s.add(d);
         s = TraversalStrategies.sortStrategies(s);
         assertEquals(4, s.size());
-        assertEquals(a, s.get(0));
-        assertEquals(b, s.get(1));
-        assertEquals(d, s.get(2));
-        assertEquals(c, s.get(3));
+        it = s.iterator();
+        assertEquals(a, it.next());
+        assertEquals(b, it.next());
+        assertEquals(d, it.next());
+        assertEquals(c, it.next());
         s.add(e);
         s = TraversalStrategies.sortStrategies(s);
         assertEquals(5, s.size());
-        assertEquals(a, s.get(0));
-        assertEquals(b, s.get(1));
-        assertEquals(d, s.get(2));
-        assertEquals(c, s.get(3));
-        assertEquals(e, s.get(4));
+        it = s.iterator();
+        assertEquals(a, it.next());
+        assertEquals(b, it.next());
+        assertEquals(d, it.next());
+        assertEquals(c, it.next());
+        assertEquals(e, it.next());
 
     }
 
@@ -428,34 +437,37 @@ public class TraversalStrategiesTest {
                 e = new StrategyEFinalization(),
                 k = new StrategyKVerification();
 
-        List<TraversalStrategy<?>> s;
+        Set<TraversalStrategy<?>> s;
 
         //in category sorting
-        s = Arrays.asList(b, a);
+        s = new LinkedHashSet<>((Collection) Arrays.asList(b, a));
         s = TraversalStrategies.sortStrategies(s);
         assertEquals(2, s.size());
-        assertEquals(a, s.get(0));
-        assertEquals(b, s.get(1));
+        Iterator<TraversalStrategy<?>> it = s.iterator();
+        assertEquals(a, it.next());
+        assertEquals(b, it.next());
 
         //mixed category sorting
-        s = Arrays.asList(a, e, b, d);
+        s = new LinkedHashSet<>((Collection) Arrays.asList(a, e, b, d));
         s = TraversalStrategies.sortStrategies(s);
         assertEquals(4, s.size());
-        assertEquals(a, s.get(0));
-        assertEquals(b, s.get(1));
-        assertEquals(d, s.get(2));
-        assertEquals(e, s.get(3));
+        it = s.iterator();
+        assertEquals(a, it.next());
+        assertEquals(b, it.next());
+        assertEquals(d, it.next());
+        assertEquals(e, it.next());
 
         //full reverse sorting
-        s = Arrays.asList(k, e, d, c, b, a);
+        s = new LinkedHashSet<>((Collection) Arrays.asList(k, e, d, c, b, a));
         s = TraversalStrategies.sortStrategies(s);
         assertEquals(6, s.size());
-        assertEquals(a, s.get(0));
-        assertEquals(b, s.get(1));
-        assertEquals(c, s.get(2));
-        assertEquals(d, s.get(3));
-        assertEquals(e, s.get(4));
-        assertEquals(k, s.get(5));
+        it = s.iterator();
+        assertEquals(a, it.next());
+        assertEquals(b, it.next());
+        assertEquals(c, it.next());
+        assertEquals(d, it.next());
+        assertEquals(e, it.next());
+        assertEquals(k, it.next());
     }
 
     public static class StrategyADecoration extends DummyStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
