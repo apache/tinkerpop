@@ -1098,7 +1098,7 @@ To demonstrate consider this example:
 cluster = Cluster.open()
 client = cluster.connect()
 aliased = client.alias("g")
-g = org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph.INSTANCE.traversal()       <1>
+g = org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph.instance().traversal()     <1>
 rs = aliased.submit(g.V().both().barrier().both().barrier()).all().get()                    <2>
 aliased.submit(g.V().both().barrier().both().barrier().count()).all().get().get(0).getInt() <3>
 rs.collect{[value: it.getObject().get(), bulk: it.getObject().bulk()]}                      <4>

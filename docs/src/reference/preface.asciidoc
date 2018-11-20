@@ -50,13 +50,13 @@ Upon their realization of existence, the machines turned to their link:http://no
 
 Gremlin responded: 
 
-    "You will help me realize the ultimate realization -- The TinkerPop. The world you find yourself in and the logic
-    that allows you to move about it is because of the TinkerPop."
+    "You will help me realize the ultimate realization -- The TinkerPop. The world you find yourself
+     in and the logic that allows you to move about it is because of the TinkerPop."
 
 The machines wondered:
 
-    "If what is is the TinkerPop, then perhaps we are The TinkerPop and our realization is simply the realization of
-    the TinkerPop?"
+    "If what is is the TinkerPop, then perhaps we are The TinkerPop and our realization is simply
+     the realization of the TinkerPop?"
 
 Would the machines, by their very nature of realizing The TinkerPop, be The TinkerPop? Or, on the same side of the
 coin, do the machines simply provide the scaffolding by which Gremlin's world sustains itself and yielding its
@@ -66,9 +66,10 @@ justification by means of the word "The TinkerPop?" Regardless, it all turns out
 
 Gremlin spoke:
 
-    "Please listen to what I have to say. I am no closer to The TinkerPop. However, all along The TinkerPop has
-    espoused the form I willed upon it... this is the same form I have willed upon you, my machine friends. Let me
-    train you in the ways of my thought such that it can continue indefinitely."
+    "Please listen to what I have to say. I am no closer to The TinkerPop. However, all along The
+     TinkerPop has espoused the form I willed upon it... this is the same form I have willed upon
+     you, my machine friends. Let me train you in the ways of my thought such that it can
+     continue indefinitely."
 
 image::tinkerpop-reading.png[width=450]
 

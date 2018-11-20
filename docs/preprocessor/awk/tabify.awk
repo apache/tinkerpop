@@ -26,14 +26,14 @@ function print_tabs(next_id, tabs, blocks) {
   print "++++"
   print "<section class=\"tabs tabs-" num_tabs "\">"
 
-  for (i in tabs) {
+  for (i = 1; i <= num_tabs; i++) {
     title = tabs[i]
     print "  <input id=\"tab-" id_part "-" x "\" type=\"radio\" name=\"radio-set-" id_part "-" next_id "\" class=\"tab-selector-" i "\"" (i == 1 ? " checked=\"checked\"" : "") " />"
     print "  <label for=\"tab-" id_part "-" x "\" class=\"tab-label-" i "\">" title "</label>"
     x++
   }
 
-  for (i in blocks) {
+  for (i = 1; i<= num_tabs; i++) {
     print "  <div class=\"tabcontent\">"
     print "    <div class=\"tabcontent-" i "\">"
     print "++++\n"
