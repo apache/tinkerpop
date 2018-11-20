@@ -2631,8 +2631,36 @@ t.sideEffects.get('knowsG').traversal().E()
 t.sideEffects.get('createdG').traversal().E()
 ----
 
-IMPORTANT: The `subgraph()`-step only writes to graphs that support user supplied ids for its elements. Moreover,
-if no graph is specified via `withSideEffect()`, then <<tinkergraph-gremlin,TinkerGraph>> is assumed.
+TinkerGraph is the ideal (and default) `Graph` into which a subgraph is extracted as it's fast, in-memory, and supports
+user-supplied identifiers which can be any Java object. It is this last feature that needs some focus as many
+TinkerPop-enabled graphs have complex identifier types and TinkerGraph's ability to consume those makes it a perfect
+host for an incoming subgraph. However care needs to be taken when using the elements of the TinkerGraph subgraph.
+The original graph's identifiers may be preserved, but the elements of the graph are now TinkerGraph objects like,
+`TinkerVertex` and `TinkerEdge`. As a result, they can not be used directly in Gremlin running against the original
+graph. For example, the following traversal would likely return an error:
+
+[source,text]
+----
+Vertex v = sg.V().has('name','marko').next();  <1>
+List<Vertex> vertices = g.V(v).out().toList(); <2>
+----
+
+<1> Here "sg" is a reference to a TinkerGraph subgraph and "v" is a `TinkerVertex`.
+<2> The `g.V(v)` has the potential to fail as "g" is the original `Graph` instance and not a TinkerGraph - it could
+reject the `TinkerVertex` instance as it will not recognize it.
+
+It is safer to wrap the `TinkerVertex` in a `ReferenceVertex` or simply reference the `id()` as follows:
+
+[source,text]
+----
+Vertex v = sg.V().has('name','marko').next();
+List<Vertex> vertices = g.V(v.id()).out().toList();
+
+// OR
+
+Vertex v = new ReferenceVertex(sg.V().has('name','marko').next());
+List<Vertex> vertices = g.V(v).out().toList();
+----
 
 *Additional References*
 
