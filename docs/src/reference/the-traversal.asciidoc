@@ -3184,6 +3184,11 @@ The `Scope` enum has two constants: `Scope.local` and `Scope.global`. Scope dete
 being scoped is with respects to the current object (`local`) at that step or to the entire stream of objects up to that
 step (`global`).
 
+[NOTE, caption=Python]
+====
+The term `global` is a reserved word in Python, and therefore a `Scope` using that term must be referred as `global_`.
+====
+
 [gremlin-groovy,modern]
 ----
 g.V().has('name','marko').out('knows').count() <1>
