@@ -247,6 +247,22 @@ release where breaking changes are allowed.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1975[TINKERPOP-1975],
 link:http://tinkerpop.apache.org/docs/3.4.0/reference/#with-step[Reference Documentation]
 
+==== shortestPath() Step
+
+Calculating the link:https://en.wikipedia.org/wiki/Shortest_path_problem[shortest path] between vertices is a common
+graph use case. While the traversal to determine a shortest path can be expressed in Gremlin, this particular problem
+is common enough that the feature has been encapsulated into its own step, demonstrated as follows:
+
+[source,text]
+----
+gremlin> g.withComputer().V().has('name','marko').
+......1>   shortestPath().with(ShortestPath.target, has('name','peter'))
+==>[v[1],v[3],v[6]]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1990[TINKERPOP-1990],
+link:link:http://tinkerpop.apache.org/docs/3.4.0/reference/#shortestpath-step[Reference Documentation]
+
 ==== connectedComponent() Step
 
 In prior version of TinkerPop, it was recommended that the identification of
