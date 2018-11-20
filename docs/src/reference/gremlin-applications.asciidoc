@@ -1089,7 +1089,7 @@ mechanisms are accessible, see the table below.
 1.3+v|Gremlin-Java/
 Gremlin-Console |PLAIN SASL (username/password) |3.0.0-incubating
 |Pluggable SASL |3.0.0-incubating
-|GSSAPI SASL (Kerberos) |3.3.0   
+|GSSAPI SASL (Kerberos) |3.3.0
 |Gremlin.NET |PLAIN SASL |3.3.0
 |Gremlin-Python |PLAIN SASL |3.2.2
 |Gremlin.Net |PLAIN SASL |3.2.7
@@ -2147,6 +2147,30 @@ Gephi plugin configuration parameters as accepted via the `:remote config` comma
 |=========================================================
 
 NOTE: This plugin is typically only useful to the Gremlin Console and is enabled in the there by default.
+
+The instructions above assume that the `Graph` instance being visualized is local to the Gremlin Console. It makes that
+assumption because the Gephi plugin requires a locally held `Graph`. If the intent is to visualize a `Graph` instance
+hosted in Gremlin Server or a TinkerPop-enabled graph that can only be connected to in a "remote" fashion, then it
+is still possible to use the Gephi plugin, but the requirement for a locally held `Graph` remains the same. To use
+the Gephi plugin in these situations simply use <<subgraph-step,subgraph()-step>> to extract the portion of the remote
+graph that will be visualized. Use of that step will return a `TinkerGraph` instance to the Gremlin Console at which
+point it can be used locally with the Gephi plugin. The following example demonstrates the general steps:
+
+[source,text]
+----
+gremlin> :remote connect tinkerpop.server conf/remote-objects.yaml <1>
+...
+gremlin> :> g.E().hasLabel('knows').subgraph('subGraph').cap('subGraph') <2>
+...
+gremlin> graph = result[0].object <3>
+...
+----
+
+<1> Be sure to connect with a serializer configured to return objects and not their `toString()` representation which
+is discussed in more detail in the <<connecting-via-console, Connecting Via Console>> Section.
+<2> Use the `:>` command to subgraph the remote graph as needed.
+<3> The `TinkerGraph` of that previous traversal can be found in the `result` object and now that the `Graph` is local
+to Gremlin Console it can be used with Gephi as shown in the prior instruction set.
 
 [[graph-plugins]]
 === Graph Plugins
