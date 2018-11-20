@@ -445,7 +445,7 @@ to the committer wanting to put code into a release branch.
 ** Be certain that the test suite is passing.
 ** If you updated documentation, be sure that the `process-docs.sh` is building the documentation correctly.
 * Before you can merge your branch into the release branch, you must have at least 3 +1 link:http://www.apache.org/foundation/glossary.html#ConsensusApproval[consensus votes]
-from other committers OR a single +1 from a committer and a one week review period for objections (i.e. a "cool down
+from other committers OR a single +1 from a committer and a seven day review period for objections (i.e. a "cool down
 period") at which point we will assume a lazy consensus.
 ** Please see the Apache Software Foundations regulations regarding link:http://www.apache.org/foundation/voting.html#votes-on-code-modification[Voting on Code Modifications].
 ** With the "cool down" process and lazy consensus the single +1 may (should) come from the committer who submitted
