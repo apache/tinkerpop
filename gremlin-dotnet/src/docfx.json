@@ -1,0 +1,32 @@
+{
+  "metadata": [
+    {
+      "src": [
+        {
+          "files": [ "**/*.cs" ],
+          "exclude": [ "**/bin/**", "**/obj/**" ],
+          "src": "Gremlin.Net"
+        }
+      ],
+      "dest": "obj/api"
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [ "**/*.yml" ],
+        "src": "obj/api",
+        "dest": "api"
+      },
+      {
+        "files": [ "index.md", "toc.yml" ]
+      }
+    ],
+    "globalMetadata": {
+      "_appTitle": "Apache TinkerPop - Gremlin.NET API Docs",
+      "_enableSearch": true
+    },
+    "markdownEngineName": "markdig",
+    "dest": "_site"
+  }
+}
