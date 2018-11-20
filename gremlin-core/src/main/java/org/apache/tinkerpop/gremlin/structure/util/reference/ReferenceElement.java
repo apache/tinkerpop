@@ -47,7 +47,7 @@ public abstract class ReferenceElement<E extends Element> implements Element, Se
         try {
             //Exception creation takes too much time, return default values for known types
             if (element instanceof ComputerGraph.ComputerAdjacentVertex) {
-                this.label = VertexProperty.DEFAULT_LABEL;
+                this.label = Vertex.DEFAULT_LABEL;
             } else {
                 this.label = element.label();
             }
