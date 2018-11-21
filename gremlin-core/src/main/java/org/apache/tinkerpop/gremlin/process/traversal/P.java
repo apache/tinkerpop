@@ -84,8 +84,8 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     public boolean equals(final Object other) {
         return other instanceof P &&
                 ((P) other).getClass().equals(this.getClass()) &&
-                ((P) other).getBiPredicate().equals(this.biPredicate) &&
-                ((((P) other).getOriginalValue() == null && this.originalValue == null) || ((P) other).getOriginalValue().equals(this.originalValue));
+                ((P) other).biPredicate.equals(this.biPredicate) &&
+                ((((P) other).originalValue == null && this.originalValue == null) || ((P) other).originalValue.equals(this.originalValue));
     }
 
     @Override

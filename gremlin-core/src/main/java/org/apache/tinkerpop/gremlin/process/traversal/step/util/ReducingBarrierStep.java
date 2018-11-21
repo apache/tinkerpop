@@ -127,7 +127,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
 
     @Override
     public MemoryComputeKey<E> getMemoryComputeKey() {
-        return MemoryComputeKey.of(this.getId(), this.getBiOperator(), false, true);
+        return MemoryComputeKey.of(this.getId(), this.reducingBiOperator, false, true);
     }
 
 }

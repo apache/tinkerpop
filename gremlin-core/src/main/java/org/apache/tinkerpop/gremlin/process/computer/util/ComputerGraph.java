@@ -62,11 +62,11 @@ public final class ComputerGraph implements Graph {
     }
 
     public static ComputerVertex vertexProgram(final Vertex starVertex, VertexProgram vertexProgram) {
-        return new ComputerGraph(State.VERTEX_PROGRAM, starVertex, Optional.of(vertexProgram)).getStarVertex();
+        return new ComputerGraph(State.VERTEX_PROGRAM, starVertex, Optional.of(vertexProgram)).starVertex;
     }
 
     public static ComputerVertex mapReduce(final Vertex starVertex) {
-        return new ComputerGraph(State.MAP_REDUCE, starVertex, Optional.empty()).getStarVertex();
+        return new ComputerGraph(State.MAP_REDUCE, starVertex, Optional.empty()).starVertex;
     }
 
     public ComputerVertex getStarVertex() {

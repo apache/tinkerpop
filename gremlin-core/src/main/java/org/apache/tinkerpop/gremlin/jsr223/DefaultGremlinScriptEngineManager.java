@@ -428,7 +428,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
 
                     globalScope.put(kv.getKey(), kv.getValue());
                 });
-        engine.setBindings(getBindings(), ScriptContext.GLOBAL_SCOPE);
+        engine.setBindings(globalScope, ScriptContext.GLOBAL_SCOPE);
 
         // merge in bindings that are marked with engine scope. there typically won't be any of these but it's just
         // here for completeness. bindings will typically apply with global scope only as engine scope will generally

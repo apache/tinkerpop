@@ -89,13 +89,13 @@ public abstract class AbstractGremlinScriptEngineFactory implements GremlinScrip
     @Override
     public Object getParameter(final String key) {
         if (key.equals(ScriptEngine.ENGINE)) {
-            return this.getEngineName();
+            return engineName;
         } else if (key.equals(ScriptEngine.ENGINE_VERSION)) {
             return this.getEngineVersion();
         } else if (key.equals(ScriptEngine.NAME)) {
             return engineName;
         } else if (key.equals(ScriptEngine.LANGUAGE)) {
-            return this.getLanguageName();
+            return languageName;
         } else if (key.equals(ScriptEngine.LANGUAGE_VERSION)) {
             return this.getLanguageVersion();
         } else
