@@ -22,9 +22,18 @@
         "files": [ "index.md", "toc.yml" ]
       }
     ],
+    "resource": [
+      {
+        "files": [ "images/**"]
+      }
+    ],
     "globalMetadata": {
       "_appTitle": "Apache TinkerPop - Gremlin.NET API Docs",
-      "_enableSearch": true
+      "_enableSearch": true,
+      "_appLogoPath": "images/tinkerpop-character.png",
+      "_appFaviconPath": "images/favicon.ico",
+      "_disableContribution": true,
+      "_appFooter": "Copyright © 2018 The Apache Software Foundation"
     },
     "markdownEngineName": "markdig",
     "dest": "_site"
