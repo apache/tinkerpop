@@ -23,9 +23,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.*;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class TypeSerializerRegistry {
     public static final TypeSerializerRegistry INSTANCE = new TypeSerializerRegistry();
@@ -34,17 +32,23 @@ public class TypeSerializerRegistry {
     private final Map<DataType, TypeSerializer<?>> serializersByDataType = new HashMap<>();
 
     private TypeSerializerRegistry() {
-        // No DataType as RequestMessage can't be fully qualified
+        // TODO: RequestMessage shouldn't be a normal type
         put(RequestMessage.class, null, new RequestMessageSerializer());
 
         put(String.class, DataType.STRING, new StringSerializer());
         put(UUID.class, DataType.UUID, new UUIDSerializer());
+
+        // TODO: provide mechanism to look for interfaces
         put(HashMap.class, DataType.MAP, new MapSerializer());
+        put(ArrayList.class, DataType.LIST, new ListSerializer());
 
         put(Integer.class, DataType.INT, SingleTypeSerializer.IntSerializer);
         put(Long.class, DataType.LONG, SingleTypeSerializer.LongSerializer);
         put(Double.class, DataType.DOUBLE, SingleTypeSerializer.DoubleSerializer);
         put(Float.class, DataType.FLOAT, SingleTypeSerializer.FloatSerializer);
+        put(Short.class, DataType.SHORT, SingleTypeSerializer.ShortSerializer);
+        put(Boolean.class, DataType.BOOLEAN, SingleTypeSerializer.BooleanSerializer);
+        put(Byte.class, DataType.BYTE, SingleTypeSerializer.ByteSerializer);
 
         put(Bytecode.class, DataType.BYTECODE, new ByteCodeSerializer());
     }

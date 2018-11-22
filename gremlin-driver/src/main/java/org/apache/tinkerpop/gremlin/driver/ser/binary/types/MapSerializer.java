@@ -31,10 +31,10 @@ import java.util.HashMap;
 public class MapSerializer extends SimpleTypeSerializer<HashMap> {
     @Override
     public HashMap readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
-        final long length = buffer.readUnsignedInt();
+        final int length = buffer.readInt();
 
-        HashMap result = new HashMap<>();
-        for (long i = 0; i < length; i++) {
+        HashMap result = new HashMap<>(length);
+        for (int i = 0; i < length; i++) {
             result.put(context.read(buffer), context.read(buffer));
         }
 

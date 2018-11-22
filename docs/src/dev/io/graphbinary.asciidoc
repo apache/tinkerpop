@@ -135,6 +135,7 @@ The total length is not part of the message as the transport layer will provide 
 - `0x24`: Byte
 - `0x25`: ByteBuffer
 - `0x26`: Short
+- `0x27`: Boolean
 - `0xff`: Unspecified null object
 - `0x00`: Custom
 
@@ -251,8 +252,9 @@ Format: `{length}{item_0}...{item_n}`
 
 Where:
 
-- `{length}` is an unsigned 4-byte two's complement integer describing the length of the list.
-- `{item_0}...{item_n}` are the items of the list. `{item_i}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{length}` is an `Int` describing the length of the collection.
+- `{item_0}...{item_n}` are the items of the list. `{item_i}` is a fully qualified typed value composed of
+`{type_code}{type_info}{value_flag}{value}`.
 
 ==== Set
 
@@ -268,7 +270,7 @@ Format: `{length}{item_0}...{item_n}`
 
 Where:
 
-- `{length}` is an unsigned 4-byte two's complement integer describing the length of the map.
+- `{length}` is an `Int` describing the length of the map.
 - `{item_0}...{item_n}` are the items of the map. `{item_i}` is sequence of 2 fully qualified typed values one representing the key and the following representing the value, each composed composed of `{type_code}{type_info}{value_flag}{value}`.
 
 ==== UUID
@@ -480,6 +482,10 @@ Where:
 ==== Short
 
 Format: 2-byte two's complement integer.
+
+==== Boolean
+
+Format: A single byte containing the value `0x01` when it's `true` and `0` otherwise.
 
 ==== Custom
 

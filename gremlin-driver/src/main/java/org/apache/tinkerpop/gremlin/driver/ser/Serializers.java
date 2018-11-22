@@ -83,6 +83,8 @@ public enum Serializers {
                 return new GryoMessageSerializerV3d0();
             case SerTokens.MIME_GRYO_LITE_V1D0:
                 return new GryoLiteMessageSerializerV1d0();
+            case SerTokens.MIME_GRAPHBINARY_V1D0:
+                return new GraphBinaryMessageSerializerV1();
             default:
                 throw new RuntimeException("Could not create a simple MessageSerializer instance of " + value);
         }

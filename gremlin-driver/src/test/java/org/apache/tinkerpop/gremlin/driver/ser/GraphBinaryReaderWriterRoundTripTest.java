@@ -52,7 +52,15 @@ public class GraphBinaryReaderWriterRoundTripTest {
         map.put("one", 1);
         map.put("two", 2);
 
-        return Arrays.asList("ABC", 1, 2f, 3.1d, 10122L, UUID.randomUUID(), bytecode, map);
+        List list = new ArrayList<>();
+        list.add("string 1");
+
+        return Arrays.asList(
+                "ABC",
+                1, 2f, 3.1d, 10122L, 0, 0f, Integer.MIN_VALUE, Integer.MAX_VALUE, Long.MAX_VALUE,
+                UUID.randomUUID(),
+                bytecode,
+                list, map);
     }
 
     @Test

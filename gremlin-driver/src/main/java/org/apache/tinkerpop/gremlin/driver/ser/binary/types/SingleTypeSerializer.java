@@ -41,6 +41,12 @@ public class SingleTypeSerializer<T> extends SimpleTypeSerializer<T> {
             new SingleTypeSerializer<>(8, DataType.DOUBLE, ByteBuf::readDouble, (v, b) -> b.writeDouble(v));
     public static final SingleTypeSerializer<Float> FloatSerializer =
             new SingleTypeSerializer<>(4, DataType.FLOAT, ByteBuf::readFloat, (v, b) -> b.writeFloat(v));
+    public static final SingleTypeSerializer<Short> ShortSerializer =
+            new SingleTypeSerializer<>(2, DataType.SHORT, ByteBuf::readShort, (v, b) -> b.writeShort(v));
+    public static final SingleTypeSerializer<Boolean> BooleanSerializer =
+            new SingleTypeSerializer<>(1, DataType.BOOLEAN, ByteBuf::readBoolean, (v, b) -> b.writeBoolean(v));
+    public static final SingleTypeSerializer<Byte> ByteSerializer =
+            new SingleTypeSerializer<>(1, DataType.BYTE, ByteBuf::readByte, (v, b) -> b.writeByte(v));
 
     private final int byteLength;
     private final DataType dataType;

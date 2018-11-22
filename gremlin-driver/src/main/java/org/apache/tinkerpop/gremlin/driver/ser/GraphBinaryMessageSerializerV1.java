@@ -22,8 +22,22 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.TypeSerializerRegistry;
 
-public class GraphBinarySerializer extends AbstractMessageSerializer {
+public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
+    private static final String MIME_TYPE = SerTokens.MIME_GRAPHBINARY_V1D0;
+
+    /**
+     * Creates a new instance of the message serializer using the default type serializers.
+     */
+    public GraphBinaryMessageSerializerV1() {
+
+    }
+
+    public GraphBinaryMessageSerializerV1(TypeSerializerRegistry registry) {
+
+    }
+
     @Override
     public ByteBuf serializeResponseAsBinary(ResponseMessage responseMessage, ByteBufAllocator allocator) throws SerializationException {
         return null;
@@ -48,6 +62,6 @@ public class GraphBinarySerializer extends AbstractMessageSerializer {
 
     @Override
     public String[] mimeTypesSupported() {
-    return new String[0];
-  }
+        return new String[] { MIME_TYPE };
+    }
 }
