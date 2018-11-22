@@ -141,7 +141,8 @@ limitations under the License.
                                                 </exec>
                                             </then>
                                             <else>
-                                                <echo>Skipping docfx generation as mono is not available</echo>
+                                                <echo>Skipping docfx generation as mono and nuget are required.</echo>
+                                                <echo>nuget must be installed as it would if doing a .NET deployment - see the glv-dotnet-deploy Maven profile for more information.</echo>
                                             </else>
                                         </if>
                                     </tasks>
