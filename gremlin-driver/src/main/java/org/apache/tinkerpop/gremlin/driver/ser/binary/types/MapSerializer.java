@@ -27,10 +27,11 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 
 import java.util.HashMap;
+import java.util.Map;
 
-public class MapSerializer extends SimpleTypeSerializer<HashMap> {
+public class MapSerializer extends SimpleTypeSerializer<Map> {
     @Override
-    public HashMap readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
+    public Map readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
         final int length = buffer.readInt();
 
         HashMap result = new HashMap<>(length);
@@ -47,7 +48,7 @@ public class MapSerializer extends SimpleTypeSerializer<HashMap> {
     }
 
     @Override
-    public ByteBuf writeValueSequence(HashMap value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
+    public ByteBuf writeValueSequence(Map value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
         CompositeByteBuf result = allocator.compositeBuffer(1 + value.size() * 2);
         result.addComponent(true, allocator.buffer(4).writeInt(value.size()));
 

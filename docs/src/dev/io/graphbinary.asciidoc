@@ -19,8 +19,9 @@ limitations under the License.
 [[graphbinary]]
 = GraphBinary
 
-GraphBinary is a binary serialization format that is designed to reduce serialization overhead on both the client
-and the server, as well as limiting the size of the payload that is transmitted over the wire.
+GraphBinary is a binary serialization format suitable for object trees, designed to reduce serialization
+overhead on both the client and the server, as well as limiting the size of the payload that is transmitted over the
+wire.
 
 It describes arbitrary object graphs with a fully-qualified format:
 
@@ -56,42 +57,6 @@ eight bytes to describe the value.
 The serialization format supports new types being added without the need to introduce a new version.
 
 Changes to existing types require new revision.
-
-=== Request Message
-
-Represents a message from the client to the server.
-
-Format: `{version}{request_id}{op}{processor}{args}`
-
-Where:
-
-- `{version}` is a `Byte` representing the protocol version, with the most significant bit set to one. For this version
-of the protocol, the value expected is `0x81` (`10000001`).
-- `{request_id}` is a `UUID`.
-- `{op}` is a `String`.
-- `{processor}` is a `String`.
-- `{args}` is a `Map`.
-
-The total length is not part of the message as the transport layer will provide it. For example: WebSockets,
-as a framing protocol, defines payload length.
-
-=== Response Message
-
-Format: `{version}{id_present}{request_id}{status_code}{status_message}{status_attributes}{result_meta}{result_data}`
-
-Where:
-
-- `{version}` is a `Byte` representing the protocol version, with the most significant bit set to one. For this version
-of the protocol, the value expected is `0x81` (`10000001`).
-- `{id_present}` is a single `Byte` representing whether a request id is present with only two possible values 0 and 1.
-- `{request_id}` is a `UUID`.
-- `{status_code}` is an `Int`.
-- `{status_message}` is a `String`.
-- `{status_attributes}` is a `Map`.
-- `{result_meta}` is a `Map`.
-- `{result_data}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-
-The total length is not part of the message as the transport layer will provide it.
 
 === Data Type Codes
 
@@ -271,7 +236,9 @@ Format: `{length}{item_0}...{item_n}`
 Where:
 
 - `{length}` is an `Int` describing the length of the map.
-- `{item_0}...{item_n}` are the items of the map. `{item_i}` is sequence of 2 fully qualified typed values one representing the key and the following representing the value, each composed composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{item_0}...{item_n}` are the items of the map. `{item_i}` is sequence of 2 fully qualified typed values one
+representing the key and the following representing the value, each composed composed of
+`{type_code}{type_info}{value_flag}{value}`.
 
 ==== UUID
 
@@ -659,3 +626,44 @@ Where:
 A time-zone offset from Greenwich/UTC, such as +02:00.
 
 Format: An `Int` representing total zone offset in seconds.
+
+=== Request and Response Messages
+
+Request and response messages are special containers types used to represent messages from client to the server and the
+other way around. These messages are independent from the transport layer.
+
+==== Request Message
+
+Represents a message from the client to the server.
+
+Format: `{version}{request_id}{op}{processor}{args}`
+
+Where:
+
+- `{version}` is a `Byte` representing the specification version, with the most significant bit set to one. For this
+version of the format, the value expected is `0x81` (`10000001`).
+- `{request_id}` is a `UUID`.
+- `{op}` is a `String`.
+- `{processor}` is a `String`.
+- `{args}` is a `Map`.
+
+The total length is not part of the message as the transport layer will provide it. For example: WebSockets,
+as a framing protocol, defines payload length.
+
+==== Response Message
+
+Format: `{version}{id_present}{request_id}{status_code}{status_message}{status_attributes}{result_meta}{result_data}`
+
+Where:
+
+- `{version}` is a `Byte` representing the protocol version, with the most significant bit set to one. For this version
+of the protocol, the value expected is `0x81` (`10000001`).
+- `{id_present}` is a single `Byte` representing whether a request id is present with only two possible values 0 and 1.
+- `{request_id}` is a `UUID`.
+- `{status_code}` is an `Int`.
+- `{status_message}` is a `String`.
+- `{status_attributes}` is a `Map`.
+- `{result_meta}` is a `Map`.
+- `{result_data}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+
+The total length is not part of the message as the transport layer will provide it.

@@ -22,20 +22,30 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.TypeSerializerRegistry;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.RequestMessageSerializer;
 
 public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHBINARY_V1D0;
+
+    private final GraphBinaryReader reader;
+    private final GraphBinaryWriter writer;
+    private final RequestMessageSerializer requestSerializer;
 
     /**
      * Creates a new instance of the message serializer using the default type serializers.
      */
     public GraphBinaryMessageSerializerV1() {
-
+        this(TypeSerializerRegistry.INSTANCE);
     }
 
     public GraphBinaryMessageSerializerV1(TypeSerializerRegistry registry) {
+        reader = new GraphBinaryReader(registry);
+        writer = new GraphBinaryWriter(registry);
 
+        requestSerializer = new RequestMessageSerializer();
     }
 
     @Override
@@ -45,14 +55,13 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
 
     @Override
     public ByteBuf serializeRequestAsBinary(RequestMessage requestMessage, ByteBufAllocator allocator) throws SerializationException {
-
+        //TODO: Implement
         return null;
     }
 
     @Override
     public RequestMessage deserializeRequest(ByteBuf msg) throws SerializationException {
-        //TODO: Use BinaryReader
-        return null;
+        return requestSerializer.readValue(msg, reader, false);
     }
 
     @Override

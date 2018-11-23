@@ -30,7 +30,11 @@ public class GraphBinaryWriter {
     private final static byte[] unspecifiedNull = new byte[] { DataType.UNSPECIFIED_NULL.getCodeByte(), 0x01};
 
     public GraphBinaryWriter() {
-        registry = TypeSerializerRegistry.INSTANCE;
+        this(TypeSerializerRegistry.INSTANCE);
+    }
+
+    public GraphBinaryWriter(TypeSerializerRegistry registry) {
+        this.registry = registry;
     }
 
     /**

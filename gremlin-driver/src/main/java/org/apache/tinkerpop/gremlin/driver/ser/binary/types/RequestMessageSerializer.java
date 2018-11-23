@@ -48,9 +48,9 @@ public class RequestMessageSerializer implements TypeSerializer<RequestMessage> 
     }
 
     @Override
-    public ByteBuf write(RequestMessage value, ByteBufAllocator allocator, GraphBinaryWriter context) {
-        //TODO: Implement
-        return null;
+    public ByteBuf write(RequestMessage value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
+        // There is no type code / information for the request message itself.
+        throw new SerializationException("RequestMessageSerializer can not be written with type information");
     }
 
     @Override

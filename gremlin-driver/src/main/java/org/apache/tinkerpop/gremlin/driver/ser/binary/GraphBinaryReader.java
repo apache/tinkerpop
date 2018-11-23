@@ -25,7 +25,11 @@ public class GraphBinaryReader {
     private final TypeSerializerRegistry registry;
 
     public GraphBinaryReader() {
-        registry = TypeSerializerRegistry.INSTANCE;
+        this(TypeSerializerRegistry.INSTANCE);
+    }
+
+    public GraphBinaryReader(TypeSerializerRegistry registry) {
+        this.registry = registry;
     }
 
     /**

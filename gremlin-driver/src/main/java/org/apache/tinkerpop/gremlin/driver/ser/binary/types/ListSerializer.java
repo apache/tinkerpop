@@ -11,9 +11,9 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListSerializer extends SimpleTypeSerializer<ArrayList> {
+public class ListSerializer extends SimpleTypeSerializer<List> {
     @Override
-    public ArrayList readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
+    public List readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
         final int length = buffer.readInt();
 
         ArrayList result = new ArrayList(length);
@@ -30,7 +30,7 @@ public class ListSerializer extends SimpleTypeSerializer<ArrayList> {
     }
 
     @Override
-    public ByteBuf writeValueSequence(ArrayList value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
+    public ByteBuf writeValueSequence(List value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
         CompositeByteBuf result = allocator.compositeBuffer(1 + value.size());
         result.addComponent(true, allocator.buffer(4).writeInt(value.size()));
 
