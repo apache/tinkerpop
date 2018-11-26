@@ -26,24 +26,38 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Collection;
 
-public class ListSerializer extends SimpleTypeSerializer<List> {
-    private static final CollectionSerializer collectionSerializer = new CollectionSerializer();
-
-    @Override
-    public List readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
-        // The collection is a List<>
-        return (List) collectionSerializer.readValue(buffer, context);
-    }
-
+class CollectionSerializer extends SimpleTypeSerializer<Collection> {
     @Override
     DataType getDataType() {
-        return DataType.LIST;
+        return null;
     }
 
     @Override
-    public ByteBuf writeValueSequence(List value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
-        return collectionSerializer.writeValueSequence(value, allocator, context);
+    Collection readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
+        final int length = buffer.readInt();
+
+        ArrayList result = new ArrayList(length);
+        for (int i = 0; i < length; i++) {
+            result.add(context.read(buffer));
+        }
+
+        return result;
+    }
+
+    @Override
+    public ByteBuf writeValueSequence(Collection value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
+        CompositeByteBuf result = allocator.compositeBuffer(1 + value.size());
+        result.addComponent(true, allocator.buffer(4).writeInt(value.size()));
+
+        for (Object item : value) {
+            result.addComponent(
+                    true,
+                    context.write(item, allocator));
+        }
+
+        return result;
     }
 }

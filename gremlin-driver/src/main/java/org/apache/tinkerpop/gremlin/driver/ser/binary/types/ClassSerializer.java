@@ -20,30 +20,29 @@ package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.CompositeByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 
-import java.util.List;
-
-public class ListSerializer extends SimpleTypeSerializer<List> {
-    private static final CollectionSerializer collectionSerializer = new CollectionSerializer();
-
-    @Override
-    public List readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
-        // The collection is a List<>
-        return (List) collectionSerializer.readValue(buffer, context);
-    }
-
+public class ClassSerializer extends SimpleTypeSerializer<Class> {
     @Override
     DataType getDataType() {
-        return DataType.LIST;
+        return DataType.CLASS;
     }
 
     @Override
-    public ByteBuf writeValueSequence(List value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
-        return collectionSerializer.writeValueSequence(value, allocator, context);
+    Class readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
+        final String name = context.readValue(buffer, String.class, false);
+        try {
+            return Class.forName(name);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
+    public ByteBuf writeValueSequence(Class value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
+        return context.writeValue(value.getName(), allocator, false);
     }
 }

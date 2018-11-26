@@ -20,30 +20,36 @@ package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.CompositeByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 
-import java.util.List;
+import java.util.Date;
 
-public class ListSerializer extends SimpleTypeSerializer<List> {
-    private static final CollectionSerializer collectionSerializer = new CollectionSerializer();
+public class DateSerializer extends SimpleTypeSerializer<Date> {
+    private final DataType dataType;
 
-    @Override
-    public List readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
-        // The collection is a List<>
-        return (List) collectionSerializer.readValue(buffer, context);
+    public DateSerializer() {
+        this(DataType.DATE);
+    }
+
+    public DateSerializer(DataType type) {
+        this.dataType = type;
     }
 
     @Override
     DataType getDataType() {
-        return DataType.LIST;
+        return dataType;
     }
 
     @Override
-    public ByteBuf writeValueSequence(List value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
-        return collectionSerializer.writeValueSequence(value, allocator, context);
+    Date readValue(ByteBuf buffer, GraphBinaryReader context) {
+        return new Date(buffer.readLong());
+    }
+
+    @Override
+    public ByteBuf writeValueSequence(Date value, ByteBufAllocator allocator, GraphBinaryWriter context) {
+        return allocator.buffer(8).writeLong(value.getTime());
     }
 }

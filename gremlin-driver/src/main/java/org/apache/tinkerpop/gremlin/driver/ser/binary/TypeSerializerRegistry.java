@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.*;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
@@ -38,6 +37,7 @@ public class TypeSerializerRegistry {
 
         put(Map.class, DataType.MAP, new MapSerializer());
         put(List.class, DataType.LIST, new ListSerializer());
+        put(Set.class, DataType.SET, new SetSerializer());
 
         put(Integer.class, DataType.INT, SingleTypeSerializer.IntSerializer);
         put(Long.class, DataType.LONG, SingleTypeSerializer.LongSerializer);
@@ -46,6 +46,10 @@ public class TypeSerializerRegistry {
         put(Short.class, DataType.SHORT, SingleTypeSerializer.ShortSerializer);
         put(Boolean.class, DataType.BOOLEAN, SingleTypeSerializer.BooleanSerializer);
         put(Byte.class, DataType.BYTE, SingleTypeSerializer.ByteSerializer);
+        put(Class.class, DataType.CLASS, new ClassSerializer());
+
+        put(Date.class, DataType.TIMESTAMP, new DateSerializer(DataType.TIMESTAMP));
+        put(Date.class, DataType.DATE, new DateSerializer());
 
         put(Bytecode.class, DataType.BYTECODE, new ByteCodeSerializer());
     }

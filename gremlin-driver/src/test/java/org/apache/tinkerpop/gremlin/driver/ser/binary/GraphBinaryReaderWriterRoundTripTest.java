@@ -54,12 +54,18 @@ public class GraphBinaryReaderWriterRoundTripTest {
         List list = new ArrayList<>();
         list.add("string 1");
 
+        Set set = new HashSet<>();
+        set.add("one");
+        set.add(2);
+
         return Arrays.asList(
                 "ABC",
                 1, 2f, 3.1d, 10122L, 0, 0f, Integer.MIN_VALUE, Integer.MAX_VALUE, Long.MAX_VALUE,
                 UUID.randomUUID(),
                 bytecode,
-                list, map);
+                // Class
+                Bytecode.class,
+                list, map, set);
     }
 
     @Test
