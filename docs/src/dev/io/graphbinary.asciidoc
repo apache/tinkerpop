@@ -652,16 +652,15 @@ as a framing protocol, defines payload length.
 
 ==== Response Message
 
-Format: `{version}{id_present}{request_id}{status_code}{status_message}{status_attributes}{result_meta}{result_data}`
+Format: `{version}{request_id}{status_code}{status_message}{status_attributes}{result_meta}{result_data}`
 
 Where:
 
 - `{version}` is a `Byte` representing the protocol version, with the most significant bit set to one. For this version
 of the protocol, the value expected is `0x81` (`10000001`).
-- `{id_present}` is a single `Byte` representing whether a request id is present with only two possible values 0 and 1.
-- `{request_id}` is a `UUID`.
+- `{request_id}` is a nullable `UUID`.
 - `{status_code}` is an `Int`.
-- `{status_message}` is a `String`.
+- `{status_message}` is a nullable `String`.
 - `{status_attributes}` is a `Map`.
 - `{result_meta}` is a `Map`.
 - `{result_data}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.

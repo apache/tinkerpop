@@ -52,6 +52,14 @@ public class GraphBinaryReader {
     public <T> T read(ByteBuf buffer) throws SerializationException {
         // Fully-qualified format: {type_code}{type_info}{value_flag}{value}
         DataType type = DataType.get(buffer.readByte());
+
+        if (type == DataType.UNSPECIFIED_NULL) {
+            // There is no TypeSerializer for unspecified null object
+            assert buffer.readByte() == 1;
+            // Just return null
+            return null;
+        }
+
         TypeSerializer<T> serializer = registry.getSerializer(type);
         return serializer.read(buffer, this);
     }

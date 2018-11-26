@@ -16,17 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
+package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.TypeSerializer;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -55,9 +51,18 @@ public class RequestMessageSerializer implements TypeSerializer<RequestMessage> 
 
     @Override
     public ByteBuf writeValue(RequestMessage value, ByteBufAllocator allocator, GraphBinaryWriter context,
-                              boolean nullable) {
-        //TODO: Implement
-        return null;
+                              boolean nullable) throws SerializationException {
+        return allocator.compositeBuffer(5).addComponents(true,
+                // Version
+                allocator.buffer(1).writeByte(0x81),
+                // RequestId
+                context.writeValue(value.getRequestId(), allocator, false),
+                // Op
+                context.writeValue(value.getOp(), allocator, false),
+                // Processor
+                context.writeValue(value.getProcessor(), allocator, false),
+                // Args
+                context.writeValue(value.getArgs(), allocator, false));
     }
 
     @Override

@@ -22,10 +22,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.TypeSerializerRegistry;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.types.RequestMessageSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.*;
 
 public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHBINARY_V1D0;
@@ -33,6 +30,7 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
     private final GraphBinaryReader reader;
     private final GraphBinaryWriter writer;
     private final RequestMessageSerializer requestSerializer;
+    private final ResponseMessageSerializer responseSerializer;
 
     /**
      * Creates a new instance of the message serializer using the default type serializers.
@@ -46,17 +44,17 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
         writer = new GraphBinaryWriter(registry);
 
         requestSerializer = new RequestMessageSerializer();
+        responseSerializer = new ResponseMessageSerializer();
     }
 
     @Override
     public ByteBuf serializeResponseAsBinary(ResponseMessage responseMessage, ByteBufAllocator allocator) throws SerializationException {
-        return null;
+        return responseSerializer.writeValue(responseMessage, allocator, writer, false);
     }
 
     @Override
     public ByteBuf serializeRequestAsBinary(RequestMessage requestMessage, ByteBufAllocator allocator) throws SerializationException {
-        //TODO: Implement
-        return null;
+        return requestSerializer.writeValue(requestMessage, allocator, writer, false);
     }
 
     @Override
@@ -66,7 +64,7 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
 
     @Override
     public ResponseMessage deserializeResponse(ByteBuf msg) throws SerializationException {
-        return null;
+        return responseSerializer.readValue(msg, reader, false);
     }
 
     @Override

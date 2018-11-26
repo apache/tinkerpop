@@ -61,7 +61,7 @@ public enum DataType {
     BYTEBUFFER(0X25),
     SHORT(0X26),
     BOOLEAN(0x27),
-    UNSPECIFIED_NULL(0xFF);
+    UNSPECIFIED_NULL(-1);
 
     private final int code;
     private static final Map<Integer, DataType> typeByCode = new HashMap<>();

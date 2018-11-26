@@ -33,9 +33,6 @@ public class TypeSerializerRegistry {
     private final Map<DataType, TypeSerializer<?>> serializersByDataType = new HashMap<>();
 
     private TypeSerializerRegistry() {
-        // TODO: RequestMessage shouldn't be a normal type
-        put(RequestMessage.class, null, new RequestMessageSerializer());
-
         put(String.class, DataType.STRING, new StringSerializer());
         put(UUID.class, DataType.UUID, new UUIDSerializer());
 
