@@ -76,3 +76,17 @@ Feature: Step - coalesce()
       | p[josh,created,ripple] |
       | p[josh,created,lop] |
       | p[peter,created,lop] |
+
+  Scenario: g_V_outXcreatedX_order_byXnameX_coalesceXname_constantXxXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out("created").order().by("name").coalesce(__.values("name"), __.constant("x"))
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | lop |
+      | lop |
+      | lop |
+      | ripple |

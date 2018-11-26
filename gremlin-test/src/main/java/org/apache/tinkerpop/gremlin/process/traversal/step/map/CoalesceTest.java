@@ -35,8 +35,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.constant;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
 import static org.junit.Assert.*;
 
 /**
@@ -54,6 +56,8 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_coalesceXoutXlikesX_outXknowsX_inXcreatedXX_groupCount_byXnameX();
 
     public abstract Traversal<Vertex, Path> get_g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX();
+
+    public abstract Traversal<Vertex, String> get_g_V_outXcreatedX_order_byXnameX_coalesceXname_constantXxXX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -128,6 +132,14 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_outXcreatedX_order_byXnameX_coalesceXname_constantXxXX() {
+        final Traversal<Vertex, String> traversal = get_g_V_outXcreatedX_order_byXnameX_coalesceXname_constantXxXX();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("lop", "lop", "lop", "ripple"), traversal);
+    }
+
     public static class Traversals extends CoalesceTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coalesceXoutXfooX_outXbarXX() {
@@ -152,6 +164,11 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Path> get_g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX() {
             return g.V().coalesce(outE("knows"), outE("created")).otherV().path().by("name").by(T.label);
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_outXcreatedX_order_byXnameX_coalesceXname_constantXxXX() {
+            return g.V().out("created").order().by("name").coalesce(values("name"), constant("x"));
         }
     }
 }
