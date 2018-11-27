@@ -112,6 +112,11 @@ which that particular issue will completed. This is a field usually only set by 
 * The "priority" field can be arbitrarily applied with one exception.  The "trivial" option should be reserved for
 tasks that are "easy" for a potential new contributor to jump into and do not have significant impact to urgently
 required improvements.
+* The "resolution" field which is set on the close of the issue should specify the status most closely related to why
+the issue was closed. In most cases, this will mean "Fixed" for a "Bug" or "Done" for an "Improvement". Only one
+resolution has special meaning and care should be taken with this particular option: "Later". "Later" means that the
+item is a good idea but likely will not be implemented in any foreseeable future. By closing uncompleted issues with
+this resolution, it should be easy to come back to them later when needed.
 
 == Code Style
 
