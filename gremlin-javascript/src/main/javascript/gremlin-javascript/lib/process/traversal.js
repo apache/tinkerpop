@@ -62,6 +62,7 @@ class Traversal {
    * @returns {Promise}
    */
   iterate() {
+    this.bytecode.addStep('none');
     return this._applyStrategies().then(() => {
       let it;
       while ((it = this._getNext()) && !it.done) {
@@ -310,6 +311,73 @@ function createP(operator, args) {
   return new (Function.prototype.bind.apply(P, args));
 }
 
+class TextP {
+  /**
+   * Represents an operation.
+   * @constructor
+   */
+  constructor(operator, value, other) {
+    this.operator = operator;
+    this.value = value;
+    this.other = other;
+  }
+
+  /**
+   * Returns the string representation of the instance.
+   * @returns {string}
+   */
+  toString() {
+    if (this.other === undefined) {
+      return this.operator + '(' + this.value + ')';
+    }
+    return this.operator + '(' + this.value + ', ' + this.other + ')';
+  }
+
+  and(arg) {
+    return new P('and', this, arg);
+  }
+
+  or(arg) {
+    return new P('or', this, arg);
+  }
+
+  /** @param {...Object} args */
+  static containing(...args) {
+    return createTextP('containing', args);
+  }
+
+  /** @param {...Object} args */
+  static endingWith(...args) {
+    return createTextP('endingWith', args);
+  }
+
+  /** @param {...Object} args */
+  static notContaining(...args) {
+    return createTextP('notContaining', args);
+  }
+
+  /** @param {...Object} args */
+  static notEndingWith(...args) {
+    return createTextP('notEndingWith', args);
+  }
+
+  /** @param {...Object} args */
+  static notStartingWith(...args) {
+    return createTextP('notStartingWith', args);
+  }
+
+  /** @param {...Object} args */
+  static startingWith(...args) {
+    return createTextP('startingWith', args);
+  }
+
+}
+
+function createTextP(operator, args) {
+  args.unshift(null, operator);
+  return new (Function.prototype.bind.apply(TextP, args));
+}
+
 class Traverser {
   constructor(object, bulk) {
     this.object = object;
@@ -320,6 +388,16 @@ class Traverser {
 class TraversalSideEffects {
 
 }
+
+const withOptions = {
+  tokens: "~tinkerpop.valueMap.tokens",
+  none: 0,
+  ids: 1,
+  labels: 2,
+  keys: 4,
+  values: 8,
+  all: 15
+};
 
 function toEnum(typeName, keys) {
   const result = {};
@@ -347,6 +425,8 @@ class EnumValue {
 module.exports = {
   EnumValue,
   P,
+  TextP,
+  withOptions,
   IO,
   Traversal,
   TraversalSideEffects,

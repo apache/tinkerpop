@@ -19,11 +19,10 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
-import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
+import org.apache.tinkerpop.gremlin.structure.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -35,9 +34,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
-import java.util.function.Supplier;
 
-import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_IO_READ;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 

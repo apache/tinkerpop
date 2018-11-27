@@ -25,11 +25,16 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
+import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,9 +65,10 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -202,7 +208,8 @@ public final class Cluster {
                 .maxSimultaneousUsagePerConnection(settings.connectionPool.maxSimultaneousUsagePerConnection)
                 .minSimultaneousUsagePerConnection(settings.connectionPool.minSimultaneousUsagePerConnection)
                 .maxConnectionPoolSize(settings.connectionPool.maxSize)
-                .minConnectionPoolSize(settings.connectionPool.minSize);
+                .minConnectionPoolSize(settings.connectionPool.minSize)
+                .validationRequest(settings.connectionPool.validationRequest);
 
         if (settings.username != null && settings.password != null)
             builder.credentials(settings.username, settings.password);
@@ -456,6 +463,10 @@ public final class Cluster {
         return manager.authProps;
     }
 
+    RequestMessage.Builder validationRequest() {
+        return manager.validationRequest.get();
+    }
+
     SslContext createSSLContext() throws Exception {
         // if the context is provided then just use that and ignore the other settings
         if (manager.sslContextOptional.isPresent())
@@ -565,6 +576,7 @@ public final class Cluster {
         private String trustStore = null;
         private String trustStorePassword = null;
         private String keyStoreType = null;
+        private String validationRequest = "''";
         private List<String> sslEnabledProtocols = new ArrayList<>();
         private List<String> sslCipherSuites = new ArrayList<>();
         private boolean sslSkipCertValidation = false;
@@ -598,9 +610,9 @@ public final class Cluster {
         }
 
         /**
-         * Set the {@link MessageSerializer} to use given its MIME type.  Note that setting this value this way
-         * will not allow specific configuration of the serializer itself.  If specific configuration is required
-         * please use {@link #serializer(MessageSerializer)}.
+         * Set the {@link MessageSerializer} to use given the exact name of a {@link Serializers} enum.  Note that
+         * setting this value this way will not allow specific configuration of the serializer itself.  If specific
+         * configuration is required * please use {@link #serializer(MessageSerializer)}.
          */
         public Builder serializer(final String mimeType) {
             serializer = Serializers.valueOf(mimeType).simpleInstance();
@@ -647,7 +659,7 @@ public final class Cluster {
         /**
          * File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and
          * SSL is enabled, the default {@link TrustManager} will be used.
-         * @deprecated As of release 3.2.10, replaced by {@link trustStore}
+         * @deprecated As of release 3.2.10, replaced by {@link #trustStore}
          */
         @Deprecated
         public Builder trustCertificateChainFile(final String certificateChainFile) {
@@ -667,7 +679,7 @@ public final class Cluster {
 
         /**
          * The X.509 certificate chain file in PEM format.
-         * @deprecated As of release 3.2.10, replaced by {@link keyStore}
+         * @deprecated As of release 3.2.10, replaced by {@link #keyStore}
          */
         @Deprecated
         public Builder keyCertChainFile(final String keyCertChainFile) {
@@ -677,7 +689,7 @@ public final class Cluster {
 
         /**
          * The PKCS#8 private key file in PEM format.
-         * @deprecated As of release 3.2.10, replaced by {@link keyStore}
+         * @deprecated As of release 3.2.10, replaced by {@link #keyStore}
          */
         @Deprecated
         public Builder keyFile(final String keyFile) {
@@ -687,14 +699,14 @@ public final class Cluster {
 
         /**
          * The password of the {@link #keyFile}, or {@code null} if it's not password-protected.
-         * @deprecated As of release 3.2.10, replaced by {@link keyStorePassword}
+         * @deprecated As of release 3.2.10, replaced by {@link #keyStorePassword}
          */
         @Deprecated
         public Builder keyPassword(final String keyPassword) {
             this.keyPassword = keyPassword;
             return this;
         }
-        
+
         /**
          * The file location of the private key in JKS or PKCS#12 format.
          */
@@ -702,7 +714,7 @@ public final class Cluster {
             this.keyStore = keyStore;
             return this;
         }
-        
+
         /**
          * The password of the {@link #keyStore}, or {@code null} if it's not password-protected.
          */
@@ -710,7 +722,7 @@ public final class Cluster {
             this.keyStorePassword = keyStorePassword;
             return this;
         }
-        
+
         /**
          * The file location for a SSL Certificate Chain to use when SSL is enabled. If
          * this value is not provided and SSL is enabled, the default {@link TrustManager} will be used.
@@ -719,7 +731,7 @@ public final class Cluster {
             this.trustStore = trustStore;
             return this;
         }
-        
+
         /**
          * The password of the {@link #trustStore}, or {@code null} if it's not password-protected.
          */
@@ -727,15 +739,15 @@ public final class Cluster {
             this.trustStorePassword = trustStorePassword;
             return this;
         }
-        
+
         /**
-         * The format of the {@link keyStore}, either {@code JKS} or {@code PKCS12} 
+         * The format of the {@link #keyStore}, either {@code JKS} or {@code PKCS12}
          */
         public Builder keyStoreType(final String keyStoreType) {
             this.keyStoreType = keyStoreType;
             return this;
         }
-        
+
         /**
          * A list of SSL protocols to enable. @see <a href=
          *      "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SunJSSE_Protocols">JSSE
@@ -745,7 +757,7 @@ public final class Cluster {
             this.sslEnabledProtocols = sslEnabledProtocols;
             return this;
         }
-        
+
         /**
          * A list of cipher suites to enable. @see <a href=
          *      "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SupportedCipherSuites">Cipher
@@ -755,7 +767,7 @@ public final class Cluster {
             this.sslCipherSuites = sslCipherSuites;
             return this;
         }
-        
+
         /**
          * If true, trust all certificates and do not perform any validation.
          */
@@ -879,6 +891,17 @@ public final class Cluster {
         }
 
         /**
+         * Specify a valid Gremlin script that can be used to test remote operations. This script should be designed
+         * to return quickly with the least amount of overhead possible. By default, the script sends an empty string.
+         * If the graph does not support that sort of script because it requires all scripts to include a reference
+         * to a graph then a good option might be {@code g.inject()}.
+         */
+        public Builder validationRequest(final String script) {
+            validationRequest = script;
+            return this;
+        }
+
+        /**
          * Time in milliseconds to wait between retries when attempting to reconnect to a dead host.
          */
         public Builder reconnectInterval(final int interval) {
@@ -999,8 +1022,9 @@ public final class Cluster {
         private final LoadBalancingStrategy loadBalancingStrategy;
         private final AuthProperties authProps;
         private final Optional<SslContext> sslContextOptional;
+        private final Supplier<RequestMessage.Builder> validationRequest;
 
-        private final ScheduledExecutorService executor;
+        private final ScheduledThreadPoolExecutor executor;
 
         private final int nioPoolSize;
         private final int workerPoolSize;
@@ -1044,6 +1068,7 @@ public final class Cluster {
             connectionPoolSettings.sslSkipCertValidation = builder.sslSkipCertValidation;
             connectionPoolSettings.keepAliveInterval = builder.keepAliveInterval;
             connectionPoolSettings.channelizer = builder.channelizer;
+            connectionPoolSettings.validationRequest = builder.validationRequest;
 
             sslContextOptional = Optional.ofNullable(builder.sslContext);
 
@@ -1053,8 +1078,12 @@ public final class Cluster {
 
             this.factory = new Factory(builder.nioPoolSize);
             this.serializer = builder.serializer;
-            this.executor = Executors.newScheduledThreadPool(builder.workerPoolSize,
+            
+            this.executor = new ScheduledThreadPoolExecutor(builder.workerPoolSize,
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-worker-%d").build());
+            this.executor.setRemoveOnCancelPolicy(true);
+
+            validationRequest = () -> RequestMessage.build(Tokens.OPS_EVAL).add(Tokens.ARGS_GREMLIN, builder.validationRequest);
         }
 
         private void validateBuilder(final Builder builder) {

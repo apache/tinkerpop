@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
@@ -834,6 +835,19 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         final T resource = findModelEntryObject(resourceName);
         final T fromStatic = read(getCompatibility().readFromResource(resourceName), T.class);
         final T recycled = read(write(fromStatic, T.class), T.class);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteTextP() throws Exception {
+        final String resourceName = "textp";
+        assumeCompatibility(resourceName);
+
+        final TextP resource = findModelEntryObject(resourceName);
+        final TextP fromStatic = read(getCompatibility().readFromResource(resourceName), TextP.class);
+        final TextP recycled = read(write(fromStatic, TextP.class), TextP.class);
         assertEquals(fromStatic, recycled);
         assertEquals(resource, fromStatic);
         assertEquals(resource, recycled);

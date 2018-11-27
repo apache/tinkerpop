@@ -17,7 +17,7 @@ specific language governing permissions and limitations
 under the License.
 '''
 
-from gremlin_python.structure.graph import Graph
+from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.driver import serializer
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
@@ -78,7 +78,7 @@ def prepare_traversal_source(scenario):
 
     remote = DriverRemoteConnection('ws://localhost:45940/gremlin', "ggraph", message_serializer=s)
     scenario.context.remote_conn["empty"] = remote
-    g = Graph().traversal().withRemote(remote)
+    g = traversal().withRemote(remote)
     g.V().drop().iterate()
 
 
@@ -98,14 +98,14 @@ def __create_remote(server_graph_name):
 
 
 def __create_lookup_v(remote):
-    g = Graph().traversal().withRemote(remote)
+    g = traversal().withRemote(remote)
 
     # hold a map of name/vertex for use in asserting results
     return g.V().group().by('name').by(tail()).next()
 
 
 def __create_lookup_e(remote):
-    g = Graph().traversal().withRemote(remote)
+    g = traversal().withRemote(remote)
 
     # hold a map of the "name"/edge for use in asserting results - "name" in this context is in the form of
     # outgoingV-label->incomingV

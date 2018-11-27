@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraver
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
@@ -52,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -343,6 +345,26 @@ public final class GryoSerializersV3d0 {
         }
     }
 
+    public final static class TextPSerializer implements SerializerShim<TextP> {
+        @Override
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final TextP p) {
+            output.writeString(p.getBiPredicate().toString());
+            kryo.writeObject(output, p.getValue());
+        }
+
+        @Override
+        public <I extends InputShim> TextP read(final KryoShim<I, ?> kryo, final I input, final Class<TextP> clazz) {
+            final String predicate = input.readString();
+            final String value = kryo.readObject(input, String.class);
+
+            try {
+                return (TextP) TextP.class.getMethod(predicate, String.class).invoke(null, value);
+            } catch (final Exception e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        }
+    }
+
     public final static class LambdaSerializer implements SerializerShim<Lambda> {
         @Override
         public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Lambda lambda) {
@@ -427,7 +449,12 @@ public final class GryoSerializersV3d0 {
             output.writeString(object.getName());
             output.writeDouble(object.getDuration(TimeUnit.NANOSECONDS) / 1000000d);
             kryo.writeObject(output, object.getCounts());
-            kryo.writeObject(output, object.getAnnotations());
+
+            // annotations is a synchronized LinkedHashMap - get rid of the "synch" for serialization as gryo
+            // doesn't know how to deserialize that well and LinkedHashMap should work with 3.3.x and previous
+            final Map<String, Object> annotations = new LinkedHashMap<>();
+            object.getAnnotations().forEach(annotations::put);
+            kryo.writeObject(output, annotations);
 
             // kryo might have a problem with LinkedHashMap value collections. can't recreate it independently but
             // it gets fixed with standard collections for some reason.

@@ -26,14 +26,14 @@ function print_tabs(next_id, tabs, blocks) {
   print "++++"
   print "<section class=\"tabs tabs-" num_tabs "\">"
 
-  for (i in tabs) {
+  for (i = 1; i <= num_tabs; i++) {
     title = tabs[i]
     print "  <input id=\"tab-" id_part "-" x "\" type=\"radio\" name=\"radio-set-" id_part "-" next_id "\" class=\"tab-selector-" i "\"" (i == 1 ? " checked=\"checked\"" : "") " />"
     print "  <label for=\"tab-" id_part "-" x "\" class=\"tab-label-" i "\">" title "</label>"
     x++
   }
 
-  for (i in blocks) {
+  for (i = 1; i<= num_tabs; i++) {
     print "  <div class=\"tabcontent\">"
     print "    <div class=\"tabcontent-" i "\">"
     print "++++\n"
@@ -63,9 +63,17 @@ BEGIN {
   status = 1
   lang = gensub(/^\[gremlin-([^,\]]+).*/, "\\1", "g", $0)
   code = ""
+  evaluate = 1
 }
 
-/^\[source,(csharp|groovy|java|python)/ {
+/^\[source,(csharp|groovy|java|javascript|python),tab\]/ {
+  status = 1
+  lang = gensub(/^\[source,([^,\]]+).*/, "\\1", "g", $0)
+  code = ""
+  evaluate = 0
+}
+
+/^\[source,(csharp|groovy|java|javascript|python)\]/ {
   if (status == 3) {
     status = 1
     lang = gensub(/^\[source,([^\]]+).*/, "\\1", "g", $0)
@@ -73,7 +81,7 @@ BEGIN {
   }
 }
 
-! /^\[source,(csharp|groovy|java|python)/ {
+! /^\[source,(csharp|groovy|java|javascript|python)/ {
   if (status == 3 && $0 != "") {
     print_tabs(next_id, tabs, blocks)
     next_id = next_id + length(tabs)
@@ -96,7 +104,7 @@ BEGIN {
 { if (status == 3) {
     if ($0 == "----") {
       i = length(blocks) + 1
-      if (i == 1) {
+      if (i == 1 && evaluate == 1) {
         tabs[i] = "console (" lang ")"
         blocks[i] = code_header code "\n" $0 "\n"
         i++
@@ -114,7 +122,7 @@ BEGIN {
     }
   } else {
     if (status == 0) print
-    else if (status == 1) code_header = $0
+    else if (status == 1) code_header = gensub(/,tab/, "", "g", $0)
     else code = code "\n" $0
   }
 }

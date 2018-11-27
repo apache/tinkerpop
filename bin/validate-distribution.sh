@@ -85,11 +85,12 @@ fi
 
 echo -n "* downloading ${COMPONENT} (${ZIP_FILENAME})... "
 curl -Lsf ${URL} -o ${ZIP_FILENAME} || { echo "Failed to download ${COMPONENT}" ; exit 1; }
-for ext in "asc" "sha1"
+for ext in "asc" "sha512"
 do
   curl -Lsf ${URL}.${ext} -o ${ZIP_FILENAME}.${ext} || { echo "Failed to download ${COMPONENT} (${ext})" ; exit 1 ; }
 done
 curl -Lsf ${URL}.md5 -o ${ZIP_FILENAME}.md5 && { echo "MD5 checksums should not be released (${ZIP_FILENAME}.md5)" ; exit 1 ; }
+curl -Lsf ${URL}.sha1 -o ${ZIP_FILENAME}.sha1 && { echo "SHA1 checksums should not be released (${ZIP_FILENAME}.sha1)" ; exit 1 ; }
 echo "OK"
 
 # validate zip file
@@ -122,9 +123,9 @@ echo "OK"
 #[ "$ACTUAL" = "${EXPECTED}" ] || { echo "failed"; exit 1; }
 #echo "OK"
 
-echo -n "  * SHA1 checksum ... "
-EXPECTED=`cat ${ZIP_FILENAME}.sha1`
-ACTUAL=`sha1sum ${ZIP_FILENAME} | awk '{print $1}'`
+echo -n "  * SHA512 checksum ... "
+EXPECTED=`cat ${ZIP_FILENAME}.sha512`
+ACTUAL=`sha512sum ${ZIP_FILENAME} | awk '{print $1}'`
 [ "$ACTUAL" = "${EXPECTED}" ] || { echo "failed"; exit 1; }
 echo "OK"
 

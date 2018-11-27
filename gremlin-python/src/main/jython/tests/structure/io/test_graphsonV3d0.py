@@ -23,6 +23,7 @@ import datetime
 import time
 import json
 import uuid
+import math
 
 from mock import Mock
 
@@ -50,11 +51,20 @@ class TestGraphSONReader(object):
         assert x[1] == 2
         assert x[2] == "3"
         ##
+
         x = self.graphson_reader.readObject(
             json.dumps({"@type": "g:Set", "@value": [{"@type": "g:Int32", "@value": 1},
                                                      {"@type": "g:Int32", "@value": 2},
-                                                     {"@type": "g:Float", "@value": 2.0},
                                                      "3"]}))
+        # return a set as normal
+        assert isinstance(x, set)
+        assert x == set([1, 2, "3"])
+
+        x = self.graphson_reader.readObject(
+            json.dumps({"@type": "g:Set", "@value": [{"@type": "g:Int32", "@value": 1},
+                                                    {"@type": "g:Int32", "@value": 2},
+                                                    {"@type": "g:Float", "@value": 2.0},
+                                                    "3"]}))
         # coerce to list here because Java might return numerics of different types which python won't recognize
         # see comments of TINKERPOP-1844 for more details
         assert isinstance(x, list)
@@ -96,6 +106,27 @@ class TestGraphSONReader(object):
         }))
         assert isinstance(x, float)
         assert 31.2 == x
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "g:Double",
+            "@value": "NaN"
+        }))
+        assert isinstance(x, float)
+        assert math.isnan(x)
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "g:Double",
+            "@value": "Infinity"
+        }))
+        assert isinstance(x, float)
+        assert math.isinf(x) and x > 0
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "g:Double",
+            "@value": "-Infinity"
+        }))
+        assert isinstance(x, float)
+        assert math.isinf(x) and x < 0
 
     def test_graph(self):
         vertex = self.graphson_reader.readObject("""

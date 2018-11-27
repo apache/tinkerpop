@@ -23,7 +23,7 @@ image::apache-tinkerpop-logo.png[width=500]
 
 image::tinkerpop-reading.png[width=800,align="center"]
 
-Apache TinkerPop has an extensive set of documentation that covers virtually all aspects of usage. This documentation
+Apache TinkerPop™ has an extensive set of documentation that covers virtually all aspects of usage. This documentation
 tends to fall into the following categories:
 
 1. link:http://tinkerpop.apache.org/docs/x.y.z/reference[Reference Documentation] - The primary documentation for
@@ -37,7 +37,8 @@ TinkerPop's interfaces).
 5. link:http://tinkerpop.apache.org/javadocs/x.y.z/full/[Javadoc] - The full Javadoc for all TinkerPop modules. There
 is also an abridged version of the link:http://tinkerpop.apache.org/javadocs/current/core/[core] interfaces which may
 be more convenient in some cases.
-6. link:http://tinkerpop.apache.org/docs/x.y.z/upgrade/[Upgrade Documentation] - Notes related to upgrading from one
+6. link:http://tinkerpop.apache.org/jsdocs/x.y.z/[JSDoc] - The JSDoc for gremlin-javascript.
+7. link:http://tinkerpop.apache.org/docs/x.y.z/upgrade/[Upgrade Documentation] - Notes related to upgrading from one
 version of TinkerPop to the next. This document describes breaking changes, major new features and other important
 information related to a particular version.
 

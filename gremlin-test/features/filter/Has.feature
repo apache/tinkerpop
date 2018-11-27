@@ -558,3 +558,58 @@ Feature: Step - has()
     Then the result should be unordered
       | result |
       | d[6].l |
+
+  Scenario: g_V_hasXname_containingXarkXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("name", TextP.containing("ark"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+
+  Scenario: g_V_hasXname_startingWithXmarXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("name", TextP.startingWith("mar"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+
+  Scenario: g_V_hasXname_endingWithXasXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("name", TextP.endingWith("as"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[vadas] |
+
+  Scenario: g_V_hasXperson_name_containingXoX_andXltXmXXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("person", "name", TextP.containing("o").and(P.lt("m")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[josh] |
+
+  Scenario: g_V_hasXname_gtXmX_andXcontainingXoXXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("name", P.gt("m").and(TextP.containing("o")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |

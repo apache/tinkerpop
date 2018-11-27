@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
-        <version>19</version>
+        <version>21</version>
     </parent>
     <groupId>org.apache.tinkerpop</groupId>
     <artifactId>tinkerpop</artifactId>
@@ -144,15 +144,15 @@ limitations under the License.
         <module>gremlin-tools</module>
     </modules>
     <scm>
-        <connection>scm:git:git@git-wip-us.apache.org:repos/asf/tinkerpop.git</connection>
-        <developerConnection>scm:git:git@git-wip-us.apache.org:repos/asf/tinkerpop.git</developerConnection>
-        <url>https://git-wip-us.apache.org/repos/asf?p=tinkerpop.git</url>
+        <connection>scm:git:git@github.com:apache/tinkerpop.git</connection>
+        <developerConnection>scm:git:git@github.com:apache/tinkerpop.git</developerConnection>
+        <url>https://github.com/apache/tinkerpop</url>
     </scm>
     <properties>
         <commons.configuration.version>1.10</commons.configuration.version>
         <commons.lang.version>2.6</commons.lang.version>
         <commons.lang3.version>3.3.1</commons.lang3.version>
-        <groovy.version>2.4.15</groovy.version>
+        <groovy.version>2.5.4</groovy.version>
         <hadoop.version>2.7.2</hadoop.version>
         <java.tuples.version>1.2</java.tuples.version>
         <javadoc-plugin.version>2.10.4</javadoc-plugin.version>
@@ -398,6 +398,7 @@ limitations under the License.
                         <exclude>**/*.nuspec</exclude>
                         <exclude>**/*.nuspec.template</exclude>
                         <exclude>**/gremlin-javascript/node_modules/**</exclude>
+                        <exclude>**/gremlin-javascript/doc/**</exclude>
                         <exclude>**/node/node_modules/**</exclude>
                         <exclude>**/node/node</exclude>
                         <exclude>**/npm-debug.log</exclude>

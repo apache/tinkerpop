@@ -47,11 +47,9 @@ import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
 import org.apache.tinkerpop.shaded.jackson.core.JsonToken;
 import org.apache.tinkerpop.shaded.jackson.databind.DeserializationContext;
 import org.apache.tinkerpop.shaded.jackson.databind.JavaType;
-import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.deser.std.StdDeserializer;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
-import org.apache.tinkerpop.shaded.jackson.databind.node.ArrayNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdKeySerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
@@ -705,15 +703,28 @@ class GraphSONSerializersV3d0 {
         }
     }
 
-    static class DoubleJackonsDeserializer extends StdDeserializer<Double> {
+    static class DoubleJacksonDeserializer extends StdDeserializer<Double> {
 
-        protected DoubleJackonsDeserializer() {
+        protected DoubleJacksonDeserializer() {
             super(Double.class);
         }
 
         @Override
-        public Double deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            return jsonParser.getDoubleValue();
+        public Double deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            if (jsonParser.getCurrentToken().isNumeric())
+                return jsonParser.getDoubleValue();
+            else  {
+                final String numberText = jsonParser.getValueAsString();
+                if ("NaN".equalsIgnoreCase(numberText))
+                    return Double.NaN;
+                else if ("-Infinity".equals(numberText) || "-INF".equalsIgnoreCase(numberText))
+                    return Double.NEGATIVE_INFINITY;
+                else if ("Infinity".equals(numberText) || "INF".equals(numberText))
+                    return Double.POSITIVE_INFINITY;
+                else
+                    throw new IllegalStateException("Double value unexpected: " + numberText);
+            }
+
         }
 
         @Override

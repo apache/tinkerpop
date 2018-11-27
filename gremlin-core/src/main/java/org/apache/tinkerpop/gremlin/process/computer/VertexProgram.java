@@ -241,6 +241,10 @@ public interface VertexProgram<M> extends Cloneable {
         public Builder configure(final Object... keyValues);
 
         public <P extends VertexProgram> P create(final Graph graph);
+        
+        default public <P extends VertexProgram> P create() {
+          return this.create(null);
+        }
 
     }
 

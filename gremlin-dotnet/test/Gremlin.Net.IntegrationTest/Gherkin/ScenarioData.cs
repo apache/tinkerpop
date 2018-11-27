@@ -31,6 +31,8 @@ using Gremlin.Net.Process.Remote;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
 
+using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
+
 namespace Gremlin.Net.IntegrationTest.Gherkin
 {
     internal class ScenarioData
@@ -68,14 +70,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
         public static void CleanEmptyData()
         {
-            var g = new Graph().Traversal().WithRemote(GetByGraphName("empty").Connection);
+            var g = Traversal().WithRemote(GetByGraphName("empty").Connection);
             g.V().Drop().Iterate();
         }
 
         public static void ReloadEmptyData()
         {
             var graphData = Lazy.Value._dataPerGraph["empty"];
-            var g = new Graph().Traversal().WithRemote(graphData.Connection);
+            var g = Traversal().WithRemote(graphData.Connection);
             graphData.Vertices = GetVertices(g);
             graphData.Edges = GetEdges(g);
         }
@@ -95,7 +97,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             return new ScenarioData(GraphNames.Select(name =>
             {
                 var connection = ConnectionFactory.CreateRemoteConnection($"g{name}");
-                var g = new Graph().Traversal().WithRemote(connection);
+                var g = Traversal().WithRemote(connection);
                 return new ScenarioDataPerGraph(name, connection, GetVertices(g), GetEdges(g));
             }).ToDictionary(x => x.Name));
         }

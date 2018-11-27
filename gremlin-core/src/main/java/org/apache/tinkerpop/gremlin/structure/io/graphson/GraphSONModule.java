@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -37,6 +38,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Connec
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
@@ -145,6 +147,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(AndP.class, "P");
                     put(OrP.class, "P");
                     put(P.class, "P");
+                    put(TextP.class, "TextP");
                     Stream.of(
                             VertexProperty.Cardinality.class,
                             Column.class,
@@ -172,6 +175,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                             InlineFilterStrategy.class,
                             MatchPredicateStrategy.class,
                             OrderLimitStrategy.class,
+                            OptionsStrategy.class,
                             PathProcessorStrategy.class,
                             PathRetractionStrategy.class,
                             CountStrategy.class,
@@ -254,7 +258,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
 
             // numbers
             addDeserializer(Integer.class, new GraphSONSerializersV3d0.IntegerJackonsDeserializer());
-            addDeserializer(Double.class, new GraphSONSerializersV3d0.DoubleJackonsDeserializer());
+            addDeserializer(Double.class, new GraphSONSerializersV3d0.DoubleJacksonDeserializer());
 
             // traversal
             addDeserializer(Bytecode.class, new TraversalSerializersV3d0.BytecodeJacksonDeserializer());
@@ -270,6 +274,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     TraversalOptionParent.Pick.values(),
                     T.values()).flatMap(Stream::of).forEach(e -> addDeserializer(e.getClass(), new TraversalSerializersV3d0.EnumJacksonDeserializer(e.getDeclaringClass())));
             addDeserializer(P.class, new TraversalSerializersV3d0.PJacksonDeserializer());
+            addDeserializer(TextP.class, new TraversalSerializersV3d0.TextPJacksonDeserializer());
             addDeserializer(Lambda.class, new TraversalSerializersV3d0.LambdaJacksonDeserializer());
             addDeserializer(Traverser.class, new TraversalSerializersV3d0.TraverserJacksonDeserializer());
             Arrays.asList(
@@ -288,6 +293,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     InlineFilterStrategy.class,
                     MatchPredicateStrategy.class,
                     OrderLimitStrategy.class,
+                    OptionsStrategy.class,
                     PathProcessorStrategy.class,
                     PathRetractionStrategy.class,
                     CountStrategy.class,
@@ -359,6 +365,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(AndP.class, "P");
                     put(OrP.class, "P");
                     put(P.class, "P");
+                    put(TextP.class, "TextP");
                     Stream.of(
                             VertexProperty.Cardinality.class,
                             Column.class,
@@ -386,6 +393,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                             InlineFilterStrategy.class,
                             MatchPredicateStrategy.class,
                             OrderLimitStrategy.class,
+                            OptionsStrategy.class,
                             PathProcessorStrategy.class,
                             PathRetractionStrategy.class,
                             CountStrategy.class,
@@ -476,6 +484,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     TraversalOptionParent.Pick.values(),
                     T.values()).flatMap(Stream::of).forEach(e -> addDeserializer(e.getClass(), new TraversalSerializersV2d0.EnumJacksonDeserializer(e.getDeclaringClass())));
             addDeserializer(P.class, new TraversalSerializersV2d0.PJacksonDeserializer());
+            addDeserializer(TextP.class, new TraversalSerializersV2d0.TextPJacksonDeserializer());
             addDeserializer(Lambda.class, new TraversalSerializersV2d0.LambdaJacksonDeserializer());
             addDeserializer(Traverser.class, new TraversalSerializersV2d0.TraverserJacksonDeserializer());
             Arrays.asList(
@@ -494,6 +503,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     InlineFilterStrategy.class,
                     MatchPredicateStrategy.class,
                     OrderLimitStrategy.class,
+                    OptionsStrategy.class,
                     PathProcessorStrategy.class,
                     PathRetractionStrategy.class,
                     CountStrategy.class,

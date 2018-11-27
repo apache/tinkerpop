@@ -23,7 +23,9 @@ import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.structure.RemoteGraph;
+import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.ServerTestHelper;
@@ -73,7 +75,7 @@ public class RemoteGraphProvider extends AbstractGraphProvider implements AutoCl
     public Graph openTestGraph(final Configuration config) {
         final String serverGraphName = config.getString(DriverRemoteConnection.GREMLIN_REMOTE_DRIVER_SOURCENAME);
         return remoteCache.computeIfAbsent(serverGraphName,
-                k -> RemoteGraph.open(new DriverRemoteConnection(cluster, config)));
+                k -> RemoteGraph.open(new DriverRemoteConnection(cluster, config), config));
     }
 
     @Override
@@ -84,7 +86,7 @@ public class RemoteGraphProvider extends AbstractGraphProvider implements AutoCl
         final Supplier<Graph> graphGetter = () -> server.getServerGremlinExecutor().getGraphManager().getGraph(serverGraphName);
         return new HashMap<String, Object>() {{
             put(Graph.GRAPH, RemoteGraph.class.getName());
-            put(RemoteGraph.GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS, DriverRemoteConnection.class.getName());
+            put(TraversalSource.GREMLIN_REMOTE_CONNECTION_CLASS, DriverRemoteConnection.class.getName());
             put(DriverRemoteConnection.GREMLIN_REMOTE_DRIVER_SOURCENAME, "g" + serverGraphName);
             put("clusterConfiguration.port", TestClientFactory.PORT);
             put("clusterConfiguration.hosts", "localhost");
@@ -118,7 +120,7 @@ public class RemoteGraphProvider extends AbstractGraphProvider implements AutoCl
         // concerns and will be likely relegated to the test module so that OptOut can continue to work and we can
         // full execute the process tests. we should be able to clean this up considerably when RemoteGraph can be
         // moved with breaking change.
-        return super.traversal(graph).withRemote(((RemoteGraph) graph).getConnection());
+        return AnonymousTraversalSource.traversal().withRemote(((RemoteGraph) graph).getConnection());
     }
 
     public static void startServer() throws Exception {

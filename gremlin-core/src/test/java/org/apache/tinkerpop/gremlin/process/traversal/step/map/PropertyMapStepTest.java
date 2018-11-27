@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,10 +38,12 @@ public class PropertyMapStepTest extends StepTest {
                 __.valueMap("name"),
                 __.valueMap("age"),
                 __.valueMap("name", "age"),
-                __.valueMap(true),
-                __.valueMap(true, "name"),
-                __.valueMap(true, "age"),
-                __.valueMap(true, "name", "age"),
+                __.valueMap().with(WithOptions.tokens),
+                __.valueMap("name").with(WithOptions.tokens),
+                __.valueMap("age").with(WithOptions.tokens),
+                __.valueMap("name", "age").with(WithOptions.tokens),
+                __.valueMap("name", "age").with(WithOptions.tokens, WithOptions.ids),
+                __.valueMap("name", "age").with(WithOptions.tokens, WithOptions.labels),
                 __.propertyMap(),
                 __.propertyMap("name"),
                 __.propertyMap("age"),

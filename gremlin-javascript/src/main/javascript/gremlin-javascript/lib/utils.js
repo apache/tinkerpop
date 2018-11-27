@@ -31,7 +31,7 @@ exports.toLong = function toLong(value) {
 
 const Long = exports.Long = function Long(value) {
   if (typeof value !== 'string' && typeof value !== 'number') {
-    throw new TypeError('Ty')
+    throw new TypeError('The value must be a string or a number');
   }
   this.value = value.toString();
 };
@@ -53,4 +53,24 @@ exports.getUuid = function getUuid() {
     hex.substr(12, 4) + '-' +
     hex.substr(16, 4) + '-' +
     hex.substr(20, 12));
+};
+
+exports.emptyArray = Object.freeze([]);
+
+class ImmutableMap extends Map {
+  constructor(iterable) {
+    super(iterable);
+  }
+
+  set(){
+    return this;
+  }
+
+  ['delete'](){
+    return false;
+  }
+
+  clear() { }
 }
+
+exports.ImmutableMap = ImmutableMap;

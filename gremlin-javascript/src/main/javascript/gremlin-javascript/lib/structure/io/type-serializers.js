@@ -49,11 +49,37 @@ class TypeSerializer {
 
 class NumberSerializer extends TypeSerializer {
   serialize(item) {
-    return item;
+    if (isNaN(item)) {
+      return {
+        [typeKey]: 'g:Double',
+        [valueKey]: 'NaN'
+      };
+    } else if (item === Number.POSITIVE_INFINITY) {
+      return {
+        [typeKey]: 'g:Double',
+        [valueKey]: 'Infinity'
+      };
+    } else if (item === Number.NEGATIVE_INFINITY) {
+      return {
+        [typeKey]: 'g:Double',
+        [valueKey]: '-Infinity'
+      };
+    } else {
+      return item;
+    }
   }
 
   deserialize(obj) {
-    return parseFloat(obj[valueKey]);
+    var val = obj[valueKey];
+    if (val === 'NaN') {
+      return NaN;
+    } else if (val === 'Infinity') {
+      return Number.POSITIVE_INFINITY;
+    } else if (val === '-Infinity') {
+      return Number.NEGATIVE_INFINITY;
+    } else {
+      return parseFloat(val);
+    }
   }
 
   canBeUsedFor(value) {
@@ -147,6 +173,28 @@ class PSerializer extends TypeSerializer {
 
   canBeUsedFor(value) {
     return (value instanceof t.P);
+  }
+}
+
+class TextPSerializer extends TypeSerializer {
+  /** @param {TextP} item */
+  serialize(item) {
+    const result = {};
+    result[typeKey] = 'g:TextP';
+    const resultValue = result[valueKey] = {
+      'predicate': item.operator
+    };
+    if (item.other === undefined || item.other === null) {
+      resultValue['value'] = this.writer.adaptObject(item.value);
+    }
+    else {
+      resultValue['value'] = [ this.writer.adaptObject(item.value), this.writer.adaptObject(item.other) ];
+    }
+    return result;
+  }
+
+  canBeUsedFor(value) {
+    return (value instanceof t.TextP);
   }
 }
 
@@ -384,6 +432,7 @@ module.exports = {
   PathSerializer,
   PropertySerializer,
   PSerializer,
+  TextPSerializer,
   SetSerializer,
   TSerializer,
   TraverserSerializer,

@@ -350,7 +350,7 @@ WHERE {
   ?person v:label "person" .
   ?person v:age ?age .
   ?person v:name ?name .
-} ORDER BY (?age))
+} ORDER BY (?age)""")
 ----
 
 ==== Group By

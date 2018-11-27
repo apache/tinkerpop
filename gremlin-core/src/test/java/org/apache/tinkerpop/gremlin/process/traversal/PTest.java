@@ -29,6 +29,7 @@ import org.junit.runners.Parameterized;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Random;
 import java.util.function.Predicate;
 
@@ -94,6 +95,21 @@ public class PTest {
                     {P.between("m", "n").or(P.eq("daniel")), "marko", true},
                     {P.between("m", "n").or(P.eq("daniel")), "daniel", true},
                     {P.between("m", "n").or(P.eq("daniel")), "stephen", false},
+                    // text predicates
+                    {TextP.containing("ark"), "marko", true},
+                    {TextP.containing("ark"), "josh", false},
+                    {TextP.startingWith("jo"), "marko", false},
+                    {TextP.startingWith("jo"), "josh", true},
+                    {TextP.endingWith("ter"), "marko", false},
+                    {TextP.endingWith("ter"), "peter", true},
+                    {TextP.containing("o"), "marko", true},
+                    {TextP.containing("o"), "josh", true},
+                    {TextP.containing("o").and(P.gte("j")), "marko", true},
+                    {TextP.containing("o").and(P.gte("j")), "josh", true},
+                    {TextP.containing("o").and(P.gte("j")).and(TextP.endingWith("ko")), "marko", true},
+                    {TextP.containing("o").and(P.gte("j")).and(TextP.endingWith("ko")), "josh", false},
+                    {TextP.containing("o").and(P.gte("j").and(TextP.endingWith("ko"))), "marko", true},
+                    {TextP.containing("o").and(P.gte("j").and(TextP.endingWith("ko"))), "josh", false},
             }));
         }
 
@@ -109,8 +125,13 @@ public class PTest {
         @Test
         public void shouldTest() {
             assertEquals(expected, predicate.test(value));
-            assertEquals(!expected, predicate.clone().negate().test(value));
-            assertEquals(!expected, P.not(predicate).test(value));
+            assertNotEquals(expected, predicate.clone().negate().test(value));
+            assertNotEquals(expected, P.not(predicate.clone()).test(value));
+            if (value instanceof Number) {
+                assertEquals(expected, predicate.test(((Number) value).longValue()));
+                assertNotEquals(expected, predicate.clone().negate().test(((Number) value).longValue()));
+                assertNotEquals(expected, P.not(predicate).test(((Number) value).longValue()));
+            }
         }
 
         @Before

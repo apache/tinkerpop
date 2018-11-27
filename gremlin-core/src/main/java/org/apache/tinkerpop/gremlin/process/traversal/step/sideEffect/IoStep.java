@@ -205,7 +205,7 @@ public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
         }
     }
 
-    private String detectFileType() {
+    protected String detectFileType() {
         if (file.endsWith(".kryo"))
             return IO.gryo;
         else if (file.endsWith(".json"))
@@ -216,7 +216,7 @@ public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
             throw new IllegalStateException("Could not detect the file format - specify the writer explicitly or rename file with a standard extension");
     }
 
-    private List<IoRegistry> detectRegistries() {
+    protected List<IoRegistry> detectRegistries() {
         final List<Object> k = parameters.get(IO.registry, null);
         return k.stream().map(cn -> {
             try {

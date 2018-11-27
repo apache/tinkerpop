@@ -54,6 +54,7 @@ import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.any;
 import static org.hamcrest.Matchers.either;
+import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeThat;
@@ -83,6 +84,19 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Parameterized.Parameter(0)
     public String version;
+
+    @Test
+    public void shouldHandleNumberConstants() throws Exception {
+        assumeThat(version, not(startsWith("v1")));
+
+        final List<Object> o = new ArrayList<>();
+        o.add(123.321d);
+        o.add(Double.NaN);
+        o.add(Double.NEGATIVE_INFINITY);
+        o.add(Double.POSITIVE_INFINITY);
+
+        assertEquals(o, serializeDeserialize(mapper, o, List.class));
+    }
 
     @Test
     public void shouldHandleMap() throws Exception {

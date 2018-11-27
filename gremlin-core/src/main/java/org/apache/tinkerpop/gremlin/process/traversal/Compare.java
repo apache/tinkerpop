@@ -18,7 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import java.math.BigDecimal;
+import org.apache.tinkerpop.gremlin.util.NumberHelper;
+
 import java.util.function.BiPredicate;
 
 /**
@@ -28,14 +29,13 @@ import java.util.function.BiPredicate;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Matt Frantz (http://github.com/mhfrantz)
+ * @author Daniel Kuppitz (http://gemlin.guru)
  */
 public enum Compare implements BiPredicate<Object, Object> {
+
     /**
-     * Evaluates if the first object is equal to the second.  If both are of type {@link Number} but not of the
-     * same class (i.e. double for the first object and long for the second object) both values are converted to
-     * {@link BigDecimal} so that it can be evaluated via {@link BigDecimal#compareTo}.  Otherwise they are evaluated
-     * via {@link Object#equals(Object)}.  Testing against {@link Number#doubleValue()} enables the compare
-     * operations to be a bit more forgiving with respect to comparing different number types.
+     * Evaluates if the first object is equal to the second. If both are of type {@link Number}, {@link NumberHelper}
+     * will be used for the comparison, thus enabling the comparison of only values, ignoring the number types.
      *
      * @since 3.0.0-incubating
      */
@@ -43,8 +43,7 @@ public enum Compare implements BiPredicate<Object, Object> {
         @Override
         public boolean test(final Object first, final Object second) {
             return null == first ? null == second : (first instanceof Number && second instanceof Number
-                    && !first.getClass().equals(second.getClass())
-                    ? big((Number) first).compareTo(big((Number) second)) == 0
+                    ? NumberHelper.compare((Number) first, (Number) second) == 0
                     : first.equals(second));
         }
 
@@ -58,11 +57,8 @@ public enum Compare implements BiPredicate<Object, Object> {
     },
 
     /**
-     * Evaluates if the first object is not equal to the second.  If both are of type {@link Number} but not of the
-     * same class (i.e. double for the first object and long for the second object) both values are converted to
-     * {@link BigDecimal} so that it can be evaluated via {@link BigDecimal#equals}.  Otherwise they are evaluated
-     * via {@link Object#equals(Object)}.  Testing against {@link Number#doubleValue()} enables the compare
-     * operations to be a bit more forgiving with respect to comparing different number types.
+     * Evaluates if the first object is not equal to the second. If both are of type {@link Number}, {@link NumberHelper}
+     * will be used for the comparison, thus enabling the comparison of only values, ignoring the number types.
      *
      * @since 3.0.0-incubating
      */
@@ -82,11 +78,8 @@ public enum Compare implements BiPredicate<Object, Object> {
     },
 
     /**
-     * Evaluates if the first object is greater than the second.  If both are of type {@link Number} but not of the
-     * same class (i.e. double for the first object and long for the second object) both values are converted to
-     * {@link BigDecimal} so that it can be evaluated via {@link BigDecimal#compareTo}.  Otherwise they are evaluated
-     * via {@link Comparable#compareTo(Object)}.  Testing against {@link BigDecimal#compareTo} enables the compare
-     * operations to be a bit more forgiving with respect to comparing different number types.
+     * Evaluates if the first object is greater than the second. If both are of type {@link Number}, {@link NumberHelper}
+     * will be used for the comparison, thus enabling the comparison of only values, ignoring the number types.
      *
      * @since 3.0.0-incubating
      */
@@ -94,8 +87,8 @@ public enum Compare implements BiPredicate<Object, Object> {
         @Override
         public boolean test(final Object first, final Object second) {
             return null != first && null != second && (
-                    first instanceof Number && second instanceof Number && !first.getClass().equals(second.getClass())
-                            ? big((Number) first).compareTo(big((Number) second)) > 0
+                    first instanceof Number && second instanceof Number
+                            ? NumberHelper.compare((Number) first, (Number) second) > 0
                             : ((Comparable) first).compareTo(second) > 0);
         }
 
@@ -109,11 +102,8 @@ public enum Compare implements BiPredicate<Object, Object> {
     },
 
     /**
-     * Evaluates if the first object is greater-equal to the second.  If both are of type {@link Number} but not of the
-     * same class (i.e. double for the first object and long for the second object) both values are converted to
-     * {@link BigDecimal} so that it can be evaluated via {@link BigDecimal#compareTo}.  Otherwise they are evaluated
-     * via {@link Comparable#compareTo(Object)}.  Testing against {@link BigDecimal#compareTo} enables the compare
-     * operations to be a bit more forgiving with respect to comparing different number types.
+     * Evaluates if the first object is greater-equal to the second. If both are of type {@link Number}, {@link NumberHelper}
+     * will be used for the comparison, thus enabling the comparison of only values, ignoring the number types.
      *
      * @since 3.0.0-incubating
      */
@@ -133,11 +123,8 @@ public enum Compare implements BiPredicate<Object, Object> {
     },
 
     /**
-     * Evaluates if the first object is less than the second.  If both are of type {@link Number} but not of the
-     * same class (i.e. double for the first object and long for the second object) both values are converted to
-     * {@link BigDecimal} so that it can be evaluated via {@link BigDecimal#compareTo}.  Otherwise they are evaluated
-     * via {@link Comparable#compareTo(Object)}.  Testing against {@link BigDecimal#compareTo} enables the compare
-     * operations to be a bit more forgiving with respect to comparing different number types.
+     * Evaluates if the first object is less than the second. If both are of type {@link Number}, {@link NumberHelper}
+     * will be used for the comparison, thus enabling the comparison of only values, ignoring the number types.
      *
      * @since 3.0.0-incubating
      */
@@ -145,8 +132,8 @@ public enum Compare implements BiPredicate<Object, Object> {
         @Override
         public boolean test(final Object first, final Object second) {
             return null != first && null != second && (
-                    first instanceof Number && second instanceof Number && !first.getClass().equals(second.getClass())
-                            ? big((Number) first).compareTo(big((Number) second)) < 0
+                    first instanceof Number && second instanceof Number
+                            ? NumberHelper.compare((Number) first, (Number) second) < 0
                             : ((Comparable) first).compareTo(second) < 0);
         }
 
@@ -160,11 +147,8 @@ public enum Compare implements BiPredicate<Object, Object> {
     },
 
     /**
-     * Evaluates if the first object is less-equal to the second.  If both are of type {@link Number} but not of the
-     * same class (i.e. double for the first object and long for the second object) both values are converted to
-     * {@link BigDecimal} so that it can be evaluated via {@link BigDecimal#compareTo}.  Otherwise they are evaluated
-     * via {@link Comparable#compareTo(Object)}.  Testing against {@link BigDecimal#compareTo} enables the compare
-     * operations to be a bit more forgiving with respect to comparing different number types.
+     * Evaluates if the first object is less-equal to the second. If both are of type {@link Number}, {@link NumberHelper}
+     * will be used for the comparison, thus enabling the comparison of only values, ignoring the number types.
      *
      * @since 3.0.0-incubating
      */
@@ -188,11 +172,4 @@ public enum Compare implements BiPredicate<Object, Object> {
      */
     @Override
     public abstract Compare negate();
-
-    /**
-     * Convert Number to BigDecimal.
-     */
-    private static BigDecimal big(final Number n) {
-        return new BigDecimal(n.toString());
-    }
 }

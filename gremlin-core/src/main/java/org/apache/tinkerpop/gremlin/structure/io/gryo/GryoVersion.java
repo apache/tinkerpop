@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
@@ -47,6 +48,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
@@ -244,7 +246,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Collections.singleton(null).getClass(), 54));
             add(GryoTypeReg.of(Collections.singletonList(null).getClass(), 24));
             add(GryoTypeReg.of(Collections.singletonMap(null, null).getClass(), 23));
-            add(GryoTypeReg.of(Types.COLLECTIONS_SYNCHRONIZED_MAP, 185, new UtilSerializers.SynchronizedMapSerializer()));  // ***LAST ID***
+            add(GryoTypeReg.of(Types.COLLECTIONS_SYNCHRONIZED_MAP, 185, new UtilSerializers.SynchronizedMapSerializer()));
             add(GryoTypeReg.of(Contains.class, 49));
             add(GryoTypeReg.of(Currency.class, 40));
             add(GryoTypeReg.of(Date.class, 38));
@@ -311,6 +313,7 @@ public enum GryoVersion {
 
             add(GryoTypeReg.of(Bytecode.class, 122, new GryoSerializersV3d0.BytecodeSerializer()));
             add(GryoTypeReg.of(P.class, 124, new GryoSerializersV3d0.PSerializer()));
+            add(GryoTypeReg.of(TextP.class, 186, new GryoSerializersV3d0.TextPSerializer())); // ***LAST ID***
             add(GryoTypeReg.of(Lambda.class, 125, new GryoSerializersV3d0.LambdaSerializer()));
             add(GryoTypeReg.of(Bytecode.Binding.class, 126, new GryoSerializersV3d0.BindingSerializer()));
             add(GryoTypeReg.of(Order.class, 127));
@@ -338,6 +341,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LazyBarrierStrategy.class, 150));
             add(GryoTypeReg.of(MatchPredicateStrategy.class, 151));
             add(GryoTypeReg.of(OrderLimitStrategy.class, 152));
+            add(GryoTypeReg.of(OptionsStrategy.class, 187));                            // ***LAST ID***
             add(GryoTypeReg.of(PathProcessorStrategy.class, 153));
             add(GryoTypeReg.of(PathRetractionStrategy.class, 154));
             add(GryoTypeReg.of(CountStrategy.class, 155));
@@ -436,7 +440,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Collections.singleton(null).getClass(), 54));
             add(GryoTypeReg.of(Collections.singletonList(null).getClass(), 24));
             add(GryoTypeReg.of(Collections.singletonMap(null, null).getClass(), 23));
-            add(GryoTypeReg.of(Types.COLLECTIONS_SYNCHRONIZED_MAP, 185, new UtilSerializers.SynchronizedMapSerializer()));  // ***LAST ID***
+            add(GryoTypeReg.of(Types.COLLECTIONS_SYNCHRONIZED_MAP, 185, new UtilSerializers.SynchronizedMapSerializer()));
             add(GryoTypeReg.of(Contains.class, 49));
             add(GryoTypeReg.of(Currency.class, 40));
             add(GryoTypeReg.of(Date.class, 38));
@@ -502,6 +506,7 @@ public enum GryoVersion {
 
             add(GryoTypeReg.of(Bytecode.class, 122, new GryoSerializersV1d0.BytecodeSerializer()));
             add(GryoTypeReg.of(P.class, 124, new GryoSerializersV1d0.PSerializer()));
+            add(GryoTypeReg.of(TextP.class, 186, new GryoSerializersV1d0.TextPSerializer())); // ***LAST ID***
             add(GryoTypeReg.of(Lambda.class, 125, new GryoSerializersV1d0.LambdaSerializer()));
             add(GryoTypeReg.of(Bytecode.Binding.class, 126, new GryoSerializersV1d0.BindingSerializer()));
             add(GryoTypeReg.of(Order.class, 127));
@@ -570,6 +575,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LazyBarrierStrategy.class, 150));
             add(GryoTypeReg.of(MatchPredicateStrategy.class, 151));
             add(GryoTypeReg.of(OrderLimitStrategy.class, 152));
+            add(GryoTypeReg.of(OptionsStrategy.class, 187));                            // ***LAST ID***
             add(GryoTypeReg.of(PathProcessorStrategy.class, 153));
             add(GryoTypeReg.of(PathRetractionStrategy.class, 154));
             add(GryoTypeReg.of(CountStrategy.class, 155));

@@ -19,6 +19,44 @@ limitations under the License.
 
 image::gremlin-standing.png[width=125]
 
+The <<intro,Introduction>> discussed the diversity of TinkerPop-enabled graphs, with special attention paid to the
+different <<connecting-gremlin,connection models>>, and how TinkerPop makes it possible to bridge that diversity in
+an <<staying-agnostic,agnostic>> manner. This particular section deals with elements of the Graph API which was noted
+as an API to avoid when trying to build an agnostic system. The Graph API refers to the core elements of what composes
+the <<graph-computing,structure of a graph>> within the Gremlin Traversal Machine (GTM), such as the `Graph`, `Vertex`
+and `Edge` Java interfaces.
+
+To maintain the most portable code, users should only reference these interfaces. To "reference", simply means to
+utilize it as a pointer. For `Graph`, that means holding a pointer to the location of graph data and then using it to
+spawn `GraphTraversalSource` instances so as to write Gremlin:
+
+[gremlin-groovy]
+----
+graph = TinkerGraph.open()
+g = graph.traversal()
+g.addV('person')
+----
+
+In the above example, "graph" is the `Graph` interface produced by calling `open()` on `TinkerGraph` which creates the
+instance. Note that while the end intent of the code is to create a "person" vertex, it does not use the APIs on
+`Graph` to do that - e.g. `graph.addVertex(T.label,'person')`.
+
+Even if the developer desired to use the `graph.addVertex()` method there are only a handful of scenarios where it is
+possible:
+
+* The application is being developed on the JVM and the developer is using <<connecting-embedded, embedded>> mode
+* The architecture includes Gremlin Server and the user is sending Gremlin scripts to the server
+* The graph system chosen is a <<connecting-rgp, Remote Gremlin Provider>> and they expose the Graph API via scripts
+
+Note that Gremlin Language Variants force developers to use the Graph API by reference. There is no `addVertex()`
+method available to GLVs on their respective `Graph` instances, nor are their graph elements filled with data at the
+call of `properties()`. Developing applications to meet this lowest common denominator in API usage will go a long
+way to making that application portable across TinkerPop-enabled systems.
+
+When considering the remaining sub-sections that follow, recall that they are all generally bound to the Graph API.
+They are described here for reference and in some sense backward compatibility with older recommended models of
+development. In the future, the contents of this section will become less and less relevant.
+
 == Features
 
 A `Feature` implementation describes the capabilities of a `Graph` instance. This interface is implemented by graph
@@ -47,8 +85,9 @@ TIP: To ensure provider agnostic code, always check feature support prior to usa
 way, the application can behave gracefully in case a particular implementation is provided at runtime that does not
 support a function being accessed.
 
-WARNING: Assignments of a `GraphStrategy` can alter the base features of a `Graph` in dynamic ways, such that checks
-against a `Feature` may not always reflect the behavior exhibited when the `GraphStrategy` is in use.
+WARNING: Features of reference graphs which are used to connect to remote graphs do not reflect the features of the
+graph to which it connects. It reflects the features of instantiated graph itself, which will likely be quite
+different considering that reference graphs will typically be immutable.
 
 [[vertex-properties]]
 == Vertex Properties
@@ -60,8 +99,8 @@ pairs. Moreover, while an `Edge` can only have one property of key "name" (for e
 "name" properties. With the inclusion of vertex properties, two features are introduced which ultimately advance the
 graph modelers toolkit:
 
-. Multiple properties (*multi-properties*): a vertex property key can have multiple values.  For example, a vertex can have
-multiple "name" properties.
+. Multiple properties (*multi-properties*): a vertex property key can have multiple values.  For example, a vertex can
+have multiple "name" properties.
 . Properties on properties (*meta-properties*): a vertex property can have properties (i.e. a vertex property can
 have key/value data associated with it).
 
@@ -165,14 +204,28 @@ graph.variables().keys()
 IMPORTANT: Graph variables are not intended to be subject to heavy, concurrent mutation nor to be used in complex
 computations. The intention is to have a location to store data about the graph for administrative purposes.
 
+WARNING: Attempting to set graph variables in a reference graph will not promote them to the remote graph. Typically,
+a reference graph has immutable features and will not support this features.
+
 [[transactions]]
 == Graph Transactions
 
 image:gremlin-coins.png[width=100,float=right] A link:http://en.wikipedia.org/wiki/Database_transaction[database transaction]
-represents a unit of work to execute against the database.  Transactions are controlled by an implementation of the
-`Transaction` interface and that object can be obtained from the `Graph` interface using the `tx()` method.  It is
-important to note that the `Transaction` object does not represent a "transaction" itself.  It merely exposes the
-methods for working with transactions (e.g. committing, rolling back, etc).
+represents a unit of work to execute against the database. Transactions in TinkerPop can be considered in several
+contexts: transactions for <<connecting-embedded,embedded graphs>> via the Graph API,
+transactions for <<connecting-gremlin-server,Gremlin Server>> and transactions within
+<<connecting-rgp,Remote Gremlin Providers>>. For those following recommended patterns, the concepts presented in the
+embedded section should generally be of little interest and are present mainly for reference. Utilizing those
+transactional features will greatly reduce the portability of an application's Gremlin code.
+
+[[tx-embedded]]
+=== Embedded
+
+When on the JVM using an <<connecting-embedded,embedded graph>>, there is considerable flexibility for working with
+transactions. With the Graph API, transactions are controlled by an implementation of the `Transaction` interface and
+that object can be obtained from the `Graph` interface using the `tx()` method.  It is important to note that the
+`Transaction` object does not represent a "transaction" itself.  It merely exposes the methods for working with
+transactions (e.g. committing, rolling back, etc).
 
 Most `Graph` implementations that `supportsTransactions` will implement an "automatic" `ThreadLocal` transaction,
 which means that when a read or write occurs after the `Graph` is instantiated, a transaction is automatically
@@ -197,7 +250,7 @@ graph system provider to choose the specific aspects of how their implementation
 TinkerPop stack. Be sure to understand the transaction semantics of the specific graph implementation that is being
 utilized as it may present differing functionality than described here.
 
-=== Configuring
+==== Configuring
 
 Determining when a transaction starts is dependent upon the behavior assigned to the `Transaction`.  It is up to the
 `Graph` implementation to determine the default behavior and unless the implementation doesn't allow it, the behavior
@@ -280,7 +333,7 @@ NOTE: It may be important to consult the documentation of the `Graph` implementa
 specifics of how transactions will behave.  TinkerPop allows some latitude in this area and implementations may not have
 the exact same behaviors and link:https://en.wikipedia.org/wiki/ACID[ACID] guarantees.
 
-=== Threaded Transactions
+==== Threaded Transactions
 
 Most `Graph` implementations that support transactions do so in a `ThreadLocal` manner, where the current transaction
 is bound to the current thread of execution. Consider the following example to demonstrate:
@@ -345,6 +398,43 @@ In the above case, the call to `graph.tx().createThreadedTx()` creates a new `Gr
 `ThreadLocal` transaction, thus allowing each thread to operate on it in the same context.  In this case, there would
 be three separate vertices persisted to the `Graph`.
 
+[[tx-gremlin-server]]
+=== Gremlin Server
+
+The available capability for transactions with <<gremlin-server,Gremlin Server>> is dependent upon the method of
+interaction that is used. The preferred method for <<connecting-gremlin-server,interacting with Gremlin Server>>
+is via websockets and bytecode based requests. In this mode of operations each Gremlin traversal that is executed will
+be treated as a single transaction. Traversals that fail will have their transaction rolled back and successful
+iteration of a traversal will conclude with a transactional commit. How the graph hosted in Gremlin Server reacts to
+those commands is dependent on the graph chosen and it is therefore important to understand the transactional semantics
+of that graph when developing an application.
+
+Gremlin Server also has the option to accept Gremlin-based scripts. The scripting approach provides access to the
+Graph API and thus also the transactional model described in the <<tx-embedded,embedded>> section. Therefore a single
+script can have the ability to execute multiple transactions per request with complete control provided to the
+developer to commit or rollback transactions as needed.
+
+There are two methods for sending scripts to Gremlin Server: sessionless and session-based. With sessionless requests
+there will always be an attempt to close the transaction at the end of the request with a commit if there are no errors
+or a rollback if there is a failure. It is therefore unnecessary to close transactions manually within scripts
+themselves. By default, session-based requests do not have this quality. The transaction will be held open on the
+server until the user closes it manually. There is an option to have automatic transaction management for sessions.
+More information on this topic can be found in the <<considering-transactions,Considering Transactions>> Section and
+the <<sessions,Considering Sessions>> Section.
+
+While those sections provide some additional details, the short advice is to avoid scripts when possible and prefer
+bytecode based requests.
+
+[[tx-rgp]]
+=== Remote Gremlin Providers
+
+At this time, transactional patterns for Remote Gremlin Providers are largely in line with Gremlin Server. Most
+offer bytecode or script based sessionless requests, which have automatic transaction management, such that a
+successful traversal will commit on success and a failing traversal will rollback. As most of these RGPs do not
+expose a `Graph` instances, access to lower level transactional functions even in a sessionless fashion are not
+typically allowed. The nature of what a "transaction" means will be dependent on the RGP as is the case with any
+TinkerPop-enabled graph system, so it is important to consult that systems documentation for more details.
+
 == Namespace Conventions
 
 End users, <<implementations,graph system providers>>, <<graphcomputer,`GraphComputer`>> algorithm designers,
@@ -357,8 +447,8 @@ stakeholders do not conflict.
 Data keyed as such is only accessible via the graph system implementation and no other stakeholders are granted read
 nor write access to data prefixed with "~" (see `Graph.Hidden`). Test coverage and exceptions exist to ensure that
 graph systems respect this hard boundary.
-* <<vertexprogram,`VertexProgram`>> and <<mapreduce,`MapReduce`>> developers should, like `GraphStrategy` developers,
-leverage _qualified namespaces_ particular to their domain (e.g. `mydomain.myvertexprogram.computedata`).
+* <<vertexprogram,`VertexProgram`>> and <<mapreduce,`MapReduce`>> developers should leverage _qualified namespaces_
+particular to their domain (e.g. `mydomain.myvertexprogram.computedata`).
 * `GremlinPlugin` creators should prefix their plugin name with their domain (e.g. `mydomain.myplugin`).
 
 IMPORTANT: TinkerPop uses `tinkerpop.` and `gremlin.` as the prefixes for provided strategies, vertex programs, map

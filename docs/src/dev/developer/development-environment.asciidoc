@@ -237,7 +237,9 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 ** Build AsciiDocs (but don't evaluate code blocks in specific files): `bin/process-docs.sh --dryRun docs/src/reference/the-graph.asciidoc,docs/src/tutorial/getting-started,...`
 ** Build AsciiDocs (but evaluate code blocks only in specific files): `bin/process-docs.sh --fullRun docs/src/reference/the-graph.asciidoc,docs/src/tutorial/getting-started,...`
 ** Process a single AsciiDoc file: +pass:[docs/preprocessor/preprocess-file.sh `pwd`/gremlin-console/target/apache-tinkerpop-gremlin-console-*-standalone "" "*" `pwd`/docs/src/xyz.asciidoc]+
-* Build JavaDocs: `mvn process-resources -Djavadoc`
+* Build JavaDocs/JSDoc: `mvn process-resources -Djavadoc`
+** Javadoc to `target/site/apidocs` directory
+** JSDoc to the `gremlin-javascript/src/main/javascript/gremlin-javascript/doc/` directory
 * Check for Apache License headers: `mvn apache-rat:check`
 * Specify the seed used for `Random` in tests `mvn clean install -DtestSeed` - useful when a test fails, the seed will be printed in the build output so that the test can run with the same version of random (look for "TestHelper" logger in output)
 * Check for newer dependencies: `mvn versions:display-dependency-updates` or `mvn versions:display-plugin-updates`

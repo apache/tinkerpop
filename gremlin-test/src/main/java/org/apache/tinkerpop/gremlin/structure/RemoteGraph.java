@@ -16,34 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.remote;
+package org.apache.tinkerpop.gremlin.structure;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.tinkerpop.gremlin.GraphProvider;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
+import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.Iterator;
 
 /**
- * A {@code ServerGraph} represents a proxy by which traversals spawned from this graph are expected over a
- * {@link RemoteConnection}. This is not a full {@link Graph} implementation in the sense that the most of the methods
- * will throw an {@link UnsupportedOperationException}.  This implementation can only be used for spawning remote
- * traversal instances.
+ * {@code RemoteGraph} is only required for integrating with the test suite as there must be a {@link Graph} instance
+ * for the test suite to bind to. Test suites that use this must ensure that the {@link TraversalSource} be
+ * generated from their {@link GraphProvider} in via {@link AnonymousTraversalSource#withRemote(RemoteConnection)} or
+ * similar overload. See {@code RemoteGraphProvider} in the gremlin-server module for an example.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As for release 3.2.2, replaced by {@link TraversalSource#withRemote(RemoteConnection)} or its overloads.
  */
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
@@ -107,42 +102,37 @@ import java.util.Iterator;
         test = "org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest",
         method = "*",
         reason = "The interruption model in the test can't guarantee interruption at the right time with RemoteGraph.")
-@Deprecated
 public class RemoteGraph implements Graph {
 
     private final RemoteConnection connection;
+    private final Configuration conf;
 
-    public static final String GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS = "gremlin.remoteGraph.remoteConnectionClass";
-
-    static {
-        TraversalStrategies.GlobalCache.registerStrategies(RemoteGraph.class, TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class).clone().addStrategies(RemoteStrategy.instance()));
-    }
-
-    private RemoteGraph(final RemoteConnection connection) {
+    private RemoteGraph(final RemoteConnection connection, final Configuration conf) {
         this.connection = connection;
+        this.conf = conf;
     }
 
     /**
      * Creates a new {@link RemoteGraph} instance using the specified configuration, which allows {@link RemoteGraph}
-     * to be compliant with {@link GraphFactory}. Expects key for {@link #GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS}
+     * to be compliant with {@link GraphFactory}. Expects key for {@link TraversalSource#GREMLIN_REMOTE_CONNECTION_CLASS}
      * as well as any configuration required by the underlying {@link RemoteConnection} which will be instantiated.
      * Note that the {@code Configuration} object is passed down without change to the creation of the
      * {@link RemoteConnection} instance.
      */
     public static RemoteGraph open(final Configuration conf) {
-        if (!conf.containsKey(GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS))
-            throw new IllegalArgumentException("Configuration must contain the '" + GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS + "' key");
+        if (!conf.containsKey(TraversalSource.GREMLIN_REMOTE_CONNECTION_CLASS))
+            throw new IllegalArgumentException("Configuration must contain the '" + TraversalSource.GREMLIN_REMOTE_CONNECTION_CLASS + "' key");
 
         final RemoteConnection remoteConnection;
         try {
-            final Class<? extends RemoteConnection> clazz = Class.forName(conf.getString(GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS)).asSubclass(RemoteConnection.class);
+            final Class<? extends RemoteConnection> clazz = Class.forName(conf.getString(TraversalSource.GREMLIN_REMOTE_CONNECTION_CLASS)).asSubclass(RemoteConnection.class);
             final Constructor<? extends RemoteConnection> ctor = clazz.getConstructor(Configuration.class);
             remoteConnection = ctor.newInstance(conf);
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
 
-        return new RemoteGraph(remoteConnection);
+        return new RemoteGraph(remoteConnection, conf);
     }
 
     public static RemoteGraph open(final String configFile) throws Exception {
@@ -156,8 +146,8 @@ public class RemoteGraph implements Graph {
      * @param connection the {@link RemoteConnection} instance to use
      *                   {@link RemoteConnection}
      */
-    public static RemoteGraph open(final RemoteConnection connection) {
-        return new RemoteGraph(connection);
+    public static RemoteGraph open(final RemoteConnection connection, final Configuration conf) {
+        return new RemoteGraph(connection, conf);
     }
 
     public RemoteConnection getConnection() {
@@ -215,7 +205,7 @@ public class RemoteGraph implements Graph {
 
     @Override
     public Configuration configuration() {
-        throw new UnsupportedOperationException(String.format("RemoteGraph is a proxy to %s - this method is not supported", connection));
+        return conf;
     }
 
     @Override

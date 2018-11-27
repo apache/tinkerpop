@@ -28,8 +28,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.P
+import org.apache.tinkerpop.gremlin.process.traversal.TextP
 import org.apache.tinkerpop.gremlin.process.traversal.IO
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions
 import java.lang.reflect.Modifier
 
 def toJsMap = ["in": "in_",
@@ -37,6 +39,10 @@ def toJsMap = ["in": "in_",
                "with": "with_"]
 
 def toJs = { symbol -> toJsMap.getOrDefault(symbol, symbol) }
+
+def toJSValue = { type, value ->
+  type == String.class && value != null ? ('"' + value + '"') : value
+}
 
 def decapitalize = {
     String string = it;
@@ -66,6 +72,12 @@ def binding = ["enums": CoreImports.getClassImports()
                "pmethods": P.class.getMethods().
                        findAll { Modifier.isStatic(it.getModifiers()) }.
                        findAll { P.class.isAssignableFrom(it.returnType) }.
+                       collect { it.name }.
+                       unique().
+                       sort { a, b -> a <=> b },
+               "tpmethods": TextP.class.getMethods().
+                       findAll { Modifier.isStatic(it.getModifiers()) }.
+                       findAll { TextP.class.isAssignableFrom(it.returnType) }.
                        collect { it.name }.
                        unique().
                        sort { a, b -> a <=> b },
@@ -102,7 +114,9 @@ def binding = ["enums": CoreImports.getClassImports()
                "tokens": gatherTokensFrom([IO, ConnectedComponent, ShortestPath, PageRank, PeerPressure]),
                "toJs": toJs,
                "version": determineVersion(),
-               "decapitalize": decapitalize]
+               "decapitalize": decapitalize,
+               "withOptions": WithOptions.getDeclaredFields().
+                        collect {["name": it.name, "value": toJSValue(it.type, it.get(null))]}]
 
 def engine = new GStringTemplateEngine()
 def graphTraversalTemplate = engine.createTemplate(new File("${project.basedir}/glv/GraphTraversalSource.template"))

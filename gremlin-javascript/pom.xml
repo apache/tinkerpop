@@ -65,7 +65,7 @@ limitations under the License.
                         <groupId>org.codehaus.groovy</groupId>
                         <artifactId>groovy-all</artifactId>
                         <version>${groovy.version}</version>
-                        <classifier>indy</classifier>
+                        <type>pom</type>
                         <scope>runtime</scope>
                     </dependency>
                 </dependencies>
@@ -173,19 +173,29 @@ limitations under the License.
                 <executions>
                     <execution>
                         <id>install node and npm</id>
-                        <phase>generate-test-resources</phase>
+                        <phase>generate-resources</phase>
                         <goals>
                             <goal>install-node-and-npm</goal>
                         </goals>
                     </execution>
                     <execution>
                         <id>npm install</id>
-                        <phase>generate-test-resources</phase>
+                        <phase>generate-resources</phase>
                         <goals>
                             <goal>npm</goal>
                         </goals>
                         <configuration>
                             <arguments>install</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>grunt jsdoc</id>
+                        <goals>
+                            <goal>grunt</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <arguments>jsdoc</arguments>
                         </configuration>
                     </execution>
                     <execution>
@@ -195,7 +205,8 @@ limitations under the License.
                             <goal>npm</goal>
                         </goals>
                         <configuration>
-                            <arguments>test</arguments>
+                            <skip>${skipTests}</skip>
+                            <arguments>test --exit</arguments>
                             <failOnError>true</failOnError>
                         </configuration>
                     </execution>
@@ -206,13 +217,13 @@ limitations under the License.
                             <goal>npm</goal>
                         </goals>
                         <configuration>
+                            <skip>${skipTests}</skip>
                             <arguments>run-script features</arguments>
                             <failOnError>true</failOnError>
                         </configuration>
                     </execution>
                 </executions>
                 <configuration>
-                    <skip>${skipTests}</skip>
                     <workingDirectory>src/main/javascript/gremlin-javascript</workingDirectory>
                     <nodeVersion>v6.12.3</nodeVersion>
                 </configuration>

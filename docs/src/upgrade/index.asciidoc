@@ -20,9 +20,9 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 
 = TinkerPop Upgrade Information
 
-This document helps users of TinkerPop to understand the changes that come with each software release.  It outlines
-new features, how to resolve breaking changes and other information specific to a release.  This document is useful
-to end-users who are building applications on TinkerPop, but it is equally useful to TinkerPop providers, who
+This document helps users of Apache TinkerPop™ to understand the changes that come with each software release.  It
+outlines new features, how to resolve breaking changes and other information specific to a release.  This document is
+useful to end-users who are building applications on TinkerPop, but it is equally useful to TinkerPop providers, who
 build libraries and other systems on the core APIs and protocols that TinkerPop exposes.
 
 These providers include:
@@ -33,6 +33,8 @@ These providers include:
 * Graph Driver Provider
 * Graph Language Provider
 * Graph Plugin Provider
+
+include::release-3.4.x.asciidoc[]
 
 include::release-3.3.x.asciidoc[]
 

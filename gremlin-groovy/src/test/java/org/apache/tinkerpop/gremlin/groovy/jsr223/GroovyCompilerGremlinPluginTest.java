@@ -25,6 +25,7 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -47,23 +48,19 @@ public class GroovyCompilerGremlinPluginTest {
     @Test
     public void shouldConfigureWithCompileStatic() {
         final GroovyCompilerGremlinPlugin plugin = GroovyCompilerGremlinPlugin.build().
-                expectedCompilationTime(0).
                 compilation(GroovyCompilerGremlinPlugin.Compilation.COMPILE_STATIC).create();
         final Optional<Customizer[]> customizers = plugin.getCustomizers("gremlin-groovy");
         assertThat(customizers.isPresent(), is(true));
-        assertEquals(1, customizers.get().length);
-        assertThat(customizers.get()[0], instanceOf(CompileStaticGroovyCustomizer.class));
+        assertEquals(1, Stream.of(customizers.get()).filter(c -> c instanceof CompileStaticGroovyCustomizer).count());
     }
 
     @Test
     public void shouldConfigureWithTypeChecked() {
         final GroovyCompilerGremlinPlugin plugin = GroovyCompilerGremlinPlugin.build().
-                expectedCompilationTime(0).
                 compilation(GroovyCompilerGremlinPlugin.Compilation.TYPE_CHECKED).create();
         final Optional<Customizer[]> customizers = plugin.getCustomizers("gremlin-groovy");
         assertThat(customizers.isPresent(), is(true));
-        assertEquals(1, customizers.get().length);
-        assertThat(customizers.get()[0], instanceOf(TypeCheckedGroovyCustomizer.class));
+        assertEquals(1, Stream.of(customizers.get()).filter(c -> c instanceof TypeCheckedGroovyCustomizer).count());
     }
 
     @Test
@@ -71,12 +68,10 @@ public class GroovyCompilerGremlinPluginTest {
         final Map<String,Object> conf = new HashMap<>();
         conf.put("Debug", true);
         final GroovyCompilerGremlinPlugin plugin = GroovyCompilerGremlinPlugin.build().
-                expectedCompilationTime(0).
                 compilerConfigurationOptions(conf).create();
         final Optional<Customizer[]> customizers = plugin.getCustomizers("gremlin-groovy");
         assertThat(customizers.isPresent(), is(true));
-        assertEquals(1, customizers.get().length);
-        assertThat(customizers.get()[0], instanceOf(ConfigurationGroovyCustomizer.class));
+        assertEquals(1, Stream.of(customizers.get()).filter(c -> c instanceof ConfigurationGroovyCustomizer).count());
 
         final CompilerConfiguration compilerConfiguration = new CompilerConfiguration();
         assertThat(compilerConfiguration.getDebug(), is(false));
@@ -90,48 +85,40 @@ public class GroovyCompilerGremlinPluginTest {
     @Test
     public void shouldConfigureWithInterpreterMode() {
         final GroovyCompilerGremlinPlugin plugin = GroovyCompilerGremlinPlugin.build().
-                expectedCompilationTime(0).
                 enableInterpreterMode(true).create();
         final Optional<Customizer[]> customizers = plugin.getCustomizers("gremlin-groovy");
         assertThat(customizers.isPresent(), is(true));
-        assertEquals(1, customizers.get().length);
-        assertThat(customizers.get()[0], instanceOf(InterpreterModeGroovyCustomizer.class));
+        assertEquals(1, Stream.of(customizers.get()).filter(c -> c instanceof InterpreterModeGroovyCustomizer).count());
     }
 
     @Test
     public void shouldConfigureWithThreadInterrupt() {
         final GroovyCompilerGremlinPlugin plugin = GroovyCompilerGremlinPlugin.build().
-                expectedCompilationTime(0).
                 enableThreadInterrupt(true).create();
         final Optional<Customizer[]> customizers = plugin.getCustomizers("gremlin-groovy");
         assertThat(customizers.isPresent(), is(true));
-        assertEquals(1, customizers.get().length);
-        assertThat(customizers.get()[0], instanceOf(ThreadInterruptGroovyCustomizer.class));
+        assertEquals(1, Stream.of(customizers.get()).filter(c -> c instanceof ThreadInterruptGroovyCustomizer).count());
     }
 
     @Test
     public void shouldConfigureWithTimedInterrupt() {
         final GroovyCompilerGremlinPlugin plugin = GroovyCompilerGremlinPlugin.build().
-                expectedCompilationTime(0).
                 timedInterrupt(60000).create();
         final Optional<Customizer[]> customizers = plugin.getCustomizers("gremlin-groovy");
         assertThat(customizers.isPresent(), is(true));
-        assertEquals(1, customizers.get().length);
-        assertThat(customizers.get()[0], instanceOf(TimedInterruptGroovyCustomizer.class));
+        assertEquals(1, Stream.of(customizers.get()).filter(c -> c instanceof TimedInterruptGroovyCustomizer).count());
     }
 
     @Test
     public void shouldConfigureWithCompilationOptions() {
         final GroovyCompilerGremlinPlugin plugin = GroovyCompilerGremlinPlugin.build().
+                classMapCacheSpecification("initialCapacity=1000,maximumSize=1000").
                 expectedCompilationTime(30000).create();
         final Optional<Customizer[]> customizers = plugin.getCustomizers("gremlin-groovy");
         assertThat(customizers.isPresent(), is(true));
         assertEquals(1, customizers.get().length);
         assertThat(customizers.get()[0], instanceOf(CompilationOptionsCustomizer.class));
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void shouldNotConfigureIfNoSettingsAreSupplied() {
-        GroovyCompilerGremlinPlugin.build().expectedCompilationTime(0).create();
+        assertEquals(30000, ((CompilationOptionsCustomizer) customizers.get()[0]).getExpectedCompilationTime());
+        assertEquals("initialCapacity=1000,maximumSize=1000", ((CompilationOptionsCustomizer) customizers.get()[0]).getClassMapCacheSpecification());
     }
 }

@@ -29,7 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.Set;
 
 /**
@@ -37,7 +37,7 @@ import java.util.Set;
  */
 public final class RequirementsStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
 
-    private final Set<TraverserRequirement> requirements = new HashSet<>();
+    private final Set<TraverserRequirement> requirements = EnumSet.noneOf(TraverserRequirement.class);
 
     private RequirementsStrategy() {
     }

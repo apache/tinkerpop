@@ -58,7 +58,6 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.Shortest
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
-import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
@@ -67,11 +66,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
@@ -181,9 +184,10 @@ public final class CoreImports {
         CLASS_IMPORTS.add(TraversalOptionParent.class);
         CLASS_IMPORTS.add(TraversalOptionParent.Pick.class);
         CLASS_IMPORTS.add(P.class);
+        CLASS_IMPORTS.add(TextP.class);
+        CLASS_IMPORTS.add(WithOptions.class);
         // remote
         CLASS_IMPORTS.add(RemoteConnection.class);
-        CLASS_IMPORTS.add(RemoteGraph.class);
         CLASS_IMPORTS.add(EmptyGraph.class);
         // io
         CLASS_IMPORTS.add(GraphReader.class);
@@ -246,9 +250,11 @@ public final class CoreImports {
         CLASS_IMPORTS.add(ReadOnlyStrategy.class);
         CLASS_IMPORTS.add(StandardVerificationStrategy.class);
         // graph traversal
+        CLASS_IMPORTS.add(AnonymousTraversalSource.class);
         CLASS_IMPORTS.add(__.class);
         CLASS_IMPORTS.add(GraphTraversal.class);
         CLASS_IMPORTS.add(GraphTraversalSource.class);
+        CLASS_IMPORTS.add(Traversal.class);
         CLASS_IMPORTS.add(TraversalMetrics.class);
         CLASS_IMPORTS.add(Translator.class);
         CLASS_IMPORTS.add(Bindings.class);
@@ -291,6 +297,8 @@ public final class CoreImports {
 
         uniqueMethods(IoCore.class).forEach(METHOD_IMPORTS::add);
         uniqueMethods(P.class).forEach(METHOD_IMPORTS::add);
+        uniqueMethods(AnonymousTraversalSource.class).forEach(METHOD_IMPORTS::add);
+        uniqueMethods(TextP.class).forEach(METHOD_IMPORTS::add);
         uniqueMethods(__.class).filter(m -> !m.getName().equals("__")).forEach(METHOD_IMPORTS::add);
         uniqueMethods(Computer.class).forEach(METHOD_IMPORTS::add);
         uniqueMethods(TimeUtil.class).forEach(METHOD_IMPORTS::add);

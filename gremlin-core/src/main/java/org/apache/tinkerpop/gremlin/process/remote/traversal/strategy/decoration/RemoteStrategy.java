@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoratio
 
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
-import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.RemoteStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -38,12 +37,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEf
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -57,8 +52,7 @@ import java.util.Set;
 public final class RemoteStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy>
         implements TraversalStrategy.DecorationStrategy {
 
-    private static final RemoteStrategy INSTANCE = new RemoteStrategy();
-    private final Optional<RemoteConnection> remoteConnection;
+    private final RemoteConnection remoteConnection;
 
     /**
      * Should be applied before all {@link DecorationStrategy} instances.
@@ -76,21 +70,9 @@ public final class RemoteStrategy extends AbstractTraversalStrategy<TraversalStr
         add(SubgraphStrategy.class);
     }};
 
-    private RemoteStrategy() {
-        remoteConnection = Optional.empty();
-    }
-
     public RemoteStrategy(final RemoteConnection remoteConnection) {
-        this.remoteConnection = Optional.ofNullable(remoteConnection);
-    }
-
-    /**
-     * @deprecated As of release 3.2.2, replaced by {@link #RemoteStrategy(RemoteConnection)} where this method should
-     * only be used by {@link RemoteGraph} for backward compatibility.
-     */
-    @Deprecated
-    public static RemoteStrategy instance() {
-        return INSTANCE;
+        if (null == remoteConnection) throw new IllegalArgumentException("remoteConnection cannot be null");
+        this.remoteConnection = remoteConnection;
     }
 
     @Override
@@ -100,17 +82,6 @@ public final class RemoteStrategy extends AbstractTraversalStrategy<TraversalStr
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        // this check for a remoteConnection is really only relevant for backward compatibility for RemoteGraph prior
-        // to the now preferred method of withRemote().
-        if (!remoteConnection.isPresent()) {
-            if (!(traversal.getGraph().orElse(EmptyGraph.instance()) instanceof RemoteGraph))
-                throw new IllegalStateException("RemoteStrategy expects a RemoteGraph instance attached to the Traversal");
-
-            final RemoteGraph remoteGraph = (RemoteGraph) traversal.getGraph().get();
-            if (null == remoteGraph.getConnection())
-                throw new IllegalStateException("RemoteStrategy expects the RemoteGraph instance to have a RemoteConnection");
-        }
-
         if (!(traversal.getParent() instanceof EmptyStep))
             return;
 
@@ -122,8 +93,7 @@ public final class RemoteStrategy extends AbstractTraversalStrategy<TraversalStr
         }
 
         // remote step wraps the traversal and emits the results from the remote connection.
-        final RemoteStep<?, ?> remoteStep = new RemoteStep<>(traversal,
-                remoteConnection.orElseGet(() -> ((RemoteGraph) traversal.getGraph().get()).getConnection()));
+        final RemoteStep<?, ?> remoteStep = new RemoteStep<>(traversal, remoteConnection);
         TraversalHelper.removeAllSteps(traversal);
         traversal.addStep(remoteStep);
 

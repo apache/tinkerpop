@@ -43,6 +43,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -180,7 +181,8 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                     // as this is a value map, replace that step with propertiesMap() that returns PropertyType.VALUE.
                     // from there, add the filter as shown above and then unwrap the properties as they would have
                     // been done under valueMap()
-                    final PropertyMapStep propertyMapStep = new PropertyMapStep(traversal, step.isIncludeTokens(), PropertyType.PROPERTY, step.getPropertyKeys());
+                    final PropertyMapStep propertyMapStep = new PropertyMapStep(traversal, PropertyType.PROPERTY, step.getPropertyKeys());
+                    propertyMapStep.configure(WithOptions.tokens, step.getIncludedTokens());
                     TraversalHelper.replaceStep(step, propertyMapStep, traversal);
 
                     final LambdaMapStep mapPropertiesFilterStep = new LambdaMapStep<>(traversal, new MapPropertiesFilter());

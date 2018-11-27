@@ -79,7 +79,7 @@ public final class GraphSONMessageSerializerV3d0 extends AbstractGraphSONMessage
 
     @Override
     public String[] mimeTypesSupported() {
-        return new String[]{MIME_TYPE, "application/json"};
+        return new String[]{MIME_TYPE, SerTokens.MIME_JSON};
     }
 
     @Override

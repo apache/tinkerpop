@@ -25,6 +25,13 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
 
+Please see the link:https://github.com/apache/tinkerpop/blob/3.2.11/CHANGELOG.asciidoc#release-3-2-11[changelog] for a complete list of all the modifications that are part of this release.
+
+
+== TinkerPop 3.2.10
+
+*Release Date: October 15, 2018*
+
 Please see the link:https://github.com/apache/tinkerpop/blob/3.2.10/CHANGELOG.asciidoc#release-3-2-10[changelog] for a complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
@@ -104,6 +111,48 @@ The Grateful Dead dataset has been with TinkerPop since the early days of 1.x. I
 packaged dataset that needed to be loaded through the various IO options available, while other toy graphs had the
 benefit of `TinkerFactory` to help get them bootstrapped. For 3.2.10, Grateful Dead is now more conveniently loaded
 via that same method as the other toy graphs with `TinkerFactory.createGratefulDead()`.
+
+==== Gremlin Javascript Script Submission
+
+Gremlin Javascript can now submit script, with optional bindings, using the `Client` class:
+
+[source,javascript]
+----
+const gremlin = require('gremlin');
+const client = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traversalSource: 'g' });
+
+client.submit('g.V().tail()')
+    .then(result => {
+        console.log(result.length);
+        console.log(result.toArray()[0]);
+    });
+
+client.submit('g.V(vid)', { vid: 1 })
+    .then(result => {
+        console.log(result.length);
+        // Get the first item
+        console.log(result.first());
+    });
+----
+
+and also allows translation of bytecode steps into script:
+
+[source,javascript]
+----
+const gremlin = require('gremlin');
+const graph = new gremlin.process.Graph();
+const client = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traversalSource: 'g' });
+const translator = new gremlin.process.Translator('g');
+
+const g = graph.traversal();
+const script = translator.translate(g.V().tail().getBytecode());
+
+client.submit(script)
+    .then(result => {
+        console.log(result.length);
+        console.log(result.first());
+    });
+----
 
 === Upgrading for Providers
 

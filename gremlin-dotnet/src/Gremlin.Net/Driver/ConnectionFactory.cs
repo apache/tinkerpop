@@ -22,6 +22,7 @@
 #endregion
 
 using System;
+using System.Net.WebSockets;
 using Gremlin.Net.Structure.IO.GraphSON;
 
 namespace Gremlin.Net.Driver
@@ -30,22 +31,24 @@ namespace Gremlin.Net.Driver
     {
         private readonly GraphSONReader _graphSONReader;
         private readonly GraphSONWriter _graphSONWriter;
+        private readonly Action<ClientWebSocketOptions> _webSocketConfiguration;
         private readonly GremlinServer _gremlinServer;
         private readonly string _mimeType;
 
         public ConnectionFactory(GremlinServer gremlinServer, GraphSONReader graphSONReader,
-                                 GraphSONWriter graphSONWriter, string mimeType)
+            GraphSONWriter graphSONWriter, string mimeType, Action<ClientWebSocketOptions> webSocketConfiguration)
         {
             _gremlinServer = gremlinServer;
             _mimeType = mimeType;
             _graphSONReader = graphSONReader ?? throw new ArgumentNullException(nameof(graphSONReader));
             _graphSONWriter = graphSONWriter ?? throw new ArgumentNullException(nameof(graphSONWriter));
+            _webSocketConfiguration = webSocketConfiguration;
         }
 
         public Connection CreateConnection()
         {
             return new Connection(_gremlinServer.Uri, _gremlinServer.Username, _gremlinServer.Password, _graphSONReader,
-                                 _graphSONWriter, _mimeType);
+                                 _graphSONWriter, _mimeType, _webSocketConfiguration);
         }
     }
 }

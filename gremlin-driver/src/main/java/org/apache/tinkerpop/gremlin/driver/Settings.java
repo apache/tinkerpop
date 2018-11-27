@@ -240,6 +240,8 @@ final class Settings {
             if (connectionPoolConf.containsKey("keepAliveInterval"))
                 cpSettings.keepAliveInterval = connectionPoolConf.getLong("keepAliveInterval");
 
+            if (connectionPoolConf.containsKey("validationRequest"))
+                cpSettings.validationRequest = connectionPoolConf.getString("validationRequest");
 
             settings.connectionPool = cpSettings;
         }
@@ -255,28 +257,28 @@ final class Settings {
 
         /**
          * The trusted certificate in PEM format.
-         * @deprecated As of release 3.2.10, replaced by {@link trustStore}
+         * @deprecated As of release 3.2.10, replaced by {@link #trustStore}
          */
         @Deprecated
         public String trustCertChainFile = null;
 
         /**
          * The X.509 certificate chain file in PEM format.
-         * @deprecated As of release 3.2.10, replaced by {@link keyStore}
+         * @deprecated As of release 3.2.10, replaced by {@link #keyStore}
          */
         @Deprecated
         public String keyCertChainFile = null;
 
         /**
          * The PKCS#8 private key file in PEM format.
-         * @deprecated As of release 3.2.10, replaced by {@link keyStore}
+         * @deprecated As of release 3.2.10, replaced by {@link #keyStore}
          */
         @Deprecated
         public String keyFile = null;
 
         /**
          * The password of the {@link #keyFile}, or {@code null} if it's not password-protected.
-         * @deprecated As of release 3.2.10, replaced by {@link keyStorePassword}
+         * @deprecated As of release 3.2.10, replaced by {@link #keyStorePassword}
          */
         @Deprecated
         public String keyPassword = null;
@@ -409,6 +411,11 @@ final class Settings {
          * {@link org.apache.tinkerpop.gremlin.driver.Channelizer.WebSocketChannelizer}.
          */
         public String channelizer = Channelizer.WebSocketChannelizer.class.getName();
+
+        /**
+         * A valid Gremlin script that can be used to test remote operations.
+         */
+        public String validationRequest = "''";
     }
 
     public static class SerializerSettings {

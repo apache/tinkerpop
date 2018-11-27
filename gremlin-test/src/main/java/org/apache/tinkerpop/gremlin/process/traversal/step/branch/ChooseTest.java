@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -157,7 +158,8 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
     public void g_injectX1X_chooseXisX1X__constantX10Xfold__foldX() {
         final Traversal<Integer, List<Integer>> traversal = get_g_injectX1X_chooseXisX1X__constantX10Xfold__foldX();
         printTraversalForm(traversal);
-        assertEquals(Collections.singletonList(10), traversal.next());
+        final List expected = new ArrayList() {{ add(10);}};
+        assertEquals(expected, traversal.next());
         assertThat(traversal.hasNext(), is(false));
     }
 
@@ -165,7 +167,8 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
     public void g_injectX2X_chooseXisX1X__constantX10Xfold__foldX() {
         final Traversal<Integer, List<Integer>> traversal = get_g_injectX2X_chooseXisX1X__constantX10Xfold__foldX();
         printTraversalForm(traversal);
-        assertEquals(Collections.singletonList(2), traversal.next());
+        final List expected = new ArrayList() {{ add(2);}};
+        assertEquals(expected, traversal.next());
         assertThat(traversal.hasNext(), is(false));
     }
 

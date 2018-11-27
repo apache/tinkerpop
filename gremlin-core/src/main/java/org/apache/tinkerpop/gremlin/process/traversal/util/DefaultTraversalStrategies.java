@@ -25,25 +25,23 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class DefaultTraversalStrategies implements TraversalStrategies {
 
-    protected List<TraversalStrategy<?>> traversalStrategies = new ArrayList<>();
+    protected Set<TraversalStrategy<?>> traversalStrategies = new LinkedHashSet<>();
 
     @Override
     @SuppressWarnings({"unchecked", "varargs"})
     public TraversalStrategies addStrategies(final TraversalStrategy<?>... strategies) {
-        final List<TraversalStrategy<?>> concurrent = new ArrayList<>(this.traversalStrategies);
         for (final TraversalStrategy<?> addStrategy : strategies) {
-            for (final TraversalStrategy<?> currentStrategy : concurrent) {
-                if (addStrategy.getClass().equals(currentStrategy.getClass()))
-                    this.traversalStrategies.remove(currentStrategy);
-            }
+            this.traversalStrategies.remove(addStrategy);
         }
         Collections.addAll(this.traversalStrategies, strategies);
         this.traversalStrategies = TraversalStrategies.sortStrategies(this.traversalStrategies);
@@ -68,7 +66,7 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
 
     @Override
     public List<TraversalStrategy<?>> toList() {
-        return Collections.unmodifiableList(this.traversalStrategies);
+        return Collections.unmodifiableList(new ArrayList<>(this.traversalStrategies));
     }
 
     @Override
@@ -91,7 +89,7 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     public DefaultTraversalStrategies clone() {
         try {
             final DefaultTraversalStrategies clone = (DefaultTraversalStrategies) super.clone();
-            clone.traversalStrategies = new ArrayList<>(this.traversalStrategies.size());
+            clone.traversalStrategies = new LinkedHashSet<>(this.traversalStrategies.size());
             clone.traversalStrategies.addAll(this.traversalStrategies);
             return clone;
         } catch (final CloneNotSupportedException e) {

@@ -37,7 +37,9 @@ import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptContext;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineFactory;
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
+import org.apache.tinkerpop.gremlin.jsr223.TranslatorCustomizer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.codehaus.groovy.ast.ClassHelper;
@@ -151,36 +153,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     /**
      * Script to generated Class map.
      */
-    private final LoadingCache<String, Future<Class>> classMap = Caffeine.newBuilder().
-            softValues().
-            recordStats().
-            build(new CacheLoader<String, Future<Class>>() {
-        @Override
-        public Future<Class> load(final String script) throws Exception {
-            final long start = System.currentTimeMillis();
-
-            return CompletableFuture.supplyAsync(() -> {
-                try {
-                    return loader.parseClass(script, generateScriptName());
-                } catch (CompilationFailedException e) {
-                    final long finish = System.currentTimeMillis();
-                    log.error("Script compilation FAILED {} took {}ms {}", script, finish - start, e);
-                    failedCompilationCount.incrementAndGet();
-                    throw e;
-                } finally {
-                    final long time = System.currentTimeMillis() - start;
-                    if (time > expectedCompilationTime) {
-                        //We warn if a script took longer than a few seconds. Repeatedly seeing these warnings is a sign that something is wrong.
-                        //Scripts with a large numbers of parameters often trigger this and should be avoided.
-                        log.warn("Script compilation {} took {}ms", script, time);
-                        longRunCompilationCount.incrementAndGet();
-                    } else {
-                        log.debug("Script compilation {} took {}ms", script, time);
-                    }
-                }
-            }, Runnable::run);
-        }
-    });
+    private final LoadingCache<String, Future<Class>> classMap;
 
     /**
      * Global closures map - this is used to simulate a single global functions namespace
@@ -222,6 +195,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
     private final boolean interpreterModeEnabled;
     private final long expectedCompilationTime;
+    private final Translator.ScriptTranslator.TypeTranslator typeTranslator;
 
     /**
      * There is no need to require type checking infrastructure if type checking is not enabled.
@@ -264,12 +238,23 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         expectedCompilationTime = compilationOptionsCustomizerProvider.isPresent() ?
                 compilationOptionsCustomizerProvider.get().getExpectedCompilationTime() : 5000;
 
+        classMap = Caffeine.from(compilationOptionsCustomizerProvider.isPresent() ?
+                compilationOptionsCustomizerProvider.get().getClassMapCacheSpecification() : "softValues").
+                recordStats().
+                build(new GroovyCacheLoader());
+
         typeCheckingEnabled = listOfCustomizers.stream()
                 .anyMatch(p -> p instanceof TypeCheckedGroovyCustomizer || p instanceof CompileStaticGroovyCustomizer);
 
         // determine if interpreter mode should be enabled
         interpreterModeEnabled = groovyCustomizers.stream()
                 .anyMatch(p -> p.getClass().equals(InterpreterModeGroovyCustomizer.class));
+
+        final Optional<TranslatorCustomizer> translatorCustomizer = listOfCustomizers.stream().
+                filter(p -> p instanceof TranslatorCustomizer).
+                map(p -> (TranslatorCustomizer) p).findFirst();
+        typeTranslator = translatorCustomizer.isPresent() ? translatorCustomizer.get().createTypeTranslator() :
+                new GroovyTranslator.DefaultTypeTranslator();
 
         createClassLoader();
     }
@@ -287,7 +272,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         // extract the named traversalsource prior to that happening so that bytecode bindings can share the same
         // namespace as global bindings (e.g. traversalsources and graphs).
         if (traversalSource.equals(HIDDEN_G))
-            throw new IllegalArgumentException("The traversalSource cannot have the name " + HIDDEN_G+ " - it is reserved");
+            throw new IllegalArgumentException("The traversalSource cannot have the name " + HIDDEN_G + " - it is reserved");
 
         if (bindings.containsKey(HIDDEN_G))
             throw new IllegalArgumentException("Bindings cannot include " + HIDDEN_G + " - it is reserved");
@@ -304,7 +289,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         inner.putAll(bytecode.getBindings());
         inner.put(HIDDEN_G, b);
 
-        return (Traversal.Admin) this.eval(GroovyTranslator.of(HIDDEN_G).translate(bytecode), inner);
+        return (Traversal.Admin) this.eval(GroovyTranslator.of(HIDDEN_G, typeTranslator).translate(bytecode), inner);
     }
 
     /**
@@ -812,5 +797,34 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
             throw new ScriptException(exp);
         }
         return buf.toString();
+    }
+
+    private final class GroovyCacheLoader implements CacheLoader<String, Future<Class>> {
+        @Override
+        public Future<Class> load(final String script) throws Exception {
+            final long start = System.currentTimeMillis();
+
+            return CompletableFuture.supplyAsync(() -> {
+                try {
+                    return loader.parseClass(script, generateScriptName());
+                } catch (CompilationFailedException e) {
+                    final long finish = System.currentTimeMillis();
+                    log.error("Script compilation FAILED {} took {}ms {}", script, finish - start, e);
+                    failedCompilationCount.incrementAndGet();
+                    throw e;
+                } finally {
+                    final long time = System.currentTimeMillis() - start;
+                    if (time > expectedCompilationTime) {
+                        //We warn if a script took longer than a few seconds. Repeatedly seeing these warnings is a sign that something is wrong.
+                        //Scripts with a large numbers of parameters often trigger this and should be avoided.
+                        log.warn("Script compilation {} took {}ms", script, time);
+                        longRunCompilationCount.incrementAndGet();
+                    } else {
+                        log.debug("Script compilation {} took {}ms", script, time);
+                    }
+                }
+            }, Runnable::run);
+
+        }
     }
 }

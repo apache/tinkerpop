@@ -276,7 +276,7 @@ public abstract class ShortestPathTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_V_shortestPath_edgesIncluded() {
-            return g.V().shortestPath().with(includeEdges, true);
+            return g.V().shortestPath().with(includeEdges);
         }
 
         @Override
@@ -291,7 +291,7 @@ public abstract class ShortestPathTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_V_shortestPath_edgesIncluded_edgesXoutEX() {
-            return g.V().shortestPath().with(includeEdges, true).with(edges, __.outE());
+            return g.V().shortestPath().with(includeEdges).with(edges, __.outE());
         }
 
         @Override

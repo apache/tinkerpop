@@ -2495,7 +2495,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         try {
             g.V().repeat(__.out()).emit().program(vp).dedup()
-                    .valueMap("name", "pl").forEachRemaining((Map<String, Object> map) -> {
+                    .valueMap("name", "pl").forEachRemaining((Map<Object, Object> map) -> {
 
                 final String name = (String) ((List) map.get("name")).get(0);
                 final List<Integer> pathLengths = (List<Integer>) map.get("pl");
@@ -2560,10 +2560,6 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
                     ConfigurationUtils.append(graph.configuration().subset(VERTEX_PROGRAM_Q_CFG_PREFIX), configuration);
                 }
                 return (VertexProgramQ) VertexProgram.createVertexProgram(graph, configuration);
-            }
-
-            public VertexProgramQ create() {
-                return create(null);
             }
 
             public Builder property(final String name) {
@@ -2863,10 +2859,6 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
                     ConfigurationUtils.append(graph.configuration().subset(SIMPLE_VERTEX_PROGRAM_CFG_PREFIX), configuration);
                 }
                 return (VertexProgramR) VertexProgram.createVertexProgram(graph, configuration);
-            }
-
-            public VertexProgramR create() {
-                return create(null);
             }
 
             public Builder direction(final Direction direction) {

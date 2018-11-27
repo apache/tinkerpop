@@ -22,10 +22,10 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 
 = Provider Documentation
 
-TinkerPop exposes a set of interfaces, protocols, and tests that make it possible for third-parties to build libraries
-and systems that plug-in to the TinkerPop stack.  TinkerPop refers to those third-parties as "providers" and this
-documentation is designed to help providers understand what is involved in developing code on these lower levels of
-the TinkerPop API.
+Apache TinkerPop™ exposes a set of interfaces, protocols, and tests that make it possible for third-parties to build
+libraries and systems that plug-in to the TinkerPop stack.  TinkerPop refers to those third-parties as "providers" and
+this documentation is designed to help providers understand what is involved in developing code on these lower levels
+of the TinkerPop API.
 
 This document attempts to address the needs of the different providers that have been identified:
 
@@ -572,9 +572,9 @@ internal class MyTypeReader : IGraphSONDeserializer
     }
 }
 
-var graphsonReader = new GraphSONReader(
+var graphsonReader = new GraphSON3Reader(
     new Dictionary<string, IGraphSONDeserializer> {{MyType.GraphsonType, new MyTypeReader()}});
-var graphsonWriter = new GraphSONWriter(
+var graphsonWriter = new GraphSON3Writer(
     new Dictionary<Type, IGraphSONSerializer> {{typeof(MyType), new MyClassWriter()}});
 
 var gremlinClient = new GremlinClient(new GremlinServer("localhost", 8182), graphsonReader, graphsonWriter);
@@ -821,7 +821,11 @@ can be used to alter a traversal prior to its execution. A typical example is co
 lookup becomes an `O(log(|V|))`. Please review `TinkerGraphStepStrategy` for ideas.
 * Step Implementations: Every link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graph-traversal-steps[step] is
 ultimately referenced by the `GraphTraversal` interface. It is possible to extend `GraphTraversal` to use a graph
-system specific step implementation.
+system specific step implementation. Note that while it is sometimes possible to develop custom step implementations
+by extending from a TinkerPop step (typically, `AddVertexStep` and other `Mutating` steps), it's important to
+consider that doing so introduces some greater risk for code breaks on upgrades as opposed to other areas of the code
+base. As steps are more internal features of TinkerPop, they might be subject to breaking API and behavioral changes
+that would be less likely to be accepted by more public facing interfaces.
 
 == Graph Driver Provider Requirements
 
@@ -985,7 +989,8 @@ evaluated and is committed when the script completes (or rolled back if an error
 !=========================================================
 |=========================================================
 
-'`authentication` operation arguments'
+**`authentication` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
@@ -993,7 +998,8 @@ evaluated and is committed when the script completes (or rolled back if an error
 |saslMechanism |String | The SASL mechanism: `PLAIN` or `GSSAPI`. Note that it is up to the server implementation to use or disregard this setting (default implementation in Gremlin Server ignores it).
 |=========================================================
 
-'`eval` operation arguments'
+**`eval` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
@@ -1030,7 +1036,8 @@ Gremlin Server are deployed, session state is not shared among them.
 !`close` !Close the specified session. Will return a `NO CONTENT` message as confirmation of the close being completed.
 |=========================================================
 
-'`authentication` operation arguments'
+**`authentication` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
@@ -1038,7 +1045,8 @@ Gremlin Server are deployed, session state is not shared among them.
 |sasl |String | *Required* The response to the server authentication challenge.  This value is dependent on the SASL authentication mechanism required by the server and is Base64 encoded.
 |=========================================================
 
-'`eval` operation arguments'
+**`eval` operation arguments**
+
 [width="100%",options="header"]
 |=========================================================
 |Key |Type |Description
@@ -1055,7 +1063,7 @@ example, if the Gremlin Server defines two `TraversalSource` instances named `g1
 to send an alias pair with key of "g" and value of "g2" and thus allow the script to refer to "g2" simply as "g".
 |=========================================================
 
-'`close` operation arguments'
+**`close` operation arguments**
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
@@ -1090,7 +1098,7 @@ To demonstrate consider this example:
 cluster = Cluster.open()
 client = cluster.connect()
 aliased = client.alias("g")
-g = org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph.INSTANCE.traversal()       <1>
+g = org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph.instance().traversal()     <1>
 rs = aliased.submit(g.V().both().barrier().both().barrier()).all().get()                    <2>
 aliased.submit(g.V().both().barrier().both().barrier().count()).all().get().get(0).getInt() <3>
 rs.collect{[value: it.getObject().get(), bulk: it.getObject().bulk()]}                      <4>
@@ -1131,14 +1139,16 @@ operation is available to clear the cache of a specific side-effect.
 !`keys` !Gets all the keys of all side-effects as produced by a previously executed `Traversal`.
 |=========================================================
 
-'`authentication` operation arguments'
+**`authentication` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
 |sasl |String | *Required* The response to the server authentication challenge.  This value is dependent on the SASL authentication mechanism required by the server and is Base64 encoded.
 |=========================================================
 
-'`bytecode` operation arguments'
+**`bytecode` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
@@ -1153,14 +1163,16 @@ one key value pair present (since only one `Traversal` is being submitted, there
 single alias).
 |=========================================================
 
-'`close` operation arguments'
+**`close` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
 |sideEffect |UUID | *Required* The unique identifier for the request that original submitted the traversal (side-effects are keyed by that value)
 |=========================================================
 
-'`gather` operation arguments'
+**`gather` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
@@ -1182,7 +1194,8 @@ streamed side-effect data should be treated on the client. It provides a hint as
 rolled back up into a single object or simply left as-is. There are four values for "aggregateTo": `bulkset`, `list`,
 `map`, `set` and `none`.
 
-'`keys` operation arguments'
+**`keys` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description

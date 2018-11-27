@@ -113,7 +113,7 @@ Feature: Step - shortestPath()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().shortestPath().with("~tinkerpop.shortestPath.includeEdges", true)
+      g.withComputer().V().shortestPath().with("~tinkerpop.shortestPath.includeEdges")
       """
     When iterated to list
     Then the result should be unordered
@@ -206,7 +206,7 @@ Feature: Step - shortestPath()
     And the traversal of
       """
       g.withComputer().V().shortestPath().
-          with("~tinkerpop.shortestPath.includeEdges", true).
+          with("~tinkerpop.shortestPath.includeEdges").
           with("~tinkerpop.shortestPath.edges", __.outE())
       """
     When iterated to list

@@ -24,8 +24,8 @@
 
 const assert = require('assert');
 const graphModule = require('../../lib/structure/graph');
-const Graph = graphModule.Graph;
 const Vertex = graphModule.Vertex;
+const traversal = require('../../lib/process/anonymous-traversal').traversal;
 const utils = require('../../lib/utils');
 const helper = require('../helper');
 
@@ -41,7 +41,7 @@ describe('Traversal', function () {
   });
   describe('#toList()', function () {
     it('should submit the traversal and return a list', function () {
-      var g = new Graph().traversal().withRemote(connection);
+      var g = traversal().withRemote(connection);
       return g.V().toList().then(function (list) {
         assert.ok(list);
         assert.strictEqual(list.length, 6);
@@ -51,14 +51,14 @@ describe('Traversal', function () {
   });
   describe('#next()', function () {
     it('should submit the traversal and return an iterator', function () {
-      var g = new Graph().traversal().withRemote(connection);
-      var traversal = g.V().count();
-      return traversal.next()
+      var g = traversal().withRemote(connection);
+      var t = g.V().count();
+      return t.next()
         .then(function (item) {
           assert.ok(item);
           assert.strictEqual(item.done, false);
           assert.strictEqual(typeof item.value, 'number');
-          return traversal.next();
+          return t.next();
         }).then(function (item) {
           assert.ok(item);
           assert.strictEqual(item.done, true);

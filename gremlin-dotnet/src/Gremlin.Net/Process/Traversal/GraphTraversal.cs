@@ -22,6 +22,7 @@
 #endregion
 
 using System.Collections.Generic;
+using System.Linq;
 using Gremlin.Net.Structure;
 
 // THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
@@ -844,8 +845,8 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<S, E> Inject (params E[] injections)
         {
-            var args = new List<E>(0 + injections.Length) {};
-            args.AddRange(injections);
+            var args = new List<object>(0 + injections.Length) {};
+            args.AddRange(injections.Cast<object>());
             Bytecode.AddStep("inject", args.ToArray());
             return Wrap<S, E>(this);
         }
@@ -1718,6 +1719,15 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal<S, E> Where (ITraversal whereTraversal)
         {
             Bytecode.AddStep("where", whereTraversal);
+            return Wrap<S, E>(this);
+        }
+
+        /// <summary>
+        ///     Adds the with step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, E> With (string key)
+        {
+            Bytecode.AddStep("with", key);
             return Wrap<S, E>(this);
         }
 

@@ -256,6 +256,7 @@ final class UtilSerializers {
             map.forEach(m::put);
             kryo.writeObject(output, m);
         }
+
         @Override
         public <I extends InputShim> Map read(final KryoShim<I, ?> kryo, final I input, final Class<Map> clazz) {
             return Collections.synchronizedMap(kryo.readObject(input, LinkedHashMap.class));

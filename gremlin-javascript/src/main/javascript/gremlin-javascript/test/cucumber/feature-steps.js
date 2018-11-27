@@ -30,7 +30,7 @@ const graphModule = require('../../lib/structure/graph');
 const graphTraversalModule = require('../../lib/process/graph-traversal');
 const traversalModule = require('../../lib/process/traversal');
 const utils = require('../../lib/utils');
-const Graph = graphModule.Graph;
+const traversal = require('../../lib/process/anonymous-traversal').traversal;
 const Path = graphModule.Path;
 const __ = graphTraversalModule.statics;
 const t = traversalModule.t;
@@ -104,7 +104,7 @@ defineSupportCode(function(methods) {
     }
     this.graphName = graphName;
     const data = this.getData();
-    this.g = new Graph().traversal().withRemote(data.connection);
+    this.g = traversal().withRemote(data.connection);
     if (graphName === 'empty') {
       return this.cleanEmptyGraph();
     }
@@ -218,13 +218,15 @@ function getSandbox(g, parameters) {
     },
     Order: traversalModule.order,
     P: traversalModule.P,
+    TextP: traversalModule.TextP,
     IO: traversalModule.IO,
     Pick: traversalModule.pick,
     Pop: traversalModule.pop,
     Scope: traversalModule.scope,
     Operator: traversalModule.operator,
     T: traversalModule.t,
-    toLong: utils.toLong
+    toLong: utils.toLong,
+    WithOptions: traversalModule.withOptions
   };
   // Pass the parameter to the sandbox
   Object.keys(parameters).forEach(paramName => sandbox[paramName] = parameters[paramName]);

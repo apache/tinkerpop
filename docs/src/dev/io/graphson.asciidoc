@@ -1171,6 +1171,8 @@ types. By default, TinkerPop types will have the namespace "g" (or "gx" for "ext
 
 ==== Double
 
+While the `@value` is expected to be a JSON number, it might also be a `String` of `NaN`, `Infinity` or `-Infinity`.
+
 [source,json]
 ----
 {
@@ -3011,6 +3013,19 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 {
   "@type" : "g:T",
   "@value" : "label"
+}
+----
+
+==== TextP
+
+[source,json]
+----
+{
+  "@type" : "g:TextP",
+  "@value" : {
+    "predicate" : "containing",
+    "value" : "ark"
+  }
 }
 ----
 
@@ -5389,6 +5404,19 @@ Please see <<_p,P>> for additional information on `within`.
 {
   "@type" : "g:T",
   "@value" : "label"
+}
+----
+
+==== TextP
+
+[source,json]
+----
+{
+  "@type" : "g:TextP",
+  "@value" : {
+    "predicate" : "containing",
+    "value" : "ark"
+  }
 }
 ----
 

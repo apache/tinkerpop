@@ -173,17 +173,20 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
             if (inner.isPresent()) {
                 final ResponseException responseException = inner.get();
                 if (responseException.getResponseStatusCode() == ResponseStatusCode.SERVER_ERROR_SERIALIZATION)
-                    throw new RemoteException(String.format("Server could not serialize the result requested. Server error - %s. Note that the class must be serializable by the client and server for proper operation.", responseException.getMessage()));
+                    throw new RemoteException(String.format(
+                            "Server could not serialize the result requested. Server error - %s. Note that the class must be serializable by the client and server for proper operation.", responseException.getMessage()),
+                            responseException.getRemoteStackTrace().orElse(null));
                 else
-                    throw new RemoteException(responseException.getMessage());
+                    throw new RemoteException(responseException.getMessage(), responseException.getRemoteStackTrace().orElse(null));
             } else if (ex.getCause() != null) {
                 final Throwable rootCause = ExceptionUtils.getRootCause(ex);
                 if (rootCause instanceof TimeoutException)
                     throw new RemoteException("Host did not respond in a timely fashion - check the server status and submit again.");
                 else
                     throw new RemoteException(rootCause.getMessage());
-            } else
+            } else {
                 throw new RemoteException(ex.getMessage());
+            }
         }
     }
 

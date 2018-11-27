@@ -56,14 +56,14 @@ import java.util.Optional;
  */
 public final class ScriptRecordReader extends RecordReader<NullWritable, VertexWritable> {
 
-    protected final static String SCRIPT_FILE = "gremlin.hadoop.scriptInputFormat.script";
-    protected final static String SCRIPT_ENGINE = "gremlin.hadoop.scriptInputFormat.scriptEngine";
-    private final static String GRAPH = "graph";
-    private final static String LINE = "line";
-    private final static String READ_CALL = "parse(" + LINE + ")";
+    protected static final String SCRIPT_FILE = "gremlin.hadoop.scriptInputFormat.script";
+    protected static final String SCRIPT_ENGINE = "gremlin.hadoop.scriptInputFormat.scriptEngine";
+    private static final String GRAPH = "graph";
+    private static final String LINE = "line";
+    private static final String READ_CALL = "parse(" + LINE + ")";
     private final VertexWritable vertexWritable = new VertexWritable();
     private final LineRecordReader lineRecordReader;
-    private final GremlinScriptEngineManager manager = new CachedGremlinScriptEngineManager();
+    private static final GremlinScriptEngineManager manager = new CachedGremlinScriptEngineManager();
 
     private ScriptEngine engine;
     private CompiledScript script;

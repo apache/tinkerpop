@@ -26,8 +26,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.P
+import org.apache.tinkerpop.gremlin.process.traversal.TextP
 import org.apache.tinkerpop.gremlin.process.traversal.IO
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions
 import org.apache.tinkerpop.gremlin.structure.Direction
 import java.lang.reflect.Modifier
 import java.lang.reflect.TypeVariable
@@ -59,6 +61,7 @@ def toCSharpTypeMap = ["Long": "long",
                        "Traversal[]": "ITraversal[]",
                        "Predicate": "IPredicate",
                        "P": "P",
+                       "TextP": "TextP",
                        "TraversalStrategy": "ITraversalStrategy",
                        "TraversalStrategy[]": "ITraversalStrategy[]",
                        "Function": "IFunction",
@@ -112,6 +115,10 @@ def toCSharpType = { name ->
 
 def toCSharpMethodName = { symbol -> (String) Character.toUpperCase(symbol.charAt(0)) + symbol.substring(1) }
 
+def toCSharpValue = { type, value ->
+  type == String.class && value != null ? ('"' + value + '"') : value
+}
+
 def getJavaGenericTypeParameterTypeNames = { method ->
     def typeArguments = method.genericReturnType.actualTypeArguments
     return typeArguments.
@@ -131,7 +138,7 @@ def getJavaParameterTypeNames = { method ->
     return method.parameters.
             collect { param ->
                 param.type.simpleName
-            } 
+            }
 }
 
 def toCSharpParamString = { param, genTypeName ->
@@ -180,7 +187,7 @@ def getCSharpParamString = { method, useGenericParams ->
                     else if (genType instanceof GenericArrayType) {
                         if (((GenericArrayType)genType).getGenericComponentType() instanceof TypeVariable<?>) {
                             genTypeName = ((TypeVariable<?>)((GenericArrayType)genType).getGenericComponentType()).name + "[]"
-                        }                        
+                        }
                     }
                 }
                 toCSharpParamString(param, genTypeName)
@@ -202,14 +209,12 @@ def getParamNames = { parameters ->
         }
 }
 
-def getArgsListType = { parameterString ->
-    def argsListType = "object"
+def isParamsArgCastNecessary = { parameterString ->
     if (parameterString.contains("params ")) {
         def paramsType = parameterString.substring(parameterString.indexOf("params ") + "params ".length(), parameterString.indexOf("[]"))
-        if (paramsType == "E" || paramsType == "S")
-            argsListType = paramsType
+        return paramsType == "E" || paramsType == "S" 
     }
-    argsListType
+    return false
 }
 
 def hasMethodNoGenericCounterPartInGraphTraversal = { method ->
@@ -241,6 +246,12 @@ def binding = ["pmethods": P.class.getMethods().
         collect { it.name }.
         unique().
         sort { a, b -> a <=> b },
+               "tpmethods": TextP.class.getMethods().
+                       findAll { Modifier.isStatic(it.getModifiers()) }.
+                       findAll { TextP.class.isAssignableFrom(it.returnType) }.
+                       collect { it.name }.
+                       unique().
+                       sort { a, b -> a <=> b },
                "sourceStepMethods": GraphTraversalSource.getMethods(). // SOURCE STEPS
                         findAll { GraphTraversalSource.class.equals(it.returnType) }.
                         findAll {
@@ -257,8 +268,8 @@ def binding = ["pmethods": P.class.getMethods().
                             return ["methodName": javaMethod.name, "parameters":parameters, "paramNames":paramNames]
                         },
                "sourceSpawnMethods": GraphTraversalSource.getMethods(). // SPAWN STEPS
-                        findAll { GraphTraversal.class.equals(it.returnType) }.          
-                // Select unique combination of C# parameter types and sort by Java parameter type combination                                                                    
+                        findAll { GraphTraversal.class.equals(it.returnType) }.
+                // Select unique combination of C# parameter types and sort by Java parameter type combination
                         sort { a, b -> a.name <=> b.name ?: getJavaParamTypeString(a) <=> getJavaParamTypeString(b) }.
                         unique { a,b -> a.name <=> b.name ?: getCSharpParamTypeString(a) <=> getCSharpParamTypeString(b) }.
                         collect { javaMethod ->
@@ -268,8 +279,8 @@ def binding = ["pmethods": P.class.getMethods().
                             def tParam = getCSharpGenericTypeParam(t2)
                             def parameters = getCSharpParamString(javaMethod, true)
                             def paramNames = getParamNames(javaMethod.parameters)
-                            def argsListType = getArgsListType(parameters)
-                            return ["methodName": javaMethod.name, "t1":t1, "t2":t2, "tParam":tParam, "parameters":parameters, "paramNames":paramNames, "argsListType":argsListType]
+                            def isArgsCastNecessary = isParamsArgCastNecessary(parameters)
+                            return ["methodName": javaMethod.name, "t1":t1, "t2":t2, "tParam":tParam, "parameters":parameters, "paramNames":paramNames, "isArgsCastNecessary":isArgsCastNecessary]
                         },
                "graphStepMethods": GraphTraversal.getMethods().
                         findAll { GraphTraversal.class.equals(it.returnType) }.
@@ -289,8 +300,8 @@ def binding = ["pmethods": P.class.getMethods().
                             }
                             def parameters = getCSharpParamString(javaMethod, true)
                             def paramNames = getParamNames(javaMethod.parameters)
-                            def argsListType = getArgsListType(parameters)
-                            return ["methodName": javaMethod.name, "t1":t1, "t2":t2, "tParam":tParam, "parameters":parameters, "paramNames":paramNames, "argsListType":argsListType]
+                            def isArgsCastNecessary = isParamsArgCastNecessary(parameters)
+                            return ["methodName": javaMethod.name, "t1":t1, "t2":t2, "tParam":tParam, "parameters":parameters, "paramNames":paramNames, "isArgsCastNecessary":isArgsCastNecessary]
                         },
                "anonStepMethods": __.class.getMethods().
                         findAll { GraphTraversal.class.equals(it.returnType) }.
@@ -315,7 +326,9 @@ def binding = ["pmethods": P.class.getMethods().
                             return ["methodName": javaMethod.name, "t2":t2, "tParam":tParam, "parameters":parameters, "paramNames":paramNames, "callGenericTypeArg":callGenericTypeArg, "graphTraversalT2":graphTraversalT2]
                         },
                "tokens": gatherTokensFrom([IO, ConnectedComponent, ShortestPath, PageRank, PeerPressure]),
-               "toCSharpMethodName": toCSharpMethodName]
+               "toCSharpMethodName": toCSharpMethodName,
+               "withOptions": WithOptions.getDeclaredFields().
+                        collect {["type": toCSharpType(it.type.simpleName), "name": toCSharpMethodName(it.name), "value": toCSharpValue(it.type, it.get(null))]}]
 
 def engine = new groovy.text.GStringTemplateEngine()
 def traversalTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/GraphTraversal.template")).make(binding)
@@ -333,6 +346,14 @@ anonymousTraversalFile.newWriter().withWriter{ it << anonymousTraversalTemplate 
 def pTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/P.template")).make(binding)
 def pFile = new File("${projectBaseDir}/src/Gremlin.Net/Process/Traversal/P.cs")
 pFile.newWriter().withWriter{ it << pTemplate }
+
+def tpTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/TextP.template")).make(binding)
+def tpFile = new File("${projectBaseDir}/src/Gremlin.Net/Process/Traversal/TextP.cs")
+tpFile.newWriter().withWriter{ it << tpTemplate }
+
+def withOptionsTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/WithOptions.template")).make(binding)
+def withOptionsFile = new File("${projectBaseDir}/src/Gremlin.Net/Process/Traversal/WithOptions.cs")
+withOptionsFile.newWriter().withWriter{ it << withOptionsTemplate }
 
 binding.tokens.each {k,v ->
     def tokenTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/Token.template")).make([tokenFields: v, tokenName: k])

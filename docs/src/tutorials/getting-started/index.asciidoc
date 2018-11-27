@@ -21,7 +21,7 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 
 == Getting Started
 
-link:http://tinkerpop.apache.org[Apache TinkerPop] is an open source Graph Computing Framework. Within itself, TinkerPop
+link:http://tinkerpop.apache.org[Apache TinkerPop™] is an open source Graph Computing Framework. Within itself, TinkerPop
 represents a large collection of capabilities and technologies and, in its wider ecosystem, an additionally extended
 world of link:http://tinkerpop.apache.org/#graph-systems[third-party contributed] graph libraries and
 systems. TinkerPop's ecosystem can appear complex to newcomers of all experience, especially when glancing at the

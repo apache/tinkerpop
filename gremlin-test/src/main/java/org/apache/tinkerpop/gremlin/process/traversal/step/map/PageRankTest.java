@@ -51,7 +51,7 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_pageRank_hasXpageRankX();
 
-    public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX();
+    public abstract Traversal<Vertex, Map<Object, List<Object>>> get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX();
 
     public abstract Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_descX_byXnameX_name();
 
@@ -63,7 +63,7 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_pageRank_byXpageRankX_asXaX_outXknowsX_pageRank_asXbX_selectXa_bX_by_byXmathX();
 
-    public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_byXinEXcreatedXX_timesX1X_byXpriorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX();
+    public abstract Traversal<Vertex, Map<Object, List<Object>>> get_g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_byXinEXcreatedXX_timesX1X_byXpriorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX();
 
     public abstract Traversal<Vertex, Map<Object, List<Vertex>>> get_g_V_outXcreatedX_groupXmX_byXlabelX_pageRankX1X_withXpropertyName_pageRankXX_withXedges_inEXX_withXtimes_1X_inXcreatedX_groupXmX_byXpageRankX_capXmX();
 
@@ -80,9 +80,9 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_valueMapXname_projectRankX() {
-        final Traversal<Vertex, Map<String, List<Object>>> traversal = get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX();
+        final Traversal<Vertex, Map<Object, List<Object>>> traversal = get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX();
         printTraversalForm(traversal);
-        final List<Map<String, List<Object>>> result = traversal.toList();
+        final List<Map<Object, List<Object>>> result = traversal.toList();
         assertEquals(4, result.size());
         final Map<String, Double> map = new HashMap<>();
         result.forEach(m -> map.put((String) m.get("name").get(0), (Double) m.get("projectRank").get(0)));
@@ -184,11 +184,11 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_byXinEXcreatedXX_timesX1X_byXpriorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX() {
-        final Traversal<Vertex, Map<String, List<Object>>> traversal = get_g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_byXinEXcreatedXX_timesX1X_byXpriorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX();
+        final Traversal<Vertex, Map<Object, List<Object>>> traversal = get_g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_byXinEXcreatedXX_timesX1X_byXpriorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX();
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
-            final Map<String, List<Object>> map = traversal.next();
+            final Map<Object, List<Object>> map = traversal.next();
             assertEquals(2, map.size());
             String name = (String) map.get("name").get(0);
             double pageRank = (Double) map.get("priors").get(0);
@@ -274,7 +274,7 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, List<Object>>> get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX() {
+        public Traversal<Vertex, Map<Object, List<Object>>> get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX() {
             return g.V().out("created").pageRank().by(__.bothE()).by("projectRank").times(0).valueMap("name", "projectRank");
         }
 
@@ -304,7 +304,7 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_byXinEXcreatedXX_timesX1X_byXpriorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX() {
+        public Traversal<Vertex, Map<Object, List<Object>>> get_g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_byXinEXcreatedXX_timesX1X_byXpriorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX() {
             return g.V().hasLabel("software").has("name", "ripple").pageRank(1.0).by(__.inE("created")).times(1).by("priors").in("created").union(__.both(), __.identity()).valueMap("name", "priors");
         }
 

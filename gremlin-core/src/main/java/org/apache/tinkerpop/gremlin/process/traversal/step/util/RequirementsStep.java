@@ -23,7 +23,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -36,7 +37,13 @@ public final class RequirementsStep<S> extends AbstractStep<S, S> {
 
     public RequirementsStep(final Traversal.Admin traversal, final Set<TraverserRequirement> requirements) {
         super(traversal);
-        this.requirements = new HashSet<>(requirements);
+
+        if (requirements == null || requirements.isEmpty()) {
+            this.requirements = EnumSet.noneOf(TraverserRequirement.class);
+        } else {
+            this.requirements = EnumSet.copyOf(requirements);
+        }
+
     }
 
     public void addRequirement(final TraverserRequirement requirement) {

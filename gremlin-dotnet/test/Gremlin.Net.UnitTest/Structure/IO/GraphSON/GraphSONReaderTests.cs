@@ -43,7 +43,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             new object[] { 2 },
             new object[] { 3 }
         };
-        
+
         /// <summary>
         /// Parameters for each collections test supporting multiple versions of GraphSON
         /// </summary>
@@ -51,7 +51,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         {
             new object[] { 3 }
         };
-        
+
         private GraphSONReader CreateStandardGraphSONReader(int version)
         {
             if (version == 3)
@@ -198,6 +198,42 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         }
 
         [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializeNaN(int version)
+        {
+            var serializedValue = "{\"@type\":\"g:Double\",\"@value\":'NaN'}";
+            var reader = CreateStandardGraphSONReader(version);
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(Double.NaN, deserializedValue);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializePositiveInfinity(int version)
+        {
+            var serializedValue = "{\"@type\":\"g:Double\",\"@value\":'Infinity'}";
+            var reader = CreateStandardGraphSONReader(version);
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(Double.PositiveInfinity, deserializedValue);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializeNegativeInfinity(int version)
+        {
+            var serializedValue = "{\"@type\":\"g:Double\",\"@value\":'-Infinity'}";
+            var reader = CreateStandardGraphSONReader(version);
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(Double.NegativeInfinity, deserializedValue);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
         public void ShouldDeserializeDecimal(int version)
         {
             var serializedValue = "{\"@type\":\"gx:BigDecimal\",\"@value\":-8.201}";
@@ -220,7 +256,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 
             Assert.Equal(7.5M, deserializedValue);
         }
-        
+
         [Theory, MemberData(nameof(Versions))]
         public void ShouldDeserializeList(int version)
         {
@@ -392,7 +428,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var reader = CreateStandardGraphSONReader(version);
 
             var deserializedValue = reader.ToObject(JObject.Parse(json));
-                
+
             Assert.Equal((IList<object>)new object[] { 1, 2, 3}, deserializedValue);
         }
 
@@ -404,7 +440,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var reader = CreateStandardGraphSONReader(version);
 
             var deserializedValue = reader.ToObject(JObject.Parse(json));
-                
+
             Assert.Equal((ISet<object>)new HashSet<object>{ 1, 2, 3}, deserializedValue);
         }
 
@@ -416,7 +452,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var reader = CreateStandardGraphSONReader(version);
 
             var deserializedValue = reader.ToObject(JObject.Parse(json));
-                
+
             Assert.Equal(new Dictionary<object, object>{ { "a", 1 }, { "b", 2 }}, deserializedValue);
         }
 

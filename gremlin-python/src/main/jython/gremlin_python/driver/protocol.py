@@ -31,7 +31,13 @@ __author__ = 'David M. Brown (davebshow@gmail.com)'
 
 
 class GremlinServerError(Exception):
-    pass
+    def __init__(self, status):
+        super(GremlinServerError, self).__init__("{0}: {1}".format(status["code"], status["message"]))
+        self._status_attributes = status["attributes"]
+
+    @property
+    def status_attributes(self):
+        return self._status_attributes        
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -90,9 +96,9 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
         elif status_code in [200, 206]:
             result_set.stream.put_nowait(data)
             if status_code == 200:
+                result_set.status_attributes = message['status']['attributes']
                 del results_dict[request_id]
             return status_code
         else:
             del results_dict[request_id]
-            raise GremlinServerError(
-                "{0}: {1}".format(status_code, message["status"]["message"]))
+            raise GremlinServerError(message["status"])

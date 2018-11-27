@@ -21,9 +21,73 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Gremlin Symphony #40 in G Minor*
 
-== TinkerPop 3.3.4
+== TinkerPop 3.3.5
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.3.5/CHANGELOG.asciidoc#release-3-3-5[changelog] for a complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+==== AnonymousTraversalSource
+
+The `AnonymousTraversalSource` provides for a more unified syntax for `TraversalSource` construction by placing greater
+user emphasis on the creation of the source rather than the `Graph` it is connected to. It has a number of different
+static `traversal()` methods available and when imported as:
+
+[source,java]
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+
+allows `TraversalSource` construction syntax such as:
+
+[source,text]
+----
+gremlin> g = traversal().withGraph(TinkerFactory.createModern())
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+gremlin> g = traversal().withRemote('conf/remote-graph.properties')
+==>graphtraversalsource[emptygraph[empty], standard]
+gremlin> g = traversal().withRemote(DriverRemoteConnection.using('localhost',8182))
+==>graphtraversalsource[emptygraph[empty], standard]
+----
+
+Typically, this syntax is used for "remote" traversal construction for bytecode based requests, but has the option to
+bind a local `Graph` instance to it as well. It doesn't save much typing to do so obviously, so it may not be best
+used in that situation. Python, Javascript and .NET have similar syntax.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2078[TINKERPOP-2078]
+
+==== Bytecode Command
+
+The Gremlin Console now has a new `:bytecode` command to help users work more directly with Gremlin bytecode. The
+command is more of a debugging tool than something that would be used for every day purposes. It is sometimes helpful
+to look at Gremlin bytecode directly and the process for viewing it in human readable format is not a single step
+process. It is also not immediately clear how to convert bytecode to a Gremlin string. The `:bytecode` command aims to
+help with both of these issues:
+
+[source,text]
+----
+gremlin> g = TinkerFactory.createModern().traversal()
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+gremlin> :bytecode from g.V().out('knows')  <1>
+==>{"@type":"g:Bytecode","@value":{"step":[["V"],["out","knows"]]}}
+gremlin> :bytecode translate g {"@type":"g:Bytecode","@value":{"step":[["V"],["out","knows"]]}} <2>
+==>g.V().out("knows")
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2050[TINKERPOP-2050],
+link:http://tinkerpop.apache.org/docs/3.3.5/reference/#_console_commands[Reference Documentation - Console Commands]
+
+==== Configurable Class Map Cache
+
+The "class map" cache in Gremlin Server (specifically the `GremlinGroovyScriptEngine`) that holds compiled scripts is
+now fully configurable via the `GroovyCompilerGremlinPlugin.classMapCacheSpecification`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2038[TINKERPOP-2038],
+link:http://tinkerpop.apache.org/docs/3.3.2/reference/#gremlin-server-cache[Reference Documentation - Cache Management]
+
+== TinkerPop 3.3.4
+
+*Release Date: October 15, 2018*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.3.4/CHANGELOG.asciidoc#release-3-3-4[changelog] for a complete list of all the modifications that are part of this release.
 
@@ -40,9 +104,9 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1956[TINKERPOP-1956]
 
 ==== TimedInterrupt
 
-In Gremlin Server, it is best not to use the {{timedInterrupt}} option on {{GroovyCompilerGremlinPlugin}} because it
-can compete with the {{scriptEvaluationTimeout}} setting and produce a different error path. Simply rely on
-{{scriptEvaluationTimeout}} as it covers both script evaluation time and result iteration time.
+In Gremlin Server, it is best not to use the `timedInterrupt` option on `GroovyCompilerGremlinPlugin` because it
+can compete with the `scriptEvaluationTimeout` setting and produce a different error path. Simply rely on
+`scriptEvaluationTimeout` as it covers both script evaluation time and result iteration time.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1778[TINKERPOP-1778]
 

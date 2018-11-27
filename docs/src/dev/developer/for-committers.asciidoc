@@ -23,14 +23,14 @@ The guidelines that follow apply to those with commit access to the main reposit
 == Communication
 
 TinkerPop has a link:http://groups.google.com/group/gremlin-users[user mailing list] and a
-link:https://lists.apache.org/list.html?dev@tinkerpop.apache.org[developer mailing list].  As a committer,
+pass:[<a href="https://lists.apache.org/list.html?dev@tinkerpop.apache.org">dev mailing list</a>].  As a committer,
 it is a good idea to join both.
 
-It would also be helpful to join the public link:https://apache.hipchat.com/chat/room/2013155[TinkerPop HipChat room]
-for developer discussion.  This helps contributors to communicate in a more real-time way.  Anyone can join as a guest,
+It may also be helpful to join the public link:https://apache.hipchat.com/chat/room/2013155[TinkerPop HipChat room]
+for developer discussion. This helps contributors to communicate in a more real-time way. Anyone can join as a guest,
 but for regular contributors it may be best to request that an Apache HipChat account be created.
 
-Occasionally, online meetings via video conference are held.  These meetings are schedule via the dev mailing list
+Occasionally, online meetings via video conference are held. These meetings are schedule via the dev mailing list
 about a week before they are to occur to find a day and time that is available for those interested in attending.
 On the day of the meeting, the meeting organizer will create a Google Hangout (or similar video conferencing link) to
 post to the TinkerPop room in HipChat.  At that point, all who are interested can attend.  Meeting minutes should be
@@ -64,7 +64,7 @@ TinkerPop has several release branches:
 
 * `tp30` - 3.0.x (no longer maintained)
 * `tp31` - 3.1.x (no longer maintained)
-* `tp32` - 3.2.x (bug fixes and documentation updates only)
+* `tp32` - 3.2.x (major bug fixes only)
 * `tp33` - 3.3.x (current development)
 * `master` - 3.4.x (future development)
 
@@ -123,8 +123,9 @@ be adjusted accordingly to not auto-wildcard the imports.
 
 TinkerPop uses link:https://travis-ci.com/[Travis] for link:https://en.wikipedia.org/wiki/Continuous_integration[CI]
 services. The build status can be found link:https://travis-ci.org/apache/tinkerpop[here].  Note that the CI process
-does not run integration tests or include Neo4j-related tests as those tests would likely exceed the allowable times
-for builds on these servers.
+does not run all possible tests (e.g. Neo4j-related tests) as a full execution would likely exceed the allowable times
+for builds on these servers. Instead Travis runs a basic cross-section of tests selected to provide a reasonably high
+degree of confidence in the branch built.
 
 == Deprecation
 
@@ -432,7 +433,7 @@ that may be used as building blocks for your benchmarks; `AbstractBenchmarkBase`
 [[rtc]]
 == Review then Commit
 
-Code modifications must go through a link:http://www.apache.org/foundation/glossary.html#ReviewThenCommit[review-then-committ] (RTC)
+Code modifications must go through a link:http://www.apache.org/foundation/glossary.html#ReviewThenCommit[review-then-commit] (RTC)
 process before being merged into a release branch. All committers should follow the pattern below, where "you" refers
 to the committer wanting to put code into a release branch.
 
@@ -440,11 +441,11 @@ to the committer wanting to put code into a release branch.
 * Fork the release branch that the fix will be put into.
 ** The branch name should be the JIRA issue identifier (e.g. `TINKERPOP-XXX`).
 * Develop your fix in your branch.
-* When your fix is complete and ready to merge, issue a link:https://git-scm.com/docs/git-request-pull[pull request].
+* When your fix is complete and ready to merge, issue a <<pull-requests,pull request>>.
 ** Be certain that the test suite is passing.
 ** If you updated documentation, be sure that the `process-docs.sh` is building the documentation correctly.
 * Before you can merge your branch into the release branch, you must have at least 3 +1 link:http://www.apache.org/foundation/glossary.html#ConsensusApproval[consensus votes]
-from other committers OR a single +1 from a committer and a one week review period for objections (i.e. a "cool down
+from other committers OR a single +1 from a committer and a seven day review period for objections (i.e. a "cool down
 period") at which point we will assume a lazy consensus.
 ** Please see the Apache Software Foundations regulations regarding link:http://www.apache.org/foundation/voting.html#votes-on-code-modification[Voting on Code Modifications].
 ** With the "cool down" process and lazy consensus the single +1 may (should) come from the committer who submitted
@@ -453,7 +454,7 @@ the pull request (in other words, the change submitter and the reviewer are the 
 not rely strictly on lazy consensus.
 * Votes are issued by TinkerPop committers as comments to the pull request.
 * Once either consensus position is reached, you are responsible for merging to the release branch and handling any merge conflicts.
-** If there is a higher version release branch that requires your fix (e.g. `3.y-1.z` fix going to a `3.y.z` release), be sure to merge to that release branch as well.
+** If there is a higher version release branch that requires your fix (e.g. `3.y-1.z` fix going to a `3.y.z` release), multiple pull requests may be necessary (i.e. one for each branch).
 * Be conscious of deleting your branch if it is no longer going to be used so stale branches don't pollute the repository.
 
 NOTE: These steps also generally apply to external pull requests from those who are not official Apache committers. In
@@ -489,7 +490,9 @@ require a review.
 
 When the committer chooses CTR, it is considered good form to include something in the commit message that explains
 that CTR was invoked and the reason for doing so.  For example, "Invoking CTR as this change encompasses minor
-adjustments to text formatting."
+adjustments to text formatting." CTR based commits will still require manual merging through all release branches.
+Merges should occur in reverse order, starting with the latest release version first (e.g. if the fix is going to
+3.2.x then the change should be merged in the following order `master`, `tp33`, `tp32`).
 
 [[pull-requests]]
 === Pull Requests
@@ -513,6 +516,11 @@ A pull request will typically be made to a target <<branches, branch>>. Assuming
 release branches (e.g. a pull request made to for the branch containing 3.2.x must merge to the branch that releases
 3.3.x), it is important to be sure that those changes are merged to the downstream release branches. Typically,
 this process is best handled by multiple pull requests: one to each release branch.
+
+While merges can be handled manually with `git` commands, it is typically best to use the GitHub UI itself and the
+"Merge Pull Request" button instead. Branches should be merged in reverse order, starting with the latest release
+version first (e.g. if the fix is going to 3.2.x then the change should be merged in the following order `master`,
+`tp33`, `tp32`).
 
 As an example, consider a situation where there is a feature branch named "TINKERPOP-1234" that contains a fix for
 the `tp32` branch:
@@ -560,7 +568,7 @@ Again, depending on the changes, it may make sense to re-test at this point, oth
 git push origin TINKERPOP-1234-master --force
 ----
 
-It should not be safe to merge both pull requests to their release branches.
+It should now be safe to merge both pull requests to their release branches.
 
 IMPORTANT: Always take a moment to review the commits in a particular pull request. Be sure that they are *all* related
 to the work that was done and that no extraneous commits are present that cannot be explained. Ensuring a pull request

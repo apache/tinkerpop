@@ -37,7 +37,7 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -148,7 +148,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     public Set<TraverserRequirement> getTraverserRequirements() {
         if (null == this.requirements) {
             // if (!this.locked) this.applyStrategies();
-            this.requirements = new HashSet<>();
+            this.requirements = EnumSet.noneOf(TraverserRequirement.class);
             for (final Step<?, ?> step : this.getSteps()) {
                 this.requirements.addAll(step.getRequirements());
             }

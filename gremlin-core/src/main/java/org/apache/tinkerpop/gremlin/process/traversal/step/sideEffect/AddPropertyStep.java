@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
-import org.apache.tinkerpop.gremlin.process.traversal.step.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
@@ -46,7 +45,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AddPropertyStep<S extends Element> extends SideEffectStep<S>
+public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
         implements Mutating<Event.ElementPropertyChangedEvent>, TraversalParent, Scoping {
 
     private Parameters parameters = new Parameters();

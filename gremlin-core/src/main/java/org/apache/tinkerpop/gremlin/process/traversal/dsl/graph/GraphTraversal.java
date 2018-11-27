@@ -157,6 +157,7 @@ import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -169,6 +170,7 @@ import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
@@ -558,7 +560,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#valuemap-step" target="_blank">Reference Documentation - ValueMap Step</a>
      * @since 3.0.0-incubating
      */
-    public default <E2> GraphTraversal<S, Map<String, E2>> valueMap(final String... propertyKeys) {
+    public default <E2> GraphTraversal<S, Map<Object, E2>> valueMap(final String... propertyKeys) {
         this.asAdmin().getBytecode().addStep(Symbols.valueMap, propertyKeys);
         return this.asAdmin().addStep(new PropertyMapStep<>(this.asAdmin(), false, PropertyType.VALUE, propertyKeys));
     }
@@ -573,7 +575,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link PropertyMapStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#valuemap-step" target="_blank">Reference Documentation - ValueMap Step</a>
      * @since 3.0.0-incubating
+     * @deprecated As of release 3.4.0, deprecated in favor of {@link GraphTraversal#valueMap(String...)} in conjunction with
+     *             {@link GraphTraversal#with(String, Object)}.
      */
+    @Deprecated
     public default <E2> GraphTraversal<S, Map<Object, E2>> valueMap(final boolean includeTokens, final String... propertyKeys) {
         this.asAdmin().getBytecode().addStep(Symbols.valueMap, includeTokens, propertyKeys);
         return this.asAdmin().addStep(new PropertyMapStep<>(this.asAdmin(), includeTokens, PropertyType.VALUE, propertyKeys));
@@ -1501,26 +1506,39 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.2.2
      */
     public default GraphTraversal<S, E> hasId(final Object id, final Object... otherIds) {
-        if (id instanceof P)
+        if (id instanceof P) {
             return this.hasId((P) id);
+        }
         else {
-            final List<Object> ids = new ArrayList<>();
+            Object[] ids;
             if (id instanceof Object[]) {
-                for (final Object i : (Object[]) id) {
-                    ids.add(i);
-                }
-            } else
-                ids.add(id);
+                ids = (Object[]) id;
+            } else {
+                ids = new Object[] {id};
+            }
+            int size = ids.length;
+            int capacity = size;
             for (final Object i : otherIds) {
                 if (i.getClass().isArray()) {
-                    for (final Object ii : (Object[]) i) {
-                        ids.add(ii);
+                    final Object[] tmp = (Object[]) i;
+                    int newLength = size + tmp.length;
+                    if (capacity < newLength) {
+                        ids = Arrays.copyOf(ids, capacity = size + tmp.length);
                     }
-                } else
-                    ids.add(i);
+                    System.arraycopy(tmp, 0, ids, size, tmp.length);
+                    size = newLength;
+                } else {
+                    if (capacity == size) {
+                        ids = Arrays.copyOf(ids, capacity = size * 2);
+                    }
+                    ids[size++] = i;
+                }
             }
-            this.asAdmin().getBytecode().addStep(Symbols.hasId, ids.toArray());
-            return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.id.getAccessor(), ids.size() == 1 ? P.eq(ids.get(0)) : P.within(ids)));
+            if (capacity > size) {
+                ids = Arrays.copyOf(ids, size);
+            }
+            this.asAdmin().getBytecode().addStep(Symbols.hasId, ids);
+            return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.id.getAccessor(), ids.length == 1 ? P.eq(ids[0]) : P.within(ids)));
         }
     }
 
@@ -1581,16 +1599,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         else {
             final List<Object> values = new ArrayList<>();
             if (value instanceof Object[]) {
-                for (final Object v : (Object[]) value) {
-                    values.add(v);
-                }
+                Collections.addAll(values, (Object[]) value);
             } else
                 values.add(value);
             for (final Object v : otherValues) {
                 if (v instanceof Object[]) {
-                    for (final Object vv : (Object[]) v) {
-                        values.add(vv);
-                    }
+                    Collections.addAll(values, (Object[]) v);
                 } else
                     values.add(v);
             }
@@ -2562,6 +2576,23 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     //// WITH-MODULATOR
+
+    /**
+     * Provides a configuration to a step in the form of a key which is the same as {@code with(key, true)}. The key
+     * of the configuration must be step specific and therefore a configuration could be supplied that is not known to
+     * be valid until execution.
+     *
+     * @param key the key of the configuration to apply to a step
+     * @return the traversal with a modulated step
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#with-step" target="_blank">Reference Documentation - With Step</a>
+     * @since 3.4.0
+     */
+    public default GraphTraversal<S,E> with(final String key) {
+        this.asAdmin().getBytecode().addStep(Symbols.with, key);
+        final Object[] configPair = { key, true };
+        ((Configuring) this.asAdmin().getEndStep()).configure(configPair);
+        return this;
+    }
 
     /**
      * Provides a configuration to a step in the form of a key and value pair. The key of the configuration must be

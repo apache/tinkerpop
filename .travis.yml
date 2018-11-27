@@ -30,4 +30,6 @@ jobs:
     - script: "touch gremlin-dotnet/src/.glv && touch gremlin-dotnet/test/.glv && mvn clean install -q -DskipTests && mvn verify -pl :gremlin-dotnet,:gremlin-dotnet-tests -P gremlin-dotnet"
     - script: "touch gremlin-python/.glv && mvn clean install -q -DskipTests && mvn verify -pl gremlin-python"
     - script: "mvn clean install -q -DskipTests && mvn verify -pl :gremlin-javascript"
-    - script: "mvn clean install -q -DskipTests && mvn verify -pl :spark-gremlin -DskipIntegrationTests=false"
+    - script:
+      - "mvn clean install -q -DskipTests"
+      - "travis_wait 60 mvn verify -pl :spark-gremlin -DskipIntegrationTests=false"

@@ -20,6 +20,7 @@ import datetime
 import json
 import time
 import uuid
+import math
 from collections import OrderedDict
 
 import six
@@ -27,7 +28,7 @@ from aenum import Enum
 
 from gremlin_python import statics
 from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType
-from gremlin_python.process.traversal import Binding, Bytecode, P, Traversal, Traverser, TraversalStrategy
+from gremlin_python.process.traversal import Binding, Bytecode, P, TextP, Traversal, Traverser, TraversalStrategy
 from gremlin_python.structure.graph import Edge, Property, Vertex, VertexProperty, Path
 
 # When we fall back to a superclass's serializer, we iterate over this map.
@@ -135,7 +136,7 @@ class _GraphSONTypeIO(object):
 
     symbolMap = {"global_": "global", "as_": "as", "in_": "in", "and_": "and",
                  "or_": "or", "is_": "is", "not_": "not", "from_": "from",
-                 "set_": "set", "list_": "list", "all_": "all"}
+                 "set_": "set", "list_": "list", "all_": "all", "with_": "with"}
 
     @classmethod
     def unmangleKeyword(cls, symbol):
@@ -278,6 +279,17 @@ class PSerializer(_GraphSONTypeIO):
         return GraphSONUtil.typedValue("P", out)
 
 
+class TextPSerializer(_GraphSONTypeIO):
+    python_type = TextP
+
+    @classmethod
+    def dictify(cls, p, writer):
+        out = {"predicate": p.operator,
+               "value": [writer.toDict(p.value), writer.toDict(p.other)] if p.other is not None else
+               writer.toDict(p.value)}
+        return GraphSONUtil.typedValue("TextP", out)
+
+
 class BindingSerializer(_GraphSONTypeIO):
     python_type = Binding
 
@@ -394,6 +406,31 @@ class FloatIO(_NumberIO):
     python_type = FloatType
     graphson_type = "g:Float"
     graphson_base_type = "Float"
+
+    @classmethod
+    def dictify(cls, n, writer):
+        if isinstance(n, bool):  # because isinstance(False, int) and isinstance(True, int)
+            return n
+        elif math.isnan(n):
+            return GraphSONUtil.typedValue(cls.graphson_base_type, "NaN")
+        elif math.isinf(n) and n > 0:
+            return GraphSONUtil.typedValue(cls.graphson_base_type, "Infinity")
+        elif math.isinf(n) and n < 0:
+            return GraphSONUtil.typedValue(cls.graphson_base_type, "-Infinity")
+        else:
+            return GraphSONUtil.typedValue(cls.graphson_base_type, n)
+
+    @classmethod
+    def objectify(cls, v, _):
+        if isinstance(v, str):
+            if v == 'NaN':
+                return float('nan')
+            elif v == "Infinity":
+                return float('inf')
+            elif v == "-Infinity":
+                return float('-inf')
+
+        return cls.python_type(v)
 
 
 class DoubleIO(FloatIO):

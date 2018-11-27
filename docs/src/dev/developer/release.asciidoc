@@ -177,7 +177,9 @@ validity into question.
 . Update `CHANGELOG.asciidoc`:
 .. Update the release date - the release date is the date of the vote. Double check the header to be sure that it is
 formatted properly - the easiest way to is to view the `CHANGELOG.asciidoc` to be sure that it produces a link in the
-GitHub viewer.
+GitHub viewer. The release date for all versions should be the same as the first release of the set even if the
+release vote does not begin on the same day. In other words if 3.2.x has a vote date of "October, 1 2018" then 3.3.x
+should also have that date even if the vote thread for 3.3.x doesn't start until the day after.
 .. Generate the JIRA release notes report for the current version and append them to the `CHANGELOG.asciidoc`.
 ... Use an "advanced" search to filter out JIRA issues already released on other versions. For example:
 `project = TINKERPOP and status = Closed AND fixVersion = 3.2.0 ORDER BY type, Id ASC`.
@@ -217,8 +219,9 @@ for generating javadoc and without that the binary distributions won't contain t
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-console/xx.yy.zz/gremlin-console-xx.yy.zz-distribution.zip* dev/xx.yy.zz`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-server/xx.yy.zz/gremlin-server-xx.yy.zz-distribution.zip* dev/xx.yy.zz`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/tinkerpop/xx.yy.zz/tinkerpop-xx.yy.zz-source-release.zip* dev/xx.yy.zz`
-.. `rm -f dev/*.md5`
 .. `cd dev/xx.yy.zz`
+.. `rm -f *.md5`
+.. `for file in *.sha1 ; do artifact=$(basename ${file} .sha1); sha512sum $artifact | awk '{print $1}' > ${artifact}.sha512; rm ${file}; done`
 .. pass:[<code>ls * | xargs -n1 -I {} echo "mv apache-tinkerpop-{} {}" | sed -e 's/distribution/bin/' -e 's/source-release/src/' -e 's/tinkerpop-tinkerpop/tinkerpop/' -e s'/^\(.*\) \(.*\) \(.*\)$/\1 \3 \2/' | /bin/bash</code>]
 .. `cd ..; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
 . Execute `bin/validate-distribution.sh` and any other relevant testing.
@@ -312,10 +315,10 @@ The online docs can be found here:
 	http://tinkerpop.apache.org/javadocs/xx.yy.zz/full/ (full javadoc)
 
 The tag in Apache Git can be found here:
-	https://git-wip-us.apache.org/repos/asf?p=tinkerpop.git;XXXXXXXXXXXXXXXXXX
+	https://github.com/apache/tinkerpop/tree/xx.yy.zz
 
 The release notes are available here:
-	https://github.com/apache/tinkerpop/blob/master/CHANGELOG.asciidoc#XXXXXXXXXXXXXXXXXX
+	https://github.com/apache/tinkerpop/blob/xx.yy.zz/CHANGELOG.asciidoc
 
 The [VOTE] will be open for the next 72 hours --- closing <DayOfTheWeek> (<Month> <Day> <Year>) at <Time> <TimeZone>.
 
@@ -397,6 +400,11 @@ https://www.nuget.org/packages/Gremlin.Net/xx.yy.zz
 Javascript artifacts are available in npm:
 
 https://www.npmjs.com/package/gremlin/v/xx.yy.zz
+
+Docker images for Gremlin Console and Gremlin Server can be found on Docker
+Hub:
+
+https://hub.docker.com/u/tinkerpop/
 
 [include the release line logo image]
 ----

@@ -162,6 +162,7 @@ const deserializers = {
   'g:Property': typeSerializers.PropertySerializer,
   'g:Path': typeSerializers.Path3Serializer,
   'g:T': typeSerializers.TSerializer,
+  'g:TextP': typeSerializers.TextPSerializer,
   'g:List': typeSerializers.ListSerializer,
   'g:Set': typeSerializers.SetSerializer,
   'g:Map': typeSerializers.MapSerializer
@@ -173,6 +174,7 @@ const serializers = [
   typeSerializers.BytecodeSerializer,
   typeSerializers.TraverserSerializer,
   typeSerializers.PSerializer,
+  typeSerializers.TextPSerializer,
   typeSerializers.LambdaSerializer,
   typeSerializers.EnumSerializer,
   typeSerializers.VertexSerializer,

@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 
@@ -45,7 +46,7 @@ public class GraphTraversalTest {
 
     private static Set<String> NO_GRAPH = new HashSet<>(Arrays.asList("asAdmin", "by", "read", "write", "with", "option", "iterate", "to", "from", "profile", "pageRank", "connectedComponent", "peerPressure", "shortestPath", "program", "none"));
     private static Set<String> NO_ANONYMOUS = new HashSet<>(Arrays.asList("start", "__"));
-    private static Set<String> IGNORES_BYTECODE = new HashSet<>(Arrays.asList("asAdmin", "read", "write", "iterate", "mapValues", "mapKeys"));
+    private static Set<String> IGNORES_BYTECODE = new HashSet<>(Arrays.asList("asAdmin", "read", "write", "iterate"));
 
     @Test
     public void shouldHaveMethodsOfGraphTraversalOnAnonymousGraphTraversal() {
@@ -100,10 +101,16 @@ public class GraphTraversalTest {
                 ///
                 if (stepMethod.getName().equals("by"))
                     traversal.order();
+                else if (stepMethod.getName().equals("with"))
+                    randomPossibleStep(random, traversal,
+                            GraphTraversal::V, GraphTraversal::shortestPath, GraphTraversal::pageRank,
+                            GraphTraversal::connectedComponent, GraphTraversal::peerPressure, t -> t.addE("link"),
+                            GraphTraversal::addV);
                 else if (stepMethod.getName().equals("option"))
                     traversal.branch(__.identity().out(randomString(random)));
                 else if (stepMethod.getName().equals("to") || stepMethod.getName().equals("from"))
                     traversal.addE(randomString(random));
+
                 if (stepMethod.getName().equals("range")) {
                     if (Scope.class.isAssignableFrom(stepMethod.getParameterTypes()[0])) {
                         list.add(arguments[0] = Scope.local);
@@ -166,7 +173,11 @@ public class GraphTraversalTest {
         }
     }
 
-    private final static String randomString(final Random random) {
+    private static void randomPossibleStep(final Random random, final GraphTraversal t, final Consumer<GraphTraversal>... possible) {
+        possible[random.nextInt(possible.length)].accept(t);
+    }
+
+    private static String randomString(final Random random) {
         String s = "";
         for (int i = 0; i < random.nextInt(10) + 1; i++) {
             s = (s + (char) (random.nextInt(100) + 1)).trim();

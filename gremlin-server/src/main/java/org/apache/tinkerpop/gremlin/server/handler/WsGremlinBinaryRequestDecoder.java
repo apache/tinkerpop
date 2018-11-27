@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.server.handler;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
-import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -65,7 +64,7 @@ public class WsGremlinBinaryRequestDecoder extends MessageToMessageDecoder<Binar
         try {
             messageBytes.readBytes(contentTypeBytes);
             final String contentType = contentTypeBytes.toString(UTF8);
-            final MessageSerializer serializer = select(contentType, Serializers.DEFAULT_REQUEST_SERIALIZER);
+            final MessageSerializer serializer = select(contentType, ServerSerializers.DEFAULT_SERIALIZER);
 
             // it's important to re-initialize these channel attributes as they apply globally to the channel. in
             // other words, the next request to this channel might not come with the same configuration and mixed
