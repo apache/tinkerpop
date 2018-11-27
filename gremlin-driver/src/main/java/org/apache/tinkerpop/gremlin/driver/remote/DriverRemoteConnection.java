@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -49,8 +48,8 @@ import java.util.function.Supplier;
  */
 public class DriverRemoteConnection implements RemoteConnection {
 
-    public static final String GREMLIN_REMOTE_DRIVER_CLUSTERFILE = TraversalSource.GREMLIN_REMOTE + "driver.clusterFile";
-    public static final String GREMLIN_REMOTE_DRIVER_SOURCENAME = TraversalSource.GREMLIN_REMOTE + "driver.sourceName";
+    public static final String GREMLIN_REMOTE_DRIVER_CLUSTERFILE = GREMLIN_REMOTE + "driver.clusterFile";
+    public static final String GREMLIN_REMOTE_DRIVER_SOURCENAME = GREMLIN_REMOTE + "driver.sourceName";
 
     private static final String DEFAULT_TRAVERSAL_SOURCE = "g";
 
