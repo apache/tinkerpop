@@ -73,9 +73,11 @@ public class GraphBinaryWriter {
     /**
      * Represents a null value of a specific type, useful when the parent type contains a type parameter that must be
      * specified.
+     * <p>Note that for simple types, the provided information will be <code>null</code>.</p>
      */
-    public <T> ByteBuf writeFullyQualifiedNull(Class<T> objectClass, ByteBufAllocator allocator) throws SerializationException {
+    public <T> ByteBuf writeFullyQualifiedNull(Class<T> objectClass, ByteBufAllocator allocator, Object information) throws SerializationException {
         TypeSerializer<T> serializer = registry.getSerializer(objectClass);
+        //TODO: Change to writeNull()
         return serializer.write(null, allocator, this);
     }
 
