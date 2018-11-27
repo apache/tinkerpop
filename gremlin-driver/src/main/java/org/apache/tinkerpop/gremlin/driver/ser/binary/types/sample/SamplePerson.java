@@ -18,38 +18,26 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types.sample;
 
-import java.util.Collection;
+import java.util.Date;
 
 /**
- * A sample custom data type, trying to demonstrate the possibility to have arbitrary complex types and null
- * values without loosing type information.
+ * A sample custom data type containing few properties.
  */
-class SamplePair<K, V> {
-    private final K key;
-    private final V value;
-    private final Info info;
+class SamplePerson {
+    private final String name;
+    private final Date birthDate;
 
-    class Info {
-        private final Class<?> keyType;
-        private final Collection<Class<?>> keySubTypes;
+    SamplePerson(String name, Date birthDate) {
 
-        Info(Class<?> keyType, Collection<Class<?>> keySubTypes) {
-            this.keyType = keyType;
-            this.keySubTypes = keySubTypes;
-        }
+        this.name = name;
+        this.birthDate = birthDate;
     }
 
-    SamplePair(K key, V value, SamplePair.Info info) {
-        this.key = key;
-        this.value = value;
-        this.info = info;
+    public String getName() {
+        return name;
     }
 
-    public K getKey() {
-        return key;
-    }
-
-    public V getValue() {
-        return value;
+    public Date getBirthDate() {
+        return birthDate;
     }
 }

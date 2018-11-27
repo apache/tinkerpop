@@ -463,7 +463,7 @@ Type Info: `{name}{custom_type_info}`
 Where:
 
 - `{name}` is a `String` containing the implementation specific text identifier of the custom type.
-- `{custom_type_info}` is an optional sequence of bytes representing the additional type information, specially useful
+- `{custom_type_info}` is a `ByteBuffer` representing the additional type information, specially useful
 for complex custom types.
 
 Value format: `{blob}`

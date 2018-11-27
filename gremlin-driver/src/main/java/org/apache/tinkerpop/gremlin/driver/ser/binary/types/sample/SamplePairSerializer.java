@@ -31,7 +31,7 @@ import java.nio.charset.StandardCharsets;
 
 class SamplePairSerializer implements TypeSerializer<SamplePair> {
     private final static byte[] dataTypeBuffer = new byte[] { DataType.CUSTOM.getCodeByte() };
-    private final byte[] dataTypeNameBuffer = "SAMPLE_PAIR".getBytes(StandardCharsets.UTF_8);
+    private final byte[] dataTypeNameBuffer = "SAMPLEPAIR".getBytes(StandardCharsets.UTF_8);
 
     @Override
     public SamplePair read(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
@@ -57,6 +57,18 @@ class SamplePairSerializer implements TypeSerializer<SamplePair> {
                 // Value flag
                 valueBuffer
         );
+    }
+
+    public ByteBuf writeNull(ByteBufAllocator allocator, Object information, GraphBinaryWriter context) {
+        SamplePair.Info info = (SamplePair.Info) information;
+        // Write type code:  "CUSTOM"
+        // Write Type info: "SAMPLEPAIR"
+        // value flag null
+        // 2 fully qualified null values.
+
+        // TODO: How do we get the target serializer / type?
+        //context.writeFullyQualifiedNull(DataType.CUSTOM, )
+        return null;
     }
 
     @Override
