@@ -445,7 +445,9 @@ The following deprecated classes, methods or fields have been removed in this ve
 
 * `gremlin-core`
 ** `org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer#GREMLIN_CORE`
-** `org.apache.tinkerpop.gremlin.process.remote.RemoteGraph` - moved to `gremlin-test`.
+** `org.apache.tinkerpop.gremlin.process.remote.RemoteGraph` - moved to `gremlin-test`
+** `org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.submit(Traversal)`
+** `org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.submit(Bytecode)`
 ** `org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy#identity()`
 ** `org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine`
 ** `org.apache.tinkerpop.gremlin.process.traversal.TraversalSource#withRemote(*)`
@@ -487,7 +489,8 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-1707[TINKERPOP-1707],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1954[TINKERPOP-1954],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1986[TINKERPOP-1986],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2079[TINKERPOP-2079],
-link:https://issues.apache.org/jira/browse/TINKERPOP-2080[TINKERPOP-2080]
+link:https://issues.apache.org/jira/browse/TINKERPOP-2080[TINKERPOP-2080],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2103[TINKERPOP-2103]
 
 ==== Deprecated GraphSONMessageSerializerGremlinV2d0
 
@@ -707,7 +710,7 @@ long ago moved to the `Computer` infrastructure as methods for constructing a `T
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1143[TINKERPOP-1143]
 
-==== Upsert Graph Feature
+===== Upsert Graph Feature
 
 Some `Graph` implementations may be able to offer upsert functionality for vertices and edges, which can help improve
 usability and performance. To help make it clear to users that a graph operates in this fashion, the `supportsUpsert()`
@@ -726,7 +729,7 @@ should consider their own test suites carefully to ensure appropriate coverage.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1685[TINKERPOP-1685]
 
-==== TypeTranslator Changes
+===== TypeTranslator Changes
 
 The `TypeTranslator` experienced a change in its API and `GroovyTranslator` a change in expectations.
 
@@ -741,3 +744,13 @@ is "complete" - i.e. that it provides all the functionality to translate the typ
 the extension model described above is the easiest way to get going with a custom `TypeTranslator` approach.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2072[TINKERPOP-2072]
+
+==== Graph Driver Providers
+
+===== Deprecation Removal in RemoteConnection
+
+The two deprecated synchronous `submit()` methods on the `RemoteConnection` interface have been removed, which means
+that `RemoteConnection` implementations will need to implement `submitAsync(Bytecode)` if they have not already done
+so.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2103[TINKERPOP-2103]

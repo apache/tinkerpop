@@ -79,6 +79,7 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Removed previously deprecated `RemoteStrategy.instance()` and the strategy no longer has any connection to `RemoteGraph`.
 * Removed previously deprecated methods in `SubgraphStrategy` and `PartitionStrategy` builders.
 * Removed previously deprecated Credentials DSL infrastructure.
+* Removed previously deprecated `RemoteConnection#submit(Traversal)` and `RemoteConnection#submit(Bytecode)` methods.
 * Removed previously deprecated `MutationListener#vertexPropertyChanged(Vertex, Property, Object, Object...)`.
 * Removed previously deprecated `OpSelectorHandler` constructor.
 * Removed previously deprecated `close()` from `GremlinGroovyScriptEngine` which no longer implements `AutoCloseable`.
