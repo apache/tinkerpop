@@ -74,6 +74,7 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * `MutationListener#vertexPropertyChanged(Vertex, VertexProperty, Object, Object...)` no longer has a default implementation.
 * Deprecated `GraphSONMessageSerializerV2d0` as it is now analogous to `GraphSONMessageSerializerGremlinV2d0`.
 * Moved previously deprecated `RemoteGraph` to `gremlin-test` as it is now just a testing component.
+* Removed previously deprecated `TraversalSource.withRemote()`.
 * Removed previously deprecated `RemoteStrategy.instance()` and the strategy no longer has any connection to `RemoteGraph`.
 * Removed previously deprecated methods in `SubgraphStrategy` and `PartitionStrategy` builders.
 * Removed previously deprecated Credentials DSL infrastructure.

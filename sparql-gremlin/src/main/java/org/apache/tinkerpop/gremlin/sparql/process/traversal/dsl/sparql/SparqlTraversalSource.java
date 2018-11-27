@@ -18,15 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.sparql.process.traversal.dsl.sparql;
 
-import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.sparql.process.traversal.strategy.SparqlStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -91,33 +88,6 @@ public class SparqlTraversalSource implements TraversalSource {
     @SuppressWarnings({"unchecked"})
     public SparqlTraversalSource withoutStrategies(final Class<? extends TraversalStrategy>... traversalStrategyClasses) {
         return (SparqlTraversalSource) TraversalSource.super.withoutStrategies(traversalStrategyClasses);
-    }
-
-    @Override
-    public SparqlTraversalSource withRemote(final Configuration conf) {
-        return (SparqlTraversalSource) TraversalSource.super.withRemote(conf);
-    }
-
-    @Override
-    public SparqlTraversalSource withRemote(final String configFile) throws Exception {
-        return (SparqlTraversalSource) TraversalSource.super.withRemote(configFile);
-    }
-
-    @Override
-    public SparqlTraversalSource withRemote(final RemoteConnection connection) {
-        try {
-            // check if someone called withRemote() more than once, so just release resources on the initial
-            // connection as you can't have more than one. maybe better to toss IllegalStateException??
-            if (this.connection != null)
-                this.connection.close();
-        } catch (Exception ignored) {
-            // not sure there's anything to do here
-        }
-
-        this.connection = connection;
-        final TraversalSource clone = this.clone();
-        clone.getStrategies().addStrategies(new RemoteStrategy(connection));
-        return (SparqlTraversalSource) clone;
     }
 
     /**
