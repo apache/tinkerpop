@@ -56,6 +56,9 @@ class SamplePersonSerializer implements CustomTypeSerializer<SamplePerson> {
             return null;
         }
 
+        // Read the buffer int, no necessary in this case
+        buffer.readInt();
+
         return new SamplePerson(
                 context.readValue(buffer, String.class, false), context.readValue(buffer, Date.class,false));
     }

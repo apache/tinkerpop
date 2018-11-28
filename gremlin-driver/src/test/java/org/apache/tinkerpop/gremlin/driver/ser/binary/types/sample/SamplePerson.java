@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types.sample;
 
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * A sample custom data type containing few properties.
@@ -28,6 +29,8 @@ class SamplePerson {
     private final Date birthDate;
 
     SamplePerson(String name, Date birthDate) {
+        Objects.requireNonNull(name);
+        Objects.requireNonNull(birthDate);
 
         this.name = name;
         this.birthDate = birthDate;
