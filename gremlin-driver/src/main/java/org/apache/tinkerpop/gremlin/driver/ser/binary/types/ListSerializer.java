@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.CompositeByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
@@ -29,17 +28,16 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import java.util.List;
 
 public class ListSerializer extends SimpleTypeSerializer<List> {
-    private static final CollectionSerializer collectionSerializer = new CollectionSerializer();
+    private static final CollectionSerializer collectionSerializer = new CollectionSerializer(DataType.LIST);
+
+    public ListSerializer() {
+        super(DataType.LIST);
+    }
 
     @Override
     public List readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
         // The collection is a List<>
         return (List) collectionSerializer.readValue(buffer, context);
-    }
-
-    @Override
-    DataType getDataType() {
-        return DataType.LIST;
     }
 
     @Override

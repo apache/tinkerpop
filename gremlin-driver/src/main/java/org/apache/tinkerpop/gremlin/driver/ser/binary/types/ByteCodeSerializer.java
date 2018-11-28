@@ -30,6 +30,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import java.util.List;
 
 public class ByteCodeSerializer extends SimpleTypeSerializer<Bytecode> {
+    public ByteCodeSerializer() {
+        super(DataType.BYTECODE);
+    }
 
     @Override
     public Bytecode readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
@@ -55,11 +58,6 @@ public class ByteCodeSerializer extends SimpleTypeSerializer<Bytecode> {
             values[j] = context.read(buffer);
         }
         return values;
-    }
-
-    @Override
-    DataType getDataType() {
-        return DataType.BYTECODE;
     }
 
     @Override

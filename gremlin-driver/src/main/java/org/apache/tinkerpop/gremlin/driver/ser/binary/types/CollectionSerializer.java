@@ -30,9 +30,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 class CollectionSerializer extends SimpleTypeSerializer<Collection> {
-    @Override
-    DataType getDataType() {
-        return null;
+    public CollectionSerializer(DataType dataType) {
+        super(dataType);
     }
 
     @Override

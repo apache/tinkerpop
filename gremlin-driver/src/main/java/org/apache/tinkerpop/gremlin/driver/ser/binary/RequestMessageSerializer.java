@@ -26,8 +26,9 @@ import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import java.util.Map;
 import java.util.UUID;
 
-public class RequestMessageSerializer implements TypeSerializer<RequestMessage> {
-    public RequestMessage readValue(ByteBuf buffer, GraphBinaryReader context, boolean nullable) throws SerializationException {
+public class RequestMessageSerializer {
+
+    public RequestMessage readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
         final int version = buffer.readByte();
         assert version >>> 31 == 1;
 
@@ -43,15 +44,7 @@ public class RequestMessageSerializer implements TypeSerializer<RequestMessage> 
         return builder.create();
     }
 
-    @Override
-    public ByteBuf write(RequestMessage value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
-        // There is no type code / information for the request message itself.
-        throw new SerializationException("RequestMessageSerializer can not be written with type information");
-    }
-
-    @Override
-    public ByteBuf writeValue(RequestMessage value, ByteBufAllocator allocator, GraphBinaryWriter context,
-                              boolean nullable) throws SerializationException {
+    public ByteBuf writeValue(RequestMessage value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
         return allocator.compositeBuffer(5).addComponents(true,
                 // Version
                 allocator.buffer(1).writeByte(0x81),
@@ -63,11 +56,5 @@ public class RequestMessageSerializer implements TypeSerializer<RequestMessage> 
                 context.writeValue(value.getProcessor(), allocator, false),
                 // Args
                 context.writeValue(value.getArgs(), allocator, false));
-    }
-
-    @Override
-    public RequestMessage read(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
-        // There is no type code / information for the request message itself.
-        throw new SerializationException("RequestMessageSerializer must not invoked with type information");
     }
 }

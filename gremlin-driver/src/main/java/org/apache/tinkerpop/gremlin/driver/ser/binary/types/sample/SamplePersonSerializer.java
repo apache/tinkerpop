@@ -25,18 +25,25 @@ import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.TypeSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.CustomTypeSerializer;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 /**
  * A sample custom type serializer.
  */
-class SamplePersonSerializer implements TypeSerializer<SamplePerson> {
-    private final static byte[] dataTypeBuffer = new byte[] { DataType.CUSTOM.getCodeByte() };
-    private final byte[] dataTypeNameBuffer = "SAMPLEPERSON".getBytes(StandardCharsets.UTF_8);
+class SamplePersonSerializer implements CustomTypeSerializer<SamplePerson> {
     private final byte[] typeInfoBuffer = new byte[] { 0, 0, 0, 0 };
+
+    @Override
+    public String getTypeName() {
+        return "sampleProvider.SamplePerson";
+    }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.CUSTOM;
+    }
 
     @Override
     public SamplePerson read(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
@@ -61,9 +68,7 @@ class SamplePersonSerializer implements TypeSerializer<SamplePerson> {
     @Override
     public ByteBuf write(SamplePerson value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
         if (value == null) {
-            return allocator.compositeBuffer(4).addComponents(true,
-                    Unpooled.wrappedBuffer(dataTypeBuffer),
-                    Unpooled.wrappedBuffer(dataTypeNameBuffer),
+            return allocator.compositeBuffer(2).addComponents(true,
                     // No custom_type_info
                     Unpooled.wrappedBuffer(typeInfoBuffer),
                     // Value_flag null set
@@ -75,9 +80,7 @@ class SamplePersonSerializer implements TypeSerializer<SamplePerson> {
                 context.writeValue(value.getName(), allocator, false),
                 context.writeValue(value.getBirthDate(), allocator, false));
 
-        return allocator.compositeBuffer(6).addComponents(true,
-                Unpooled.wrappedBuffer(dataTypeBuffer),
-                Unpooled.wrappedBuffer(dataTypeNameBuffer),
+        return allocator.compositeBuffer(4).addComponents(true,
                 // No custom_type_info
                 Unpooled.wrappedBuffer(typeInfoBuffer),
                 // value_flag empty

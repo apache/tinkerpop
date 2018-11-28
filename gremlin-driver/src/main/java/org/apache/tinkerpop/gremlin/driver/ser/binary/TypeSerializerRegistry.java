@@ -25,58 +25,151 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import java.util.*;
 
 public class TypeSerializerRegistry {
-    public static final TypeSerializerRegistry INSTANCE = new TypeSerializerRegistry();
+    public static final TypeSerializerRegistry INSTANCE = build().create();
+
+    public static Builder build() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private final List<RegistryEntry> list = new LinkedList<>(Arrays.asList(
+                new RegistryEntry<>(String.class, new StringSerializer()),
+                new RegistryEntry<>(UUID.class, new UUIDSerializer()),
+                new RegistryEntry<>(Map.class, new MapSerializer()),
+                new RegistryEntry<>(List.class, new ListSerializer()),
+                new RegistryEntry<>(Set.class, new SetSerializer()),
+                new RegistryEntry<>(Integer.class, SingleTypeSerializer.IntSerializer),
+                new RegistryEntry<>(Long.class, SingleTypeSerializer.LongSerializer),
+                new RegistryEntry<>(Double.class, SingleTypeSerializer.DoubleSerializer),
+                new RegistryEntry<>(Float.class, SingleTypeSerializer.FloatSerializer),
+                new RegistryEntry<>(Short.class, SingleTypeSerializer.ShortSerializer),
+                new RegistryEntry<>(Boolean.class, SingleTypeSerializer.BooleanSerializer),
+                new RegistryEntry<>(Byte.class, SingleTypeSerializer.ByteSerializer),
+                new RegistryEntry<>(Class.class, new ClassSerializer()),
+                new RegistryEntry<>(Date.class, new DateSerializer(DataType.TIMESTAMP)),
+                new RegistryEntry<>(Date.class, new DateSerializer(DataType.DATE)),
+                new RegistryEntry<>(Bytecode.class, new ByteCodeSerializer())));
+
+        /**
+         * Adds a serializer for a built-in type.
+         */
+        public <T> Builder add(Class<T> type, TypeSerializer<T> serializer) {
+            if (serializer.getDataType() == DataType.CUSTOM) {
+                throw new IllegalArgumentException("DataType can not be CUSTOM, use addCustomType() method instead");
+            }
+
+            if (serializer.getDataType() == DataType.UNSPECIFIED_NULL) {
+                throw new IllegalArgumentException("Adding a serializer for a UNSPECIFIED_NULL is not permitted");
+            }
+
+            if (serializer instanceof CustomTypeSerializer) {
+                throw new IllegalArgumentException(
+                        "CustomTypeSerializer implementations are reserved for customtypes");
+            }
+
+            list.add(new RegistryEntry<>(type, serializer));
+            return this;
+        }
+
+        /**
+         * Adds a serializer for a custom type.
+         */
+        public <T> Builder addCustomType(Class<T> type, CustomTypeSerializer<T> serializer) {
+            if (serializer == null) {
+                throw new NullPointerException("serializer can not be null");
+            }
+
+            if (serializer.getDataType() != DataType.CUSTOM) {
+                throw new IllegalArgumentException("Custom serializer must use CUSTOM data type");
+            }
+
+            if (serializer.getTypeName() == null) {
+                throw new NullPointerException("serializer custom type name can not be null");
+            }
+
+            list.add(new RegistryEntry<>(type, serializer));
+            return this;
+        }
+
+        /**
+         * Creates a new {@link TypeSerializerRegistry} instance based on the serializers added.
+         */
+        public TypeSerializerRegistry create() {
+            return new TypeSerializerRegistry(list);
+        }
+    }
+
+    private static class RegistryEntry<T> {
+        private final Class<T> type;
+        private final TypeSerializer<T> typeSerializer;
+
+        private RegistryEntry(Class<T> type, TypeSerializer<T> typeSerializer) {
+            this.type = type;
+            this.typeSerializer = typeSerializer;
+        }
+
+        public Class<T> getType() {
+            return type;
+        }
+
+        public DataType getDataType() {
+            return typeSerializer.getDataType();
+        }
+
+        public String getCustomTypeName() {
+            if (getDataType() != DataType.CUSTOM) {
+                return null;
+            }
+
+            CustomTypeSerializer customTypeSerializer = (CustomTypeSerializer) typeSerializer;
+            return customTypeSerializer.getTypeName();
+        }
+
+        public TypeSerializer<T> getTypeSerializer() {
+            return typeSerializer;
+        }
+    }
 
     private final Map<Class<?>, TypeSerializer<?>> serializers = new HashMap<>();
     private final Map<Class<?>, TypeSerializer<?>> serializersByInterface = new HashMap<>();
     private final Map<DataType, TypeSerializer<?>> serializersByDataType = new HashMap<>();
+    private final Map<String, CustomTypeSerializer> serializersByCustomTypeName = new HashMap<>();
 
-    private TypeSerializerRegistry() {
-        put(String.class, DataType.STRING, new StringSerializer());
-        put(UUID.class, DataType.UUID, new UUIDSerializer());
-
-        put(Map.class, DataType.MAP, new MapSerializer());
-        put(List.class, DataType.LIST, new ListSerializer());
-        put(Set.class, DataType.SET, new SetSerializer());
-
-        put(Integer.class, DataType.INT, SingleTypeSerializer.IntSerializer);
-        put(Long.class, DataType.LONG, SingleTypeSerializer.LongSerializer);
-        put(Double.class, DataType.DOUBLE, SingleTypeSerializer.DoubleSerializer);
-        put(Float.class, DataType.FLOAT, SingleTypeSerializer.FloatSerializer);
-        put(Short.class, DataType.SHORT, SingleTypeSerializer.ShortSerializer);
-        put(Boolean.class, DataType.BOOLEAN, SingleTypeSerializer.BooleanSerializer);
-        put(Byte.class, DataType.BYTE, SingleTypeSerializer.ByteSerializer);
-        put(Class.class, DataType.CLASS, new ClassSerializer());
-
-        put(Date.class, DataType.TIMESTAMP, new DateSerializer(DataType.TIMESTAMP));
-        put(Date.class, DataType.DATE, new DateSerializer());
-
-        put(Bytecode.class, DataType.BYTECODE, new ByteCodeSerializer());
+    private TypeSerializerRegistry(Collection<RegistryEntry> entries) {
+        for (RegistryEntry entry : entries) {
+            put(entry);
+        }
     }
 
-    public <T> TypeSerializerRegistry put(Class<T> type, DataType dataType, TypeSerializer<T> instance) {
+    private void put(RegistryEntry entry) {
+        final Class type = entry.getType();
+        final TypeSerializer serializer = entry.getTypeSerializer();
+
         if (type == null) {
-            throw new IllegalArgumentException("Type can not be null");
+            throw new NullPointerException("Type can not be null");
         }
 
-        if (instance == null) {
-            throw new IllegalArgumentException("Serializer instance can not be null");
+        if (serializer == null) {
+            throw new NullPointerException("Serializer instance can not be null");
+        }
+
+        if (serializer.getDataType() == null) {
+            throw new NullPointerException("Serializer data type can not be null");
         }
 
         if (!type.isInterface()) {
             // Direct class match
-            serializers.put(type, instance);
+            serializers.put(type, serializer);
         } else {
             // Interface can be assigned by provided type
-            serializersByInterface.put(type, instance);
+            serializersByInterface.put(type, serializer);
         }
 
-
-        if (dataType != null) {
-            serializersByDataType.put(dataType, instance);
+        if (serializer.getDataType() != DataType.CUSTOM) {
+            serializersByDataType.put(serializer.getDataType(), serializer);
+        } else {
+            serializersByCustomTypeName.put(entry.getCustomTypeName(), (CustomTypeSerializer) serializer);
         }
-
-        return this;
     }
 
     public <T> TypeSerializer<T> getSerializer(Class<T> type) throws SerializationException {
@@ -96,7 +189,24 @@ public class TypeSerializerRegistry {
     }
 
     public <T> TypeSerializer<T> getSerializer(DataType dataType) throws SerializationException {
+        if (dataType == DataType.CUSTOM) {
+            throw new IllegalArgumentException("Custom type serializers can not be retrieved using this method");
+        }
+
         return validateInstance(serializersByDataType.get(dataType), dataType.toString());
+    }
+
+    /**
+     * Gets the serializer for a given custom type name.
+     */
+    public <T> CustomTypeSerializer<T> getSerializerForCustomType(String name) throws SerializationException {
+        CustomTypeSerializer serializer = serializersByCustomTypeName.get(name);
+
+        if (serializer == null) {
+            throw new SerializationException(String.format("Serializer for custom type '%s' not found", name));
+        }
+
+        return serializer;
     }
 
     private static TypeSerializer validateInstance(TypeSerializer serializer, String typeName) throws SerializationException {

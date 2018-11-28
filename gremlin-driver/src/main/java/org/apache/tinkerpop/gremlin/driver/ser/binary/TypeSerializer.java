@@ -22,7 +22,16 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 
+/**
+ * Represents a serializer for a given type.
+ */
 public interface TypeSerializer<T> {
+
+    /**
+     * Gets the {@link DataType} that is represented by the given {@link T}.
+     */
+    DataType getDataType();
+
     /**
      * Reads the type information and value from the buffer and returns an instance of T.
      */

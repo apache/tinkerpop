@@ -25,16 +25,24 @@ import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.TypeSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.CustomTypeSerializer;
 
 import java.nio.charset.StandardCharsets;
 
-class SamplePairSerializer implements TypeSerializer<SamplePair> {
-    private final static byte[] dataTypeBuffer = new byte[] { DataType.CUSTOM.getCodeByte() };
-    private final byte[] dataTypeNameBuffer = "SAMPLEPAIR".getBytes(StandardCharsets.UTF_8);
+class SamplePairSerializer implements CustomTypeSerializer<SamplePair> {
 
     @Override
-    public SamplePair read(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
+    public DataType getDataType() {
+        return DataType.CUSTOM;
+    }
+
+    @Override
+    public String getTypeName() {
+        return "sampleProvider.SamplePair";
+    }
+
+    @Override
+    public SamplePair read(ByteBuf buffer, GraphBinaryReader context) {
         return null;
     }
 
@@ -44,16 +52,12 @@ class SamplePairSerializer implements TypeSerializer<SamplePair> {
     }
 
     @Override
-    public ByteBuf write(SamplePair value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
+    public ByteBuf write(SamplePair value, ByteBufAllocator allocator, GraphBinaryWriter context) {
 
         ByteBuf valueBuffer = null;
 
         return allocator.compositeBuffer(3).addComponents(true,
-                // Type code
-                Unpooled.wrappedBuffer(dataTypeBuffer),
-                // Custom type name
-                Unpooled.wrappedBuffer(dataTypeNameBuffer),
-                // No custom type info in this case
+                // No custom type info
                 // Value flag
                 valueBuffer
         );

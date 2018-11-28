@@ -30,6 +30,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MapSerializer extends SimpleTypeSerializer<Map> {
+    public MapSerializer() {
+        super(DataType.MAP);
+    }
+
     @Override
     public Map readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
         final int length = buffer.readInt();
@@ -40,11 +44,6 @@ public class MapSerializer extends SimpleTypeSerializer<Map> {
         }
 
         return result;
-    }
-
-    @Override
-    DataType getDataType() {
-        return DataType.MAP;
     }
 
     @Override

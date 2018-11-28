@@ -28,14 +28,13 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import java.util.UUID;
 
 public class UUIDSerializer extends SimpleTypeSerializer<UUID> {
-    @Override
-    public UUID readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
-        return new UUID(buffer.readLong(), buffer.readLong());
+    public UUIDSerializer() {
+        super(DataType.UUID);
     }
 
     @Override
-    DataType getDataType() {
-        return DataType.UUID;
+    public UUID readValue(ByteBuf buffer, GraphBinaryReader context) {
+        return new UUID(buffer.readLong(), buffer.readLong());
     }
 
     @Override

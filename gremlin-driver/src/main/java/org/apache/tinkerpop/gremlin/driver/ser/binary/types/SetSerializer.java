@@ -29,11 +29,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class SetSerializer extends SimpleTypeSerializer<Set>{
-    private static final CollectionSerializer collectionSerializer = new CollectionSerializer();
+    private static final CollectionSerializer collectionSerializer = new CollectionSerializer(DataType.SET);
 
-    @Override
-    DataType getDataType() {
-        return DataType.SET;
+    public SetSerializer() {
+        super(DataType.SET);
     }
 
     @Override

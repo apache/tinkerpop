@@ -22,12 +22,14 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.CustomTypeSerializer;
 
 public class GraphBinaryWriter {
     private final TypeSerializerRegistry registry;
-    private final static byte[] valueFlagNull = new byte[] { 0x01 };
-    private final static byte[] valueFlagNone = new byte[] { 0 };
-    private final static byte[] unspecifiedNull = new byte[] { DataType.UNSPECIFIED_NULL.getCodeByte(), 0x01};
+    private final static byte[] valueFlagNullBytes = new byte[] { 0x01 };
+    private final static byte[] valueFlagNoneBytes = new byte[] { 0 };
+    private final static byte[] unspecifiedNullBytes = new byte[] { DataType.UNSPECIFIED_NULL.getCodeByte(), 0x01};
+    private final static byte[] customTypeCodeBytes = new byte[] { DataType.CUSTOM.getCodeByte() };
 
     public GraphBinaryWriter() {
         this(TypeSerializerRegistry.INSTANCE);
@@ -61,13 +63,30 @@ public class GraphBinaryWriter {
     public <T> ByteBuf write(T value, ByteBufAllocator allocator) throws SerializationException {
         if (value == null) {
             // return Object of type "unspecified object null" with the value flag set to null.
-            return Unpooled.wrappedBuffer(unspecifiedNull);
+            return Unpooled.wrappedBuffer(unspecifiedNullBytes);
         }
 
         Class<?> objectClass = value.getClass();
 
         TypeSerializer<T> serializer = (TypeSerializer<T>) registry.getSerializer(objectClass);
-        return serializer.write(value, allocator, this);
+
+        if (serializer instanceof CustomTypeSerializer) {
+            CustomTypeSerializer customTypeSerializer = (CustomTypeSerializer) serializer;
+            // Is a custom type
+            // Write type code, custom type name and let the serializer write
+            // the rest of {custom_type_info} followed by {value_flag} and {value}
+            return allocator.compositeBuffer(3).addComponents(true,
+                    Unpooled.wrappedBuffer(customTypeCodeBytes),
+                    writeValue(customTypeSerializer.getTypeName(), allocator, false),
+                    customTypeSerializer.write(value, allocator, this));
+        }
+
+        return allocator.compositeBuffer(2).addComponents(true,
+                // {type_code}
+                // TODO: Reuse buffer pooled locally
+                allocator.buffer(1).writeByte(serializer.getDataType().getCodeByte()),
+                // {type_info}{value_flag}{value}
+                serializer.write(value, allocator, this));
     }
 
     /**
@@ -85,13 +104,13 @@ public class GraphBinaryWriter {
      * Gets a buffer containing a single byte representing the null value_flag.
      */
     public ByteBuf getValueFlagNull() {
-        return Unpooled.wrappedBuffer(valueFlagNull);
+        return Unpooled.wrappedBuffer(valueFlagNullBytes);
     }
 
     /**
      * Gets a buffer containing a single byte with value 0, representing an unset value_flag.
      */
     public ByteBuf getValueFlagNone() {
-        return Unpooled.wrappedBuffer(valueFlagNone);
+        return Unpooled.wrappedBuffer(valueFlagNoneBytes);
     }
 }

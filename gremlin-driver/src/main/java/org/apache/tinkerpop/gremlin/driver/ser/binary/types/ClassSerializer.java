@@ -26,9 +26,8 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 
 public class ClassSerializer extends SimpleTypeSerializer<Class> {
-    @Override
-    DataType getDataType() {
-        return DataType.CLASS;
+    public ClassSerializer() {
+        super(DataType.CLASS);
     }
 
     @Override

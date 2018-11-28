@@ -28,15 +28,14 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import java.nio.charset.StandardCharsets;
 
 public class StringSerializer extends SimpleTypeSerializer<String> {
-    @Override
-    public String readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
-        final int length = buffer.readInt();
-        return buffer.readCharSequence(length, StandardCharsets.UTF_8).toString();
+    public StringSerializer() {
+        super(DataType.STRING);
     }
 
     @Override
-    DataType getDataType() {
-        return DataType.STRING;
+    public String readValue(ByteBuf buffer, GraphBinaryReader context) {
+        final int length = buffer.readInt();
+        return buffer.readCharSequence(length, StandardCharsets.UTF_8).toString();
     }
 
     @Override

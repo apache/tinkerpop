@@ -18,26 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.TypeSerializer;
 
-import java.util.Date;
-
-public class DateSerializer extends SimpleTypeSerializer<Date> {
-    public DateSerializer(DataType type) {
-        super(type);
-    }
-
-    @Override
-    Date readValue(ByteBuf buffer, GraphBinaryReader context) {
-        return new Date(buffer.readLong());
-    }
-
-    @Override
-    public ByteBuf writeValueSequence(Date value, ByteBufAllocator allocator, GraphBinaryWriter context) {
-        return allocator.buffer(8).writeLong(value.getTime());
-    }
+/**
+ * Represents a serializer for a custom (provider specific) serializer.
+ * <p>
+ *     Note that invocations to
+ * </p>
+ * @param <T>
+ */
+public interface CustomTypeSerializer<T> extends TypeSerializer<T> {
+    /**
+     * Gets the custom type name.
+     */
+    String getTypeName();
 }

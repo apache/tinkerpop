@@ -31,7 +31,15 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.TypeSerializer;
  * and {value}.
  */
 public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
-    abstract DataType getDataType();
+    private final DataType dataType;
+
+    public DataType getDataType() {
+        return dataType;
+    }
+
+    public SimpleTypeSerializer(DataType dataType) {
+        this.dataType = dataType;
+    }
 
     @Override
     public T read(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
@@ -58,14 +66,7 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
 
     @Override
     public ByteBuf write(T value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
-        final ByteBuf valueBuffer = writeValue(value, allocator, context, true);
-
-        return allocator.compositeBuffer(2)
-                .addComponents(
-                        true,
-                        //TODO: Reuse buffer pooled locally
-                        allocator.buffer(1).writeByte(getDataType().getCodeByte()),
-                        valueBuffer);
+        return writeValue(value, allocator, context, true);
     }
 
     @Override

@@ -54,12 +54,12 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
 
     @Override
     public ByteBuf serializeRequestAsBinary(RequestMessage requestMessage, ByteBufAllocator allocator) throws SerializationException {
-        return requestSerializer.writeValue(requestMessage, allocator, writer, false);
+        return requestSerializer.writeValue(requestMessage, allocator, writer);
     }
 
     @Override
     public RequestMessage deserializeRequest(ByteBuf msg) throws SerializationException {
-        return requestSerializer.readValue(msg, reader, false);
+        return requestSerializer.readValue(msg, reader);
     }
 
     @Override

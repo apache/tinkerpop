@@ -29,14 +29,8 @@ import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import java.util.Map;
 import java.util.UUID;
 
-public class ResponseMessageSerializer implements TypeSerializer<ResponseMessage> {
-    @Override
-    public ResponseMessage read(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
-        // There is no type code / information for the response message itself.
-        throw new SerializationException("ResponseMessageSerializer must not invoked with type information");
-    }
+public class ResponseMessageSerializer {
 
-    @Override
     public ResponseMessage readValue(ByteBuf buffer, GraphBinaryReader context, boolean nullable) throws SerializationException {
         final int version = buffer.readByte();
         assert version >>> 31 == 1;
@@ -50,13 +44,6 @@ public class ResponseMessageSerializer implements TypeSerializer<ResponseMessage
                 .create();
     }
 
-    @Override
-    public ByteBuf write(ResponseMessage value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
-        // There is no type code / information for the response message itself.
-        throw new SerializationException("ResponseMessageSerializer can not be written with type information");
-    }
-
-    @Override
     public ByteBuf writeValue(ResponseMessage value, ByteBufAllocator allocator, GraphBinaryWriter context, boolean nullable) throws SerializationException {
         final ResponseResult result = value.getResult();
         final ResponseStatus status = value.getStatus();
