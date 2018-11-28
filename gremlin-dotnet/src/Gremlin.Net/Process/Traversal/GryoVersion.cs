@@ -40,10 +40,13 @@ namespace Gremlin.Net.Process.Traversal
 
         public static GryoVersion V3_0 => new GryoVersion("V3_0");
 
+        public static GryoVersion V3_1 => new GryoVersion("V3_1");
+
         private static readonly IDictionary<string, GryoVersion> Properties = new Dictionary<string, GryoVersion>
         {
             { "V1_0", V1_0 },
             { "V3_0", V3_0 },
+            { "V3_1", V3_1 },
         };
 
         /// <summary>

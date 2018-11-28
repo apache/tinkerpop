@@ -62,6 +62,8 @@ import java.util.Map;
  * wouldn't be practical to serialize in this fashion.  This is a bit of a special case for TinkerGraph given its
  * in-memory status.  Typical implementations would create serializers for a complex vertex identifier or a
  * custom data class like a "geographic point".
+ * <p/>
+ * This is compatible with GraphSON 3.x and Gryo 3.x.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

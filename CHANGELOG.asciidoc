@@ -46,6 +46,7 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Bumped to Netty 4.1.25.
 * Bumped to Spark 2.3.1.
 * Bumped to Groovy 2.5.2.
+* Introduced Gryo 3.1.
 * Modified Gremlin Server to return a "host" status attribute on responses.
 * Added ability to the Java, .NET, Python and JavaScript drivers to retrieve status attributes returned from the server.
 * Modified Java and Gremlin.Net `ResponseException` to include status code and status attributes.

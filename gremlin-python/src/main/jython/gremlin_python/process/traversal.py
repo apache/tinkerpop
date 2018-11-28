@@ -148,10 +148,11 @@ statics.add_static('V1_0', GraphSONVersion.V1_0)
 statics.add_static('V2_0', GraphSONVersion.V2_0)
 statics.add_static('V3_0', GraphSONVersion.V3_0)
 
-GryoVersion = Enum('GryoVersion', ' V1_0 V3_0')
+GryoVersion = Enum('GryoVersion', ' V1_0 V3_0 V3_1')
 
 statics.add_static('V1_0', GryoVersion.V1_0)
 statics.add_static('V3_0', GryoVersion.V3_0)
+statics.add_static('V3_1', GryoVersion.V3_1)
 
 Operator = Enum('Operator', ' addAll and_ assign div max min minus mult or_ sum sumLong')
 

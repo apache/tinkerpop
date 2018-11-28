@@ -60,6 +60,10 @@ toGryoV3d0 = { o, type, mapper ->
     toGryo(o, type, mapper, "v3d0")
 }
 
+toGryoV3d1 = { o, type, mapper ->
+    toGryo(o, type, mapper, "v3d1")
+}
+
 writeSupportedObjects = { mapper, toGryoFunction ->
     model.entries().findAll{it.hasGryoCompatibility()}.each {
         toGryoFunction(it.getObject(), it, mapper)
@@ -79,6 +83,13 @@ mapper = GryoMapper.build().
         create().createMapper()
 
 writeSupportedObjects(mapper, toGryoV3d0)
+
+mapper = GryoMapper.build().
+        version(GryoVersion.V3_1).
+        addRegistry(TinkerIoRegistryV3d0.instance()).
+        create().createMapper()
+
+writeSupportedObjects(mapper, toGryoV3d1)
 
 def ver = "_" + "${projectVersion}".replace(".","_").replace("-SNAPSHOT","")
 def target = "${projectBaseDir}/src/test/resources/org/apache/tinkerpop/gremlin/structure/io/gryo/" + ver

@@ -99,7 +99,7 @@ public final class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, 
      * Create a new builder using the default version of Gryo - v3.
      */
     public static Io.Builder<GryoIo> build() {
-        return build(GryoVersion.V3_0);
+        return build(GryoVersion.V3_1);
     }
 
     /**

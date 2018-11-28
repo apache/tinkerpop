@@ -63,7 +63,8 @@ public class SparkSingleIterationStrategyTest extends AbstractSparkTest {
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {"V1d0", GryoVersion.V1_0},
-                {"V3d0", GryoVersion.V3_0}});
+                {"V3d0", GryoVersion.V3_0},
+                {"V3d1", GryoVersion.V3_1}});
     }
 
     @Parameterized.Parameter(value = 0)

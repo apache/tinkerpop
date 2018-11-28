@@ -86,6 +86,18 @@ public abstract class AbstractIoRegistryCheck extends AbstractGremlinTest {
         assertTrue(input.delete());
     }
 
+    public void checkGryoV3d1IoRegistryCompliance(final HadoopGraph graph, final Class<? extends GraphComputer> graphComputerClass) throws Exception {
+        final File input = TestHelper.generateTempFile(this.getClass(), "gryo-io-registry", ".kryo");
+        graph.configuration().setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
+        graph.configuration().setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, GryoOutputFormat.class.getCanonicalName());
+        graph.configuration().setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, input.getAbsolutePath());
+        graph.configuration().setProperty(GryoPool.CONFIG_IO_GRYO_VERSION, GryoVersion.V3_1.name());
+        graph.configuration().setProperty(IoRegistry.IO_REGISTRY, ToyIoRegistry.class.getCanonicalName());
+        final GryoRecordWriter writer = new GryoRecordWriter(new DataOutputStream(new FileOutputStream(input)), ConfUtil.makeHadoopConfiguration(graph.configuration()));
+        validateIoRegistryGraph(graph, graphComputerClass, writer);
+        assertTrue(input.delete());
+    }
+
     public void checkGraphSONIoRegistryCompliance(final HadoopGraph graph, final Class<? extends GraphComputer> graphComputerClass) throws Exception {
         final File input = TestHelper.generateTempFile(this.getClass(), "graphson-io-registry", ".json");
         graph.configuration().setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GraphSONInputFormat.class.getCanonicalName());

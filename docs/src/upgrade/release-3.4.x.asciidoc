@@ -544,6 +544,12 @@ gremlin> g.V(1).
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1522[TINKERPOP-1522]
 
+==== Gryo 3.1
+
+This release introduces Gryo 3.1 which is now the default Gryo version. Those using older versions of TinkerPop drivers
+(e.g. 3.3.5) connecting to a 3.4.0 server can still expect Gryo 3.0 to work and be fully compatible. Gremlin Server
+still has Gryo 3.0 serializer configurations present in its default packaging.
+
 === Upgrading for Providers
 
 ==== Graph Database Providers

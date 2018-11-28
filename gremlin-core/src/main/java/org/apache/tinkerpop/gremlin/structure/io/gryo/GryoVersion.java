@@ -118,6 +118,7 @@ import org.apache.tinkerpop.shaded.kryo.KryoSerializable;
 import org.apache.tinkerpop.shaded.kryo.serializers.JavaSerializer;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.LabelledCounter;
 import org.apache.commons.collections.map.ReferenceMap;
+import org.apache.tinkerpop.shaded.kryo.serializers.VersionFieldSerializer;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
@@ -150,6 +151,7 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -166,11 +168,14 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
 /**
+ * Defines all the class registrations and serializers for the various versions of Gryo.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public enum GryoVersion {
     V1_0("1.0", initV1d0Registrations(), GryoClassResolverV1d0::new),
-    V3_0("3.0", initV3d0Registrations(), GryoClassResolverV3d0::new);
+    V3_0("3.0", initV3d0Registrations(), GryoClassResolverV3d0::new),
+    V3_1("3.1", initV3d1Registrations(), GryoClassResolverV3d0::new);
 
     private final String versionNumber;
     private final List<TypeRegistration<?>> registrations;
@@ -219,6 +224,36 @@ public enum GryoVersion {
 
     public String getVersion() {
         return versionNumber;
+    }
+
+    public static List<TypeRegistration<?>> initV3d1Registrations() {
+        final List<TypeRegistration<?>> registrations = initV3d0Registrations();
+
+        // override the "detached" property serialization. need the host of the detached to be serialized for spark
+        // use cases or else locally unique properties won't work
+        // see https://issues.apache.org/jira/browse/TINKERPOP-2051
+        overrideRegistration(DetachedVertexProperty.class, new GryoSerializersV3d1.DetachedVertexPropertySerializer(), registrations);
+
+        return registrations;
+    }
+
+    private static void overrideRegistration(final Class<?> clazz, final SerializerShim serializer, final List<TypeRegistration<?>> registrations) {
+        final Iterator<TypeRegistration<?>> iter = registrations.iterator();
+        Integer registrationId = null;
+        while (iter.hasNext()) {
+            final TypeRegistration<?> existingRegistration = iter.next();
+            if (existingRegistration.getTargetClass().equals(clazz)) {
+                registrationId = existingRegistration.getId();
+                iter.remove();
+                break;
+            }
+        }
+
+        if (null == registrationId)
+            throw new IllegalStateException("Gryo 3.0 should have a DetachedVertexProperty registered as a serializer to override for 3.1");
+
+        // replace the old serializer
+        registrations.add(GryoTypeReg.of(clazz, registrationId, serializer));
     }
 
     public static List<TypeRegistration<?>> initV3d0Registrations() {

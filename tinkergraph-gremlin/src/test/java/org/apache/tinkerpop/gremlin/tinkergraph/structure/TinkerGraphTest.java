@@ -547,7 +547,7 @@ public class TinkerGraphTest {
         final ArrayList<Color> colorList = new ArrayList<>(Arrays.asList(Color.RED, Color.GREEN));
 
         final Supplier<ClassResolver> classResolver = new CustomClassResolverSupplier();
-        final GryoMapper mapper = GryoMapper.build().version(GryoVersion.V3_0).addRegistry(TinkerIoRegistryV3d0.instance()).classResolver(classResolver).create();
+        final GryoMapper mapper = GryoMapper.build().version(GryoVersion.V3_1).addRegistry(TinkerIoRegistryV3d0.instance()).classResolver(classResolver).create();
         final Kryo kryo = mapper.createMapper();
         try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             final Output out = new Output(stream);
@@ -575,7 +575,7 @@ public class TinkerGraphTest {
         final ArrayList<Color> colorList = new ArrayList<>(Arrays.asList(Color.RED, Color.GREEN));
 
         final Supplier<ClassResolver> classResolver = new CustomClassResolverSupplier();
-        final GryoMapper mapper = GryoMapper.build().version(GryoVersion.V3_0).addRegistry(TinkerIoRegistryV3d0.instance()).classResolver(classResolver).create();
+        final GryoMapper mapper = GryoMapper.build().version(GryoVersion.V3_1).addRegistry(TinkerIoRegistryV3d0.instance()).classResolver(classResolver).create();
         final Kryo kryo = mapper.createMapper();
         try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             final Output out = new Output(stream);

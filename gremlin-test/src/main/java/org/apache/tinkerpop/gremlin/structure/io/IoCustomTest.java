@@ -78,7 +78,10 @@ public class IoCustomTest extends AbstractGremlinTest {
                         (Function<Graph, GraphWriter>) g -> g.io(GryoIo.build(GryoVersion.V1_0)).writer().mapper(g.io(GryoIo.build(GryoVersion.V1_0)).mapper().version(GryoVersion.V1_0).addCustom(CustomId.class).create()).create()},
                 {"gryo-v3", true,
                         (Function<Graph, GraphReader>) g -> g.io(GryoIo.build(GryoVersion.V3_0)).reader().mapper(g.io(GryoIo.build(GryoVersion.V3_0)).mapper().version(GryoVersion.V3_0).addCustom(CustomId.class).create()).create(),
-                        (Function<Graph, GraphWriter>) g -> g.io(GryoIo.build(GryoVersion.V3_0)).writer().mapper(g.io(GryoIo.build(GryoVersion.V3_0)).mapper().version(GryoVersion.V3_0).addCustom(CustomId.class).create()).create()}
+                        (Function<Graph, GraphWriter>) g -> g.io(GryoIo.build(GryoVersion.V3_0)).writer().mapper(g.io(GryoIo.build(GryoVersion.V3_0)).mapper().version(GryoVersion.V3_0).addCustom(CustomId.class).create()).create()},
+                {"gryo-v3d1", true,
+                        (Function<Graph, GraphReader>) g -> g.io(GryoIo.build(GryoVersion.V3_1)).reader().mapper(g.io(GryoIo.build(GryoVersion.V3_1)).mapper().version(GryoVersion.V3_1).addCustom(CustomId.class).create()).create(),
+                        (Function<Graph, GraphWriter>) g -> g.io(GryoIo.build(GryoVersion.V3_1)).writer().mapper(g.io(GryoIo.build(GryoVersion.V3_1)).mapper().version(GryoVersion.V3_1).addCustom(CustomId.class).create()).create()}
         });
     }
 

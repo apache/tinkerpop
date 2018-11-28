@@ -442,6 +442,193 @@ public class SerializationTest {
         }
     }
 
+    public static class GryoV3d1Test extends AbstractGremlinTest {
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldSerializeVertexAsDetached() throws Exception {
+            final GryoIo gryoIo = graph.io(GryoIo.build(GryoVersion.V3_1));
+            final GryoWriter gryoWriter = gryoIo.writer().create();
+            final GryoReader gryoReader = gryoIo.reader().create();
+
+            final Vertex v = graph.vertices(convertToVertexId("marko")).next();
+            final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            gryoWriter.writeObject(outputStream, v);
+
+            final ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            final Vertex detached = gryoReader.readObject(inputStream, DetachedVertex.class);
+            assertNotNull(detached);
+            assertEquals(v.label(), detached.label());
+            assertEquals(v.id(), detached.id());
+            assertEquals(v.value("name").toString(), detached.value("name"));
+            assertEquals((Integer) v.value("age"), detached.value("age"));
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldSerializeEdgeAsDetached() throws Exception {
+            final GryoIo gryoIo = graph.io(GryoIo.build(GryoVersion.V3_1));
+            final GryoWriter gryoWriter = gryoIo.writer().create();
+            final GryoReader gryoReader = gryoIo.reader().create();
+
+            final Edge e = g.E(convertToEdgeId("marko", "knows", "vadas")).next();
+            final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            gryoWriter.writeObject(outputStream, e);
+
+            final ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            final Edge detached = gryoReader.readObject(inputStream, DetachedEdge.class);
+            assertNotNull(detached);
+            assertEquals(e.label(), detached.label());
+            assertEquals(e.id(), detached.id());
+            assertEquals((Double) e.value("weight"), detached.value("weight"));
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldSerializePropertyAsDetached() throws Exception {
+            final GryoIo gryoIo = graph.io(GryoIo.build(GryoVersion.V3_1));
+            final GryoWriter gryoWriter = gryoIo.writer().create();
+            final GryoReader gryoReader = gryoIo.reader().create();
+
+            final Property property = g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("weight");
+            final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            gryoWriter.writeObject(outputStream, property);
+
+            final ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            final Property detached = gryoReader.readObject(inputStream, DetachedProperty.class);
+            assertNotNull(detached);
+            assertEquals(property.key(), detached.key());
+            assertEquals(property.value(), detached.value());
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldSerializeVertexPropertyAsDetached() throws Exception {
+            final GryoIo gryoIo = graph.io(GryoIo.build(GryoVersion.V3_1));
+            final GryoWriter gryoWriter = gryoIo.writer().create();
+            final GryoReader gryoReader = gryoIo.reader().create();
+
+            final VertexProperty vertexProperty = graph.vertices(convertToVertexId("marko")).next().property("name");
+            final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            gryoWriter.writeObject(outputStream, vertexProperty);
+
+            final ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            final VertexProperty detached = gryoReader.readObject(inputStream, DetachedVertexProperty.class);
+            assertNotNull(detached);
+            assertEquals(vertexProperty.label(), detached.label());
+            assertEquals(vertexProperty.id(), detached.id());
+            assertEquals(vertexProperty.value(), detached.value());
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.CREW)
+        public void shouldSerializeVertexPropertyWithPropertiesAsDetached() throws Exception {
+            final GryoIo gryoIo = graph.io(GryoIo.build(GryoVersion.V3_1));
+            final GryoWriter gryoWriter = gryoIo.writer().create();
+            final GryoReader gryoReader = gryoIo.reader().create();
+
+            final VertexProperty<?> vertexProperty = IteratorUtils.filter(graph.vertices(convertToVertexId("marko")).next().properties("location"), p -> p.value().equals("brussels")).next();
+            final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            gryoWriter.writeObject(outputStream, vertexProperty);
+
+            final ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            final VertexProperty<?> detached = gryoReader.readObject(inputStream, DetachedVertexProperty.class);
+
+            assertNotNull(detached);
+            assertEquals(vertexProperty.label(), detached.label());
+            assertEquals(vertexProperty.id(), detached.id());
+            assertEquals(vertexProperty.value(), detached.value());
+            assertEquals(vertexProperty.values("startTime").next(), detached.values("startTime").next());
+            assertEquals(vertexProperty.properties("startTime").next().key(), detached.properties("startTime").next().key());
+            assertEquals(vertexProperty.values("endTime").next(), detached.values("endTime").next());
+            assertEquals(vertexProperty.properties("endTime").next().key(), detached.properties("endTime").next().key());
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldSerializePathAsDetached() throws Exception {
+            final GryoIo gryoIo = graph.io(GryoIo.build(GryoVersion.V3_1));
+            final GryoWriter gryoWriter = gryoIo.writer().create();
+            final GryoReader gryoReader = gryoIo.reader().create();
+
+            final Path p = g.V(convertToVertexId("marko")).as("a").outE().as("b").inV().as("c").path()
+                    .filter(t -> ((Vertex) t.get().objects().get(2)).value("name").equals("lop")).next();
+            final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            gryoWriter.writeObject(outputStream, p);
+
+            final ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            final Path detached = gryoReader.readObject(inputStream, DetachedPath.class);
+            assertNotNull(detached);
+            assertEquals(p.labels().size(), detached.labels().size());
+            assertEquals(p.labels().get(0).size(), detached.labels().get(0).size());
+            assertEquals(p.labels().get(1).size(), detached.labels().get(1).size());
+            assertEquals(p.labels().get(2).size(), detached.labels().get(2).size());
+            assertTrue(p.labels().stream().flatMap(Collection::stream).allMatch(detached::hasLabel));
+
+            final Vertex vOut = p.get("a");
+            final Vertex detachedVOut = detached.get("a");
+            assertEquals(vOut.label(), detachedVOut.label());
+            assertEquals(vOut.id(), detachedVOut.id());
+
+            // this is a SimpleTraverser so no properties are present in detachment
+            assertFalse(detachedVOut.properties().hasNext());
+
+            final Edge e = p.get("b");
+            final Edge detachedE = detached.get("b");
+            assertEquals(e.label(), detachedE.label());
+            assertEquals(e.id(), detachedE.id());
+
+            // this is a SimpleTraverser so no properties are present in detachment
+            assertFalse(detachedE.properties().hasNext());
+
+            final Vertex vIn = p.get("c");
+            final Vertex detachedVIn = detached.get("c");
+            assertEquals(vIn.label(), detachedVIn.label());
+            assertEquals(vIn.id(), detachedVIn.id());
+
+            // this is a SimpleTraverser so no properties are present in detachment
+            assertFalse(detachedVIn.properties().hasNext());
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldSerializeTraversalMetrics() throws Exception {
+            final GryoIo gryoIo = graph.io(GryoIo.build(GryoVersion.V3_1));
+            final GryoWriter gryoWriter = gryoIo.writer().create();
+            final GryoReader gryoReader = gryoIo.reader().create();
+
+            final TraversalMetrics before = (TraversalMetrics) g.V().both().profile().next();
+            final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            gryoWriter.writeObject(outputStream, before);
+
+            final ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            final TraversalMetrics after = gryoReader.readObject(inputStream, TraversalMetrics.class);
+            assertNotNull(after);
+            assertEquals(before.getMetrics().size(), after.getMetrics().size());
+            assertEquals(before.getDuration(TimeUnit.MILLISECONDS), after.getDuration(TimeUnit.MILLISECONDS));
+            assertEquals(before.getMetrics(0).getCounts(), after.getMetrics().stream().findFirst().get().getCounts());
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldSerializeTree() throws Exception {
+            final GryoIo gryoIo = graph.io(GryoIo.build(GryoVersion.V3_1));
+            final GryoWriter gryoWriter = gryoIo.writer().create();
+            final GryoReader gryoReader = gryoIo.reader().create();
+
+            final Tree before = g.V(convertToVertexId("marko")).out().properties("name").tree().next();
+
+            final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            gryoWriter.writeObject(outputStream, before);
+
+            final ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            final Tree after = gryoReader.readObject(inputStream, Tree.class);
+            assertNotNull(after);
+            //The following assertions should be sufficent.
+            assertThat("Type does not match", after, instanceOf(Tree.class));
+            assertEquals("The objects differ", after, before);
+        }
+    }
+
     public static class GraphSONV1d0Test extends AbstractGremlinTest {
         private final TypeReference<HashMap<String, Object>> mapTypeReference = new TypeReference<HashMap<String, Object>>() {
         };

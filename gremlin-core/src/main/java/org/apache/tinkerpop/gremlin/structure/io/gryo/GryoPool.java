@@ -42,7 +42,7 @@ public final class GryoPool {
     public static final String CONFIG_IO_GRYO_POOL_SIZE = "gremlin.io.gryo.poolSize";
     public static final String CONFIG_IO_GRYO_VERSION = "gremlin.io.gryo.version";
     public static final int CONFIG_IO_GRYO_POOL_SIZE_DEFAULT = 256;
-    public static final GryoVersion CONFIG_IO_GRYO_POOL_VERSION_DEFAULT = GryoVersion.V3_0;
+    public static final GryoVersion CONFIG_IO_GRYO_POOL_VERSION_DEFAULT = GryoVersion.V3_1;
 
     public enum Type {READER, WRITER, READER_WRITER}
 

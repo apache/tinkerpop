@@ -76,7 +76,10 @@ public class IoEdgeTest extends AbstractGremlinTest {
                         (Function<Graph, GraphWriter>) g -> g.io(GryoIo.build(GryoVersion.V1_0)).writer().create()},
                 {"gryo-v3", true, true,
                         (Function<Graph,GraphReader>) g -> g.io(GryoIo.build(GryoVersion.V3_0)).reader().create(),
-                        (Function<Graph, GraphWriter>) g -> g.io(GryoIo.build(GryoVersion.V3_0)).writer().create()}
+                        (Function<Graph, GraphWriter>) g -> g.io(GryoIo.build(GryoVersion.V3_0)).writer().create()},
+                {"gryo-v3d1", true, true,
+                        (Function<Graph,GraphReader>) g -> g.io(GryoIo.build(GryoVersion.V3_1)).reader().create(),
+                        (Function<Graph, GraphWriter>) g -> g.io(GryoIo.build(GryoVersion.V3_1)).writer().create()}
         });
     }
 

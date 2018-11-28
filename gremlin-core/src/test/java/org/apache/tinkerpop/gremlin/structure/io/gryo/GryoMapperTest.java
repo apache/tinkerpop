@@ -84,7 +84,8 @@ public class GryoMapperTest {
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {"1_0", (Supplier<GryoMapper.Builder>) () -> GryoMapper.build().version(GryoVersion.V1_0)},
-                {"3_0", (Supplier<GryoMapper.Builder>) () -> GryoMapper.build().version(GryoVersion.V3_0)}});
+                {"3_0", (Supplier<GryoMapper.Builder>) () -> GryoMapper.build().version(GryoVersion.V3_0)},
+                {"3_1", (Supplier<GryoMapper.Builder>) () -> GryoMapper.build().version(GryoVersion.V3_1)}});
     }
 
     @Parameterized.Parameter

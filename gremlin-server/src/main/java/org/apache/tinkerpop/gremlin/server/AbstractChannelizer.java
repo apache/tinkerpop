@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import io.netty.channel.EventLoopGroup;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
@@ -27,7 +26,7 @@ import io.netty.handler.timeout.IdleStateHandler;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.AbstractGryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV2d0;
-import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
+import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d1;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
@@ -79,8 +78,8 @@ import java.util.stream.Stream;
 public abstract class AbstractChannelizer extends ChannelInitializer<SocketChannel> implements Channelizer {
     private static final Logger logger = LoggerFactory.getLogger(AbstractChannelizer.class);
     protected static final List<Settings.SerializerSettings> DEFAULT_SERIALIZERS = Arrays.asList(
-            new Settings.SerializerSettings(GryoMessageSerializerV3d0.class.getName(), Collections.emptyMap()),
-            new Settings.SerializerSettings(GryoMessageSerializerV3d0.class.getName(), new HashMap<String,Object>(){{
+            new Settings.SerializerSettings(GryoMessageSerializerV3d1.class.getName(), Collections.emptyMap()),
+            new Settings.SerializerSettings(GryoMessageSerializerV3d1.class.getName(), new HashMap<String,Object>(){{
                 put(AbstractGryoMessageSerializerV1d0.TOKEN_SERIALIZE_RESULT_TO_STRING, true);
             }}),
             new Settings.SerializerSettings(GraphSONMessageSerializerV2d0.class.getName(), Collections.emptyMap())

@@ -728,9 +728,10 @@ appropriate test resource directory for the current `SNAPSHOT` version and the a
 the IO asciidocs.
 2. After the release of a new TinkerPop version - in this case, a new test resource directory should be created for
 the `SNAPSHOT` version and the generated `test-case-data` copied in appropriately.
+3. If a new serialization format version is released (e.g. increment the version of Gryo).
 
-The second case, does require some additional discussion. When a new version is added the following classes will need
-to be updated in the following ways:
+The second and third cases, require some additional discussion. When a new version is added the following classes will
+need to be updated in the following ways:
 
 *GryoCompatibility* - Include new Gryo 1.0 and 3.0 enums for the current `SNAPSHOT`.
 

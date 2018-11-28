@@ -80,6 +80,7 @@
                                 <artifactId>groovy-all</artifactId>
                                 <version>${groovy.version}</version>
                                 <scope>runtime</scope>
+                                <type>pom</type>
                             </dependency>
                             <dependency>
                                 <groupId>log4j</groupId>

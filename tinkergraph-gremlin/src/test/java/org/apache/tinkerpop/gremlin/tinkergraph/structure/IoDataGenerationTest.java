@@ -150,9 +150,49 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteDEFAULTClassicGraphAsGryoV3d0() throws IOException {
+    public void shouldWriteClassicGraphAsGryoV3d1() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-v3d1.kryo");
+        GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_1).create()).create().writeGraph(os, TinkerFactory.createClassic());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteModernGraphAsGryoV3d1() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-v3d1.kryo");
+        GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_1).create()).create().writeGraph(os, TinkerFactory.createModern());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteCrewGraphAsGryoV3d1() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-crew-v3d1.kryo");
+        GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_1).create()).create().writeGraph(os, TinkerFactory.createTheCrew());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteSinkGraphAsGryoV3d1() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-sink-v3d1.kryo");
+        GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_1).create()).create().writeGraph(os, TinkerFactory.createKitchenSink());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteDEFAULTClassicGraphAsGryoV3d1() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic.kryo");
-        GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os, TinkerFactory.createClassic());
+        GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_1).create()).create().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
 
@@ -160,9 +200,9 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteDEFAULTModernGraphAsGryoV3d0() throws IOException {
+    public void shouldWriteDEFAULTModernGraphAsGryoV3d1() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern.kryo");
-        GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os, TinkerFactory.createModern());
+        GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_1).create()).create().writeGraph(os, TinkerFactory.createModern());
         os.close();
     }
 
@@ -170,9 +210,9 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteDEFAULTCrewGraphAsGryoV3d0() throws IOException {
+    public void shouldWriteDEFAULTCrewGraphAsGryoV3d1() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-crew.kryo");
-        GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os, TinkerFactory.createTheCrew());
+        GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_1).create()).create().writeGraph(os, TinkerFactory.createTheCrew());
         os.close();
     }
 
@@ -180,7 +220,7 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteDEFAULTSinkGraphAsGryoV3d0() throws IOException {
+    public void shouldWriteDEFAULTSinkGraphAsGryoV3d1() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-sink.kryo");
         GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os, TinkerFactory.createKitchenSink());
         os.close();
