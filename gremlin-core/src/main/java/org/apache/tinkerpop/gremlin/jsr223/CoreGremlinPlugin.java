@@ -33,6 +33,7 @@ public final class CoreGremlinPlugin implements GremlinPlugin {
 
     private static final ImportCustomizer gremlinCore = DefaultImportCustomizer.build()
             .addClassImports(CoreImports.getClassImports())
+            .addFieldImports(CoreImports.getFieldImports())
             .addEnumImports(CoreImports.getEnumImports())
             .addMethodImports(CoreImports.getMethodImports()).create();
 

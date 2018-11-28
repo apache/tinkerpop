@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -47,6 +48,11 @@ public interface ImportCustomizer extends Customizer {
     public Set<Enum> getEnumImports();
 
     /**
+     * Gets the set of fields to be imported to the {@link GremlinScriptEngine}.
+     */
+    public Set<Field> getFieldImports();
+
+    /**
      * Gets the set of packages from the {@link #getClassImports()}.
      */
     public default Set<Package> getClassPackages() {
@@ -65,5 +71,12 @@ public interface ImportCustomizer extends Customizer {
      */
     public default Set<Class> getEnumClasses() {
         return getEnumImports().stream().map(Enum::getDeclaringClass).collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    /**
+     * Gets the set of fields from the {@link #getFieldImports()}.
+     */
+    public default Set<Class> getFieldClasses() {
+        return getFieldImports().stream().map(Field::getDeclaringClass).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 }

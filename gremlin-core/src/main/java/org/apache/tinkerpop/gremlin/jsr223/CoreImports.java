@@ -139,6 +139,7 @@ import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
@@ -153,6 +154,7 @@ import java.util.stream.Stream;
 public final class CoreImports {
 
     private final static Set<Class> CLASS_IMPORTS = new LinkedHashSet<>();
+    private final static Set<Field> FIELD_IMPORTS = new LinkedHashSet<>();
     private final static Set<Method> METHOD_IMPORTS = new LinkedHashSet<>();
     private final static Set<Enum> ENUM_IMPORTS = new LinkedHashSet<>();
 
@@ -334,6 +336,10 @@ public final class CoreImports {
 
     public static Set<Enum> getEnumImports() {
         return Collections.unmodifiableSet(ENUM_IMPORTS);
+    }
+
+    public static Set<Field> getFieldImports() {
+        return Collections.unmodifiableSet(FIELD_IMPORTS);
     }
 
     /**
