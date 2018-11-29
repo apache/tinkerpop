@@ -52,8 +52,8 @@ public class SingleTypeSerializer<T> extends SimpleTypeSerializer<T> {
     private final Function<ByteBuf, T> readFunc;
     private final BiConsumer<T, ByteBuf> writeFunc;
 
-    private SingleTypeSerializer(int byteLength, DataType dataType, Function<ByteBuf, T> readFunc,
-                                 BiConsumer<T, ByteBuf> writeFunc) {
+    private SingleTypeSerializer(final int byteLength, final DataType dataType, final Function<ByteBuf, T> readFunc,
+                                 final BiConsumer<T, ByteBuf> writeFunc) {
         super(dataType);
         this.byteLength = byteLength;
         this.readFunc = readFunc;
@@ -61,13 +61,13 @@ public class SingleTypeSerializer<T> extends SimpleTypeSerializer<T> {
     }
 
     @Override
-    public T readValue(ByteBuf buffer, GraphBinaryReader context) {
+    public T readValue(final ByteBuf buffer, final GraphBinaryReader context) {
         return readFunc.apply(buffer);
     }
 
     @Override
-    public ByteBuf writeValueSequence(T value, ByteBufAllocator allocator, GraphBinaryWriter context) {
-        ByteBuf buffer = allocator.buffer(byteLength);
+    public ByteBuf writeValueSequence(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) {
+        final ByteBuf buffer = allocator.buffer(byteLength);
         writeFunc.accept(value, buffer);
         return buffer;
     }

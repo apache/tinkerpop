@@ -37,18 +37,18 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
         return dataType;
     }
 
-    public SimpleTypeSerializer(DataType dataType) {
+    public SimpleTypeSerializer(final DataType dataType) {
         this.dataType = dataType;
     }
 
     @Override
-    public T read(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
+    public T read(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         // No {type_info}, just {value_flag}{value}
         return readValue(buffer, context, true);
     }
 
     @Override
-    public T readValue(ByteBuf buffer, GraphBinaryReader context, boolean nullable) throws SerializationException {
+    public T readValue(final ByteBuf buffer, final GraphBinaryReader context, final boolean nullable) throws SerializationException {
         if (nullable) {
             final byte valueFlag = buffer.readByte();
             if ((valueFlag & 1) == 1) {
@@ -62,15 +62,15 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
     /**
      * Reads a non-nullable value
      */
-    abstract T readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException;
+    abstract T readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException;
 
     @Override
-    public ByteBuf write(T value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
+    public ByteBuf write(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         return writeValue(value, allocator, context, true);
     }
 
     @Override
-    public ByteBuf writeValue(T value, ByteBufAllocator allocator, GraphBinaryWriter context, boolean nullable) throws SerializationException {
+    public ByteBuf writeValue(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context, final boolean nullable) throws SerializationException {
         if (value == null) {
             if (!nullable) {
                 throw new SerializationException("Unexpected null value when nullable is false");
@@ -88,5 +88,5 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
         return allocator.compositeBuffer(2).addComponents(true, context.getValueFlagNone(), valueSequence);
     }
 
-    public abstract ByteBuf writeValueSequence(T value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException;
+    public abstract ByteBuf writeValueSequence(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException;
 }

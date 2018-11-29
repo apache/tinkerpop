@@ -28,7 +28,7 @@ class SamplePerson {
     private final String name;
     private final Date birthDate;
 
-    SamplePerson(String name, Date birthDate) {
+    SamplePerson(final String name, final Date birthDate) {
         Objects.requireNonNull(name);
         Objects.requireNonNull(birthDate);
 

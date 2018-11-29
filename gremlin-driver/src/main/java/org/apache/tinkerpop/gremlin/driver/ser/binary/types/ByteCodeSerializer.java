@@ -35,7 +35,7 @@ public class ByteCodeSerializer extends SimpleTypeSerializer<Bytecode> {
     }
 
     @Override
-    public Bytecode readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
+    public Bytecode readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final Bytecode result = new Bytecode();
 
         final int stepsLength = buffer.readInt();
@@ -51,9 +51,9 @@ public class ByteCodeSerializer extends SimpleTypeSerializer<Bytecode> {
         return result;
     }
 
-    private static Object[] getInstructionArguments(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
+    private static Object[] getInstructionArguments(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final int valuesLength = buffer.readInt();
-        Object[] values = new Object[valuesLength];
+        final Object[] values = new Object[valuesLength];
         for (int j = 0; j < valuesLength; j++) {
             values[j] = context.read(buffer);
         }
@@ -61,7 +61,7 @@ public class ByteCodeSerializer extends SimpleTypeSerializer<Bytecode> {
     }
 
     @Override
-    public ByteBuf writeValueSequence(Bytecode value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
+    public ByteBuf writeValueSequence(final Bytecode value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final List<Bytecode.Instruction> steps = value.getStepInstructions();
         final List<Bytecode.Instruction> sources = value.getSourceInstructions();
         // 2 buffers for the length + plus 2 buffers per each step and source
@@ -73,8 +73,8 @@ public class ByteCodeSerializer extends SimpleTypeSerializer<Bytecode> {
         return result;
     }
 
-    private void writeInstructions(ByteBufAllocator allocator, GraphBinaryWriter context,
-                                   List<Bytecode.Instruction> instructions, CompositeByteBuf result) throws SerializationException {
+    private void writeInstructions(final ByteBufAllocator allocator, final GraphBinaryWriter context,
+                                   final List<Bytecode.Instruction> instructions, final CompositeByteBuf result) throws SerializationException {
 
         result.addComponent(true, context.writeValue(instructions.size(), allocator, false));
 
@@ -86,7 +86,7 @@ public class ByteCodeSerializer extends SimpleTypeSerializer<Bytecode> {
         }
     }
 
-    private static ByteBuf getArgumentsBuffer(Object[] arguments, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
+    private static ByteBuf getArgumentsBuffer(final Object[] arguments, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(1 + arguments.length);
         result.addComponent(true, context.writeValue(arguments.length, allocator, false));
 

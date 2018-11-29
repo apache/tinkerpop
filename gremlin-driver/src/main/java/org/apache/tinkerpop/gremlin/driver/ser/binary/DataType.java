@@ -73,7 +73,7 @@ public enum DataType {
         }
     }
 
-    DataType(int code) {
+    DataType(final int code) {
         this.code = code;
     }
 
@@ -94,7 +94,7 @@ public enum DataType {
     /**
      * Gets a DataType by code.
      */
-    public static DataType get(int code) {
+    public static DataType get(final int code) {
         return typeByCode.get(code);
     }
 }

@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.*;
 
-public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
+public class GraphBinaryMessageSerializerV1d0 extends AbstractMessageSerializer {
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHBINARY_V1D0;
 
     private final GraphBinaryReader reader;
@@ -35,11 +35,11 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
     /**
      * Creates a new instance of the message serializer using the default type serializers.
      */
-    public GraphBinaryMessageSerializerV1() {
+    public GraphBinaryMessageSerializerV1d0() {
         this(TypeSerializerRegistry.INSTANCE);
     }
 
-    public GraphBinaryMessageSerializerV1(TypeSerializerRegistry registry) {
+    public GraphBinaryMessageSerializerV1d0(TypeSerializerRegistry registry) {
         reader = new GraphBinaryReader(registry);
         writer = new GraphBinaryWriter(registry);
 

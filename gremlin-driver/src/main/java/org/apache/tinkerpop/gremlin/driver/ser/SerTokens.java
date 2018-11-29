@@ -43,5 +43,5 @@ public final  class SerTokens {
     public static final String MIME_GRYO_V1D0 = "application/vnd.gremlin-v1.0+gryo";
     public static final String MIME_GRYO_V3D0 = "application/vnd.gremlin-v3.0+gryo";
     public static final String MIME_GRYO_LITE_V1D0 = "application/vnd.gremlin-v1.0+gryo-lite";
-    public static final String MIME_GRAPHBINARY_V1D0 = "application/vnd.graphbinary-v1.0+json";
+    public static final String MIME_GRAPHBINARY_V1D0 = "application/vnd.graphbinary-v1.0";
 }

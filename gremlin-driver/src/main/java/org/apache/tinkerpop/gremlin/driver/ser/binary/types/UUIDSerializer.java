@@ -33,12 +33,12 @@ public class UUIDSerializer extends SimpleTypeSerializer<UUID> {
     }
 
     @Override
-    public UUID readValue(ByteBuf buffer, GraphBinaryReader context) {
+    public UUID readValue(final ByteBuf buffer, final GraphBinaryReader context) {
         return new UUID(buffer.readLong(), buffer.readLong());
     }
 
     @Override
-    public ByteBuf writeValueSequence(UUID value, ByteBufAllocator allocator, GraphBinaryWriter context) {
+    public ByteBuf writeValueSequence(final UUID value, final ByteBufAllocator allocator, final GraphBinaryWriter context) {
         return allocator.buffer(16)
                 .writeLong(value.getMostSignificantBits())
                 .writeLong(value.getLeastSignificantBits());

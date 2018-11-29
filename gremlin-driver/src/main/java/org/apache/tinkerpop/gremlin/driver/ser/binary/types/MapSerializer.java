@@ -35,10 +35,10 @@ public class MapSerializer extends SimpleTypeSerializer<Map> {
     }
 
     @Override
-    public Map readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
+    public Map readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final int length = buffer.readInt();
 
-        HashMap result = new HashMap<>(length);
+        final HashMap result = new HashMap<>(length);
         for (int i = 0; i < length; i++) {
             result.put(context.read(buffer), context.read(buffer));
         }
@@ -47,8 +47,8 @@ public class MapSerializer extends SimpleTypeSerializer<Map> {
     }
 
     @Override
-    public ByteBuf writeValueSequence(Map value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
-        CompositeByteBuf result = allocator.compositeBuffer(1 + value.size() * 2);
+    public ByteBuf writeValueSequence(final Map value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+        final CompositeByteBuf result = allocator.compositeBuffer(1 + value.size() * 2);
         result.addComponent(true, allocator.buffer(4).writeInt(value.size()));
 
         for (Object key : value.keySet()) {

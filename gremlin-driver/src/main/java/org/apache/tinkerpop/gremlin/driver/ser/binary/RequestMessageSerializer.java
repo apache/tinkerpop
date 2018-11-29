@@ -28,7 +28,7 @@ import java.util.UUID;
 
 public class RequestMessageSerializer {
 
-    public RequestMessage readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
+    public RequestMessage readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final int version = buffer.readByte();
         assert version >>> 31 == 1;
 
@@ -44,7 +44,7 @@ public class RequestMessageSerializer {
         return builder.create();
     }
 
-    public ByteBuf writeValue(RequestMessage value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
+    public ByteBuf writeValue(final RequestMessage value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         return allocator.compositeBuffer(5).addComponents(true,
                 // Version
                 allocator.buffer(1).writeByte(0x81),

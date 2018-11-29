@@ -35,7 +35,7 @@ public interface TypeSerializer<T> {
     /**
      * Reads the type information and value from the buffer and returns an instance of T.
      */
-    T read(ByteBuf buffer, GraphBinaryReader context) throws SerializationException;
+    T read(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException;
 
     /**
      * Reads the value from the buffer (not the type information) and returns an instance of T.
@@ -44,15 +44,15 @@ public interface TypeSerializer<T> {
      *     information
      * </p>
      */
-    T readValue(ByteBuf buffer, GraphBinaryReader context, boolean nullable) throws SerializationException;
+    T readValue(final ByteBuf buffer, final GraphBinaryReader context, final boolean nullable) throws SerializationException;
 
     /**
      * Writes the type code, information and value to buffer.
      */
-    ByteBuf write(T value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException;
+    ByteBuf write(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException;
 
     /**
      * Writes the value to buffer, composed by the value flag and the sequence of bytes.
      */
-    ByteBuf writeValue(T value, ByteBufAllocator allocator, GraphBinaryWriter context, boolean nullable)throws SerializationException;
+    ByteBuf writeValue(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context, final boolean nullable)throws SerializationException;
 }

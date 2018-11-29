@@ -31,7 +31,7 @@ public class ClassSerializer extends SimpleTypeSerializer<Class> {
     }
 
     @Override
-    Class readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
+    Class readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final String name = context.readValue(buffer, String.class, false);
         try {
             return Class.forName(name);
@@ -41,7 +41,7 @@ public class ClassSerializer extends SimpleTypeSerializer<Class> {
     }
 
     @Override
-    public ByteBuf writeValueSequence(Class value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
+    public ByteBuf writeValueSequence(final Class value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         return context.writeValue(value.getName(), allocator, false);
     }
 }

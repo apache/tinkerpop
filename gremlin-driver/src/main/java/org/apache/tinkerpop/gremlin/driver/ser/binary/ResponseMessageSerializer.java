@@ -31,7 +31,7 @@ import java.util.UUID;
 
 public class ResponseMessageSerializer {
 
-    public ResponseMessage readValue(ByteBuf buffer, GraphBinaryReader context, boolean nullable) throws SerializationException {
+    public ResponseMessage readValue(final ByteBuf buffer, final GraphBinaryReader context, final boolean nullable) throws SerializationException {
         final int version = buffer.readByte();
         assert version >>> 31 == 1;
 
@@ -44,7 +44,7 @@ public class ResponseMessageSerializer {
                 .create();
     }
 
-    public ByteBuf writeValue(ResponseMessage value, ByteBufAllocator allocator, GraphBinaryWriter context, boolean nullable) throws SerializationException {
+    public ByteBuf writeValue(final ResponseMessage value, final ByteBufAllocator allocator, final GraphBinaryWriter context, final boolean nullable) throws SerializationException {
         final ResponseResult result = value.getResult();
         final ResponseStatus status = value.getStatus();
 

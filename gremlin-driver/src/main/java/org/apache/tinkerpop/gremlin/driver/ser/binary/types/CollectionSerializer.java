@@ -30,15 +30,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 class CollectionSerializer extends SimpleTypeSerializer<Collection> {
-    public CollectionSerializer(DataType dataType) {
+    public CollectionSerializer(final DataType dataType) {
         super(dataType);
     }
 
     @Override
-    Collection readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
+    Collection readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final int length = buffer.readInt();
 
-        ArrayList result = new ArrayList(length);
+        final ArrayList result = new ArrayList(length);
         for (int i = 0; i < length; i++) {
             result.add(context.read(buffer));
         }
@@ -47,8 +47,8 @@ class CollectionSerializer extends SimpleTypeSerializer<Collection> {
     }
 
     @Override
-    public ByteBuf writeValueSequence(Collection value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
-        CompositeByteBuf result = allocator.compositeBuffer(1 + value.size());
+    public ByteBuf writeValueSequence(final Collection value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+        final CompositeByteBuf result = allocator.compositeBuffer(1 + value.size());
         result.addComponent(true, allocator.buffer(4).writeInt(value.size()));
 
         for (Object item : value) {

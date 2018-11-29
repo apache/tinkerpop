@@ -46,7 +46,7 @@ class SamplePersonSerializer implements CustomTypeSerializer<SamplePerson> {
     }
 
     @Override
-    public SamplePerson read(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
+    public SamplePerson read(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         // {custom type info}, {value_flag} and {value}
         // No custom_type_info
         assert buffer.readInt() == 0;
@@ -64,12 +64,12 @@ class SamplePersonSerializer implements CustomTypeSerializer<SamplePerson> {
     }
 
     @Override
-    public SamplePerson readValue(ByteBuf buffer, GraphBinaryReader context, boolean nullable) throws SerializationException {
+    public SamplePerson readValue(final ByteBuf buffer, final GraphBinaryReader context, final boolean nullable) throws SerializationException {
         throw new SerializationException("SamplePersonSerializer can not read a value without type information");
     }
 
     @Override
-    public ByteBuf write(SamplePerson value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
+    public ByteBuf write(final SamplePerson value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         if (value == null) {
             return allocator.compositeBuffer(2).addComponents(true,
                     // No custom_type_info
@@ -79,7 +79,7 @@ class SamplePersonSerializer implements CustomTypeSerializer<SamplePerson> {
             );
         }
 
-        ByteBuf valueBuffer = allocator.compositeBuffer(2).addComponents(true,
+        final ByteBuf valueBuffer = allocator.compositeBuffer(2).addComponents(true,
                 context.writeValue(value.getName(), allocator, false),
                 context.writeValue(value.getBirthDate(), allocator, false));
 
@@ -93,7 +93,7 @@ class SamplePersonSerializer implements CustomTypeSerializer<SamplePerson> {
     }
 
     @Override
-    public ByteBuf writeValue(SamplePerson value, ByteBufAllocator allocator, GraphBinaryWriter context, boolean nullable) throws SerializationException {
+    public ByteBuf writeValue(final SamplePerson value, final ByteBufAllocator allocator, final GraphBinaryWriter context, final boolean nullable) throws SerializationException {
         throw new SerializationException("SamplePersonSerializer can not write a value without type information");
     }
 }

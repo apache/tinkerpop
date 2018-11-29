@@ -27,17 +27,17 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import java.util.Date;
 
 public class DateSerializer extends SimpleTypeSerializer<Date> {
-    public DateSerializer(DataType type) {
+    public DateSerializer(final DataType type) {
         super(type);
     }
 
     @Override
-    Date readValue(ByteBuf buffer, GraphBinaryReader context) {
+    Date readValue(final ByteBuf buffer, final GraphBinaryReader context) {
         return new Date(buffer.readLong());
     }
 
     @Override
-    public ByteBuf writeValueSequence(Date value, ByteBufAllocator allocator, GraphBinaryWriter context) {
+    public ByteBuf writeValueSequence(final Date value, final ByteBufAllocator allocator, final GraphBinaryWriter context) {
         return allocator.buffer(8).writeLong(value.getTime());
     }
 }

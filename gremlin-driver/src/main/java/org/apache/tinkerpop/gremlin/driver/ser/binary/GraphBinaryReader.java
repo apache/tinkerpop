@@ -28,14 +28,14 @@ public class GraphBinaryReader {
         this(TypeSerializerRegistry.INSTANCE);
     }
 
-    public GraphBinaryReader(TypeSerializerRegistry registry) {
+    public GraphBinaryReader(final TypeSerializerRegistry registry) {
         this.registry = registry;
     }
 
     /**
      * Reads a value for an specific type.
      */
-    public <T> T readValue(ByteBuf buffer, Class<T> type, boolean nullable) throws SerializationException {
+    public <T> T readValue(final ByteBuf buffer, final Class<T> type, final boolean nullable) throws SerializationException {
         if (buffer == null) {
             throw new IllegalArgumentException("input cannot be null.");
         } else if (type == null) {
@@ -49,7 +49,7 @@ public class GraphBinaryReader {
     /**
      * Reads the type code, information and value of a given buffer with fully-qualified format.
      */
-    public <T> T read(ByteBuf buffer) throws SerializationException {
+    public <T> T read(final ByteBuf buffer) throws SerializationException {
         // Fully-qualified format: {type_code}{type_info}{value_flag}{value}
         final DataType type = DataType.get(buffer.readByte());
 

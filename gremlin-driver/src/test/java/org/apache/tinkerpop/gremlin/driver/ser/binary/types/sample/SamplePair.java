@@ -39,7 +39,7 @@ class SamplePair<K, V> {
         }
     }
 
-    SamplePair(K key, V value, SamplePair.Info info) {
+    SamplePair(final K key, final V value, final SamplePair.Info info) {
         this.key = key;
         this.value = value;
         this.info = info;

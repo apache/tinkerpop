@@ -42,19 +42,19 @@ class SamplePairSerializer implements CustomTypeSerializer<SamplePair> {
     }
 
     @Override
-    public SamplePair read(ByteBuf buffer, GraphBinaryReader context) {
+    public SamplePair read(final ByteBuf buffer, final GraphBinaryReader context) {
         return null;
     }
 
     @Override
-    public SamplePair readValue(ByteBuf buffer, GraphBinaryReader context, boolean nullable) throws SerializationException {
+    public SamplePair readValue(final ByteBuf buffer, final GraphBinaryReader context, final boolean nullable) throws SerializationException {
         throw new SerializationException("SamplePairSerializer can't read the value without type information");
     }
 
     @Override
-    public ByteBuf write(SamplePair value, ByteBufAllocator allocator, GraphBinaryWriter context) {
+    public ByteBuf write(final SamplePair value, final ByteBufAllocator allocator, final GraphBinaryWriter context) {
 
-        ByteBuf valueBuffer = null;
+        final ByteBuf valueBuffer = null;
 
         return allocator.compositeBuffer(3).addComponents(true,
                 // No custom type info
@@ -63,7 +63,7 @@ class SamplePairSerializer implements CustomTypeSerializer<SamplePair> {
         );
     }
 
-    public ByteBuf writeNull(ByteBufAllocator allocator, Object information, GraphBinaryWriter context) {
+    public ByteBuf writeNull(final ByteBufAllocator allocator, final Object information, final GraphBinaryWriter context) {
         SamplePair.Info info = (SamplePair.Info) information;
         // Write type code:  "CUSTOM"
         // Write Type info: "SAMPLEPAIR"
@@ -76,7 +76,7 @@ class SamplePairSerializer implements CustomTypeSerializer<SamplePair> {
     }
 
     @Override
-    public ByteBuf writeValue(SamplePair value, ByteBufAllocator allocator, GraphBinaryWriter context, boolean nullable) throws SerializationException {
+    public ByteBuf writeValue(final SamplePair value, final ByteBufAllocator allocator, final GraphBinaryWriter context, final boolean nullable) throws SerializationException {
         throw new SerializationException("SamplePairSerializer can't write the value without type information");
     }
 }

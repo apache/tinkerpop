@@ -35,14 +35,14 @@ public class GraphBinaryWriter {
         this(TypeSerializerRegistry.INSTANCE);
     }
 
-    public GraphBinaryWriter(TypeSerializerRegistry registry) {
+    public GraphBinaryWriter(final TypeSerializerRegistry registry) {
         this.registry = registry;
     }
 
     /**
      * Writes a value without including type information.
      */
-    public <T> ByteBuf writeValue(T value, ByteBufAllocator allocator, boolean nullable) throws SerializationException {
+    public <T> ByteBuf writeValue(final T value, final ByteBufAllocator allocator, final boolean nullable) throws SerializationException {
         if (value == null) {
             if (!nullable) {
                 throw new SerializationException("Unexpected null value when nullable is false");
@@ -60,7 +60,7 @@ public class GraphBinaryWriter {
     /**
      * Writes an object in fully-qualified format, containing {type_code}{type_info}{value_flag}{value}.
      */
-    public <T> ByteBuf write(T value, ByteBufAllocator allocator) throws SerializationException {
+    public <T> ByteBuf write(final T value, final ByteBufAllocator allocator) throws SerializationException {
         if (value == null) {
             // return Object of type "unspecified object null" with the value flag set to null.
             return Unpooled.wrappedBuffer(unspecifiedNullBytes);
@@ -94,7 +94,7 @@ public class GraphBinaryWriter {
      * specified.
      * <p>Note that for simple types, the provided information will be <code>null</code>.</p>
      */
-    public <T> ByteBuf writeFullyQualifiedNull(Class<T> objectClass, ByteBufAllocator allocator, Object information) throws SerializationException {
+    public <T> ByteBuf writeFullyQualifiedNull(final Class<T> objectClass, final ByteBufAllocator allocator, final Object information) throws SerializationException {
         TypeSerializer<T> serializer = registry.getSerializer(objectClass);
         //TODO: Change to writeNull()
         return serializer.write(null, allocator, this);

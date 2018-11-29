@@ -42,19 +42,19 @@ public class GraphBinaryReaderWriterRoundTripTest {
 
     @Parameterized.Parameters
     public static Collection input() {
-        Bytecode bytecode = new Bytecode();
+        final Bytecode bytecode = new Bytecode();
         bytecode.addStep("V");
         bytecode.addStep("tail", 3);
         bytecode.addSource(TraversalSource.Symbols.withComputer, "myComputer");
 
-        Map<String, Integer> map = new HashMap<>();
+        final Map<String, Integer> map = new HashMap<>();
         map.put("one", 1);
         map.put("two", 2);
 
-        List list = new ArrayList<>();
+        final List list = new ArrayList<>();
         list.add("string 1");
 
-        Set set = new HashSet<>();
+        final Set set = new HashSet<>();
         set.add("one");
         set.add(2);
 
@@ -70,9 +70,9 @@ public class GraphBinaryReaderWriterRoundTripTest {
 
     @Test
     public void shouldWriteAndRead() throws Exception {
-        ByteBuf buffer = writer.write(value, allocator);
+        final ByteBuf buffer = writer.write(value, allocator);
         buffer.readerIndex(0);
-        Object result = reader.read(buffer);
+        final Object result = reader.read(buffer);
         Assert.assertEquals(value, result);
     }
 }

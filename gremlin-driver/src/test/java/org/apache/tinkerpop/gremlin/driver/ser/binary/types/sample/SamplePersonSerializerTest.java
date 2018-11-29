@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.driver.ser.binary.types.sample;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
+import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.TypeSerializerRegistry;
 import org.junit.Assert;
@@ -36,7 +36,7 @@ import java.util.UUID;
 public class SamplePersonSerializerTest {
 
     private final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
-    private final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1(
+    private final GraphBinaryMessageSerializerV1d0 serializer = new GraphBinaryMessageSerializerV1d0(
             TypeSerializerRegistry.build().addCustomType(SamplePerson.class, new SamplePersonSerializer()).create());
 
     @Test

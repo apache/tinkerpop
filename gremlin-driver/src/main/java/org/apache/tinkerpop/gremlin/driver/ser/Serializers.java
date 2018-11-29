@@ -33,6 +33,7 @@ public enum Serializers {
     GRAPHSON_V1D0(SerTokens.MIME_GRAPHSON_V1D0),
     GRAPHSON_V2D0(SerTokens.MIME_GRAPHSON_V2D0),
     GRAPHSON_V3D0(SerTokens.MIME_GRAPHSON_V3D0),
+    GRAPHBINARY_V1D0(SerTokens.MIME_GRAPHBINARY_V1D0),
     GRYO_V1D0(SerTokens.MIME_GRYO_V1D0),
     GRYO_V3D0(SerTokens.MIME_GRYO_V3D0),
     GRYO_LITE_V1D0(SerTokens.MIME_GRYO_LITE_V1D0);
@@ -84,7 +85,7 @@ public enum Serializers {
             case SerTokens.MIME_GRYO_LITE_V1D0:
                 return new GryoLiteMessageSerializerV1d0();
             case SerTokens.MIME_GRAPHBINARY_V1D0:
-                return new GraphBinaryMessageSerializerV1();
+                return new GraphBinaryMessageSerializerV1d0();
             default:
                 throw new RuntimeException("Could not create a simple MessageSerializer instance of " + value);
         }
