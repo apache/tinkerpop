@@ -42,7 +42,7 @@ public class GraphBinaryReader {
             throw new IllegalArgumentException("type cannot be null.");
         }
 
-        TypeSerializer<T> serializer = registry.getSerializer(type);
+        final TypeSerializer<T> serializer = registry.getSerializer(type);
         return serializer.readValue(buffer, this, nullable);
     }
 

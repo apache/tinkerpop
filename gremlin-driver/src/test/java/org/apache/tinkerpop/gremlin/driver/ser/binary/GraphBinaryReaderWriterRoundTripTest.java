@@ -21,7 +21,17 @@ package org.apache.tinkerpop.gremlin.driver.ser.binary;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
+import org.apache.tinkerpop.gremlin.structure.Column;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,13 +44,8 @@ public class GraphBinaryReaderWriterRoundTripTest {
     private final GraphBinaryWriter writer = new GraphBinaryWriter();
     private final GraphBinaryReader reader = new GraphBinaryReader();
     private final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
-    private final Object value;
 
-    public GraphBinaryReaderWriterRoundTripTest(Object value) {
-        this.value = value;
-    }
-
-    @Parameterized.Parameters
+    @Parameterized.Parameters(name = "Type{0}")
     public static Collection input() {
         final Bytecode bytecode = new Bytecode();
         bytecode.addStep("V");
@@ -59,14 +64,46 @@ public class GraphBinaryReaderWriterRoundTripTest {
         set.add(2);
 
         return Arrays.asList(
-                "ABC",
-                1, 2f, 3.1d, 10122L, 0, 0f, Integer.MIN_VALUE, Integer.MAX_VALUE, Long.MAX_VALUE,
-                UUID.randomUUID(),
-                bytecode,
-                // Class
-                Bytecode.class,
-                list, map, set);
+                new Object[] {"String", "ABC"},
+
+                // numerics
+                new Object[] {"Integer", 1},
+                new Object[] {"Float", 2f},
+                new Object[] {"Double", 3.1d},
+                new Object[] {"Long", 10122L},
+                new Object[] {"IntegerZero", 0},
+                new Object[] {"FloatZero", 0f},
+                new Object[] {"IntegerMin", Integer.MIN_VALUE},
+                new Object[] {"IntegerMax", Integer.MAX_VALUE},
+                new Object[] {"LongMax", Long.MAX_VALUE},
+
+                new Object[] {"UUID", UUID.randomUUID()},
+                new Object[] {"Bytecode", bytecode},
+                new Object[] {"Class", Bytecode.class},
+
+                // enums
+                new Object[] {"Barrier", SackFunctions.Barrier.normSack},
+                new Object[] {"Cardinality", VertexProperty.Cardinality.list},
+                new Object[] {"Columns", Column.values},
+                new Object[] {"Direction", Direction.BOTH},
+                new Object[] {"Operator", Operator.sum},
+                new Object[] {"Order", Order.desc},
+                new Object[] {"Pick", TraversalOptionParent.Pick.any},
+                new Object[] {"Pop", Pop.mixed},
+                new Object[] {"Scope", Scope.global},
+                new Object[] {"T", T.label},
+
+                // collections
+                new Object[] {"List", list},
+                new Object[] {"Map", map},
+                new Object[] {"Set", set});
     }
+
+    @Parameterized.Parameter(value = 0)
+    public String name;
+
+    @Parameterized.Parameter(value = 1)
+    public Object value;
 
     @Test
     public void shouldWriteAndRead() throws Exception {

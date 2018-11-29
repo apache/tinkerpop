@@ -66,9 +66,9 @@ public class GraphBinaryWriter {
             return Unpooled.wrappedBuffer(unspecifiedNullBytes);
         }
 
-        Class<?> objectClass = value.getClass();
+        final Class<?> objectClass = value.getClass();
 
-        TypeSerializer<T> serializer = (TypeSerializer<T>) registry.getSerializer(objectClass);
+        final TypeSerializer<T> serializer = (TypeSerializer<T>) registry.getSerializer(objectClass);
 
         if (serializer instanceof CustomTypeSerializer) {
             CustomTypeSerializer customTypeSerializer = (CustomTypeSerializer) serializer;

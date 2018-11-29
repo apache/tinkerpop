@@ -19,10 +19,38 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.types.*;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ByteCodeSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ClassSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.CustomTypeSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.DateSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.EnumSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ListSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.MapSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.SetSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.SingleTypeSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.StringSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.UUIDSerializer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
+import org.apache.tinkerpop.gremlin.structure.Column;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 public class TypeSerializerRegistry {
     public static final TypeSerializerRegistry INSTANCE = build().create();
@@ -33,6 +61,16 @@ public class TypeSerializerRegistry {
 
     public static class Builder {
         private final List<RegistryEntry> list = new LinkedList<>(Arrays.asList(
+                new RegistryEntry<>(SackFunctions.Barrier.class, EnumSerializer.BarrierSerializer),
+                new RegistryEntry<>(VertexProperty.Cardinality.class, EnumSerializer.CardinalitySerializer),
+                new RegistryEntry<>(Column.class, EnumSerializer.ColumnSerializer),
+                new RegistryEntry<>(Direction.class, EnumSerializer.DirectionSerializer),
+                new RegistryEntry<>(Operator.class, EnumSerializer.OperatorSerializer),
+                new RegistryEntry<>(Order.class, EnumSerializer.OrderSerializer),
+                new RegistryEntry<>(TraversalOptionParent.Pick.class, EnumSerializer.PickSerializer),
+                new RegistryEntry<>(Pop.class, EnumSerializer.PopSerializer),
+                new RegistryEntry<>(Scope.class, EnumSerializer.ScopeSerializer),
+                new RegistryEntry<>(T.class, EnumSerializer.TSerializer),
                 new RegistryEntry<>(String.class, new StringSerializer()),
                 new RegistryEntry<>(UUID.class, new UUIDSerializer()),
                 new RegistryEntry<>(Map.class, new MapSerializer()),
@@ -175,7 +213,7 @@ public class TypeSerializerRegistry {
     public <T> TypeSerializer<T> getSerializer(final Class<T> type) throws SerializationException {
         TypeSerializer<?> serializer = serializers.get(type);
 
-        if (serializer == null) {
+        if (null == serializer) {
             // Find by interface
             for (Map.Entry<Class<?>, TypeSerializer<?>> entry : serializersByInterface.entrySet()) {
                 if (entry.getKey().isAssignableFrom(type)) {
@@ -184,6 +222,12 @@ public class TypeSerializerRegistry {
                 }
             }
         }
+
+        if (null == serializer && Enum.class.isAssignableFrom(type)) {
+            // maybe it's a enum - enums with bodies are weird in java, they are subclasses of themselves, so
+            // Columns.values will be of type Column$2. could be a better/safer way to do this.
+            serializer = serializers.get(type.getSuperclass());
+        }         
 
         return validateInstance(serializer, type.getTypeName());
     }
