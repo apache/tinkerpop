@@ -241,3 +241,26 @@ Feature: Step - group()
     Then the result should be unordered
       | result |
       | m[{"ripple":[], "peter":["created"], "noone":["blah"], "vadas":[], "josh":["created", "created"], "lop":[], "marko":[666, "created", "knows", "knows"]}] |
+
+  Scenario: g_V_hasLabelXpersonX_asXpX_outXcreatedX_group_byXnameX_byXselectXpX_valuesXageX_sumX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").as("p").out("created").group().by("name").by(__.select("p").values("age").sum())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"ripple":"d[32].l", "lop":"d[96].l"}] |
+
+  Scenario: g_V_hasLabelXpersonX_asXpX_outXcreatedX_groupXaX_byXnameX_byXselectXpX_valuesXageX_sumX_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").as("p").out("created").group("a").by("name").by(__.select("p").values("age").sum()).cap("a")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"ripple":"d[32].l", "lop":"d[96].l"}] |
+

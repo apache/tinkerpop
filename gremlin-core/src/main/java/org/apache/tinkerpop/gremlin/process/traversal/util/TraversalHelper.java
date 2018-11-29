@@ -40,6 +40,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
@@ -127,6 +129,9 @@ public final class TraversalHelper {
                         state = 'e';
                 }
                 states.clear();
+                if (step instanceof SelectStep || step instanceof SelectOneStep) {
+                    states.add('u');
+                }
                 for (final Traversal.Admin<?, ?> local : ((TraversalParent) step).getGlobalChildren()) {
                     final char s = isLocalStarGraph(local, currState);
                     if ('x' == s) return 'x';

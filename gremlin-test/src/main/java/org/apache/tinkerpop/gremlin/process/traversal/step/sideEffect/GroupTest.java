@@ -99,6 +99,8 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX(final Map<String, List<Object>> m);
 
+    public abstract Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXpersonX_asXpX_outXcreatedX_group_byXnameX_byXselectXpX_valuesXageX_sumX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_group_byXnameX() {
@@ -483,6 +485,20 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasLabelXpersonX_asXpX_outXcreatedX_group_byXnameX_byXselectXpX_valuesXageX_sumX() {
+        final Traversal<Vertex, Map<String, Number>> traversal = get_g_V_hasLabelXpersonX_asXpX_outXcreatedX_group_byXnameX_byXselectXpX_valuesXageX_sumX();
+        printTraversalForm(traversal);
+        final Map<String, Number> map = traversal.next();
+        assertEquals(2, map.size());
+        assertTrue(map.containsKey("ripple"));
+        assertTrue(map.containsKey("lop"));
+        assertEquals(32L, map.get("ripple"));
+        assertEquals(96L, map.get("lop"));
+        assertFalse(traversal.hasNext());
+    }
+
     public static class Traversals extends GroupTest {
 
         @Override
@@ -588,6 +604,11 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, List<Object>>> get_g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX(final Map<String, List<Object>> m) {
             return g.withSideEffect("a", m).V().group("a").by("name").by(outE().label().fold()).cap("a");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXpersonX_asXpX_outXcreatedX_group_byXnameX_byXselectXpX_valuesXageX_sumX() {
+            return g.V().hasLabel("person").as("p").out("created").<String, Number>group().by("name").by(__.select("p").values("age").sum());
         }
     }
 }
