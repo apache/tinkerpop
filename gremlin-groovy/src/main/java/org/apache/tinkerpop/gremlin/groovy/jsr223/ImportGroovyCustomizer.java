@@ -59,6 +59,7 @@ class ImportGroovyCustomizer implements GroovyCustomizer {
                     .filter(m -> !m.getDeclaringClass().equals(__.class))
                     .forEach(m -> ic.addStaticImport(m.getDeclaringClass().getCanonicalName(), m.getName()));
             customizer.getEnumImports().forEach(m -> ic.addStaticImport(m.getDeclaringClass().getCanonicalName(), m.name()));
+            customizer.getFieldImports().forEach(f -> ic.addStaticImport(f.getDeclaringClass().getCanonicalName(), f.getName()));
         }
 
         return ic;

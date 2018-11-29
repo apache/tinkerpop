@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.jsr223.ScriptEngineCache;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
@@ -55,6 +56,10 @@ public class GroovyScriptEngineSetup {
 
             for (Method m : CoreImports.getMethodImports()) {
                 staticImports.add(m.getDeclaringClass());
+            }
+
+            for (Field f : CoreImports.getFieldImports()) {
+                staticImports.add(f.getDeclaringClass());
             }
 
             for (Class<?> c : staticImports) {

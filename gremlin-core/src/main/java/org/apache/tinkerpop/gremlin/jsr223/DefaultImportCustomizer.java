@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,23 +36,33 @@ public class DefaultImportCustomizer implements ImportCustomizer {
     private final Set<Class> classImports;
     private final Set<Method> methodImports;
     private final Set<Enum> enumImports;
+    private final Set<Field> fieldImports;
 
     private DefaultImportCustomizer(final Builder builder) {
         classImports = builder.classImports;
         methodImports = builder.methodImports;
         enumImports = builder.enumImports;
+        fieldImports = builder.fieldImports;
     }
 
+    @Override
     public Set<Class> getClassImports() {
         return Collections.unmodifiableSet(classImports);
     }
 
+    @Override
     public Set<Method> getMethodImports() {
         return Collections.unmodifiableSet(methodImports);
     }
 
+    @Override
     public Set<Enum> getEnumImports() {
         return Collections.unmodifiableSet(enumImports);
+    }
+
+    @Override
+    public Set<Field> getFieldImports() {
+        return Collections.unmodifiableSet(fieldImports);
     }
 
     public static Builder build() {
@@ -62,6 +73,7 @@ public class DefaultImportCustomizer implements ImportCustomizer {
         private Set<Class> classImports = new LinkedHashSet<>();
         private Set<Method> methodImports = new LinkedHashSet<>();
         private Set<Enum> enumImports = new LinkedHashSet<>();
+        private Set<Field> fieldImports = new LinkedHashSet<>();
 
         private Builder() {}
 
@@ -100,6 +112,24 @@ public class DefaultImportCustomizer implements ImportCustomizer {
             return this;
         }
 
+        /**
+         * Adds fields that are meant to be imported statically to the engine. When adding fields be sure that
+         * the classes of those fields are added to the {@link #addClassImports(Class[])} or
+         * {@link #addClassImports(Collection)}. If they are not added then the certain {@code ScriptEngine} instances
+         * may have problems importing the methods (e.g. gremlin-python).
+         */
+        public Builder addFieldImports(final Field... field) {
+            fieldImports.addAll(Arrays.asList(field));
+            return this;
+        }
+
+        /**
+         * Overload to {@link #addFieldImports(Field...)}.
+         */
+        public Builder addFieldImports(final Collection<Field> fields) {
+            fieldImports.addAll(fields);
+            return this;
+        }
 
         /**
          * Adds methods that are meant to be imported statically to the engine. When adding methods be sure that
