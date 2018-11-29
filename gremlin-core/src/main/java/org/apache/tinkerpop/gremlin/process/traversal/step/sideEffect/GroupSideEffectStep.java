@@ -55,7 +55,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
         super(traversal);
         this.sideEffectKey = sideEffectKey;
         this.valueTraversal = this.integrateChild(__.fold().asAdmin());
-        this.barrierStep = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal).orElse(null);
+        this.barrierStep = GroupStep.determineBarrierStep(this.valueTraversal);
         this.getTraversal().getSideEffects().registerIfAbsent(this.sideEffectKey, HashMapSupplier.instance(),
                 new GroupStep.GroupBiOperator<>(null == this.barrierStep ?
                         Operator.assign :
@@ -69,7 +69,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
             this.state = 'v';
         } else if ('v' == this.state) {
             this.valueTraversal = this.integrateChild(GroupStep.convertValueTraversal(kvTraversal));
-            this.barrierStep = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal).orElse(null);
+            this.barrierStep = GroupStep.determineBarrierStep(this.valueTraversal);
             this.getTraversal().getSideEffects().register(this.sideEffectKey, null,
                     new GroupStep.GroupBiOperator<>(null == this.barrierStep ?
                             Operator.assign :
@@ -124,7 +124,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
         if (null != this.keyTraversal)
             clone.keyTraversal = this.keyTraversal.clone();
         clone.valueTraversal = this.valueTraversal.clone();
-        clone.barrierStep = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, clone.valueTraversal).orElse(null);
+        clone.barrierStep = GroupStep.determineBarrierStep(clone.valueTraversal);
         return clone;
     }
 

@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -28,12 +29,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTravers
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.FunctionTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LocalBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
@@ -59,9 +60,26 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     public GroupStep(final Traversal.Admin traversal) {
         super(traversal);
         this.valueTraversal = this.integrateChild(__.fold().asAdmin());
-        this.barrierStep = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal).orElse(null);
+        this.barrierStep = determineBarrierStep(this.valueTraversal);
         this.setReducingBiOperator(new GroupBiOperator<>(null == this.barrierStep ? Operator.assign : this.barrierStep.getMemoryComputeKey().getReducer()));
         this.setSeedSupplier(HashMapSupplier.instance());
+    }
+
+    /**
+     * Determines the first (non-local) barrier step in the provided traversal. This method is used by {@link GroupStep}
+     * and {@link org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStep} to ultimately
+     * determine the reducing reducing bi-operator.
+     *
+     * @param traversal The traversal to inspect.
+     * @return The first non-local barrier step or {@code null} if no such step was found.
+     */
+    public static <S, V> Barrier determineBarrierStep(final Traversal.Admin<S, V> traversal) {
+        for (final Step step : traversal.getSteps()) {
+            if (step instanceof Barrier && !(step instanceof LocalBarrier)) {
+                return (Barrier) step;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -71,7 +89,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
             this.state = 'v';
         } else if ('v' == this.state) {
             this.valueTraversal = this.integrateChild(convertValueTraversal(kvTraversal));
-            this.barrierStep = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal).orElse(null);
+            this.barrierStep = determineBarrierStep(this.valueTraversal);
             this.setReducingBiOperator(new GroupBiOperator<>(null == this.barrierStep ? Operator.assign : this.barrierStep.getMemoryComputeKey().getReducer()));
             this.state = 'x';
         } else {
@@ -117,7 +135,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         if (null != this.keyTraversal)
             clone.keyTraversal = this.keyTraversal.clone();
         clone.valueTraversal = this.valueTraversal.clone();
-        clone.barrierStep = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, clone.valueTraversal).orElse(null);
+        clone.barrierStep = determineBarrierStep(clone.valueTraversal);
         return clone;
     }
 
@@ -185,14 +203,15 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     }
 
     public static <K, V> Map<K, V> doFinalReduction(final Map<K, Object> map, final Traversal.Admin<?, V> valueTraversal) {
-        TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueTraversal).ifPresent(barrierStep -> {
+        final Barrier barrierStep = determineBarrierStep(valueTraversal);
+        if (barrierStep != null) {
             for (final K key : map.keySet()) {
                 valueTraversal.reset();
                 barrierStep.addBarrier(map.get(key));
                 if (valueTraversal.hasNext())
                     map.put(key, valueTraversal.next());
             }
-        });
+        }
         return (Map<K, V>) map;
     }
 }
