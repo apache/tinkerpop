@@ -35,6 +35,7 @@ If adding comments sections, please "sign" comments with initials and reference 
 
 * *spm* - Stephen Mallette
 * *as* - Ashwini Singh
+* *dk* - Daniel Kuppitz
 
 image:tp4-think.png[]
 
@@ -213,3 +214,11 @@ necessarily a GraphSON format and could be something else as described in the <<
 Consider a testing framework based on the Gherkin tests from 3.x and a `gremlin-test` parent module for all the test
 framework modules that will potentially be needed. In 3.x, we found situation where having test modules beyond
 `gremlin-test` would have been helpful, so a parent module that held all those would probably be smart.
+
+== Elements and IDs
+
+In link:https://issues.apache.org/jira/browse/TINKERPOP-2051[TINKERPOP-2051] we tried to make vertex property ids local to their vertex. Several approaches were leading nowhere, in most cases we just broke the Gryo compatibility test suite. The basic idea was to remember the parent element (at least its id) and use it in property equality comparisons. This way, the property `[name->marko]` would only match another `[name->marko]` property if the parent elements were the same. In the end it was questioned if that's even the right approach / what users expect. From a user perspective it would probably make more sense if two properties would match if the keys and values match. That said, we should question whether we actually need ids on properties and thus whether properties are actually `Element`s.
+
+=== Comments [dk]
+
+In my opinion, only vertices should have globally unique ids. Edge ids should be local to the out-vertex (that requires that we "remember" the out-vertex id, even if the edge is detached) and properties should have no ids at all, they can be simply identified by their key (or key and value if we decide to keep multi-properties).
