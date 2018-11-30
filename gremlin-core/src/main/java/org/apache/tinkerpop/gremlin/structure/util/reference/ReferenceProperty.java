@@ -52,6 +52,12 @@ public class ReferenceProperty<V> implements Attachable<Property<V>>, Serializab
         this.value = property.value();
     }
 
+    public ReferenceProperty(final String key, final V value) {
+        this.element = null;
+        this.key = key;
+        this.value = value;
+    }
+
     @Override
     public int hashCode() {
         return ElementHelper.hashCode(this);

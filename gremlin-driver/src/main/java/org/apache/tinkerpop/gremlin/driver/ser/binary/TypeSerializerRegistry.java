@@ -23,13 +23,17 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ByteCodeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ClassSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.CustomTypeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.DateSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.EdgeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.EnumSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ListSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.MapSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.PropertySerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.SetSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.SingleTypeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.StringSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.UUIDSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.VertexPropertySerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.VertexSerializer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
@@ -39,13 +43,17 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -76,6 +84,10 @@ public class TypeSerializerRegistry {
                 new RegistryEntry<>(Map.class, new MapSerializer()),
                 new RegistryEntry<>(List.class, new ListSerializer()),
                 new RegistryEntry<>(Set.class, new SetSerializer()),
+                new RegistryEntry<>(Edge.class, new EdgeSerializer()),
+                new RegistryEntry<>(VertexProperty.class, new VertexPropertySerializer()),
+                new RegistryEntry<>(Property.class, new PropertySerializer()),
+                new RegistryEntry<>(Vertex.class, new VertexSerializer()),
                 new RegistryEntry<>(Integer.class, SingleTypeSerializer.IntSerializer),
                 new RegistryEntry<>(Long.class, SingleTypeSerializer.LongSerializer),
                 new RegistryEntry<>(Double.class, SingleTypeSerializer.DoubleSerializer),
@@ -169,7 +181,7 @@ public class TypeSerializerRegistry {
     }
 
     private final Map<Class<?>, TypeSerializer<?>> serializers = new HashMap<>();
-    private final Map<Class<?>, TypeSerializer<?>> serializersByInterface = new HashMap<>();
+    private final Map<Class<?>, TypeSerializer<?>> serializersByInterface = new LinkedHashMap<>();
     private final Map<DataType, TypeSerializer<?>> serializersByDataType = new HashMap<>();
     private final Map<String, CustomTypeSerializer> serializersByCustomTypeName = new HashMap<>();
 
@@ -244,7 +256,7 @@ public class TypeSerializerRegistry {
      * Gets the serializer for a given custom type name.
      */
     public <T> CustomTypeSerializer<T> getSerializerForCustomType(final String name) throws SerializationException {
-        CustomTypeSerializer serializer = serializersByCustomTypeName.get(name);
+        final CustomTypeSerializer serializer = serializersByCustomTypeName.get(name);
 
         if (serializer == null) {
             throw new SerializationException(String.format("Serializer for custom type '%s' not found", name));

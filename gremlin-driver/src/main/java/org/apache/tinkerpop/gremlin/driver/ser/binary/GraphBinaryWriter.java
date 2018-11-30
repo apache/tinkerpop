@@ -51,9 +51,9 @@ public class GraphBinaryWriter {
             return getValueFlagNull();
         }
 
-        Class<?> objectClass = value.getClass();
+        final Class<?> objectClass = value.getClass();
 
-        TypeSerializer<T> serializer = (TypeSerializer<T>) registry.getSerializer(objectClass);
+        final TypeSerializer<T> serializer = (TypeSerializer<T>) registry.getSerializer(objectClass);
         return serializer.writeValue(value, allocator, this, nullable);
     }
 
@@ -67,7 +67,6 @@ public class GraphBinaryWriter {
         }
 
         final Class<?> objectClass = value.getClass();
-
         final TypeSerializer<T> serializer = (TypeSerializer<T>) registry.getSerializer(objectClass);
 
         if (serializer instanceof CustomTypeSerializer) {

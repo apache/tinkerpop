@@ -25,38 +25,35 @@ import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+/**
+ * @author Stephen Mallette (http://stephen.genoprime.com)
+ */
+public class PropertySerializer extends SimpleTypeSerializer<Property> {
 
-public class MapSerializer extends SimpleTypeSerializer<Map> {
-    public MapSerializer() {
-        super(DataType.MAP);
+    public PropertySerializer() {
+        super(DataType.PROPERTY);
     }
 
     @Override
-    public Map readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
-        final int length = buffer.readInt();
+    Property readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+        final Property p = new ReferenceProperty<>(context.readValue(buffer, String.class, false), context.read(buffer));
 
-        final Map<Object,Object> result = new LinkedHashMap<>(length);
-        for (int i = 0; i < length; i++) {
-            result.put(context.read(buffer), context.read(buffer));
-        }
-
-        return result;
+        // discard the parent element as it's not serialized for references right now
+        context.read(buffer);
+        return p;
     }
 
     @Override
-    public ByteBuf writeValueSequence(final Map value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
-        final CompositeByteBuf result = allocator.compositeBuffer(1 + value.size() * 2);
-        result.addComponent(true, allocator.buffer(4).writeInt(value.size()));
+    public ByteBuf writeValueSequence(final Property value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+        final CompositeByteBuf result = allocator.compositeBuffer(3);
+        result.addComponent(true, context.writeValue(value.key(), allocator, false));
+        result.addComponent(true, context.write(value.value(), allocator));
 
-        for (Object key : value.keySet()) {
-            result.addComponents(
-                    true,
-                    context.write(key, allocator),
-                    context.write(value.get(key), allocator));
-        }
+        // leave space for the parent reference element as it's not serialized for references
+        result.addComponent(true, context.write(null, allocator));
 
         return result;
     }

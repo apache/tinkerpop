@@ -252,7 +252,7 @@ Example
 
 ==== Edge
 
-Format: `{id}{label}{inVLabel}{outVLabel}{inV}{outV}{properties}`
+Format: `{id}{label}{inVId}{inVLabel}{outVId}{outVLabel}{parent}{properties}`
 
 Where:
 
@@ -260,9 +260,12 @@ Where:
 - `{label}` is a `String` value.
 - `{inVLabel}` is a `String` value.
 - `{outVLabel}` is a `String` value.
-- `{inV}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-- `{outV}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-- `{properties}` is a `List` of `VertexProperty` items.
+- `{inVId}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{outVId}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{parent}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which contains
+the parent `Vertex`. Note that as TinkerPop currently send "references" only, this value will always be `null`.
+- `{properties}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which contains
+the properties for the edge. Note that as TinkerPop currently send "references" only this value will always be `null`.
 
 ==== Path
 
@@ -275,12 +278,15 @@ Where:
 
 ==== Property
 
-Format: `{key}{value}`
+Format: `{key}{value}{parent}`
 
 Where:
 
 - `{key}` is a `String` value.
 - `{value}`  is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{parent}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which is either
+an `Edge` or `VertexProperty`. Note that as TinkerPop currently sends "references" only this value will always be
+`null`.
 
 ==== TinkerGraph
 
@@ -301,17 +307,22 @@ Where:
 
 - `{id}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
 - `{label}` is a `String` value.
-- `{properties}` is a `List` of `VertexProperty` items.
+- `{properties}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which contains
+properties. Note that as TinkerPop currently send "references" only, this value will always be `null`.
 
 ==== VertexProperty
 
-Format: `{id}{label}{value}`
+Format: `{id}{label}{value}{parent}{properties}`
 
 Where:
 
 - `{id}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
 - `{label}` is a `String` value.
 - `{value}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{parent}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which contains
+the parent `Vertex`. Note that as TinkerPop currently send "references" only, this value will always be `null`.
+- `{properties}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which contains
+properties. Note that as TinkerPop currently send "references" only, this value will always be `null`.
 
 ==== Barrier
 

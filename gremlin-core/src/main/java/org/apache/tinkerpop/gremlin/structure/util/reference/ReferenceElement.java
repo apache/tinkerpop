@@ -42,6 +42,11 @@ public abstract class ReferenceElement<E extends Element> implements Element, Se
 
     }
 
+    protected ReferenceElement(final Object id, final String label) {
+        this.id = id;
+        this.label = label;
+    }
+
     public ReferenceElement(final Element element) {
         this.id = element.id();
         try {

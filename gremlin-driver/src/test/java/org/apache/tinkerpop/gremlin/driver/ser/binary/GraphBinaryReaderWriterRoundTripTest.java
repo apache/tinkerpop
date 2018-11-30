@@ -32,12 +32,21 @@ import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+
+import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public class GraphBinaryReaderWriterRoundTripTest {
@@ -64,39 +73,54 @@ public class GraphBinaryReaderWriterRoundTripTest {
         set.add(2);
 
         return Arrays.asList(
-                new Object[] {"String", "ABC"},
+                new Object[] {"String", "ABC", null},
 
                 // numerics
-                new Object[] {"Integer", 1},
-                new Object[] {"Float", 2f},
-                new Object[] {"Double", 3.1d},
-                new Object[] {"Long", 10122L},
-                new Object[] {"IntegerZero", 0},
-                new Object[] {"FloatZero", 0f},
-                new Object[] {"IntegerMin", Integer.MIN_VALUE},
-                new Object[] {"IntegerMax", Integer.MAX_VALUE},
-                new Object[] {"LongMax", Long.MAX_VALUE},
+                new Object[] {"Integer", 1, null},
+                new Object[] {"Float", 2f, null},
+                new Object[] {"Double", 3.1d, null},
+                new Object[] {"Long", 10122L, null},
+                new Object[] {"IntegerZero", 0, null},
+                new Object[] {"FloatZero", 0f, null},
+                new Object[] {"IntegerMin", Integer.MIN_VALUE, null},
+                new Object[] {"IntegerMax", Integer.MAX_VALUE, null},
+                new Object[] {"LongMax", Long.MAX_VALUE, null},
 
-                new Object[] {"UUID", UUID.randomUUID()},
-                new Object[] {"Bytecode", bytecode},
-                new Object[] {"Class", Bytecode.class},
+                new Object[] {"UUID", UUID.randomUUID(), null},
+                new Object[] {"Bytecode", bytecode, null},
+                new Object[] {"Class", Bytecode.class, null},
 
                 // enums
-                new Object[] {"Barrier", SackFunctions.Barrier.normSack},
-                new Object[] {"Cardinality", VertexProperty.Cardinality.list},
-                new Object[] {"Columns", Column.values},
-                new Object[] {"Direction", Direction.BOTH},
-                new Object[] {"Operator", Operator.sum},
-                new Object[] {"Order", Order.desc},
-                new Object[] {"Pick", TraversalOptionParent.Pick.any},
-                new Object[] {"Pop", Pop.mixed},
-                new Object[] {"Scope", Scope.global},
-                new Object[] {"T", T.label},
+                new Object[] {"Barrier", SackFunctions.Barrier.normSack, null},
+                new Object[] {"Cardinality", VertexProperty.Cardinality.list, null},
+                new Object[] {"Columns", Column.values, null},
+                new Object[] {"Direction", Direction.BOTH, null},
+                new Object[] {"Operator", Operator.sum, null},
+                new Object[] {"Order", Order.desc, null},
+                new Object[] {"Pick", TraversalOptionParent.Pick.any, null},
+                new Object[] {"Pop", Pop.mixed, null},
+                new Object[] {"Scope", Scope.global, null},
+                new Object[] {"T", T.label, null},
+
+                // graph
+                new Object[] {"ReferenceEdge", new ReferenceEdge(123, "person", new ReferenceVertex(123, "person"), new ReferenceVertex(321, "person")), null},
+                new Object[] {"TinkerEdge", TinkerFactory.createModern().traversal().E().hasLabel("knows").next(), null},
+                new Object[] {"ReferenceProperty", new ReferenceProperty<>("name", "john"), (Consumer<ReferenceProperty>) referenceProperty -> {
+                    assertEquals("name", referenceProperty.key());
+                    assertEquals("john", referenceProperty.value());
+                }},
+                new Object[] {"ReferenceVertex", new ReferenceVertex(123, "person"), null},
+                new Object[] {"TinkerVertex", TinkerFactory.createModern().traversal().V().hasLabel("person").next(), null},
+                new Object[] {"ReferenceVertexProperty", new ReferenceVertexProperty<>(123, "name", "john"), (Consumer<ReferenceVertexProperty>) referenceProperty -> {
+                    assertEquals("name", referenceProperty.key());
+                    assertEquals("john", referenceProperty.value());
+                    assertEquals(123, referenceProperty.id());
+                }},
 
                 // collections
-                new Object[] {"List", list},
-                new Object[] {"Map", map},
-                new Object[] {"Set", set});
+                new Object[] {"List", list, null},
+                new Object[] {"Map", map, null},
+                new Object[] {"Set", set, null});
     }
 
     @Parameterized.Parameter(value = 0)
@@ -105,11 +129,15 @@ public class GraphBinaryReaderWriterRoundTripTest {
     @Parameterized.Parameter(value = 1)
     public Object value;
 
+    @Parameterized.Parameter(value = 2)
+    public Consumer<?> assertion;
+
     @Test
     public void shouldWriteAndRead() throws Exception {
         final ByteBuf buffer = writer.write(value, allocator);
         buffer.readerIndex(0);
         final Object result = reader.read(buffer);
-        Assert.assertEquals(value, result);
+
+        Optional.ofNullable(assertion).orElse((Consumer) r -> assertEquals(value, r)).accept(result);
     }
 }
