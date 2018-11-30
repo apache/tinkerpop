@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.*;
 
-public class GraphBinaryMessageSerializerV1d0 extends AbstractMessageSerializer {
+public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHBINARY_V1D0;
 
     private final GraphBinaryReader reader;
@@ -35,11 +35,11 @@ public class GraphBinaryMessageSerializerV1d0 extends AbstractMessageSerializer 
     /**
      * Creates a new instance of the message serializer using the default type serializers.
      */
-    public GraphBinaryMessageSerializerV1d0() {
+    public GraphBinaryMessageSerializerV1() {
         this(TypeSerializerRegistry.INSTANCE);
     }
 
-    public GraphBinaryMessageSerializerV1d0(TypeSerializerRegistry registry) {
+    public GraphBinaryMessageSerializerV1(final TypeSerializerRegistry registry) {
         reader = new GraphBinaryReader(registry);
         writer = new GraphBinaryWriter(registry);
 
@@ -48,22 +48,22 @@ public class GraphBinaryMessageSerializerV1d0 extends AbstractMessageSerializer 
     }
 
     @Override
-    public ByteBuf serializeResponseAsBinary(ResponseMessage responseMessage, ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         return responseSerializer.writeValue(responseMessage, allocator, writer, false);
     }
 
     @Override
-    public ByteBuf serializeRequestAsBinary(RequestMessage requestMessage, ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator) throws SerializationException {
         return requestSerializer.writeValue(requestMessage, allocator, writer);
     }
 
     @Override
-    public RequestMessage deserializeRequest(ByteBuf msg) throws SerializationException {
+    public RequestMessage deserializeRequest(final ByteBuf msg) throws SerializationException {
         return requestSerializer.readValue(msg, reader);
     }
 
     @Override
-    public ResponseMessage deserializeResponse(ByteBuf msg) throws SerializationException {
+    public ResponseMessage deserializeResponse(final ByteBuf msg) throws SerializationException {
         return responseSerializer.readValue(msg, reader, false);
     }
 

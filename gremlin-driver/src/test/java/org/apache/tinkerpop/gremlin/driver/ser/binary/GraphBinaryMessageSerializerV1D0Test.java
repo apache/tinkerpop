@@ -23,7 +23,7 @@ import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
-import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1d0;
+import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,7 +33,7 @@ import java.util.UUID;
 
 public class GraphBinaryMessageSerializerV1D0Test {
     private final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
-    private final GraphBinaryMessageSerializerV1d0 serializer = new GraphBinaryMessageSerializerV1d0();
+    private final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1();
 
     @Test
     public void shouldSerializeAndDeserializeRequest() throws SerializationException {
