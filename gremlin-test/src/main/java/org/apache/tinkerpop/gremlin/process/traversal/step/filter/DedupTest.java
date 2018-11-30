@@ -91,6 +91,8 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Long> get_g_V_repeatXdedupX_timesX2X_count();
 
+    public abstract Traversal<Vertex, Long> get_g_V_bothE_properties_dedup_count();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_out_in_valuesXnameX_fold_dedupXlocalX_unfold() {
@@ -312,6 +314,14 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_bothE_properties_dedup_count() {
+        final Traversal<Vertex, Long> traversal = get_g_V_bothE_properties_dedup_count();
+        printTraversalForm(traversal);
+        assertEquals(6L, traversal.next().longValue());
+        assertFalse(traversal.hasNext());
+    }
 
     public static class Traversals extends DedupTest {
         @Override
@@ -392,6 +402,11 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_repeatXdedupX_timesX2X_count() {
             return g.V().repeat(dedup()).times(2).count();
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_bothE_properties_dedup_count() {
+            return g.V().bothE().properties().dedup().count();
         }
     }
 }

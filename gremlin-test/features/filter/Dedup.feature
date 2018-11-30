@@ -235,3 +235,13 @@ Feature: Step - dedup()
       | result |
       | d[0].l |
 
+  Scenario: g_V_bothE_properties_dedup_count
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().bothE().properties().dedup().count()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[6].l |
