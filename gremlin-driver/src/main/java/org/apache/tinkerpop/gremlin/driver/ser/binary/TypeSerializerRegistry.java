@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.types.CustomTypeSerializer
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.DateSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.EdgeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.EnumSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.LambdaSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ListSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.MapSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.PropertySerializer;
@@ -48,6 +49,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -88,6 +90,7 @@ public class TypeSerializerRegistry {
                 new RegistryEntry<>(VertexProperty.class, new VertexPropertySerializer()),
                 new RegistryEntry<>(Property.class, new PropertySerializer()),
                 new RegistryEntry<>(Vertex.class, new VertexSerializer()),
+                new RegistryEntry<>(Lambda.class, new LambdaSerializer()),
                 new RegistryEntry<>(Integer.class, SingleTypeSerializer.IntSerializer),
                 new RegistryEntry<>(Long.class, SingleTypeSerializer.LongSerializer),
                 new RegistryEntry<>(Double.class, SingleTypeSerializer.DoubleSerializer),

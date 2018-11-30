@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -89,6 +90,10 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 new Object[] {"UUID", UUID.randomUUID(), null},
                 new Object[] {"Bytecode", bytecode, null},
                 new Object[] {"Class", Bytecode.class, null},
+                new Object[] {"Lambda0", Lambda.supplier("return 1"), null},
+                new Object[] {"Lambda1", Lambda.consumer("it"), null},
+                new Object[] {"Lambda2", Lambda.biFunction("x,y -> x + y"), null},
+                new Object[] {"LambdaN", new Lambda.UnknownArgLambda("x,y,z -> x + y + z", "gremlin-groovy", 3), null},
 
                 // enums
                 new Object[] {"Barrier", SackFunctions.Barrier.normSack, null},
