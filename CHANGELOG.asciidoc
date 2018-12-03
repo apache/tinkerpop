@@ -102,6 +102,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-2-11, 3.2.11>>.
 
+* Fixed a bug in `CoalesceStep` which squared the bulk if the step followed a `Barrier` step.
 * Fixed a bug in `GroupStep` that assigned wrong reducing bi-operators
 * Added `:bytecode` command to help developers debugging `Bytecode`-based traversals.
 * Fixed `PersistedOutputRDD` to eager persist RDD by adding `count()` action calls.
