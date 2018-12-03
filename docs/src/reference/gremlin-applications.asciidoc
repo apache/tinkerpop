@@ -143,7 +143,7 @@ TIP: When using Gremlin-Groovy in a Groovy class file, add `static { GremlinLoad
 
 === Console Commands
 
-In addition to the standard commands of the link:http://www.groovy-lang.org/Groovy+Shell[Groovy Shell], Gremlin adds
+In addition to the standard commands of the link:http://groovy-lang.org/groovysh.html[Groovy Shell], Gremlin adds
 some other useful operations.  The following table outlines the most commonly used commands:
 
 [width="100%",cols="3,^2,10",options="header"]
@@ -175,6 +175,11 @@ gremlin> :bytecode translate g {"@type":"g:Bytecode","@value":{"step":[["V"],["o
 
 <1> Generates a GraphSON 3.0 representation of the traversal as bytecode.
 <2> Converts bytecode in GraphSON 3.0 format to a traversal string.
+
+NOTE: The Console does expose the `:record` command which is inherited from the Groovy Shell. This command works well
+with local commands, but may record session outputs differently for `:remote` commands. If there is a need to use
+`:record` it may be best to manually create a `Cluster` object and issue commands that way so that they evaluate
+locally in the shell.
 
 [[console-preferences]]
 === Console Preferences
