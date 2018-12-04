@@ -21,23 +21,16 @@ package org.apache.tinkerpop.gremlin.driver.remote;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.driver.ResultSet;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 
 /**
  * A {@link RemoteConnection} implementation for Gremlin Server. Each {@code DriverServerConnection} is bound to one
@@ -179,39 +172,6 @@ public class DriverRemoteConnection implements RemoteConnection {
             return using(conf.getString("clusterConfigurationFile"), remoteTraversalSourceName);
         else {
             return using(Cluster.open(conf.subset("clusterConfiguration")), remoteTraversalSourceName);
-        }
-    }
-
-    /**
-     * @deprecated As of release 3.2.2, replaced by {@link #submitAsync(Bytecode)}.
-     */
-    @Deprecated
-    @Override
-    public <E> Iterator<Traverser.Admin<E>> submit(final Traversal<?, E> t) throws RemoteConnectionException {
-        try {
-            if (attachElements && !t.asAdmin().getStrategies().getStrategy(VertexProgramStrategy.class).isPresent()) {
-                if (!conf.isPresent()) throw new IllegalStateException("Traverser can't be reattached for testing");
-                final Graph graph = ((Supplier<Graph>) conf.get().getProperty("hidden.for.testing.only")).get();
-                return new DriverRemoteTraversal.AttachingTraverserIterator<>(client.submit(t.asAdmin().getBytecode()).iterator(), graph);
-            } else {
-                return new DriverRemoteTraversal.TraverserIterator<>(client.submit(t.asAdmin().getBytecode()).iterator());
-            }
-        } catch (Exception ex) {
-            throw new RemoteConnectionException(ex);
-        }
-    }
-
-    /**
-     * @deprecated As of release 3.2.4, replaced by {@link #submitAsync(Bytecode)}.
-     */
-    @Deprecated
-    @Override
-    public <E> RemoteTraversal<?,E> submit(final Bytecode bytecode) throws RemoteConnectionException {
-        try {
-            final ResultSet rs = client.submit(bytecode);
-            return new DriverRemoteTraversal<>(rs, client, attachElements, conf);
-        } catch (Exception ex) {
-            throw new RemoteConnectionException(ex);
         }
     }
 

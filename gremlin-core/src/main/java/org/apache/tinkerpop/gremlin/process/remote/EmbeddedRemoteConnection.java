@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Iterator;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Allows a {@link RemoteConnection} to be submitted to a "local" {@link Graph} instance thus simulating a connection
@@ -56,15 +57,16 @@ public class EmbeddedRemoteConnection implements RemoteConnection {
     }
 
     @Override
-    public <E> Iterator<Traverser.Admin<E>> submit(final Traversal<?, E> traversal) throws RemoteConnectionException {
-        throw new UnsupportedOperationException("This method is deprecated and no longer used internally");
-    }
-
-    @Override
-    public <E> RemoteTraversal<?, E> submit(final Bytecode bytecode) throws RemoteConnectionException {
-        // this method is technically deprecated but it's still being used on the 3.2.x/3.3.x lines of code. it is
-        // called by submitAsync() in RemoteConnection itself. this implementation should suffice for now
-        return new EmbeddedRemoteTraversal(JavaTranslator.of(g).translate(bytecode));
+    public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final Bytecode bytecode) throws RemoteConnectionException {
+        // default implementation for backward compatibility to 3.2.4 - this method will probably just become
+        // the new submit() in 3.3.x when the deprecation is removed
+        final CompletableFuture<RemoteTraversal<?, E>> promise = new CompletableFuture<>();
+        try {
+            promise.complete(new EmbeddedRemoteTraversal(JavaTranslator.of(g).translate(bytecode)));
+        } catch (Exception t) {
+            promise.completeExceptionally(t);
+        }
+        return promise;
     }
 
     @Override
