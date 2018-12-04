@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEf
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
-import java.lang.reflect.Constructor;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
@@ -48,10 +47,20 @@ import java.util.function.UnaryOperator;
  * {@code TraversalSource(Graph)} and {@code TraversalSource(Graph,TraversalStrategies)}
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface TraversalSource extends Cloneable, AutoCloseable {
 
+    /**
+     * @deprecated As of release 3.3.5, replaced by {@link RemoteConnection#GREMLIN_REMOTE}.
+     */
+    @Deprecated
     public static final String GREMLIN_REMOTE = "gremlin.remote.";
+
+    /**
+     * @deprecated As of release 3.3.5, replaced by {@link RemoteConnection#GREMLIN_REMOTE_CONNECTION_CLASS}.
+     */
+    @Deprecated
     public static final String GREMLIN_REMOTE_CONNECTION_CLASS = GREMLIN_REMOTE + "remoteConnectionClass";
 
     /**
@@ -341,7 +350,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
 
     /**
      * Configures the {@code TraversalSource} as a "remote" to issue the {@link Traversal} for execution elsewhere.
-     * Expects key for {@link #GREMLIN_REMOTE_CONNECTION_CLASS} as well as any configuration required by
+     * Expects key for {@link RemoteConnection#GREMLIN_REMOTE_CONNECTION_CLASS} as well as any configuration required by
      * the underlying {@link RemoteConnection} which will be instantiated. Note that the {@code Configuration} object
      * is passed down without change to the creation of the {@link RemoteConnection} instance.
      *
@@ -350,19 +359,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
      */
     @Deprecated
     public default TraversalSource withRemote(final Configuration conf) {
-        if (!conf.containsKey(GREMLIN_REMOTE_CONNECTION_CLASS))
-            throw new IllegalArgumentException("Configuration must contain the '" + GREMLIN_REMOTE_CONNECTION_CLASS + "' key");
-
-        final RemoteConnection remoteConnection;
-        try {
-            final Class<? extends RemoteConnection> clazz = Class.forName(conf.getString(GREMLIN_REMOTE_CONNECTION_CLASS)).asSubclass(RemoteConnection.class);
-            final Constructor<? extends RemoteConnection> ctor = clazz.getConstructor(Configuration.class);
-            remoteConnection = ctor.newInstance(conf);
-        } catch (Exception ex) {
-            throw new IllegalStateException(ex);
-        }
-
-        return withRemote(remoteConnection);
+        return withRemote(RemoteConnection.from(conf));
     }
 
     /**

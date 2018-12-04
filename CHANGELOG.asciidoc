@@ -31,6 +31,7 @@ This release also includes changes from <<release-3-2-11, 3.2.11>>.
 * Fixed `PersistedOutputRDD` to eager persist RDD by adding `count()` action calls.
 * Deserialized `g:Set` to a Python `Set` in GraphSON in `gremlin-python`.
 * Deprecated `Serializers.DEFAULT_RESULT_SERIALIZER` and `DEFAULT_REQUEST_SERIALIZER`.
+* Deprecated `TraversalSource#GREMLIN_REMOTE` and `TraversalSource#GREMLIN_REMOTE_CONNECTION_CLASS` moving them to `RemoteConnection`.
 * Fixed the setting of the default label for a `ReferenceVertex` when the original vertex was of type `ComputerAdjacentVertex`.
 * Changed Java driver to expect a generic `RemoteTraverser` object rather than the specific `DefaultRemoteTraverser`.
 * Display the remote stack trace in the Gremlin Console when scripts sent to the server fail.
