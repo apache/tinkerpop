@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.types.EnumSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.LambdaSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ListSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.MapSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.PSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.PropertySerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.SetSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.SingleTypeSerializer;
@@ -38,10 +39,13 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.types.VertexSerializer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
+import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -80,6 +84,9 @@ public class TypeSerializerRegistry {
                 new RegistryEntry<>(Order.class, EnumSerializer.OrderSerializer),
                 new RegistryEntry<>(TraversalOptionParent.Pick.class, EnumSerializer.PickSerializer),
                 new RegistryEntry<>(Pop.class, EnumSerializer.PopSerializer),
+                new RegistryEntry<>(P.class, new PSerializer<>()),
+                new RegistryEntry<>(AndP.class, new PSerializer<>()),
+                new RegistryEntry<>(OrP.class, new PSerializer<>()),
                 new RegistryEntry<>(Scope.class, EnumSerializer.ScopeSerializer),
                 new RegistryEntry<>(T.class, EnumSerializer.TSerializer),
                 new RegistryEntry<>(String.class, new StringSerializer()),
@@ -107,7 +114,7 @@ public class TypeSerializerRegistry {
         /**
          * Adds a serializer for a built-in type.
          */
-        public <T> Builder add(final Class<T> type, final TypeSerializer<T> serializer) {
+        public <DT> Builder add(final Class<DT> type, final TypeSerializer<DT> serializer) {
             if (serializer.getDataType() == DataType.CUSTOM) {
                 throw new IllegalArgumentException("DataType can not be CUSTOM, use addCustomType() method instead");
             }
@@ -128,7 +135,7 @@ public class TypeSerializerRegistry {
         /**
          * Adds a serializer for a custom type.
          */
-        public <T> Builder addCustomType(final Class<T> type, final CustomTypeSerializer<T> serializer) {
+        public <DT> Builder addCustomType(final Class<DT> type, final CustomTypeSerializer<DT> serializer) {
             if (serializer == null) {
                 throw new NullPointerException("serializer can not be null");
             }
@@ -153,16 +160,16 @@ public class TypeSerializerRegistry {
         }
     }
 
-    private static class RegistryEntry<T> {
-        private final Class<T> type;
-        private final TypeSerializer<T> typeSerializer;
+    private static class RegistryEntry<DT> {
+        private final Class<DT> type;
+        private final TypeSerializer<DT> typeSerializer;
 
-        private RegistryEntry(Class<T> type, TypeSerializer<T> typeSerializer) {
+        private RegistryEntry(Class<DT> type, TypeSerializer<DT> typeSerializer) {
             this.type = type;
             this.typeSerializer = typeSerializer;
         }
 
-        public Class<T> getType() {
+        public Class<DT> getType() {
             return type;
         }
 
@@ -179,7 +186,7 @@ public class TypeSerializerRegistry {
             return customTypeSerializer.getTypeName();
         }
 
-        public TypeSerializer<T> getTypeSerializer() {
+        public TypeSerializer<DT> getTypeSerializer() {
             return typeSerializer;
         }
     }
@@ -232,7 +239,7 @@ public class TypeSerializerRegistry {
         }
     }
 
-    public <T> TypeSerializer<T> getSerializer(final Class<T> type) throws SerializationException {
+    public <DT> TypeSerializer<DT> getSerializer(final Class<DT> type) throws SerializationException {
         TypeSerializer<?> serializer = serializers.get(type);
 
         if (null == serializer) {
@@ -267,7 +274,7 @@ public class TypeSerializerRegistry {
         return validateInstance(serializer, type.getTypeName());
     }
 
-    public <T> TypeSerializer<T> getSerializer(final DataType dataType) throws SerializationException {
+    public <DT> TypeSerializer<DT> getSerializer(final DataType dataType) throws SerializationException {
         if (dataType == DataType.CUSTOM) {
             throw new IllegalArgumentException("Custom type serializers can not be retrieved using this method");
         }
@@ -278,7 +285,7 @@ public class TypeSerializerRegistry {
     /**
      * Gets the serializer for a given custom type name.
      */
-    public <T> CustomTypeSerializer<T> getSerializerForCustomType(final String name) throws SerializationException {
+    public <DT> CustomTypeSerializer<DT> getSerializerForCustomType(final String name) throws SerializationException {
         final CustomTypeSerializer serializer = serializersByCustomTypeName.get(name);
 
         if (serializer == null) {

@@ -23,6 +23,7 @@ import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
@@ -105,6 +106,13 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 new Object[] {"Pop", Pop.mixed, null},
                 new Object[] {"Scope", Scope.global, null},
                 new Object[] {"T", T.label, null},
+                new Object[] {"Pgt", P.gt(0), null},
+                new Object[] {"Pgte", P.gte(0), null},
+                new Object[] {"Pbetween", P.between(0,1), null},
+                new Object[] {"Pand", P.gt(1).and(P.lt(2)), null},
+                new Object[] {"Por", P.gt(1).or(P.lt(2)), null},
+                new Object[] {"Pnot", P.not(P.lte(1)), null},
+                new Object[] {"Pwithout", P.without(1,2,3,4), null},
 
                 // graph
                 new Object[] {"ReferenceEdge", new ReferenceEdge(123, "person", new ReferenceVertex(123, "person"), new ReferenceVertex(321, "person")), null},
