@@ -41,7 +41,7 @@ public class ListSerializer extends SimpleTypeSerializer<List> {
     }
 
     @Override
-    public ByteBuf writeValueSequence(final List value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
-        return collectionSerializer.writeValueSequence(value, allocator, context);
+    public ByteBuf writeValue(final List value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+        return collectionSerializer.writeValue(value, allocator, context);
     }
 }

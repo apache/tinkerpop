@@ -47,7 +47,7 @@ public class MapSerializer extends SimpleTypeSerializer<Map> {
     }
 
     @Override
-    public ByteBuf writeValueSequence(final Map value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    public ByteBuf writeValue(final Map value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(1 + value.size() * 2);
         result.addComponent(true, allocator.buffer(4).writeInt(value.size()));
 

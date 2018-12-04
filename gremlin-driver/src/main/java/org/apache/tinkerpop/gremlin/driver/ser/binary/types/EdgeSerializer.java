@@ -59,7 +59,7 @@ public class EdgeSerializer extends SimpleTypeSerializer<Edge> {
     }
 
     @Override
-    public ByteBuf writeValueSequence(final Edge value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    public ByteBuf writeValue(final Edge value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(8);
         result.addComponent(true, context.write(value.id(), allocator));
         result.addComponent(true, context.writeValue(value.label(), allocator, false));

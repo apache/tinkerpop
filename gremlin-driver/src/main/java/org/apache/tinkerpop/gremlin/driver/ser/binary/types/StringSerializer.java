@@ -39,7 +39,7 @@ public class StringSerializer extends SimpleTypeSerializer<String> {
     }
 
     @Override
-    public ByteBuf writeValueSequence(final String value, final ByteBufAllocator allocator, final GraphBinaryWriter context) {
+    public ByteBuf writeValue(final String value, final ByteBufAllocator allocator, final GraphBinaryWriter context) {
         final byte[] stringBytes = value.getBytes(StandardCharsets.UTF_8);
         return allocator.buffer(4 + stringBytes.length).writeInt(stringBytes.length).writeBytes(stringBytes);
     }

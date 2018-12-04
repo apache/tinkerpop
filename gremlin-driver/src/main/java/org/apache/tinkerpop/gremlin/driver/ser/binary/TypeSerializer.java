@@ -41,18 +41,18 @@ public interface TypeSerializer<T> {
      * Reads the value from the buffer (not the type information) and returns an instance of T.
      * <p>
      *     Implementors should throw an exception when a complex type doesn't support reading without the type
-     *     information
+     *     information.
      * </p>
      */
     T readValue(final ByteBuf buffer, final GraphBinaryReader context, final boolean nullable) throws SerializationException;
 
     /**
-     * Writes the type code, information and value to buffer.
+     * Writes the type code, information and value to a buffer using the provided allocator.
      */
     ByteBuf write(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException;
 
     /**
-     * Writes the value to buffer, composed by the value flag and the sequence of bytes.
+     * Writes the value to a buffer, composed by the value flag and the sequence of bytes.
      */
     ByteBuf writeValue(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context, final boolean nullable)throws SerializationException;
 }

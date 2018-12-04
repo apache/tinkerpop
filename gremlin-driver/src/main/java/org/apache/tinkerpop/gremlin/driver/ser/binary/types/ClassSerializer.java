@@ -41,7 +41,7 @@ public class ClassSerializer extends SimpleTypeSerializer<Class> {
     }
 
     @Override
-    public ByteBuf writeValueSequence(final Class value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    public ByteBuf writeValue(final Class value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         return context.writeValue(value.getName(), allocator, false);
     }
 }

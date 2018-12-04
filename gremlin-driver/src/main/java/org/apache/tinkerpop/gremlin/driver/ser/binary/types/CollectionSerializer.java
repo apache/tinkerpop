@@ -47,7 +47,7 @@ class CollectionSerializer extends SimpleTypeSerializer<Collection> {
     }
 
     @Override
-    public ByteBuf writeValueSequence(final Collection value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    public ByteBuf writeValue(final Collection value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(1 + value.size());
         result.addComponent(true, allocator.buffer(4).writeInt(value.size()));
 

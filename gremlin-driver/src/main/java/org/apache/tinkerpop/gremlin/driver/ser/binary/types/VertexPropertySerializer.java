@@ -53,7 +53,7 @@ public class VertexPropertySerializer extends SimpleTypeSerializer<VertexPropert
     }
 
     @Override
-    public ByteBuf writeValueSequence(final VertexProperty value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    public ByteBuf writeValue(final VertexProperty value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(5);
         result.addComponent(true, context.write(value.id(), allocator));
         result.addComponent(true, context.writeValue(value.label(), allocator, false));

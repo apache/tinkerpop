@@ -60,7 +60,11 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
     }
 
     /**
-     * Reads a non-nullable value
+     * Reads a non-nullable value according to the type format.
+     * @param buffer A buffer which reader index has been set to the beginning of the {value}.
+     * @param context The binary writer.
+     * @return
+     * @throws SerializationException
      */
     abstract T readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException;
 
@@ -79,7 +83,7 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
             return context.getValueFlagNull();
         }
 
-        final ByteBuf valueSequence = writeValueSequence(value, allocator, context);
+        final ByteBuf valueSequence = writeValue(value, allocator, context);
 
         if (!nullable) {
             return valueSequence;
@@ -88,5 +92,12 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
         return allocator.compositeBuffer(2).addComponents(true, context.getValueFlagNone(), valueSequence);
     }
 
-    public abstract ByteBuf writeValueSequence(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException;
+    /**
+     * Writes a non-nullable value into a buffer using the provided allocator.
+     * @param value A non-nullable value.
+     * @param allocator The buffer allocator to use.
+     * @param context The binary writer.
+     * @throws SerializationException
+     */
+    public abstract ByteBuf writeValue(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException;
 }

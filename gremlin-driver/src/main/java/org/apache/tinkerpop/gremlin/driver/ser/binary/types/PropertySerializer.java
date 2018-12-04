@@ -47,7 +47,7 @@ public class PropertySerializer extends SimpleTypeSerializer<Property> {
     }
 
     @Override
-    public ByteBuf writeValueSequence(final Property value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    public ByteBuf writeValue(final Property value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(3);
         result.addComponent(true, context.writeValue(value.key(), allocator, false));
         result.addComponent(true, context.write(value.value(), allocator));

@@ -48,7 +48,7 @@ public class VertexSerializer extends SimpleTypeSerializer<Vertex> {
     }
 
     @Override
-    public ByteBuf writeValueSequence(final Vertex value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    public ByteBuf writeValue(final Vertex value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(3);
         result.addComponent(true, context.write(value.id(), allocator));
         result.addComponent(true, context.writeValue(value.label(), allocator, false));

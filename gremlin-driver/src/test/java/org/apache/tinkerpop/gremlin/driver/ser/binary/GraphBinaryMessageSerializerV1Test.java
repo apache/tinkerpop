@@ -31,7 +31,7 @@ import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 
 import java.util.UUID;
 
-public class GraphBinaryMessageSerializerV1D0Test {
+public class GraphBinaryMessageSerializerV1Test {
     private final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
     private final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1();
 

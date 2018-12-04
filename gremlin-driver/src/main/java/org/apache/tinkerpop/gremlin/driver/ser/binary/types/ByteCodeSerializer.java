@@ -61,7 +61,7 @@ public class ByteCodeSerializer extends SimpleTypeSerializer<Bytecode> {
     }
 
     @Override
-    public ByteBuf writeValueSequence(final Bytecode value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    public ByteBuf writeValue(final Bytecode value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final List<Bytecode.Instruction> steps = value.getStepInstructions();
         final List<Bytecode.Instruction> sources = value.getSourceInstructions();
         // 2 buffers for the length + plus 2 buffers per each step and source

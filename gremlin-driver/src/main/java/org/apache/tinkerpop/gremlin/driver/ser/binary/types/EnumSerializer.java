@@ -68,7 +68,7 @@ public class EnumSerializer<E extends Enum> extends SimpleTypeSerializer<E> {
     }
 
     @Override
-    public ByteBuf writeValueSequence(final E value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    public ByteBuf writeValue(final E value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         return context.write(value.name(), allocator);
     }
 }

@@ -52,7 +52,7 @@ public class LambdaSerializer extends SimpleTypeSerializer<Lambda> {
     }
 
     @Override
-    public ByteBuf writeValueSequence(final Lambda value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    public ByteBuf writeValue(final Lambda value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(3);
         result.addComponent(true, context.writeValue(value.getLambdaLanguage(), allocator, false));
         result.addComponent(true, context.writeValue(value.getLambdaScript(), allocator, false));

@@ -41,7 +41,7 @@ public class SetSerializer extends SimpleTypeSerializer<Set>{
     }
 
     @Override
-    public ByteBuf writeValueSequence(final Set value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
-        return collectionSerializer.writeValueSequence(value, allocator, context);
+    public ByteBuf writeValue(final Set value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+        return collectionSerializer.writeValue(value, allocator, context);
     }
 }

@@ -37,7 +37,7 @@ public class DateSerializer extends SimpleTypeSerializer<Date> {
     }
 
     @Override
-    public ByteBuf writeValueSequence(final Date value, final ByteBufAllocator allocator, final GraphBinaryWriter context) {
+    public ByteBuf writeValue(final Date value, final ByteBufAllocator allocator, final GraphBinaryWriter context) {
         return allocator.buffer(8).writeLong(value.getTime());
     }
 }
