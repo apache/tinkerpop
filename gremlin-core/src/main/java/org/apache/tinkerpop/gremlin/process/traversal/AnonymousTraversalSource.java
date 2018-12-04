@@ -19,10 +19,12 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+
+import java.lang.reflect.Constructor;
 
 /**
  * Provides a unified way to construct a {@link TraversalSource} from the perspective of the traversal. In this syntax
@@ -60,9 +62,7 @@ public class AnonymousTraversalSource<T extends TraversalSource> {
      * traversals spawned from it will execute over that reference.
      */
     public T withRemote(final String configFile) throws Exception {
-        // for now, this method simply uses the deprecated approach. when this approach is removed we just need to
-        // make it possible to set a RemoteConnection directly on TraversalSource construction.
-        return (T) withGraph(EmptyGraph.instance()).withRemote(configFile);
+        return withRemote(new PropertiesConfiguration(configFile));
     }
 
     /**
@@ -70,9 +70,19 @@ public class AnonymousTraversalSource<T extends TraversalSource> {
      * traversals spawned from it will execute over that reference.
      */
     public T withRemote(final Configuration conf) {
-        // for now, this method simply uses the deprecated approach. when this approach is removed we just need to
-        // make it possible to set a RemoteConnection directly on TraversalSource construction.
-        return (T) withGraph(EmptyGraph.instance()).withRemote(conf);
+        if (!conf.containsKey(TraversalSource.GREMLIN_REMOTE_CONNECTION_CLASS))
+            throw new IllegalArgumentException("Configuration must contain the '" + TraversalSource.GREMLIN_REMOTE_CONNECTION_CLASS + "' key");
+
+        final RemoteConnection remoteConnection;
+        try {
+            final Class<? extends RemoteConnection> clazz = Class.forName(conf.getString(TraversalSource.GREMLIN_REMOTE_CONNECTION_CLASS)).asSubclass(RemoteConnection.class);
+            final Constructor<? extends RemoteConnection> ctor = clazz.getConstructor(Configuration.class);
+            remoteConnection = ctor.newInstance(conf);
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
+
+        return withRemote(remoteConnection);
     }
 
     /**
@@ -80,9 +90,11 @@ public class AnonymousTraversalSource<T extends TraversalSource> {
      * traversals spawned from it will execute over that reference.
      */
     public T withRemote(final RemoteConnection remoteConnection) {
-        // for now, this method simply uses the deprecated approach. when this approach is removed we just need to
-        // make it possible to set a RemoteConnection directly on TraversalSource construction.
-        return (T) withGraph(EmptyGraph.instance()).withRemote(remoteConnection);
+        try {
+            return traversalSourceClass.getConstructor(RemoteConnection.class).newInstance(remoteConnection);
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     /**

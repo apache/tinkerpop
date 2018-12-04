@@ -47,13 +47,6 @@ public class GraphTraversalSourceTest {
         verify(mock, times(1)).close();
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void shouldNotAllowLeakRemoteConnectionsIfMultipleAreCreated() throws Exception {
-        final RemoteConnection mock1 = mock(RemoteConnection.class);
-        final RemoteConnection mock2 = mock(RemoteConnection.class);
-        traversal().withRemote(mock1).withRemote(mock2);
-    }
-
     @Test
     public void shouldSupportMapBasedStrategies() throws Exception {
         GraphTraversalSource g = EmptyGraph.instance().traversal();

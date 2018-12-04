@@ -448,7 +448,9 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.process.remote.RemoteGraph` - moved to `gremlin-test`.
 ** `org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy#identity()`
 ** `org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine`
+** `org.apache.tinkerpop.gremlin.process.traversal.TraversalSource#withRemote(*)`
 ** `org.apache.tinkerpop.gremlin.process.traversal.engine.*`
+** `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource#withRemote(*)`
 ** `org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy.Builder#addReadPartition(String)`
 ** `org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy.Builder#edgeCriterion(Traversal)`
 ** `org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy.Builder#vertexCriterion(Traversal)`
@@ -484,7 +486,8 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-1705[TINKERPOP-1705],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1707[TINKERPOP-1707],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1954[TINKERPOP-1954],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1986[TINKERPOP-1986],
-link:https://issues.apache.org/jira/browse/TINKERPOP-2079[TINKERPOP-2079]
+link:https://issues.apache.org/jira/browse/TINKERPOP-2079[TINKERPOP-2079],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2080[TINKERPOP-2080]
 
 ==== Deprecated GraphSONMessageSerializerGremlinV2d0
 

@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.sparql.process.traversal.dsl.sparql;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.sparql.process.traversal.strategy.SparqlStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
