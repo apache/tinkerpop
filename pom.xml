@@ -162,7 +162,7 @@ limitations under the License.
         <netty.version>4.1.25.Final</netty.version>
         <slf4j.version>1.7.21</slf4j.version>
         <snakeyaml.version>1.15</snakeyaml.version>
-        <spark.version>2.3.1</spark.version>
+        <spark.version>2.4.0</spark.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
