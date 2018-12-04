@@ -96,6 +96,7 @@ public class GraphBinaryReaderWriterRoundTripTest {
 
                 new Object[] {"UUID", UUID.randomUUID(), null},
                 new Object[] {"Bytecode", bytecode, null},
+                new Object[] {"Binding", new Bytecode.Binding<>("x", 123), null},
                 new Object[] {"Class", Bytecode.class, null},
                 new Object[] {"Lambda0", Lambda.supplier("return 1"), null},
                 new Object[] {"Lambda1", Lambda.consumer("it"), null},

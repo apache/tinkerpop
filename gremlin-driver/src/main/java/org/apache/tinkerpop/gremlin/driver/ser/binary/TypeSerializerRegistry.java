@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.BindingSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ByteCodeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ClassSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.CustomTypeSerializer;
@@ -112,7 +113,8 @@ public class TypeSerializerRegistry {
                 new RegistryEntry<>(Class.class, new ClassSerializer()),
                 new RegistryEntry<>(Date.class, new DateSerializer(DataType.TIMESTAMP)),
                 new RegistryEntry<>(Date.class, new DateSerializer(DataType.DATE)),
-                new RegistryEntry<>(Bytecode.class, new ByteCodeSerializer())));
+                new RegistryEntry<>(Bytecode.class, new ByteCodeSerializer()),
+                new RegistryEntry<>(Bytecode.Binding.class, new BindingSerializer())));
 
         /**
          * Adds a serializer for a built-in type.
