@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
 import org.apache.tinkerpop.gremlin.structure.*;
@@ -118,33 +119,12 @@ public class TinkerGraphPlayTest {
     @Test
     @Ignore
     public void testPlayDK() throws Exception {
-        TinkerGraph graph = TinkerFactory.createTheCrew();
-        GraphTraversalSource g = graph.traversal().withStrategies(
-                SubgraphStrategy.build().vertexProperties(hasNot("endTime")).create());
+        GraphTraversalSource g = TinkerFactory.createModern().traversal();
 
-        System.out.println("\n--- valueMap().by(unfold()) ---");
-        g.V().valueMap().forEachRemaining(System.out::println);
-
-        System.out.println("\n--- valueMap().by(unfold()) ---");
-        g.V().valueMap().by(unfold()).forEachRemaining(System.out::println);
-
-        System.out.println("\n--- valueMap().by(unfold()).with(tokens) ---");
-        g.V().valueMap().by(unfold()).with(tokens).forEachRemaining(System.out::println);
-
-        System.out.println("\n--- valueMap().by(unfold()).with(tokens, false) ---");
-        g.V().valueMap().by(unfold()).with(tokens, false).forEachRemaining(System.out::println);
-
-        System.out.println("\n--- valueMap().by(unfold()).with(tokens, ids) ---");
-        g.V().valueMap().by(unfold()).with(tokens, ids).forEachRemaining(System.out::println);
-
-        System.out.println("\n--- valueMap().by(unfold()).with(tokens, labels) ---");
-        g.V().valueMap().by(unfold()).with(tokens, labels).forEachRemaining(System.out::println);
-
-        System.out.println("\n--- valueMap().by(unfold()).with(tokens, all) ---");
-        g.V().valueMap().by(unfold()).with(tokens, all).forEachRemaining(System.out::println);
-
-        System.out.println("\n--- valueMap().by(unfold()).with(tokens, ids | labels) ---");
-        g.V().valueMap().by(unfold()).with(tokens, ids | labels).forEachRemaining(System.out::println);
+        g.V().index().forEachRemaining(System.out::println);
+        g.V().fold().index().forEachRemaining(System.out::println);
+        g.V().index().with(WithOptions.indexer, WithOptions.list).forEachRemaining(System.out::println);
+        g.V().fold().index().with(WithOptions.indexer, WithOptions.map).forEachRemaining(System.out::println);
     }
 
     @Test

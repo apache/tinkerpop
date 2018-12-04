@@ -1084,6 +1084,42 @@ g.V().identity()
 
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#identity--++[`identity()`]
 
+[[index-step]]
+=== Index Step
+
+The `index()`-step (*map*) indexes each element in the current collection. If the current traverser's value is not a collection, then it's treated as a single-item collection. There two indexers
+available, which can be chosen using the `with()` modulator. The list indexer (default) creates a list for each collection item, with the first item being the original element and the second element
+being the index. The map indexer created a linked hash map in which the index represents the key and the original item is used as the value.
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel("software").values("name").fold().
+  order(Scope.local).
+  index().
+  unfold().
+  order().
+    by(__.tail(Scope.local, 1))  <1>
+g.V().hasLabel("software").values("name").fold().
+  order(Scope.local).
+  index().
+    with(WithOptions.indexer, WithOptions.list).
+  unfold().
+  order().
+    by(__.tail(Scope.local, 1))  <2>
+g.V().hasLabel("person").values("name").fold().
+  order(Scope.local).
+  index().
+    with(WithOptions.indexer, WithOptions.map)  <3>
+----
+
+<1> Index all software names in their alphabetical order.
+<2> Same as statement 1, but with an explicitely specified list indexer.
+<3> Index all person names in their alphabetical order and store the result in an ordered map.
+
+*Additional References*
+
+link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#index--++[`index()`]
+
 [[inject-step]]
 === Inject Step
 

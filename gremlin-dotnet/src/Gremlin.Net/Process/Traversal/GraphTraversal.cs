@@ -841,6 +841,15 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Adds the index step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, E2> Index<E2> ()
+        {
+            Bytecode.AddStep("index");
+            return Wrap<S, E2>(this);
+        }
+
+        /// <summary>
         ///     Adds the inject step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal<S, E> Inject (params E[] injections)

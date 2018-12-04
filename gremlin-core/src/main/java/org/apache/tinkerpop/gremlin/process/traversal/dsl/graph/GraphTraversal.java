@@ -85,6 +85,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.IndexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaCollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
@@ -2561,6 +2562,27 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * Indexes all items of the current collection. The indexing format can be configured using the {@link GraphTraversal#with(String, Object)}
+     * and {@link org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions#indexer}.
+     *
+     * Indexed as list: ["a","b","c"] => [["a",0],["b",1],["c",2]]
+     * Indexed as map:  ["a","b","c"] => {0:"a",1:"b",2:"c"}
+     *
+     * If the current object is not a collection, this step will map the object to a single item collection/map:
+     *
+     * Indexed as list: "a" => ["a",0]
+     * Indexed as map:  "a" => {0:"a"}
+     *
+     * @return the traversal with an appended {@link IndexStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#index-step" target="_blank">Reference Documentation - Index Step</a>
+     * @since 3.4.0
+     */
+    public default <E2> GraphTraversal<S, E2> index() {
+        this.asAdmin().getBytecode().addStep(Symbols.index);
+        return this.asAdmin().addStep(new IndexStep<>(this.asAdmin()));
+    }
+
+    /**
      * Turns the lazy traversal pipeline into a bulk-synchronous pipeline which basically iterates that traversal to
      * the size of the barrier. In this case, it iterates the entire thing as the default barrier size is set to
      * {@code Integer.MAX_VALUE}.
@@ -2934,6 +2956,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String aggregate = "aggregate";
         public static final String subgraph = "subgraph";
         public static final String barrier = "barrier";
+        public static final String index = "index";
         public static final String local = "local";
         public static final String emit = "emit";
         public static final String repeat = "repeat";

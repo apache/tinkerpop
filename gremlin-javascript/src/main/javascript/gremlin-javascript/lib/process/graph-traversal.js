@@ -603,6 +603,16 @@ class GraphTraversal extends Traversal {
   }
   
   /**
+   * Graph traversal index method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  index(...args) {
+    this.bytecode.addStep('index', args);
+    return this;
+  }
+  
+  /**
    * Graph traversal inject method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1251,6 +1261,7 @@ const statics = {
   in_: (...args) => callOnEmptyTraversal('in_', args),
   inE: (...args) => callOnEmptyTraversal('inE', args),
   inV: (...args) => callOnEmptyTraversal('inV', args),
+  index: (...args) => callOnEmptyTraversal('index', args),
   inject: (...args) => callOnEmptyTraversal('inject', args),
   is: (...args) => callOnEmptyTraversal('is', args),
   key: (...args) => callOnEmptyTraversal('key', args),

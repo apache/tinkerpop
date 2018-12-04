@@ -1125,4 +1125,10 @@ public class __ {
         return __.<A>start().barrier(barrierConsumer);
     }
 
+    /**
+     * @see GraphTraversal#index()
+     */
+    public static <A, B> GraphTraversal<A, B> index() {
+        return __.<A>start().index();
+    }
 }

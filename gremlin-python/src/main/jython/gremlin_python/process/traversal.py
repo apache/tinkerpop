@@ -637,3 +637,9 @@ class WithOptions(object):
 
     all = 15
 
+    indexer = "~tinkerpop.index.indexer"
+
+    list = 0
+
+    map = 1
+
