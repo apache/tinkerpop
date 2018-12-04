@@ -52,9 +52,7 @@ class CollectionSerializer extends SimpleTypeSerializer<Collection> {
         result.addComponent(true, allocator.buffer(4).writeInt(value.size()));
 
         for (Object item : value) {
-            result.addComponent(
-                    true,
-                    context.write(item, allocator));
+            result.addComponent(true, context.write(item, allocator));
         }
 
         return result;

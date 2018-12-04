@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.types.LambdaSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ListSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.MapSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.PSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.PathSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.PropertySerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.SetSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.SingleTypeSerializer;
@@ -40,6 +41,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
@@ -97,6 +99,7 @@ public class TypeSerializerRegistry {
                 new RegistryEntry<>(Edge.class, new EdgeSerializer()),
                 new RegistryEntry<>(VertexProperty.class, new VertexPropertySerializer()),
                 new RegistryEntry<>(Property.class, new PropertySerializer()),
+                new RegistryEntry<>(Path.class, new PathSerializer()),
                 new RegistryEntry<>(Vertex.class, new VertexSerializer()),
                 new RegistryEntry<>(Lambda.class, new LambdaSerializer()),
                 new RegistryEntry<>(Integer.class, SingleTypeSerializer.IntSerializer),

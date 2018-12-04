@@ -55,8 +55,11 @@ public class GraphBinaryReader {
 
         if (type == DataType.UNSPECIFIED_NULL) {
             // There is no TypeSerializer for unspecified null object
-            // Read the value_flag
-            assert buffer.readByte() == 1;
+            // Read the value_flag - (folding the buffer.readByte() into the assert does not advance the index so
+            // assign to a var first and then do equality on that - learned that the hard way
+            final byte check = buffer.readByte();
+            assert check == 1;
+
             // Just return null
             return null;
         }

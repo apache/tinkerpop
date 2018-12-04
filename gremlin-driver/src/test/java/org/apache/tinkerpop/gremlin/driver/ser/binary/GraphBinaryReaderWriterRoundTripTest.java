@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -54,6 +55,8 @@ public class GraphBinaryReaderWriterRoundTripTest {
     private final GraphBinaryReader reader = new GraphBinaryReader();
     private final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
 
+    private static final GraphTraversalSource g = TinkerFactory.createModern().traversal();
+
     @Parameterized.Parameters(name = "Type{0}")
     public static Collection input() {
         final Bytecode bytecode = new Bytecode();
@@ -65,8 +68,13 @@ public class GraphBinaryReaderWriterRoundTripTest {
         map.put("one", 1);
         map.put("two", 2);
 
-        final List list = new ArrayList<>();
-        list.add("string 1");
+        final List listSingle = new ArrayList<>();
+        listSingle.add("string 1");
+
+        final List listMulti = new ArrayList<>();
+        listSingle.add("string 1");
+        listSingle.add(200);
+        listSingle.add("string 2");
 
         final Set set = new HashSet<>();
         set.add("one");
@@ -116,21 +124,24 @@ public class GraphBinaryReaderWriterRoundTripTest {
 
                 // graph
                 new Object[] {"ReferenceEdge", new ReferenceEdge(123, "person", new ReferenceVertex(123, "person"), new ReferenceVertex(321, "person")), null},
-                new Object[] {"TinkerEdge", TinkerFactory.createModern().traversal().E().hasLabel("knows").next(), null},
+                new Object[] {"TinkerEdge", g.E().hasLabel("knows").next(), null},
                 new Object[] {"ReferenceProperty", new ReferenceProperty<>("name", "john"), (Consumer<ReferenceProperty>) referenceProperty -> {
                     assertEquals("name", referenceProperty.key());
                     assertEquals("john", referenceProperty.value());
                 }},
                 new Object[] {"ReferenceVertex", new ReferenceVertex(123, "person"), null},
-                new Object[] {"TinkerVertex", TinkerFactory.createModern().traversal().V().hasLabel("person").next(), null},
+                new Object[] {"TinkerVertex", g.V().hasLabel("person").next(), null},
                 new Object[] {"ReferenceVertexProperty", new ReferenceVertexProperty<>(123, "name", "john"), (Consumer<ReferenceVertexProperty>) referenceProperty -> {
                     assertEquals("name", referenceProperty.key());
                     assertEquals("john", referenceProperty.value());
                     assertEquals(123, referenceProperty.id());
                 }},
+                new Object[] {"PathLabelled", g.V().as("a", "b").out().as("c").path().next(), null},
+                new Object[] {"PathNotLabelled", g.V().out().inE().values().path().next(), null},
 
                 // collections
-                new Object[] {"List", list, null},
+                new Object[] {"ListSingle", listSingle, null},
+                new Object[] {"ListMulti", listMulti, null},
                 new Object[] {"Map", map, null},
                 new Object[] {"Set", set, null});
     }
