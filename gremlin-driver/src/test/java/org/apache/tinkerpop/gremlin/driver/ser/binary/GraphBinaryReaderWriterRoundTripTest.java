@@ -38,14 +38,12 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 import static org.junit.Assert.assertEquals;
 
@@ -101,6 +99,7 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 new Object[] {"Columns", Column.values, null},
                 new Object[] {"Direction", Direction.BOTH, null},
                 new Object[] {"Operator", Operator.sum, null},
+                new Object[] {"Operator", Operator.div, null},
                 new Object[] {"Order", Order.desc, null},
                 new Object[] {"Pick", TraversalOptionParent.Pick.any, null},
                 new Object[] {"Pop", Pop.mixed, null},
@@ -139,10 +138,13 @@ public class GraphBinaryReaderWriterRoundTripTest {
 
     @Test
     public void shouldWriteAndRead() throws Exception {
-        final ByteBuf buffer = writer.write(value, allocator);
-        buffer.readerIndex(0);
-        final Object result = reader.read(buffer);
+        // Test it multiple times as the type registry might change its internal state
+        for (int i = 0; i < 5; i++) {
+            final ByteBuf buffer = writer.write(value, allocator);
+            buffer.readerIndex(0);
+            final Object result = reader.read(buffer);
 
-        Optional.ofNullable(assertion).orElse((Consumer) r -> assertEquals(value, r)).accept(result);
+            Optional.ofNullable(assertion).orElse((Consumer) r -> assertEquals(value, r)).accept(result);
+        }
     }
 }

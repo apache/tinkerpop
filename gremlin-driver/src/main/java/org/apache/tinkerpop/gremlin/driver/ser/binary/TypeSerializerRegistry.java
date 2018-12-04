@@ -61,6 +61,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class TypeSerializerRegistry {
     public static final TypeSerializerRegistry INSTANCE = build().create();
@@ -188,6 +189,12 @@ public class TypeSerializerRegistry {
     private final Map<DataType, TypeSerializer<?>> serializersByDataType = new HashMap<>();
     private final Map<String, CustomTypeSerializer> serializersByCustomTypeName = new HashMap<>();
 
+    /**
+     * Stores serializers by class, where the class resolution involved a lookup or special conditions.
+     * This is used for interface implementations and enums.
+     */
+    private final ConcurrentHashMap<Class<?>, TypeSerializer<?>> serializersByImplementation = new ConcurrentHashMap<>();
+
     private TypeSerializerRegistry(final Collection<RegistryEntry> entries) {
         for (RegistryEntry entry : entries) {
             put(entry);
@@ -229,20 +236,33 @@ public class TypeSerializerRegistry {
         TypeSerializer<?> serializer = serializers.get(type);
 
         if (null == serializer) {
-            // Find by interface
-            for (Map.Entry<Class<?>, TypeSerializer<?>> entry : serializersByInterface.entrySet()) {
-                if (entry.getKey().isAssignableFrom(type)) {
-                    serializer = entry.getValue();
-                    break;
-                }
-            }
+            // Try to obtain the serializer by the type interface implementation or superclass,
+            // when previously accessed.
+            serializer = serializersByImplementation.get(type);
         }
 
         if (null == serializer && Enum.class.isAssignableFrom(type)) {
             // maybe it's a enum - enums with bodies are weird in java, they are subclasses of themselves, so
-            // Columns.values will be of type Column$2. could be a better/safer way to do this.
+            // Columns.values will be of type Column$2.
             serializer = serializers.get(type.getSuperclass());
-        }         
+
+            // In case it matched, store the match
+            if (serializer != null) {
+                serializersByImplementation.put(type, serializer);
+            }
+        }
+
+        if (null == serializer) {
+            // Lookup by interface
+            for (Map.Entry<Class<?>, TypeSerializer<?>> entry : serializersByInterface.entrySet()) {
+                if (entry.getKey().isAssignableFrom(type)) {
+                    serializer = entry.getValue();
+                    // Store the type-to-interface match, to avoid looking it up in the future
+                    serializersByImplementation.put(type, serializer);
+                    break;
+                }
+            }
+        }
 
         return validateInstance(serializer, type.getTypeName());
     }
