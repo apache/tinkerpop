@@ -44,7 +44,7 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Maintained order of annotations in metrics returned from `profile()`-step.
 * Refactored `TypeTranslator` to be directly extensible for `ScriptTranslator` functions.
 * Bumped to Netty 4.1.25.
-* Bumped to Spark 2.3.1.
+* Bumped to Spark 2.4.0.
 * Bumped to Groovy 2.5.4.
 * Modified Gremlin Server to return a "host" status attribute on responses.
 * Added ability to the Java, .NET, Python and JavaScript drivers to retrieve status attributes returned from the server.
