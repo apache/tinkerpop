@@ -114,18 +114,18 @@ public class RemoteGraph implements Graph {
 
     /**
      * Creates a new {@link RemoteGraph} instance using the specified configuration, which allows {@link RemoteGraph}
-     * to be compliant with {@link GraphFactory}. Expects key for {@link TraversalSource#GREMLIN_REMOTE_CONNECTION_CLASS}
+     * to be compliant with {@link GraphFactory}. Expects key for {@link RemoteConnection#GREMLIN_REMOTE_CONNECTION_CLASS}
      * as well as any configuration required by the underlying {@link RemoteConnection} which will be instantiated.
      * Note that the {@code Configuration} object is passed down without change to the creation of the
      * {@link RemoteConnection} instance.
      */
     public static RemoteGraph open(final Configuration conf) {
-        if (!conf.containsKey(TraversalSource.GREMLIN_REMOTE_CONNECTION_CLASS))
-            throw new IllegalArgumentException("Configuration must contain the '" + TraversalSource.GREMLIN_REMOTE_CONNECTION_CLASS + "' key");
+        if (!conf.containsKey(RemoteConnection.GREMLIN_REMOTE_CONNECTION_CLASS))
+            throw new IllegalArgumentException("Configuration must contain the '" + RemoteConnection.GREMLIN_REMOTE_CONNECTION_CLASS + "' key");
 
         final RemoteConnection remoteConnection;
         try {
-            final Class<? extends RemoteConnection> clazz = Class.forName(conf.getString(TraversalSource.GREMLIN_REMOTE_CONNECTION_CLASS)).asSubclass(RemoteConnection.class);
+            final Class<? extends RemoteConnection> clazz = Class.forName(conf.getString(RemoteConnection.GREMLIN_REMOTE_CONNECTION_CLASS)).asSubclass(RemoteConnection.class);
             final Constructor<? extends RemoteConnection> ctor = clazz.getConstructor(Configuration.class);
             remoteConnection = ctor.newInstance(conf);
         } catch (Exception ex) {

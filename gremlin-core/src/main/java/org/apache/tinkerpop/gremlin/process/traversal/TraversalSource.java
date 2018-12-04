@@ -49,9 +49,6 @@ import java.util.function.UnaryOperator;
  */
 public interface TraversalSource extends Cloneable, AutoCloseable {
 
-    public static final String GREMLIN_REMOTE = "gremlin.remote.";
-    public static final String GREMLIN_REMOTE_CONNECTION_CLASS = GREMLIN_REMOTE + "remoteConnectionClass";
-
     /**
      * Get the {@link TraversalStrategies} associated with this traversal source.
      *

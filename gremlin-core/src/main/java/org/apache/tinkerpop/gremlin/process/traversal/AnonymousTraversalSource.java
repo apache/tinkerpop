@@ -26,6 +26,8 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.lang.reflect.Constructor;
 
+import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE_CONNECTION_CLASS;
+
 /**
  * Provides a unified way to construct a {@link TraversalSource} from the perspective of the traversal. In this syntax
  * the user is creating the source and binding it to a reference which is either an existing {@link Graph} instance
@@ -70,19 +72,7 @@ public class AnonymousTraversalSource<T extends TraversalSource> {
      * traversals spawned from it will execute over that reference.
      */
     public T withRemote(final Configuration conf) {
-        if (!conf.containsKey(TraversalSource.GREMLIN_REMOTE_CONNECTION_CLASS))
-            throw new IllegalArgumentException("Configuration must contain the '" + TraversalSource.GREMLIN_REMOTE_CONNECTION_CLASS + "' key");
-
-        final RemoteConnection remoteConnection;
-        try {
-            final Class<? extends RemoteConnection> clazz = Class.forName(conf.getString(TraversalSource.GREMLIN_REMOTE_CONNECTION_CLASS)).asSubclass(RemoteConnection.class);
-            final Constructor<? extends RemoteConnection> ctor = clazz.getConstructor(Configuration.class);
-            remoteConnection = ctor.newInstance(conf);
-        } catch (Exception ex) {
-            throw new IllegalStateException(ex);
-        }
-
-        return withRemote(remoteConnection);
+        return withRemote(RemoteConnection.from(conf));
     }
 
     /**
