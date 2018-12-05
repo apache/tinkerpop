@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.types.BigIntegerSerializer;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
@@ -48,6 +47,8 @@ import org.junit.runners.Parameterized;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -62,7 +63,7 @@ public class GraphBinaryReaderWriterRoundTripTest {
     private static final GraphTraversalSource g = TinkerFactory.createModern().traversal();
 
     @Parameterized.Parameters(name = "Type{0}")
-    public static Collection input() {
+    public static Collection input() throws Exception {
         final Bytecode bytecode = new Bytecode();
         bytecode.addStep("V");
         bytecode.addStep("tail", 3);
@@ -101,6 +102,10 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 new Object[] {"BigIntegerNeg", new BigInteger("-1234567890987654321"), null},
                 new Object[] {"BigDecimalPos", new BigDecimal("1234567890987654321.1232132"), null},
                 new Object[] {"BigDecimalNeg", new BigDecimal("-1234567890987654321.1232132"), null},
+
+                // date+time
+                new Object[] {"Date", DateFormat.getDateInstance(DateFormat.MEDIUM).parse("Jan 12, 1952"), null},
+                new Object[] {"Timestamp", Timestamp.valueOf("2016-01-15 12:01:02"), null},
 
                 new Object[] {"UUID", UUID.randomUUID(), null},
                 new Object[] {"Bytecode", bytecode, null},

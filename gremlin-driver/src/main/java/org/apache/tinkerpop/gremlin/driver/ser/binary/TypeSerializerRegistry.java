@@ -64,6 +64,7 @@ import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -119,8 +120,8 @@ public class TypeSerializerRegistry {
                 new RegistryEntry<>(BigInteger.class, new BigIntegerSerializer()),
                 new RegistryEntry<>(BigDecimal.class, new BigDecimalSerializer()),
                 new RegistryEntry<>(Class.class, new ClassSerializer()),
-                new RegistryEntry<>(Date.class, new DateSerializer(DataType.TIMESTAMP)),
-                new RegistryEntry<>(Date.class, new DateSerializer(DataType.DATE)),
+                new RegistryEntry<>(Timestamp.class, DateSerializer.TimestampSerializer),
+                new RegistryEntry<>(Date.class, DateSerializer.DateSerializer),
                 new RegistryEntry<>(Traverser.class, new TraverserSerializer()),
                 new RegistryEntry<>(Bytecode.class, new ByteCodeSerializer()),
                 new RegistryEntry<>(Bytecode.Binding.class, new BindingSerializer())));

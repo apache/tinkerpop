@@ -24,20 +24,32 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 
+import java.sql.Timestamp;
 import java.util.Date;
+import java.util.function.Function;
 
-public class DateSerializer extends SimpleTypeSerializer<Date> {
-    public DateSerializer(final DataType type) {
+/**
+ * @author Stephen Mallette (http://stephen.genoprime.com)
+ */
+public class DateSerializer<T extends Date> extends SimpleTypeSerializer<T> {
+
+    public static final DateSerializer<Date> DateSerializer = new DateSerializer<>(DataType.DATE, Date::new);
+    public static final DateSerializer<Timestamp> TimestampSerializer = new DateSerializer<>(DataType.TIMESTAMP, Timestamp::new);
+
+    private final Function<Long, T> reader;
+
+    private DateSerializer(final DataType type, final Function<Long, T> reader) {
         super(type);
+        this.reader = reader;
     }
 
     @Override
-    Date readValue(final ByteBuf buffer, final GraphBinaryReader context) {
-        return new Date(buffer.readLong());
+    T readValue(final ByteBuf buffer, final GraphBinaryReader context) {
+        return reader.apply(buffer.readLong());
     }
 
     @Override
-    public ByteBuf writeValue(final Date value, final ByteBufAllocator allocator, final GraphBinaryWriter context) {
+    public ByteBuf writeValue(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) {
         return allocator.buffer(8).writeLong(value.getTime());
     }
 }
