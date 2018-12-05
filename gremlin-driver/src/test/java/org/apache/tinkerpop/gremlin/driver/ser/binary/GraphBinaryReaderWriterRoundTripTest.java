@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
@@ -97,6 +98,7 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 new Object[] {"UUID", UUID.randomUUID(), null},
                 new Object[] {"Bytecode", bytecode, null},
                 new Object[] {"Binding", new Bytecode.Binding<>("x", 123), null},
+                new Object[] {"Traverser", new DefaultRemoteTraverser<>("marko", 100), null},
                 new Object[] {"Class", Bytecode.class, null},
                 new Object[] {"Lambda0", Lambda.supplier("return 1"), null},
                 new Object[] {"Lambda1", Lambda.consumer("it"), null},

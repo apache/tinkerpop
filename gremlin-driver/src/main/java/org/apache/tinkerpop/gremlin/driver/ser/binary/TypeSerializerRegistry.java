@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.types.PropertySerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.SetSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.SingleTypeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.StringSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.TraverserSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.UUIDSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.VertexPropertySerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.VertexSerializer;
@@ -46,6 +47,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
@@ -113,6 +115,7 @@ public class TypeSerializerRegistry {
                 new RegistryEntry<>(Class.class, new ClassSerializer()),
                 new RegistryEntry<>(Date.class, new DateSerializer(DataType.TIMESTAMP)),
                 new RegistryEntry<>(Date.class, new DateSerializer(DataType.DATE)),
+                new RegistryEntry<>(Traverser.class, new TraverserSerializer()),
                 new RegistryEntry<>(Bytecode.class, new ByteCodeSerializer()),
                 new RegistryEntry<>(Bytecode.Binding.class, new BindingSerializer())));
 
