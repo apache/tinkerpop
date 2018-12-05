@@ -103,12 +103,12 @@ public class TypeSerializerRegistry {
                 new RegistryEntry<>(UUID.class, new UUIDSerializer()),
                 new RegistryEntry<>(Edge.class, new EdgeSerializer()),
                 new RegistryEntry<>(Path.class, new PathSerializer()),
+                new RegistryEntry<>(VertexProperty.class, new VertexPropertySerializer()), // needs to register before the less specific Property
                 new RegistryEntry<>(Property.class, new PropertySerializer()),
 
                 // TODO: tinkergraph
 
                 new RegistryEntry<>(Vertex.class, new VertexSerializer()),
-                new RegistryEntry<>(VertexProperty.class, new VertexPropertySerializer()),
                 new RegistryEntry<>(SackFunctions.Barrier.class, EnumSerializer.BarrierSerializer),
                 new RegistryEntry<>(Bytecode.Binding.class, new BindingSerializer()),
                 new RegistryEntry<>(Bytecode.class, new ByteCodeSerializer()),
