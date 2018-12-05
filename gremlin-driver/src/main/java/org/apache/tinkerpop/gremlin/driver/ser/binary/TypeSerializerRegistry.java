@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.BigDecimalSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.BigIntegerSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.BindingSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ByteCodeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ClassSerializer;
@@ -60,6 +62,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -112,6 +116,8 @@ public class TypeSerializerRegistry {
                 new RegistryEntry<>(Short.class, SingleTypeSerializer.ShortSerializer),
                 new RegistryEntry<>(Boolean.class, SingleTypeSerializer.BooleanSerializer),
                 new RegistryEntry<>(Byte.class, SingleTypeSerializer.ByteSerializer),
+                new RegistryEntry<>(BigInteger.class, new BigIntegerSerializer()),
+                new RegistryEntry<>(BigDecimal.class, new BigDecimalSerializer()),
                 new RegistryEntry<>(Class.class, new ClassSerializer()),
                 new RegistryEntry<>(Date.class, new DateSerializer(DataType.TIMESTAMP)),
                 new RegistryEntry<>(Date.class, new DateSerializer(DataType.DATE)),

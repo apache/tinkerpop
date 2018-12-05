@@ -434,7 +434,14 @@ Where:
 
 A variable-length two's complement encoding of a signed integer.
 
-Example values
+Format: `{length}{value}`
+
+Where:
+
+- `{length}` is an `Int`.
+- `{value}` is the two's complement of the `BigInteger`.
+
+Example values of the two's complement `{value}`:
 
 - `00`: Integer 0.
 - `01`: Integer 1.

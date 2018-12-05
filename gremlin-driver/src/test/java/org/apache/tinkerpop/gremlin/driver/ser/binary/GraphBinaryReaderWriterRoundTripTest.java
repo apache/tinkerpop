@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.BigIntegerSerializer;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
@@ -45,6 +46,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -94,6 +97,10 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 new Object[] {"IntegerMin", Integer.MIN_VALUE, null},
                 new Object[] {"IntegerMax", Integer.MAX_VALUE, null},
                 new Object[] {"LongMax", Long.MAX_VALUE, null},
+                new Object[] {"BigIntegerPos", new BigInteger("1234567890987654321"), null},
+                new Object[] {"BigIntegerNeg", new BigInteger("-1234567890987654321"), null},
+                new Object[] {"BigDecimalPos", new BigDecimal("1234567890987654321.1232132"), null},
+                new Object[] {"BigDecimalNeg", new BigDecimal("-1234567890987654321.1232132"), null},
 
                 new Object[] {"UUID", UUID.randomUUID(), null},
                 new Object[] {"Bytecode", bytecode, null},
