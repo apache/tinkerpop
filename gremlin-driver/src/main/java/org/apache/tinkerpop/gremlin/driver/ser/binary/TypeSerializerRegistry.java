@@ -27,16 +27,22 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ByteCodeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ClassSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.CustomTypeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.DateSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.DurationSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.EdgeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.EnumSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.InstantSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.LambdaSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ListSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.LocalDateSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.LocalDateTimeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.LocalTimeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.MapSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.MonthDaySerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.OffsetDateTimeSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.OffsetTimeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.PSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.PathSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.PeriodSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.PropertySerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.SetSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.SingleTypeSerializer;
@@ -45,7 +51,9 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.types.TraverserSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.UUIDSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.VertexPropertySerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.VertexSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.YearMonthSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ZoneOffsetSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ZonedDateTimeSerializer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
@@ -72,10 +80,19 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.MonthDay;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.Period;
+import java.time.Year;
+import java.time.YearMonth;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -143,9 +160,21 @@ public class TypeSerializerRegistry {
 
                 // TODO: char
 
+                new RegistryEntry<>(Duration.class, new DurationSerializer()),
+
+                // TODO: inetaddress
+
+                new RegistryEntry<>(Instant.class, new InstantSerializer()),
                 new RegistryEntry<>(LocalDate.class, new LocalDateSerializer()),
                 new RegistryEntry<>(LocalTime.class, new LocalTimeSerializer()),
                 new RegistryEntry<>(LocalDateTime.class, new LocalDateTimeSerializer()),
+                new RegistryEntry<>(MonthDay.class, new MonthDaySerializer()),
+                new RegistryEntry<>(OffsetDateTime.class, new OffsetDateTimeSerializer()),
+                new RegistryEntry<>(OffsetTime.class, new OffsetTimeSerializer()),
+                new RegistryEntry<>(Period.class, new PeriodSerializer()),
+                new RegistryEntry<>(Year.class, SingleTypeSerializer.YearSerializer),
+                new RegistryEntry<>(YearMonth.class, new YearMonthSerializer()),
+                new RegistryEntry<>(ZonedDateTime.class, new ZonedDateTimeSerializer()),
                 new RegistryEntry<>(ZoneOffset.class, new ZoneOffsetSerializer())));
 
         /**

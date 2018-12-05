@@ -50,10 +50,19 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.text.DateFormat;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.MonthDay;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.Period;
+import java.time.Year;
+import java.time.YearMonth;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -112,10 +121,19 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 // date+time
                 new Object[] {"Date", DateFormat.getDateInstance(DateFormat.MEDIUM).parse("Jan 12, 1952"), null},
                 new Object[] {"Timestamp", Timestamp.valueOf("2016-01-15 12:01:02"), null},
-                new Object[] {"ZoneOffset", ZoneOffset.ofTotalSeconds(100), null},
+                new Object[] {"Duration", Duration.ofSeconds(213123213, 400), null},
+                new Object[] {"Instant", Instant.ofEpochSecond(213123213, 400), null},
                 new Object[] {"LocalDate", LocalDate.of(2016, 10, 21), null},
                 new Object[] {"LocalTime", LocalTime.of(12, 20, 30, 300), null},
                 new Object[] {"LocalDateTime", LocalDateTime.of(2016, 10, 21, 12, 20, 30, 300), null},
+                new Object[] {"MonthDay", MonthDay.of(12, 28), null},
+                new Object[] {"OffsetDateTime", OffsetDateTime.of(2017, 11, 15, 12, 30, 45, 300, ZoneOffset.ofTotalSeconds(400)), null},
+                new Object[] {"OffsetTime", OffsetTime.of(12, 30, 45, 300, ZoneOffset.ofTotalSeconds(400)), null},
+                new Object[] {"Period", Period.of(1, 6, 15), null},
+                new Object[] {"Year", Year.of(1996), null},
+                new Object[] {"YearMonth", YearMonth.of(2016, 11), null},
+                new Object[] {"ZonedDateTime", ZonedDateTime.of(2016, 11, 15, 12, 30, 45, 300, ZoneOffset.ofTotalSeconds(200)), null},
+                new Object[] {"ZoneOffset", ZoneOffset.ofTotalSeconds(100), null},
 
                 new Object[] {"UUID", UUID.randomUUID(), null},
                 new Object[] {"Bytecode", bytecode, null},

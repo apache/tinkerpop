@@ -632,12 +632,12 @@ Where:
 
 A date-time with a time-zone in the ISO-8601 calendar system.
 
-Format: `{local_date_time}{zone_id}`
+Format: `{local_date_time}{zone_offset}`
 
 Where:
 
 - `{local_date_time}` is `LocalDateTime`.
-- `{time}` is a `LocalTime`.
+- `{zone_offset}` is a `ZoneOffset`.
 
 ==== ZoneOffset
 

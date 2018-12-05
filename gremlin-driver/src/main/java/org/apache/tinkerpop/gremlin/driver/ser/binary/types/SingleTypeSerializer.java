@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 
+import java.time.Year;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -47,6 +48,8 @@ public class SingleTypeSerializer<T> extends SimpleTypeSerializer<T> {
             new SingleTypeSerializer<>(1, DataType.BOOLEAN, ByteBuf::readBoolean, (v, b) -> b.writeBoolean(v));
     public static final SingleTypeSerializer<Byte> ByteSerializer =
             new SingleTypeSerializer<>(1, DataType.BYTE, ByteBuf::readByte, (v, b) -> b.writeByte(v));
+    public static final SingleTypeSerializer<Year> YearSerializer =
+            new SingleTypeSerializer<>(4, DataType.YEAR, bb -> Year.of(bb.readInt()), (v, b) -> b.writeInt(v.getValue()));
 
     private final int byteLength;
     private final Function<ByteBuf, T> readFunc;
