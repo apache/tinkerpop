@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.BigDecimalSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.BigIntegerSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.BindingSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ByteBufferSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ByteCodeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ClassSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.CustomTypeSerializer;
@@ -62,8 +63,10 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Collection;
@@ -117,6 +120,7 @@ public class TypeSerializerRegistry {
                 new RegistryEntry<>(Short.class, SingleTypeSerializer.ShortSerializer),
                 new RegistryEntry<>(Boolean.class, SingleTypeSerializer.BooleanSerializer),
                 new RegistryEntry<>(Byte.class, SingleTypeSerializer.ByteSerializer),
+                new RegistryEntry<>(ByteBuffer.class, new ByteBufferSerializer()),
                 new RegistryEntry<>(BigInteger.class, new BigIntegerSerializer()),
                 new RegistryEntry<>(BigDecimal.class, new BigDecimalSerializer()),
                 new RegistryEntry<>(Class.class, new ClassSerializer()),
@@ -239,7 +243,7 @@ public class TypeSerializerRegistry {
             throw new NullPointerException("Serializer data type can not be null");
         }
 
-        if (!type.isInterface()) {
+        if (!type.isInterface() && !Modifier.isAbstract(type.getModifiers())) {
             // Direct class match
             serializers.put(type, serializer);
         } else {
