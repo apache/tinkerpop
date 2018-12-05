@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.types.DateSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.DurationSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.EdgeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.EnumSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.InetAddressSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.InstantSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.LambdaSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ListSerializer;
@@ -78,6 +79,9 @@ import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.time.Duration;
@@ -161,9 +165,9 @@ public class TypeSerializerRegistry {
                 // TODO: char
 
                 new RegistryEntry<>(Duration.class, new DurationSerializer()),
-
-                // TODO: inetaddress
-
+                new RegistryEntry<>(InetAddress.class, new InetAddressSerializer()),
+                new RegistryEntry<>(Inet4Address.class, new InetAddressSerializer<>()),
+                new RegistryEntry<>(Inet6Address.class, new InetAddressSerializer<>()),
                 new RegistryEntry<>(Instant.class, new InstantSerializer()),
                 new RegistryEntry<>(LocalDate.class, new LocalDateSerializer()),
                 new RegistryEntry<>(LocalTime.class, new LocalTimeSerializer()),

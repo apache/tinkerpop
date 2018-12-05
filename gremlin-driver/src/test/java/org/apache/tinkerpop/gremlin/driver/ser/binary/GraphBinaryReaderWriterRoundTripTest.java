@@ -47,6 +47,7 @@ import org.junit.runners.Parameterized;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -141,6 +142,8 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 new Object[] {"Traverser", new DefaultRemoteTraverser<>("marko", 100), null},
                 new Object[] {"Class", Bytecode.class, null},
                 new Object[] {"ByteBuffer", ByteBuffer.allocate(8).putLong(123456), null},
+                new Object[] {"InetAddressV4", InetAddress.getByName("localhost"), null},
+                new Object[] {"InetAddressV6", InetAddress.getByName("::1"), null},
                 new Object[] {"Lambda0", Lambda.supplier("return 1"), null},
                 new Object[] {"Lambda1", Lambda.consumer("it"), null},
                 new Object[] {"Lambda2", Lambda.biFunction("x,y -> x + y"), null},
