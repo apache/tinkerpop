@@ -62,7 +62,23 @@ public enum DataType {
     SHORT(0X26),
     BOOLEAN(0x27),
     UNSPECIFIED_NULL(-1),
-    CUSTOM(0);
+    CUSTOM(0),
+
+    CHAR(0X60),
+    DURATION(0X61),
+    INETADDRESS(0X62),
+    INSTANT(0X63),
+    LOCALDATE(0X64),
+    LOCALDATETIME(0X65),
+    LOCALTIME(0X66),
+    MONTHDAY(0X67),
+    OFFSETDATETIME(0X68),
+    OFFSETTIME(0X69),
+    PERIOD(0X6A),
+    YEAR(0X6B),
+    YEARMONTH(0X6C),
+    ZONEDATETIME(0X6D),
+    ZONEOFFSET(0X6E);
 
     private final int code;
     private static final Map<Integer, DataType> typeByCode = new HashMap<>();
@@ -88,7 +104,7 @@ public enum DataType {
      * Gets the data type code.
      */
     public byte getCodeByte() {
-        return (byte)code;
+        return (byte) code;
     }
 
     /**

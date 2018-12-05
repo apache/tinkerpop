@@ -31,6 +31,9 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.types.EdgeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.EnumSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.LambdaSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ListSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.LocalDateSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.LocalDateTimeSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.LocalTimeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.MapSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.PSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.PathSerializer;
@@ -42,6 +45,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.types.TraverserSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.UUIDSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.VertexPropertySerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.VertexSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ZoneOffsetSerializer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
@@ -68,6 +72,10 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -131,7 +139,14 @@ public class TypeSerializerRegistry {
                 new RegistryEntry<>(Byte.class, SingleTypeSerializer.ByteSerializer),
                 new RegistryEntry<>(ByteBuffer.class, new ByteBufferSerializer()),
                 new RegistryEntry<>(Short.class, SingleTypeSerializer.ShortSerializer),
-                new RegistryEntry<>(Boolean.class, SingleTypeSerializer.BooleanSerializer)));
+                new RegistryEntry<>(Boolean.class, SingleTypeSerializer.BooleanSerializer),
+
+                // TODO: char
+
+                new RegistryEntry<>(LocalDate.class, new LocalDateSerializer()),
+                new RegistryEntry<>(LocalTime.class, new LocalTimeSerializer()),
+                new RegistryEntry<>(LocalDateTime.class, new LocalDateTimeSerializer()),
+                new RegistryEntry<>(ZoneOffset.class, new ZoneOffsetSerializer())));
 
         /**
          * Adds a serializer for a built-in type.
@@ -250,7 +265,7 @@ public class TypeSerializerRegistry {
             // Direct class match
             serializers.put(type, serializer);
         } else {
-            // Interface can be assigned by provided type
+            // Interface or abstract class can be assigned by provided type
             serializersByInterface.put(type, serializer);
         }
 

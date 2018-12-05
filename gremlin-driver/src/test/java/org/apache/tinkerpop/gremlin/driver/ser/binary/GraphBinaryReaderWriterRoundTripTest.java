@@ -50,6 +50,10 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.text.DateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -108,6 +112,10 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 // date+time
                 new Object[] {"Date", DateFormat.getDateInstance(DateFormat.MEDIUM).parse("Jan 12, 1952"), null},
                 new Object[] {"Timestamp", Timestamp.valueOf("2016-01-15 12:01:02"), null},
+                new Object[] {"ZoneOffset", ZoneOffset.ofTotalSeconds(100), null},
+                new Object[] {"LocalDate", LocalDate.of(2016, 10, 21), null},
+                new Object[] {"LocalTime", LocalTime.of(12, 20, 30, 300), null},
+                new Object[] {"LocalDateTime", LocalDateTime.of(2016, 10, 21, 12, 20, 30, 300), null},
 
                 new Object[] {"UUID", UUID.randomUUID(), null},
                 new Object[] {"Bytecode", bytecode, null},
