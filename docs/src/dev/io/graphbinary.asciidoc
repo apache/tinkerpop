@@ -101,26 +101,26 @@ Changes to existing types require new revision.
 - `0x25`: ByteBuffer
 - `0x26`: Short
 - `0x27`: Boolean
-- `0xff`: Unspecified null object
+- `0xfe`: Unspecified null object
 - `0x00`: Custom
 
 ==== Extended Types
 
-- `0x60`: Char
-- `0x61`: Duration
-- `0x62`: InetAddress
-- `0x63`: Instant
-- `0x64`: LocalDate
-- `0x65`: LocalDateTime
-- `0x66`: LocalTime
-- `0x67`: MonthDay
-- `0x68`: OffsetDateTime
-- `0x69`: OffsetTime
-- `0x6a`: Period
-- `0x6b`: Year
-- `0x6c`: YearMonth
-- `0x6d`: ZonedDateTime
-- `0x6e`: ZoneOffset
+- `0x80`: Char
+- `0x81`: Duration
+- `0x82`: InetAddress
+- `0x83`: Instant
+- `0x84`: LocalDate
+- `0x85`: LocalDateTime
+- `0x86`: LocalTime
+- `0x87`: MonthDay
+- `0x88`: OffsetDateTime
+- `0x89`: OffsetTime
+- `0x8a`: Period
+- `0x8b`: Year
+- `0x8c`: YearMonth
+- `0x8d`: ZonedDateTime
+- `0x8e`: ZoneOffset
 
 === Null handling
 
