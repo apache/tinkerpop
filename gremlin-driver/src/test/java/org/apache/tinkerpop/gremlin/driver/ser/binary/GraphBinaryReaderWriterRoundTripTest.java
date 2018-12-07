@@ -34,8 +34,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
@@ -187,6 +189,9 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 }},
                 new Object[] {"PathLabelled", g.V().as("a", "b").out().as("c").path().next(), null},
                 new Object[] {"PathNotLabelled", g.V().out().inE().values().path().next(), null},
+                new Object[] {"Graph", g.E().subgraph("k").cap("k").next(), (Consumer<Graph>) graph -> {
+                    IoTest.assertModernGraph(graph, true, false);
+                }},
 
                 // collections
                 new Object[] {"ListSingle", listSingle, null},

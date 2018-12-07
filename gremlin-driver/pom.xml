@@ -69,16 +69,23 @@ limitations under the License.
             <artifactId>log4j</artifactId>
             <optional>true</optional>
         </dependency>
-        <!-- TEST -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
+        <!-- TinkerGraph is an optional dependency that is only required if doing deserialization of Graph instances -->
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>tinkergraph-gremlin</artifactId>
             <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <!-- TEST -->
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>gremlin-test</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

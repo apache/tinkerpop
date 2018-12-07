@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.types.DateSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.DurationSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.EdgeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.EnumSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.GraphSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.InetAddressSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.InstantSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.LambdaSerializer;
@@ -71,6 +72,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -135,9 +137,7 @@ public class TypeSerializerRegistry {
                 new RegistryEntry<>(Path.class, new PathSerializer()),
                 new RegistryEntry<>(VertexProperty.class, new VertexPropertySerializer()), // needs to register before the less specific Property
                 new RegistryEntry<>(Property.class, new PropertySerializer()),
-
-                // TODO: tinkergraph
-
+                new RegistryEntry<>(Graph.class, new GraphSerializer()),
                 new RegistryEntry<>(Vertex.class, new VertexSerializer()),
                 new RegistryEntry<>(SackFunctions.Barrier.class, EnumSerializer.BarrierSerializer),
                 new RegistryEntry<>(Bytecode.Binding.class, new BindingSerializer()),

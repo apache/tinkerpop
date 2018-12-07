@@ -37,7 +37,7 @@ public enum DataType {
     EDGE(0X0D),
     PATH(0X0E),
     PROPERTY(0X0F),
-    TINKERGRAPH(0X10),
+    GRAPH(0X10),
     VERTEX(0X11),
     VERTEXPROPERTY(0X12),
     BARRIER(0X13),

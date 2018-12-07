@@ -289,7 +289,7 @@ Where:
 an `Edge` or `VertexProperty`. Note that as TinkerPop currently sends "references" only this value will always be
 `null`.
 
-==== TinkerGraph
+==== Graph
 
 A collection of vertices and edges.
 
