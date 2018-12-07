@@ -34,8 +34,6 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -48,7 +46,6 @@ import java.util.Map;
  */
 public class GraphSerializer extends SimpleTypeSerializer<Graph> {
 
-    private static final Logger log = LoggerFactory.getLogger(GraphSerializer.class);
     private static final Method openMethod = detectGraphOpenMethod();
 
     public GraphSerializer() {

@@ -259,10 +259,10 @@ Where:
 
 - `{id}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
 - `{label}` is a `String` value.
-- `{inVLabel}` is a `String` value.
-- `{outVLabel}` is a `String` value.
 - `{inVId}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{inVLabel}` is a `String` value.
 - `{outVId}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{outVLabel}` is a `String` value.
 - `{parent}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which contains
 the parent `Vertex`. Note that as TinkerPop currently send "references" only, this value will always be `null`.
 - `{properties}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which contains
@@ -291,14 +291,38 @@ an `Edge` or `VertexProperty`. Note that as TinkerPop currently sends "reference
 
 ==== Graph
 
-A collection of vertices and edges.
+A collection of vertices and edges. Note that while similar the vertex/edge formats here hold some differences as
+compared to the `Vertex` and `Edge` formats used for standard serialization/deserialiation of a single graph element.
 
-Format: `{vertices}{edges}`
+Format: `{vlength}{vertex_0}...{vertex_n}{elength}{edge_0}...{edge_n}`
 
 Where:
 
-- `{vertices}` is a `List` in which each item is a `Vertex`.
-- `{edges}` is a `List` in which each item is a `Edge`.
+- `{vlength}` is an `Int` describing the number of vertices.
+- `{vertex_0}...{vertex_n}` are vertices as described below.
+- `{elength}` is an `Int` describing the number of edges.
+- `{edge_0}...{edge_n}` are edges as described below.
+
+Vertex Format: `{id}{label}{plength}{property_0}...{property_n}`
+
+- `{id}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{label}` is a `String` value.
+- `{plength}` is an `Int` describing the number of properties on the vertex.
+- `{property_0}...{property_n}` are the vertex properties consisting of `{id}{label}{value}{parent}{properties}` as
+defined in `VertexProperty` where the `{parent}` is always `null` and `{properties}` is a `List` of `Property` objects.
+
+Edge Format: `{id}{label}{inVId}{inVLabel}{outVId}{outVLabel}{parent}{properties}`
+
+Where:
+
+- `{id}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{label}` is a `String` value.
+- `{inVId}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{inVLabel}` is always `null`.
+- `{outVId}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{outVLabel}` is always `null`.
+- `{parent}` is always `null`.
+- `{properties}` is a `List` of `Property` objects.
 
 ==== Vertex
 
