@@ -63,6 +63,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
@@ -149,9 +150,10 @@ public class TypeSerializerRegistry {
                 new RegistryEntry<>(TraversalOptionParent.Pick.class, EnumSerializer.PickSerializer),
                 new RegistryEntry<>(Pop.class, EnumSerializer.PopSerializer),
                 new RegistryEntry<>(Lambda.class, new LambdaSerializer()),
-                new RegistryEntry<>(P.class, new PSerializer<>()),
-                new RegistryEntry<>(AndP.class, new PSerializer<>()),
-                new RegistryEntry<>(OrP.class, new PSerializer<>()),
+                new RegistryEntry<>(P.class, new PSerializer<>(DataType.P, P.class)),
+                new RegistryEntry<>(AndP.class, new PSerializer<>(DataType.P, AndP.class)),
+                new RegistryEntry<>(OrP.class, new PSerializer<>(DataType.P, OrP.class)),
+                new RegistryEntry<>(TextP.class, new PSerializer<>(DataType.TEXTP, TextP.class)),
                 new RegistryEntry<>(Scope.class, EnumSerializer.ScopeSerializer),
                 new RegistryEntry<>(T.class, EnumSerializer.TSerializer),
                 new RegistryEntry<>(Traverser.class, new TraverserSerializer()),

@@ -61,6 +61,7 @@ public enum DataType {
     BYTEBUFFER(0X25),
     SHORT(0X26),
     BOOLEAN(0x27),
+    TEXTP(0x28),
 
     CHAR(0X80),
     DURATION(0X81),

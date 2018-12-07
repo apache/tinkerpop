@@ -41,8 +41,12 @@ import java.util.List;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class PSerializer<T extends P> extends SimpleTypeSerializer<T> {
-    public PSerializer() {
-        super(DataType.P);
+
+    private final Class<T> classOfP;
+
+    public PSerializer(final DataType typeOfP, final Class<T> classOfP) {
+        super(typeOfP);
+        this.classOfP = classOfP;
     }
 
     @Override
@@ -66,16 +70,16 @@ public class PSerializer<T extends P> extends SimpleTypeSerializer<T> {
                 Method m;
                 try {
                     // do a direct lookup
-                    m = P.class.getMethod(predicateName, argumentClasses);
+                    m = classOfP.getMethod(predicateName, argumentClasses);
                 } catch (NoSuchMethodException ex0) {
                     // then try collection types
                     try {
-                        m = P.class.getMethod(predicateName, Collection.class);
+                        m = classOfP.getMethod(predicateName, Collection.class);
                         collectionType = true;
                     } catch (NoSuchMethodException ex1) {
                         // finally go for the generics
                         try {
-                            m = P.class.getMethod(predicateName, Object.class);
+                            m = classOfP.getMethod(predicateName, Object.class);
                         } catch (NoSuchMethodException ex2) {
                             throw new SerializationException("not found");
                         }

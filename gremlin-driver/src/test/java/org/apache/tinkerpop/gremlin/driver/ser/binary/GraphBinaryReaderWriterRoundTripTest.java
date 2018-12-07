@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
@@ -168,6 +169,7 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 new Object[] {"Por", P.gt(1).or(P.lt(2)), null},
                 new Object[] {"Pnot", P.not(P.lte(1)), null},
                 new Object[] {"Pwithout", P.without(1,2,3,4), null},
+                new Object[] {"TextP", TextP.startingWith("mark"), null},
 
                 // graph
                 new Object[] {"ReferenceEdge", new ReferenceEdge(123, "person", new ReferenceVertex(123, "person"), new ReferenceVertex(321, "person")), null},

@@ -101,6 +101,7 @@ Changes to existing types require new revision.
 - `0x25`: ByteBuffer
 - `0x26`: Short
 - `0x27`: Boolean
+- `0x27`: TextP
 - `0xfe`: Unspecified null object
 - `0x00`: Custom
 
@@ -408,6 +409,16 @@ Format: a single `String` representing the enum value.
 ==== T
 
 Format: a single `String` representing the enum value.
+
+==== TextP
+
+Format: `{predicate}{values_length}{value_0}...{value_n}`
+
+Where:
+
+- `{name}` is a String.
+- `{values_length}` is an `Int` describing the amount values.
+- `{value_i}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
 
 ==== Traverser
 
