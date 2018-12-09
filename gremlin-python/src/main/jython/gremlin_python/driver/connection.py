@@ -68,6 +68,8 @@ class Connection:
                 done = self._executor.submit(self._receive)
                 result_set.done = done
                 future.set_result(result_set)
+            finally:
+                self._pool.put_nowait(self)
 
         future_write.add_done_callback(cb)
         return future
@@ -78,4 +80,3 @@ class Connection:
             status_code = self._protocol.data_received(data, self._results)
             if status_code != 206:
                 break
-        self._pool.put_nowait(self)
