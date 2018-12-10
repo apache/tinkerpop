@@ -111,6 +111,7 @@ This release also includes changes from <<release-3-2-11, 3.2.11>>.
 * Added `:bytecode` command to help developers debugging `Bytecode`-based traversals.
 * Fixed `PersistedOutputRDD` to eager persist RDD by adding `count()` action calls.
 * Deserialized `g:Set` to a Python `Set` in GraphSON in `gremlin-python`.
+* Deprecated `StarGraph.builder()` and `StarGraph.Builder.build()` in favor of the more common "builder" patterns of `build()` and `create()` respectively.
 * Deprecated `Serializers.DEFAULT_RESULT_SERIALIZER` and `DEFAULT_REQUEST_SERIALIZER`.
 * Deprecated `TraversalSource#GREMLIN_REMOTE` and `TraversalSource#GREMLIN_REMOTE_CONNECTION_CLASS` moving them to `RemoteConnection`.
 * Fixed the setting of the default label for a `ReferenceVertex` when the original vertex was of type `ComputerAdjacentVertex`.
