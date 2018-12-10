@@ -224,7 +224,15 @@ public final class StarGraph implements Graph, Serializable {
         return starGraph;
     }
 
+    /**
+     * @deprecated As of release 3.3.5, replaced by {@link #build()}.
+     */
+    @Deprecated
     public static StarGraph.Builder builder() {
+        return build();
+    }
+
+    public static StarGraph.Builder build() {
         return new Builder();
     }
 
@@ -250,7 +258,7 @@ public final class StarGraph implements Graph, Serializable {
          * @param b true to allow interning, false otherwise
          * @return this builder
          */
-        public Builder internStrings(boolean b) {
+        public Builder internStrings(final boolean b) {
             this.internStrings = b;
             return this;
         }
@@ -266,15 +274,24 @@ public final class StarGraph implements Graph, Serializable {
          * @param b
          * @return
          */
-        public Builder compareIdsUsingStrings(boolean b) {
+        public Builder compareIdsUsingStrings(final boolean b) {
             this.compareIdsUsingStrings = b;
             return this;
         }
 
         /**
          * @return a new StarGraph
+         * @deprecated As of release 3.3.5, replaced by {@link #create()}.
          */
+        @Deprecated
         public StarGraph build() {
+            return create();
+        }
+
+        /**
+         * @return a new StarGraph
+         */
+        public StarGraph create() {
             return new StarGraph(internStrings, compareIdsUsingStrings);
         }
     }
