@@ -82,7 +82,7 @@ public abstract class AbstractGraphSONTypeSerializer extends TypeSerializer {
 
     protected void writeTypePrefix(final JsonGenerator jsonGenerator, final String s) throws IOException {
         jsonGenerator.writeStartObject();
-        jsonGenerator.writeStringField(this.getPropertyName(), s);
+        jsonGenerator.writeStringField(propertyName, s);
         jsonGenerator.writeFieldName(this.valuePropertyName);
     }
 

@@ -319,9 +319,9 @@ public final class GraphFilter implements Cloneable, Serializable {
     public boolean equals(final Object object) {
         if (!(object instanceof GraphFilter))
             return false;
-        else if (((GraphFilter) object).hasVertexFilter() && !((GraphFilter) object).getVertexFilter().equals(this.vertexFilter))
+        else if (((GraphFilter) object).hasVertexFilter() && !((GraphFilter) object).vertexFilter.equals(this.vertexFilter))
             return false;
-        else if (((GraphFilter) object).hasEdgeFilter() && !((GraphFilter) object).getEdgeFilter().equals(this.edgeFilter))
+        else if (((GraphFilter) object).hasEdgeFilter() && !((GraphFilter) object).edgeFilter.equals(this.edgeFilter))
             return false;
         else
             return true;

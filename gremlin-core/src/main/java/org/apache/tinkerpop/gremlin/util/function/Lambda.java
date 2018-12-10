@@ -77,7 +77,7 @@ public interface Lambda extends Serializable {
         @Override
         public boolean equals(final Object object) {
             return object instanceof Lambda &&
-                    ((Lambda) object).getLambdaArguments() == this.getLambdaArguments() &&
+                    ((Lambda) object).getLambdaArguments() == this.lambdaArguments &&
                     ((Lambda) object).getLambdaScript().equals(this.lambdaSource) &&
                     ((Lambda) object).getLambdaLanguage().equals(this.lambdaLanguage);
         }

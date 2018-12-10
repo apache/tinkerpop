@@ -253,7 +253,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     public static <A, B, C extends Traversal<A, B>> C addRepeatToTraversal(final C traversal, final String loopName, final Traversal.Admin<B, B> repeatTraversal) {
         addRepeatToTraversal(traversal, repeatTraversal);
         final Step<?, B> step = traversal.asAdmin().getEndStep();
-        ((RepeatStep) step).setLoopName(loopName);
+        ((RepeatStep) step).loopName = loopName;
         return traversal;
     }
 
