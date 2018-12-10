@@ -537,7 +537,7 @@ Format: one to four bytes representing a single UTF8 char, according to the Unic
 
 For characters `0x00`-`0x7F`, UTF-8 encodes the character as a single byte.
 
-For characters `0x80`-`0x7FF`, UTF-8 uses 2 bytes: the first byte is binary `110` followed by the 5 high bits of the
+For characters `0x80`-`0x07FF`, UTF-8 uses 2 bytes: the first byte is binary `110` followed by the 5 high bits of the
 character, while the second byte is binary 10 followed by the 6 low bits of the character.
 
 The 3 and 4-byte encodings are similar to the 2-byte encoding, except that the first byte of the 3-byte encoding starts

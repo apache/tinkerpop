@@ -105,6 +105,7 @@ public class GraphBinaryReaderWriterRoundTripTest {
 
         return Arrays.asList(
                 new Object[] {"String", "ABC", null},
+                new Object[] {"Char", '£', null},
 
                 // numerics
                 new Object[] {"Byte", 1, null},
