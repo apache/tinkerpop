@@ -1,0 +1,291 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+
+[[long-traversals]]
+== Long Traversals
+
+It can be tempting to generate long traversals, e.g. to create a set of vertices and edges based on information that
+resides within an application. For example, let's consider two lists - one that contains information about persons and
+another that contains information about the relationship between these persons. To illustrate the problem we will
+create two list with a few random map entries.
+
+[gremlin-groovy]
+----
+:set max-iteration 10
+rnd = new Random(123) ; x = []
+persons = (1..100).collect {["id": it, "name": "person ${it}", "age": rnd.nextInt(40) + 20]}
+relations = (1..500).collect {[rnd.nextInt(persons.size()), rnd.nextInt(persons.size())]}.
+  unique().grep {it[0] != it[1] && !x.contains(it.reverse())}.collect {
+    x << it
+    minAge = Math.min(persons[it[0]].age, persons[it[1]].age)
+    knowsSince = new Date().year + 1900 - rnd.nextInt(minAge)
+    ["from": persons[it[0]].id, "to": persons[it[1]].id, "since": knowsSince]
+  }
+[ "Number of persons": persons.size()
+, "Number of unique relationships": relations.size() ]
+----
+
+Now, to create the `person` vertices and the `knows` edges between them it may look like a good idea to generate a
+single graph-mutating traversal, just like this:
+
+[gremlin-groovy]
+----
+t = g
+for (person in persons) {
+  t = t.addV("person").
+          property(id, person.id).
+          property("name", person.name).
+          property("age", person.age).as("p${person.id}")
+} ; []
+for (relation in relations) {
+  t = t.addE("knows").property("since", relation.since).
+          from("p${relation.from}").
+          to("p${relation.to}")
+} ; []
+traversalAsString = org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslator.of("g").translate(t.bytecode) ; []
+[ "Traversal String Length": traversalAsString.length()
+, "Traversal Preview": traversalAsString.replaceFirst(/^(.{104}).*(.{64})$/, '$1 ... $2') ]
+----
+
+However, this kind of traversal does not scale and it's prone to produce a `StackOverflowError`. This error can hardly be prevented
+as it's a limit imposed by the JVM. The stack size can be increased using the `-Xss` JVM option, but that's not how the problem that's
+discussed here, should be solved. The proper way to accomplish the same thing as in the traversal above is to inject the lists into
+the traversal and process them from there.
+
+[gremlin-groovy]
+----
+g.withSideEffect("relations", relations).
+  inject(persons).sideEffect(
+    unfold().
+    addV("person").
+      property(id, select("id")).
+      property("name", select("name")).
+      property("age", select("age")).
+    group("m").
+      by(id).
+      by(unfold())).
+  select("relations").unfold().as("r").
+  addE("knows").
+    from(select("m").select(select("r").select("from"))).
+    to(select("m").select(select("r").select("to"))).
+    property("since", select("since")).iterate()
+g
+----
+
+Obviously, these traversals are more complicated, but the number of steps is known and thus it's the best way to prevent an
+unexpected `StackOverflowError`. Furthermore, shorter traversals reduce the (de)serialization costs when such a traversal is send
+over the wire to a Gremlin Server.
+
+NOTE: Although the example was based on a graph-mutating traversal, the same rules apply for read-only and mixed traversals.
+
+[[unspecified-keys-and-labels]]
+== Unspecified Keys and Labels
+
+Some Gremlin steps have optional arguments that represent keys (e.g. `valueMap()`) or labels (e.g. `out()`). In the prototyping
+phase of a projects it's often convenient to use these steps without any arguments. However, in production code this is bad idea
+and keys and labels should always be specified. Not only does it make the traversal easier to read for others, but it also ensures
+that the application will not break if the schema changes at one point and the queries return completely different results.
+
+The following code block shows a few examples that are good for prototyping or graph discovery.
+
+[gremlin-groovy,modern]
+----
+g.V().has("person","name","marko").out()
+g.V().has("person","name","marko").out("created").valueMap()
+g.V().has("software","name","ripple").inE().has("weight", gte(0.5)).outV().properties()
+----
+
+The next code block shows the same queries, but with specified keys and labels.
+
+[gremlin-groovy,existing]
+----
+g.V().has("person","name","marko").out("created","knows")
+g.V().has("person","name","marko").out("created").valueMap("name","lang")
+g.V().has("software","name","ripple").inE("created").has("weight", gte(0.5)).outV().
+  properties("name","age")
+----
+
+[[unnecessary-steps]]
+== Unnecessary Steps
+
+There are quite a few steps and patterns that can be combined into a much shorter form. TinkerPop is trying to optimize queries, by
+rewriting such patterns automatically using traversal optimization strategies. These strategies, however, do have a few preconditions
+and under certain circumstance they will not attempt to rewrite a traversal. For example, if the traversal has path computations
+enabled (e.g. by using certain steps, such as `path()`, `simplePath()`, `otherV()`, etc.), then the assumption is that all steps are
+required in order to produce the desired path.
+
+An often seen anti-pattern is the one that explicitely traversers to an edge and then to a vertex without using any filters.
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel("person").outE("created").inV().dedup()    <1>
+g.V().hasLabel("software").inE("created").outV().count()  <2>
+----
+
+<1> The `created` edge is never really needed as the traversal only asks for all things that were created by all persons in the graph.
+    These "things" are only represented by the adjacent vertices, not the edges.
+<2> This traversals counts the persons in the graph who created software. The interesting thing about this query is that it actually 
+    doesn't need to traverse all the way to the `person` vertices to count them. In this case it's sufficient to count the edges
+    between the `software` and `person` vertices. The performance of this query pretty much depends on the particular provider
+    implementation, but counting incident edges is usually much faster than counting adjacent vertices.
+
+The next code block shows the two aforementioned queries properly rewritten.
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel("person").out("created").dedup()
+g.V().hasLabel("software").inE("created").count()
+----
+
+Another anti-pattern that is commonly seen is the chaining of `where()`-steps using predicates. Consider the following traversal:
+
+[gremlin-groovy,modern]
+----
+g.V().as('a').
+  both().where(lt('a')).by(id).as('b').
+  both().where(lt('a')).by(id).where(gt('b')).by(id).as('c').
+  not(both().where(eq('a'))).
+  select('a','b','c').
+    by('name')
+----
+
+Ignoring the anti-patterns that were discussed before, there's not much wrong with the traversal, but note the two chained `where()`-steps
+(`where(lt('a')).by(id).where(gt('b'))).by(id)`). Both steps compare the id of the current vertex with the id of a previous vertex. These
+two conditions can be combined on the predicate level.
+
+[gremlin-groovy,existing]
+----
+g.V().as('a').
+  both().where(lt('a')).by(id).as('b').
+  both().where(lt('a').and(gt('b'))).by(id).as('c').
+  not(both().where(eq('a'))).
+  select('a','b','c').
+    by('name')
+----
+
+The `profile()` output of both queries should make clear why this is better than using two `where()`-steps.
+
+[gremlin-groovy,existing]
+----
+g.V().as('a').
+  both().where(lt('a')).by(id).as('b').
+  both().where(lt('a')).by(id).where(gt('b')).by(id).as('c').
+  not(both().where(eq('a'))).
+  select('a','b','c').
+    by('name').
+  profile()
+g.V().as('a').
+  both().where(lt('a')).by(id).as('b').
+  both().where(lt('a').and(gt('b'))).by(id).as('c').
+  not(both().where(eq('a'))).
+  select('a','b','c').
+    by('name').
+  profile()
+----
+
+[[unspecified-label-in-global-vertex-lookup]]
+== Unspecified Label in Global Vertex lookup
+
+The severity of the anti-pattern described in this section heavily depends on the provider implementation. Throughout the TinkerPop
+documentation the code samples often use traversals that start like this:
+
+[gremlin-groovy,modern]
+----
+g.V().has('name','marko')
+----
+
+This is totally fine for TinkerGraph as it uses a very simplified indexing schema, e.g. every vertex that has a certain property is stored in
+the same index. However, providers may prefer to use separate indexes for different vertex labels. This becomes more important as graphs grow
+much larger over time (which is not what TinkerGraph is meant to do). Hence, any traversal that's going to be used in production code should
+also specify the vertex label to prevent the query engine from searching every index for the provided property value.
+
+The easy fix for the initially mentioned query follows in the code block below.
+
+[gremlin-groovy,existing]
+----
+g.V().hasLabel('person').has('name','marko')  <1>
+g.V().has('person','name','marko')            <2>
+----
+
+<1> With the specified label the traversal still returns the same result, but it's much safer to use across different providers.
+<2> Same as statement 1, but a much shorter form to improve readability.
+
+[[steps-instead-of-tokens]]
+== Steps Instead of Tokens
+
+When child traversals contain a single step, there's a good chance that the step can be replaced with a token. These tokens are translated
+into optimized traversals that execute much faster then their step traversal pendants. A few examples of single step child traversals are
+shown in the following code block.
+
+[gremlin-groovy,modern]
+----
+g.V().groupCount().by(label())
+g.V().group().by(label()).by(id().fold())
+g.V().project("id","label").
+    by(id()).
+    by(label())
+g.V().choose(label()).
+    option("person", project("person").by(values("name"))).
+    option("software", project("product").by(values("name")))
+----
+
+With tokens used instead of steps the traversals become a little shorter and more readable.
+
+[gremlin-groovy,existing]
+----
+g.V().groupCount().by(label)
+g.V().group().by(label).by(id)                         <1>
+g.V().project("id","label").
+    by(id).
+    by(label)
+g.V().choose(label).
+    option("person", project("person").by("name")).
+    option("software", project("product").by("name"))  <2>
+----
+
+<1> Note, that tokens use a `fold()` reducer by default.
+<2> `by("name")` doesn't use a token, but falls into the same category as the String `"name"` is translated into an optimized traversal.
+
+But this is not all about readability; as initially mentioned, the use of tokens also improves the overall query performance as shown in
+the `profile()` output below.
+
+[gremlin-groovy,existing]
+----
+g.V().groupCount().by(label()).profile()               // not using token
+g.V().groupCount().by(label).profile()                 // using a token
+g.V().group().by(label()).by(id().fold()).profile()    // not using tokens
+g.V().group().by(label).by(id).profile()               // using tokens
+g.V().project("id","label").
+    by(id()).
+    by(label()).profile()                              // not using tokens
+g.V().project("id","label").
+    by(id).
+    by(label).profile()                                // using tokens
+g.V().choose(label()).
+    option("person", project("person").by(values("name"))).
+    option("software", project("product").by(values("name"))).
+  profile()                                            // not using tokens
+g.V().choose(label).
+    option("person", project("person").by("name")).
+    option("software", project("product").by("name")).
+  profile()                                            // using tokens
+----
+
+NOTE: Pay attention to all metrics. The time difference does not always look significant, sometimes it might even be worse in the
+optimized query, but that's usually because TinkerGraph keeps everything in memory and thus even bad queries can sometimes perform
+surprisingly well. The more important metrics, however, are the number of traversers that are used and the overall number of
+generated steps.
