@@ -394,7 +394,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 "    v = graph.addVertex();\n" +
                 "    v.property(\"ii\", ii);\n" +
                 "    v.property(\"sin\", Math.sin(ii/5.0));\n" +
-                "    Vertex u = g.V(ids.get(rand.nextInt(ids.size()))).next();\n" +
+                "    Vertex u = graph.vertices(ids.get(rand.nextInt(ids.size()))).next();\n" +
                 "    v.addEdge(\"linked\", u);\n" +
                 "    ids.add(u.id());\n" +
                 "    ids.add(v.id());\n" +
@@ -1110,15 +1110,13 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         // this line is important because it tests GraphTraversal which has a certain transactional path
         final Vertex vertexRequest1 = client.submit("g.addV().property(\"name\",\"stephen\")").all().get().get(0).getVertex();
-        assertEquals("stephen", vertexRequest1.values("name").next());
 
         final Vertex vertexRequest2 = client.submit("graph.vertices().next()").all().get().get(0).getVertex();
-        assertEquals("stephen", vertexRequest2.values("name").next());
+        assertEquals(vertexRequest1.id(), vertexRequest2.id());
 
         // this line is important because it tests the other transactional path
-        final Vertex vertexRequest3 = client.submit("graph.addVertex(\"name\",\"marko\")").all().get().get(0).getVertex();
-        assertEquals("marko", vertexRequest3.values("name").next());
-
+        client.submit("graph.addVertex(\"name\",\"marko\")").all().get().get(0).getVertex();
+        
         assertEquals(2, client.submit("g.V().count()").all().get().get(0).getLong());
 
         cluster.close();
@@ -1397,8 +1395,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client sessionWithoutManagedTx = cluster.connect(name.getMethodName() + "-not-managed");
 
         // this should auto-commit
-        final Vertex vStephen = sessionWithManagedTx.submit("v = g.addV().property('name','stephen').next()").all().get().get(0).getVertex();
-        assertEquals("stephen", vStephen.value("name"));
+        sessionWithManagedTx.submit("v = g.addV().property('name','stephen').next()").all().get().get(0).getVertex();
 
         // the other clients should see that change because of auto-commit
         assertThat(client.submit("g.V().has('name','stephen').hasNext()").all().get().get(0).getBoolean(), is(true));
@@ -1406,7 +1403,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         // this should NOT auto-commit
         final Vertex vDaniel = sessionWithoutManagedTx.submit("v = g.addV().property('name','daniel').next()").all().get().get(0).getVertex();
-        assertEquals("daniel", vDaniel.value("name"));
 
         // the other clients should NOT see that change because of auto-commit
         assertThat(client.submit("g.V().has('name','daniel').hasNext()").all().get().get(0).getBoolean(), is(false));
@@ -1414,7 +1410,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         // but "v" should still be there
         final Vertex vDanielAgain = sessionWithoutManagedTx.submit("v").all().get().get(0).getVertex();
-        assertEquals("daniel", vDanielAgain.value("name"));
+        assertEquals(vDaniel.id(), vDanielAgain.id());
 
         // now commit manually
         sessionWithoutManagedTx.submit("g.tx().commit()").all().get();

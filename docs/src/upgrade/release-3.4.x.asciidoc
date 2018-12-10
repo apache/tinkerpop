@@ -125,6 +125,41 @@ gremlin> g.V().has("age", within(32L, 35L))
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2058[TINKERPOP-2058]
 
+==== ReferenceElementStrategy
+
+Gremlin Server has had some inconsistent behavior in the serialization of the results it returns. Remote traversals
+based on Gremlin bytecode always detach returned graph elements to "reference" (i.e. removes properties and only
+include the `id` and `label`), but scripts would detach graph elements and include the properties. For 3.4.0,
+TinkerPop introduces the `ReferenceElementStrategy` which can be configured on a `GraphTraversalSource` to always
+detach to "reference".
+
+[source,text]
+----
+gremlin> graph = TinkerFactory.createModern()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> g = graph.traversal().withStrategies(ReferenceElementStrategy.instance())
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+gremlin> v = g.V().has('person','name','marko').next()
+==>v[1]
+gremlin> v.class
+==>class org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex
+gremlin> v.properties()
+gremlin>
+----
+
+The packaged initialization scripts that come with Gremlin Server now pre-configure the sample graphs with this
+strategy to ensure that both scripts and bytecode based requests over any protocol (HTTP, websocket, etc) and
+serialization format all return a "reference". To revert to the old form, simply remove the strategy in the
+initialization script.
+
+It is recommended that users choose to configure their `GraphTraversalSource` instances with `ReferenceElementStrategy`
+as working with "references" only is the recommended method for developing applications with TinkerPop. In the future,
+it is possible that `ReferenceElementStrategy` will be configured by default for all graphs on or off Gremlin Server,
+so it would be best to start utilizing it now and grooming existing Gremlin and related application code to account
+for it.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2075[TINKERPOP-2075]
+
 ==== Added text predicates
 
 Gremlin now supports simple text predicates on top of the existing `P` predicates. Both, the new `TextP` text predicates and the old `P` predicates, can be chained using `and()` and `or()`.

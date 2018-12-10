@@ -135,7 +135,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldHandleVertexResult() throws Exception {
-        final ResultSet results = client.submit("gmodern.V(1).next()");
+        final ResultSet results = client.submit("gmodern.withoutStrategies(ReferenceElementStrategy).V(1).next()");
         final Vertex v = results.all().get().get(0).getVertex();
         assertThat(v, instanceOf(DetachedVertex.class));
 
@@ -165,28 +165,28 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldHandleVertexPropertyResult() throws Exception {
-        final ResultSet results = client.submit("gmodern.V().properties('name').next()");
+        final ResultSet results = client.submit("gmodern.withoutStrategies(ReferenceElementStrategy).V().properties('name').next()");
         final VertexProperty<String> v = results.all().get().get(0).getVertexProperty();
         assertThat(v, instanceOf(DetachedVertexProperty.class));
     }
 
     @Test
     public void shouldHandleEdgeResult() throws Exception {
-        final ResultSet results = client.submit("gmodern.E().next()");
+        final ResultSet results = client.submit("gmodern.withoutStrategies(ReferenceElementStrategy).E().next()");
         final Edge e = results.all().get().get(0).getEdge();
         assertThat(e, instanceOf(DetachedEdge.class));
     }
 
     @Test
     public void shouldHandlePropertyResult() throws Exception {
-        final ResultSet results = client.submit("gmodern.E().properties('weight').next()");
+        final ResultSet results = client.submit("gmodern.withoutStrategies(ReferenceElementStrategy).E().properties('weight').next()");
         final Property<Double> p = results.all().get().get(0).getProperty();
         assertThat(p, instanceOf(DetachedProperty.class));
     }
 
     @Test
     public void shouldHandlePathResult() throws Exception {
-        final ResultSet results = client.submit("gmodern.V().out().path()");
+        final ResultSet results = client.submit("gmodern.withoutStrategies(ReferenceElementStrategy).V().out().path()");
         final Path p = results.all().get().get(0).getPath();
         assertThat(p, instanceOf(DetachedPath.class));
     }

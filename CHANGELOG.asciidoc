@@ -29,6 +29,7 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Use `Compare.eq` in `Contains` predicates to ensure the same filter behavior for numeric values.
 * Added `OptionsStrategy` to allow traversals to take arbitrary traversal-wide configurations.
 * Added text predicates.
+* Added `ReferenceElementStrategy` to auto-detach elements to "reference" from a traversal.
 * Allowed `ImportCustomizer` to accept fields.
 * Removed groovy-sql dependency.
 * Modified `Mutating` steps so that they are no longer marked as `final`.
