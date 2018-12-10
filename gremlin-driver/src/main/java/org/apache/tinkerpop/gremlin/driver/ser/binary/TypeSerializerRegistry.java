@@ -50,6 +50,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.types.PropertySerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.SetSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.SingleTypeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.StringSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.TraversalStrategySerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.TraverserSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.UUIDSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.VertexPropertySerializer;
@@ -66,6 +67,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
@@ -121,7 +123,7 @@ public class TypeSerializerRegistry {
     }
 
     public static class Builder {
-        private final List<RegistryEntry> list = new LinkedList<>(Arrays.asList(
+        private final List<RegistryEntry> list = new LinkedList<>(Arrays.<RegistryEntry>asList(
                 new RegistryEntry<>(Integer.class, SingleTypeSerializer.IntSerializer),
                 new RegistryEntry<>(Long.class, SingleTypeSerializer.LongSerializer),
                 new RegistryEntry<>(String.class, new StringSerializer()),
@@ -164,6 +166,7 @@ public class TypeSerializerRegistry {
                 new RegistryEntry<>(ByteBuffer.class, new ByteBufferSerializer()),
                 new RegistryEntry<>(Short.class, SingleTypeSerializer.ShortSerializer),
                 new RegistryEntry<>(Boolean.class, SingleTypeSerializer.BooleanSerializer),
+                new RegistryEntry<>(TraversalStrategy.class, new TraversalStrategySerializer()),
 
                 new RegistryEntry<>(Character.class, new CharSerializer()),
                 new RegistryEntry<>(Duration.class, new DurationSerializer()),
@@ -254,7 +257,7 @@ public class TypeSerializerRegistry {
                 return null;
             }
 
-            CustomTypeSerializer customTypeSerializer = (CustomTypeSerializer) typeSerializer;
+            final CustomTypeSerializer customTypeSerializer = (CustomTypeSerializer) typeSerializer;
             return customTypeSerializer.getTypeName();
         }
 

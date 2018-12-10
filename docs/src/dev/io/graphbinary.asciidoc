@@ -101,7 +101,8 @@ Changes to existing types require new revision.
 - `0x25`: ByteBuffer
 - `0x26`: Short
 - `0x27`: Boolean
-- `0x27`: TextP
+- `0x28`: TextP
+- `0x29`: TraversalStrategy
 - `0xfe`: Unspecified null object
 - `0x00`: Custom
 
@@ -443,6 +444,15 @@ Where:
 - `{name}` is a String.
 - `{values_length}` is an `Int` describing the amount values.
 - `{value_i}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+
+==== TraversalStrategy
+
+Format: `{strategy_class}{configuration}`
+
+Where:
+
+- `{strategy_class} is a `Class` that is of type `TraversalStrategy`.
+- `{configuration} is a `Map` of data used to configure the strategy that will be given to a `TraversalStrategy` `create(Configuration)` method.
 
 ==== Traverser
 

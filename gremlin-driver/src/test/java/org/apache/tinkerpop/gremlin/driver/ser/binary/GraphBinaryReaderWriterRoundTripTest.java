@@ -32,6 +32,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -70,6 +72,7 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
@@ -192,6 +195,10 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 new Object[] {"PathNotLabelled", g.V().out().inE().values().path().next(), null},
                 new Object[] {"Graph", g.E().subgraph("k").cap("k").next(), (Consumer<Graph>) graph -> {
                     IoTest.assertModernGraph(graph, true, false);
+                }},
+                new Object[] {"TraversalStrategy", SubgraphStrategy.build().vertices(hasLabel("person")).create(), (Consumer<TraversalStrategyProxy>) strategy -> {
+                    assertEquals(SubgraphStrategy.class, strategy.getStrategyClass());
+                    assertEquals(hasLabel("person").asAdmin().getBytecode(), strategy.getConfiguration().getProperty(SubgraphStrategy.VERTICES));
                 }},
 
                 // collections

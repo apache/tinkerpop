@@ -20,12 +20,20 @@ package org.apache.tinkerpop.gremlin.driver.ser;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.CompositeByteBuf;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.*;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.RequestMessageSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.ResponseMessageSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.TypeSerializerRegistry;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHBINARY_V1D0;
+    private static final byte[] HEADER = MIME_TYPE.getBytes(UTF_8);
 
     private final GraphBinaryReader reader;
     private final GraphBinaryWriter writer;
@@ -54,7 +62,11 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
 
     @Override
     public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator) throws SerializationException {
-        return requestSerializer.writeValue(requestMessage, allocator, writer);
+        final CompositeByteBuf result = allocator.compositeBuffer(3);
+        result.addComponent(true, allocator.buffer(1).writeByte(HEADER.length));
+        result.addComponent(true, allocator.buffer(HEADER.length).writeBytes(HEADER));
+        result.addComponent(true, requestSerializer.writeValue(requestMessage, allocator, writer));
+        return result;
     }
 
     @Override

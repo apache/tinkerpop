@@ -62,6 +62,7 @@ public enum DataType {
     SHORT(0X26),
     BOOLEAN(0x27),
     TEXTP(0x28),
+    TRAVERSALSTRATEGY(0X29),
 
     CHAR(0X80),
     DURATION(0X81),
