@@ -29,6 +29,23 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.4.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Indexing of collections
+
+TinkerPOp 3.4.0 adds a new `index()`-step, which allows users to transform simple collections into index collections or maps.
+
+```
+gremlin> g.V().hasLabel("software").values("name").fold().
+......1>   order(local).
+......2>   index().unfold()
+==>[lop,0]
+==>[ripple,1]
+gremlin> g.V().hasLabel("person").values("name").fold().
+......1>   order(local).by(decr).
+......2>   index().
+......3>     with(WithOptions.indexer, WithOptions.map)
+==>[0:vadas,1:peter,2:marko,3:josh]
+```
+
 ==== Modulation of valueMap()
 
 The `valueMap()` step now supports `by` and `with` modulation, which also led to the deprecation of `valueMap(true)` overloads.
