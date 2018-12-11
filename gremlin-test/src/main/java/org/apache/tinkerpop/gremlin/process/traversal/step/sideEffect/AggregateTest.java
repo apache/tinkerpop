@@ -36,10 +36,12 @@ import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeThat;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -120,7 +122,9 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
     public void g_V_hasLabelXpersonX_aggregateXxX_byXageX_capXxX_asXyX_selectXyX() {
         final Traversal<Vertex, Collection<Integer>> traversal = get_g_V_hasLabelXpersonX_aggregateXxX_byXageX_capXxX_asXyX_selectXyX();
         final Collection<Integer> ages = traversal.next();
-        assertTrue(ages instanceof BulkSet);
+
+        // in 3.3.x a BulkSet will coerce to List under GraphSON
+        assumeThat(ages instanceof BulkSet, is(true));
         assertEquals(4, ages.size());
         assertTrue(ages.contains(29));
         assertTrue(ages.contains(27));
