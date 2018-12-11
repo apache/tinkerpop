@@ -20,7 +20,7 @@
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.driver.remote.RemoteGraphProvider;
+import org.apache.tinkerpop.gremlin.driver.remote.GryoRemoteGraphProvider;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -33,7 +33,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class RemoteGraphGroovyTranslatorProvider extends RemoteGraphProvider {
+public class GryoRemoteGraphGroovyTranslatorProvider extends GryoRemoteGraphProvider {
 
     private static boolean SKIP = false;
 

@@ -16,18 +16,18 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+
 package org.apache.tinkerpop.gremlin.process.remote;
 
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
-import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
-import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
-import org.apache.tinkerpop.gremlin.driver.remote.RemoteGraphProvider;
+import org.apache.tinkerpop.gremlin.driver.remote.GryoRemoteGraphComputerProvider;
+import org.apache.tinkerpop.gremlin.process.ProcessComputerSuite;
 import org.junit.runner.RunWith;
 
 /**
- * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(ProcessStandardSuite.class)
-@GraphProviderClass(provider = RemoteGraphProvider.class, graph = RemoteGraph.class)
-public class RemoteGraphProcessStandardTest {
+@RunWith(ProcessComputerSuite.class)
+@GraphProviderClass(provider = GryoRemoteGraphComputerProvider.class, graph = RemoteGraph.class)
+public class GryoRemoteGraphProcessComputerTest {
 }

@@ -20,6 +20,9 @@
 package org.apache.tinkerpop.gremlin.driver.remote;
 
 import org.apache.tinkerpop.gremlin.GraphProvider;
+import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -29,26 +32,11 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
 import java.util.Random;
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
-public class RemoteGraphComputerProvider extends RemoteGraphProvider {
-
-    private final Random RANDOM = new Random();
-
-    @Override
-    public GraphTraversalSource traversal(final Graph graph) {
-        assert graph instanceof RemoteGraph;
-        final int state = RANDOM.nextInt(3);
-        switch (state) {
-            case 0:
-                return super.traversal(graph).withComputer();
-            case 1:
-                return super.traversal(graph).withComputer(Computer.compute(TinkerGraphComputer.class));
-            case 2:
-                return super.traversal(graph).withComputer(Computer.compute(TinkerGraphComputer.class).workers(1));
-            default:
-                throw new IllegalStateException("This state should not have occurred: " + state);
-        }
+public class GraphSONRemoteGraphComputerProvider extends AbstractRemoteGraphProvider {
+    public GraphSONRemoteGraphComputerProvider() {
+        super(createClusterBuilder(Serializers.GRAPHSON_V3D0).create(), true);
     }
 }

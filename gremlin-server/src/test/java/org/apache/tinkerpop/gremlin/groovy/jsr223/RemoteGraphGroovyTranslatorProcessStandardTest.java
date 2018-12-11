@@ -28,6 +28,6 @@ import org.junit.runner.RunWith;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(ProcessStandardSuite.class)
-@GraphProviderClass(provider = RemoteGraphGroovyTranslatorProvider.class, graph = RemoteGraph.class)
+@GraphProviderClass(provider = GryoRemoteGraphGroovyTranslatorProvider.class, graph = RemoteGraph.class)
 public class RemoteGraphGroovyTranslatorProcessStandardTest {
 }

@@ -21,9 +21,11 @@ package org.apache.tinkerpop.gremlin.driver.remote;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -32,6 +34,7 @@ import org.apache.tinkerpop.gremlin.server.ServerTestHelper;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.TestClientFactory;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -44,17 +47,26 @@ import java.util.function.Supplier;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class RemoteGraphProvider extends AbstractGraphProvider implements AutoCloseable {
+public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider implements AutoCloseable {
     private static final Set<Class> IMPLEMENTATION = new HashSet<Class>() {{
         add(RemoteGraph.class);
     }};
 
     private static GremlinServer server;
     private final Map<String, RemoteGraph> remoteCache = new HashMap<>();
-    private final Cluster cluster = TestClientFactory.build().maxContentLength(1000000).create();
-    private final Client client = cluster.connect();
+    private final Cluster cluster;
+    private final Client client;
+    private final boolean useComputer;
 
-    public RemoteGraphProvider() {
+
+    public AbstractRemoteGraphProvider(final Cluster cluster) {
+        this(cluster, false);
+    }
+
+    public AbstractRemoteGraphProvider(final Cluster cluster, final boolean useComputer) {
+        this.cluster = cluster;
+        this.client = this.cluster.connect();
+        this.useComputer = useComputer;
         try {
             startServer();
         } catch (Exception ex) {
@@ -115,12 +127,35 @@ public class RemoteGraphProvider extends AbstractGraphProvider implements AutoCl
 
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
+        assert graph instanceof RemoteGraph;
+
         // ensure that traversal is created using withRemote() rather than just using RemoteGraph. withRemote() is
         // the appropriate way for users to create a remote traversal. RemoteGraph has been deprecated for users
         // concerns and will be likely relegated to the test module so that OptOut can continue to work and we can
         // full execute the process tests. we should be able to clean this up considerably when RemoteGraph can be
         // moved with breaking change.
-        return AnonymousTraversalSource.traversal().withRemote(((RemoteGraph) graph).getConnection());
+        final GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(((RemoteGraph) graph).getConnection());
+
+        if (useComputer) {
+            final int state = TestHelper.RANDOM.nextInt(3);
+            switch (state) {
+                case 0:
+                    return g.withComputer();
+                case 1:
+                    return g.withComputer(Computer.compute(TinkerGraphComputer.class));
+                case 2:
+                    return g.withComputer(Computer.compute(TinkerGraphComputer.class).workers(4));
+                default:
+                    throw new IllegalStateException("This state should not have occurred: " + state);
+            }
+        }
+
+        return g;
+    }
+
+    public static Cluster.Builder createClusterBuilder(final Serializers serializer) {
+        // match the content length in the server yaml
+        return TestClientFactory.build().maxContentLength(1000000).serializer(serializer);
     }
 
     public static void startServer() throws Exception {

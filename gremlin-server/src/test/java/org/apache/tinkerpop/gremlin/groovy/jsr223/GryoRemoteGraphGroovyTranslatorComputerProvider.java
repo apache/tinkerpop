@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import org.apache.tinkerpop.gremlin.GraphProvider;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -32,14 +33,12 @@ import java.util.Random;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
-public class RemoteGraphGroovyTranslatorComputerProvider extends RemoteGraphGroovyTranslatorProvider {
-
-    private final Random RANDOM = new Random();
+public class GryoRemoteGraphGroovyTranslatorComputerProvider extends GryoRemoteGraphGroovyTranslatorProvider {
 
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
         assert graph instanceof RemoteGraph;
-        final int state = RANDOM.nextInt(3);
+        final int state = TestHelper.RANDOM.nextInt(3);
         switch (state) {
             case 0:
                 return super.traversal(graph).withComputer();
