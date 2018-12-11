@@ -166,7 +166,7 @@ public final class MemoryTraversalSideEffects implements TraversalSideEffects {
         final Set<MemoryComputeKey> keys = new HashSet<>();
         final TraversalSideEffects sideEffects =
                 traversal.getSideEffects() instanceof MemoryTraversalSideEffects ?
-                        ((MemoryTraversalSideEffects) traversal.getSideEffects()).getSideEffects() :
+                        ((MemoryTraversalSideEffects) traversal.getSideEffects()).sideEffects :
                         traversal.getSideEffects();
         sideEffects.keys().
                 stream().

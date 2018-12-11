@@ -80,7 +80,7 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
     }
 
     public static boolean isStartStep(final Step<?, ?> step) {
-        return step instanceof GraphStep && ((GraphStep) step).isStartStep();
+        return step instanceof GraphStep && ((GraphStep) step).isStart;
     }
 
     public boolean returnsVertex() {
