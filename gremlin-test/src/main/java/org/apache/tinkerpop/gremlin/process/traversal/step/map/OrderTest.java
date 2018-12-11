@@ -425,19 +425,25 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_unfold_order_byXvalues_descX() {
-        final Traversal<Vertex, Map.Entry<String, Number>> traversal = get_g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_unfold_order_byXvalues_descX();
+        final Traversal<Vertex, ?> traversal = get_g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_unfold_order_byXvalues_descX();
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
-        Map.Entry<String, Number> entry = traversal.next();
+
+        // the object should be a Map.Entry, but GLVs don't have that object so the assertion is made a bit more friendly.
+        Object o = traversal.next();
+        Map.Entry<String, Number> entry = o instanceof Map.Entry ? (Map.Entry) o : ((Map<String,Number>) o).entrySet().iterator().next();
         assertEquals("marko", entry.getKey());
         assertEquals(1.9, entry.getValue().doubleValue(), 0.0001);
-        entry = traversal.next();
+        o = traversal.next();
+        entry = o instanceof Map.Entry ? (Map.Entry) o : ((Map<String,Number>) o).entrySet().iterator().next();
         assertEquals("josh", entry.getKey());
         assertEquals(1.4, entry.getValue().doubleValue(), 0.0001);
-        entry = traversal.next();
+        o = traversal.next();
+        entry = o instanceof Map.Entry ? (Map.Entry) o : ((Map<String,Number>) o).entrySet().iterator().next();
         assertEquals("peter", entry.getKey());
         assertEquals(0.2, entry.getValue().doubleValue(), 0.0001);
-        entry = traversal.next();
+        o = traversal.next();
+        entry = o instanceof Map.Entry ? (Map.Entry) o : ((Map<String,Number>) o).entrySet().iterator().next();
         assertEquals("vadas", entry.getKey());
         assertEquals(0.0, entry.getValue().doubleValue(), 0.0001);
         assertFalse(traversal.hasNext());
