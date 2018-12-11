@@ -139,21 +139,6 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
-    /*@Test
-    @LoadGraphWith(CLASSIC)
-    public void g_v1_asXxX_bothE_asXeX_valueXweightX_exceptXwX_aggregateXwX_backXeX_otherV_jumpXx_true_trueX_path() {
-        Iterator<Path> traversal = get_g_v1_asXxX_bothE_asXeX_valueXweightX_exceptXwX_aggregateXwX_backXeX_otherV_jumpXx_true_trueX_path(convertToVertexId("marko"));
-        System.out.println("Testing: " + traversal);
-        final List<Path> paths = StreamFactory.stream(traversal).collect(Collectors.toList());
-        // for OLTP it's a roulette game; the result can change depending on which path is taken first by the traverser (this makes some cool real world use cases possible)
-        // Senzari use case: generate a random playlist without artist repetitions
-        assertEquals(4, paths.size());
-        assertEquals(3, paths.stream().filter(path -> path.size() == 3).count());
-        assertEquals(1, paths.stream().filter(path -> path.size() == 5).count());
-        assertFalse(traversal.hasNext());
-    }*/
-
-
     public static class Traversals extends AggregateTest {
 
         @Override
