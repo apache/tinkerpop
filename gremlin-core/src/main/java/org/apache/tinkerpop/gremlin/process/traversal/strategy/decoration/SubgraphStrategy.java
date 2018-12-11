@@ -78,6 +78,7 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
     private final Traversal.Admin<Vertex, ?> vertexCriterion;
     private final Traversal.Admin<Edge, ?> edgeCriterion;
     private final Traversal.Admin<VertexProperty, ?> vertexPropertyCriterion;
+    private final boolean checkAdjacentVertices;
 
     private static final Set<Class<? extends DecorationStrategy>> POSTS = Collections.singleton(ConnectiveStrategy.class);
 
@@ -86,10 +87,11 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
     private SubgraphStrategy(final Builder builder) {
 
         this.vertexCriterion = null == builder.vertexCriterion ? null : builder.vertexCriterion.asAdmin().clone();
+        this.checkAdjacentVertices = builder.checkAdjacentVertices;
 
         // if there is no vertex predicate there is no need to test either side of the edge - also this option can
         // be simply configured in the builder to not be used
-        if (null == this.vertexCriterion || !builder.checkAdjacentVertices) {
+        if (null == this.vertexCriterion || !checkAdjacentVertices) {
             this.edgeCriterion = null == builder.edgeCriterion ? null : builder.edgeCriterion.asAdmin().clone();
         } else {
             final Traversal.Admin<Edge, ?> vertexPredicate;
@@ -290,6 +292,7 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
             map.put(EDGES, this.edgeCriterion);
         if (null != this.vertexPropertyCriterion)
             map.put(VERTEX_PROPERTIES, this.vertexPropertyCriterion);
+        map.put(CHECK_ADJACENT_VERTICES, this.checkAdjacentVertices);
         return new MapConfiguration(map);
     }
 
@@ -313,6 +316,7 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
     public static final String VERTICES = "vertices";
     public static final String EDGES = "edges";
     public static final String VERTEX_PROPERTIES = "vertexProperties";
+    public static final String CHECK_ADJACENT_VERTICES = "checkAdjacentVertices";
 
     public static SubgraphStrategy create(final Configuration configuration) {
         final Builder builder = SubgraphStrategy.build();
@@ -322,6 +326,8 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
             builder.edges((Traversal) configuration.getProperty(EDGES));
         if (configuration.containsKey(VERTEX_PROPERTIES))
             builder.vertexProperties((Traversal) configuration.getProperty(VERTEX_PROPERTIES));
+        if (configuration.containsKey(CHECK_ADJACENT_VERTICES))
+            builder.checkAdjacentVertices(configuration.getBoolean(CHECK_ADJACENT_VERTICES));
         return builder.create();
     }
 

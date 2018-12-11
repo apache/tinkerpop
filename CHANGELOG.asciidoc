@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-2-11, 3.2.11>>.
 
+* Fixed configuration and serialization of `SubgraphStrategy` which was missing the `checkAdjacentVertices` flag.
 * Captured `TraversalInterruptionException` and converted to `TimeoutException` for `GremlinExecutor`.
 * Fixed a bug in `CoalesceStep` which squared the bulk if the step followed a `Barrier` step.
 * Fixed a bug in `GroupStep` that assigned wrong reducing bi-operators
