@@ -137,7 +137,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         }
         this.finalEndStep = this.getEndStep();
         // finalize requirements
-        if (this.parent instanceof EmptyStep) {
+        if (this.getParent() instanceof EmptyStep) {
             this.requirements = null;
             this.getTraverserRequirements();
         }
@@ -149,14 +149,14 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         if (null == this.requirements) {
             // if (!this.locked) this.applyStrategies();
             this.requirements = EnumSet.noneOf(TraverserRequirement.class);
-            for (final Step<?, ?> step : this.unmodifiableSteps) {
+            for (final Step<?, ?> step : this.getSteps()) {
                 this.requirements.addAll(step.getRequirements());
             }
             if (!this.requirements.contains(TraverserRequirement.LABELED_PATH) && TraversalHelper.hasLabels(this))
                 this.requirements.add(TraverserRequirement.LABELED_PATH);
-            if (!this.sideEffects.keys().isEmpty())
+            if (!this.getSideEffects().keys().isEmpty())
                 this.requirements.add(TraverserRequirement.SIDE_EFFECTS);
-            if (null != this.sideEffects.getSackInitialValue())
+            if (null != this.getSideEffects().getSackInitialValue())
                 this.requirements.add(TraverserRequirement.SACK);
             if (this.requirements.contains(TraverserRequirement.ONE_BULK))
                 this.requirements.remove(TraverserRequirement.BULK);
