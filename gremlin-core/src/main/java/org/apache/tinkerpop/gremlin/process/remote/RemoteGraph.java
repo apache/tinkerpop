@@ -95,6 +95,10 @@ import java.util.Iterator;
         test = "org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest",
         method = "*",
         reason = "The interruption model in the test can't guarantee interruption at the right time with RemoteGraph.")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StoreTest",
+        method = "g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX",
+        reason = "This test returns BulkSet which isn't supported in GraphSON 3.0 until 3.4.0.")
 @Deprecated
 public class RemoteGraph implements Graph {
 
