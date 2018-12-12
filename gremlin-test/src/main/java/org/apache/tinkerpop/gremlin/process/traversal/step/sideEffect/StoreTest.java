@@ -88,7 +88,6 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
         printTraversalForm(traversal);
         final Set<String> names = traversal.next();
         assertFalse(traversal.hasNext());
-        assertFalse(names instanceof BulkSet);
         assertEquals(6, names.size());
         assertTrue(names.contains("marko"));
         assertTrue(names.contains("vadas"));
