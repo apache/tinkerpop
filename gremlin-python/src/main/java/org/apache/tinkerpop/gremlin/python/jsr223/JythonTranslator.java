@@ -19,16 +19,9 @@
 
 package org.apache.tinkerpop.gremlin.python.jsr223;
 
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationConverter;
-import org.apache.commons.configuration.MapConfiguration;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

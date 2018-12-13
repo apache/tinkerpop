@@ -48,7 +48,7 @@ public class JythonTranslatorTest {
     @Test
     public void shouldSupportStringSupplierLambdas() throws Exception {
         GraphTraversalSource g = TinkerFactory.createModern().traversal();
-        g = g.withStrategies(new TranslationStrategy(g, JythonTranslator.of("g")));
+        g = g.withStrategies(new TranslationStrategy(g, JythonTranslator.of("g"), false));
         final GraphTraversal.Admin<Vertex, Integer> t = g.withSideEffect("lengthSum", 0).withSack(1)
                 .V()
                 .filter(Lambda.predicate("x : x.get().label() == 'person'"))
@@ -98,7 +98,7 @@ public class JythonTranslatorTest {
         // properly in the python engine. not much of an assertion here to worry about - just need to ensure that
         // the traversal with such steps evaluates to success
         GraphTraversalSource g = TinkerFactory.createModern().traversal();
-        g = g.withStrategies(new TranslationStrategy(g, JythonTranslator.of("g")));
+        g = g.withStrategies(new TranslationStrategy(g, JythonTranslator.of("g"), false));
         final List<Object> o = g.V().has("name").
                 match(__.as("x").label().as("lbl"),
                         __.as("x").id().as("id")).
@@ -114,7 +114,7 @@ public class JythonTranslatorTest {
         // the jython translation kicks in when you add a lambda so ensure that it translates when strategies are
         // present
         GraphTraversalSource g = TinkerFactory.createModern().traversal();
-        g = g.withStrategies(new TranslationStrategy(g, JythonTranslator.of("g")));
+        g = g.withStrategies(new TranslationStrategy(g, JythonTranslator.of("g"), false));
         final List<Object> o = g.withStrategies(ReadOnlyStrategy.instance(),
                                                 SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create()).
                                  V().has("name").map(Lambda.function("lambda x: type(x.get())")).toList();

@@ -104,7 +104,7 @@ public class GroovyTranslatorTest {
     public void shouldSupportStringSupplierLambdas() {
         final TinkerGraph graph = TinkerFactory.createModern();
         GraphTraversalSource g = graph.traversal();
-        g = g.withStrategies(new TranslationStrategy(g, GroovyTranslator.of("g")));
+        g = g.withStrategies(new TranslationStrategy(g, GroovyTranslator.of("g"), false));
         final GraphTraversal.Admin<Vertex, Integer> t = g.withSideEffect("lengthSum", 0).withSack(1)
                 .V()
                 .filter(Lambda.predicate("it.get().label().equals('person')"))

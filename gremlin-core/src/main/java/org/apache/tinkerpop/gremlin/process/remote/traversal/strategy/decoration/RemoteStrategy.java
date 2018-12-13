@@ -85,13 +85,6 @@ public final class RemoteStrategy extends AbstractTraversalStrategy<TraversalStr
         if (!(traversal.getParent() instanceof EmptyStep))
             return;
 
-        // verifications to ensure unsupported steps do not exist in the traversal
-        if (Boolean.valueOf(System.getProperty("is.testing", "false")) &&
-                (TraversalHelper.hasStepOfAssignableClassRecursively(ProfileSideEffectStep.class, traversal) ||
-                        traversal.getBytecode().toString().contains("$"))) {
-            throw new VerificationException("Test suite does not support profiling nor lambdas", traversal);
-        }
-
         // remote step wraps the traversal and emits the results from the remote connection.
         final RemoteStep<?, ?> remoteStep = new RemoteStep<>(traversal, remoteConnection);
         TraversalHelper.removeAllSteps(traversal);

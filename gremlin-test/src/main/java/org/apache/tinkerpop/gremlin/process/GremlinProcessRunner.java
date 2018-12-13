@@ -74,8 +74,6 @@ public class GremlinProcessRunner extends BlockJUnit4ClassRunner {
                 return true;
             else if (ex instanceof NotSerializableException)
                 return true;
-            else if (ex.getClass().getSimpleName().contains("ResponseException"))
-                return true;
             ex = ex.getCause();
         }
         return false;

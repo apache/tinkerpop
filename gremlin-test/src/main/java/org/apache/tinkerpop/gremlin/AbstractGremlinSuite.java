@@ -92,8 +92,10 @@ public abstract class AbstractGremlinSuite extends Suite {
 
         // validate public acknowledgement of the test suite and filter out tests ignored by the implementation
         validateOptInToSuite(pair.getValue1());
-        validateOptInAndOutAnnotationsOnGraph(pair.getValue1());
+        validateOptInAndOutAnnotations(pair.getValue0());
+        validateOptInAndOutAnnotations(pair.getValue1());
 
+        registerOptOuts(pair.getValue0(), graphProviderDescriptor, traversalEngineType);
         registerOptOuts(pair.getValue1(), graphProviderDescriptor, traversalEngineType);
 
         try {
@@ -126,22 +128,35 @@ public abstract class AbstractGremlinSuite extends Suite {
                 throw new InitializationError(String.format("The %s will not run for this Graph until it is publicly acknowledged with the @OptIn annotation on the Graph instance itself", this.getClass().getSimpleName()));
     }
 
-    private void registerOptOuts(final Class<? extends Graph> graphClass,
+    private void registerOptOuts(final Class<?> classWithOptOuts,
                                  final Optional<GraphProvider.Descriptor> graphProviderDescriptor,
                                  final TraversalEngine.Type traversalEngineType) throws InitializationError {
-        final Graph.OptOut[] optOuts = graphClass.getAnnotationsByType(Graph.OptOut.class);
+        // don't get why getAnnotationsByType() refuses to pick up OptOuts on the superclass. doing it manually and
+        // only for the immediate superclass for now
+        final List<Graph.OptOut> optOuts = getAllOptOuts(classWithOptOuts);
 
-        if (optOuts != null && optOuts.length > 0) {
+        if (!optOuts.isEmpty()) {
             // validate annotation - test class and reason must be set
-            if (!Arrays.stream(optOuts).allMatch(ignore -> ignore.test() != null && ignore.reason() != null && !ignore.reason().isEmpty()))
+            if (!optOuts.stream().allMatch(ignore -> ignore.test() != null && ignore.reason() != null && !ignore.reason().isEmpty()))
                 throw new InitializationError("Check @IgnoreTest annotations - all must have a 'test' and 'reason' set");
 
             try {
-                filter(new OptOutTestFilter(optOuts, graphProviderDescriptor, traversalEngineType));
+                final Graph.OptOut[] oos = new Graph.OptOut[optOuts.size()];
+                optOuts.toArray(oos);
+                filter(new OptOutTestFilter(oos, graphProviderDescriptor, traversalEngineType));
             } catch (NoTestsRemainException ex) {
                 throw new InitializationError(ex);
             }
         }
+    }
+
+    private static List<Graph.OptOut> getAllOptOuts(final Class<?> clazz) {
+        if (clazz == Object.class)
+            return Collections.emptyList();
+
+        return Stream.concat(getAllOptOuts(clazz.getSuperclass()).stream(),
+                Stream.of(clazz.getAnnotationsByType(Graph.OptOut.class))).distinct().collect(Collectors.toList());
+
     }
 
     private static Class<?>[] enforce(final Class<?>[] unfilteredTestsToExecute, final Class<?>[] unfilteredTestsToEnforce) {
@@ -190,7 +205,7 @@ public abstract class AbstractGremlinSuite extends Suite {
         return Pair.with(annotation.provider(), annotation.graph());
     }
 
-    public static void validateOptInAndOutAnnotationsOnGraph(final Class<? extends Graph> klass) throws InitializationError {
+    static void validateOptInAndOutAnnotations(final Class<?> klass) throws InitializationError {
         // sometimes test names change and since they are String representations they can easily break if a test
         // is renamed. this test will validate such things.  it is not possible to @OptOut of this test.
         final Graph.OptOut[] optOuts = klass.getAnnotationsByType(Graph.OptOut.class);

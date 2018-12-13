@@ -33,7 +33,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
-import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import javax.script.Bindings;
@@ -51,7 +50,7 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
 
     private final TraversalSource traversalSource;
     private final Translator translator;
-    private final boolean IS_TESTING = Boolean.valueOf(System.getProperty("is.testing", "false"));
+    private final boolean assertBytecode;
 
     private static final Set<Class<? extends DecorationStrategy>> POSTS = new HashSet<>(Arrays.asList(
             ConnectiveStrategy.class,
@@ -66,9 +65,10 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
             RemoteStrategy.class,
             VertexProgramStrategy.class));
 
-    public TranslationStrategy(final TraversalSource traversalSource, final Translator translator) {
+    public TranslationStrategy(final TraversalSource traversalSource, final Translator translator, final boolean assertBytecode) {
         this.traversalSource = traversalSource;
         this.translator = translator;
+        this.assertBytecode = assertBytecode;
     }
 
     @Override
@@ -76,18 +76,9 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
         if (!(traversal.getParent() instanceof EmptyStep))
             return;
 
-        // verifications to ensure unsupported steps do not exist in the traversal
-        if (IS_TESTING) {
-            if (traversal.getBytecode().toString().contains("$$Lambda$") || traversal.getBytecode().toString().contains("Supplier@"))
-                throw new VerificationException("Test suite does not support lambdas", traversal);
-            if (TraversalHelper.hasStepOfAssignableClassRecursively(ProgramVertexProgramStep.class, traversal))
-                throw new VerificationException("Test suite does not support embedded vertex programs", traversal);
-        }
-
         final Traversal.Admin<?, ?> translatedTraversal;
-        final Bytecode bytecode = removeTranslationStrategy(IS_TESTING ?
-                insertBindingsForTesting(traversal.getBytecode()) :
-                traversal.getBytecode());
+        final Bytecode bytecode = removeTranslationStrategy(insertBindingsForTesting(traversal.getBytecode()));
+
         ////////////////
         if (this.translator instanceof Translator.StepTranslator) {
             // reflection based translation
@@ -113,8 +104,11 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
         TraversalHelper.removeAllSteps(traversal);
         TraversalHelper.removeToTraversal((Step) translatedTraversal.getStartStep(), EmptyStep.instance(), traversal);
         ////////////////
-        if (IS_TESTING && !BytecodeHelper.getLambdaLanguage(bytecode).isPresent())
-            // this tests to ensure that the bytecode being translated is the same as the bytecode of the generated traversal
+
+        // this tests to ensure that the bytecode being translated is the same as the bytecode of the generated
+        // traversal. we might not do this sometimes in testing if lambdas are present but still want to use
+        // TranslationStrategy
+        if (assertBytecode)
             assertEquals(removeTranslationStrategy(traversal.getBytecode()), translatedTraversal.getBytecode());
     }
 
