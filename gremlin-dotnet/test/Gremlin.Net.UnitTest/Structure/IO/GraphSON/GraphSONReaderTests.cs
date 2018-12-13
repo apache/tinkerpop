@@ -456,10 +456,23 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(new Dictionary<object, object>{ { "a", 1 }, { "b", 2 }}, deserializedValue);
         }
 
+        [Theory, MemberData(nameof(VersionsSupportingCollections))]
+        public void ShouldDeserializeBulkSet(int version)
+        {
+            const string json = "{\"@type\": \"g:BulkSet\", \"@value\": [" +
+                                "\"marko\", {\"@type\": \"g:Int64\", \"@value\": 1}, " +
+                                "\"josh\", {\"@type\": \"g:Int64\", \"@value\": 3}]}";
+            var reader = CreateStandardGraphSONReader(version);
+
+            var deserializedValue = reader.ToObject(JObject.Parse(json));
+
+            Assert.Equal(new List<object>{ "marko", "josh", "josh", "josh" }, deserializedValue);
+        }
+
         [Fact]
         public void ShouldDeserializeTraverser()
         {
-            dynamic d = JObject.Parse("{\"@type\":\"g:Traverser\",\"@value\":1}");
+            dynamic d = JObject.Parse("{\"@type\":\"g:Traverser\",\"@value\":1,\"bulk\": {\"type\":\"g:Int64\",\"value\":10}}");
 
             Assert.NotNull(d);
             Assert.Equal("g:Traverser", (string)d["@type"]);

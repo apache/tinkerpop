@@ -375,6 +375,27 @@ class ArraySerializer extends TypeSerializer {
   }
 }
 
+class BulkSetSerializer extends TypeSerializer {
+  deserialize(obj) {
+      const value = obj[valueKey];
+      if (!Array.isArray(value)) {
+          throw new Error('Expected Array, obtained: ' + value);
+      }
+
+      // coerce the BulkSet to List. if the bulk exceeds the int space then we can't coerce to List anyway,
+      // so this query will be trouble. we'd need a legit BulkSet implementation here in js. this current
+      // implementation is here to replicate the previous functionality that existed on the server side in
+      // previous versions.
+      let result = [];
+      for (let ix = 0, iy = value.length; ix < iy; ix += 2) {
+        const pair = value.slice(ix, ix + 2);
+        result = result.concat(Array(this.reader.read(pair[1])).fill(this.reader.read(pair[0])));
+      }
+
+      return result;
+  }
+}
+
 class MapSerializer extends TypeSerializer {
   deserialize(obj) {
     const value = obj[valueKey];
@@ -419,6 +440,7 @@ class SetSerializer extends ArraySerializer {
 }
 
 module.exports = {
+  BulkSetSerializer,
   BytecodeSerializer,
   DateSerializer,
   EdgeSerializer,

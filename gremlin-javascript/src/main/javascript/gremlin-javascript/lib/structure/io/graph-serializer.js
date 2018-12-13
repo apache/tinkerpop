@@ -165,7 +165,8 @@ const deserializers = {
   'g:TextP': typeSerializers.TextPSerializer,
   'g:List': typeSerializers.ListSerializer,
   'g:Set': typeSerializers.SetSerializer,
-  'g:Map': typeSerializers.MapSerializer
+  'g:Map': typeSerializers.MapSerializer,
+  'g:BulkSet': typeSerializers.BulkSetSerializer
 };
 
 const serializers = [

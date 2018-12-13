@@ -41,7 +41,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             new Dictionary<string, IgnoreReason>
             {
                 // Add here the name of scenarios to ignore and the reason, e.g.
-                // { "g_injectX2X_chooseXisX1X__constantX10Xfold__foldX", IgnoreReason.NoReason }
+                { "g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX", IgnoreReason.NoReason },
+                { "g_V_hasLabelXpersonX_aggregateXxX_byXageX_capXxX_asXyX_selectXyX", IgnoreReason.NoReason }
             };
         
         private static class Keywords

@@ -125,9 +125,9 @@ public class GraphSONTypeSerializerV3d0 extends AbstractGraphSONTypeSerializer {
                 mapped = Tree.class;
             else
                 mapped = Map.class;
-        } else if (List.class.isAssignableFrom(c) || BulkSet.class.isAssignableFrom(c))  // coerce BulkSet to List as their behavior on iteration is identical
+        } else if (List.class.isAssignableFrom(c))
             mapped = List.class;
-        else if (Set.class.isAssignableFrom(c))
+        else if (Set.class.isAssignableFrom(c) && !BulkSet.class.isAssignableFrom(c))   // we have special handling of BulkSet
             mapped = Set.class;
         else if (Vertex.class.isAssignableFrom(c))
             mapped = Vertex.class;

@@ -70,6 +70,13 @@ describe('GraphSONReader', function () {
               });
       assert.strictEqual(result, Number.POSITIVE_INFINITY);
   });
+  it('should parse BulkSet', function() {
+      const obj = {"@type": "g:BulkSet", "@value": ["marko", {"@type": "g:Int64", "@value": 1}, "josh", {"@type": "g:Int64", "@value": 3}]};
+      const reader = new GraphSONReader();
+      const result = reader.read(obj);
+      assert.strictEqual(result.length, 4);
+      assert.deepStrictEqual(result, ["marko", "josh", "josh", "josh"]);
+  });
   it('should parse Date', function() {
     const obj = { "@type" : "g:Date", "@value" : 1481750076295 };
     const reader = new GraphSONReader();

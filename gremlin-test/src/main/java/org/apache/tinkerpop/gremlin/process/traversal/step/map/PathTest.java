@@ -103,7 +103,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
             counter++;
             final Path path = traversal.next();
             assertEquals(3, path.size());
-            assertEquals("marko", ((Vertex) path.get(0)).<String>value("name"));
+            assertEquals(convertToVertex ("marko"), path.<Vertex>get(0));
             assertEquals("josh", path.<String>get(1));
             assertEquals("java", path.<String>get(2));
         }

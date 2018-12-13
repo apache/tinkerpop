@@ -5093,6 +5093,22 @@ A "Binding" refers to a `Bytecode.Binding`.
 }
 ----
 
+==== BulkSet
+
+[source,json]
+----
+{
+  "@type" : "g:BulkSet",
+  "@value" : [ "marko", {
+    "@type" : "g:Int64",
+    "@value" : 1
+  }, "josh", {
+    "@type" : "g:Int64",
+    "@value" : 2
+  } ]
+}
+----
+
 ==== Bytecode
 
 The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` woudl be quite different for the endless variations of commands that could be used together in the Gremlin language.
