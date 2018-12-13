@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.driver.remote;
 
 import org.apache.tinkerpop.gremlin.GraphProvider;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 
 /**
@@ -342,6 +343,30 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesTest",
         method = "g_injectXg_VX1X_propertiesXnameX_nextX_value",
         reason = "Needs investigation")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ReadTest",
+        method = "*",
+        reason = "The io() step is not supported generally by GraphComputer")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.WriteTest",
+        method = "*",
+        reason = "The io() step is not supported generally by GraphComputer")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatTest",
+        method = "g_V_repeatXout_repeatXoutX_timesX1XX_timesX1X_limitX1X_path_by_name",
+        reason = "It is not possible to access more than a path element's id on GraphComputer")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatTest",
+        method = "g_V_repeatXoutXknowsXX_untilXrepeatXoutXcreatedXX_emitXhasXname_lopXXX_path_byXnameX",
+        reason = "It is not possible to access more than a path element's id on GraphComputer")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatTest",
+        method = "g_VX3X_repeatXbothX_createdXX_untilXloops_is_40XXemit_repeatXin_knowsXX_emit_loopsXisX1Xdedup_values",
+        reason = "Local traversals may not traverse past the local star-graph on GraphComputer")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatTest",
+        method = "g_VX6X_repeatXa_bothXcreatedX_simplePathX_emitXrepeatXb_bothXknowsXX_untilXloopsXbX_asXb_whereXloopsXaX_asXbX_hasXname_vadasXX_dedup_name",
+        reason = "Local traversals may not traverse past the local star-graph on GraphComputer")
 @GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
 public class GraphSONRemoteGraphComputerProvider extends AbstractRemoteGraphProvider {
     public GraphSONRemoteGraphComputerProvider() {

@@ -21,11 +21,6 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ReadTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.WriteTest;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
@@ -217,6 +212,14 @@ import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
         test = "org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest",
         method = "shouldNeverPropagateANullValuedTraverser",
         reason = "Reason requires investigation")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ReadTest",
+        method = "*",
+        reason = "read and write tests don't translate locally well because of calling iterate() inside read()/write() add a none()")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.WriteTest",
+        method = "*",
+        reason = "read and write tests don't translate locally well because of calling iterate() inside read()/write() add a none()")
 public class TinkerGraphGryoTranslatorProvider extends TinkerGraphProvider {
 
     @Override

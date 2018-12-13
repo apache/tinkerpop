@@ -21,14 +21,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.GraphProvider;
 import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ReadTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.WriteTest;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
@@ -224,11 +217,11 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
         method = "shouldNeverPropagateANullValuedTraverser",
         reason = "Reason requires investigation")
 @Graph.OptOut(
-        test = "import org.apache.tinkerpop.gremlin.process.traversal.step.map.ReadTest",
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ReadTest",
         method = "*",
         reason = "read and write tests don't translate locally well because of calling iterate() inside read()/write() add a none()")
 @Graph.OptOut(
-        test = "import org.apache.tinkerpop.gremlin.process.traversal.step.map.WriteTest",
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.WriteTest",
         method = "*",
         reason = "read and write tests don't translate locally well because of calling iterate() inside read()/write() add a none()")
 @Graph.OptOut(
