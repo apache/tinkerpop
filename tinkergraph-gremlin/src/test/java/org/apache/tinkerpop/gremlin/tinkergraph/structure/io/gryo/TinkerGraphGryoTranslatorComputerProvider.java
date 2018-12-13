@@ -27,6 +27,10 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest",
+        method = "shouldSucceedWithProperTraverserRequirements",
+        reason = "Reason requires investigation")
 @GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
 public class TinkerGraphGryoTranslatorComputerProvider extends TinkerGraphGryoTranslatorProvider {
 

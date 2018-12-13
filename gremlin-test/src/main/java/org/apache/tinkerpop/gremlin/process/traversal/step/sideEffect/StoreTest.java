@@ -22,13 +22,12 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.util.function.HashSetSupplier;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -126,7 +125,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Set<String>> get_g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX() {
-            return g.withSideEffect("a", HashSetSupplier.instance()).V().both().<String>values("name").store("a").cap("a");
+            return g.withSideEffect("a", new HashSet()).V().both().<String>values("name").store("a").cap("a");
         }
 
         @Override

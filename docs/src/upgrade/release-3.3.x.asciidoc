@@ -85,6 +85,22 @@ now fully configurable via the `GroovyCompilerGremlinPlugin.classMapCacheSpecifi
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2038[TINKERPOP-2038],
 link:http://tinkerpop.apache.org/docs/3.3.2/reference/#gremlin-server-cache[Reference Documentation - Cache Management]
 
+=== Upgrading for Providers
+
+==== Graph Database Providers
+
+===== OptOut on GraphProvider
+
+It is not uncommon for those utilizing the TinkerPop test suite to have multiple configurations of their graph under
+test. The multiple configurations typically manifest as multiple `GraphProvider` implementations which supply the
+different configurations to test. It is sometimes the case, that a particular `Graph` configuration cannot support all
+of the tests in the suite at which point some less than straightforward approaches to dealing with that present as
+solutions.
+
+It has always been possible to apply an `OptOut` annotation to a `Graph` instance, to avoid a particular test
+execution. It is now possible to apply that same `OptOut` to a `GraphProvider` instance for that same purpose.
+Hopefully, this feature will make multiple configuration testing easier.
+
 == TinkerPop 3.3.4
 
 *Release Date: October 15, 2018*

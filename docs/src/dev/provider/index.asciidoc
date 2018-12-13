@@ -701,8 +701,9 @@ in this case when running the mis-configured suite).
 
 There are times when there may be a specific test in the suite that the implementation cannot support (despite the
 features it implements) or should not otherwise be executed.  It is possible for implementers to "opt-out" of a test
-by using the `@Graph.OptOut` annotation.  The following is an example of this annotation usage as taken from
-`HadoopGraph`:
+by using the `@Graph.OptOut` annotation. This annotation can be applied to either a `Graph` instance or a
+`GraphProvider` instance (the latter would typically be used for "opting out" for a particular `Graph` configuration
+that was under test). The following is an example of this annotation usage as taken from `HadoopGraph`:
 
 [source,java]
 ----
