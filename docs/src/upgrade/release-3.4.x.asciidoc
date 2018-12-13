@@ -93,16 +93,19 @@ gremlin> g.V().has("person","name","marko").properties("location").valueMap().wi
 ==>[value:santa fe,startTime:2005]
 ```
 
-As shown above, the support of the `with()` modulator for `valueMap()` makes the `valueMap(boolean)` overload superfluous, hence this overload is now deprecated. This is a breaking API change, since
-`valueMap()` will now always yield instances of type `Map<Object, Object>`. Prior this change only the `valueMap(boolean)` overload yielded `Map<Object, Object>` objects, `valueMap()` without the
-boolean parameter used to yield instances of type `Map<String, Object>`.
+As shown above, the support of the `with()` modulator for `valueMap()` makes the `valueMap(boolean)` overload
+superfluous, hence this overload is now deprecated. This is a breaking API change, since `valueMap()` will now always
+yield instances of type `Map<Object, Object>`. Prior this change only the `valueMap(boolean)` overload yielded
+`Map<Object, Object>` objects, `valueMap()` without the boolean parameter used to yield instances of type
+`Map<String, Object>`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2059[TINKERPOP-2059]
 
 ==== Number Comparison of Predicates
 
-In previous versions `within()` and `without()` performed strict number comparisons; that means these predicates did not only compare number values, but also the time. This was inconsistent with
-how other predicates (like `eq, `gt`, etc.) work. All predicates will now ignore the number type and instead compare numbers only based on their value.
+In previous versions `within()` and `without()` performed strict number comparisons; that means these predicates did
+not only compare number values, but also the type. This was inconsistent with how other predicates (like `eq, `gt`,
+etc.) work. All predicates will now ignore the number type and instead compare numbers only based on their value.
 
 Old behavior:
 
@@ -162,7 +165,8 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2075[TINKERPOP-2075]
 
 ==== Added Text Predicates
 
-Gremlin now supports simple text predicates on top of the existing `P` predicates. Both, the new `TextP` text predicates and the old `P` predicates, can be chained using `and()` and `or()`.
+Gremlin now supports simple text predicates on top of the existing `P` predicates. Both, the new `TextP` text
+predicates and the old `P` predicates, can be chained using `and()` and `or()`.
 
 [source,groovy]
 ----
@@ -196,7 +200,8 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2037[TINKERPOP-2037]
 
 ==== Changed Infix Behavior
 
-The infix notation of `and()` and `or()` now supports an arbitrary number of traversals and `ConnectiveStrategy` produces a traversal with proper AND and OR semantics.
+The infix notation of `and()` and `or()` now supports an arbitrary number of traversals and `ConnectiveStrategy`
+produces a traversal with proper AND and OR semantics.
 
 ```
 Input: a.or.b.and.c.or.d.and.e.or.f.and.g.and.h.or.i
@@ -406,8 +411,9 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-2031[TINKERPOP-2031]
 
 ==== Improvements in `min()` and `max()`
 
-Previously `min()` and `max()` were only working for numeric values. This has been changed and these steps can now operate over any `Comparable` value. The common workaround was the combination
-of `order().by()` and `limit()` as shown here:
+Previously `min()` and `max()` were only working for numeric values. This has been changed and these steps can now
+operate over any `Comparable` value. The common workaround was the combination of `order().by()` and `limit()` as
+shown here:
 
 [source,groovy]
 ----
@@ -441,7 +447,8 @@ gremlin> g.V().values('name').max()
 
 Traversals now support nesting of `repeat()` loops.
 
-These can now be used to repeat another traversal while in a looped context, either inside the body of a `repeat()` or in its step modifiers (`until()` or `emit()`).
+These can now be used to repeat another traversal while in a looped context, either inside the body of a `repeat()` or
+in its step modifiers (`until()` or `emit()`).
 
 [source,groovy]
 ----
@@ -545,7 +552,8 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1984[TINKERPOP-1984]
 
 ==== Reducing Barrier Steps
 
-The behavior of `min()`, `max()`, `mean()` and `sum()` has been modified to return no result if there's no input. Previously these steps yielded the internal seed value:
+The behavior of `min()`, `max()`, `mean()` and `sum()` has been modified to return no result if there's no input.
+Previously these steps yielded the internal seed value:
 
 [source,groovy]
 ----
@@ -559,7 +567,8 @@ gremlin> g.V().values('foo').sum()
 ==>0
 ----
 
-These traversals will no longer emit a result. Note, that this also affects more complex scenarios, e.g. if these steps are used in `by()` modulators:
+These traversals will no longer emit a result. Note, that this also affects more complex scenarios, e.g. if these
+steps are used in `by()` modulators:
 
 [source,groovy]
 ----
@@ -569,8 +578,8 @@ gremlin> g.V().group().
 ==>[software:0,person:3.5]
 ----
 
-Since software vertices have no outgoing edges and thus no weight values to sum, `software` will no longer show up in the result. In order to get the same result as before, one would
-have to add a `coalesce()`-step:
+Since software vertices have no outgoing edges and thus no weight values to sum, `software` will no longer show up in
+the result. In order to get the same result as before, one would have to add a `coalesce()`-step:
 
 [source,groovy]
 ----
@@ -588,8 +597,9 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1777[TINKERPOP-1777]
 
 ==== Order of select() Scopes
 
-The order of select scopes has been changed to: maps, side-effects, paths
-Previously the order was: side-effects, maps, paths - which made it almost impossible to select a specific map entry if a side-effect with the same name existed.
+The order of select scopes has been changed to: maps, side-effects, paths. Previously the order was: side-effects,
+maps, paths - which made it almost impossible to select a specific map entry if a side-effect with the same name
+existed.
 
 The following snippets illustrate the changed behavior:
 
@@ -609,7 +619,8 @@ gremlin> g.V(1).
 ==>[a:marko]
 ----
 
-Above is the old behavior; the second `select("a")` has no effect, it selects the side-effect `a` again, although one would expect to get the map entry `a`. What follows is the new behavior:
+Above is the old behavior; the second `select("a")` has no effect, it selects the side-effect `a` again, although one
+would expect to get the map entry `a`. What follows is the new behavior:
 
 [source,groovy]
 ----
