@@ -301,7 +301,7 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
                 case 1:
                     return g.withComputer(Computer.compute(TinkerGraphComputer.class));
                 case 2:
-                    return g.withComputer(Computer.compute(TinkerGraphComputer.class).workers(4));
+                    return g.withComputer(Computer.compute(TinkerGraphComputer.class).workers(Runtime.getRuntime().availableProcessors()));
                 default:
                     throw new IllegalStateException("This state should not have occurred: " + state);
             }
