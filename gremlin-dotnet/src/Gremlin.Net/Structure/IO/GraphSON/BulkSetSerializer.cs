@@ -42,13 +42,13 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             // so this query will be trouble. we'd need a legit BulkSet implementation here in C#. this current 
             // implementation is here to replicate the previous functionality that existed on the server side in 
             // previous versions.
-            var result = new List<Tuple<dynamic,int>>();
+            var result = new List<Tuple<object,int>>();
             for (var i = 0; i < jArray.Count; i += 2)
             {
-                result.Add(new Tuple<dynamic,int>(reader.ToObject(jArray[i]), (int) reader.ToObject(jArray[i + 1])));
+                result.Add(new Tuple<object,int>(reader.ToObject(jArray[i]), (int) reader.ToObject(jArray[i + 1])));
             }
-            
-            return result.Select(x => Enumerable.Repeat(x.Item1, x.Item2)).SelectMany<dynamic,dynamic>(x => x).ToList();
+
+            return result.SelectMany(x => Enumerable.Repeat(x.Item1, x.Item2)).ToList();
         }
     }
 }

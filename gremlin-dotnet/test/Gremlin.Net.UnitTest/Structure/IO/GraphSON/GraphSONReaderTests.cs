@@ -470,6 +470,15 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         }
 
         [Fact]
+        public void ShouldDeserializeBulkSetWithGraphSON3()
+        {
+            const string json =
+                "{\"@type\":\"g:List\",\"@value\":[{\"@type\":\"g:Traverser\",\"@value\":{\"bulk\":{\"@type\":\"g:Int64\",\"@value\":1},\"value\":{\"@type\":\"g:BulkSet\",\"@value\":[{\"@type\":\"g:Int64\",\"@value\":1},{\"@type\":\"g:Int64\",\"@value\":2},{\"@type\":\"g:Int64\",\"@value\":0},{\"@type\":\"g:Int64\",\"@value\":3},{\"@type\":\"g:Int64\",\"@value\":2},{\"@type\":\"g:Int64\",\"@value\":1},{\"@type\":\"g:Double\",\"@value\":1.0},{\"@type\":\"g:Int64\",\"@value\":2}]}}}]}";
+            var reader = CreateStandardGraphSONReader(3);
+            var deserializedValue = reader.ToObject(JObject.Parse(json));
+        }
+
+        [Fact]
         public void ShouldDeserializeTraverser()
         {
             dynamic d = JObject.Parse("{\"@type\":\"g:Traverser\",\"@value\":1,\"bulk\": {\"type\":\"g:Int64\",\"value\":10}}");
