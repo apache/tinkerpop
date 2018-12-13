@@ -368,6 +368,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
         reason = "Local traversals may not traverse past the local star-graph on GraphComputer")
 @GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
 public class GryoRemoteGraphGroovyTranslatorComputerProvider extends GryoRemoteGraphGroovyTranslatorProvider {
+    private final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
 
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
@@ -379,7 +380,7 @@ public class GryoRemoteGraphGroovyTranslatorComputerProvider extends GryoRemoteG
             case 1:
                 return super.traversal(graph).withComputer(Computer.compute(TinkerGraphComputer.class));
             case 2:
-                return super.traversal(graph).withComputer(Computer.compute(TinkerGraphComputer.class).workers(1));
+                return super.traversal(graph).withComputer(Computer.compute(TinkerGraphComputer.class).workers(TestHelper.RANDOM.nextInt(AVAILABLE_PROCESSORS) + 1));
             default:
                 throw new IllegalStateException("This state should not have occurred: " + state);
         }
