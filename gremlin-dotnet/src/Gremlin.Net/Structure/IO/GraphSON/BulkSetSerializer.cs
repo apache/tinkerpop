@@ -21,9 +21,9 @@
 
 #endregion
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Newtonsoft.Json.Linq;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
@@ -42,13 +42,9 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             // so this query will be trouble. we'd need a legit BulkSet implementation here in C#. this current 
             // implementation is here to replicate the previous functionality that existed on the server side in 
             // previous versions.
-            var result = new List<Tuple<object,int>>();
-            for (var i = 0; i < jArray.Count; i += 2)
-            {
-                result.Add(new Tuple<object,int>(reader.ToObject(jArray[i]), (int) reader.ToObject(jArray[i + 1])));
-            }
-
-            return result.SelectMany(x => Enumerable.Repeat(x.Item1, x.Item2)).ToList();
+            return Enumerable.Range(0, jArray.Count / 2).SelectMany<int,object>(i =>
+                           Enumerable.Repeat<object>(reader.ToObject(jArray[i * 2]), (int) reader.ToObject(jArray[i * 2 + 1]))).
+                       ToList();
         }
     }
 }
