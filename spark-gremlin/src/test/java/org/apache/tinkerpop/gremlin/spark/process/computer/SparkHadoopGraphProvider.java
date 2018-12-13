@@ -49,6 +49,7 @@ import java.util.Map;
 public class SparkHadoopGraphProvider extends HadoopGraphProvider {
 
     protected static final String PREVIOUS_SPARK_PROVIDER = "previous.spark.provider";
+    private final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
 
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
@@ -80,7 +81,7 @@ public class SparkHadoopGraphProvider extends HadoopGraphProvider {
         }
 
         config.put(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());
-        config.put(SparkLauncher.SPARK_MASTER, "local[4]");
+        config.put(SparkLauncher.SPARK_MASTER, "local[" + AVAILABLE_PROCESSORS + "]");
         config.put(Constants.SPARK_SERIALIZER, KryoSerializer.class.getCanonicalName());
         config.put(Constants.SPARK_KRYO_REGISTRATOR, GryoRegistrator.class.getCanonicalName());
         config.put(Constants.SPARK_KRYO_REGISTRATION_REQUIRED, true);
@@ -90,14 +91,14 @@ public class SparkHadoopGraphProvider extends HadoopGraphProvider {
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
         return RANDOM.nextBoolean() ?
-                graph.traversal().withComputer(Computer.compute(SparkGraphComputer.class).workers(RANDOM.nextInt(3) + 1)) :
+                graph.traversal().withComputer(Computer.compute(SparkGraphComputer.class).workers(RANDOM.nextInt(AVAILABLE_PROCESSORS) + 1)) :
                 graph.traversal().withComputer();
     }
 
     @Override
     public GraphComputer getGraphComputer(final Graph graph) {
         return RANDOM.nextBoolean() ?
-                graph.compute().workers(RANDOM.nextInt(3) + 1) :
+                graph.compute().workers(RANDOM.nextInt(AVAILABLE_PROCESSORS) + 1) :
                 graph.compute(SparkGraphComputer.class);
     }
 }

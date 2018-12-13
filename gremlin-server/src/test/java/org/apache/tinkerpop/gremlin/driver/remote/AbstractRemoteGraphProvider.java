@@ -204,6 +204,7 @@ import java.util.function.Supplier;
         method = "g_V_valueMap_unfold_mapXkeyX",
         reason = "Tests that include lambdas are not supported by the test suite for remotes")
 public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider implements AutoCloseable {
+    private final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
     private static final Set<Class> IMPLEMENTATION = new HashSet<Class>() {{
         add(RemoteGraph.class);
     }};
@@ -300,7 +301,7 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
                 case 1:
                     return g.withComputer(Computer.compute(TinkerGraphComputer.class));
                 case 2:
-                    return g.withComputer(Computer.compute(TinkerGraphComputer.class).workers(4));
+                    return g.withComputer(Computer.compute(TinkerGraphComputer.class).workers(TestHelper.RANDOM.nextInt(AVAILABLE_PROCESSORS) + 1));
                 default:
                     throw new IllegalStateException("This state should not have occurred: " + state);
             }
