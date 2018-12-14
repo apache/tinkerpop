@@ -42,14 +42,6 @@ public class GraphSONTypeIdResolver implements TypeIdResolver {
 
     private final Map<Class, String> typeToId = new HashMap<>();
 
-    public Map<String, JavaType> getIdToType() {
-        return idToType;
-    }
-
-    public Map<Class, String> getTypeToId() {
-        return typeToId;
-    }
-
     // Override manually a type definition.
     public GraphSONTypeIdResolver addCustomType(final String name, final Class clasz) {
         if (Tree.class.isAssignableFrom(clasz)) {
@@ -63,6 +55,14 @@ public class GraphSONTypeIdResolver implements TypeIdResolver {
         }
         typeToId.put(clasz, name);
         return this;
+    }
+
+    public Map<String, JavaType> getIdToType() {
+        return idToType;
+    }
+
+    public Map<Class, String> getTypeToId() {
+        return typeToId;
     }
 
     @Override
@@ -94,15 +94,11 @@ public class GraphSONTypeIdResolver implements TypeIdResolver {
     @Override
     public JavaType typeFromId(final DatabindContext databindContext, final String s) {
         // Get the type from the string from the stored Map. If not found, default to deserialize as a String.
-        return idToType.containsKey(s)
-                ? idToType.get(s)
-                // TODO: shouldn't we fail instead, if the type is not found? Or log something?
-                : databindContext.constructType(String.class);
+        return idToType.containsKey(s) ? idToType.get(s) : databindContext.constructType(String.class);
     }
 
     @Override
     public String getDescForKnownTypeIds() {
-        // TODO: Not sure what to put here.
         return "GraphSON advanced typing system";
     }
 
