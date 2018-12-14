@@ -151,7 +151,8 @@ public abstract class AbstractGremlinSuite extends Suite {
     }
 
     private static List<Graph.OptOut> getAllOptOuts(final Class<?> clazz) {
-        if (clazz == Object.class)
+        // we typically get a null class if this is called recursively and the original clazz was an interface
+        if (clazz == Object.class || null == clazz)
             return Collections.emptyList();
 
         return Stream.concat(getAllOptOuts(clazz.getSuperclass()).stream(),
