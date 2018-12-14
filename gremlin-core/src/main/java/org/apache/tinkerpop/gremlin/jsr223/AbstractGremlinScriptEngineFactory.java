@@ -52,7 +52,7 @@ public abstract class AbstractGremlinScriptEngineFactory implements GremlinScrip
     }
 
     @Override
-    public String getEngineName() {
+    public final String getEngineName() {
         return engineName;
     }
 
@@ -67,7 +67,7 @@ public abstract class AbstractGremlinScriptEngineFactory implements GremlinScrip
     }
 
     @Override
-    public String getLanguageName() {
+    public final String getLanguageName() {
         return languageName;
     }
 

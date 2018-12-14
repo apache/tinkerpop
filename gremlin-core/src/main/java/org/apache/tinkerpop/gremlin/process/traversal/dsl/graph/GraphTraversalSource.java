@@ -283,14 +283,14 @@ public class GraphTraversalSource implements TraversalSource {
         if (useBulk)
             return this;
         final GraphTraversalSource clone = this.clone();
-        RequirementsStrategy.addRequirements(clone.strategies, TraverserRequirement.ONE_BULK);
+        RequirementsStrategy.addRequirements(clone.getStrategies(), TraverserRequirement.ONE_BULK);
         clone.bytecode.addSource(Symbols.withBulk, useBulk);
         return clone;
     }
 
     public GraphTraversalSource withPath() {
         final GraphTraversalSource clone = this.clone();
-        RequirementsStrategy.addRequirements(clone.strategies, TraverserRequirement.PATH);
+        RequirementsStrategy.addRequirements(clone.getStrategies(), TraverserRequirement.PATH);
         clone.bytecode.addSource(Symbols.withPath);
         return clone;
     }
