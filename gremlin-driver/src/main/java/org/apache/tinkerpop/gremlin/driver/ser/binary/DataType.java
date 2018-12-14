@@ -63,6 +63,7 @@ public enum DataType {
     BOOLEAN(0x27),
     TEXTP(0x28),
     TRAVERSALSTRATEGY(0X29),
+    BULKSET(0X2A),
 
     CHAR(0X80),
     DURATION(0X81),

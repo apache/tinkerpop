@@ -103,6 +103,7 @@ Changes to existing types require new revision.
 - `0x27`: Boolean
 - `0x28`: TextP
 - `0x29`: TraversalStrategy
+- `0x2a`: BulkSet
 - `0xfe`: Unspecified null object
 - `0x00`: Custom
 
@@ -239,7 +240,7 @@ Where:
 
 - `{length}` is an `Int` describing the length of the map.
 - `{item_0}...{item_n}` are the items of the map. `{item_i}` is sequence of 2 fully qualified typed values one
-representing the key and the following representing the value, each composed composed of
+representing the key and the following representing the value, each composed of
 `{type_code}{type_info}{value_flag}{value}`.
 
 ==== UUID
@@ -435,25 +436,6 @@ Format: a single `String` representing the enum value.
 
 Format: a single `String` representing the enum value.
 
-==== TextP
-
-Format: `{predicate}{values_length}{value_0}...{value_n}`
-
-Where:
-
-- `{name}` is a String.
-- `{values_length}` is an `Int` describing the amount values.
-- `{value_i}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-
-==== TraversalStrategy
-
-Format: `{strategy_class}{configuration}`
-
-Where:
-
-- `{strategy_class} is a `Class` that is of type `TraversalStrategy`.
-- `{configuration} is a `Map` of data used to configure the strategy that will be given to a `TraversalStrategy` `create(Configuration)` method.
-
 ==== Traverser
 
 Format: `{bulk}{value}`
@@ -516,6 +498,39 @@ Format: 2-byte two's complement integer.
 ==== Boolean
 
 Format: A single byte containing the value `0x01` when it's `true` and `0` otherwise.
+
+==== TextP
+
+Format: `{predicate}{values_length}{value_0}...{value_n}`
+
+Where:
+
+- `{name}` is a String.
+- `{values_length}` is an `Int` describing the amount values.
+- `{value_i}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+
+==== TraversalStrategy
+
+Format: `{strategy_class}{configuration}`
+
+Where:
+
+- `{strategy_class} is a `Class` that is of type `TraversalStrategy`.
+- `{configuration} is a `Map` of data used to configure the strategy that will be given to a `TraversalStrategy` `create(Configuration)` method.
+
+==== BulkSet
+
+Format: `{length}{item_0}...{item_n}`
+
+Where:
+
+- `{length}` is an `Int` describing the length of the `BulkSet`.
+- `{item_0}...{item_n}` are the items of the `BulkSet`. `{item_i}` is sequence of a fully qualified typed value composed of
+`{type_code}{type_info}{value_flag}{value}` followed by the "bulk" which is a `Long` value.
+
+If the implementing language does not have a `BulkSet` object to deserialize into, this format can be coerced to a
+`List` and still be considered compliant with Gremlin. Simply create "expand the bulk" by adding the item to the `List`
+the number of times specified by the bulk.
 
 ==== Custom
 

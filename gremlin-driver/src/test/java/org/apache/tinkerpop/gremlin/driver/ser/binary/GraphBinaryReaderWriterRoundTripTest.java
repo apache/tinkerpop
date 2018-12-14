@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.structure.Column;
@@ -105,6 +106,10 @@ public class GraphBinaryReaderWriterRoundTripTest {
         final Set set = new HashSet<>();
         set.add("one");
         set.add(2);
+
+        final BulkSet<String> bulkSet = new BulkSet<>();
+        bulkSet.add("marko", 1);
+        bulkSet.add("josh", 3);
 
         return Arrays.asList(
                 new Object[] {"String", "ABC", null},
@@ -200,6 +205,7 @@ public class GraphBinaryReaderWriterRoundTripTest {
                     assertEquals(SubgraphStrategy.class, strategy.getStrategyClass());
                     assertEquals(hasLabel("person").asAdmin().getBytecode(), strategy.getConfiguration().getProperty(SubgraphStrategy.VERTICES));
                 }},
+                new Object[] {"BulkSet", bulkSet, null},
 
                 // collections
                 new Object[] {"ListSingle", listSingle, null},

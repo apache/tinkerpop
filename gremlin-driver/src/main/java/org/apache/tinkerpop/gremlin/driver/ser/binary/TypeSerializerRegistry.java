@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.BigDecimalSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.BigIntegerSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.BindingSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.BulkSetSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ByteBufferSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ByteCodeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.CharSerializer;
@@ -70,6 +71,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.structure.Column;
@@ -167,6 +169,7 @@ public class TypeSerializerRegistry {
                 new RegistryEntry<>(Short.class, SingleTypeSerializer.ShortSerializer),
                 new RegistryEntry<>(Boolean.class, SingleTypeSerializer.BooleanSerializer),
                 new RegistryEntry<>(TraversalStrategy.class, new TraversalStrategySerializer()),
+                new RegistryEntry<>(BulkSet.class, new BulkSetSerializer()),
 
                 new RegistryEntry<>(Character.class, new CharSerializer()),
                 new RegistryEntry<>(Duration.class, new DurationSerializer()),
