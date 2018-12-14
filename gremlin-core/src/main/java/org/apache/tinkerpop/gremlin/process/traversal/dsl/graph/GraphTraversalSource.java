@@ -18,10 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -290,6 +292,49 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         RequirementsStrategy.addRequirements(clone.strategies, TraverserRequirement.PATH);
         clone.bytecode.addSource(Symbols.withPath);
+        return clone;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @deprecated As of release 3.3.5, replaced by {@link AnonymousTraversalSource#withRemote(Configuration)}.
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2078">TINKERPOP-2078</a>
+     */
+    @Override
+    @Deprecated
+    public GraphTraversalSource withRemote(final Configuration conf) {
+        return (GraphTraversalSource) TraversalSource.super.withRemote(conf);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @deprecated As of release 3.3.5, replaced by {@link AnonymousTraversalSource#withRemote(String)}.
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2078">TINKERPOP-2078</a>
+     */
+    @Override
+    @Deprecated
+    public GraphTraversalSource withRemote(final String configFile) throws Exception {
+        return (GraphTraversalSource) TraversalSource.super.withRemote(configFile);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @deprecated As of release 3.3.5, replaced by {@link AnonymousTraversalSource#withRemote(RemoteConnection)}.
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2078">TINKERPOP-2078</a>
+     */
+    @Override
+    @Deprecated
+    public GraphTraversalSource withRemote(final RemoteConnection connection) {
+        // check if someone called withRemote() more than once, so just release resources on the initial
+        // connection as you can't have more than one. maybe better to toss IllegalStateException??
+        if (this.connection != null)
+            throw new IllegalStateException(String.format("TraversalSource already configured with a RemoteConnection [%s]", connection));
+        final GraphTraversalSource clone = this.clone();
+        clone.connection = connection;
+        clone.getStrategies().addStrategies(new RemoteStrategy(connection));
         return clone;
     }
 
