@@ -57,11 +57,11 @@ public class GraphSONTypeIdResolver implements TypeIdResolver {
         return this;
     }
 
-    public Map<String, JavaType> getIdToType() {
+    public final Map<String, JavaType> getIdToType() {
         return idToType;
     }
 
-    public Map<Class, String> getTypeToId() {
+    public final Map<Class, String> getTypeToId() {
         return typeToId;
     }
 
