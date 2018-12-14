@@ -78,6 +78,16 @@ class TestGraphSONReader(object):
         assert x['b'] == "marko"
         assert len(x) == 2
 
+        # BulkSet gets coerced to a List - both have the same behavior
+        x = self.graphson_reader.readObject(
+            json.dumps({"@type": "g:BulkSet",
+                        "@value": ["marko", {"@type": "g:Int64", "@value": 1}, "josh", {"@type": "g:Int64", "@value": 3}]}))
+        assert isinstance(x, list)
+        assert len(x) == 4
+        assert x.count("marko") == 1
+        assert x.count("josh") == 3
+
+
     def test_number_input(self):
         x = self.graphson_reader.readObject(json.dumps({
             "@type": "g:Int32",

@@ -58,6 +58,7 @@ const parsers = [
 const ignoreReason = {
   lambdaNotSupported: 'Lambdas are not supported on gremlin-javascript',
   computerNotSupported: "withComputer() is not supported on gremlin-javascript",
+  setNotSupported: "There is no Set support in gremlin-javascript",
   needsFurtherInvestigation: '',
 };
 
@@ -95,6 +96,7 @@ const ignoredScenarios = {
   'g_V_hasXsong_name_MIGHT_AS_WELLX_shortestPath_targetXhasXsong_name_MAYBE_YOU_KNOW_HOW_I_FEELXX_edgesXoutEXfollowedByXX_distanceXweightX': new IgnoreError(ignoreReason.computerNotSupported),
   'g_V_hasXname_markoX_shortestPath_maxDistanceX1X': new IgnoreError(ignoreReason.computerNotSupported),
   'g_V_hasXname_vadasX_shortestPath_distanceXweightX_maxDistanceX1_3X': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX': new IgnoreError(ignoreReason.setNotSupported)
 };
 
 defineSupportCode(function(methods) {

@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Rule;
@@ -54,6 +55,7 @@ import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.any;
 import static org.hamcrest.Matchers.either;
+import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
@@ -84,6 +86,19 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Parameterized.Parameter(0)
     public String version;
+
+    @Test
+    public void shouldHandleBulkSet() throws Exception {
+        // only supported on V3
+        assumeThat(version, not(anyOf(startsWith("v1"), startsWith("v2"))));
+
+        final BulkSet<String> bs = new BulkSet<>();
+        bs.add("test1", 1);
+        bs.add("test2", 2);
+        bs.add("test3", 3);
+
+        assertEquals(bs, serializeDeserialize(mapper, bs, BulkSet.class));
+    }
 
     @Test
     public void shouldHandleNumberConstants() throws Exception {

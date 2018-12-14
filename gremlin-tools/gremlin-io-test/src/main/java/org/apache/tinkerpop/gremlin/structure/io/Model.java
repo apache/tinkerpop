@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
@@ -126,11 +127,13 @@ public class Model {
         addCoreEntry(100, "Integer");
         addCoreEntry(Arrays.asList(1,"person", true), "List", "List is used to distinguish between different collection types as JSON is not explicit enough for all of Gremlin's requirements.", noGraphSONBeforeV3AndNoGryo);
         addCoreEntry(100L, "Long", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+
         final Map<Object,Object> map = new HashMap<>();
         map.put("test", 123);
         map.put(new Date(1481750076295L), "red");
         map.put(Arrays.asList(1,2,3), new Date(1481750076295L));
         addCoreEntry(map, "Map", "Map is redefined so that to provide the ability to allow for non-String keys, which is not possible in JSON.", noGraphSONBeforeV3AndNoGryo);
+
         addCoreEntry(new HashSet<>(Arrays.asList(1,"person", true)), "Set", "Allows a JSON collection to behave as a Set.", noGraphSONBeforeV3AndNoGryo);
         // Timestamp was added to Gryo 1.0 as of 3.2.4. It was not supported in 3.2.3.
         addCoreEntry(new java.sql.Timestamp(1481750076295L), "Timestamp", "", noTypeGraphSONPlusGryo3_2_3);
@@ -149,6 +152,12 @@ public class Model {
 
         addGraphProcessEntry(SackFunctions.Barrier.normSack, "Barrier", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(new Bytecode.Binding("x", 1), "Binding", "A \"Binding\" refers to a `Bytecode.Binding`.", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+
+        final BulkSet<String> bulkSet = new BulkSet<>();
+        bulkSet.add("marko", 1);
+        bulkSet.add("josh", 2);
+        addGraphProcessEntry(bulkSet, "BulkSet", "", before3_4_0);
+
         addGraphProcessEntry(g.V().hasLabel("person").out().in().tree().asAdmin().getBytecode(), "Bytecode", "The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` woudl be quite different for the endless variations of commands that could be used together in the Gremlin language.", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(VertexProperty.Cardinality.list, "Cardinality", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(Column.keys, "Column", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());

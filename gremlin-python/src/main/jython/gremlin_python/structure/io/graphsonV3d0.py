@@ -483,6 +483,27 @@ class MapType(_GraphSONTypeIO):
         return new_dict
 
 
+class BulkSetIO(_GraphSONTypeIO):
+    graphson_type = "g:BulkSet"
+
+    @classmethod
+    def objectify(cls, l, reader):
+        new_list = []
+
+        # this approach basically mimics what currently existed in 3.3.4 and prior versions where BulkSet is
+        # basically just coerced to list. the limitation here is that if the value of a bulk exceeds the size of
+        # a list (into the long space) then stuff won't work nice.
+        if len(l) > 0:
+            x = 0
+            while x < len(l):
+                obj = reader.toObject(l[x])
+                bulk = reader.toObject(l[x + 1])
+                for y in range(bulk):
+                    new_list.append(obj)
+                x = x + 2
+        return new_list
+
+
 class FloatIO(_NumberIO):
     python_type = FloatType
     graphson_type = "g:Float"

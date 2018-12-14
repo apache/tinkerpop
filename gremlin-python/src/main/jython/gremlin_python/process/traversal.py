@@ -598,11 +598,13 @@ class Bytecode(object):
 BINDINGS
 '''
 
+
 class Bindings(object):
     def of(self,key,value):
         if not isinstance(key, str):
             raise TypeError("Key must be str")
         return (key,value)
+
 
 class Binding(object):
     def __init__(self,key,value):

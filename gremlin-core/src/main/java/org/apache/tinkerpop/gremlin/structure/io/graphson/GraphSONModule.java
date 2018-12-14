@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy;
@@ -142,6 +143,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(TraversalMetrics.class, "TraversalMetrics");
                     put(Traverser.class, "Traverser");
                     put(Tree.class, "Tree");
+                    put(BulkSet.class, "BulkSet");
                     put(Bytecode.class, "Bytecode");
                     put(Bytecode.Binding.class, "Binding");
                     put(AndP.class, "P");
@@ -221,6 +223,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addSerializer(Double.class, new GraphSONSerializersV3d0.DoubleGraphSONSerializer());
 
             // traversal
+            addSerializer(BulkSet.class, new TraversalSerializersV3d0.BulkSetJacksonSerializer());
             addSerializer(Traversal.class, new TraversalSerializersV3d0.TraversalJacksonSerializer());
             addSerializer(Bytecode.class, new TraversalSerializersV3d0.BytecodeJacksonSerializer());
             Stream.of(VertexProperty.Cardinality.class,
@@ -261,6 +264,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(Double.class, new GraphSONSerializersV3d0.DoubleJacksonDeserializer());
 
             // traversal
+            addDeserializer(BulkSet.class, new TraversalSerializersV3d0.BulkSetJacksonDeserializer());
             addDeserializer(Bytecode.class, new TraversalSerializersV3d0.BytecodeJacksonDeserializer());
             addDeserializer(Bytecode.Binding.class, new TraversalSerializersV3d0.BindingJacksonDeserializer());
             Stream.of(VertexProperty.Cardinality.values(),
