@@ -63,20 +63,22 @@ class Connection:
                 f.result()
             except Exception as e:
                 future.set_exception(e)
+                self._pool.put_nowait(self)
             else:
                 # Start receive task
                 done = self._executor.submit(self._receive)
                 result_set.done = done
                 future.set_result(result_set)
-            finally:
-                self._pool.put_nowait(self)
 
         future_write.add_done_callback(cb)
         return future
 
     def _receive(self):
-        while True:
-            data = self._transport.read()
-            status_code = self._protocol.data_received(data, self._results)
-            if status_code != 206:
-                break
+        try:
+            while True:
+                data = self._transport.read()
+                status_code = self._protocol.data_received(data, self._results)
+                if status_code != 206:
+                    break
+        finally:
+            self._pool.put_nowait(self)
