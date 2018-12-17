@@ -301,22 +301,22 @@ because the GTM is responsible for processing traversals. One can write Gremlin 
 a GTM there will be no way to execute that traversal against a TinkerPop-enabled graph. The GTM is typically in one
 of the following places:
 
-* Embedded in a Java application (i.e. Java Virtual Machine)
-* Hosted in <<gremlin-server,Gremlin Server>>
-* Exposed by a remote Remote Gremlin Provider (RGP)
+* <<connecting-embedded,Embedded>> in a Java application (i.e. Java Virtual Machine)
+* <<connecting-gremlin-server,Hosted>> in <<gremlin-server,Gremlin Server>>
+* <<connecting-rgp,Hosted>> by a Remote Gremlin Provider (RGP)
 
 The following sections outline each of these models and what impact they have to using Gremlin.
 
 [[connecting-embedded]]
 === Embedded
 
-TinkerPop maintains the reference implementation for the GTM, which is written in Java and thus available for the
-Java Virtual Machine (JVM). This is the classic model that TinkerPop has long been based on and many examples, blog
-posts and other resources on the internet will be demonstrated in this style. It is worth noting that the embedded
-mode is not restricted to just Java as a programming language. Any JVM language can take this approach and in some
-cases there are language specific wrappers that can help make Gremlin more convenient to use in the style and
-capability of that language. Examples of these wrappers include link:https://github.com/mpollmeier/gremlin-scala[gremlin-scala]
-and link:http://ogre.clojurewerkz.org/[Ogre] (for Clojure).
+image:blueprints-character-1.png[width=125,float=left] TinkerPop maintains the reference implementation for the GTM,
+which is written in Java and thus available for the Java Virtual Machine (JVM). This is the classic model that
+TinkerPop has long been based on and many examples, blog posts and other resources on the internet will be
+demonstrated in this style. It is worth noting that the embedded mode is not restricted to just Java as a programming
+language. Any JVM language can take this approach and in some cases there are language specific wrappers that can help
+make Gremlin more convenient to use in the style and capability of that language. Examples of these wrappers include
+link:https://github.com/mpollmeier/gremlin-scala[gremlin-scala] and link:http://ogre.clojurewerkz.org/[Ogre] (for Clojure).
 
 In this mode, users will start by creating a `Graph` instance, followed by a `GraphTraversalSource` which is the class
 from which Gremlin traversals are spawned. Graphs that allow this sort of direct instantiation are obviously ones
@@ -359,9 +359,9 @@ methods by end-users.
 [[connecting-gremlin-server]]
 === Gremlin Server
 
-A JVM-based graph maybe be hosted in TinkerPop's <<gremlin-server,Gremlin Server>>. Gremlin Server exposes the graph
-as an endpoint to which different clients can connect, essentially providing a remote GTM. Gremlin Server supports
-multiple methods for clients to interface with it:
+image:rexster-character-3.png[width=125,float=left] A JVM-based graph maybe be hosted in TinkerPop's
+<<gremlin-server,Gremlin Server>>. Gremlin Server exposes the graph as an endpoint to which different clients can
+connect, essentially providing a remote GTM. Gremlin Server supports multiple methods for clients to interface with it:
 
 * Websockets with a link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[custom sub-protocol]
 ** String-based Gremlin scripts
@@ -412,8 +412,6 @@ g = traversal().withRemote(
 
 As shown in the embedded approach in the previous section, once "g" is defined, writing Gremlin is structurally and
 conceptually the same irrespective of programming language.
-
-
 
 [[connecting-gremlin-server-limitations]]
 ==== Limitations
