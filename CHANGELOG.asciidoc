@@ -120,6 +120,7 @@ This release also includes changes from <<release-3-2-11, 3.2.11>>.
 * Changed Java driver to expect a generic `RemoteTraverser` object rather than the specific `DefaultRemoteTraverser`.
 * Display the remote stack trace in the Gremlin Console when scripts sent to the server fail.
 * Added `AnonymousTraversalSource` which provides a more unified means of constructing a `TraversalSource`.
+* Added `DriverRemoteConnection.using(Client)` to provide users better control over the number of connections being created.
 * Changed behavior of GraphSON deserializer in gremlin-python such that `g:Set` returns a Python `Set`.
 * Changed behavior of `iterate()` in Python, Javascript and .NET to send `none()` thus avoiding unnecessary results being returned.
 * Provided for a configurable class map cache in the `GremlinGroovyScriptEngine` and exposed that in Gremlin Server.
