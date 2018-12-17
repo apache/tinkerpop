@@ -66,6 +66,10 @@ include::tree.asciidoc[]
 
 include::olap-spark-yarn.asciidoc[]
 
+= Anti-Patterns
+
+include::anti-patterns.asciidoc[]
+
 = Implementation Recipes
 
 include::style-guide.asciidoc[]
