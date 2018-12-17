@@ -38,6 +38,8 @@ with their graph. Moreover, the graph systems themselves are not only separated 
 also by their implementation patterns, which range everywhere from being an embedded graph system to a cloud-only
 graph. One might even find diversity parallel to Gremlin if considering other graph query languages.
 
+image::gremlin-reference.png[width=1024]
+
 Despite all this diversity and disparity, Gremlin remains the unifying interface for all these different elements of
 the graph community. As a user, choosing a TinkerPop-enabled graph and using Gremlin in the correct way when building
 applications shields them from change and disparity in the space. As a graph provider, choosing to become
