@@ -55,6 +55,7 @@ public class DriverRemoteConnection implements RemoteConnection {
 
     private final Client client;
     private final boolean tryCloseCluster;
+    private final boolean tryCloseClient;
     private final String remoteTraversalSourceName;
     private transient Optional<Configuration> conf = Optional.empty();
 
@@ -81,6 +82,7 @@ public class DriverRemoteConnection implements RemoteConnection {
         }
 
         tryCloseCluster = true;
+        tryCloseClient = true;
         this.conf = Optional.of(conf);
     }
 
@@ -88,6 +90,7 @@ public class DriverRemoteConnection implements RemoteConnection {
         client = cluster.connect(Client.Settings.build().create()).alias(remoteTraversalSourceName);
         this.remoteTraversalSourceName = remoteTraversalSourceName;
         this.tryCloseCluster = tryCloseCluster;
+        tryCloseClient = true;
     }
 
     /**
@@ -98,7 +101,31 @@ public class DriverRemoteConnection implements RemoteConnection {
 
         client = cluster.connect(Client.Settings.build().create()).alias(remoteTraversalSourceName);
         tryCloseCluster = false;
+        tryCloseClient = true;
         this.conf = Optional.of(conf);
+    }
+
+    private DriverRemoteConnection(final Client client, final String remoteTraversalSourceName) {
+        this.client = client;
+        this.remoteTraversalSourceName = remoteTraversalSourceName;
+        this.tryCloseCluster = false;
+        tryCloseClient = false;
+    }
+
+    /**
+     * Creates a {@link DriverRemoteConnection} using an existing {@link Client} object. The {@link Client} will not
+     * be closed on calls to {@link #close()}.
+     */
+    public static DriverRemoteConnection using(final Client client) {
+        return using(client, DEFAULT_TRAVERSAL_SOURCE);
+    }
+
+    /**
+     * Creates a {@link DriverRemoteConnection} using an existing {@link Client} object. The {@link Client} will not
+     * be closed on calls to {@link #close()}.
+     */
+    public static DriverRemoteConnection using(final Client client, final String remoteTraversalSourceName) {
+        return new DriverRemoteConnection(client, remoteTraversalSourceName);
     }
 
     /**
@@ -229,7 +256,8 @@ public class DriverRemoteConnection implements RemoteConnection {
     @Override
     public void close() throws Exception {
         try {
-            client.close();
+            if (tryCloseClient)
+                client.close();
         } catch (Exception ex) {
             throw new RemoteConnectionException(ex);
         } finally {
