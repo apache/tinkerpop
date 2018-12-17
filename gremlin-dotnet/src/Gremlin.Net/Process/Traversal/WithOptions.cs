@@ -59,6 +59,15 @@ namespace Gremlin.Net.Process.Traversal.Step.Util
 
         public static readonly int All = 15;
 
+
+        public static readonly string Indexer = "~tinkerpop.index.indexer";
+
+
+        public static readonly int List = 0;
+
+
+        public static readonly int Map = 1;
+
     }
 
 #pragma warning restore 1591

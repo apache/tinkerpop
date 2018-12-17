@@ -295,6 +295,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("in", *args)
         return self
 
+    def index(self, *args):
+        self.bytecode.add_step("index", *args)
+        return self
+
     def inject(self, *args):
         self.bytecode.add_step("inject", *args)
         return self
@@ -695,6 +699,10 @@ class __(object):
         return cls.graph_traversal(None, None, Bytecode()).in_(*args)
 
     @classmethod
+    def index(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).index(*args)
+
+    @classmethod
     def inject(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).inject(*args)
 
@@ -1047,6 +1055,10 @@ statics.add_static('inV', inV)
 def in_(*args):
     return __.in_(*args)
 statics.add_static('in_', in_)
+
+def index(*args):
+    return __.index(*args)
+statics.add_static('index', index)
 
 def inject(*args):
     return __.inject(*args)

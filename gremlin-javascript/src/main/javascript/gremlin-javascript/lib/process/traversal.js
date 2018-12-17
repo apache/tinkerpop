@@ -396,7 +396,10 @@ const withOptions = {
   labels: 2,
   keys: 4,
   values: 8,
-  all: 15
+  all: 15,
+  indexer: "~tinkerpop.index.indexer",
+  list: 0,
+  map: 1
 };
 
 function toEnum(typeName, keys) {

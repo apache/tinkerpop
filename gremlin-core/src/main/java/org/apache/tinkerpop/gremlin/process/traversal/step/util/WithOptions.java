@@ -67,4 +67,23 @@ public class WithOptions {
      * Include all tokens.
      */
     public static int all = ids | labels | keys | values;
+
+    //
+    // IndexStep
+    //
+
+    /**
+     * Configures the indexer to be used in {@link org.apache.tinkerpop.gremlin.process.traversal.step.map.IndexStep}.
+     */
+    public static final String indexer = Graph.Hidden.hide("tinkerpop.index.indexer");
+
+    /**
+     * Index items using 2-item lists.
+     */
+    public static int list = 0;
+
+    /**
+     * Index items using a {@link java.util.LinkedHashMap}.
+     */
+    public static int map = 1;
 }
