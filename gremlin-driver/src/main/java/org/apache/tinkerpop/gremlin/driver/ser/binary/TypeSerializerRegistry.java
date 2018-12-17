@@ -40,6 +40,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.types.ListSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.LocalDateSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.LocalDateTimeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.LocalTimeSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.MapEntrySerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.MapSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.MonthDaySerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.OffsetDateTimeSerializer;
@@ -51,6 +52,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.types.PropertySerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.SetSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.SingleTypeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.StringSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.TransformSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.TraversalStrategySerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.TraverserSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.UUIDSerializer;
@@ -170,6 +172,8 @@ public class TypeSerializerRegistry {
                 new RegistryEntry<>(Boolean.class, SingleTypeSerializer.BooleanSerializer),
                 new RegistryEntry<>(TraversalStrategy.class, new TraversalStrategySerializer()),
                 new RegistryEntry<>(BulkSet.class, new BulkSetSerializer()),
+
+                new RegistryEntry<>(Map.Entry.class, new MapEntrySerializer()),
 
                 new RegistryEntry<>(Character.class, new CharSerializer()),
                 new RegistryEntry<>(Duration.class, new DurationSerializer()),
@@ -298,7 +302,7 @@ public class TypeSerializerRegistry {
             throw new NullPointerException("Serializer instance can not be null");
         }
 
-        if (serializer.getDataType() == null) {
+        if (serializer.getDataType() == null && !(serializer instanceof TransformSerializer)) {
             throw new NullPointerException("Serializer data type can not be null");
         }
 
@@ -310,10 +314,10 @@ public class TypeSerializerRegistry {
             serializersByInterface.put(type, serializer);
         }
 
-        if (serializer.getDataType() != DataType.CUSTOM) {
-            serializersByDataType.put(serializer.getDataType(), serializer);
-        } else {
+        if (serializer.getDataType() == DataType.CUSTOM) {
             serializersByCustomTypeName.put(entry.getCustomTypeName(), (CustomTypeSerializer) serializer);
+        } else if (serializer.getDataType() != null) {
+            serializersByDataType.put(serializer.getDataType(), serializer);
         }
     }
 

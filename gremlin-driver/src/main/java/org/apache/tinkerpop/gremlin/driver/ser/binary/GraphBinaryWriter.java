@@ -23,6 +23,7 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.CustomTypeSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.TransformSerializer;
 
 public class GraphBinaryWriter {
     private final TypeSerializerRegistry registry;
@@ -78,6 +79,13 @@ public class GraphBinaryWriter {
                     Unpooled.wrappedBuffer(customTypeCodeBytes),
                     writeValue(customTypeSerializer.getTypeName(), allocator, false),
                     customTypeSerializer.write(value, allocator, this));
+        }
+
+        if (serializer instanceof TransformSerializer) {
+            // For historical reasons, there are types that need to be transformed into another type
+            // before serialization, e.g., Map.Entry
+            TransformSerializer<T> transformSerializer = (TransformSerializer<T>) serializer;
+            return write(transformSerializer.transform(value), allocator);
         }
 
         return allocator.compositeBuffer(2).addComponents(true,

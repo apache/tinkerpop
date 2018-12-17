@@ -16,20 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.driver.remote;
+package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
-import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.TypeSerializer;
 
 /**
- * @author Stephen Mallette (http://stephen.genoprime.com)
+ * Represents a special TypeSerializer placeholder that transforms the value into another before serializing it.
  */
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeTest",
-        method = "*",
-        reason = "No support for Tree serialization in GraphBinary")
-public class GraphBinaryRemoteGraphProvider extends AbstractRemoteGraphProvider implements AutoCloseable {
-    public GraphBinaryRemoteGraphProvider() {
-        super(createClusterBuilder(Serializers.GRAPHBINARY_V1D0).create());
-    }
+public interface TransformSerializer<T> extends TypeSerializer<T> {
+    Object transform(T value);
 }
