@@ -30,6 +30,7 @@ This release also includes changes from <<release-3-2-11, 3.2.11>>.
 * Fixed a bug in `CoalesceStep` which squared the bulk if the step followed a `Barrier` step.
 * Fixed a bug in `GroupStep` that assigned wrong reducing bi-operators
 * Added `:bytecode` command to help developers debugging `Bytecode`-based traversals.
+* Added option to set the path for the URI on the Java driver.
 * Fixed `PersistedOutputRDD` to eager persist RDD by adding `count()` action calls.
 * Deserialized `g:Set` to a Python `Set` in GraphSON in `gremlin-python`.
 * Deprecated `StarGraph.builder()` and `StarGraph.Builder.build()` in favor of the more common "builder" patterns of `build()` and `create()` respectively.

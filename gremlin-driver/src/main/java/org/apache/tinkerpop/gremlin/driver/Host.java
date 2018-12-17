@@ -48,7 +48,7 @@ public final class Host {
     Host(final InetSocketAddress address, final Cluster cluster) {
         this.cluster = cluster;
         this.address = address;
-        this.hostUri = makeUriFromAddress(address, cluster.connectionPoolSettings().enableSsl);
+        this.hostUri = makeUriFromAddress(address, cluster.getPath(), cluster.connectionPoolSettings().enableSsl);
         hostLabel = String.format("Host{address=%s, hostUri=%s}", address, hostUri);
     }
 
@@ -90,10 +90,10 @@ public final class Host {
         makeAvailable();
     }
 
-    private static URI makeUriFromAddress(final InetSocketAddress addy, final boolean ssl) {
+    private static URI makeUriFromAddress(final InetSocketAddress addy, final String path, final boolean ssl) {
         try {
             final String scheme = ssl ? "wss" : "ws";
-            return new URI(scheme, null, addy.getHostName(), addy.getPort(), "/gremlin", null, null);
+            return new URI(scheme, null, addy.getHostName(), addy.getPort(), path, null, null);
         } catch (URISyntaxException use) {
             throw new RuntimeException(String.format("URI for host could not be constructed from: %s", addy), use);
         }

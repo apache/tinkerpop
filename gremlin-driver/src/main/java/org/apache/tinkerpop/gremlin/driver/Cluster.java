@@ -31,10 +31,6 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
-import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -182,6 +178,7 @@ public final class Cluster {
 
         final Builder builder = new Builder(settings.hosts.get(0))
                 .port(settings.port)
+                .path(settings.path)
                 .enableSsl(settings.connectionPool.enableSsl)
                 .trustCertificateChainFile(settings.connectionPool.trustCertChainFile)
                 .keepAliveInterval(settings.connectionPool.keepAliveInterval)
@@ -294,6 +291,13 @@ public final class Cluster {
                 .filter(Host::isAvailable)
                 .map(Host::getHostUri)
                 .collect(Collectors.toList()));
+    }
+
+    /**
+     * Gets the path to the Gremlin service.
+     */
+    public String getPath() {
+        return manager.path;
     }
 
     /**
@@ -550,6 +554,7 @@ public final class Cluster {
     public final static class Builder {
         private List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
+        private String path = "/gremlin";
         private MessageSerializer serializer = Serializers.GRYO_V3D0.simpleInstance();
         private int nioPoolSize = Runtime.getRuntime().availableProcessors();
         private int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
@@ -606,6 +611,14 @@ public final class Cluster {
          */
         public Builder workerPoolSize(final int workerPoolSize) {
             this.workerPoolSize = workerPoolSize;
+            return this;
+        }
+
+        /**
+         * The path to the Gremlin service on the host which is "/gremlin" by default.
+         */
+        public Builder path(final String path) {
+            this.path = path;
             return this;
         }
 
@@ -1029,6 +1042,7 @@ public final class Cluster {
         private final int nioPoolSize;
         private final int workerPoolSize;
         private final int port;
+        private final String path;
 
         private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
@@ -1075,6 +1089,7 @@ public final class Cluster {
             nioPoolSize = builder.nioPoolSize;
             workerPoolSize = builder.workerPoolSize;
             port = builder.port;
+            path = builder.path;
 
             this.factory = new Factory(builder.nioPoolSize);
             this.serializer = builder.serializer;
@@ -1134,7 +1149,6 @@ public final class Cluster {
 
             if (builder.workerPoolSize < 1)
                 throw new IllegalArgumentException("workerPoolSize must be greater than zero");
-
         }
 
         synchronized void init() {
