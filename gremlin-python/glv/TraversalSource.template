@@ -311,9 +311,9 @@ class Bytecode(object):
             for item in arg:
                 newSet.add(self.__convertArgument(item))
             return newSet
-        elif isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-            self.bindings[arg[0]] = arg[1]
-            return Binding(arg[0],self.__convertArgument(arg[1]))
+        elif isinstance(arg, Binding):
+            self.bindings[arg.key] = arg.value
+            return Binding(arg.key, self.__convertArgument(arg.value))
         else:
             return arg
 
@@ -328,10 +328,12 @@ BINDINGS
 
 
 class Bindings(object):
-    def of(self,key,value):
+
+    @staticmethod
+    def of(key, value):
         if not isinstance(key, str):
             raise TypeError("Key must be str")
-        return (key,value)
+        return Binding(key, value)
 
 
 class Binding(object):
