@@ -49,7 +49,9 @@ class SamplePersonSerializer implements CustomTypeSerializer<SamplePerson> {
     public SamplePerson read(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         // {custom type info}, {value_flag} and {value}
         // No custom_type_info
-        assert buffer.readInt() == 0;
+        if (buffer.readInt() != 0) {
+            throw new SerializationException("{custom_type_info} should not be provided for this custom type");
+        }
 
         final byte valueFlag = buffer.readByte();
         if ((valueFlag & 1) == 1) {
@@ -59,8 +61,10 @@ class SamplePersonSerializer implements CustomTypeSerializer<SamplePerson> {
         // Read the buffer int, no necessary in this case
         buffer.readInt();
 
-        return new SamplePerson(
-                context.readValue(buffer, String.class, false), context.readValue(buffer, Date.class,false));
+        final String name = context.readValue(buffer, String.class, false);
+        final Date birthDate = context.readValue(buffer, Date.class, false);
+
+        return new SamplePerson(name, birthDate);
     }
 
     @Override
