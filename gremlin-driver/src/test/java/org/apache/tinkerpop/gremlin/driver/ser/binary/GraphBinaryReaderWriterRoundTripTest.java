@@ -33,12 +33,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
@@ -110,6 +112,14 @@ public class GraphBinaryReaderWriterRoundTripTest {
         final BulkSet<String> bulkSet = new BulkSet<>();
         bulkSet.add("marko", 1);
         bulkSet.add("josh", 3);
+
+        final Tree<Vertex> tree = new Tree<>();
+        final Tree<Vertex> subTree = new Tree<>();
+        final Tree<Vertex> subSubTree = new Tree<>();
+        subSubTree.put(new ReferenceVertex(1, "animal"), new Tree<>());
+        subSubTree.put(new ReferenceVertex(2, "animal"), new Tree<>());
+        subTree.put(new ReferenceVertex(100, "animal"), subSubTree);
+        tree.put(new ReferenceVertex(1000, "animal"), subTree);
 
         return Arrays.asList(
                 new Object[] {"String", "ABC", null},
@@ -206,6 +216,7 @@ public class GraphBinaryReaderWriterRoundTripTest {
                     assertEquals(hasLabel("person").asAdmin().getBytecode(), strategy.getConfiguration().getProperty(SubgraphStrategy.VERTICES));
                 }},
                 new Object[] {"BulkSet", bulkSet, null},
+                new Object[] {"Tree", tree, null},
 
                 // collections
                 new Object[] {"ListSingle", listSingle, null},

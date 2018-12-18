@@ -104,6 +104,7 @@ Changes to existing types require new revision.
 - `0x28`: TextP
 - `0x29`: TraversalStrategy
 - `0x2a`: BulkSet
+- `0x2b`: Tree
 - `0xfe`: Unspecified null object
 - `0x00`: Custom
 
@@ -531,6 +532,16 @@ Where:
 If the implementing language does not have a `BulkSet` object to deserialize into, this format can be coerced to a
 `List` and still be considered compliant with Gremlin. Simply create "expand the bulk" by adding the item to the `List`
 the number of times specified by the bulk.
+
+==== Tree
+
+Format: `{length}{item_0}...{item_n}`
+
+Where:
+
+- `{length}` is an `Int` describing the length of the items.
+- `{item_0}...{item_n}` are the items of the `Tree`. `{item_i}` is composed of `{key}` is a fully-qualified type value
+followed by a `{Tree}`.
 
 ==== Custom
 

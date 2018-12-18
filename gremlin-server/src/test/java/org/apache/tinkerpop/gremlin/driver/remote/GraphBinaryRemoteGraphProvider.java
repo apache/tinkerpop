@@ -19,15 +19,10 @@
 package org.apache.tinkerpop.gremlin.driver.remote;
 
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeTest",
-        method = "*",
-        reason = "No support for Tree serialization in GraphBinary")
 public class GraphBinaryRemoteGraphProvider extends AbstractRemoteGraphProvider implements AutoCloseable {
     public GraphBinaryRemoteGraphProvider() {
         super(createClusterBuilder(Serializers.GRAPHBINARY_V1D0).create());

@@ -64,6 +64,7 @@ public enum DataType {
     TEXTP(0x28),
     TRAVERSALSTRATEGY(0X29),
     BULKSET(0X2A),
+    TREE(0X2B),
 
     CHAR(0X80),
     DURATION(0X81),
