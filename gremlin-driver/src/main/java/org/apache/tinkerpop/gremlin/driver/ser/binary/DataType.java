@@ -87,10 +87,12 @@ public enum DataType {
 
     private final int code;
     private static final Map<Integer, DataType> typeByCode = new HashMap<>();
+    private static final Map<DataType, byte[]> bufferByDataType = new HashMap<>();
 
     static {
         for (DataType t : DataType.values()) {
             typeByCode.put(t.code, t);
+            bufferByDataType.put(t, new byte[] { (byte)t.code });
         }
     }
 
@@ -110,6 +112,13 @@ public enum DataType {
      */
     public byte getCodeByte() {
         return (byte) code;
+    }
+
+    /**
+     * Gets a byte array containing a single byte representing the type code.
+     */
+    byte[] getDataTypeBuffer() {
+        return bufferByDataType.get(this);
     }
 
     /**

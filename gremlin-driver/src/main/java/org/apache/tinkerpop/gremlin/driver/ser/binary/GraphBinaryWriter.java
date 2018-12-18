@@ -90,8 +90,7 @@ public class GraphBinaryWriter {
 
         return allocator.compositeBuffer(2).addComponents(true,
                 // {type_code}
-                // TODO: Reuse buffer pooled locally
-                allocator.buffer(1).writeByte(serializer.getDataType().getCodeByte()),
+                Unpooled.wrappedBuffer(serializer.getDataType().getDataTypeBuffer()),
                 // {type_info}{value_flag}{value}
                 serializer.write(value, allocator, this));
     }
@@ -103,7 +102,6 @@ public class GraphBinaryWriter {
      */
     public <T> ByteBuf writeFullyQualifiedNull(final Class<T> objectClass, final ByteBufAllocator allocator, final Object information) throws SerializationException {
         TypeSerializer<T> serializer = registry.getSerializer(objectClass);
-        //TODO: Change to writeNull()
         return serializer.write(null, allocator, this);
     }
 
