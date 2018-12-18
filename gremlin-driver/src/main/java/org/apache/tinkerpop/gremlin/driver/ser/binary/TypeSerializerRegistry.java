@@ -71,6 +71,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -80,82 +81,93 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TypeSerializerRegistry {
-    public static final TypeSerializerRegistry INSTANCE = build().create();
 
     public static Builder build() {
         return new Builder();
     }
 
+    private static final RegistryEntry[] defaultEntries = new RegistryEntry[] {
+            new RegistryEntry<>(Integer.class, SingleTypeSerializer.IntSerializer),
+            new RegistryEntry<>(Long.class, SingleTypeSerializer.LongSerializer),
+            new RegistryEntry<>(String.class, new StringSerializer()),
+            new RegistryEntry<>(Date.class, DateSerializer.DateSerializer),
+            new RegistryEntry<>(Timestamp.class, DateSerializer.TimestampSerializer),
+            new RegistryEntry<>(Class.class, new ClassSerializer()),
+            new RegistryEntry<>(Double.class, SingleTypeSerializer.DoubleSerializer),
+            new RegistryEntry<>(Float.class, SingleTypeSerializer.FloatSerializer),
+            new RegistryEntry<>(List.class, new ListSerializer()),
+            new RegistryEntry<>(Map.class, new MapSerializer()),
+            new RegistryEntry<>(Set.class, new SetSerializer()),
+            new RegistryEntry<>(UUID.class, new UUIDSerializer()),
+            new RegistryEntry<>(Edge.class, new EdgeSerializer()),
+            new RegistryEntry<>(Path.class, new PathSerializer()),
+            new RegistryEntry<>(VertexProperty.class, new VertexPropertySerializer()), // needs to register before the less specific Property
+            new RegistryEntry<>(Property.class, new PropertySerializer()),
+            new RegistryEntry<>(Graph.class, new GraphSerializer()),
+            new RegistryEntry<>(Vertex.class, new VertexSerializer()),
+            new RegistryEntry<>(SackFunctions.Barrier.class, EnumSerializer.BarrierSerializer),
+            new RegistryEntry<>(Bytecode.Binding.class, new BindingSerializer()),
+            new RegistryEntry<>(Bytecode.class, new ByteCodeSerializer()),
+            new RegistryEntry<>(VertexProperty.Cardinality.class, EnumSerializer.CardinalitySerializer),
+            new RegistryEntry<>(Column.class, EnumSerializer.ColumnSerializer),
+            new RegistryEntry<>(Direction.class, EnumSerializer.DirectionSerializer),
+            new RegistryEntry<>(Operator.class, EnumSerializer.OperatorSerializer),
+            new RegistryEntry<>(Order.class, EnumSerializer.OrderSerializer),
+            new RegistryEntry<>(TraversalOptionParent.Pick.class, EnumSerializer.PickSerializer),
+            new RegistryEntry<>(Pop.class, EnumSerializer.PopSerializer),
+            new RegistryEntry<>(Lambda.class, new LambdaSerializer()),
+            new RegistryEntry<>(P.class, new PSerializer<>(DataType.P, P.class)),
+            new RegistryEntry<>(AndP.class, new PSerializer<>(DataType.P, AndP.class)),
+            new RegistryEntry<>(OrP.class, new PSerializer<>(DataType.P, OrP.class)),
+            new RegistryEntry<>(TextP.class, new PSerializer<>(DataType.TEXTP, TextP.class)),
+            new RegistryEntry<>(Scope.class, EnumSerializer.ScopeSerializer),
+            new RegistryEntry<>(T.class, EnumSerializer.TSerializer),
+            new RegistryEntry<>(Traverser.class, new TraverserSerializer()),
+            new RegistryEntry<>(BigDecimal.class, new BigDecimalSerializer()),
+            new RegistryEntry<>(BigInteger.class, new BigIntegerSerializer()),
+            new RegistryEntry<>(Byte.class, SingleTypeSerializer.ByteSerializer),
+            new RegistryEntry<>(ByteBuffer.class, new ByteBufferSerializer()),
+            new RegistryEntry<>(Short.class, SingleTypeSerializer.ShortSerializer),
+            new RegistryEntry<>(Boolean.class, SingleTypeSerializer.BooleanSerializer),
+            new RegistryEntry<>(TraversalStrategy.class, new TraversalStrategySerializer()),
+            new RegistryEntry<>(BulkSet.class, new BulkSetSerializer()),
+            new RegistryEntry<>(Tree.class, new TreeSerializer()),
+
+            // MapEntrySerializer is a TransformSerializer implementation
+            new RegistryEntry<>(Map.Entry.class, new MapEntrySerializer()),
+
+            new RegistryEntry<>(Character.class, new CharSerializer()),
+            new RegistryEntry<>(Duration.class, new DurationSerializer()),
+            new RegistryEntry<>(InetAddress.class, new InetAddressSerializer()),
+            new RegistryEntry<>(Inet4Address.class, new InetAddressSerializer<>()),
+            new RegistryEntry<>(Inet6Address.class, new InetAddressSerializer<>()),
+            new RegistryEntry<>(Instant.class, new InstantSerializer()),
+            new RegistryEntry<>(LocalDate.class, new LocalDateSerializer()),
+            new RegistryEntry<>(LocalTime.class, new LocalTimeSerializer()),
+            new RegistryEntry<>(LocalDateTime.class, new LocalDateTimeSerializer()),
+            new RegistryEntry<>(MonthDay.class, new MonthDaySerializer()),
+            new RegistryEntry<>(OffsetDateTime.class, new OffsetDateTimeSerializer()),
+            new RegistryEntry<>(OffsetTime.class, new OffsetTimeSerializer()),
+            new RegistryEntry<>(Period.class, new PeriodSerializer()),
+            new RegistryEntry<>(Year.class, SingleTypeSerializer.YearSerializer),
+            new RegistryEntry<>(YearMonth.class, new YearMonthSerializer()),
+            new RegistryEntry<>(ZonedDateTime.class, new ZonedDateTimeSerializer()),
+            new RegistryEntry<>(ZoneOffset.class, new ZoneOffsetSerializer()) };
+
+    public static final TypeSerializerRegistry INSTANCE = build().create();
+
     public static class Builder {
-        private final List<RegistryEntry> list = new LinkedList<>(Arrays.<RegistryEntry>asList(
-                new RegistryEntry<>(Integer.class, SingleTypeSerializer.IntSerializer),
-                new RegistryEntry<>(Long.class, SingleTypeSerializer.LongSerializer),
-                new RegistryEntry<>(String.class, new StringSerializer()),
-                new RegistryEntry<>(Date.class, DateSerializer.DateSerializer),
-                new RegistryEntry<>(Timestamp.class, DateSerializer.TimestampSerializer),
-                new RegistryEntry<>(Class.class, new ClassSerializer()),
-                new RegistryEntry<>(Double.class, SingleTypeSerializer.DoubleSerializer),
-                new RegistryEntry<>(Float.class, SingleTypeSerializer.FloatSerializer),
-                new RegistryEntry<>(List.class, new ListSerializer()),
-                new RegistryEntry<>(Map.class, new MapSerializer()),
-                new RegistryEntry<>(Set.class, new SetSerializer()),
-                new RegistryEntry<>(UUID.class, new UUIDSerializer()),
-                new RegistryEntry<>(Edge.class, new EdgeSerializer()),
-                new RegistryEntry<>(Path.class, new PathSerializer()),
-                new RegistryEntry<>(VertexProperty.class, new VertexPropertySerializer()), // needs to register before the less specific Property
-                new RegistryEntry<>(Property.class, new PropertySerializer()),
-                new RegistryEntry<>(Graph.class, new GraphSerializer()),
-                new RegistryEntry<>(Vertex.class, new VertexSerializer()),
-                new RegistryEntry<>(SackFunctions.Barrier.class, EnumSerializer.BarrierSerializer),
-                new RegistryEntry<>(Bytecode.Binding.class, new BindingSerializer()),
-                new RegistryEntry<>(Bytecode.class, new ByteCodeSerializer()),
-                new RegistryEntry<>(VertexProperty.Cardinality.class, EnumSerializer.CardinalitySerializer),
-                new RegistryEntry<>(Column.class, EnumSerializer.ColumnSerializer),
-                new RegistryEntry<>(Direction.class, EnumSerializer.DirectionSerializer),
-                new RegistryEntry<>(Operator.class, EnumSerializer.OperatorSerializer),
-                new RegistryEntry<>(Order.class, EnumSerializer.OrderSerializer),
-                new RegistryEntry<>(TraversalOptionParent.Pick.class, EnumSerializer.PickSerializer),
-                new RegistryEntry<>(Pop.class, EnumSerializer.PopSerializer),
-                new RegistryEntry<>(Lambda.class, new LambdaSerializer()),
-                new RegistryEntry<>(P.class, new PSerializer<>(DataType.P, P.class)),
-                new RegistryEntry<>(AndP.class, new PSerializer<>(DataType.P, AndP.class)),
-                new RegistryEntry<>(OrP.class, new PSerializer<>(DataType.P, OrP.class)),
-                new RegistryEntry<>(TextP.class, new PSerializer<>(DataType.TEXTP, TextP.class)),
-                new RegistryEntry<>(Scope.class, EnumSerializer.ScopeSerializer),
-                new RegistryEntry<>(T.class, EnumSerializer.TSerializer),
-                new RegistryEntry<>(Traverser.class, new TraverserSerializer()),
-                new RegistryEntry<>(BigDecimal.class, new BigDecimalSerializer()),
-                new RegistryEntry<>(BigInteger.class, new BigIntegerSerializer()),
-                new RegistryEntry<>(Byte.class, SingleTypeSerializer.ByteSerializer),
-                new RegistryEntry<>(ByteBuffer.class, new ByteBufferSerializer()),
-                new RegistryEntry<>(Short.class, SingleTypeSerializer.ShortSerializer),
-                new RegistryEntry<>(Boolean.class, SingleTypeSerializer.BooleanSerializer),
-                new RegistryEntry<>(TraversalStrategy.class, new TraversalStrategySerializer()),
-                new RegistryEntry<>(BulkSet.class, new BulkSetSerializer()),
-                new RegistryEntry<>(Tree.class, new TreeSerializer()),
-
-                new RegistryEntry<>(Map.Entry.class, new MapEntrySerializer()),
-
-                new RegistryEntry<>(Character.class, new CharSerializer()),
-                new RegistryEntry<>(Duration.class, new DurationSerializer()),
-                new RegistryEntry<>(InetAddress.class, new InetAddressSerializer()),
-                new RegistryEntry<>(Inet4Address.class, new InetAddressSerializer<>()),
-                new RegistryEntry<>(Inet6Address.class, new InetAddressSerializer<>()),
-                new RegistryEntry<>(Instant.class, new InstantSerializer()),
-                new RegistryEntry<>(LocalDate.class, new LocalDateSerializer()),
-                new RegistryEntry<>(LocalTime.class, new LocalTimeSerializer()),
-                new RegistryEntry<>(LocalDateTime.class, new LocalDateTimeSerializer()),
-                new RegistryEntry<>(MonthDay.class, new MonthDaySerializer()),
-                new RegistryEntry<>(OffsetDateTime.class, new OffsetDateTimeSerializer()),
-                new RegistryEntry<>(OffsetTime.class, new OffsetTimeSerializer()),
-                new RegistryEntry<>(Period.class, new PeriodSerializer()),
-                new RegistryEntry<>(Year.class, SingleTypeSerializer.YearSerializer),
-                new RegistryEntry<>(YearMonth.class, new YearMonthSerializer()),
-                new RegistryEntry<>(ZonedDateTime.class, new ZonedDateTimeSerializer()),
-                new RegistryEntry<>(ZoneOffset.class, new ZoneOffsetSerializer())));
+        private final List<RegistryEntry> list = new LinkedList<>();
 
         /**
          * Adds a serializer for a built-in type.
+         * <p>
+         *     Note that when providing a serializer for an Interface ({@link VertexProperty}, {@link Property},
+         *     {@link Vertex}, ...), the serializer resolution from the registry will be defined by the order that
+         *     it was provided. In this case, you should provide the type serializer starting from most specific to
+         *     less specific or to put it in other words, start from derived types and then parent types, e.g.,
+         *     {@link VertexProperty} before {@link Property}.
+         * </p>
          */
         public <DT> Builder add(final Class<DT> type, final TypeSerializer<DT> serializer) {
             if (serializer.getDataType() == DataType.CUSTOM) {
@@ -246,9 +258,16 @@ public class TypeSerializerRegistry {
     private final ConcurrentHashMap<Class<?>, TypeSerializer<?>> serializersByImplementation = new ConcurrentHashMap<>();
 
     private TypeSerializerRegistry(final Collection<RegistryEntry> entries) {
+        final Set<Class> providedTypes = new HashSet<>(entries.size());
+
+        // Include user-provided entries first
         for (RegistryEntry entry : entries) {
             put(entry);
+            providedTypes.add(entry.type);
         }
+
+        // Followed by the defaults
+        Arrays.stream(defaultEntries).filter(e -> !providedTypes.contains(e.type)).forEach(this::put);
     }
 
     private void put(final RegistryEntry entry) {
