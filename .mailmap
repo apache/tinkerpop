@@ -1,0 +1,7 @@
+# --------------------------------------------------------------------------
+# maps log commit email addresses to user names so that they properly report
+# for release notes with: git shortlog -sn
+# --------------------------------------------------------------------------
+Stephen Mallette                 <spmallette@users.noreply.github.com>
+Florian Hockmann                 <fh@florian-hockmann.de>
+Jason Plurad                     <pluradj@us.ibm.com>

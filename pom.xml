@@ -355,6 +355,7 @@ limitations under the License.
                 <configuration>
                     <excludeSubProjects>false</excludeSubProjects>
                     <excludes>
+                        <exclude>.mailmap</exclude>
                         <exclude>.travis.yml</exclude>
                         <exclude>.travis.*.sh</exclude>
                         <exclude>.dockerignore</exclude>
