@@ -23,33 +23,66 @@ import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryIo;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.TypeSerializerRegistry;
-import org.junit.Assert;
+import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
 import org.junit.Test;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
+
+import static org.apache.tinkerpop.gremlin.driver.ser.AbstractMessageSerializer.TOKEN_IO_REGISTRIES;
+import static org.junit.Assert.assertThat;
 
 public class SamplePersonSerializerTest {
 
-    private final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
-    private final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1(
-            TypeSerializerRegistry.build().addCustomType(SamplePerson.class, new SamplePersonSerializer()).create());
+    private static final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
 
     @Test
-    public void customSerializationWithPersonTest() throws SerializationException {
-        Date birthDate = Date.from(LocalDateTime.of(2010, 4, 29, 5, 30).toInstant(ZoneOffset.UTC));
-        SamplePerson person = new SamplePerson("Olivia", birthDate);
+    public void shouldCustomSerializationWithPerson() throws SerializationException {
+        final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1(
+                TypeSerializerRegistry.build().addCustomType(SamplePerson.class, new SamplePersonSerializer()).create());
+        assertPerson(serializer);
+    }
 
-        ByteBuf serialized = serializer.serializeResponseAsBinary(
+    @Test
+    public void shouldSerializePersonViaIoRegistry() throws SerializationException {
+        final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1();
+        final Map<String,Object> config = new HashMap<>();
+        config.put(TOKEN_IO_REGISTRIES, Collections.singletonList(CustomIoRegistry.class.getName()));
+        serializer.configure(config, Collections.emptyMap());
+
+        assertPerson(serializer);
+    }
+
+    private void assertPerson(final GraphBinaryMessageSerializerV1 serializer) throws SerializationException {
+        final Date birthDate = Date.from(LocalDateTime.of(2010, 4, 29, 5, 30).toInstant(ZoneOffset.UTC));
+        final SamplePerson person = new SamplePerson("Olivia", birthDate);
+
+        final ByteBuf serialized = serializer.serializeResponseAsBinary(
                 ResponseMessage.build(UUID.randomUUID()).result(person).create(), allocator);
 
-        ResponseMessage deserialized = serializer.deserializeResponse(serialized);
+        final ResponseMessage deserialized = serializer.deserializeResponse(serialized);
 
-        SamplePerson actual = (SamplePerson) deserialized.getResult().getData();
-        Assert.assertThat(actual, new ReflectionEquals(person));
+        final SamplePerson actual = (SamplePerson) deserialized.getResult().getData();
+        assertThat(actual, new ReflectionEquals(person));
+    }
+
+    public static class CustomIoRegistry extends AbstractIoRegistry {
+        private static final CustomIoRegistry ioreg = new CustomIoRegistry();
+
+        private CustomIoRegistry() {
+            register(GraphBinaryIo.class, SamplePerson.class, new SamplePersonSerializer());
+        }
+
+        public static CustomIoRegistry instance() {
+            return ioreg;
+        }
     }
 }

@@ -23,11 +23,20 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.CompositeByteBuf;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryIo;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.RequestMessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.ResponseMessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.TypeSerializerRegistry;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.CustomTypeSerializer;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
+import org.javatuples.Pair;
+
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -35,10 +44,10 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHBINARY_V1D0;
     private static final byte[] HEADER = MIME_TYPE.getBytes(UTF_8);
 
-    private final GraphBinaryReader reader;
-    private final GraphBinaryWriter writer;
-    private final RequestMessageSerializer requestSerializer;
-    private final ResponseMessageSerializer responseSerializer;
+    private GraphBinaryReader reader;
+    private GraphBinaryWriter writer;
+    private RequestMessageSerializer requestSerializer;
+    private ResponseMessageSerializer responseSerializer;
 
     /**
      * Creates a new instance of the message serializer using the default type serializers.
@@ -48,6 +57,41 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
     }
 
     public GraphBinaryMessageSerializerV1(final TypeSerializerRegistry registry) {
+        reader = new GraphBinaryReader(registry);
+        writer = new GraphBinaryWriter(registry);
+
+        requestSerializer = new RequestMessageSerializer();
+        responseSerializer = new ResponseMessageSerializer();
+    }
+
+    public GraphBinaryMessageSerializerV1(final TypeSerializerRegistry.Builder builder) {
+        this(builder.create());
+    }
+
+    @Override
+    public void configure(final Map<String, Object> config, final Map<String, Graph> graphs) {
+        final List<String> classNameList = getListStringFromConfig(TOKEN_IO_REGISTRIES, config);
+        final TypeSerializerRegistry.Builder builder = TypeSerializerRegistry.build();
+
+        classNameList.forEach(className -> {
+            try {
+                final Class<?> clazz = Class.forName(className);
+                try {
+                    final Method instanceMethod = tryInstanceMethod(clazz);
+                    final IoRegistry ioreg = (IoRegistry) instanceMethod.invoke(null);
+                    final List<Pair<Class, CustomTypeSerializer>> classSerializers = ioreg.find(GraphBinaryIo.class, CustomTypeSerializer.class);
+                    for (Pair<Class,CustomTypeSerializer> cs : classSerializers) {
+                        builder.addCustomType(cs.getValue0(), cs.getValue1());
+                    }
+                } catch (Exception methodex) {
+                    throw new IllegalStateException(String.format("Could not instantiate IoRegistry from an instance() method on %s", className), methodex);
+                }
+            } catch (Exception ex) {
+                throw new IllegalStateException(ex);
+            }
+        });
+
+        final TypeSerializerRegistry registry = builder.create();
         reader = new GraphBinaryReader(registry);
         writer = new GraphBinaryWriter(registry);
 
