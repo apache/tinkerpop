@@ -275,11 +275,12 @@ Please see the link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/t
 
 Remote systems like Gremlin Server and Remote Gremlin Providers respond to requests made in a particular serialization
 format and respond by serializing results to some format to be interpreted by the client. For JVM-based languages,
-there are two options for serialization: Gryo and GraphSON. When using Gryo serialization (the default serializer for
-the Java driver), it is important that the client and server have the same serializers configured or else one or
-the other will experience serialization exceptions and fail to always communicate. Discrepancy in serializer
-registration between client and server can happen fairly easily as graphs will automatically include serializers on
-the server-side, thus leaving the client to be configured manually. This can be done manually as follows:
+there are three options for serialization: Gryo, GraphSON and GraphBinary. When using Gryo serialization (the default
+serializer for the Java driver), it is important that the client and server have the same serializers configured or
+else one or the other will experience serialization exceptions and fail to always communicate. Discrepancy in
+serializer registration between client and server can happen fairly easily as graphs will automatically include
+serializers on the server-side, thus leaving the client to be configured manually. This can be done manually as
+follows:
 
 [source,java]
 ----
@@ -295,8 +296,9 @@ GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cli
 
 The `IoRegistry` tells the serializer what classes from the graph provider to auto-register during serialization.
 Gremlin Server roughly uses this same approach when it configures it's serializers, so using this same model will
-ensure compatibility when making requests. Obviously, it is possible to switch to GraphSON by building a
-`GraphSONMessageSerializerV3d0` in the same way and building that into the `Cluster` object.
+ensure compatibility when making requests. Obviously, it is possible to switch to GraphSON or GraphBinary by building
+the appropriate `MessageSerializer` (`GraphSONMessageSerializerV3d0` or `GraphBinaryMessageSerializerV1` respectively)
+in the same way and building that into the `Cluster` object.
 
 === The Lambda Solution
 
