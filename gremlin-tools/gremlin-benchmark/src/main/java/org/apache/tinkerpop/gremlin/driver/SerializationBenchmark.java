@@ -22,10 +22,10 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.apache.tinkerpop.benchmark.util.AbstractBenchmarkBase;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.openjdk.jmh.annotations.Benchmark;
 
 import java.nio.charset.StandardCharsets;
@@ -90,31 +90,32 @@ public class SerializationBenchmark extends AbstractBenchmarkBase {
 
     private static final UUID id = UUID.randomUUID();
 
-    private static final GraphBinaryReader binaryReader = new GraphBinaryReader();
-    private static final GraphSONMessageSerializerV3d0 graphsonReader = new GraphSONMessageSerializerV3d0();
+    private static final GraphBinaryMessageSerializerV1 binarySerializer = new GraphBinaryMessageSerializerV1();
+    private static final GraphSONMessageSerializerV3d0 graphsonSerializer = new GraphSONMessageSerializerV3d0();
 
     @Benchmark
     public RequestMessage testReadMessage1Binary() throws SerializationException {
         RequestMessageBinaryBuffer1.readerIndex(0);
-        return binaryReader.readValue(RequestMessageBinaryBuffer1, RequestMessage.class, false);
+
+        return binarySerializer.deserializeRequest(RequestMessageBinaryBuffer1);
     }
 
     @Benchmark
     public RequestMessage testReadMessage2Binary() throws SerializationException {
         RequestMessageBinaryBuffer2.readerIndex(0);
-        return binaryReader.readValue(RequestMessageBinaryBuffer2, RequestMessage.class, false);
+        return binarySerializer.deserializeRequest(RequestMessageBinaryBuffer2);
     }
 
     @Benchmark
     public RequestMessage testReadMessage1GraphSON() throws SerializationException {
         RequestMessageGraphSONBuffer1.readerIndex(0);
-        return graphsonReader.deserializeRequest(RequestMessageGraphSONBuffer1);
+        return graphsonSerializer.deserializeRequest(RequestMessageGraphSONBuffer1);
     }
 
     @Benchmark
     public RequestMessage testReadMessage2GraphSON() throws SerializationException {
         RequestMessageGraphSONBuffer2.readerIndex(0);
-        return graphsonReader.deserializeRequest(RequestMessageGraphSONBuffer2);
+        return graphsonSerializer.deserializeRequest(RequestMessageGraphSONBuffer2);
     }
 
     @Benchmark
