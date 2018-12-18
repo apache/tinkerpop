@@ -32,6 +32,7 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Added text predicates.
 * Added `BulkSet` as a GraphSON type with support in all language variants.
 * Added `ReferenceElementStrategy` to auto-detach elements to "reference" from a traversal.
+* Added initial release of the GraphBinary serialization format with Java support.
 * Allowed `ImportCustomizer` to accept fields.
 * Removed groovy-sql dependency.
 * Modified `Mutating` steps so that they are no longer marked as `final`.
