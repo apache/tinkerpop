@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.apache.tinkerpop.gremlin.driver.ser.AbstractMessageSerializer.TOKEN_IO_REGISTRIES;
+import static org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1.TOKEN_CUSTOM;
 import static org.junit.Assert.assertThat;
 
 public class SamplePersonSerializerTest {
@@ -56,6 +57,17 @@ public class SamplePersonSerializerTest {
         final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1();
         final Map<String,Object> config = new HashMap<>();
         config.put(TOKEN_IO_REGISTRIES, Collections.singletonList(CustomIoRegistry.class.getName()));
+        serializer.configure(config, Collections.emptyMap());
+
+        assertPerson(serializer);
+    }
+
+    @Test
+    public void shouldSerializePersonViaCustom() throws SerializationException {
+        final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1();
+        final Map<String,Object> config = new HashMap<>();
+        config.put(TOKEN_CUSTOM, Collections.singletonList(String.format("%s;%s",
+                SamplePerson.class.getCanonicalName(), SamplePersonSerializer.class.getCanonicalName())));
         serializer.configure(config, Collections.emptyMap());
 
         assertPerson(serializer);

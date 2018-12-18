@@ -32,7 +32,7 @@ import java.util.Date;
 /**
  * A sample custom type serializer.
  */
-class SamplePersonSerializer implements CustomTypeSerializer<SamplePerson> {
+public final class SamplePersonSerializer implements CustomTypeSerializer<SamplePerson> {
     private final byte[] typeInfoBuffer = new byte[] { 0, 0, 0, 0 };
 
     @Override

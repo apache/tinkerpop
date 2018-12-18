@@ -41,6 +41,7 @@ import java.util.Map;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
+    public static final String TOKEN_CUSTOM = "custom";
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHBINARY_V1D0;
     private static final byte[] HEADER = MIME_TYPE.getBytes(UTF_8);
 
@@ -91,6 +92,8 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
             }
         });
 
+        addCustomClasses(config, builder);
+
         final TypeSerializerRegistry registry = builder.create();
         reader = new GraphBinaryReader(registry);
         writer = new GraphBinaryWriter(registry);
@@ -126,5 +129,33 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
     @Override
     public String[] mimeTypesSupported() {
         return new String[] { MIME_TYPE };
+    }
+
+    private void addCustomClasses(final Map<String, Object> config, final TypeSerializerRegistry.Builder builder) {
+        final List<String> classNameList = getListStringFromConfig(TOKEN_CUSTOM, config);
+
+        classNameList.forEach(serializerDefinition -> {
+            final String className;
+            final String serializerName;
+            if (serializerDefinition.contains(";")) {
+                final String[] split = serializerDefinition.split(";");
+                if (split.length != 2)
+                    throw new IllegalStateException(String.format("Invalid format for serializer definition [%s] - expected <class>;<serializer-class>", serializerDefinition));
+
+                className = split[0];
+                serializerName = split[1];
+            } else {
+                throw new IllegalStateException(String.format("Invalid format for serializer definition [%s] - expected <class>;<serializer-class>", serializerDefinition));
+            }
+
+            try {
+                final Class clazz = Class.forName(className);
+                final Class serializerClazz = Class.forName(serializerName);
+                final CustomTypeSerializer serializer = (CustomTypeSerializer) serializerClazz.newInstance();
+                builder.addCustomType(clazz, serializer);
+            } catch (Exception ex) {
+                throw new IllegalStateException("CustomTypeSerializer could not be instantiated", ex);
+            }
+        });
     }
 }
