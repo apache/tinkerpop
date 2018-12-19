@@ -115,7 +115,7 @@ class Connection {
       return this._openPromise;
     }
 
-    this._ws = new WebSocket(url, {
+    this._ws = new WebSocket(this.url, {
       headers: this.options.headers,
       ca: this.options.ca,
       cert: this.options.cert,
