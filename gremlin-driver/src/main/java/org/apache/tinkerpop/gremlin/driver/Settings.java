@@ -48,6 +48,11 @@ final class Settings {
     public int port = 8182;
 
     /**
+     * The path to the Gremlin service which is defaulted to "/gremlin".
+     */
+    public String path = "/gremlin";
+
+    /**
      * The list of hosts that the driver will connect to.
      */
     public List<String> hosts = new ArrayList<>();
