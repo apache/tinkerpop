@@ -126,7 +126,7 @@ during this period.
 assigned (use common sense when reviewing these tickets before removing the Fix Version as it is possible the incorrect
 Resolution may have been assigned).
 .. Be sure that `gremlin-io-test` has been updated (from 3.3.0 on - this module was not available prior to the 3.3.x line)
-... This is typically a post-release task, but it's worthing checking to be sure in case the step was somehow overlooked.
+... This is typically a post-release task, but it's worth checking to be sure in case the step was somehow overlooked.
 ... Instructions for updating the module are described in the <<io,IO Documentation and Testing Section>>.
 . When all documentation changes are in place, use `bin/publish-docs.sh` to deploy a final `SNAPSHOT` representation
 of the docs and thus validate that there are no issues with the documentation generation process. Request review
