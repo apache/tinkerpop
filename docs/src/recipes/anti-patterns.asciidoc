@@ -128,7 +128,7 @@ and under certain circumstance they will not attempt to rewrite a traversal. For
 enabled (e.g. by using certain steps, such as `path()`, `simplePath()`, `otherV()`, etc.), then the assumption is that all steps are
 required in order to produce the desired path.
 
-An often seen anti-pattern is the one that explicitely traversers to an edge and then to a vertex without using any filters.
+An often seen anti-pattern is the one that explicitly traverses to an edge and then to a vertex without using any filters.
 
 [gremlin-groovy,modern]
 ----
