@@ -105,6 +105,7 @@ Changes to existing types require new revision.
 - `0x29`: TraversalStrategy
 - `0x2a`: BulkSet
 - `0x2b`: Tree
+- `0x2c`: Metrics
 - `0xfe`: Unspecified null object
 - `0x00`: Custom
 
@@ -542,6 +543,19 @@ Where:
 - `{length}` is an `Int` describing the length of the items.
 - `{item_0}...{item_n}` are the items of the `Tree`. `{item_i}` is composed of `{key}` is a fully-qualified type value
 followed by a `{Tree}`.
+
+==== Metrics
+
+Format: `{id}{name}{duration}{counts}{annotations}{nested_metrics}`
+
+Where:
+
+- `{id}` is a `String` representing the identifier.
+- `{name}` is a `String` representing the name.
+- `{duration}` is a `Long` describing the duration in nanoseconds.
+- `{counts}` is a `Map` composed by `String` keys and `Long` values.
+- `{annotations}` is a `Map` composed by `String` keys and a value of any type.
+- `{nested_metrics}` is a `List` composed by `Metrics` items.
 
 ==== Custom
 

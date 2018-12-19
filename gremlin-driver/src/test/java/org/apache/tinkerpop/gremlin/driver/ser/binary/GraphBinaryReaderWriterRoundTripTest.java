@@ -36,6 +36,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -52,6 +54,7 @@ import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -73,10 +76,12 @@ import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 @RunWith(Parameterized.class)
 public class GraphBinaryReaderWriterRoundTripTest {
@@ -120,6 +125,12 @@ public class GraphBinaryReaderWriterRoundTripTest {
         subSubTree.put(new ReferenceVertex(2, "animal"), new Tree<>());
         subTree.put(new ReferenceVertex(100, "animal"), subSubTree);
         tree.put(new ReferenceVertex(1000, "animal"), subTree);
+
+        final MutableMetrics metrics = new MutableMetrics("id1", "name1");
+        metrics.setDuration(123, TimeUnit.MICROSECONDS);
+        metrics.setCount("c1", 20);
+        metrics.setAnnotation("a", "b");
+        metrics.addNested(new MutableMetrics("idNested", "nameNested"));
 
         return Arrays.asList(
                 new Object[] {"String", "ABC", null},
@@ -217,6 +228,14 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 }},
                 new Object[] {"BulkSet", bulkSet, null},
                 new Object[] {"Tree", tree, null},
+                new Object[] {"EmptyMetrics", new MutableMetrics("idEmpty", "nameEmpty"), (Consumer<Metrics>) m -> {
+                    assertThat(m, new ReflectionEquals(new MutableMetrics("idEmpty", "nameEmpty")));
+                }},
+                new Object[] {"Metrics", metrics, (Consumer<Metrics>) m -> {
+                    assertThat(m, new ReflectionEquals(metrics, "nested", "counts"));
+                    assertEquals(new ArrayList(metrics.getCounts().values()), new ArrayList(m.getCounts().values()));
+                    assertThat(m.getNested(), new ReflectionEquals(metrics.getNested()));
+                }},
 
                 // collections
                 new Object[] {"ListSingle", listSingle, null},
