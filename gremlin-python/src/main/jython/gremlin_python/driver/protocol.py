@@ -72,6 +72,10 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
         self._transport.write(message)
 
     def data_received(self, message, results_dict):
+        # if Gremlin Server cuts off then we get a None for the message
+        if message is None:
+            raise GremlinServerError("Server disconnected - please try to reconnect")
+
         message = self._message_serializer.deserialize_message(json.loads(message.decode('utf-8')))
         request_id = message['requestId']
         result_set = results_dict[request_id]

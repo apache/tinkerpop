@@ -118,6 +118,7 @@ This release also includes changes from <<release-3-2-11, 3.2.11>>.
 * Deprecated `TraversalSource#GREMLIN_REMOTE` and `TraversalSource#GREMLIN_REMOTE_CONNECTION_CLASS` moving them to `RemoteConnection`.
 * Fixed the setting of the default label for a `ReferenceVertex` when the original vertex was of type `ComputerAdjacentVertex`.
 * Changed Java driver to expect a generic `RemoteTraverser` object rather than the specific `DefaultRemoteTraverser`.
+* Better handled server disconnect condition for the `gremlin-python` driver by throwing a clear exception.
 * Display the remote stack trace in the Gremlin Console when scripts sent to the server fail.
 * Added `AnonymousTraversalSource` which provides a more unified means of constructing a `TraversalSource`.
 * Added `DriverRemoteConnection.using(Client)` to provide users better control over the number of connections being created.
