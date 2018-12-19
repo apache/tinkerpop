@@ -799,6 +799,7 @@ The following table describes the various configuration options for the Gremlin 
 |jaasEntry |Sets the `AuthProperties.Property.JAAS_ENTRY` properties for authentication to Gremlin Server. |_none_
 |nioPoolSize |Size of the pool for handling request/response operations. |available processors
 |password |The password to submit on requests that require authentication. |_none_
+|path |The URL path to the Gremlin Server. |_/gremlin_
 |port |The port of the Gremlin Server to connect to. The same port will be applied for all hosts. |8192
 |protocol |Sets the `AuthProperties.Property.PROTOCOL` properties for authentication to Gremlin Server. |_none_
 |serializer.className |The fully qualified class name of the `MessageSerializer` that will be used to communicate with the server. Note that the serializer configured on the client should be supported by the server configuration. |_none_
