@@ -125,7 +125,7 @@ class Connection {
 
     this._ws.on('message', (data) => this._handleMessage(data));
     this._ws.on('error', (err) => this._handleError(err));
-    this._ws.on('close', (e) => this._handleClose(e));
+    this._ws.on('close', (code) => this._handleClose(code));
 
     this._ws.on('pong', () => {
       if (this._pongTimeout) {
@@ -217,10 +217,10 @@ class Connection {
     }
   }
 
-  _handleClose(e) {
+  _handleClose(code) {
     this._cleanupWebsocket();
 
-    switch (e.code) {
+    switch (code) {
       case 1000: // close normally
         if (this._closeCallback) {
           this._closeCallback();
@@ -360,6 +360,9 @@ class Connection {
    * @return {Promise}
    */
   close() {
+    if (this.isOpen === false) {
+      return Promise.resolve();
+    }
     if (!this._closePromise) {
       this._closePromise = new Promise(resolve => {
         this._closeCallback = resolve;
