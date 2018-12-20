@@ -60,11 +60,11 @@ class Connection {
    * @param {GraphSONWriter} [options.writer] The writer to use.
    * @param {Authenticator} [options.authenticator] The authentication handler to use.
    * @param {Object} [options.headers] An associative array containing the additional header key/values for the initial request.
-   * @param {Boolean} [options.pingEnabled] Setup ping interval
-   * @param {Number} [options.pingInterval] Ping request interval if ping enabled
-   * @param {Number} [options.pongTimeout] Timeout of pong response after sending a ping
-   * @param {Boolean} [options.autoReconnect] Auto reconnect on timeout
-   * @param {Boolean} [options.connectOnStartup] Open websocket on startup
+   * @param {Boolean} [options.pingEnabled] Setup ping interval. Defaults to: true.
+   * @param {Number} [options.pingInterval] Ping request interval in ms if ping enabled. Defaults to: 60000.
+   * @param {Number} [options.pongTimeout] Timeout of pong response in ms after sending a ping. Defaults to: 30000.
+   * @param {Boolean} [options.autoReconnect] Enable auto reconnect on timeout. Defaults to: true.
+   * @param {Boolean} [options.connectOnStartup] Open websocket on startup. Defaults to: true.
    * @constructor
    */
   constructor(url, options) {
@@ -96,8 +96,8 @@ class Connection {
     this._timeoutAutoReconnectionInterval = 500;
 
     this._pingEnabled = this.options.pingEnabled === false ? false : true;
-    this._pingIntervalDelay = this.options.pingInterval && this.options.pingInterval > 0 ? this.options.pingInterval : pingIntervalDelay;
-    this._pongTimeoutDelay = this.options.pongTimeout && this.options.pongTimeout > 0 ? this.options.pongTimeout : pongTimeoutDelay;
+    this._pingIntervalDelay = this.options.pingInterval || pingIntervalDelay;
+    this._pongTimeoutDelay = this.options.pongTimeout || pongTimeoutDelay;
 
     if (this.options.connectOnStartup !== false) {
       this.open();
@@ -184,9 +184,6 @@ class Connection {
   }
 
   _pingHeartbeat() {
-    if (this._pingEnabled === false) {
-      return ;
-    }
 
     if (this._pingInterval) {
       clearInterval(this._pingInterval);
