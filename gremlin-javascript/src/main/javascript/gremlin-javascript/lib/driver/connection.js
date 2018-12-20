@@ -144,7 +144,9 @@ class Connection {
       this._ws.on('open', () => {
         debug(`websocket open event received`);
         this.isOpen = true;
-        this._pingHeartbeat();
+        if (this._pingEnabled) {
+          this._pingHeartbeat();
+        }
         resolve();
       });
     });
