@@ -308,6 +308,7 @@ class Connection {
 
     this._ws.removeAllListeners();
     this._openPromise = null;
+    this._closePromise = null;
     this.isOpen = false;
   }
 
