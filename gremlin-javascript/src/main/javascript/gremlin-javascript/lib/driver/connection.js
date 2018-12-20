@@ -22,6 +22,7 @@
  */
 'use strict';
 
+const EventEmitter = require('events');
 const WebSocket = require('ws');
 const util = require('util');
 const utils = require('../utils');
@@ -43,7 +44,7 @@ const pongTimeoutDelay = 30 * 1000;
 /**
  * Represents a single connection to a Gremlin Server.
  */
-class Connection {
+class Connection extends EventEmitter {
 
   /**
    * Creates a new instance of {@link Connection}.
@@ -115,6 +116,8 @@ class Connection {
       return this._openPromise;
     }
 
+    this.emit('log', `ws open`);
+
     this._ws = new WebSocket(this.url, {
       headers: this.options.headers,
       ca: this.options.ca,
@@ -125,15 +128,17 @@ class Connection {
 
     this._ws.on('message', (data) => this._handleMessage(data));
     this._ws.on('error', (err) => this._handleError(err));
-    this._ws.on('close', (code) => this._handleClose(code));
+    this._ws.on('close', (code, message) => this._handleClose(code, message));
 
     this._ws.on('pong', () => {
+      this.emit('log', 'ws pong received');
       if (this._pongTimeout) {
         clearTimeout(this._pongTimeout);
         this._pongTimeout = null;
       }
     });
     this._ws.on('ping', () => {
+      this.emit('log', 'ws ping received');
       this._ws.pong();
     });
 
@@ -207,6 +212,7 @@ class Connection {
   }
 
   _handleError(err) {
+    this.emit('log', `ws error ${err}`);
     this._cleanupWebsocket();
     switch (err.code) {
       case 'ECONNREFUSED':
@@ -217,7 +223,9 @@ class Connection {
     }
   }
 
-  _handleClose(code) {
+  _handleClose(code, message) {
+    this.emit('log', `ws close code=${code} message=${message}`);
+
     this._cleanupWebsocket();
 
     switch (code) {
