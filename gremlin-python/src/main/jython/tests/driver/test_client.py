@@ -49,6 +49,19 @@ def test_client_eval_traversal(client):
     assert len(client.submit('g.V()').all().result()) == 6
 
 
+def test_client_connection_pool_after_error(client):
+    # Overwrite fixture with pool_size=1 client
+    client = Client('ws://localhost:45940/gremlin', 'gmodern', pool_size=1)
+
+    try:
+        # should fire an exception
+        client.submit('1/0').all().result()
+        assert False
+    except Exception:
+        # expecting the pool size to be 1 again after query returned
+        assert client.available_pool_size == 1
+
+
 def test_client_bytecode(client):
     g = Graph().traversal()
     t = g.V()
