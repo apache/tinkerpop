@@ -478,9 +478,9 @@ g.V(v1).addE('knows').to(v2).property('weight',0.75).iterate()
 ----
 [source,csharp]
 ----
-Vertex v1 = g.addV("person").property("name","marko").Next();
-Vertex v2 = g.addV("person").property("name","stephen").Next();
-g.V(v1).addE("knows").to(v2).property("weight",0.75).Iterate();
+Vertex v1 = g.AddV("person").Property("name","marko").Next();
+Vertex v2 = g.AddV("person").Property("name","stephen").Next();
+g.V(v1).AddE("knows").To(v2).Property("weight",0.75).Iterate();
 ----
 [source,java]
 ----
