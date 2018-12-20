@@ -14,6 +14,7 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
+    "debug": "^4.1.0",
     "ws": "^6.1.2"
   },
   "devDependencies": {

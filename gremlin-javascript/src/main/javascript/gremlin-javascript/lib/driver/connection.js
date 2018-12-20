@@ -27,6 +27,7 @@ const util = require('util');
 const utils = require('../utils');
 const serializer = require('../structure/io/graph-serializer');
 const ResultSet = require('./result-set');
+const debug = require('debug')('gremlin:connection');
 
 const responseStatusCode = {
   success: 200,
@@ -128,15 +129,20 @@ class Connection {
     this._ws.on('close', (e) => this._handleClose(e));
 
     this._ws.on('pong', () => {
+      debug(`websocket pong event received`);
       if (this._pongTimeout) {
         clearTimeout(this._pongTimeout);
         this._pongTimeout = null;
       }
     });
-    this._ws.on('ping', () => this._ws.pong());
+    this._ws.on('ping', () => {
+      debug(`websocket ping event received`);
+      this._ws.pong();
+    });
 
     return this._openPromise = new Promise((resolve, reject) => {
       this._ws.on('open', () => {
+        debug(`websocket open event received`);
         this.isOpen = true;
         this._pingHeartbeat();
         resolve();
@@ -206,6 +212,7 @@ class Connection {
   }
 
   _handleError(err) {
+    debug(`_handleError ${err}`);
     this._cleanupWebsocket();
     switch (err.code) {
       case 'ECONNREFUSED':
@@ -217,6 +224,7 @@ class Connection {
   }
 
   _handleClose(e) {
+    debug(`_handleClose ${e}`);
     this._cleanupWebsocket();
 
     switch (e.code) {
@@ -314,6 +322,7 @@ class Connection {
    * reconnect websocket
    */
   _reconnect() {
+    debug(`_reconnect ${e}`);
     setTimeout(() => {
       this.open();
     }, this._timeoutAutoReconnectionInterval)
