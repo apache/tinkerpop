@@ -68,6 +68,8 @@ class Connection extends EventEmitter {
    * @constructor
    */
   constructor(url, options) {
+    super();
+
     this.url = url;
     this.options = options || {};
 
