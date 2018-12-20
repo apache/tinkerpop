@@ -178,14 +178,13 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         {
             // smoke test to validate serialization of OptionsStrategy. no way to really validate this from an integration
             // test perspective because there's no way to access the internals of the strategy via bytecode
-            var graph = new Graph();
             var connection = _connectionFactory.CreateRemoteConnection();
             var options = new Dictionary<string,object>
             {
                 {"x", "test"},
                 {"y", true}
             };
-            var g = graph.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
 
             var b = new Bindings();
             var countWithStrategy = g.WithStrategies(new OptionsStrategy(options)).V().Count().Next();

@@ -29,9 +29,22 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.4.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Gremlin.NET Driver Improvements
+
+The Gremlin.NET driver now uses request pipelining. This allows connections to be reused for different requests in parallel which should lead to better utilization of connections.
+The `ConnectionPool` now also has a fixed size whereas it could previously create an unlimited number of connections.
+Each `Connection` can handle up to `MaxInProcessPerConnection` requests in parallel.
+If this limit is reached for all connections, then a `NoConnectionAvailableException` is thrown which makes this a breaking change.
+
+These settings can be set as properties on the `ConnectionPoolSettings` instance that can be passed to the `GremlinClient`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1774[TINKERPOP-1774],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1775[TINKERPOP-1775],
+link:http://tinkerpop.apache.org/docs/3.4.0/reference/#_connection_pool[Reference Documentation]
+
 ==== Indexing of collections
 
-TinkerPOp 3.4.0 adds a new `index()`-step, which allows users to transform simple collections into index collections or maps.
+TinkerPop 3.4.0 adds a new `index()`-step, which allows users to transform simple collections into index collections or maps.
 
 ```
 gremlin> g.V().hasLabel("software").values("name").fold().
