@@ -63,7 +63,6 @@ class Connection extends EventEmitter {
    * @param {Boolean} [options.pingEnabled] Setup ping interval. Defaults to: true.
    * @param {Number} [options.pingInterval] Ping request interval in ms if ping enabled. Defaults to: 60000.
    * @param {Number} [options.pongTimeout] Timeout of pong response in ms after sending a ping. Defaults to: 30000.
-   * @param {Boolean} [options.autoReconnect] Enable auto reconnect on timeout. Defaults to: true.
    * @param {Boolean} [options.connectOnStartup] Open websocket on startup. Defaults to: true.
    * @constructor
    */
@@ -94,8 +93,6 @@ class Connection extends EventEmitter {
     this.isOpen = false;
     this.traversalSource = options.traversalSource || 'g';
     this._authenticator = options.authenticator;
-
-    this._timeoutAutoReconnectionInterval = 500;
 
     this._pingEnabled = this.options.pingEnabled === false ? false : true;
     this._pingIntervalDelay = this.options.pingInterval || pingIntervalDelay;
@@ -216,32 +213,16 @@ class Connection extends EventEmitter {
   _handleError(err) {
     this.emit('log', `ws error ${err}`);
     this._cleanupWebsocket();
-    switch (err.code) {
-      case 'ECONNREFUSED':
-        this._reconnect(err);
-        break;
-      default:
-        throw err;
-    }
+    this.emit('error', err);
   }
 
   _handleClose(code, message) {
     this.emit('log', `ws close code=${code} message=${message}`);
-
     this._cleanupWebsocket();
-
-    switch (code) {
-      case 1000: // close normally
-        if (this._closeCallback) {
-          this._closeCallback();
-        }
-        break;
-      default: // not close normally, reconnect
-        if (this.options.autoReconnect !== false) {
-          this._reconnect(e);
-        }
-        break;
+    if (this._closeCallback) {
+      this._closeCallback();
     }
+    this.emit('close', code, message);
   }
 
   _handleMessage(data) {
@@ -320,15 +301,6 @@ class Connection extends EventEmitter {
     this._openPromise = null;
     this._closePromise = null;
     this.isOpen = false;
-  }
-
-  /**
-   * reconnect websocket
-   */
-  _reconnect() {
-    setTimeout(() => {
-      this.open();
-    }, this._timeoutAutoReconnectionInterval)
   }
 
   /**
