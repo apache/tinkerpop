@@ -341,7 +341,14 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
     public void g_V_repeatXout_repeatXoutX_timesX1XX_timesX1X_limitX1X_path_by_name() {
         // This traversal gets optimised by the RepeatUnrollStrategy
         final Traversal<Vertex, Path> traversal_unrolled = get_g_V_repeatXout_repeatXoutX_timesX1XX_timesX1X_limitX1X_path_by_name();
-        final Path path_original = traversal_unrolled.next();
+        final Path pathOriginal = traversal_unrolled.next();
+        assertFalse(traversal_unrolled.hasNext());
+        assertEquals(3, pathOriginal.size());
+        assertEquals("marko", pathOriginal.get(0));
+        assertEquals("josh", pathOriginal.get(1));
+
+        // could be lop or ripple depending on what the graph chooses to traverse first
+        assertThat(pathOriginal.get(2), anyOf(equalTo("ripple"), equalTo("lop")));
 
         g = g.withoutStrategies(RepeatUnrollStrategy.class);
 
@@ -355,8 +362,6 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
         // could be lop or ripple depending on what the graph chooses to traverse first
         assertThat(path.get(2), anyOf(equalTo("ripple"), equalTo("lop")));
-
-        assertEquals(path, path_original);
     }
 
     @Test
