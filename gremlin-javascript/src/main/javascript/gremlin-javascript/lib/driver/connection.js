@@ -322,7 +322,7 @@ class Connection {
    * reconnect websocket
    */
   _reconnect() {
-    debug(`_reconnect ${e}`);
+    debug(`_reconnect`);
     setTimeout(() => {
       this.open();
     }, this._timeoutAutoReconnectionInterval)
