@@ -285,7 +285,7 @@ class GraphSONSerializersV3d0 {
         }
     }
 
-    final static class TraversalExplanationJacksonSerializer extends StdSerializer<TraversalExplanation> {
+    final static class TraversalExplanationJacksonSerializer extends StdScalarSerializer<TraversalExplanation> {
         public TraversalExplanationJacksonSerializer() {
             super(TraversalExplanation.class);
         }

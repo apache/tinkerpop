@@ -141,6 +141,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(VertexProperty.class, "VertexProperty");
                     put(Metrics.class, "Metrics");
                     put(TraversalMetrics.class, "TraversalMetrics");
+                    put(TraversalExplanation.class, "TraversalExplanation");
                     put(Traverser.class, "Traverser");
                     put(Tree.class, "Tree");
                     put(BulkSet.class, "BulkSet");
@@ -362,6 +363,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(VertexProperty.class, "VertexProperty");
                     put(Metrics.class, "Metrics");
                     put(TraversalMetrics.class, "TraversalMetrics");
+                    put(TraversalExplanation.class, "TraversalExplanation");
                     put(Traverser.class, "Traverser");
                     put(Tree.class, "Tree");
                     put(Bytecode.class, "Bytecode");
