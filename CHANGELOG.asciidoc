@@ -43,6 +43,7 @@ This release also includes changes from <<release-3-2-11, 3.2.11>>.
 * Added `AnonymousTraversalSource` which provides a more unified means of constructing a `TraversalSource`.
 * Added `DriverRemoteConnection.using(Client)` to provide users better control over the number of connections being created.
 * Changed behavior of GraphSON deserializer in gremlin-python such that `g:Set` returns a Python `Set`.
+* Fixed bug that prevented `TraversalExplanation` from serializing properly with GraphSON.
 * Changed behavior of `iterate()` in Python, Javascript and .NET to send `none()` thus avoiding unnecessary results being returned.
 * Provided for a configurable class map cache in the `GremlinGroovyScriptEngine` and exposed that in Gremlin Server.
 * `GraphProvider` instances can be annotated with `OptOut` configurations that will be applied in addition to the `OptOut` instances on a `Graph`.
