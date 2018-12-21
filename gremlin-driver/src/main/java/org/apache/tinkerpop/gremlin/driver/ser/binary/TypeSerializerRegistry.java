@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -135,8 +136,9 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(Tree.class, new TreeSerializer()),
             new RegistryEntry<>(Metrics.class, new MetricsSerializer()),
 
-            // MapEntrySerializer is a TransformSerializer implementation
+            // TransformSerializer implementations
             new RegistryEntry<>(Map.Entry.class, new MapEntrySerializer()),
+            new RegistryEntry<>(TraversalExplanation.class, new TraversalExplanationSerializer()),
 
             new RegistryEntry<>(Character.class, new CharSerializer()),
             new RegistryEntry<>(Duration.class, new DurationSerializer()),
