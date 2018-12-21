@@ -97,7 +97,7 @@ public class DriverRemoteConnection implements RemoteConnection {
     }
 
     private DriverRemoteConnection(final Client client, final String remoteTraversalSourceName) {
-        this.client = client;
+        this.client = client.alias(remoteTraversalSourceName);
         this.remoteTraversalSourceName = remoteTraversalSourceName;
         this.tryCloseCluster = false;
         tryCloseClient = false;
