@@ -163,31 +163,30 @@ namespace Gremlin.Net.Driver
         {
             if (Interlocked.CompareExchange(ref _writeInProgress, 1, 0) != 0)
                 return;
-            SendNextMessageFromQueue();
+            SendMessagesFromQueueAsync().Forget();
+        }
+
+        private async Task SendMessagesFromQueueAsync()
+        {
+            while (_writeQueue.TryDequeue(out var msg))
+            {
+                try
+                {
+                    await SendMessageAsync(msg).ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    await CloseConnectionBecauseOfFailureAsync(e).ConfigureAwait(false);
+                    break;
+                }
+            }
             Interlocked.CompareExchange(ref _writeInProgress, 0, 1);
         }
 
-        private void SendNextMessageFromQueue()
+        private async Task CloseConnectionBecauseOfFailureAsync(Exception exception)
         {
-            if (_writeQueue.TryDequeue(out var msg))
-                SendMessageAsync(msg).ContinueWith(
-                    t =>
-                    {
-                        if (t.IsFaulted)
-                        {
-                            CloseConnectionBecauseOfFailure(t.Exception);
-                            return;
-                        }
-
-                        SendNextMessageFromQueue();
-                    }, TaskContinuationOptions.ExecuteSynchronously);
-        }
-
-        private void CloseConnectionBecauseOfFailure(AggregateException exception)
-        {
-            exception.Handle(_ => true);
             EmptyWriteQueue();
-            CloseAsync().WaitUnwrap();
+            await CloseAsync().ConfigureAwait(false);
             NotifyAboutConnectionFailure(exception);
         }
 
