@@ -14,7 +14,7 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "ws": "^3.0.0"
+    "ws": "^6.1.2"
   },
   "devDependencies": {
     "mocha": "~4.0.1",
