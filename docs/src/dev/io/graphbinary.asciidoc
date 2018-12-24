@@ -444,7 +444,7 @@ Format: `{bulk}{value}`
 
 Where:
 
-- `{name}` is an `Int`.
+- `{bulk}` is an `Int`.
 - `{value}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
 
 ==== BigDecimal
@@ -517,8 +517,8 @@ Format: `{strategy_class}{configuration}`
 
 Where:
 
-- `{strategy_class} is a `Class` that is of type `TraversalStrategy`.
-- `{configuration} is a `Map` of data used to configure the strategy that will be given to a `TraversalStrategy` `create(Configuration)` method.
+- `{strategy_class}` is a `Class` that is of type `TraversalStrategy`.
+- `{configuration}` is a `Map` of data used to configure the strategy that will be given to a `TraversalStrategy` `create(Configuration)` method.
 
 ==== BulkSet
 
@@ -527,7 +527,7 @@ Format: `{length}{item_0}...{item_n}`
 Where:
 
 - `{length}` is an `Int` describing the length of the `BulkSet`.
-- `{item_0}...{item_n}` are the items of the `BulkSet`. `{item_i}` is sequence of a fully qualified typed value composed of
+- `{item_0}...{item_n}` are the items of the `BulkSet`. `{item_i}` is a sequence of a fully qualified typed value composed of
 `{type_code}{type_info}{value_flag}{value}` followed by the "bulk" which is a `Long` value.
 
 If the implementing language does not have a `BulkSet` object to deserialize into, this format can be coerced to a
@@ -540,8 +540,8 @@ Format: `{length}{item_0}...{item_n}`
 
 Where:
 
-- `{length}` is an `Int` describing the length of the items.
-- `{item_0}...{item_n}` are the items of the `Tree`. `{item_i}` is composed of `{key}` is a fully-qualified type value
+- `{length}` is an `Int` describing the amount of items.
+- `{item_0}...{item_n}` are the items of the `Tree`. `{item_i}` is composed of a `{key}` which is a fully-qualified typed value
 followed by a `{Tree}`.
 
 ==== Metrics
@@ -634,7 +634,7 @@ Format: `{year}{month}{day}`
 Where:
 
 - `{year}` is an `Int` from -999,999,999 to 999,999,999.
-- `{month}` is a `Byte` to represent, from 1 (January) to 12 (December)
+- `{month}` is a `Byte` to represent the month, from 1 (January) to 12 (December)
 - `{day}` is a `Byte` from 1 to 31.
 
 ==== LocalDateTime
@@ -732,7 +732,7 @@ Format: An `Int` representing total zone offset in seconds.
 
 === Request and Response Messages
 
-Request and response messages are special containers types used to represent messages from client to the server and the
+Request and response messages are special container types used to represent messages from client to the server and the
 other way around. These messages are independent from the transport layer.
 
 ==== Request Message
