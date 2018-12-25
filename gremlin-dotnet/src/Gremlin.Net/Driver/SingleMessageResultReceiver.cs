@@ -77,7 +77,7 @@ namespace Gremlin.Net.Driver
                 new ResultSet<T>(
                     _isAggregatingSideEffects ? new List<T> {(T) _aggregator.GetAggregatedResult()} : _result,
                     statusAttributes);
-            _tcs.SetResult(resultSet);
+            _tcs.TrySetResult(resultSet);
         }
 
         public void HandleFailure(Exception objException)

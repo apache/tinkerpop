@@ -74,7 +74,7 @@ namespace Gremlin.Net.Driver
         public async Task ConnectAsync()
         {
             await _webSocketConnection.ConnectAsync(_uri).ConfigureAwait(false);
-            ReceiveNext();
+            BeginReceiving();
         }
 
         public int NrRequestsInFlight => _callbackByRequestId.Count;
@@ -90,17 +90,28 @@ namespace Gremlin.Net.Driver
             return receiver.Result;
         }
 
-        private void ReceiveNext()
+        private void BeginReceiving()
         {
             var state = Volatile.Read(ref _connectionState);
             if (state == Closed) return;
-            _webSocketConnection.ReceiveMessageAsync().ContinueWith(
-                received =>
+            ReceiveMessagesAsync().Forget();
+        }
+
+        private async Task ReceiveMessagesAsync()
+        {
+            while (true)
+            {
+                try
                 {
-                    Parse(received.Result);
-                    ReceiveNext();
-                },
-                TaskContinuationOptions.ExecuteSynchronously);
+                    var received = await _webSocketConnection.ReceiveMessageAsync().ConfigureAwait(false);
+                    Parse(received);
+                }
+                catch (Exception e)
+                {
+                    await CloseConnectionBecauseOfFailureAsync(e).ConfigureAwait(false);
+                    break;
+                }
+            }
         }
 
         private void Parse(byte[] received)
