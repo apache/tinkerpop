@@ -390,10 +390,9 @@ def g = traversal().withRemote('conf/remote-graph.properties')
 ----
 [source,csharp]
 ----
-using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/IntroTests.cs[tags=traversalSourceUsing]
 
-var g = Traversal().WithRemote(
-              new DriverRemoteConnection(new GremlinClient(new GremlinServer("localhost", 8182))));
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/IntroTests.cs[tags=traversalSourceCreation]
 ----
 [source,javascript]
 ----
@@ -478,9 +477,7 @@ g.V(v1).addE('knows').to(v2).property('weight',0.75).iterate()
 ----
 [source,csharp]
 ----
-Vertex v1 = g.AddV("person").Property("name","marko").Next();
-Vertex v2 = g.AddV("person").Property("name","stephen").Next();
-g.V(v1).AddE("knows").To(v2).Property("weight",0.75).Iterate();
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/IntroTests.cs[tags=basicGremlinAdds]
 ----
 [source,java]
 ----
@@ -519,8 +516,7 @@ peopleMarkoKnows = g.V().has('person','name','marko').out('knows').toList()
 ----
 [source,csharp]
 ----
-Vertex marko = g.V().has("person","name","marko").Next()
-List<Vertex> peopleMarkoKnows = g.V().has("person","name","marko").out("knows").ToList()
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/IntroTests.cs[tags=basicGremlinMarkoKnows]
 ----
 [source,java]
 ----

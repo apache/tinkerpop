@@ -532,52 +532,9 @@ any .NET language and registering them with the `GremlinClient`.
 
 [source,csharp]
 ----
-internal class MyType
-{
-    public static string GraphsonPrefix = "providerx";
-    public static string GraphsonBaseType = "MyType";
-    public static string GraphsonType = GraphSONUtil.FormatTypeName(GraphsonPrefix, GraphsonBaseType);
+include::../../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Dev/Provider/IndexTests.cs[tags=myTypeSerialization]
 
-    public MyType(int x, int y)
-    {
-        X = x;
-        Y = y;
-    }
-
-    public int X { get; }
-    public int Y { get; }
-}
-
-internal class MyClassWriter : IGraphSONSerializer
-{
-    public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
-    {
-        MyType myType = objectData;
-        var valueDict = new Dictionary<string, object>
-        {
-            {"x", myType.X},
-            {"y", myType.Y}
-        };
-        return GraphSONUtil.ToTypedValue(nameof(TestClass), valueDict, MyType.GraphsonPrefix);
-    }
-}
-
-internal class MyTypeReader : IGraphSONDeserializer
-{
-    public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
-    {
-        var x = reader.ToObject(graphsonObject["x"]);
-        var y = reader.ToObject(graphsonObject["y"]);
-        return new MyType(x, y);
-    }
-}
-
-var graphsonReader = new GraphSON3Reader(
-    new Dictionary<string, IGraphSONDeserializer> {{MyType.GraphsonType, new MyTypeReader()}});
-var graphsonWriter = new GraphSON3Writer(
-    new Dictionary<Type, IGraphSONSerializer> {{typeof(MyType), new MyClassWriter()}});
-
-var gremlinClient = new GremlinClient(new GremlinServer("localhost", 8182), graphsonReader, graphsonWriter);
+include::../../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Dev/Provider/IndexTests.cs[tags=supportingGremlinNetIO]
 ----
 
 [[remoteconnection-implementations]]
