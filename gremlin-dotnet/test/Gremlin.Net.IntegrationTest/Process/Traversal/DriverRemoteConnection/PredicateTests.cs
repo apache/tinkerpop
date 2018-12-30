@@ -21,6 +21,7 @@
 
 #endregion
 
+using System.Collections.Generic;
 using Gremlin.Net.Process.Traversal;
 using Xunit;
 
@@ -48,6 +49,18 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
 
             var count = g.V().Has("name", P.Within("josh", "vadas")).Count().Next();
+
+            Assert.Equal(2, count);
+        }
+        
+        [Fact]
+        public void ShouldUsePWithinWithListArgumentInHasStep()
+        {
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var names = new List<string> {"josh", "vadas"};
+
+            var count = g.V().Has("name", P.Within(names)).Count().Next();
 
             Assert.Equal(2, count);
         }
