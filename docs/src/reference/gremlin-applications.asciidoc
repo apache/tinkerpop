@@ -564,22 +564,7 @@ def list = g.V().has('person','name','marko').out('knows').toList()
 ----
 [source,csharp]
 ----
-// script
-var gremlinServer = new GremlinServer("localhost", 8182);
-using (var gremlinClient = new GremlinClient(gremlinServer))
-{
-    var bindings = new Dictionary<string, object>
-    {
-        {"name", "marko"}
-    };
-
-    var response =
-        await gremlinClient.SubmitWithSingleResultAsync<object>("g.V().has('person','name',name).out('knows')", bindings);
-}
-
-// bytecode
-var g = Traversal().WithRemote(new DriverRemoteConnection(new GremlinClient(new GremlinServer("localhost", 8182))));
-var list = g.V().Has("person","name","marko").Out("knows").toList();
+include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinApplicationsTests.cs[tags=connectingViaDrivers]
 ----
 [source,javascript]
 ----

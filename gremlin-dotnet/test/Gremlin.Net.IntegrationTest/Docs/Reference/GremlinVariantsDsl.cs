@@ -23,12 +23,10 @@
 
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
-using Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection;
-using Xunit;
 
-namespace Gremlin.Net.IntegrationTest.Process.Traversal.Dsl 
+// tag::dsl[]
+namespace Dsl 
 {
-
     public static class SocialTraversalExtensions
     {
         public static GraphTraversal<Vertex,Vertex> Knows(this GraphTraversal<Vertex,Vertex> t, string personName) 
@@ -79,22 +77,5 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.Dsl
             return t;
         }
     }
-
-    public class DslTest 
-    {
-        private readonly RemoteConnectionFactory _connectionFactory = new RemoteConnectionFactory();
-        
-        [Fact]
-        public void ShouldUseDsl() 
-        {
-            var connection = _connectionFactory.CreateRemoteConnection();
-            var social = AnonymousTraversalSource.Traversal().WithRemote(connection);
-
-            Assert.NotNull(social.Persons("marko").Knows("josh").Next());
-            Assert.Equal(27, social.Persons("marko").YoungestFriendsAge().Next());
-            Assert.Equal(4, social.Persons().Count().Next());
-            Assert.Equal(2, social.Persons("marko", "josh").Count().Next());
-            Assert.Equal(1, social.Persons().Filter(__Social.CreatedAtLeast(2)).Count().Next());
-        }
-    }
 }
+// end::dsl[]
