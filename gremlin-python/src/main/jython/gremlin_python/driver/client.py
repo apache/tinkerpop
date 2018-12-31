@@ -76,6 +76,10 @@ class Client:
         self._fill_pool()
 
     @property
+    def available_pool_size(self):
+        return self._pool.qsize()
+
+    @property
     def executor(self):
         return self._executor
 
