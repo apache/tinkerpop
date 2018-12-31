@@ -96,6 +96,7 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Removed previously deprecated `HasContainer#makeHasContainers(String, P)`
 * Removed support for Giraph.
 * Removed previously deprecated JavaScript Driver property `traversers` of the `ResultSet`.
+* gremlin-python: use explicit Bindings object for python instead of a 2-tuple
 
 == TinkerPop 3.3.0 (Gremlin Symphony #40 in G Minor)
 
