@@ -66,7 +66,6 @@ gremlin> g.V().hasLabel("person").valueMap().by(unfold())
 ==>[name:josh,age:32]
 ==>[name:peter,age:35]
 ```
-
 ===== with() Modulation
 
 The `with()` modulator can be used to include certain tokens (`id`, `label`, `key` and/or `value`).
