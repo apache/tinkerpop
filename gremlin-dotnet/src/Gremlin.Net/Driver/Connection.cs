@@ -124,8 +124,10 @@ namespace Gremlin.Net.Driver
             }
             catch (Exception e)
             {
-                _callbackByRequestId[receivedMsg.RequestId].HandleFailure(e);
-                _callbackByRequestId.TryRemove(receivedMsg.RequestId, out _);
+                if (_callbackByRequestId.TryRemove(receivedMsg.RequestId, out var responseHandler))
+                {
+                    responseHandler.HandleFailure(e);
+                }
             }
         }
 
