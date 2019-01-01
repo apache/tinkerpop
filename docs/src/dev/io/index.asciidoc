@@ -34,3 +34,5 @@ include::graphml.asciidoc[]
 include::graphson.asciidoc[]
 
 include::gryo.asciidoc[]
+
+include::graphbinary.asciidoc[]

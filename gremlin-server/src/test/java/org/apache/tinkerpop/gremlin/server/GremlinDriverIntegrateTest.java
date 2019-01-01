@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
@@ -911,6 +912,21 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         final Instant then = r.get(0).get(Instant.class);
         assertEquals(now, then);
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldWorkWithGraphBinaryV1Serialization() throws Exception {
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1D0).create();
+        final Client client = cluster.connect();
+
+        final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
+        assertEquals(1, r.size());
+
+        final Vertex v = r.get(0).get(ReferenceVertex.class);
+        assertEquals(1, v.id());
+        assertEquals("person", v.label());
 
         cluster.close();
     }

@@ -257,6 +257,24 @@ g.sparql("""SELECT ?name ?age
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1878[TINKERPOP-1878],
 link:http://tinkerpop.apache.org/docs/3.4.0/reference/#sparql-gremlin[Reference Documentation]
 
+==== GraphBinary
+
+GraphBinary is a new language agnostic, network serialization format designed to replace Gryo and GraphSON. At this
+time it is only available on the JVM, but support will be added for other languages in upcoming releases. The
+serializer has been configured in Gremlin Server's packaged configuration files. The serializer can be configured
+using the Java driver as follows:
+
+[source,java]
+----
+Cluster cluster = Cluster.build("localhost").port(8182).
+                          serializer(Serializers.GRAPHBINARY_V1D0).create();
+Client client = cluster.connect();
+List<Result> r = client.submit("g.V().has('person','name','marko')").all().join();
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1942[TINKERPOP-1942],
+link:http://tinkerpop.apache.org/docs/3.4.0/dev/io/#graphbinary[IO Documentation]
+
 ==== Status Attributes
 
 The Gremlin Server protocol allows for status attributes to be returned in responses. These attributes were typically

@@ -1457,7 +1457,7 @@ link:http://docs.groovy-lang.org/latest/html/documentation/#compilation-customiz
 
 ==== Serialization
 
-Gremlin Server can accept requests and return results using different serialization formats.  Serializers implement the
+Gremlin Server can accept requests and return results using different serialization formats. Serializers implement the
 `MessageSerializer` interface. In doing so, they express the list of mime types they expect to support. When
 configuring multiple serializers it is possible for two or more serializers to support the same mime type. Such a
 situation may be common with a generic mime type such as `application/json`. Serializers are added in the order that
@@ -1467,14 +1467,15 @@ by other serializers that also support it.
 The format of the serialization is configured by the `serializers` setting described in the table above.  Note that
 some serializers have additional configuration options as defined by the `serializers[X].config` setting.  The
 `config` setting is a `Map` where the keys and values get passed to the serializer at its initialization.  The
-available and/or expected keys are dependent on the serializer being used.  Gremlin Server comes packaged with two
-different serializers: GraphSON and Gryo.
+available and/or expected keys are dependent on the serializer being used.  Gremlin Server comes packaged with three
+different serializers: GraphSON, Gryo, and GraphBinary.
 
 ===== GraphSON
 
 The GraphSON serializer produces human readable output in JSON format and is a good configuration choice for those
 trying to use TinkerPop from non-JVM languages.  JSON obviously has wide support across virtually all major
-programming languages and can be consumed by a wide variety of tools.
+programming languages and can be consumed by a wide variety of tools. The format itself is described in the
+link:http://tinkerpop.apache.org/docs/current/dev/io/#graphson[IO Documentation].
 
 [source,yaml]
 ----
@@ -1508,7 +1509,8 @@ type names, so interpretation from non-JVM languages will be required.  It has t
 ===== Gryo
 
 The Gryo serializer utilizes Kryo-based serialization which produces a binary output.  This format is best consumed
-by JVM-based languages.
+by JVM-based languages. The format itself is described in the
+link:http://tinkerpop.apache.org/docs/current/dev/io/#gryo[IO Documentation].
 
 [source,yaml]
   - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerGremlinV1d0 }
@@ -1525,15 +1527,36 @@ It has the MIME type of `application/vnd.gremlin-v1.0+gryo` and the following co
 |serializeResultToString |When set to `true`, results are serialized by first calling `toString()` on each object in the result list resulting in an extended MIME Type of `application/vnd.gremlin-v1.0+gryo-stringd`.  When set to `false` Kryo-based serialization is applied. |_false_
 |=========================================================
 
-As described above, there are multiple ways in which to register serializers for Kryo-based serialization.  These
-configurations can be used in conjunction with one another where there is a specific ordering to how the configurations
-are applied.  The `userMapperFromGraph` setting is applied first, followed by any `ioRegistries` and finalized by the
-`custom` setting.
+As described above, there are multiple ways in which to register serializers for Kryo-based serialization.  Note
+that the `ioRegistries` setting is applied first, followed by the `custom` setting.
 
 Those configuring or implementing a `Supplier<ClassResolver>` should consider this an "advanced" option and typically
 important to use cases where server types need to be coerced to client types (i.e. a type is available on the server
 but not on the client).  Implementations should typically instantiate `ClassResolver` implementations that are
 extensions of the `GryoClassResolver` as this class is important to most serialization tasks in TinkerPop.
+
+===== GraphBinary
+
+GraphBinary is a binary serialization format suitable for object trees, designed to reduce serialization overhead on
+both the client and the server, as well as limiting the size of the payload that is transmitted over the wire. The
+format itself is described in the link:http://tinkerpop.apache.org/docs/current/dev/io/#graphbinary[IO Documentation].
+
+IMPORTANT: GraphBinary is currently only supported on the JVM.
+
+[source,yaml]
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1 }
+
+It has the MIME type of `application/vnd.graphbinary-v1.0` and the following configuration options:
+
+[width="100%",cols="3,10,^2",options="header"]
+|=========================================================
+|Key |Description |Default
+|custom |A list of classes with custom kryo `Serializer` implementations related to them in the form of `<class>;<serializer-class>`. |_none_
+|ioRegistries |A list of `IoRegistry` implementations to be applied to the serializer. |_none_
+|=========================================================
+
+As described above, there are multiple ways in which to register serializers for GraphBinary-based serialization. Note
+that the `ioRegistries` setting is applied first, followed by the `custom` setting.
 
 [[metrics]]
 ==== Metrics
@@ -1713,9 +1736,10 @@ With the type of request and detachment model in mind, it is now possible to dis
 properties in relation to them all in concert.
 
 For script-based requests, users should take care when returning graph elements. By default, elements will be returned
-as detached elements and will thus serialize with all properties that are bound to them. As such, Gryo and GraphSON
-serializers will write all properties in the return payload. Script-based requests should definitely follow the best
-practice of only returning the data required by the application.
+as "detached elements" and depending on the serializer being used those detached elements may or may not have their
+properties carried with them. Gryo and GraphSON serializers will write all properties in the return payload in this
+case but GraphBinary will not. Therefore, script-based requests that use Gryo or GraphSON should definitely follow the
+best practice of only returning the data required by the application.
 
 NOTE: Gryo does have the exception for the `GryoMessageSerializerGremlinV1d0` with the `serializeResultToString`
 option enabled, which will simply convert all results using the Java `toString()` method prior to serialization and
@@ -1758,7 +1782,7 @@ List<Vertex> results = g.V().hasLabel("person").valueMap('name').with(WithOption
 
 Both of the above requests return a list of `Map` instances that contain the `id`, `label` and the "name" property.
 
-IMPORTANT: The example graph configurations pre-packaged with Gremlin Server utilize `ReferenceElementStrategy`
+TIP: The example graph configurations pre-packaged with Gremlin Server utilize `ReferenceElementStrategy`
 which convert all graph elements to references by initializing "g" using
 `withStrategies(ReferenceElementStrategy.instance()`. Consider utilizing `ReferenceElementStrategy` whenever creating
 a `GraphTraversalSource` in Java to ensure the most portable Gremlin.

@@ -38,6 +38,10 @@ public class ReferenceVertex extends ReferenceElement<Vertex> implements Vertex 
 
     }
 
+    public ReferenceVertex(final Object id, final String label) {
+        super(id, label);
+    }
+
     public ReferenceVertex(final Vertex vertex) {
         super(vertex);
     }

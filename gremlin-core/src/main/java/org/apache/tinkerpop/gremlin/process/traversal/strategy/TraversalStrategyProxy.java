@@ -20,14 +20,20 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 
 import java.io.Serializable;
 
 /**
+ * This class is for use with {@link Bytecode} and for serialization purposes. It is not meant for direct use with
+ * {@link TraversalSource#withStrategies(TraversalStrategy[])}.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalStrategyProxy<T extends TraversalStrategy> implements Serializable {
+public final class TraversalStrategyProxy<T extends TraversalStrategy> implements Serializable, TraversalStrategy {
 
     private final Configuration configuration;
     private final Class<T> strategyClass;
@@ -47,5 +53,15 @@ public final class TraversalStrategyProxy<T extends TraversalStrategy> implement
 
     public Class<T> getStrategyClass() {
         return this.strategyClass;
+    }
+
+    @Override
+    public void apply(final Traversal.Admin traversal) {
+        throw new UnsupportedOperationException("TraversalStrategyProxy is not meant to be used directly as a TraversalStrategy and is for serialization purposes only");
+    }
+
+    @Override
+    public int compareTo(final Object o) {
+        throw new UnsupportedOperationException("TraversalStrategyProxy is not meant to be used directly as a TraversalStrategy and is for serialization purposes only");
     }
 }

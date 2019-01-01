@@ -50,7 +50,7 @@ public abstract class AbstractMessageSerializer implements MessageSerializer {
             try {
                 final Class<?> clazz = Class.forName(className);
                 try {
-                    // try instance() first and then instance() which was deprecated in 3.2.4
+                    // try instance() first and then getInstance() which was deprecated in 3.2.4
                     final Method instanceMethod = tryInstanceMethod(clazz);
                     if (IoRegistry.class.isAssignableFrom(instanceMethod.getReturnType()))
                         builder.addRegistry((IoRegistry) instanceMethod.invoke(null));

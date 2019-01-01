@@ -1,0 +1,771 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+////
+
+[[graphbinary]]
+= GraphBinary
+
+GraphBinary is a binary serialization format suitable for object trees, designed to reduce serialization
+overhead on both the client and the server, as well as limiting the size of the payload that is transmitted over the
+wire.
+
+It describes arbitrary object graphs with a fully-qualified format:
+
+[source]
+----
+{type_code}{type_info}{value_flag}{value}
+----
+
+Where:
+
+* `{type_code}` is a single byte representing the type number.
+* `{type_info}` is an optional sequence of bytes providing additional information of the type represented. This is
+specially useful for representing complex and custom types.
+* `{value_flag}` is a single byte providing information about the value. Flags have the following meaning:
+** `0x01` The value is `null`. When this flag is set, no bytes for `{value}` will be provided.
+* `{value}` is a sequence of bytes which content is determined by the type.
+
+All encodings are big-endian.
+
+Quick examples, using hexadecimal notation to represent each byte:
+
+- `01 00 00 00 00 01`: a 32-bit integer number, that represents the decimal number 1. It’s composed by the
+type_code `0x01`, and empty flag value `0x00` and four bytes to describe the value.
+- `01 00 00 00 00 ff`: a 32-bit integer, representing the number 256.
+- `01 01`: a null value for a 32-bit integer. It’s composed by the type_code `0x01`, and a null flag value `0x01`.
+- `02 00 00 00 00 00 00 00 00 01`: a 64-bit integer number 1. It’s composed by the type_code `0x02`, empty flags and
+eight bytes to describe the value.
+
+== Version 1.0
+
+=== Forward Compatibility
+
+The serialization format supports new types being added without the need to introduce a new version.
+
+Changes to existing types require new revision.
+
+=== Data Type Codes
+
+==== Core Data Types
+
+- `0x01`: Int
+- `0x02`: Long
+- `0x03`: String
+- `0x04`: Date
+- `0x05`: Timestamp
+- `0x06`: Class
+- `0x07`: Double
+- `0x08`: Float
+- `0x09`: List
+- `0x0a`: Map
+- `0x0b`: Set
+- `0x0c`: UUID
+- `0x0d`: Edge
+- `0x0e`: Path
+- `0x0f`: Property
+- `0x10`: TinkerGraph
+- `0x11`: Vertex
+- `0x12`: VertexProperty
+- `0x13`: Barrier
+- `0x14`: Binding
+- `0x15`: Bytecode
+- `0x16`: Cardinality
+- `0x17`: Column
+- `0x18`: Direction
+- `0x19`: Operator
+- `0x1a`: Order
+- `0x1b`: Pick
+- `0x1c`: Pop
+- `0x1d`: Lambda
+- `0x1e`: P
+- `0x1f`: Scope
+- `0x20`: T
+- `0x21`: Traverser
+- `0x22`: BigDecimal
+- `0x23`: BigInteger
+- `0x24`: Byte
+- `0x25`: ByteBuffer
+- `0x26`: Short
+- `0x27`: Boolean
+- `0x28`: TextP
+- `0x29`: TraversalStrategy
+- `0x2a`: BulkSet
+- `0x2b`: Tree
+- `0x2c`: Metrics
+- `0xfe`: Unspecified null object
+- `0x00`: Custom
+
+==== Extended Types
+
+- `0x80`: Char
+- `0x81`: Duration
+- `0x82`: InetAddress
+- `0x83`: Instant
+- `0x84`: LocalDate
+- `0x85`: LocalDateTime
+- `0x86`: LocalTime
+- `0x87`: MonthDay
+- `0x88`: OffsetDateTime
+- `0x89`: OffsetTime
+- `0x8a`: Period
+- `0x8b`: Year
+- `0x8c`: YearMonth
+- `0x8d`: ZonedDateTime
+- `0x8e`: ZoneOffset
+
+=== Null handling
+
+The serialization format defines two ways to represent null values:
+
+- Unspecified null object
+- Fully-qualified null
+
+When a parent type can contain any subtype e.g., a object collection, a `null` value must be represented using the
+"Unspecified Null Object" type code and the null value flag.
+
+In contrast, when the parent type contains a type parameter that must be specified, a `null` value is represented using
+a fully-qualified object using the appropriate type code and type information.
+
+=== Data Type Formats
+
+==== Int
+
+Format: 4-byte two's complement integer.
+
+Example values:
+
+- `00 00 00 01`: 32-bit integer number 1.
+- `00 00 01 01`: 32-bit integer number 256.
+- `ff ff ff ff`: 32-bit integer number -1.
+- `ff ff ff fe`: 32-bit integer number -2.
+
+==== Long
+
+Format: 4-byte two's complement integer.
+
+Example values
+
+- `00 00 00 00 00 00 00 01`: 64-bit integer number 1.
+- `ff ff ff ff ff ff ff fe`: 64-bit integer number -2.
+
+==== String
+
+Format: `{length}{text_value}`
+
+Where:
+
+- `{length}` is an `Int` describing the byte length of the text. Length is a positive number or zero to represent
+the empty string.
+- `{text_value}` is a sequence of bytes representing the string value in UTF8 encoding.
+
+Example values
+
+- `00 00 00 03 61 62 63`: the string 'abc'.
+- `00 00 00 04 61 62 63 64`: the string 'abcd'.
+- `00 00 00 00`: the empty string ''.
+
+==== Date
+
+Format: An 8-byte two's complement signed integer representing a millisecond-precision offset from the unix epoch.
+
+Example values
+
+- `00 00 00 00 00 00 00 00`: The moment in time 1970-01-01T00:00:00.000Z.
+- `ff ff ff ff ff ff ff ff`: The moment in time 1969-12-31T23:59:59.999Z.
+
+==== Timestamp
+
+Format: The same as `Date`.
+
+==== Class
+
+Format: A `String` containing the fqcn.
+
+==== Double
+
+Format: 8 bytes representing IEEE 754 double-precision binary floating-point format.
+
+Example values
+
+- `3f f0 00 00 00 00 00 00`: Double 1
+- `3f 70 00 00 00 00 00 00`: Double 0.00390625
+- `3f b9 99 99 99 99 99 9a`: Double 0.1
+
+==== Float
+
+Format: 4 bytes representing IEEE 754 single-precision binary floating-point format.
+
+Example values
+
+- `3f 80 00 00`: Float 1
+- `3e c0 00 00`: Float 0.375
+
+==== List
+
+An ordered collection of items.
+
+Format: `{length}{item_0}...{item_n}`
+
+Where:
+
+- `{length}` is an `Int` describing the length of the collection.
+- `{item_0}...{item_n}` are the items of the list. `{item_i}` is a fully qualified typed value composed of
+`{type_code}{type_info}{value_flag}{value}`.
+
+==== Set
+
+A collection that contains no duplicate elements.
+
+Format: Same as `List`.
+
+==== Map
+
+A dictionary of keys to values.
+
+Format: `{length}{item_0}...{item_n}`
+
+Where:
+
+- `{length}` is an `Int` describing the length of the map.
+- `{item_0}...{item_n}` are the items of the map. `{item_i}` is sequence of 2 fully qualified typed values one
+representing the key and the following representing the value, each composed of
+`{type_code}{type_info}{value_flag}{value}`.
+
+==== UUID
+
+A 128-bit universally unique identifier.
+
+Format: 16 bytes representing the uuid.
+
+Example
+
+- `00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff`: Uuid 00112233-4455-6677-8899-aabbccddeeff.
+
+==== Edge
+
+Format: `{id}{label}{inVId}{inVLabel}{outVId}{outVLabel}{parent}{properties}`
+
+Where:
+
+- `{id}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{label}` is a `String` value.
+- `{inVId}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{inVLabel}` is a `String` value.
+- `{outVId}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{outVLabel}` is a `String` value.
+- `{parent}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which contains
+the parent `Vertex`. Note that as TinkerPop currently send "references" only, this value will always be `null`.
+- `{properties}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which contains
+the properties for the edge. Note that as TinkerPop currently send "references" only this value will always be `null`.
+
+==== Path
+
+Format: `{labels}{objects}`
+
+Where:
+
+- `{labels}` is a `List` in which each item is a `Set` of `String`.
+- `{objects}` is a `List` of fully qualified typed values.
+
+==== Property
+
+Format: `{key}{value}{parent}`
+
+Where:
+
+- `{key}` is a `String` value.
+- `{value}`  is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{parent}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which is either
+an `Edge` or `VertexProperty`. Note that as TinkerPop currently sends "references" only this value will always be
+`null`.
+
+==== Graph
+
+A collection of vertices and edges. Note that while similar the vertex/edge formats here hold some differences as
+compared to the `Vertex` and `Edge` formats used for standard serialization/deserialiation of a single graph element.
+
+Format: `{vlength}{vertex_0}...{vertex_n}{elength}{edge_0}...{edge_n}`
+
+Where:
+
+- `{vlength}` is an `Int` describing the number of vertices.
+- `{vertex_0}...{vertex_n}` are vertices as described below.
+- `{elength}` is an `Int` describing the number of edges.
+- `{edge_0}...{edge_n}` are edges as described below.
+
+Vertex Format: `{id}{label}{plength}{property_0}...{property_n}`
+
+- `{id}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{label}` is a `String` value.
+- `{plength}` is an `Int` describing the number of properties on the vertex.
+- `{property_0}...{property_n}` are the vertex properties consisting of `{id}{label}{value}{parent}{properties}` as
+defined in `VertexProperty` where the `{parent}` is always `null` and `{properties}` is a `List` of `Property` objects.
+
+Edge Format: `{id}{label}{inVId}{inVLabel}{outVId}{outVLabel}{parent}{properties}`
+
+Where:
+
+- `{id}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{label}` is a `String` value.
+- `{inVId}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{inVLabel}` is always `null`.
+- `{outVId}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{outVLabel}` is always `null`.
+- `{parent}` is always `null`.
+- `{properties}` is a `List` of `Property` objects.
+
+==== Vertex
+
+Format: `{id}{label}{properties}`
+
+Where:
+
+- `{id}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{label}` is a `String` value.
+- `{properties}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which contains
+properties. Note that as TinkerPop currently send "references" only, this value will always be `null`.
+
+==== VertexProperty
+
+Format: `{id}{label}{value}{parent}{properties}`
+
+Where:
+
+- `{id}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{label}` is a `String` value.
+- `{value}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{parent}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which contains
+the parent `Vertex`. Note that as TinkerPop currently send "references" only, this value will always be `null`.
+- `{properties}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which contains
+properties. Note that as TinkerPop currently send "references" only, this value will always be `null`.
+
+==== Barrier
+
+Format: a single `String` representing the enum value.
+
+==== Binding
+
+Format: `{key}{value}`
+
+Where:
+
+- `{key}` is a `String` value.
+- `{value}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+
+==== Bytecode
+
+Format: `{steps_length}{step_0}...{step_n}{sources_length}{source_0}...{source_n}`
+
+Where:
+
+* `{steps_length}` is an `Int` value describing the amount of steps.
+* `{step_i}` is composed of `{name}{values_length}{value_0}...{value_n}`, where:
+** `{name}` is a String.
+** `{values_length}` is an `Int` describing the amount values.
+** `{value_i}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` describing the step argument.
+* `{sources_length}` is an `Int` value describing the amount of source instructions.
+* `{source_i}` is composed of `{name}{values_length}{value_0}...{value_n}`, where:
+** `{name}` is a `String`.
+** `{values_length}` is an `Int` describing the amount values.
+** `{value_i}`  is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+
+==== Cardinality
+
+Format: a single `String` representing the enum value.
+
+==== Column
+
+Format: a single `String` representing the enum value.
+
+==== Direction
+
+Format: a single `String` representing the enum value.
+
+==== Operator
+
+Format: a single `String` representing the enum value.
+
+==== Order
+
+Format: a single `String` representing the enum value.
+
+==== Pick
+
+Format: a single `String` representing the enum value.
+
+==== Pop
+
+Format: a single `String` representing the enum value.
+
+==== Lambda
+
+Format: `{language}{script}{arguments_length}`
+Where:
+
+- `{language}` is a `String`.
+- `{script}` is a `String`.
+- `{arguments_length}` is an `Int`.
+
+==== P
+
+Format: `{predicate}{values_length}{value_0}...{value_n}`
+
+Where:
+
+- `{name}` is a String.
+- `{values_length}` is an `Int` describing the amount values.
+- `{value_i}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+
+==== Scope
+
+Format: a single `String` representing the enum value.
+
+==== T
+
+Format: a single `String` representing the enum value.
+
+==== Traverser
+
+Format: `{bulk}{value}`
+
+Where:
+
+- `{bulk}` is an `Int`.
+- `{value}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+
+==== BigDecimal
+
+Represents an arbitrary-precision signed decimal number, consisting of an arbitrary precision integer unscaled value
+and a 32-bit integer scale.
+
+Format: `{scale}{unscaled_value}`
+
+Where:
+
+- `{scale}` is an `Int`.
+- `{unscaled_value}` is a `BigInteger`.
+
+==== BigInteger
+
+A variable-length two's complement encoding of a signed integer.
+
+Format: `{length}{value}`
+
+Where:
+
+- `{length}` is an `Int`.
+- `{value}` is the two's complement of the `BigInteger`.
+
+Example values of the two's complement `{value}`:
+
+- `00`: Integer 0.
+- `01`: Integer 1.
+- `127`: Integer 7f.
+- `00 80`: Integer 128.
+- `ff`: Integer -1.
+- `80`: Integer -128.
+- `ff 7f`: Integer -129.
+
+==== Byte
+
+An unsigned 8-bit integer.
+
+==== ByteBuffer
+
+Format: `{length}{value}`
+
+Where:
+
+- `{length}` is an `Int` representing the amount of bytes contained in the value.
+- `{value}` sequence of bytes.
+
+==== Short
+
+Format: 2-byte two's complement integer.
+
+==== Boolean
+
+Format: A single byte containing the value `0x01` when it's `true` and `0` otherwise.
+
+==== TextP
+
+Format: `{predicate}{values_length}{value_0}...{value_n}`
+
+Where:
+
+- `{name}` is a String.
+- `{values_length}` is an `Int` describing the amount values.
+- `{value_i}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+
+==== TraversalStrategy
+
+Format: `{strategy_class}{configuration}`
+
+Where:
+
+- `{strategy_class}` is a `Class` that is of type `TraversalStrategy`.
+- `{configuration}` is a `Map` of data used to configure the strategy that will be given to a `TraversalStrategy` `create(Configuration)` method.
+
+==== BulkSet
+
+Format: `{length}{item_0}...{item_n}`
+
+Where:
+
+- `{length}` is an `Int` describing the length of the `BulkSet`.
+- `{item_0}...{item_n}` are the items of the `BulkSet`. `{item_i}` is a sequence of a fully qualified typed value composed of
+`{type_code}{type_info}{value_flag}{value}` followed by the "bulk" which is a `Long` value.
+
+If the implementing language does not have a `BulkSet` object to deserialize into, this format can be coerced to a
+`List` and still be considered compliant with Gremlin. Simply create "expand the bulk" by adding the item to the `List`
+the number of times specified by the bulk.
+
+==== Tree
+
+Format: `{length}{item_0}...{item_n}`
+
+Where:
+
+- `{length}` is an `Int` describing the amount of items.
+- `{item_0}...{item_n}` are the items of the `Tree`. `{item_i}` is composed of a `{key}` which is a fully-qualified typed value
+followed by a `{Tree}`.
+
+==== Metrics
+
+Format: `{id}{name}{duration}{counts}{annotations}{nested_metrics}`
+
+Where:
+
+- `{id}` is a `String` representing the identifier.
+- `{name}` is a `String` representing the name.
+- `{duration}` is a `Long` describing the duration in nanoseconds.
+- `{counts}` is a `Map` composed by `String` keys and `Long` values.
+- `{annotations}` is a `Map` composed by `String` keys and a value of any type.
+- `{nested_metrics}` is a `List` composed by `Metrics` items.
+
+==== Custom
+
+A custom type, represented as a blob value.
+
+Type Info: `{name}{custom_type_info}`
+
+Where:
+
+- `{name}` is a `String` containing the implementation specific text identifier of the custom type.
+- `{custom_type_info}` is a `ByteBuffer` representing the additional type information, specially useful
+for complex custom types.
+
+Value format: `{blob}`
+
+Where:
+
+- `{blob}` is a `ByteBuffer`.
+
+==== Unspecified Null Object
+
+A `null` value for an unspecified Object value.
+
+It's represented using the null `{value_flag}` set and no sequence of bytes.
+
+==== Char
+
+Format: one to four bytes representing a single UTF8 char, according to the Unicode standard.
+
+For characters `0x00`-`0x7F`, UTF-8 encodes the character as a single byte.
+
+For characters `0x80`-`0x07FF`, UTF-8 uses 2 bytes: the first byte is binary `110` followed by the 5 high bits of the
+character, while the second byte is binary 10 followed by the 6 low bits of the character.
+
+The 3 and 4-byte encodings are similar to the 2-byte encoding, except that the first byte of the 3-byte encoding starts
+with `1110` and the first byte of the 4-byte encoding starts with `11110`.
+
+Example values (hex bytes)
+
+- `97`: Character 'a'.
+- `c2 a2`: Character '¢'.
+- `e2 82 ac`: Character '€'
+
+==== Duration
+
+A time-based amount of time.
+
+Format: `{seconds}{nanos}`
+
+Where:
+
+- `{seconds}` is a `Long`.
+- `{nanos}` is an `Int`.
+
+==== InetAddress
+
+Format: Same as `ByteBuffer`, having only 4 byte or 16 byte sequences allowed.
+
+==== Instant
+
+An instantaneous point on the time-line.
+
+Format: `{seconds}{nanos}`
+
+Where:
+
+- `{seconds}` is a `Long`.
+- `{nanos}` is an `Int`.
+
+==== LocalDate
+
+A date without a time-zone in the ISO-8601 calendar system.
+
+Format: `{year}{month}{day}`
+
+Where:
+
+- `{year}` is an `Int` from -999,999,999 to 999,999,999.
+- `{month}` is a `Byte` to represent the month, from 1 (January) to 12 (December)
+- `{day}` is a `Byte` from 1 to 31.
+
+==== LocalDateTime
+
+Format: `{date}{time}`
+
+Where:
+
+- `{date}` is `LocalDate`.
+- `{time}` is a `LocalTime`.
+
+==== LocalTime
+A time without a time-zone in the ISO-8601 calendar system.
+
+Format: An 8 byte two's complement long representing nanoseconds since midnight.
+
+Valid values are in the range 0 to 86399999999999
+
+==== MonthDay
+
+A month-day in the ISO-8601 calendar system.
+
+Format: `{month}{day}`
+
+Where:
+
+- `{month}` is `Byte` value from 1 to 12.
+- `{day}` is `Byte` value from 1 to 31.
+
+==== OffsetDateTime
+
+A date-time with an offset from UTC/Greenwich in the ISO-8601 calendar system, such as 2007-12-03T10:15:30+01:00.
+
+Format: `{local_date_time}{offset}`
+
+Where:
+
+- `{local_date_time}` is `LocalDateTime`.
+- `{offset}` is `ZoneOffset`.
+
+==== OffsetTime
+
+A time with an offset from UTC/Greenwich in the ISO-8601 calendar system, such as 10:15:30+01:00.
+
+Format: `{local_time}{offset}`
+
+Where:
+
+- `{local_time}` is `LocalTime`.
+- `{offset}` is `ZoneOffset`.
+
+==== Period
+
+A date-based amount of time in the ISO-8601 calendar system, such as '2 years, 3 months and 4 days'.
+
+Format: `{years}{month}{days}`
+
+Where:
+
+`{years}`, `{month}` and `{days}` are `Int` values.
+
+==== Year
+
+A year in the ISO-8601 calendar system, such as 2018.
+
+Format: An `Int` representing the years.
+
+==== YearMonth
+
+A year-month in the ISO-8601 calendar system, such as 2007-12.
+
+Format: `{year}{month}`
+
+Where:
+
+- `{year}` is an `Int`.
+- `{month}` is a `Byte` from 1 to 12.
+
+==== ZonedDateTime
+
+A date-time with a time-zone in the ISO-8601 calendar system.
+
+Format: `{local_date_time}{zone_offset}`
+
+Where:
+
+- `{local_date_time}` is `LocalDateTime`.
+- `{zone_offset}` is a `ZoneOffset`.
+
+==== ZoneOffset
+
+A time-zone offset from Greenwich/UTC, such as +02:00.
+
+Format: An `Int` representing total zone offset in seconds.
+
+=== Request and Response Messages
+
+Request and response messages are special container types used to represent messages from client to the server and the
+other way around. These messages are independent from the transport layer.
+
+==== Request Message
+
+Represents a message from the client to the server.
+
+Format: `{version}{request_id}{op}{processor}{args}`
+
+Where:
+
+- `{version}` is a `Byte` representing the specification version, with the most significant bit set to one. For this
+version of the format, the value expected is `0x81` (`10000001`).
+- `{request_id}` is a `UUID`.
+- `{op}` is a `String`.
+- `{processor}` is a `String`.
+- `{args}` is a `Map`.
+
+The total length is not part of the message as the transport layer will provide it. For example: WebSockets,
+as a framing protocol, defines payload length.
+
+==== Response Message
+
+Format: `{version}{request_id}{status_code}{status_message}{status_attributes}{result_meta}{result_data}`
+
+Where:
+
+- `{version}` is a `Byte` representing the protocol version, with the most significant bit set to one. For this version
+of the protocol, the value expected is `0x81` (`10000001`).
+- `{request_id}` is a nullable `UUID`.
+- `{status_code}` is an `Int`.
+- `{status_message}` is a nullable `String`.
+- `{status_attributes}` is a `Map`.
+- `{result_meta}` is a `Map`.
+- `{result_data}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+
+The total length is not part of the message as the transport layer will provide it.
