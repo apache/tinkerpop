@@ -455,7 +455,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-2-11]]
 === TinkerPop 3.2.11 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-* Bumped to Jackson Databind 2.9.7
+* Bumped to Jackson Databind 2.9.8
 
 
 [[release-3-2-10]]
