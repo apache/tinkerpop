@@ -31,9 +31,6 @@ using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.IntegrationTest.Util;
 using Newtonsoft.Json.Linq;
 using Xunit;
-using Gremlin.Net.Structure.IO.GraphSON;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
 
 namespace Gremlin.Net.IntegrationTest.Driver
 {
