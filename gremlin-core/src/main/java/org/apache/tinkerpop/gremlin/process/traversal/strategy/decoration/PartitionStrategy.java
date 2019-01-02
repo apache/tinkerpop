@@ -284,8 +284,8 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
             final Map<String, List<Property>> filtered = new HashMap<>();
 
             // note the final filter that removes the partitionKey from the outgoing Map
-            values.entrySet().forEach(p -> {
-                final List l = p.getValue().stream().filter(property -> {
+            values.forEach((key, value) -> {
+                final List l = value.stream().filter(property -> {
                     if (property instanceof VertexProperty) {
                         final Iterator<String> itty = ((VertexProperty) property).values(partitionKey);
                         return itty.hasNext() && readPartitions.contains(itty.next());
@@ -293,7 +293,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                         return true;
                     }
                 }).filter(property -> !property.key().equals(partitionKey)).collect(Collectors.toList());
-                if (l.size() > 0) filtered.put(p.getKey(), l);
+                if (l.size() > 0) filtered.put(key, l);
             });
 
             return filtered;
@@ -314,9 +314,9 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
             final Map<String, List<Property>> values = mapTraverser.get();
             final Map<String, List<Property>> converted = new HashMap<>();
 
-            values.entrySet().forEach(p -> {
-                final List l = p.getValue().stream().map(Property::value).collect(Collectors.toList());
-                converted.put(p.getKey(), l);
+            values.forEach((key, value) -> {
+                final List l = value.stream().map(Property::value).collect(Collectors.toList());
+                converted.put(key, l);
             });
 
             return converted;
