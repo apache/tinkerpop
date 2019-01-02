@@ -454,10 +454,14 @@ This release also includes changes from <<release-3-2-6, 3.2.6>>.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
 
 [[release-3-2-11]]
-=== TinkerPop 3.2.11 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.2.11 (Release Date: January 2, 2019)
 
 * Bumped to Jackson Databind 2.9.8
 
+==== Improvements
+
+* TINKERPOP-2074 Ensure that only NuGet packages for the current version are pushed
+* TINKERPOP-2121 Bump Jackson Databind 2.9.8
 
 [[release-3-2-10]]
 === TinkerPop 3.2.10 (Release Date: October 15, 2018)
@@ -512,58 +516,57 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 ==== Bugs
 
-* TINKERPOP-1898	Issue with bindings in strategies and lambdas
-* TINKERPOP-1933	gremlin-python maximum recursion depth exceeded on large responses
-* TINKERPOP-1958	TinkerGraphCountStrategy can return wrong counts
-* TINKERPOP-1961	Duplicate copies of images directory in docs
-* TINKERPOP-1962	GroovyTranslator doesn't handle empty maps
-* TINKERPOP-1963	Use of reducing step in choose()
-* TINKERPOP-1972	inject() tests are throwing exceptions in .NET GLV tests
-* TINKERPOP-1978	Check for Websocket connection state when retrieved from Connection Pool missing
-* TINKERPOP-1988	minor error in documentation
-* TINKERPOP-1999	[Java][gremlin-driver] Query to a remote server via the websocket client hangs indefinitely if the server becomes unavailable
-* TINKERPOP-2005	Intermittent NullPointerException in response handling
-* TINKERPOP-2009	Pick.any and Pick.none should be exposed in Gremlin-JavaScript 
-* TINKERPOP-2030	KeepAlive task executed for every Connection.write call
-* TINKERPOP-2032	Update jython-standalone
-* TINKERPOP-2044	Cannot reconnect to Azure cosmos host that becomes available again
+* TINKERPOP-1898 Issue with bindings in strategies and lambdas
+* TINKERPOP-1933 gremlin-python maximum recursion depth exceeded on large responses
+* TINKERPOP-1958 TinkerGraphCountStrategy can return wrong counts
+* TINKERPOP-1961 Duplicate copies of images directory in docs
+* TINKERPOP-1962 GroovyTranslator doesn't handle empty maps
+* TINKERPOP-1963 Use of reducing step in choose()
+* TINKERPOP-1972 inject() tests are throwing exceptions in .NET GLV tests
+* TINKERPOP-1978 Check for Websocket connection state when retrieved from Connection Pool missing
+* TINKERPOP-1988 minor error in documentation
+* TINKERPOP-1999 [Java][gremlin-driver] Query to a remote server via the websocket client hangs indefinitely if the server becomes unavailable
+* TINKERPOP-2005 Intermittent NullPointerException in response handling
+* TINKERPOP-2009 Pick.any and Pick.none should be exposed in Gremlin-JavaScript
+* TINKERPOP-2030 KeepAlive task executed for every Connection.write call
+* TINKERPOP-2032 Update jython-standalone
+* TINKERPOP-2044 Cannot reconnect to Azure cosmos host that becomes available again
 
 ==== Improvements
 
-* TINKERPOP-1113	GraphComputer subclasses should support native methods
-* TINKERPOP-1365	Log the seed used to initialize Random in tests
-* TINKERPOP-1595	Go through TraversalVertexProgram with a profile and optimize.
-* TINKERPOP-1778	Do not promote timedInterrupt option for Gremlin Server script processing
-* TINKERPOP-1780	Add authentication tests for gremlin-python
-* TINKERPOP-1836	.NET sample project
-* TINKERPOP-1841	Include Python GLV tests on TravisCI
-* TINKERPOP-1897	Provide Docker images of Gremlin Server and Console
-* TINKERPOP-1945	Add support for extended GraphSon types to Gremlin.net
-* TINKERPOP-1951	gremlin-server.bat doesn't support paths containing spaces
-* TINKERPOP-1959	Provide a way to submit scripts to the server in gremlin-javascript
-* TINKERPOP-1968	Refactor elements of Gremlin Server testing
-* TINKERPOP-1976	Include Computer tests for GLVs
-* TINKERPOP-1977	Gremlin-JavaScript: Support SASL authentication
-* TINKERPOP-1985	Update position on bulk loading
-* TINKERPOP-1989	Preserve order that plugins are applied in Gremlin Console
-* TINKERPOP-1995	DriverRemoteConnection close() method returns undefined
-* TINKERPOP-2011	Use NumberHelper on choose()
-* TINKERPOP-2012	Target .NET Standard 2.0 for Gremlin.Net
-* TINKERPOP-2015	Allow users to configure the WebSocket connections
-* TINKERPOP-2016	Upgrade Jackson FasterXML to 2.9.5 or later to fix security vulnerability
-* TINKERPOP-2017	Check for Column in by()
-* TINKERPOP-2022	Cluster SSL should trust default ca certs by default
-* TINKERPOP-2023	Gremlin Server should not create self-signed certs *(breaking)*
-* TINKERPOP-2024	Gremlin Server Application archetype should connect via withRemote
-* TINKERPOP-2025	Change to SHA-256/512 and drop SHA-1 for releases
-* TINKERPOP-2026	Gremlin.Net.Driver should check ClientWebSocket.State before closing
-* TINKERPOP-2034	Register synchronizedMap() with Gryo
-* TINKERPOP-2035	Gremlin-JavaScript: Pass custom headers to the websocket connection
-* TINKERPOP-2040	Improve flexibility of GroovyTranslator to handle custom types
-* TINKERPOP-2045	Remove non-indy groovy dependencies
-* TINKERPOP-2055	Provide support for special number cases like Infinity in GraphSON
-* TINKERPOP-2056	Use NumberHelper in Compare
-
+* TINKERPOP-1113 GraphComputer subclasses should support native methods
+* TINKERPOP-1365 Log the seed used to initialize Random in tests
+* TINKERPOP-1595 Go through TraversalVertexProgram with a profile and optimize.
+* TINKERPOP-1778 Do not promote timedInterrupt option for Gremlin Server script processing
+* TINKERPOP-1780 Add authentication tests for gremlin-python
+* TINKERPOP-1836 .NET sample project
+* TINKERPOP-1841 Include Python GLV tests on TravisCI
+* TINKERPOP-1897 Provide Docker images of Gremlin Server and Console
+* TINKERPOP-1945 Add support for extended GraphSon types to Gremlin.net
+* TINKERPOP-1951 gremlin-server.bat doesn't support paths containing spaces
+* TINKERPOP-1959 Provide a way to submit scripts to the server in gremlin-javascript
+* TINKERPOP-1968 Refactor elements of Gremlin Server testing
+* TINKERPOP-1976 Include Computer tests for GLVs
+* TINKERPOP-1977 Gremlin-JavaScript: Support SASL authentication
+* TINKERPOP-1985 Update position on bulk loading
+* TINKERPOP-1989 Preserve order that plugins are applied in Gremlin Console
+* TINKERPOP-1995 DriverRemoteConnection close() method returns undefined
+* TINKERPOP-2011 Use NumberHelper on choose()
+* TINKERPOP-2012 Target .NET Standard 2.0 for Gremlin.Net
+* TINKERPOP-2015 Allow users to configure the WebSocket connections
+* TINKERPOP-2016 Upgrade Jackson FasterXML to 2.9.5 or later to fix security vulnerability
+* TINKERPOP-2017 Check for Column in by()
+* TINKERPOP-2022 Cluster SSL should trust default ca certs by default
+* TINKERPOP-2023 Gremlin Server should not create self-signed certs *(breaking)*
+* TINKERPOP-2024 Gremlin Server Application archetype should connect via withRemote
+* TINKERPOP-2025 Change to SHA-256/512 and drop SHA-1 for releases
+* TINKERPOP-2026 Gremlin.Net.Driver should check ClientWebSocket.State before closing
+* TINKERPOP-2034 Register synchronizedMap() with Gryo
+* TINKERPOP-2035 Gremlin-JavaScript: Pass custom headers to the websocket connection
+* TINKERPOP-2040 Improve flexibility of GroovyTranslator to handle custom types
+* TINKERPOP-2045 Remove non-indy groovy dependencies
+* TINKERPOP-2055 Provide support for special number cases like Infinity in GraphSON
+* TINKERPOP-2056 Use NumberHelper in Compare
 
 [[release-3-2-9]]
 === TinkerPop 3.2.9 (Release Date: May 8, 2018)
