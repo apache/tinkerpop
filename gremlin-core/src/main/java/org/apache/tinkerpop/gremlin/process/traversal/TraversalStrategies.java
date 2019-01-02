@@ -54,7 +54,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -156,7 +155,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
         }
 
         //Finally sort via t-sort
-        final List<Class<? extends TraversalStrategy>> unprocessedStrategyClasses = new ArrayList<>(strategies.stream().map((Function<TraversalStrategy<?>, ? extends Class<? extends TraversalStrategy>>) TraversalStrategy<?>::getClass).collect(Collectors.toSet()));
+        final List<Class<? extends TraversalStrategy>> unprocessedStrategyClasses = new ArrayList<>(strategies.stream().map(s -> s.getClass()).collect(Collectors.toSet()));
         final List<Class<? extends TraversalStrategy>> sortedStrategyClasses = new ArrayList<>();
         final Set<Class<? extends TraversalStrategy>> seenStrategyClasses = new HashSet<>();
 
