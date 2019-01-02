@@ -38,25 +38,12 @@ import java.util.function.Consumer;
  */
 public abstract class AbstractThreadLocalTransaction extends AbstractTransaction {
     protected final ThreadLocal<Consumer<Transaction>> readWriteConsumerInternal =
-        new ThreadLocal<Consumer<Transaction>>() {
-            @Override protected Consumer<Transaction> initialValue() {
-                return READ_WRITE_BEHAVIOR.AUTO;
-            }
-        };
+            ThreadLocal.withInitial(() -> READ_WRITE_BEHAVIOR.AUTO);
     
     protected final ThreadLocal<Consumer<Transaction>> closeConsumerInternal =
-        new ThreadLocal<Consumer<Transaction>>() {
-            @Override protected Consumer<Transaction> initialValue() {
-                return CLOSE_BEHAVIOR.ROLLBACK;
-            }
-        };
+            ThreadLocal.withInitial(() -> CLOSE_BEHAVIOR.ROLLBACK);
     
-    protected final ThreadLocal<List<Consumer<Transaction.Status>>> transactionListeners = new ThreadLocal<List<Consumer<Transaction.Status>>>() {
-        @Override
-        protected List<Consumer<Transaction.Status>> initialValue() {
-            return new ArrayList<>();
-        }
-    };
+    protected final ThreadLocal<List<Consumer<Transaction.Status>>> transactionListeners = ThreadLocal.withInitial(() -> new ArrayList<>());
 
     public AbstractThreadLocalTransaction(final Graph g) {
         super(g);
