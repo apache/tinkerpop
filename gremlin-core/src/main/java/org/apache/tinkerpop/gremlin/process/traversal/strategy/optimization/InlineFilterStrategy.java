@@ -138,9 +138,9 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                         boolean removeContainer = true;
                         final List<P<?>> orps = ((OrP) hasContainer.getPredicate()).getPredicates();
                         final List<String> newEdges = new ArrayList<>();
-                        for (int i = 0; i < orps.size(); i++) {
-                            if (orps.get(i).getBiPredicate() == Compare.eq && orps.get(i).getValue() instanceof String)
-                                newEdges.add((String) orps.get(i).getValue());
+                        for (P<?> orp : orps) {
+                            if (orp.getBiPredicate() == Compare.eq && orp.getValue() instanceof String)
+                                newEdges.add((String) orp.getValue());
                             else {
                                 removeContainer = false;
                                 break;
