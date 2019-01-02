@@ -134,7 +134,7 @@ public final class OrderLocalStep<S, C extends Comparable> extends MapStep<S, S>
             if (comparator.isShuffle())
                 Collections.shuffle((List) collection);
             else
-                Collections.sort((List) collection, comparator);
+                ((List) collection).sort(comparator);
             return (List<A>) collection;
         } else {
             return sortCollection(new ArrayList<>(collection), comparator);
@@ -146,7 +146,7 @@ public final class OrderLocalStep<S, C extends Comparable> extends MapStep<S, S>
         if (comparator.isShuffle())
             Collections.shuffle(entries);
         else
-            Collections.sort(entries, comparator);
+            entries.sort(comparator);
         final LinkedHashMap<K, V> sortedMap = new LinkedHashMap<>();
         entries.forEach(entry -> sortedMap.put(entry.getKey(), entry.getValue()));
         return sortedMap;

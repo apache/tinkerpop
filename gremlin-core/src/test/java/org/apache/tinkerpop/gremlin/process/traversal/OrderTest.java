@@ -85,7 +85,7 @@ public class OrderTest {
 
     @Test
     public void shouldOrder() {
-        Collections.sort((List) toBeOrdered, order);
+        ((List) toBeOrdered).sort(order);
         assertEquals(expectedOrder, toBeOrdered);
     }
 }

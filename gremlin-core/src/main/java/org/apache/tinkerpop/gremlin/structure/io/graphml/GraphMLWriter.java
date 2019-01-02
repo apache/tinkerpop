@@ -254,7 +254,7 @@ public final class GraphMLWriter implements GraphWriter {
     private void writeEdges(final XMLStreamWriter writer, final Graph graph) throws XMLStreamException {
         if (normalize) {
             final List<Edge> edges = IteratorUtils.list(graph.edges());
-            Collections.sort(edges, Comparators.ELEMENT_COMPARATOR);
+            edges.sort(Comparators.ELEMENT_COMPARATOR);
 
             for (Edge edge : edges) {
                 writer.writeStartElement(GraphMLTokens.EDGE);
@@ -363,7 +363,7 @@ public final class GraphMLWriter implements GraphWriter {
             while (vertexIterator.hasNext()) {
                 ((Collection<Vertex>) vertices).add(vertexIterator.next());
             }
-            Collections.sort((List<Vertex>) vertices, Comparators.ELEMENT_COMPARATOR);
+            ((List<Vertex>) vertices).sort(Comparators.ELEMENT_COMPARATOR);
         } else
             vertices = IteratorUtils.list(graph.vertices());
 

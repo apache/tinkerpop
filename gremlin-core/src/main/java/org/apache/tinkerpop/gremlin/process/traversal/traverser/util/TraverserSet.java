@@ -148,7 +148,7 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
     public void sort(final Comparator<Traverser<S>> comparator) {
         final List<Traverser.Admin<S>> list = new ArrayList<>(this.map.size());
         IteratorUtils.removeOnNext(this.map.values().iterator()).forEachRemaining(list::add);
-        Collections.sort(list, comparator);
+        list.sort(comparator);
         this.map.clear();
         list.forEach(traverser -> this.map.put(traverser, traverser));
     }

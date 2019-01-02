@@ -664,7 +664,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                         sort.add(endLabel);
                 });
             }
-            Collections.sort(sort, (a, b) -> {
+            sort.sort((a, b) -> {
                 for (final Traversal.Admin<Object, Object> traversal : traversals) {
                     final Optional<String> endLabel = Helper.getEndLabel(traversal);
                     if (endLabel.isPresent()) {
@@ -738,10 +738,9 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             if (this.onComputer) {
                 final List<Set<String>> labels = traverser.path().labels();
                 final Set<String> lastLabels = labels.get(labels.size() - 1);
-                Collections.sort(this.bundles,
-                        Comparator.<Bundle>comparingLong(b -> Helper.getStartLabels(b.traversal).stream().filter(startLabel -> !lastLabels.contains(startLabel)).count()).
-                                thenComparingInt(b -> b.traversalType.ordinal()).
-                                thenComparingDouble(b -> b.multiplicity));
+                this.bundles.sort(Comparator.<Bundle>comparingLong(b -> Helper.getStartLabels(b.traversal).stream().filter(startLabel -> !lastLabels.contains(startLabel)).count()).
+                        thenComparingInt(b -> b.traversalType.ordinal()).
+                        thenComparingDouble(b -> b.multiplicity));
             }
 
             Bundle startLabelsBundle = null;
@@ -767,7 +766,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             this.getBundle(traversal).incrementEndCount();
             if (!this.onComputer) {  // if on computer, sort on a per traverser-basis with bias towards local star graph
                 if (this.counter < 200 || this.counter % 250 == 0) // aggressively sort for the first 200 results -- after that, sort every 250
-                    Collections.sort(this.bundles, Comparator.<Bundle>comparingInt(b -> b.traversalType.ordinal()).thenComparingDouble(b -> b.multiplicity));
+                    this.bundles.sort(Comparator.<Bundle>comparingInt(b -> b.traversalType.ordinal()).thenComparingDouble(b -> b.multiplicity));
                 this.counter++;
             }
         }

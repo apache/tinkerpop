@@ -87,7 +87,7 @@ public final class IteratorUtils {
 
     public static <S> List<S> list(final Iterator<S> iterator, final Comparator comparator) {
         final List<S> l = list(iterator);
-        Collections.sort(l, comparator);
+        l.sort(comparator);
         return l;
     }
 

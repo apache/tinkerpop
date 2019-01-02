@@ -171,7 +171,7 @@ public class StarGraphGraphSONSerializerV1d0 extends StdSerializer<DirectionalSt
     }
 
     static <S> List<S> sort(final List<S> listToSort, final Comparator comparator) {
-        Collections.sort(listToSort, comparator);
+        listToSort.sort(comparator);
         return listToSort;
     }
 

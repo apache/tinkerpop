@@ -109,7 +109,7 @@ public class KryoShimServiceLoader {
                 }
             }
         } else {
-            Collections.sort(services, KryoShimServiceComparator.INSTANCE);
+            services.sort(KryoShimServiceComparator.INSTANCE);
             for (final KryoShimService kss : services) {
                 log.debug("Found KryoShimService: {} (priority {})", kss.getClass().getCanonicalName(), kss.getPriority());
             }
