@@ -21,7 +21,7 @@ limitations under the License.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-mozart.png[width=185]
 
 [[release-3-3-5]]
-=== TinkerPop 3.3.5 (Release Date: January 2, 2018)
+=== TinkerPop 3.3.5 (Release Date: January 2, 2019)
 
 This release also includes changes from <<release-3-2-11, 3.2.11>>.
 
