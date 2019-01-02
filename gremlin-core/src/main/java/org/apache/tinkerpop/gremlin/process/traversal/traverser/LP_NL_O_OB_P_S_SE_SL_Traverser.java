@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.LabelledCounter;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Stack;
 
 public class LP_NL_O_OB_P_S_SE_SL_Traverser<T> extends LP_O_OB_P_S_SE_SL_Traverser<T> {
@@ -89,9 +90,8 @@ public class LP_NL_O_OB_P_S_SE_SL_Traverser<T> extends LP_O_OB_P_S_SE_SL_Travers
         if (this.loopNames != null) {
             clone.loopNames = new ReferenceMap(ReferenceMap.HARD, ReferenceMap.WEAK);
 
-            final Iterator loopNamesIterator = this.loopNames.entrySet().iterator();
-            while (loopNamesIterator.hasNext()) {
-                final ReferenceMap.Entry pair = (ReferenceMap.Entry) loopNamesIterator.next();
+            for (Object o : this.loopNames.entrySet()) {
+                final ReferenceMap.Entry pair = (ReferenceMap.Entry) o;
 
                 final int idx = this.nestedLoops.indexOf(pair.getValue());
                 if (idx != -1)
@@ -112,9 +112,8 @@ public class LP_NL_O_OB_P_S_SE_SL_Traverser<T> extends LP_O_OB_P_S_SE_SL_Travers
         if (this.loopNames != null) {
             clone.loopNames = new ReferenceMap(ReferenceMap.HARD, ReferenceMap.WEAK);
 
-            final Iterator loopNamesIterator = this.loopNames.entrySet().iterator();
-            while (loopNamesIterator.hasNext()) {
-                final ReferenceMap.Entry pair = (ReferenceMap.Entry) loopNamesIterator.next();
+            for (Object o : this.loopNames.entrySet()) {
+                final ReferenceMap.Entry pair = (ReferenceMap.Entry) o;
 
                 final int idx = this.nestedLoops.indexOf(pair.getValue());
                 if (idx != -1)
