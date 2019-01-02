@@ -332,7 +332,7 @@ class GraphSONSerializersV2d0 {
         @Override
         public void serialize(final Integer integer, final JsonGenerator jsonGenerator,
                               final SerializerProvider serializerProvider) throws IOException {
-            jsonGenerator.writeNumber(((Integer) integer).intValue());
+            jsonGenerator.writeNumber((Integer) integer);
         }
     }
 
