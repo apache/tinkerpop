@@ -23,7 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 == TinkerPop 3.4.0
 
-*Release Date: January 2, 2018*
+*Release Date: January 2, 2019*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.0/CHANGELOG.asciidoc#release-3-4-0[changelog] for a complete list of all the modifications that are part of this release.
 
