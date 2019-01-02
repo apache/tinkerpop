@@ -21,7 +21,7 @@ limitations under the License.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
 [[release-3-4-0]]
-=== TinkerPop 3.4.0 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.4.0 (Release Date: January 2, 2019)
 
 This release also includes changes from <<release-3-3-3, 3.3.3>>.
 
@@ -100,6 +100,169 @@ This release also includes changes from <<release-3-3-3, 3.3.3>>.
 * Removed support for Giraph.
 * Removed previously deprecated JavaScript Driver property `traversers` of the `ResultSet`.
 * gremlin-python: use explicit Bindings object for python instead of a 2-tuple
+
+==== Bugs
+
+* TINKERPOP-1777 Gremlin .max step returns -2147483648 for empty result sets *(breaking)*
+* TINKERPOP-1869 Profile step and iterate do not play nicely with each other
+* TINKERPOP-1898 Issue with bindings in strategies and lambdas
+* TINKERPOP-1927 Gherkin scenario expects list with duplicates, but receives g:Set
+* TINKERPOP-1933 gremlin-python maximum recursion depth exceeded on large responses
+* TINKERPOP-1947 Path history isn't preserved for keys in mutations
+* TINKERPOP-1949 Formatting error on website
+* TINKERPOP-1958 TinkerGraphCountStrategy can return wrong counts
+* TINKERPOP-1961 Duplicate copies of images directory in docs
+* TINKERPOP-1962 GroovyTranslator doesn't handle empty maps
+* TINKERPOP-1963 Use of reducing step in choose()
+* TINKERPOP-1972 inject() tests are throwing exceptions in .NET GLV tests
+* TINKERPOP-1978 Check for Websocket connection state when retrieved from Connection Pool missing
+* TINKERPOP-1979 Several OLAP issues in MathStep
+* TINKERPOP-1988 minor error in documentation
+* TINKERPOP-1999 [Java][gremlin-driver] Query to a remote server via the websocket client hangs indefinitely if the server becomes unavailable
+* TINKERPOP-2005 Intermittent NullPointerException in response handling
+* TINKERPOP-2006 GraphML serialization invalid if a vertex and edge have similar named property
+* TINKERPOP-2009 Pick.any and Pick.none should be exposed in Gremlin-JavaScript
+* TINKERPOP-2021 Prevent maximum recursion depth failure
+* TINKERPOP-2028 AbstractGraphSONMessageSerializerV2d0 should register GremlinServerModule when mapper is provided
+* TINKERPOP-2029 ConcurrentModificationException for InlineFilterStrategy
+* TINKERPOP-2030 KeepAlive task executed for every Connection.write call
+* TINKERPOP-2032 Update jython-standalone
+* TINKERPOP-2044 Cannot reconnect to Azure cosmos host that becomes available again
+* TINKERPOP-2058 Contains predicates should rely on Compare predicates *(breaking)*
+* TINKERPOP-2081 PersistedOutputRDD materialises rdd lazily with Spark 2.x
+* TINKERPOP-2091 Wrong/Missing feature requirements in StructureStandardTestSuite
+* TINKERPOP-2094 Gremlin Driver Cluster Builder serializer method does not use mimeType as suggested
+* TINKERPOP-2095 GroupStep looks for irrelevant barrier steps
+* TINKERPOP-2096 gremlinpython: AttributeError when connection is closed before result is received
+* TINKERPOP-2100 coalesce() creating unexpected results when used with order()
+* TINKERPOP-2113 P.Within() doesn't work when given a List argument
+
+==== Improvements
+
+* TINKERPOP-550 Gremlin IO needs to support both OLTP and OLAP naturally.
+* TINKERPOP-967 Support nested-repeat() structures
+* TINKERPOP-1113 GraphComputer subclasses should support native methods
+* TINKERPOP-1143 Remove deprecated TraversalSource.Builder and TraversalEngine. *(breaking)*
+* TINKERPOP-1296 Remove deprecated serializedResponseTimeout from Gremlin Server *(breaking)*
+* TINKERPOP-1342 Allow setting scriptEvaluationTimeout in driver
+* TINKERPOP-1365 Log the seed used to initialize Random in tests
+* TINKERPOP-1410 mvn install -Dmaven.test.skip=true doesn't work on a clean machine *(breaking)*
+* TINKERPOP-1446 Add a StringFactory for Path which prefixes with type.
+* TINKERPOP-1447 Add some JavaScript intelligence to the documentation so that comments and output are not copied in a copy paste
+* TINKERPOP-1494 Means of exposing execution information from a result produced by RemoteConnection
+* TINKERPOP-1518 Provide a way for providers to expose static Graph.Features to tests
+* TINKERPOP-1522 Order of select() scopes *(breaking)*
+* TINKERPOP-1595 Go through TraversalVertexProgram with a profile and optimize.
+* TINKERPOP-1628 Implement TraversalSelectStep
+* TINKERPOP-1685 Introduce optional feature to allow for upserts without read-before-write
+* TINKERPOP-1705 Remove deprecated rebindings option *(breaking)*
+* TINKERPOP-1707 Remove deprecated AuthenticationSettings.className option *(breaking)*
+* TINKERPOP-1755 No docs for ReferenceElements
+* TINKERPOP-1769 Python graph[empty] string representation is confusing
+* TINKERPOP-1774 Gremlin .NET: Support min and max sizes in Connection pool
+* TINKERPOP-1775 Gremlin .NET: Implement a Connection write queue to support request pipelining
+* TINKERPOP-1778 Do not promote timedInterrupt option for Gremlin Server script processing
+* TINKERPOP-1780 Add authentication tests for gremlin-python
+* TINKERPOP-1831 Refactor EventStrategy  *(breaking)*
+* TINKERPOP-1836 .NET sample project
+* TINKERPOP-1841 Include Python GLV tests on TravisCI
+* TINKERPOP-1849 Provide a way to fold() with an index
+* TINKERPOP-1864 Gremlin Python tests for GraphSON 2.0 and 3.0
+* TINKERPOP-1878 Sparql to Gremlin Compiler
+* TINKERPOP-1888 Extend max and min to all Comparable properties, not just Numbers *(breaking)*
+* TINKERPOP-1889 JavaScript GLV: Use heartbeat to prevent connection timeout
+* TINKERPOP-1897 Provide Docker images of Gremlin Server and Console
+* TINKERPOP-1906 Make ResponseException explorable
+* TINKERPOP-1912 Remove MD5 checksums
+* TINKERPOP-1913 Expose metadata from Gremlin Server to Clients
+* TINKERPOP-1930 Drop support for Giraph *(breaking)*
+* TINKERPOP-1934 Bump to latest version of httpclient
+* TINKERPOP-1936 Performance enhancement to Bytecode deserialization
+* TINKERPOP-1941 Remove deprecated Structure API exception methods *(breaking)*
+* TINKERPOP-1942 Binary serialization format
+* TINKERPOP-1945 Add support for extended GraphSon types to Gremlin.net
+* TINKERPOP-1946 Remove the deprecated Credentials DSL infrastructure *(breaking)*
+* TINKERPOP-1950 Traversal construction performance enhancements
+* TINKERPOP-1951 gremlin-server.bat doesn't support paths containing spaces
+* TINKERPOP-1953 Bump to Groovy 2.4.15
+* TINKERPOP-1954 Remove deprecated GraphManager methods *(breaking)*
+* TINKERPOP-1959 Provide a way to submit scripts to the server in gremlin-javascript
+* TINKERPOP-1967 Add a connectedComponent() step
+* TINKERPOP-1968 Refactor elements of Gremlin Server testing
+* TINKERPOP-1975 Introduce with() step modulator *(breaking)*
+* TINKERPOP-1976 Include Computer tests for GLVs
+* TINKERPOP-1977 Gremlin-JavaScript: Support SASL authentication
+* TINKERPOP-1984 Allow support for multiple serializer versions in Gremlin Server HTTP *(breaking)*
+* TINKERPOP-1985 Update position on bulk loading
+* TINKERPOP-1986 Remove deprecation from PartitionStrategy, SubgraphStrategy and GremlinScriptEngine *(breaking)*
+* TINKERPOP-1987 Bump to Netty 4.1.x
+* TINKERPOP-1989 Preserve order that plugins are applied in Gremlin Console
+* TINKERPOP-1990 Add a shortestPath() step
+* TINKERPOP-1993 Bump to Spark 2.3.1
+* TINKERPOP-1995 DriverRemoteConnection close() method returns undefined
+* TINKERPOP-1996 Introduce read() and write() steps
+* TINKERPOP-2002 Create a blog post explaining the value of using TinkerPop
+* TINKERPOP-2010 Generate jsdoc for gremlin-javascript
+* TINKERPOP-2011 Use NumberHelper on choose()
+* TINKERPOP-2012 Target .NET Standard 2.0 for Gremlin.Net
+* TINKERPOP-2013 Process tests that are auto-ignored stink
+* TINKERPOP-2015 Allow users to configure the WebSocket connections
+* TINKERPOP-2016 Upgrade Jackson FasterXML to 2.9.5 or later to fix security vulnerability
+* TINKERPOP-2017 Check for Column in by()
+* TINKERPOP-2018 Generate API docs for Gremlin.Net
+* TINKERPOP-2022 Cluster SSL should trust default ca certs by default
+* TINKERPOP-2023 Gremlin Server should not create self-signed certs *(breaking)*
+* TINKERPOP-2024 Gremlin Server Application archetype should connect via withRemote
+* TINKERPOP-2025 Change to SHA-256/512 and drop SHA-1 for releases
+* TINKERPOP-2026 Gremlin.Net.Driver should check ClientWebSocket.State before closing
+* TINKERPOP-2031 Remove support for -i in gremlin-server.sh *(breaking)*
+* TINKERPOP-2033 Maintain order of profile() annotations
+* TINKERPOP-2034 Register synchronizedMap() with Gryo
+* TINKERPOP-2037 Remove unused groovy-sql dependency
+* TINKERPOP-2038 Make groovy script cache size configurable
+* TINKERPOP-2039 Bump to Groovy 2.5.2 *(breaking)*
+* TINKERPOP-2040 Improve flexibility of GroovyTranslator to handle custom types
+* TINKERPOP-2041 Text Predicates
+* TINKERPOP-2045 Remove non-indy groovy dependencies
+* TINKERPOP-2049 Single argument with() overload
+* TINKERPOP-2050 Add a :bytecode command to Gremlin Console
+* TINKERPOP-2053 Provider OptionsStrategy for traversal configurations
+* TINKERPOP-2055 Provide support for special number cases like Infinity in GraphSON
+* TINKERPOP-2056 Use NumberHelper in Compare
+* TINKERPOP-2059 Modulation of valueMap() *(breaking)*
+* TINKERPOP-2060 Make Mutating steps non-final
+* TINKERPOP-2061 Add with() configuration as global to a traversal
+* TINKERPOP-2062 Add Traversal class to CoreImports
+* TINKERPOP-2064 Add status attributes to results for gremlin-javascript
+* TINKERPOP-2065 Optimize iterate() for remote traversals
+* TINKERPOP-2066 Bump to Groovy 2.5.3
+* TINKERPOP-2067 Allow getting raw data from Gremlin.Net.Driver.IGremlinClient
+* TINKERPOP-2068 Bump Jackson Databind 2.9.7
+* TINKERPOP-2069 Document configuration of Gremlin.Net
+* TINKERPOP-2070 gremlin-javascript: Introduce Connection representation
+* TINKERPOP-2071 gremlin-python: the graphson deserializer for g:Set should return a python set
+* TINKERPOP-2072 Refactor custom type translation for ScriptTranslators *(breaking)*
+* TINKERPOP-2073 Generate tabs for static code blocks
+* TINKERPOP-2074 Ensure that only NuGet packages for the current version are pushed
+* TINKERPOP-2075 Introduce ReferenceElementStrategy
+* TINKERPOP-2077 VertexProgram.Builder should have a default create() method with no Graph
+* TINKERPOP-2078 Hide use of EmptyGraph or RemoteGraph behind a more unified method for TraversalSource construction
+* TINKERPOP-2079 Move RemoteGraph to test package *(breaking)*
+* TINKERPOP-2084 For remote requests in console display the remote stack trace
+* TINKERPOP-2092 Deprecate default GraphSON serializer fields
+* TINKERPOP-2093 Bump to Groovy 2.5.4
+* TINKERPOP-2097 Create a DriverRemoteConnection with an initialized Client
+* TINKERPOP-2101 Support Spark 2.4
+* TINKERPOP-2103 Remove deprecated submit() options on RemoteConnection *(breaking)*
+* TINKERPOP-2104 Allow ImportCustomizer to handle fields
+* TINKERPOP-2106 When gremlin executes timeout, throw TimeoutException instead of TraversalInterruptedException/InterruptedIOException
+* TINKERPOP-2110 Allow Connection on Different Path (from /gremlin)
+* TINKERPOP-2111 Add BulkSet as a GraphSON type *(breaking)*
+* TINKERPOP-2114 Document common Gremlin anti-patterns
+* TINKERPOP-2116 Explicit Bindings object for Python *(breaking)*
+* TINKERPOP-2117 gremlin-python: Provide a better data structure for a Binding
+* TINKERPOP-2119 Validate C# code samples in docs
+* TINKERPOP-2121 Bump Jackson Databind 2.9.8
 
 == TinkerPop 3.3.0 (Gremlin Symphony #40 in G Minor)
 
