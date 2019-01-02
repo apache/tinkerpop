@@ -190,14 +190,6 @@ issue title and `D` is the label field: `="* "&A2&" "&B2&(IF(D2="breaking"," \*(
 current release was under development as this new release will have those changes included within it. Please see
 3.2.1 for an example.
 .. Format "breaking" changes to be clearly marked (use JIRA and the "breaking" label to identify those - already accounted for if using the suggested formula above)
-.. Run `git shortlog -sn previous-xx.yy.zz..current-xx.yy.zz` and paste the output into the "Contributors" section of
-the CHANGELOG.
-... The `previous-xx.yy.zz` should be the oldest line of code currently under release.
-... Review the output to be sure that the command aggregated the names properly. If there are duplicates it may be
-necessary to run the command with `-e` to see the emails that are being used and then creating an entry in `.mailmap`
-to consolidate the counts.
-... Include other notes about contributors who distinguished themselves in some way on a particular release if
-necessary (e.g. the release manager responsible for a particular release).
 . Update "upgrade documentation":
 .. Update the release date.
 .. Update the link to `CHANGELOG.asciidoc` - this link may already be correct but will not exist until the repository is tagged.
