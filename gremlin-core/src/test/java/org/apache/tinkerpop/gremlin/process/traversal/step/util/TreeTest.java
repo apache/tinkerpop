@@ -38,9 +38,9 @@ public class TreeTest extends StepTest {
 
     @Test
     public void shouldProvideValidDepths() {
-        Tree<String> tree = new Tree<String>();
-        tree.put("marko", new Tree<String>(TreeTest.createTree("a", new Tree<String>("a1", "a2")), TreeTest.createTree("b", new Tree<String>("b1", "b2", "b3"))));
-        tree.put("josh", new Tree<String>("1", "2"));
+        Tree<String> tree = new Tree<>();
+        tree.put("marko", new Tree<>(TreeTest.createTree("a", new Tree<>("a1", "a2")), TreeTest.createTree("b", new Tree<>("b1", "b2", "b3"))));
+        tree.put("josh", new Tree<>("1", "2"));
 
         assertEquals(0, tree.getObjectsAtDepth(0).size());
         assertEquals(2, tree.getObjectsAtDepth(1).size());
@@ -57,9 +57,9 @@ public class TreeTest extends StepTest {
 
     @Test
     public void shouldProvideValidLeaves() {
-        Tree<String> tree = new Tree<String>();
-        tree.put("marko", new Tree<String>(TreeTest.createTree("a", new Tree<String>("a1", "a2")), TreeTest.createTree("b", new Tree<String>("b1", "b2", "b3"))));
-        tree.put("josh", new Tree<String>("1", "2"));
+        Tree<String> tree = new Tree<>();
+        tree.put("marko", new Tree<>(TreeTest.createTree("a", new Tree<>("a1", "a2")), TreeTest.createTree("b", new Tree<>("b1", "b2", "b3"))));
+        tree.put("josh", new Tree<>("1", "2"));
 
         assertEquals(7, tree.getLeafTrees().size());
         for (Tree<String> t : tree.getLeafTrees()) {
@@ -77,9 +77,9 @@ public class TreeTest extends StepTest {
     @Test
     public void shouldMergeTreesCorrectly() {
         Tree<String> tree1 = new Tree<>();
-        tree1.put("1", new Tree<String>(TreeTest.createTree("1_1", new Tree<String>("1_1_1")), TreeTest.createTree("1_2", new Tree<String>("1_2_1"))));
+        tree1.put("1", new Tree<>(TreeTest.createTree("1_1", new Tree<>("1_1_1")), TreeTest.createTree("1_2", new Tree<>("1_2_1"))));
         Tree<String> tree2 = new Tree<>();
-        tree2.put("1", new Tree<String>(TreeTest.createTree("1_1", new Tree<String>("1_1_1")), TreeTest.createTree("1_2", new Tree<String>("1_2_2"))));
+        tree2.put("1", new Tree<>(TreeTest.createTree("1_1", new Tree<>("1_1_1")), TreeTest.createTree("1_2", new Tree<>("1_2_2"))));
 
         Tree<String> mergeTree = new Tree<>();
         mergeTree.addTree(tree1);

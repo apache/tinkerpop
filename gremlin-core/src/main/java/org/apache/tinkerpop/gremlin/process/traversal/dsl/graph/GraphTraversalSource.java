@@ -398,7 +398,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.inject, starts);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new InjectStep<S>(traversal, starts));
+        return traversal.addStep(new InjectStep<>(traversal, starts));
     }
 
     /**
@@ -441,7 +441,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.io, file);
         final GraphTraversal.Admin<S,S> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new IoStep<S>(traversal, file));
+        return traversal.addStep(new IoStep<>(traversal, file));
     }
 
     /**

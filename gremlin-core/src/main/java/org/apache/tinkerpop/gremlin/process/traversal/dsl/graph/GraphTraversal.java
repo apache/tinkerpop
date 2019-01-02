@@ -938,7 +938,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default <E2 extends Comparable> GraphTraversal<S, E2> min(final Scope scope) {
         this.asAdmin().getBytecode().addStep(Symbols.min, scope);
-        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MinGlobalStep<E2>(this.asAdmin()) : new MinLocalStep<>(this.asAdmin()));
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MinGlobalStep<>(this.asAdmin()) : new MinLocalStep<>(this.asAdmin()));
     }
 
     /**
@@ -1843,7 +1843,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, E> timeLimit(final long timeLimit) {
         this.asAdmin().getBytecode().addStep(Symbols.timeLimit, timeLimit);
-        return this.asAdmin().addStep(new TimeLimitStep<E>(this.asAdmin(), timeLimit));
+        return this.asAdmin().addStep(new TimeLimitStep<>(this.asAdmin(), timeLimit));
     }
 
     /**
@@ -1855,7 +1855,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, E> simplePath() {
         this.asAdmin().getBytecode().addStep(Symbols.simplePath);
-        return this.asAdmin().addStep(new PathFilterStep<E>(this.asAdmin(), true));
+        return this.asAdmin().addStep(new PathFilterStep<>(this.asAdmin(), true));
     }
 
     /**
@@ -1867,7 +1867,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, E> cyclicPath() {
         this.asAdmin().getBytecode().addStep(Symbols.cyclicPath);
-        return this.asAdmin().addStep(new PathFilterStep<E>(this.asAdmin(), false));
+        return this.asAdmin().addStep(new PathFilterStep<>(this.asAdmin(), false));
     }
 
     /**

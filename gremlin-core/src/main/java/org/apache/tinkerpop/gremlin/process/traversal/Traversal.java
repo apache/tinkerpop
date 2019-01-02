@@ -226,7 +226,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         this.asAdmin().getBytecode().addStep(Symbols.profile);
         return this.asAdmin()
                 .addStep(new ProfileSideEffectStep<>(this.asAdmin(), ProfileSideEffectStep.DEFAULT_METRICS_KEY))
-                .addStep(new SideEffectCapStep<Object, TraversalMetrics>(this.asAdmin(), ProfileSideEffectStep.DEFAULT_METRICS_KEY));
+                .addStep(new SideEffectCapStep<>(this.asAdmin(), ProfileSideEffectStep.DEFAULT_METRICS_KEY));
     }
 
     /**

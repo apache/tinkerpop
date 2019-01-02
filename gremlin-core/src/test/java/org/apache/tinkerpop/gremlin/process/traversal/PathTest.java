@@ -186,7 +186,7 @@ public class PathTest {
     public void shouldSelectSingleCorrectly() {
         PATH_SUPPLIERS.forEach(supplier -> {
             Path path = supplier.get();
-            path = path.extend("marko", new LinkedHashSet<String>(Arrays.asList("a", "b")));
+            path = path.extend("marko", new LinkedHashSet<>(Arrays.asList("a", "b")));
             path = path.extend("stephen", new LinkedHashSet<>(Arrays.asList("a", "c")));
             path = path.extend("matthias", new LinkedHashSet<>(Arrays.asList("c", "d")));
             assertEquals(3, path.size());

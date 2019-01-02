@@ -262,7 +262,7 @@ public final class ComputerGraph implements Graph {
 
         @Override
         public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
-            return IteratorUtils.map(super.properties(propertyKeys), property -> new ComputerVertexProperty<V>((VertexProperty<V>) property));
+            return IteratorUtils.map(super.properties(propertyKeys), property -> new ComputerVertexProperty<>((VertexProperty<V>) property));
         }
 
         @Override

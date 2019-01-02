@@ -53,7 +53,7 @@ public class Tree<T> extends HashMap<T, Tree<T>> implements Serializable {
             if (i == depth - 1) {
                 return currentDepth;
             } else {
-                final List<Tree<T>> temp = new ArrayList<Tree<T>>();
+                final List<Tree<T>> temp = new ArrayList<>();
                 for (final Tree<T> t : currentDepth) {
                     temp.addAll(t.values());
                 }
@@ -64,7 +64,7 @@ public class Tree<T> extends HashMap<T, Tree<T>> implements Serializable {
     }
 
     public List<T> getObjectsAtDepth(final int depth) {
-        final List<T> list = new ArrayList<T>();
+        final List<T> list = new ArrayList<>();
         for (final Tree<T> t : this.getTreesAtDepth(depth)) {
             list.addAll(t.keySet());
         }
@@ -81,7 +81,7 @@ public class Tree<T> extends HashMap<T, Tree<T>> implements Serializable {
             for (final Tree<T> t : currentDepth) {
                 if (t.isLeaf()) {
                     for (Map.Entry<T, Tree<T>> t2 : t.entrySet()) {
-                        leaves.add(new Tree<T>(t2));
+                        leaves.add(new Tree<>(t2));
                     }
                 } else {
                     allLeaves = false;
@@ -95,7 +95,7 @@ public class Tree<T> extends HashMap<T, Tree<T>> implements Serializable {
     }
 
     public List<T> getLeafObjects() {
-        final List<T> leaves = new ArrayList<T>();
+        final List<T> leaves = new ArrayList<>();
         for (final Tree<T> t : this.getLeafTrees()) {
             leaves.addAll(t.keySet());
         }

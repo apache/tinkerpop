@@ -39,7 +39,7 @@ public interface CloseableIterator<T> extends Iterator<T>, Closeable {
         if (iterator instanceof CloseableIterator)
             return (CloseableIterator<T>) iterator;
 
-        return new DefaultCloseableIterator<T>(iterator);
+        return new DefaultCloseableIterator<>(iterator);
     }
 
     @Override
