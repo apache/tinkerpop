@@ -386,7 +386,7 @@ class GraphSONSerializersV2d0 {
             }
             if (!metrics.getNested().isEmpty()) {
                 final List<Metrics> nested = new ArrayList<>();
-                metrics.getNested().forEach(it -> nested.add(it));
+                metrics.getNested().forEach(nested::add);
                 m.put(GraphSONTokens.METRICS, nested);
             }
             jsonGenerator.writeObject(m);

@@ -459,7 +459,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
                 // becoming global).
                 final Object initializedBindings = engine.eval(initScript);
                 if (initializedBindings != null && initializedBindings instanceof Map)
-                    ((Map<String,Object>) initializedBindings).forEach((k,v) -> put(k,v));
+                    ((Map<String,Object>) initializedBindings).forEach(this::put);
             } catch (Exception ex) {
                 throw new IllegalStateException(ex);
             }

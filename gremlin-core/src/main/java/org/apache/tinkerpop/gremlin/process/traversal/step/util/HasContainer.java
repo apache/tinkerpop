@@ -169,7 +169,7 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
             final Collection collection = (Collection) predicateValue;
             if (!collection.isEmpty()) {
                 Class<?> first = collection.toArray()[0].getClass();
-                if (!((Collection) predicateValue).stream().map(Object::getClass).allMatch(c -> first.equals(c)))
+                if (!((Collection) predicateValue).stream().map(Object::getClass).allMatch(first::equals))
                     throw new IllegalArgumentException("Has comparisons on a collection of ids require ids to all be of the same type");
             }
         }

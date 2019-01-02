@@ -315,7 +315,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
             final Map<String, List<Property>> converted = new HashMap<>();
 
             values.entrySet().forEach(p -> {
-                final List l = p.getValue().stream().map(property -> property.value()).collect(Collectors.toList());
+                final List l = p.getValue().stream().map(Property::value).collect(Collectors.toList());
                 converted.put(p.getKey(), l);
             });
 

@@ -49,6 +49,7 @@ import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -210,7 +211,7 @@ public final class StringFactory {
     public static String stepString(final Step<?, ?> step, final Object... arguments) {
         final StringBuilder builder = new StringBuilder(step.getClass().getSimpleName());
         final List<String> strings = Stream.of(arguments)
-                .filter(o -> null != o)
+                .filter(Objects::nonNull)
                 .filter(o -> {
                     if (o instanceof TraversalRing)
                         return !((TraversalRing) o).isEmpty();

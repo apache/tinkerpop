@@ -174,7 +174,7 @@ public final class ComputerGraph implements Graph {
 
         @Override
         public <V> Iterator<V> values(final String... propertyKeys) {
-            return IteratorUtils.map(this.<V>properties(propertyKeys), property -> property.value());
+            return IteratorUtils.map(this.<V>properties(propertyKeys), Property::value);
         }
 
         @Override

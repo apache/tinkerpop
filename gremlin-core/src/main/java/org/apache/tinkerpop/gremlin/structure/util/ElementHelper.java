@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -170,7 +171,7 @@ public final class ElementHelper {
                 .filter(i -> i % 2 == 0)
                 .filter(i -> !keyToRemove.equals(list.get(i)))
                 .flatMap(i -> IntStream.of(i, i + 1))
-                .mapToObj(i -> list.get(i))
+                .mapToObj((IntFunction<Object>) list::get)
                 .collect(Collectors.toList());
         return revised.size() > 0 ? Optional.of(revised.toArray()) : Optional.empty();
     }
@@ -221,7 +222,7 @@ public final class ElementHelper {
      * assure that key positions contain strings and that there are an even number of elements.
      */
     public static Map<String, Object> asMap(final Object... keyValues) {
-        return asPairs(keyValues).stream().collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
+        return asPairs(keyValues).stream().collect(Collectors.toMap(Pair::getValue0, Pair::getValue1));
     }
 
     /**

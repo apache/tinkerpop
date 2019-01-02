@@ -104,7 +104,7 @@ public abstract interface Element {
      * Get the values of properties as an {@link Iterator}.
      */
     public default <V> Iterator<V> values(final String... propertyKeys) {
-        return IteratorUtils.map(this.<V>properties(propertyKeys), property -> property.value());
+        return IteratorUtils.map(this.<V>properties(propertyKeys), Property::value);
     }
 
     /**
