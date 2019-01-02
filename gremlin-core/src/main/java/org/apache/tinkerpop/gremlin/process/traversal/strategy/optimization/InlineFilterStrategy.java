@@ -195,6 +195,7 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
             InlineFilterStrategy.instance().apply(childTraversal); // todo: this may be a bad idea, but I can't seem to find a test case to break it
             for (final Step<?, ?> childStep : childTraversal.getSteps()) {
                 if (childStep instanceof HasStep) {
+                    P p = null;
                     for (final HasContainer hasContainer : ((HasStep<?>) childStep).getHasContainers()) {
                         if (null == key)
                             key = hasContainer.getKey();
@@ -202,9 +203,12 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                             process = false;
                             break;
                         }
-                        predicate = null == predicate ?
+                        p = null == p ?
                                 hasContainer.getPredicate() :
-                                predicate.or(hasContainer.getPredicate());
+                                p.and(hasContainer.getPredicate());
+                    }
+                    if (process) {
+                        predicate = null == predicate ? p : predicate.or(p);
                     }
                     labels.addAll(childStep.getLabels());
                 } else {
