@@ -288,10 +288,7 @@ public final class GraphFilter implements Cloneable, Serializable {
         final Map<String, Legal> legalMap = this.edgeLegality.get(direction);
         if (legalMap.containsKey(label))
             return legalMap.get(label);
-        else if (legalMap.containsKey(null))
-            return legalMap.get(null);
-        else
-            return Legal.NO;
+        else return legalMap.getOrDefault(null, Legal.NO);
     }
 
     /**

@@ -53,11 +53,7 @@ public final class MultiMap {
     }
 
     private static <K, V> Set<V> getMapSet(final Map<K, Set<V>> map, final K key) {
-        Set<V> set = map.get(key);
-        if (set == null) {
-            set = new LinkedHashSet<>();
-            map.put(key, set);
-        }
+        Set<V> set = map.computeIfAbsent(key, k -> new LinkedHashSet<>());
         return set;
     }
 

@@ -443,11 +443,7 @@ public final class StarGraph implements Graph, Serializable {
             ElementHelper.legalPropertyKeyValueArray(keyValues);
             if (null == this.outEdges)
                 this.outEdges = new HashMap<>();
-            List<Edge> outE = this.outEdges.get(label);
-            if (null == outE) {
-                outE = new ArrayList<>();
-                this.outEdges.put(label, outE);
-            }
+            List<Edge> outE = this.outEdges.computeIfAbsent(label, k -> new ArrayList<>());
             final StarEdge outEdge = new StarOutEdge(ElementHelper.getIdValue(keyValues).orElse(nextId()), label, inVertex.id());
             ElementHelper.attachProperties(outEdge, keyValues);
             outE.add(outEdge);
@@ -459,11 +455,7 @@ public final class StarGraph implements Graph, Serializable {
             ElementHelper.legalPropertyKeyValueArray(keyValues);
             if (null == this.inEdges)
                 this.inEdges = new HashMap<>();
-            List<Edge> inE = this.inEdges.get(label);
-            if (null == inE) {
-                inE = new ArrayList<>();
-                this.inEdges.put(label, inE);
-            }
+            List<Edge> inE = this.inEdges.computeIfAbsent(label, k -> new ArrayList<>());
             final StarEdge inEdge = new StarInEdge(ElementHelper.getIdValue(keyValues).orElse(nextId()), label, outVertex.id());
             ElementHelper.attachProperties(inEdge, keyValues);
             inE.add(inEdge);
@@ -568,18 +560,10 @@ public final class StarGraph implements Graph, Serializable {
                         final Map<String, List<Edge>> inEdges = new HashMap<>();
                         graphFilter.legalEdges(this).forEachRemaining(edge -> {
                             if (edge instanceof StarGraph.StarOutEdge) {
-                                List<Edge> edges = outEdges.get(edge.label());
-                                if (null == edges) {
-                                    edges = new ArrayList<>();
-                                    outEdges.put(edge.label(), edges);
-                                }
+                                List<Edge> edges = outEdges.computeIfAbsent(edge.label(), k -> new ArrayList<>());
                                 edges.add(edge);
                             } else {
-                                List<Edge> edges = inEdges.get(edge.label());
-                                if (null == edges) {
-                                    edges = new ArrayList<>();
-                                    inEdges.put(edge.label(), edges);
-                                }
+                                List<Edge> edges = inEdges.computeIfAbsent(edge.label(), k -> new ArrayList<>());
                                 edges.add(edge);
                             }
                         });
@@ -668,11 +652,7 @@ public final class StarGraph implements Graph, Serializable {
             ElementHelper.validateProperty(key, value);
             if (null == metaProperties)
                 metaProperties = new HashMap<>();
-            Map<String, Object> properties = metaProperties.get(this.id);
-            if (null == properties) {
-                properties = new HashMap<>();
-                metaProperties.put(this.id, properties);
-            }
+            Map<String, Object> properties = metaProperties.computeIfAbsent(this.id, k -> new HashMap<>());
             properties.put(key, value);
             return new StarProperty<>(key, value, this);
         }
@@ -783,11 +763,7 @@ public final class StarGraph implements Graph, Serializable {
             ElementHelper.validateProperty(key, value);
             if (null == edgeProperties)
                 edgeProperties = new HashMap<>();
-            Map<String, Object> properties = edgeProperties.get(this.id);
-            if (null == properties) {
-                properties = new HashMap<>();
-                edgeProperties.put(this.id, properties);
-            }
+            Map<String, Object> properties = edgeProperties.computeIfAbsent(this.id, k -> new HashMap<>());
             properties.put(key, value);
             return new StarProperty<>(key, value, this);
         }
