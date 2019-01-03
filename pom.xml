@@ -226,8 +226,19 @@ limitations under the License.
                         <goals>
                             <goal>jar-no-fork</goal>
                         </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>gremlin-dotnet/src/obj/**</exclude>
+                                <exclude>gremlin-dotnet/src/_site/**</exclude>
+                                <exclude>gremlin-javascript/src/main/javascript/gremlin-javascript/node_modules/**</exclude>
+                            </excludes>
+                        </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -1570,6 +1581,50 @@ limitations under the License.
                 </plugins>
             </build>
 
+        </profile>
+
+        <!--
+        overriding the default apache release a bit from here:
+             https://github.com/apache/maven-apache-parent/blob/apache-21/pom.xml
+        because it doesn't filter all the files out that we need as it assumes a pure java infrastructure and we
+        have all manner of different languages hanging about
+        -->
+        
+        <profile>
+            <id>apache-release</id>
+            <build>
+                <plugins>
+                    <!-- Create a source-release artifact that contains the fully buildable
+                         project directory source structure. This is the artifact which is
+                         the official subject of any release vote. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <!-- explicitly ignore the apache parent execution or we generate two zips -->
+                            <execution>
+                                <id>source-release-assembly</id>
+                                <phase>none</phase>
+                            </execution>
+                            <!-- this is the tinkerpop version that generates the "good" zip -->
+                            <execution>
+                                <id>tinkerpop-source-release-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <runOnlyAtExecutionRoot>true</runOnlyAtExecutionRoot>
+                                    <descriptors>
+                                        <descriptor>source-release.xml</descriptor>
+                                    </descriptors>
+                                    <tarLongFileMode>posix</tarLongFileMode>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
 
     </profiles>
