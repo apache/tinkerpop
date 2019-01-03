@@ -651,6 +651,8 @@ from gremlin_python.process.traversal import P
 from gremlin_python.process.traversal import Pop
 from gremlin_python.process.traversal import Scope
 from gremlin_python.process.traversal import Barrier
+from gremlin_python.process.traversal import Bindings
+from gremlin_python.process.traversal import WithOptions
 ----
 
 These can be used analogously to how they are used in Gremlin-Java.
@@ -757,8 +759,8 @@ instead of translating, compiling, and then executing each submitted bytecode, i
 
 [gremlin-python,modern]
 ----
-g.V(('id',1)).out('created').map(lambda: ("it.get().value('name').length()", "gremlin-groovy")).sum().toList()
-g.V(('id',4)).out('created').map(lambda: ("it.get().value('name').length()", "gremlin-groovy")).sum().toList()
+g.V(Bindings.of('id',1)).out('created').map(lambda: ("it.get().value('name').length()", "gremlin-groovy")).sum().toList()
+g.V(Bindings.of('id',4)).out('created').map(lambda: ("it.get().value('name').length()", "gremlin-groovy")).sum().toList()
 ----
 
 ==== Native Python Lambdas
