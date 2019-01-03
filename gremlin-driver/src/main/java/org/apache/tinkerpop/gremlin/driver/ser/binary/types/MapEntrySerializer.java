@@ -33,17 +33,17 @@ public class MapEntrySerializer extends SimpleTypeSerializer<Map.Entry> implemen
     }
 
     @Override
-    Map.Entry readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
+    Map.Entry readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         throw new SerializationException("A map entry should not be read individually");
     }
 
     @Override
-    public ByteBuf writeValue(Map.Entry value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
+    public ByteBuf writeValue(final Map.Entry value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         throw new SerializationException("A map entry should not be written individually");
     }
 
     @Override
-    public Object transform(Map.Entry value) {
+    public Object transform(final Map.Entry value) {
         final Map map = new HashMap();
         map.put(value.getKey(), value.getValue());
         return map;

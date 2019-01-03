@@ -46,12 +46,12 @@ public class TraversalExplanationSerializer extends SimpleTypeSerializer<Travers
     }
 
     @Override
-    TraversalExplanation readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
+    TraversalExplanation readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         throw new SerializationException("A TraversalExplanation should not be read individually");
     }
 
     @Override
-    public ByteBuf writeValue(TraversalExplanation value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
+    public ByteBuf writeValue(final TraversalExplanation value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         throw new SerializationException("A TraversalExplanation should not be written individually");
     }
 
@@ -59,7 +59,7 @@ public class TraversalExplanationSerializer extends SimpleTypeSerializer<Travers
      * Creates a Map containing "original", "intermediate" and "final" keys.
      */
     @Override
-    public Object transform(TraversalExplanation value) {
+    public Object transform(final TraversalExplanation value) {
         final Map<String, Object> result = new HashMap<>();
         result.put(ORIGINAL, getTraversalSteps(value.getOriginalTraversal()));
 

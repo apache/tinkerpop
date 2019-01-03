@@ -33,7 +33,7 @@ public class TreeSerializer extends SimpleTypeSerializer<Tree> {
     }
 
     @Override
-    Tree readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
+    Tree readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final int length = buffer.readInt();
 
         final Tree result = new Tree();
@@ -45,7 +45,7 @@ public class TreeSerializer extends SimpleTypeSerializer<Tree> {
     }
 
     @Override
-    public ByteBuf writeValue(Tree value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
+    public ByteBuf writeValue(final Tree value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(1 + value.size() * 2);
         result.addComponent(true, allocator.buffer(4).writeInt(value.size()));
 
