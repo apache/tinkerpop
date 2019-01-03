@@ -29,12 +29,30 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.4.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== sparql-gremlin
+
+The `sparql-gremlin` module is a link:https://en.wikipedia.org/wiki/SPARQL[SPARQL] to Gremlin compiler, which allows
+SPARQL to be executed over any TinkerPop-enabled graph system.
+
+[source,groovy]
+----
+graph = TinkerFactory.createModern()
+g = graph.traversal(SparqlTraversalSource)
+g.sparql("""SELECT ?name ?age
+            WHERE { ?person v:name ?name . ?person v:age ?age }
+            ORDER BY ASC(?age)""")
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1878[TINKERPOP-1878],
+link:http://tinkerpop.apache.org/docs/3.4.0/reference/#sparql-gremlin[Reference Documentation]
+
 ==== Gremlin.NET Driver Improvements
 
-The Gremlin.NET driver now uses request pipelining. This allows connections to be reused for different requests in parallel which should lead to better utilization of connections.
-The `ConnectionPool` now also has a fixed size whereas it could previously create an unlimited number of connections.
-Each `Connection` can handle up to `MaxInProcessPerConnection` requests in parallel.
-If this limit is reached for all connections, then a `NoConnectionAvailableException` is thrown which makes this a breaking change.
+The Gremlin.NET driver now uses request pipelining. This allows connections to be reused for different requests in
+parallel which should lead to better utilization of connections. The `ConnectionPool` now also has a fixed size
+whereas it could previously create an unlimited number of connections. Each `Connection` can handle up to
+`MaxInProcessPerConnection` requests in parallel. If this limit is reached for all connections, then a
+`NoConnectionAvailableException` is thrown which makes this a breaking change.
 
 These settings can be set as properties on the `ConnectionPoolSettings` instance that can be passed to the `GremlinClient`.
 
@@ -42,7 +60,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1774[TINKERPOP-1774],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1775[TINKERPOP-1775],
 link:http://tinkerpop.apache.org/docs/3.4.0/reference/#_connection_pool[Reference Documentation]
 
-==== Indexing of collections
+==== Indexing of Collections
 
 TinkerPop 3.4.0 adds a new `index()`-step, which allows users to transform simple collections into index collections or maps.
 
@@ -130,7 +148,7 @@ yield instances of type `Map<Object, Object>`. Prior this change only the `value
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2059[TINKERPOP-2059]
 
-==== Number Comparison of Predicates
+==== Predicate Number Comparison
 
 In previous versions `within()` and `without()` performed strict number comparisons; that means these predicates did
 not only compare number values, but also the type. This was inconsistent with how other predicates (like `eq, `gt`,
@@ -192,7 +210,7 @@ for it.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2075[TINKERPOP-2075]
 
-==== Added Text Predicates
+==== Text Predicates
 
 Gremlin now supports simple text predicates on top of the existing `P` predicates. Both, the new `TextP` text
 predicates and the old `P` predicates, can be chained using `and()` and `or()`.
@@ -207,25 +225,6 @@ gremlin> g.V().has("person","name", containing("o").and(gte("j").and(endingWith(
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2041[TINKERPOP-2041]
-
-==== Removed groovy-sql Dependency
-
-Gremlin Console and Gremlin Server no longer include groovy-sql.  If you depend on groovy-sql,
-you can install it in Gremlin Console or Gremlin Server using the plugin system.
-
-Console:
-```
-:install org.codehaus.groovy groovy-sql 2.5.2
-```
-
-Server:
-```
-bin/gremlin-server.sh install org.codehaus.groovy groovy-sql 2.5.2
-```
-
-If your project depended on groovy-sql transitively, simply include it in your project's build file (e.g. maven: pom.xml).
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2037[TINKERPOP-2037]
 
 ==== Changed Infix Behavior
 
@@ -252,23 +251,6 @@ gremlin> g.V().has("name","marko").and().has("age", lt(30)).or().has("name","jos
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2029[TINKERPOP-2029]
-
-==== sparql-gremlin
-
-The `sparql-gremlin` module is a link:https://en.wikipedia.org/wiki/SPARQL[SPARQL] to Gremlin compiler, which allows
-SPARQL to be executed over any TinkerPop-enabled graph system.
-
-[source,groovy]
-----
-graph = TinkerFactory.createModern()
-g = graph.traversal(SparqlTraversalSource)
-g.sparql("""SELECT ?name ?age
-            WHERE { ?person v:name ?name . ?person v:age ?age }
-            ORDER BY ASC(?age)""")
-----
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1878[TINKERPOP-1878],
-link:http://tinkerpop.apache.org/docs/3.4.0/reference/#sparql-gremlin[Reference Documentation]
 
 ==== GraphBinary
 
@@ -425,38 +407,7 @@ List<Result> result = client.submit("g.V()", options).all().get();
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1342[TINKERPOP-1342]
 
-==== Moving of RemoteGraph
-
-`RemoteGraph` was long ago deprecated in favor of `withRemote()`. It became even less useful with the introduction of
-the `AnonymousTraversalSource` concept in 3.3.5. It's only real use was for testing remote bytecode based traversals
-in the test suite as the test suite requires an actual `Graph` object to function properly. As such, `RemoteGraph` has
-been moved to `gremlin-test`. It should no longer be used in any capacity besides that.
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2079[TINKERPOP-2079]
-
-==== Removal of Giraph Support
-
-Support for Giraph has been removed as of this version. There were a number of reasons for this decision which were
-discussed in the community prior to taking this step. Users should switch to Spark for their OLAP based graph-computing
-needs.
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1930[TINKERPOP-1930]
-
-==== Removal of Rebindings Options
-
-The "rebindings" option is no longer supported for clients. It was deprecated long ago at 3.1.0. The server will not
-respond to them on any channel - websockets, nio or HTTP. Use the "aliases" option instead.
-
-link:https://issues.apache.org/jira/browse/TINKERPOP-1705[TINKERPOP-1705]
-
-==== gremlin-server.sh -i Removal
-
-The `-i` option for installing dependencies in Gremlin Server was long ago deprecated and has now been removed. Please
-use `install` as its replacement going forward.
-
-link:https://issues.apache.org/jira/browse/TINKERPOP-2031[TINKERPOP-2031]
-
-==== Improvements in `min()` and `max()`
+==== `min()` `max()` and Comparable
 
 Previously `min()` and `max()` were only working for numeric values. This has been changed and these steps can now
 operate over any `Comparable` value. The common workaround was the combination of `order().by()` and `limit()` as
@@ -527,72 +478,6 @@ when dealing with that event. To make this easier, the event now raises with a `
 `KeyedProperty` instance, which only contains a property key and no value in them.
 
 link:https://issues.apache.org/jira/browse/TINKERPOP-1831[TINKERPOP-1831]
-
-==== Deprecation Removal
-
-The following deprecated classes, methods or fields have been removed in this version:
-
-* `gremlin-core`
-** `org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer#GREMLIN_CORE`
-** `org.apache.tinkerpop.gremlin.process.remote.RemoteGraph` - moved to `gremlin-test`
-** `org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.submit(Traversal)`
-** `org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.submit(Bytecode)`
-** `org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy#identity()`
-** `org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine`
-** `org.apache.tinkerpop.gremlin.process.traversal.engine.*`
-** `org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy.Builder#addReadPartition(String)`
-** `org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy.Builder#edgeCriterion(Traversal)`
-** `org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy.Builder#vertexCriterion(Traversal)`
-** `org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaCollectingBarrierStep.Consumers`
-** `org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer#makeHasContainers(String, P)`
-** `org.apache.tinkerpop.gremlin.process.traversal.step.util.event.MutationListener#vertexPropertyChanged(Vertex, Property, Object, Object...)`
-** `org.apache.tinkerpop.gremlin.structure.Element.Exceptions#elementAlreadyRemoved(Class, Object)`
-** `org.apache.tinkerpop.gremlin.structure.Graph.Exceptions#elementNotFound(Class, Object)`
-** `org.apache.tinkerpop.gremlin.structure.Graph.Exceptions#elementNotFound(Class, Object, Exception)`
-* `gremlin-driver`
-** `org.apache.tinkerpop.gremlin.driver.Client#rebind(String)`
-** `org.apache.tinkerpop.gremlin.driver.Client.ReboundClusterdClient`
-** `org.apache.tinkerpop.gremlin.driver.Tokens#ARGS_REBINDINGS`
-* `gremlin-groovy`
-** `org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine.close()` - no longer implements `AutoCloseable`
-* `gremlin-server`
-** `org.apache.tinkerpop.gremlin.server.GraphManager#getGraphs()`
-** `org.apache.tinkerpop.gremlin.server.GraphManager#getTraversalSources()`
-** `org.apache.tinkerpop.gremlin.server.Settings#serializedResponseTimeout`
-** `org.apache.tinkerpop.gremlin.server.Settings.AuthenticationSettings#className`
-** `org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler(Settings, GraphManager, GremlinExecutor, ScheduledExecutorService)`
-** `org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor#makeFrame(ChannelHandlerContext, RequestMessage, MessageSerializer serializer, boolean, List, ResponseStatusCode code)`
-* `hadoop-graph`
-** `org.apache.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration#getGraphInputFormat()`
-** `org.apache.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration#getGraphOutputFormat()`
-
-Please see the javadoc deprecation notes or upgrade documentation specific to when the deprecation took place to
-understand how to resolve this breaking change.
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1143[TINKERPOP-1143],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1296[TINKERPOP-1296],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1705[TINKERPOP-1705],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1707[TINKERPOP-1707],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1954[TINKERPOP-1954],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1986[TINKERPOP-1986],
-link:https://issues.apache.org/jira/browse/TINKERPOP-2079[TINKERPOP-2079],
-link:https://issues.apache.org/jira/browse/TINKERPOP-2103[TINKERPOP-2103]
-
-==== Deprecated GraphSONMessageSerializerGremlinV2d0
-
-The `GraphSONMessageSerializerGremlinV2d0` serializer is now analogous to `GraphSONMessageSerializerV2d0` and therefore
-redundant. It has technically always been equivalent in terms of functionality as both serialized to the same format
-(i.e. GraphSON 2.0 with embedded types). It is no longer clear why these two classes were established this way, but
-it does carry the negative effect where multiple serializer versions could not be bound to Gremlin Server's HTTP
-endpoint as the MIME types conflicted on `application/json`. By simply making both message serializers support
-`application/json` and `application/vnd.gremlin-v2.0+json`, it then became possible to overcome that limitation. In
-short, prefer use of `GraphSONMessageSerializerV2d0` when possible.
-
-Note that this is a breaking change in the sense that `GraphSONMessageSerializerV2d0` will no longer set the header of
-requests messages to `application/json`. As a result, older versions of Gremlin Server not configured with
-`GraphSONMessageSerializerGremlinV2d0` will not find a deserializer to match the request.
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1984[TINKERPOP-1984]
 
 ==== Reducing Barrier Steps
 
@@ -695,6 +580,127 @@ maintains that structure sent from the server. For the other variants, the `Bulk
 which results in a much larger memory footprint than what is contained the `BulkSet`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2111[TINKERPOP-2111]
+
+==== Deprecation and Removal
+
+This section describes newly deprecated classes, methods, components and patterns of usage as well as which previously
+deprecated features have been officially removed or repurposed.
+
+===== Moving of RemoteGraph
+
+`RemoteGraph` was long ago deprecated in favor of `withRemote()`. It became even less useful with the introduction of
+the `AnonymousTraversalSource` concept in 3.3.5. It's only real use was for testing remote bytecode based traversals
+in the test suite as the test suite requires an actual `Graph` object to function properly. As such, `RemoteGraph` has
+been moved to `gremlin-test`. It should no longer be used in any capacity besides that.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2079[TINKERPOP-2079]
+
+===== Removal of Giraph Support
+
+Support for Giraph has been removed as of this version. There were a number of reasons for this decision which were
+discussed in the community prior to taking this step. Users should switch to Spark for their OLAP based graph-computing
+needs.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1930[TINKERPOP-1930]
+
+===== Removal of Rebindings Options
+
+The "rebindings" option is no longer supported for clients. It was deprecated long ago at 3.1.0. The server will not
+respond to them on any channel - websockets, nio or HTTP. Use the "aliases" option instead.
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-1705[TINKERPOP-1705]
+
+===== gremlin-server.sh -i Removal
+
+The `-i` option for installing dependencies in Gremlin Server was long ago deprecated and has now been removed. Please
+use `install` as its replacement going forward.
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-2031[TINKERPOP-2031]
+
+===== Deprecation Removal
+
+The following deprecated classes, methods or fields have been removed in this version:
+
+* `gremlin-core`
+** `org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer#GREMLIN_CORE`
+** `org.apache.tinkerpop.gremlin.process.remote.RemoteGraph` - moved to `gremlin-test`
+** `org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.submit(Traversal)`
+** `org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.submit(Bytecode)`
+** `org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy#identity()`
+** `org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine`
+** `org.apache.tinkerpop.gremlin.process.traversal.engine.*`
+** `org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy.Builder#addReadPartition(String)`
+** `org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy.Builder#edgeCriterion(Traversal)`
+** `org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy.Builder#vertexCriterion(Traversal)`
+** `org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaCollectingBarrierStep.Consumers`
+** `org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer#makeHasContainers(String, P)`
+** `org.apache.tinkerpop.gremlin.process.traversal.step.util.event.MutationListener#vertexPropertyChanged(Vertex, Property, Object, Object...)`
+** `org.apache.tinkerpop.gremlin.structure.Element.Exceptions#elementAlreadyRemoved(Class, Object)`
+** `org.apache.tinkerpop.gremlin.structure.Graph.Exceptions#elementNotFound(Class, Object)`
+** `org.apache.tinkerpop.gremlin.structure.Graph.Exceptions#elementNotFound(Class, Object, Exception)`
+* `gremlin-driver`
+** `org.apache.tinkerpop.gremlin.driver.Client#rebind(String)`
+** `org.apache.tinkerpop.gremlin.driver.Client.ReboundClusterdClient`
+** `org.apache.tinkerpop.gremlin.driver.Tokens#ARGS_REBINDINGS`
+* `gremlin-groovy`
+** `org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine.close()` - no longer implements `AutoCloseable`
+* `gremlin-server`
+** `org.apache.tinkerpop.gremlin.server.GraphManager#getGraphs()`
+** `org.apache.tinkerpop.gremlin.server.GraphManager#getTraversalSources()`
+** `org.apache.tinkerpop.gremlin.server.Settings#serializedResponseTimeout`
+** `org.apache.tinkerpop.gremlin.server.Settings.AuthenticationSettings#className`
+** `org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler(Settings, GraphManager, GremlinExecutor, ScheduledExecutorService)`
+** `org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor#makeFrame(ChannelHandlerContext, RequestMessage, MessageSerializer serializer, boolean, List, ResponseStatusCode code)`
+* `hadoop-graph`
+** `org.apache.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration#getGraphInputFormat()`
+** `org.apache.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration#getGraphOutputFormat()`
+
+Please see the javadoc deprecation notes or upgrade documentation specific to when the deprecation took place to
+understand how to resolve this breaking change.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1143[TINKERPOP-1143],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1296[TINKERPOP-1296],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1705[TINKERPOP-1705],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1707[TINKERPOP-1707],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1954[TINKERPOP-1954],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1986[TINKERPOP-1986],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2079[TINKERPOP-2079],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2103[TINKERPOP-2103]
+
+===== Deprecated GraphSONMessageSerializerGremlinV2d0
+
+The `GraphSONMessageSerializerGremlinV2d0` serializer is now analogous to `GraphSONMessageSerializerV2d0` and therefore
+redundant. It has technically always been equivalent in terms of functionality as both serialized to the same format
+(i.e. GraphSON 2.0 with embedded types). It is no longer clear why these two classes were established this way, but
+it does carry the negative effect where multiple serializer versions could not be bound to Gremlin Server's HTTP
+endpoint as the MIME types conflicted on `application/json`. By simply making both message serializers support
+`application/json` and `application/vnd.gremlin-v2.0+json`, it then became possible to overcome that limitation. In
+short, prefer use of `GraphSONMessageSerializerV2d0` when possible.
+
+Note that this is a breaking change in the sense that `GraphSONMessageSerializerV2d0` will no longer set the header of
+requests messages to `application/json`. As a result, older versions of Gremlin Server not configured with
+`GraphSONMessageSerializerGremlinV2d0` will not find a deserializer to match the request.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1984[TINKERPOP-1984]
+
+===== Removed groovy-sql Dependency
+
+Gremlin Console and Gremlin Server no longer include groovy-sql.  If you depend on groovy-sql,
+you can install it in Gremlin Console or Gremlin Server using the plugin system.
+
+Console:
+```
+:install org.codehaus.groovy groovy-sql 2.5.2
+```
+
+Server:
+```
+bin/gremlin-server.sh install org.codehaus.groovy groovy-sql 2.5.2
+```
+
+If your project depended on groovy-sql transitively, simply include it in your project's build file (e.g. maven: pom.xml).
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2037[TINKERPOP-2037]
 
 === Upgrading for Providers
 
