@@ -581,6 +581,19 @@ which results in a much larger memory footprint than what is contained the `Bulk
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2111[TINKERPOP-2111]
 
+==== Python Bindings
+
+Bindings were formerly created using a Python 2-tuple as a bit of syntactic sugar, but all other language variants
+used an explicit `Bindings` object which `gremlin-python` already had in place. To make all work variants behave
+consistently, the 2-tuple syntax has been removed in favor of the explicit `Bindings.of()` option.
+
+[source,python]
+----
+g.V(Bindings.of('id',1)).out('created').map(lambda: ("it.get().value('name').length()", "gremlin-groovy")).sum()
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2116[TINKERPOP-2116]
+
 ==== Deprecation and Removal
 
 This section describes newly deprecated classes, methods, components and patterns of usage as well as which previously
