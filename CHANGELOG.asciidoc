@@ -23,6 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-3-6]]
 === TinkerPop 3.3.6 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Fixed a concurrency issue in `TraverserSet`
 
 
 [[release-3-3-5]]

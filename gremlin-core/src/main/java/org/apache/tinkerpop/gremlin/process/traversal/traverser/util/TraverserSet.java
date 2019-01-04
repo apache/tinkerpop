@@ -40,7 +40,7 @@ import java.util.Spliterator;
  */
 public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements Set<Traverser.Admin<S>>, Queue<Traverser.Admin<S>>, Serializable {
 
-    private final Map<Traverser.Admin<S>, Traverser.Admin<S>> map = new LinkedHashMap<>();
+    private final Map<Traverser.Admin<S>, Traverser.Admin<S>> map = Collections.synchronizedMap(new LinkedHashMap<>());
 
     public TraverserSet() {
 
