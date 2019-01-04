@@ -194,7 +194,7 @@ if [ "${TYPE}" = "CONSOLE" ]; then
   SCRIPT_FILENAME="test.groovy"
   SCRIPT_PATH="${TMP_DIR}/${SCRIPT_FILENAME}"
   echo ${SCRIPT} > ${SCRIPT_PATH}
-  [[ `bin/gremlin.sh <<< ${SCRIPT} | grep '^==>' | sed -e 's/^==>//'` -eq 6 ]] || { echo "failed to evaluate sample script"; exit 1; }
+  [[ `bin/gremlin.sh <<< ${SCRIPT} | sed 's/\x1b\[m//g' | grep '^==>' | sed -e 's/^==>//'` -eq 6 ]] || { echo "failed to evaluate sample script"; exit 1; }
   [[ `bin/gremlin.sh -e ${SCRIPT_PATH}` -eq 6 ]] || { echo "failed to evaluate sample script using -e option"; exit 1; }
   CONSOLE_DIR=`pwd`
   cd ${TMP_DIR}
