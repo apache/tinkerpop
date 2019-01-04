@@ -151,7 +151,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2059[TINKERPOP-2059]
 ==== Predicate Number Comparison
 
 In previous versions `within()` and `without()` performed strict number comparisons; that means these predicates did
-not only compare number values, but also the type. This was inconsistent with how other predicates (like `eq, `gt`,
+not only compare number values, but also the type. This was inconsistent with how other predicates (like `eq`, `gt`,
 etc.) work. All predicates will now ignore the number type and instead compare numbers only based on their value.
 
 Old behavior:
