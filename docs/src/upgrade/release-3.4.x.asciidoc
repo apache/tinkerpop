@@ -330,7 +330,7 @@ gremlin> g.withComputer().V().has('name','marko').
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1990[TINKERPOP-1990],
-link:link:http://tinkerpop.apache.org/docs/3.4.0/reference/#shortestpath-step[Reference Documentation]
+link:http://tinkerpop.apache.org/docs/3.4.0/reference/#shortestpath-step[Reference Documentation]
 
 ==== connectedComponent() Step
 
