@@ -293,16 +293,6 @@ limitations under the License.
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>docker-image-tag-latest</id>
-                                <goals>
-                                    <goal>tag</goal>
-                                </goals>
-                                <configuration>
-                                    <tag>latest</tag>
-                                    <skip>${only.when.is.prerelease.version}</skip>
-                                </configuration>
-                            </execution>
-                            <execution>
                                 <id>docker-image-push</id>
                                 <phase>deploy</phase>
                                 <goals>
@@ -321,17 +311,6 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <tag>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</tag>
-                                    <skip>${only.when.is.prerelease.version}</skip>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>docker-image-push-latest</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>push</goal>
-                                </goals>
-                                <configuration>
-                                    <tag>latest</tag>
                                     <skip>${only.when.is.prerelease.version}</skip>
                                 </configuration>
                             </execution>
