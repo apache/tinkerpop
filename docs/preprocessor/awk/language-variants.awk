@@ -41,7 +41,7 @@ BEGIN {
         gsub(/^==>/, "")
         $0 = gensub(/processTraversal\("""(.*)"""\, jython, groovy)/, "\\1", 1)
         $0 = gensub("g\\.V\\(([^\\)]+)", "g.V(Bindings\\.of('id',\\1)", "g")
-        print gensub("g\\.V\\(Bindings.of\\('id',(Bindings.of\\([^\\)]+\\))\\)", "g.V(\\1)", "g")
+        print gensub("g\\.V\\(Bindings.of\\('id',(Bindings.of\\([^\\)]+\\))\\)\\)", "g.V(\\1)", "g")
         break
       default:
         print
