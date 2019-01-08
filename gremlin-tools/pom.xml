@@ -6,7 +6,7 @@
     <parent>
         <artifactId>tinkerpop</artifactId>
         <groupId>org.apache.tinkerpop</groupId>
-        <version>3.4.0</version>
+        <version>3.4.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>gremlin-tools</artifactId>
