@@ -43,7 +43,7 @@ public abstract class AbstractThreadLocalTransaction extends AbstractTransaction
     protected final ThreadLocal<Consumer<Transaction>> closeConsumerInternal =
             ThreadLocal.withInitial(() -> CLOSE_BEHAVIOR.ROLLBACK);
     
-    protected final ThreadLocal<List<Consumer<Transaction.Status>>> transactionListeners = ThreadLocal.withInitial(() -> new ArrayList<>());
+    protected final ThreadLocal<List<Consumer<Transaction.Status>>> transactionListeners = ThreadLocal.withInitial(ArrayList::new);
 
     public AbstractThreadLocalTransaction(final Graph g) {
         super(g);

@@ -223,7 +223,7 @@ public final class EventStrategy extends AbstractTraversalStrategy<TraversalStra
      */
     public static class TransactionalEventQueue implements EventQueue {
 
-        private final ThreadLocal<Deque<Event>> eventQueue = ThreadLocal.withInitial(() -> new ArrayDeque<>());
+        private final ThreadLocal<Deque<Event>> eventQueue = ThreadLocal.withInitial(ArrayDeque::new);
 
         private List<MutationListener> listeners = Collections.emptyList();
 
