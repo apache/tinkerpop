@@ -23,7 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-3-6]]
 === TinkerPop 3.3.6 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-
+* Masked sensitive configuration options in the logs of `KryoShimServiceLoader`.
 
 [[release-3-3-5]]
 === TinkerPop 3.3.5 (Release Date: January 2, 2019)
