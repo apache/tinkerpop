@@ -425,14 +425,14 @@ limitations under the License.
                                               failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
                                             <env key="PYTHONIOENCODING" value="utf-8:surrogateescape"/>
-                                            <arg line="-e -t -b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/ --user-data=&quot;graphson=v2&quot;"/> <!-- -no-line-jump -->
+                                            <arg line="-f dots -e -t -b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/ --user-data=&quot;graphson=v2&quot;"/> <!-- -no-line-jump -->
                                         </exec>
                                         <!-- run for graphson 3.0 -->
                                         <exec executable="env/bin/radish" dir="${project.build.directory}/python2"
                                               failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
                                             <env key="PYTHONIOENCODING" value="utf-8:surrogateescape"/>
-                                            <arg line="-e -t -b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/ --user-data=&quot;graphson=v3&quot;"/> <!-- -no-line-jump -->
+                                            <arg line="-f dots -e -t -b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/ --user-data=&quot;graphson=v3&quot;"/> <!-- -no-line-jump -->
                                         </exec>
                                     </target>
                                 </configuration>
