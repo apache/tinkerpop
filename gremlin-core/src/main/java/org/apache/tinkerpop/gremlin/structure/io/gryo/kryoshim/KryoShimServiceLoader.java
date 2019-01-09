@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;
 
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationUtils;
 import org.apache.tinkerpop.gremlin.util.SystemUtil;
@@ -26,10 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.ServiceLoader;
+import java.util.*;
 
 /**
  * Loads the highest-priority or user-selected {@link KryoShimService}.
@@ -38,6 +36,7 @@ public class KryoShimServiceLoader {
 
     private static volatile KryoShimService cachedShimService;
     private static volatile Configuration configuration;
+    private static String maskedProperties = ".+\\.(password|keyStorePassword|trustStorePassword)|spark.authenticate.secret";
 
     private static final Logger log = LoggerFactory.getLogger(KryoShimServiceLoader.class);
 
@@ -127,9 +126,22 @@ public class KryoShimServiceLoader {
         // once the shim service is defined, configure it
         log.info("Configuring KryoShimService {} with the following configuration:\n#######START########\n{}\n########END#########",
                 cachedShimService.getClass().getCanonicalName(),
-                ConfigurationUtils.toString(configuration));
+                ConfigurationUtils.toString(maskedConfiguration(configuration)));
         cachedShimService.applyConfiguration(configuration);
         return cachedShimService;
+    }
+
+    private static Configuration maskedConfiguration(Configuration configuration) {
+        Configuration maskedConfiguration = new BaseConfiguration();
+        Iterator keys = configuration.getKeys();
+        while(keys.hasNext()) {
+            String key = (String)keys.next();
+            if (key.matches(maskedProperties))
+                maskedConfiguration.setProperty(key, "******");
+            else
+                maskedConfiguration.setProperty(key, configuration.getProperty(key));
+        }
+        return maskedConfiguration;
     }
 
     /**
