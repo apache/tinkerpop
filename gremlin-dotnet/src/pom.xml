@@ -104,7 +104,7 @@ limitations under the License.
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <taskdef resource="net/sf/antcontrib/antcontrib.properties" />
                                         <if>
                                             <!-- docfx sadly requires mono and nuget at this time:
@@ -145,7 +145,7 @@ limitations under the License.
                                                 <echo>nuget must be installed as it would if doing a .NET deployment - see the glv-dotnet-deploy Maven profile for more information.</echo>
                                             </else>
                                         </if>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                         </executions>
@@ -195,7 +195,7 @@ limitations under the License.
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <taskdef resource="net/sf/antcontrib/antcontrib.properties" />                                       
                                         <if>
                                             <available file="mono" filepath="${env.PATH}"/>
@@ -220,7 +220,7 @@ limitations under the License.
                                                 <echo>Skipping packaging of Gremlin.Net.Template as mono is not available</echo>
                                             </else>
                                         </if>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                             <execution>

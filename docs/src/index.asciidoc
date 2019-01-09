@@ -37,8 +37,9 @@ TinkerPop's interfaces).
 5. link:http://tinkerpop.apache.org/javadocs/x.y.z/full/[Javadoc] - The full Javadoc for all TinkerPop modules. There
 is also an abridged version of the link:http://tinkerpop.apache.org/javadocs/current/core/[core] interfaces which may
 be more convenient in some cases.
-6. link:http://tinkerpop.apache.org/jsdocs/x.y.z/[JSDoc] - The JSDoc for gremlin-javascript.
-7. link:http://tinkerpop.apache.org/docs/x.y.z/upgrade/[Upgrade Documentation] - Notes related to upgrading from one
+6. link:http://tinkerpop.apache.org/dotnetdocs/x.y.z/[.NET Docs] - The API documentation for Gremlin.Net.
+7. link:http://tinkerpop.apache.org/jsdocs/x.y.z/[JSDoc] - The JSDoc for gremlin-javascript.
+8. link:http://tinkerpop.apache.org/docs/x.y.z/upgrade/[Upgrade Documentation] - Notes related to upgrading from one
 version of TinkerPop to the next. This document describes breaking changes, major new features and other important
 information related to a particular version.
 

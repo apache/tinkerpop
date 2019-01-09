@@ -276,10 +276,10 @@ limitations under the License.
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <mkdir dir="${project.build.directory}/python-reports"/>
                                         <mkdir dir="${project.build.directory}/python-packaged/env"/>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                             <!-- copy files in jython directory to target/py and run virtual env to sandbox python.
@@ -599,7 +599,7 @@ limitations under the License.
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <exec dir="${project.build.directory}/python-packaged" executable="env/bin/pip"
                                               failonerror="true">
                                             <arg line="install twine"/>
@@ -609,7 +609,7 @@ limitations under the License.
                                               failonerror="true">
                                             <arg line="upload dist/* -r pypi -s "/>
                                         </exec>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                         </executions>

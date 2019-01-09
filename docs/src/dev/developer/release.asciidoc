@@ -238,8 +238,11 @@ for generating javadoc and without that the binary distributions won't contain t
 .. `mvn deploy -pl gremlin-python -DskipTests -Dpypi`
 .. `mvn deploy -pl :gremlin-dotnet-source -DskipTests -Dnuget`
 .. `mvn deploy -pl gremlin-javascript -DskipTests -Dnpm`
-. Review the GLV releases at link:https://pypi.org/project/gremlinpython/[PyPi],
-link:https://www.nuget.org/packages/Gremlin.Net/[nuget] and link:https://www.npmjs.com/package/gremlin[npm]
+. Review the GLV releases
+.. link:https://pypi.org/project/gremlinpython/[gremlin-python - PyPi]
+.. link:https://www.nuget.org/packages/Gremlin.Net/[Gremlin.Net - nuget]
+.. link:https://www.nuget.org/packages/Gremlin.Net.Template/[Gremlin.Net.Template - nuget]
+.. link:https://www.npmjs.com/package/gremlin[gremlin - npm]
 . Deploy the Docker images
 .. `mvn deploy -pl gremlin-console -DskipTests -DdockerImages`
 .. `mvn deploy -pl gremlin-server -DskipTests -DdockerImages`
@@ -251,7 +254,7 @@ and link:https://hub.docker.com/r/tinkerpop/gremlin-server/[Server]
 . `cd release; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
 . Wait for Apache Sonatype to sync the artifacts to Maven Central at (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
 . Report the release through link:https://reporter.apache.org/addrelease.html?tinkerpop[reporter.apache.org] (an email reminder should arrive shortly following the svn command above to do the release)
-. Wait for zip distributions to to sync to the Apache mirrors (i.e ensure the download links work from a mirror).
+. Wait for zip distributions to sync to the Apache mirrors (i.e ensure the download links work from a mirror).
 . `bin/publish-home.sh <username>` to publish the updated web site with new releases.
 . Execute `bin/update-current-docs.sh` to migrate to the latest documentation set for `/current`.
 . This step should only occur after the website is updated and all links are working. If there are releases present in
@@ -313,6 +316,8 @@ The online docs can be found here:
 	http://tinkerpop.apache.org/docs/xx.yy.zz/upgrade/ (upgrade docs)
 	http://tinkerpop.apache.org/javadocs/xx.yy.zz/core/ (core javadoc)
 	http://tinkerpop.apache.org/javadocs/xx.yy.zz/full/ (full javadoc)
+	http://tinkerpop.apache.org/dotnetdocs/xx.yy.zz/ (.NET API docs)
+	http://tinkerpop.apache.org/jsdocs/xx.yy.zz/ (Javascript API docs)
 
 The tag in Apache Git can be found here:
 	https://github.com/apache/tinkerpop/tree/xx.yy.zz
