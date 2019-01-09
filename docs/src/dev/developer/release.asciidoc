@@ -313,6 +313,8 @@ The online docs can be found here:
 	http://tinkerpop.apache.org/docs/xx.yy.zz/upgrade/ (upgrade docs)
 	http://tinkerpop.apache.org/javadocs/xx.yy.zz/core/ (core javadoc)
 	http://tinkerpop.apache.org/javadocs/xx.yy.zz/full/ (full javadoc)
+	http://tinkerpop.apache.org/dotnetdocs/xx.yy.zz/ (.NET API docs)
+	http://tinkerpop.apache.org/jsdocs/xx.yy.zz/ (Javascript API docs)
 
 The tag in Apache Git can be found here:
 	https://github.com/apache/tinkerpop/tree/xx.yy.zz
