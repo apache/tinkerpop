@@ -246,10 +246,10 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <skip>${skipIntegrationTests}</skip>
-                                    <tasks>
+                                    <target>
                                         <mkdir dir="${project.build.directory}/python-reports"/>
                                         <mkdir dir="${project.build.directory}/python/env"/>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                             <!-- copy files in python directory to target/python and run virtual env to sandbox python.
