@@ -6,7 +6,7 @@
         <version>$projectVersion</version>
         <description>Gremlin.Net template to create a console application with dotnet new.</description>
         <authors>Apache TinkerPop</authors>
-        <licenseUrl>https://github.com/apache/tinkerpop/blob/master/LICENSE</licenseUrl>
+        <license>Apache-2.0</license>
         <projectUrl>http://tinkerpop.apache.org</projectUrl>
         <tags>TinkerPop Gremlin Gremlin.Net</tags>
         <packageTypes>
