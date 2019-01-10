@@ -70,7 +70,7 @@ class Connection extends EventEmitter {
     super();
 
     this.url = url;
-    this.options = options || {};
+    this.options = options = options || {};
 
     // A map containing the request id and the handler
     this._responseHandlers = {};
