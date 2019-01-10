@@ -68,6 +68,8 @@ include::olap-spark-yarn.asciidoc[]
 
 = Anti-Patterns
 
+image:gremlin-anti-gremlin.png[width=250]
+
 include::anti-patterns.asciidoc[]
 
 = Implementation Recipes
