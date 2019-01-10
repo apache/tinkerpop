@@ -89,7 +89,7 @@ The SPARQL-Gremlin compiler supports the following prefixes to traverse the grap
 [cols=",",options="header",]
 |====================================
 |Prefix |Purpose
-|`v:<id|label|<name>>` |access to vertex id, label or property value
+|`v:<id\|label\|<name>>` |access to vertex id, label or property value
 |`e:<label>` |out-edge traversal
 |`p:<name>` |property traversal
 |====================================
