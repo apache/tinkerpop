@@ -413,7 +413,7 @@ List<Result> result = client.submit("g.V()", options).all().get();
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1342[TINKERPOP-1342]
 
-==== `min()` `max()` and Comparable
+==== min() max() and Comparable
 
 Previously `min()` and `max()` were only working for numeric values. This has been changed and these steps can now
 operate over any `Comparable` value. The common workaround was the combination of `order().by()` and `limit()` as
