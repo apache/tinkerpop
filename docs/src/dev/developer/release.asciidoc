@@ -199,7 +199,8 @@ then only do this step for 3.3.x (tp33 branch), and update the site for all rele
 .. Update the `template/header-footer.html`.
 .. Update `index.html`.
 .. Update link:http://tinkerpop.apache.org/downloads.html[Downloads] page, when moving "Current Releases" to "Archived
-Releases" recall that the hyperlink must change to point to version in the link:https://archive.apache.org/dist/tinkerpop/[Apache Archives].
+Releases" recall that the hyperlink must change to point to version in the link:https://archive.apache.org/dist/tinkerpop/[Apache Archives]
+("contributions" content will be added later).
 .. Preview changes locally with `bin/generate-home.sh` then commit changes to git.
 . `mvn versions:set -DnewVersion=xx.yy.zz -DgenerateBackupPoms=false` to update project files to reference the non-SNAPSHOT version
 . `pushd gremlin-console/bin; ln -fs ../target/apache-tinkerpop-gremlin-console-xx.yy.zz-standalone/bin/gremlin.sh gremlin.sh; popd`
@@ -254,6 +255,7 @@ and link:https://hub.docker.com/r/tinkerpop/gremlin-server/[Server]
 . `cd release; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
 . Wait for Apache Sonatype to sync the artifacts to Maven Central at (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
 . Report the release through link:https://reporter.apache.org/addrelease.html?tinkerpop[reporter.apache.org] (an email reminder should arrive shortly following the svn command above to do the release)
+. Update the `site/downloads.html` - provide the contents for the modal that pops up from the "contributors" link.
 . Wait for zip distributions to sync to the Apache mirrors (i.e ensure the download links work from a mirror).
 . `bin/publish-home.sh <username>` to publish the updated web site with new releases.
 . Execute `bin/update-current-docs.sh` to migrate to the latest documentation set for `/current`.
