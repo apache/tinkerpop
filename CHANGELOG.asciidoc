@@ -20,15 +20,15 @@ limitations under the License.
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
-[[release-3-4-0]]
-=== TinkerPop 3.4.0 (Release Date: NOT OFFICIALLY RELEASED YET)
+[[release-3-4-1]]
+=== TinkerPop 3.4.1 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-This release also includes changes from <<release-3-3-5, 3.3.5>>.
+This release also includes changes from <<release-3-3-6, 3.3.6>>.
 
 [[release-3-4-0]]
 === TinkerPop 3.4.0 (Release Date: January 2, 2019)
 
-This release also includes changes from <<release-3-3-4, 3.3.4>>.
+This release also includes changes from <<release-3-3-4, 3.3.4>> and <<release-3-3-5, 3.3.5>>.
 
 * Changed Python "bindings" to use an actual `Bindings` object rather than a 2-tuple.
 * Improved the Gremlin.NET driver: It now uses request pipelining and its `ConnectionPool` has a fixed size.
