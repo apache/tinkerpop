@@ -107,6 +107,7 @@ public class InlineFilterStrategyTest {
                 {or(has("name", "marko"), filter(has("name", "bob"))), has("name", eq("marko").or(eq("bob"))), Collections.emptyList()},
                 {or(has("name", "marko"), filter(or(filter(has("name", "bob")), has("name", "stephen")))), has("name", eq("marko").or(eq("bob").or(eq("stephen")))), Collections.emptyList()},
                 {or(has("name", "marko").as("a"), filter(or(filter(has("name", "bob")).as("b"), has("name", "stephen").as("c")))), has("name", eq("marko").or(eq("bob").or(eq("stephen")))).as("a", "b", "c"), Collections.emptyList()},
+                {or(and(has("age",gt(20)), has("age",lt(30))), and(has("age",gt(35)), has("age",lt(40)))), has("age", gt(20).and(lt(30)).or(gt(35).and(lt(40)))), Collections.emptyList()},
                 //
                 {has("name", "marko").and().has("name", "marko").and().has("name", "marko"), has("name", "marko").has("name", "marko").has("name", "marko"), Collections.emptyList()},
                 {filter(has("name", "marko")).and().filter(has("name", "marko")).and().filter(has("name", "marko")), has("name", "marko").has("name", "marko").has("name", "marko"), Collections.emptyList()},
