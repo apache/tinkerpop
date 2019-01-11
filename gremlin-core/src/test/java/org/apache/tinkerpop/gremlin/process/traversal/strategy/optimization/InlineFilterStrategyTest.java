@@ -95,6 +95,7 @@ public class InlineFilterStrategyTest {
                 {or(has("name", "marko"), filter(has("name", "bob"))), has("name", eq("marko").or(eq("bob")))},
                 {or(has("name", "marko"), filter(or(filter(has("name", "bob")), has("name", "stephen")))), has("name", eq("marko").or(eq("bob").or(eq("stephen"))))},
                 {or(has("name", "marko").as("a"), filter(or(filter(has("name", "bob")).as("b"), has("name", "stephen").as("c")))), has("name", eq("marko").or(eq("bob").or(eq("stephen")))).as("a", "b", "c")},
+                {or(and(has("age",gt(20)), has("age",lt(30))), and(has("age",gt(35)), has("age",lt(40)))), has("age", gt(20).and(lt(30)).or(gt(35).and(lt(40))))},
                 //
                 {and(has("age", gt(10)), filter(has("age", 22))), addHas(__.start(), "age", gt(10), "age", eq(22))},
                 {and(has("age", gt(10)).as("a"), filter(has("age", 22).as("b")).as("c")).as("d"), addHas(__.start(), "age", gt(10), "age", eq(22)).as("a", "b", "c", "d")},
