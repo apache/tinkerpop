@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.sparql.process.traversal.strategy;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -35,9 +34,9 @@ import java.util.Set;
 
 /**
  * This {@link TraversalStrategy} is used in conjunction with the {@link SparqlTraversalSource} which has a single
- * {@code sparql()} start step. That step adds a {@link ConstantStep} to the traversal with the SPARQL query within
+ * {@code sparql()} start step. That step adds a {@link InjectStep} to the traversal with the SPARQL query within
  * it as a string value. This strategy finds that step and compiles it to a Gremlin traversal which then replaces
- * the {@link ConstantStep}.
+ * the {@link InjectStep}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -45,7 +44,7 @@ public class SparqlStrategy extends AbstractTraversalStrategy<TraversalStrategy.
         implements TraversalStrategy.DecorationStrategy {
     private static final SparqlStrategy INSTANCE = new SparqlStrategy();
 
-    private static final Set<Class<? extends DecorationStrategy>> POSTS = Collections.singleton(RemoteStrategy.class);
+    private static final Set<Class<? extends DecorationStrategy>> PRIORS = Collections.singleton(RemoteStrategy.class);
 
     private SparqlStrategy() {}
 
@@ -54,10 +53,9 @@ public class SparqlStrategy extends AbstractTraversalStrategy<TraversalStrategy.
     }
 
     @Override
-    public Set<Class<? extends DecorationStrategy>> applyPost() {
-        return POSTS;
+    public Set<Class<? extends DecorationStrategy>> applyPrior() {
+        return PRIORS;
     }
-
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
@@ -73,13 +71,7 @@ public class SparqlStrategy extends AbstractTraversalStrategy<TraversalStrategy.
                         traversal.getGraph().get(), sparql);
                 TraversalHelper.removeAllSteps(traversal);
                 sparqlTraversal.asAdmin().getSteps().forEach(s -> traversal.addStep(s));
-            } else {
-                // The ConstantStep expects a string value
-                throw new IllegalStateException("SparqlStrategy cannot be applied to a traversal that does not consist of a single InjectStep<String> with one injection");
             }
-        } else {
-            // SparqlStrategy requires that there be one step and it be a ConstantStep that contains some SPARQL
-            throw new IllegalStateException("SparqlStrategy cannot be applied to a traversal that does not consist of a single InjectStep<String> with one injection");
         }
     }
 }

@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.sparql.process.traversal.strategy.SparqlStra
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 /**
  * A {@link TraversalSource} implementation that spawns {@link SparqlTraversal} instances.
@@ -50,6 +51,12 @@ public class SparqlTraversalSource implements TraversalSource {
 
     public SparqlTraversalSource(final Graph graph) {
         this(graph, TraversalStrategies.GlobalCache.getStrategies(graph.getClass()));
+    }
+
+    public SparqlTraversalSource(final RemoteConnection connection) {
+        this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class).clone());
+        this.connection = connection;
+        this.strategies.addStrategies(new RemoteStrategy(connection));
     }
 
     @Override
@@ -122,8 +129,7 @@ public class SparqlTraversalSource implements TraversalSource {
      * The start step for a SPARQL based traversal that accepts a string representation of the query to execute.
      */
     public <S> SparqlTraversal<S,?> sparql(final String query) {
-        final SparqlTraversalSource clone = this.clone();
-        clone.getStrategies().addStrategies(SparqlStrategy.instance());
+        final SparqlTraversalSource clone = this.withStrategies(SparqlStrategy.instance()).clone();
 
         // the inject() holds the sparql which the SparqlStrategy then detects and converts to a traversal
         clone.bytecode.addStep(GraphTraversal.Symbols.inject, query);
