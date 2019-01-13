@@ -36,7 +36,6 @@ using static Gremlin.Net.Process.Traversal.__;
 using static Gremlin.Net.Process.Traversal.P;
 using static Gremlin.Net.Process.Traversal.Order;
 using static Gremlin.Net.Process.Traversal.Operator;
-using static Gremlin.Net.Process.Traversal.Order;
 using static Gremlin.Net.Process.Traversal.Pop;
 using static Gremlin.Net.Process.Traversal.Scope;
 using static Gremlin.Net.Process.Traversal.TextP;
@@ -108,7 +107,7 @@ using (var gremlinClient = new GremlinClient(gremlinServer))
         }
 
         [Fact(Skip = "No Server under localhost")]
-        public async Task SubmittingScriptsWithAuthenticationTest()
+        public void SubmittingScriptsWithAuthenticationTest()
         {
 // tag::submittingScriptsWithAuthentication[]
 var username = "username";
