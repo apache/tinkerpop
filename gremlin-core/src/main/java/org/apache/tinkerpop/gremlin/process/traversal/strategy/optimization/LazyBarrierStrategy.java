@@ -54,7 +54,8 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
             AdjacentToIncidentStrategy.class,
             FilterRankingStrategy.class,
             InlineFilterStrategy.class,
-            MatchPredicateStrategy.class));
+            MatchPredicateStrategy.class,
+            EarlyLimitStrategy.class));
 
     private static final int BIG_START_SIZE = 5;
     protected static final int MAX_BARRIER_SIZE = 2500;

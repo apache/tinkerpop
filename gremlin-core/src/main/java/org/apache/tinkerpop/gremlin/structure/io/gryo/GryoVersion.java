@@ -51,6 +51,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Partit
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategy;
@@ -235,7 +236,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Collections.singleton(null).getClass(), 54));
             add(GryoTypeReg.of(Collections.singletonList(null).getClass(), 24));
             add(GryoTypeReg.of(Collections.singletonMap(null, null).getClass(), 23));
-            add(GryoTypeReg.of(Types.COLLECTIONS_SYNCHRONIZED_MAP, 185, new UtilSerializers.SynchronizedMapSerializer()));  // ***LAST ID***
+            add(GryoTypeReg.of(Types.COLLECTIONS_SYNCHRONIZED_MAP, 185, new UtilSerializers.SynchronizedMapSerializer()));
             add(GryoTypeReg.of(Contains.class, 49));
             add(GryoTypeReg.of(Currency.class, 40));
             add(GryoTypeReg.of(Date.class, 38));
@@ -335,6 +336,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(GraphFilterStrategy.class, 157));
             add(GryoTypeReg.of(LambdaRestrictionStrategy.class, 158));
             add(GryoTypeReg.of(ReadOnlyStrategy.class, 159));
+            add(GryoTypeReg.of(EarlyLimitStrategy.class, 186));   // ***LAST ID***
             add(GryoTypeReg.of(MatchStep.CountMatchAlgorithm.class, 160));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 164));
 
@@ -412,7 +414,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Collections.singleton(null).getClass(), 54));
             add(GryoTypeReg.of(Collections.singletonList(null).getClass(), 24));
             add(GryoTypeReg.of(Collections.singletonMap(null, null).getClass(), 23));
-            add(GryoTypeReg.of(Types.COLLECTIONS_SYNCHRONIZED_MAP, 185, new UtilSerializers.SynchronizedMapSerializer()));  // ***LAST ID***
+            add(GryoTypeReg.of(Types.COLLECTIONS_SYNCHRONIZED_MAP, 185, new UtilSerializers.SynchronizedMapSerializer()));
             add(GryoTypeReg.of(Contains.class, 49));
             add(GryoTypeReg.of(Currency.class, 40));
             add(GryoTypeReg.of(Date.class, 38));
@@ -553,6 +555,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(GraphFilterStrategy.class, 157));
             add(GryoTypeReg.of(LambdaRestrictionStrategy.class, 158));
             add(GryoTypeReg.of(ReadOnlyStrategy.class, 159));
+            add(GryoTypeReg.of(EarlyLimitStrategy.class, 186));   // ***LAST ID***
             add(GryoTypeReg.of(MatchStep.CountMatchAlgorithm.class, 160));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 167));
             // skip 171, 172 to sync with tp33
