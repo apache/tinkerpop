@@ -49,7 +49,14 @@ namespace Gremlin.Net.Driver
             PopulatePoolAsync().WaitUnwrap();
         }
         
-        public int NrConnections => Interlocked.CompareExchange(ref _nrConnections, PoolEmpty, PoolEmpty);               
+        public int NrConnections
+        {
+            get
+            {
+                var nrConnections = Interlocked.CompareExchange(ref _nrConnections, PoolEmpty, PoolEmpty);
+                return nrConnections < 0 ? 0 : nrConnections;
+            }
+        }
         
         public async Task<IConnection> GetAvailableConnectionAsync()
         {
@@ -144,7 +151,6 @@ namespace Gremlin.Net.Driver
         {
             if (connection.IsOpen) return;
             ConsiderUnavailable();
-            DefinitelyDestroyConnection(connection);
         }
 
         private void ConsiderUnavailable()
