@@ -61,9 +61,7 @@ namespace Gremlin.Net.Driver
         public async Task<IConnection> GetAvailableConnectionAsync()
         {
             await EnsurePoolIsPopulatedAsync().ConfigureAwait(false);
-            if (TryGetConnectionFromPool(out var connection))
-                return ProxiedConnection(connection);
-            throw new NoConnectionAvailableException("no connection available!");
+            return ProxiedConnection(GetConnectionFromPool());
         }
 
         private async Task EnsurePoolIsPopulatedAsync()
@@ -113,15 +111,16 @@ namespace Gremlin.Net.Driver
             return newConnection;
         }
 
-        private bool TryGetConnectionFromPool(out Connection connection)
+        private Connection GetConnectionFromPool()
         {
             while (true)
             {
-                connection = SelectLeastUsedConnection();
-                if (connection == null) return false; // _connections is empty
+                var connection = SelectLeastUsedConnection();
+                if (connection == null)
+                    throw new ServerUnavailableException();
                 if (connection.NrRequestsInFlight >= _maxInProcessPerConnection)
-                    return false;
-                if (connection.IsOpen) return true;
+                    throw new ConnectionPoolBusyException(_poolSize, _maxInProcessPerConnection);
+                if (connection.IsOpen) return connection;
                 DefinitelyDestroyConnection(connection);
             }
         }

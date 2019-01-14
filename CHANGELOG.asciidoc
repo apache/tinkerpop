@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 This release also includes changes from <<release-3-3-6, 3.3.6>>.
 
 * Fixed up `SparqlStrategy` so that it could be used properly with `RemoteStrategy`.
+* Added easier to understand exceptions for connection problems in the Gremlin.Net driver.
 
 [[release-3-4-0]]
 === TinkerPop 3.4.0 (Release Date: January 2, 2019)
