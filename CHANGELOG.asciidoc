@@ -34,6 +34,7 @@ This release also includes changes from <<release-3-3-6, 3.3.6>>.
 * Added fallback resolver to `TypeSerializerRegistry` for GraphBinary.
 * Added easier to understand exceptions for connection problems in the Gremlin.Net driver.
 * Support configuring the type registry builder for GraphBinary.
+* Bump to Groovy 2.5.6.
 * Release working buffers in case of failure for GraphBinary.
 
 [[release-3-4-0]]
