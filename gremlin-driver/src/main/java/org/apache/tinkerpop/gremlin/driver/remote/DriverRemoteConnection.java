@@ -59,7 +59,7 @@ public class DriverRemoteConnection implements RemoteConnection {
     private final String remoteTraversalSourceName;
     private transient Optional<Configuration> conf = Optional.empty();
 
-    private static final boolean attachElements = Boolean.valueOf(System.getProperty("is.testing", "false"));
+    private final boolean attachElements;
 
     public DriverRemoteConnection(final Configuration conf) {
         final boolean hasClusterConf = IteratorUtils.anyMatch(conf.getKeys(), k -> k.startsWith("clusterConfiguration"));
@@ -81,6 +81,8 @@ public class DriverRemoteConnection implements RemoteConnection {
             throw new IllegalStateException(ex);
         }
 
+        attachElements = false;
+
         tryCloseCluster = true;
         tryCloseClient = true;
         this.conf = Optional.of(conf);
@@ -90,6 +92,7 @@ public class DriverRemoteConnection implements RemoteConnection {
         client = cluster.connect(Client.Settings.build().create()).alias(remoteTraversalSourceName);
         this.remoteTraversalSourceName = remoteTraversalSourceName;
         this.tryCloseCluster = tryCloseCluster;
+        attachElements = false;
         tryCloseClient = true;
     }
 
@@ -98,6 +101,8 @@ public class DriverRemoteConnection implements RemoteConnection {
      */
     DriverRemoteConnection(final Cluster cluster, final Configuration conf) {
         remoteTraversalSourceName = conf.getString(GREMLIN_REMOTE_DRIVER_SOURCENAME, DEFAULT_TRAVERSAL_SOURCE);
+
+        attachElements = conf.containsKey(GREMLIN_REMOTE + "attachment");
 
         client = cluster.connect(Client.Settings.build().create()).alias(remoteTraversalSourceName);
         tryCloseCluster = false;
@@ -109,6 +114,7 @@ public class DriverRemoteConnection implements RemoteConnection {
         this.client = client.alias(remoteTraversalSourceName);
         this.remoteTraversalSourceName = remoteTraversalSourceName;
         this.tryCloseCluster = false;
+        attachElements = false;
         tryCloseClient = false;
     }
 
@@ -218,9 +224,9 @@ public class DriverRemoteConnection implements RemoteConnection {
     @Override
     public <E> Iterator<Traverser.Admin<E>> submit(final Traversal<?, E> t) throws RemoteConnectionException {
         try {
-            if (attachElements && !t.asAdmin().getStrategies().getStrategy(VertexProgramStrategy.class).isPresent()) {
-                if (!conf.isPresent()) throw new IllegalStateException("Traverser can't be reattached for testing");
-                final Graph graph = ((Supplier<Graph>) conf.get().getProperty("hidden.for.testing.only")).get();
+            if (conf.isPresent() && conf.get().containsKey(GREMLIN_REMOTE + "attachment")
+                    && !t.asAdmin().getStrategies().getStrategy(VertexProgramStrategy.class).isPresent()) {
+                final Graph graph = ((Supplier<Graph>) conf.get().getProperty(GREMLIN_REMOTE + "attachment")).get();
                 return new DriverRemoteTraversal.AttachingTraverserIterator<>(client.submit(t.asAdmin().getBytecode()).iterator(), graph);
             } else {
                 return new DriverRemoteTraversal.TraverserIterator<>(client.submit(t.asAdmin().getBytecode()).iterator());

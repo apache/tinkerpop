@@ -44,6 +44,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE;
+
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -259,7 +261,7 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
             put(DriverRemoteConnection.GREMLIN_REMOTE_DRIVER_SOURCENAME, "g" + serverGraphName);
             put("clusterConfiguration.port", TestClientFactory.PORT);
             put("clusterConfiguration.hosts", "localhost");
-            put("hidden.for.testing.only", graphGetter);
+            put(GREMLIN_REMOTE + "attachment", graphGetter);
         }};
     }
 
