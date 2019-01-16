@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jHelper;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertexProperty;
 import org.apache.tinkerpop.gremlin.process.traversal.Compare;
+import org.apache.tinkerpop.gremlin.process.traversal.Text;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -31,13 +32,12 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.neo4j.tinkerpop.api.Neo4jDirection;
-import org.neo4j.tinkerpop.api.Neo4jNode;
-import org.neo4j.tinkerpop.api.Neo4jRelationship;
+import org.neo4j.tinkerpop.api.*;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 /**
@@ -170,10 +170,25 @@ public final class NoMultiNoMetaNeo4jTrait implements Neo4jTrait {
 
         if (label.isPresent()) {
             // find a vertex by label and key/value
+            String labelValue = label.get();
+            Neo4jGraphAPI baseGraph = graph.getBaseGraph();
             for (final HasContainer hasContainer : hasContainers) {
-                if (Compare.eq == hasContainer.getBiPredicate() && !hasContainer.getKey().equals(T.label.getAccessor())) {
-                    if (graph.getBaseGraph().hasSchemaIndex(label.get(), hasContainer.getKey())) {
-                        return IteratorUtils.stream(graph.getBaseGraph().findNodes(label.get(), hasContainer.getKey(), hasContainer.getValue()))
+                String key = hasContainer.getKey();
+                Object value = hasContainer.getValue();
+                if (!key.equals(T.label.getAccessor()) && baseGraph.hasSchemaIndex(labelValue, key)) {
+                    BiPredicate<?, ?> predicate = hasContainer.getBiPredicate();
+                    Iterable<Neo4jNode> nodes = null;
+                    if (Compare.eq == predicate) {
+                        nodes = baseGraph.findNodes(labelValue, key, value);
+                    } else if (Text.containing == predicate) {
+                        nodes = baseGraph.findNodes(labelValue, key, value.toString(), Neo4jStringSearchMode.CONTAINS);
+                    } else if (Text.startingWith == predicate) {
+                        nodes = baseGraph.findNodes(labelValue, key, value.toString(), Neo4jStringSearchMode.PREFIX);
+                    } else if (Text.endingWith == predicate) {
+                        nodes = baseGraph.findNodes(labelValue, key, value.toString(), Neo4jStringSearchMode.SUFFIX);
+                    }
+                    if (nodes != null) {
+                        return IteratorUtils.stream(nodes)
                                 .map(node -> (Vertex) new Neo4jVertex(node, graph))
                                 .filter(vertex -> HasContainer.testAll(vertex, hasContainers)).iterator();
                     }
