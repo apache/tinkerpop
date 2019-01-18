@@ -50,7 +50,7 @@ public class DriverRemoteConnection implements RemoteConnection {
     private final String remoteTraversalSourceName;
     private transient Optional<Configuration> conf = Optional.empty();
 
-    private static final boolean attachElements = Boolean.valueOf(System.getProperty("is.testing", "false"));
+    private final boolean attachElements;
 
     public DriverRemoteConnection(final Configuration conf) {
         final boolean hasClusterConf = IteratorUtils.anyMatch(conf.getKeys(), k -> k.startsWith("clusterConfiguration"));
@@ -72,6 +72,8 @@ public class DriverRemoteConnection implements RemoteConnection {
             throw new IllegalStateException(ex);
         }
 
+        attachElements = false;
+
         tryCloseCluster = true;
         tryCloseClient = true;
         this.conf = Optional.of(conf);
@@ -81,6 +83,7 @@ public class DriverRemoteConnection implements RemoteConnection {
         client = cluster.connect(Client.Settings.build().create()).alias(remoteTraversalSourceName);
         this.remoteTraversalSourceName = remoteTraversalSourceName;
         this.tryCloseCluster = tryCloseCluster;
+        attachElements = false;
         tryCloseClient = true;
     }
 
@@ -89,6 +92,8 @@ public class DriverRemoteConnection implements RemoteConnection {
      */
     DriverRemoteConnection(final Cluster cluster, final Configuration conf) {
         remoteTraversalSourceName = conf.getString(GREMLIN_REMOTE_DRIVER_SOURCENAME, DEFAULT_TRAVERSAL_SOURCE);
+
+        attachElements = conf.containsKey(GREMLIN_REMOTE + "attachment");
 
         client = cluster.connect(Client.Settings.build().create()).alias(remoteTraversalSourceName);
         tryCloseCluster = false;
@@ -100,6 +105,7 @@ public class DriverRemoteConnection implements RemoteConnection {
         this.client = client.alias(remoteTraversalSourceName);
         this.remoteTraversalSourceName = remoteTraversalSourceName;
         this.tryCloseCluster = false;
+        attachElements = false;
         tryCloseClient = false;
     }
 
