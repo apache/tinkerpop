@@ -63,15 +63,17 @@ namespace Gremlin.Net.IntegrationTest.Driver
         }
 
         [Fact]
-        public async Task ShouldThrowNoConnectionAvailableExceptionWhenNoConnectionIsAvailable()
+        public async Task ShouldThrowConnectionPoolBusyExceptionWhenPoolIsBusy()
         {
             const int nrParallelRequests = 2;
             using (var gremlinClient = CreateGremlinClient(connectionPoolSize: 1, maxInProcessPerConnection: 1))
             {
                 const int sleepTime = 100;
 
-                await Assert.ThrowsAsync<NoConnectionAvailableException>(() =>
+                var thrownException = await Assert.ThrowsAsync<ConnectionPoolBusyException>(() =>
                     ExecuteMultipleLongRunningRequestsInParallel(gremlinClient, nrParallelRequests, sleepTime));
+                Assert.Contains(nameof(ConnectionPoolSettings.MaxInProcessPerConnection), thrownException.Message);
+                Assert.Contains(nameof(ConnectionPoolSettings.PoolSize), thrownException.Message);
             }
         }
 
