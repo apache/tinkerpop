@@ -254,7 +254,6 @@ class TestGraphSONReader(object):
                 {'@type': 'g:Metrics', '@value': {'dur': 0.087637, 'counts': {}, 'name': 'ReferenceElementStep', 'annotations': {'percentDur': 5.967408283024444}, 'id': '3.0.0()'}}
             ]}}]))
         assert isinstance(prop, list)
-        print(prop)
         assert prop == [{'dur': 1.468594, 'metrics': [
                 {'dur': 1.380957, 'counts': {}, 'name': 'GraphStep(__.V())', 'annotations': {'percentDur': 94.03259171697556}, 'id': '4.0.0()'},
                 {'dur': 0.087637, 'counts': {}, 'name': 'ReferenceElementStep', 'annotations': {'percentDur': 5.967408283024444}, 'id': '3.0.0()'}
