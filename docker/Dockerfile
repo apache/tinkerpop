@@ -20,7 +20,7 @@ FROM ubuntu:trusty
 MAINTAINER Daniel Kuppitz <me@gremlin.guru>
 
 RUN apt-get update \
-    && apt-get -y install software-properties-common python-software-properties apt-transport-https curl \
+    && apt-get -y install software-properties-common python-software-properties apt-transport-https curl dpkg \
     && echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections \
     && add-apt-repository -y ppa:webupd8team/java \
     && sh -c 'curl -s https://packages.microsoft.com/config/ubuntu/14.04/packages-microsoft-prod.deb -o packages-microsoft-prod.deb' \
