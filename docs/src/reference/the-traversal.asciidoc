@@ -978,8 +978,8 @@ g.V().properties().hasKey('age').value() <6>
 g.V().hasNot('age').values('name') <7>
 ----
 
-<1> Find all vertices whose ages are between 20 (inclusive) and 30 (exclusive).
-<2> Find all vertices whose ages are not between 20 (inclusive) and 30 (exclusive).
+<1> Find all vertices whose ages are between 20 (exclusive) and 30 (exclusive). In other words, the age must be greater than 20 and less than 30.
+<2> Find all vertices whose ages are not between 20 (inclusive) and 30 (inclusive). In other words, the age must be less than 20 or greater than 30.
 <3> Find all vertices whose names are exact matches to any names in the collection `[josh,marko]`, display all
 the key,value pairs for those vertices.
 <4> Find all vertices whose names are not in the collection `[josh,marko]`, display all the key,value pairs for those vertices.
