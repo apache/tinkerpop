@@ -1270,6 +1270,7 @@ The `SessionOpProcessor` provides a way to interact with Gremlin Server over a <
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Name |Description |Default
+|globalFunctionCacheEnabled |Determines if the script engine cache for global functions is enabled and behaves as an override to the plugin specific setting of the same name. |true
 |maxParameters |Maximum number of parameters that can be passed on the request. |16
 |perGraphCloseTimeout |Time in milliseconds to wait for each configured graph to close any open transactions when the session is killed. |10000
 |sessionTimeout |Time in milliseconds before a session will time out. |28800000
@@ -1586,6 +1587,7 @@ The `GroovyCompilerGremlinPlugin` has a number of configuration options:
 |`compilerConfigurationOptions` |Allows configuration of the Groovy `CompilerConfiguration` object by taking a `Map` of key/value pairs where the "key" is a property to set on the `CompilerConfiguration`.
 |`enableThreadInterrupt` |Injects checks for thread interruption, thus allowing the script to potentially respect calls to `Thread.interrupt()`
 |`expectedCompilationTime` |The amount of time in milliseconds a script is allowed to compile before a warning message is sent to the logs.
+|`globalFunctionCacheEnabled` |Determines if the global function cache is enabled. By default, this value is `true` - described in more detail in the <<gremlin-server-cache,Cache Management>> Section.
 |`classMapCacheSpecification` |The cache specification for the `GremlinGroovyScriptEngine` class map cache - described in more detail in the <<gremlin-server-cache,Cache Management>> Section.
 |`extensions` | This setting is for use when `compilation` is configured with `COMPILE_STATIC` or `TYPE_CHECKED` and accepts a comma separated list of link:http://docs.groovy-lang.org/latest/html/documentation/#Typecheckingextensions-Workingwithextensions[type checking extensions] that can have the effect of securing calls to various methods.
 |=========================================================
@@ -2022,10 +2024,12 @@ Cluster cluster = Cluster.open();
 Client client = cluster.connect();
 
 Map<String,Object> params = new HashMap<>();
-params.put("x",4);
 params.put("#jsr223.groovy.engine.keep.globals", "soft");
-client.submit("[1,2,3,x]", params);
+client.submit("def addItUp(x,y){x+y}", params);
 ----
+
+In cases where maintaining the expense of the global function cache is unecessary this cache can be disabled with the
+`globalFunctionCacheEnabled` configuration on the `GroovyCompilerGremlinPlugin`.
 
 Gremlin Server also has a "class map" cache which holds compiled scripts which helps avoid recompilation costs on
 future requests. This cache can be tuned in the Gremlin Server configuration with the `GroovyCompilerGremlinPlugin`

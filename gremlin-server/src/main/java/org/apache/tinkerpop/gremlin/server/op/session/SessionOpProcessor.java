@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
@@ -77,6 +78,12 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
     public static final String CONFIG_PER_GRAPH_CLOSE_TIMEOUT = "perGraphCloseTimeout";
 
     /**
+     * Configuration setting that behaves as an override to the global script engine setting of the same name that is
+     * provided to the {@link GroovyCompilerGremlinPlugin}.
+     */
+    public static final String CONFIG_GLOBAL_FUNCTION_CACHE_ENABLED = "globalFunctionCacheEnabled";
+
+    /**
      * Default timeout for a session is eight hours.
      */
     public static final long DEFAULT_SESSION_TIMEOUT = 28800000;
@@ -95,6 +102,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
             put(CONFIG_SESSION_TIMEOUT, DEFAULT_SESSION_TIMEOUT);
             put(CONFIG_PER_GRAPH_CLOSE_TIMEOUT, DEFAULT_PER_GRAPH_CLOSE_TIMEOUT);
             put(CONFIG_MAX_PARAMETERS, DEFAULT_MAX_PARAMETERS);
+            put(CONFIG_GLOBAL_FUNCTION_CACHE_ENABLED, true);
         }};
     }
 
