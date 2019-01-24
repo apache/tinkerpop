@@ -157,7 +157,8 @@ class Connection extends EventEmitter {
     };
     }
 
-    const message = Buffer.from(this._header + JSON.stringify(this._getRequest(requestId, bytecode, op, args, processor)));
+    //const message = Buffer.from(this._header + JSON.stringify(this._getRequest(requestId, bytecode, op, args, processor)));
+    var message = new ArrayBuffer(this._header + JSON.stringify(this._getRequest(requestId, bytecode, op, args, processor)));
     this._ws.send(message);
   }));
   }
