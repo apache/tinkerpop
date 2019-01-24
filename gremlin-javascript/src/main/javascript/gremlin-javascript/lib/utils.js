@@ -23,6 +23,7 @@
  */
 'use strict';
 
+const uuidv4 = require('uuid/v4');
 //const crypto = require('crypto');
 
 exports.toLong = function toLong(value) {
@@ -37,7 +38,7 @@ const Long = exports.Long = function Long(value) {
 };
 
 exports.getUuid = function getUuid() {
-  const buffer = Crypto.randomBytes(16);
+  /*const buffer = Crypto.randomBytes(16);
   //clear the version
   buffer[6] &= 0x0f;
   //set the version 4
@@ -52,7 +53,8 @@ exports.getUuid = function getUuid() {
       hex.substr(8, 4) + '-' +
       hex.substr(12, 4) + '-' +
       hex.substr(16, 4) + '-' +
-      hex.substr(20, 12));
+      hex.substr(20, 12));*/
+  return uuidv4();
 };
 
 exports.emptyArray = Object.freeze([]);
