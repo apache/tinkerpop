@@ -50,6 +50,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
 import java.io.File;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -182,6 +183,30 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldReportErrorWhenRequestCantBeSerialized() throws Exception {
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3D0).create();
+        final Client client = cluster.connect().alias("g");
+
+        try {
+            final Map<String,Object> params = new HashMap<>();
+            params.put("r", Color.RED);
+            client.submit("r", params).all().get();
+            fail("Should have thrown exception over bad serialization");
+        } catch (Exception ex) {
+            final Throwable inner = ExceptionUtils.getRootCause(ex);
+            assertThat(inner, instanceOf(ResponseException.class));
+            assertEquals(ResponseStatusCode.REQUEST_ERROR_SERIALIZATION, ((ResponseException) inner).getResponseStatusCode());
+            assertTrue(ex.getMessage().contains("An error occurred during serialization of this request"));
+        }
+
+        // should not die completely just because we had a bad serialization error.  that kind of stuff happens
+        // from time to time, especially in the console if you're just exploring.
+        assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+
+        cluster.close();
     }
 
     @Test
