@@ -174,7 +174,7 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 new Object[] {"Binding", new Bytecode.Binding<>("x", 123), null},
                 new Object[] {"Traverser", new DefaultRemoteTraverser<>("marko", 100), null},
                 new Object[] {"Class", Bytecode.class, null},
-                new Object[] {"ByteBuffer", ByteBuffer.allocate(8).putLong(123456), null},
+                new Object[] {"ByteBuffer", ByteBuffer.wrap(new byte[]{ 1, 2, 3 }), null},
                 new Object[] {"InetAddressV4", InetAddress.getByName("localhost"), null},
                 new Object[] {"InetAddressV6", InetAddress.getByName("::1"), null},
                 new Object[] {"Lambda0", Lambda.supplier("return 1"), null},

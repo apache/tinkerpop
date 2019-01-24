@@ -40,6 +40,7 @@ public class ByteBufferSerializer extends SimpleTypeSerializer<ByteBuffer> {
     ByteBuffer readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final ByteBuffer bb = ByteBuffer.allocate(buffer.readInt());
         buffer.readBytes(bb);
+        bb.rewind();
         return bb;
     }
 
