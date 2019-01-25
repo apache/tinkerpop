@@ -131,7 +131,7 @@ public class Krb5Authenticator implements Authenticator {
          * or ACL's of a storage backend.
          */
         @Override
-        public void handle(Callback[] callbacks) throws UnsupportedCallbackException {
+        public void handle(final Callback[] callbacks) throws UnsupportedCallbackException {
             logger.debug("Krb5 AuthorizeCallback number: " + callbacks.length);
             AuthorizeCallback ac = null;
             for (Callback callback : callbacks) {
@@ -142,15 +142,15 @@ public class Krb5Authenticator implements Authenticator {
                 }
             }
             if (ac != null) {
-                String authid = ac.getAuthenticationID();
-                String authzid = ac.getAuthorizationID();
+                final String authid = ac.getAuthenticationID();
+                final String authzid = ac.getAuthorizationID();
                 if (authid.equals(authzid)) {   // Check whether the service ticket belongs to the authenticated user
                     ac.setAuthorized(true);
                 } else {
                     ac.setAuthorized(false);
                 }
                 if (ac.isAuthorized()) {        // Get user name from his principal name
-                    String[] authidParts = authid.split("@");
+                    final String[] authidParts = authid.split("@");
                     ac.setAuthorizedID(authidParts[0]);
                 }
             }
