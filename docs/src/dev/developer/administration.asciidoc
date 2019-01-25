@@ -81,6 +81,7 @@ or through link:http://people.apache.org/committer-index.html[people.apache.org]
 . Once verified, provide the new committer access to the repository, which is most easily done through
 link:https://whimsy.apache.org/roster/committee/[Whimsy].
 . Send an announcement email to the developer and user mailing lists with the template below.
+. Update JIRA to include this person in the "committers" group.
 
 [source,text]
 ----

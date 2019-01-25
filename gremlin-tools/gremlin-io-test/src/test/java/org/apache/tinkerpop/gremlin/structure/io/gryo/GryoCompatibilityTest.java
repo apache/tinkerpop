@@ -67,8 +67,12 @@ public class GryoCompatibilityTest extends AbstractTypedCompatibilityTest {
                 {GryoCompatibility.V3D0_3_3_4, mapperV3 },
                 {GryoCompatibility.V1D0_3_3_5, mapperV1 },
                 {GryoCompatibility.V3D0_3_3_5, mapperV3 },
+                {GryoCompatibility.V1D0_3_3_6, mapperV1 },
+                {GryoCompatibility.V3D0_3_3_6, mapperV3 },
                 {GryoCompatibility.V1D0_3_4_0, mapperV1 },
-                {GryoCompatibility.V3D0_3_4_0, mapperV3 }});
+                {GryoCompatibility.V3D0_3_4_0, mapperV3 },
+                {GryoCompatibility.V1D0_3_4_1, mapperV1 },
+                {GryoCompatibility.V3D0_3_4_1, mapperV3 }});
     }
 
     @Parameterized.Parameter(value = 0)
