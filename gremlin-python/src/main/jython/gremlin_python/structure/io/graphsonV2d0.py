@@ -493,3 +493,19 @@ class PathDeserializer(_GraphSONTypeIO):
         labels = [set(label) for label in d["labels"]]
         objects = [reader.toObject(o) for o in d["objects"]]
         return Path(labels, objects)
+
+
+class TraversalMetricsDeserializer(_GraphSONTypeIO):
+    graphson_type = "g:TraversalMetrics"
+
+    @classmethod
+    def objectify(cls, d, reader):
+        return reader.toObject(d)
+
+
+class MetricsDeserializer(_GraphSONTypeIO):
+    graphson_type = "g:Metrics"
+
+    @classmethod
+    def objectify(cls, d, reader):
+        return reader.toObject(d)
