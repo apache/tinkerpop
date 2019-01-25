@@ -65,8 +65,11 @@ class TestDriverRemoteConnection(object):
         assert 2 == len(results)
         assert 'josh' in results
         assert 'peter' in results
-        # # todo: need a traversal metrics deserializer
-        g.V().out().profile().next()
+        # #
+        results = g.V().out().profile().toList()
+        assert 1 == len(results)
+        assert 'metrics' in results[0]
+        assert 'dur' in results[0]
         # #
         results = g.V().has('name', 'peter').as_('a').out('created').as_('b').select('a', 'b').by(
             __.valueMap()).toList()

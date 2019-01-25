@@ -254,6 +254,18 @@ class TestGraphSONReader(object):
         assert isinstance(prop, uuid.UUID)
         assert str(prop) == '41d2e28a-20a4-4ab0-b379-d810dede3786'
 
+    def test_metrics(self):
+        prop = self.graphson_reader.readObject(
+            json.dumps([{'@type': 'g:TraversalMetrics', '@value': {'dur': 1.468594, 'metrics': [
+                {'@type': 'g:Metrics', '@value': {'dur': 1.380957, 'counts': {}, 'name': 'GraphStep(__.V())', 'annotations': {'percentDur': 94.03259171697556}, 'id': '4.0.0()'}},
+                {'@type': 'g:Metrics', '@value': {'dur': 0.087637, 'counts': {}, 'name': 'ReferenceElementStep', 'annotations': {'percentDur': 5.967408283024444}, 'id': '3.0.0()'}}
+            ]}}]))
+        assert isinstance(prop, list)
+        assert prop == [{'dur': 1.468594, 'metrics': [
+                {'dur': 1.380957, 'counts': {}, 'name': 'GraphStep(__.V())', 'annotations': {'percentDur': 94.03259171697556}, 'id': '4.0.0()'},
+                {'dur': 0.087637, 'counts': {}, 'name': 'ReferenceElementStep', 'annotations': {'percentDur': 5.967408283024444}, 'id': '3.0.0()'}
+                ]}]
+
 
 class TestGraphSONWriter(object):
     graphson_writer = GraphSONWriter()

@@ -280,6 +280,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-3-6]]
 === TinkerPop 3.3.6 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Add python TraversalMetrics and Metrics deserializers
 * Masked sensitive configuration options in the logs of `KryoShimServiceLoader`.
 * Fixed a concurrency issue in `TraverserSet`
 * Fixed a bug in `InlineFilterStrategy` that mixed up and's and or's when folding merging conditions together.

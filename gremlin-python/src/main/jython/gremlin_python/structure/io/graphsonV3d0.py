@@ -612,3 +612,18 @@ class TDeserializer(_GraphSONTypeIO):
     @classmethod
     def objectify(cls, d, reader):
         return T[d]
+
+class TraversalMetricsDeserializer(_GraphSONTypeIO):
+    graphson_type = "g:TraversalMetrics"
+
+    @classmethod
+    def objectify(cls, d, reader):
+        return reader.toObject(d)
+
+
+class MetricsDeserializer(_GraphSONTypeIO):
+    graphson_type = "g:Metrics"
+
+    @classmethod
+    def objectify(cls, d, reader):
+        return reader.toObject(d)
