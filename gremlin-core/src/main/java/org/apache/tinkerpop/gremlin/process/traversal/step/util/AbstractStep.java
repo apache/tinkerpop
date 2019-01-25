@@ -54,7 +54,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     @Override
     public void setId(final String id) {
-        Objects.nonNull(id);
+        Objects.requireNonNull(id);
         this.id = id;
     }
 
