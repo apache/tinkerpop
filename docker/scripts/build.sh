@@ -76,7 +76,7 @@ if [ -r "settings.xml" ]; then
   cp settings.xml ~/.m2/
 fi
 
-mvn clean install process-resources ${TINKERPOP_BUILD_OPTIONS} || exit 1
+mvn clean install process-resources --batch-mode ${TINKERPOP_BUILD_OPTIONS} || exit 1
 [ -z "${BUILD_JAVA_DOCS}" ] || mvn process-resources -Djavadoc || exit 1
 
 if [ ! -z "${BUILD_USER_DOCS}" ]; then
