@@ -24,6 +24,7 @@
 
 const EventEmitter = require('events');
 //const WebSocket = require('ws');
+//var Buffer = require('buffer');
 const util = require('util');
 const utils = require('../utils');
 const serializer = require('../structure/io/graph-serializer');
@@ -157,8 +158,15 @@ class Connection extends EventEmitter {
     };
     }
 
-    const message = Buffer.from(this._header + JSON.stringify(this._getRequest(requestId, bytecode, op, args, processor)));
-    this._ws.send(message);
+    //const message = Buffer.from(this._header + JSON.stringify(this._getRequest(requestId, bytecode, op, args, processor)));
+     const message = this._header + JSON.stringify(this._getRequest(requestId, bytecode, op, args, processor));
+      var buf = new ArrayBuffer(message.length); // 2 bytes for each char
+      var bufView = new Uint8Array(buf);
+      for (var i=0, strLen=message.length; i < strLen; i++) {
+        bufView[i] = message.charCodeAt(i);
+      }
+      this._ws.binaryType = 'arraybuffer';
+    this._ws.send(bufView);
   }));
   }
 
@@ -166,6 +174,7 @@ class Connection extends EventEmitter {
     if (args) {
       args = this._adaptArgs(args, true);
     }
+
 
     return ({
       'requestId': { '@type': 'g:UUID', '@value': id },
@@ -219,8 +228,15 @@ class Connection extends EventEmitter {
     this.emit('close', code, message);
   }
 
-  _handleMessage(data) {
-    const response = this._reader.read(JSON.parse(data.toString()));
+  _handleMessage(msg) {
+    if(event.data instanceof ArrayBuffer ) {
+      //if in browser javascript, the data are sent as Uint8
+      var data = String.fromCharCode.apply(null, new Uint8Array(msg.data));
+      console.log("Received: " + data);
+    }else{
+      data = msg;
+    }
+    const response = this._reader.read(JSON.parse(data));
     if (response.requestId === null || response.requestId === undefined) {
       // There was a serialization issue on the server that prevented the parsing of the request id
       // We invoke any of the pending handlers with an error
