@@ -102,17 +102,24 @@ public class GraphBinaryReaderWriterRoundTripTest {
         map.put("one", 1);
         map.put("two", 2);
 
-        final List listSingle = new ArrayList<>();
-        listSingle.add("string 1");
+        final Map<String, Map<String, Integer>> nestedMap = new HashMap<>();
+        nestedMap.put("first", map);
 
-        final List listMulti = new ArrayList<>();
-        listSingle.add("string 1");
-        listSingle.add(200);
-        listSingle.add("string 2");
+        final List<Object> list = new ArrayList<>();
+        list.add("string 1");
+        list.add("string 1");
+        list.add(200);
+        list.add("string 2");
 
-        final Set set = new HashSet<>();
+        final List<List<Object>> nestedList = new ArrayList<>();
+        nestedList.add(list);
+
+        final Set<Object> set = new HashSet<>();
         set.add("one");
         set.add(2);
+
+        final Set<Set<Object>> nestedSet = new HashSet<>();
+        nestedSet.add(set);
 
         final BulkSet<String> bulkSet = new BulkSet<>();
         bulkSet.add("marko", 1);
@@ -238,10 +245,12 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 }},
 
                 // collections
-                new Object[] {"ListSingle", listSingle, null},
-                new Object[] {"ListMulti", listMulti, null},
+                new Object[] {"ListSingle", list, null},
+                new Object[] {"ListNested", nestedList, null},
                 new Object[] {"Map", map, null},
-                new Object[] {"Set", set, null});
+                new Object[] {"Map", nestedMap, null},
+                new Object[] {"Set", set, null},
+                new Object[] {"SetNested", nestedSet, null});
     }
 
     @Parameterized.Parameter(value = 0)
