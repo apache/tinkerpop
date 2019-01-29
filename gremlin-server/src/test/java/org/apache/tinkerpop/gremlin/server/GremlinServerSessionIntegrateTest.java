@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import groovy.lang.MissingMethodException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -48,10 +49,10 @@ import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 /**
@@ -101,6 +102,14 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
             case "shouldEnsureSessionBindingsAreThreadSafe":
                 settings.threadPoolWorker = 2;
                 break;
+            case "shouldNotUseGlobalFunctionCache":
+                settings.processors.clear();
+                final Settings.ProcessorSettings processorSettingsForDisableFunctionCache = new Settings.ProcessorSettings();
+                processorSettingsForDisableFunctionCache.className = SessionOpProcessor.class.getCanonicalName();
+                processorSettingsForDisableFunctionCache.config = new HashMap<>();
+                processorSettingsForDisableFunctionCache.config.put(SessionOpProcessor.CONFIG_GLOBAL_FUNCTION_CACHE_ENABLED, false);
+                settings.processors.add(processorSettingsForDisableFunctionCache);
+                break;
             case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient":
             case "shouldExecuteInSessionWithTransactionManagement":
             case "shouldRollbackOnEvalExceptionForManagedTransaction":
@@ -114,6 +123,42 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
     private static void clearNeo4j(Settings settings) {
         deleteDirectory(new File("/tmp/neo4j"));
         settings.graphs.put("graph", "conf/neo4j-empty.properties");
+    }
+
+    @Test
+    public void shouldUseGlobalFunctionCache() throws Exception {
+        final Cluster cluster = TestClientFactory.open();
+        final Client client = cluster.connect(name.getMethodName());
+
+        try {
+            assertEquals(3, client.submit("def addItUp(x,y){x+y};addItUp(1,2)").all().get().get(0).getInt());
+            assertEquals(3, client.submit("addItUp(1,2)").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldNotUseGlobalFunctionCache() throws Exception {
+        final Cluster cluster = TestClientFactory.open();
+        final Client client = cluster.connect(name.getMethodName());
+
+        try {
+            assertEquals(3, client.submit("def addItUp(x,y){x+y};addItUp(1,2)").all().get().get(0).getInt());
+        } catch (Exception ex) {
+            cluster.close();
+            throw ex;
+        }
+
+        try {
+            client.submit("addItUp(1,2)").all().get().get(0).getInt();
+            fail("Global functions should not be cached so the call to addItUp() should fail");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root.getMessage(), startsWith("No signature of method"));
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test

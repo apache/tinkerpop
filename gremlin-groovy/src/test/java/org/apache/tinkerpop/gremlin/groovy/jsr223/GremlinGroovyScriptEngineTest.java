@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import groovy.lang.Closure;
+import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -58,6 +59,22 @@ import static org.junit.Assert.fail;
  */
 public class GremlinGroovyScriptEngineTest {
     private static final Object[] EMPTY_ARGS = new Object[0];
+
+    @Test
+    public void shouldNotCacheGlobalFunctions() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(CompilationOptionsCustomizer.build().
+                enableGlobalFunctionCache(false).create());
+
+        assertEquals(3, engine.eval("def addItUp(x,y){x+y};addItUp(1,2)"));
+
+        try {
+            engine.eval("addItUp(1,2)");
+            fail("Global functions should not be cached so the call to addItUp() should fail");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(MissingMethodException.class));
+        }
+    }
 
     @Test
     public void shouldCompileScriptWithoutRequiringVariableBindings() throws Exception {

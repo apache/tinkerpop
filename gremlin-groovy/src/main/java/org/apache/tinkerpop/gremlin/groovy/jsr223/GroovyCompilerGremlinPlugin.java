@@ -61,6 +61,7 @@ public class GroovyCompilerGremlinPlugin extends AbstractGremlinPlugin {
         private String extensions = null;
         private int expectedCompilationTime = 5000;
         private String cacheSpec = "softValues";
+        private boolean globalFunctionCacheEnabled = true;
 
         private Map<String,Object> keyValues = Collections.emptyMap();
 
@@ -143,6 +144,14 @@ public class GroovyCompilerGremlinPlugin extends AbstractGremlinPlugin {
             return this;
         }
 
+        /**
+         * Determines if the global function cache in the script engine is enabled or not. It is enabled by default.
+         */
+        public Builder globalFunctionCacheEnabled(final boolean enabled) {
+            this.globalFunctionCacheEnabled = enabled;
+            return this;
+        }
+
         Customizer[] asCustomizers() {
             final List<Customizer> list = new ArrayList<>();
 
@@ -159,6 +168,7 @@ public class GroovyCompilerGremlinPlugin extends AbstractGremlinPlugin {
                 list.add(new TimedInterruptGroovyCustomizer(timeInMillis));
 
             list.add(CompilationOptionsCustomizer.build().
+                    enableGlobalFunctionCache(globalFunctionCacheEnabled).
                     setExpectedCompilationTime(expectedCompilationTime > 0 ? expectedCompilationTime : 5000).
                     setClassMapCacheSpecification(cacheSpec).create());
 
