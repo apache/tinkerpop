@@ -193,6 +193,8 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     private final ImportGroovyCustomizer importGroovyCustomizer;
     private final List<GroovyCustomizer> groovyCustomizers;
 
+    private final boolean globalFunctionCacheEnabled;
+
     private final boolean interpreterModeEnabled;
     private final long expectedCompilationTime;
     private final Translator.ScriptTranslator.TypeTranslator typeTranslator;
@@ -235,11 +237,13 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         final Optional<CompilationOptionsCustomizer> compilationOptionsCustomizerProvider = listOfCustomizers.stream()
                 .filter(p -> p instanceof CompilationOptionsCustomizer)
                 .map(p -> (CompilationOptionsCustomizer) p).findFirst();
-        expectedCompilationTime = compilationOptionsCustomizerProvider.isPresent() ?
-                compilationOptionsCustomizerProvider.get().getExpectedCompilationTime() : 5000;
+        expectedCompilationTime = compilationOptionsCustomizerProvider.
+                map(CompilationOptionsCustomizer::getExpectedCompilationTime).orElse(5000L);
+        globalFunctionCacheEnabled = compilationOptionsCustomizerProvider.
+                map(CompilationOptionsCustomizer::isGlobalFunctionCacheEnabled).orElse(true);
 
-        classMap = Caffeine.from(compilationOptionsCustomizerProvider.isPresent() ?
-                compilationOptionsCustomizerProvider.get().getClassMapCacheSpecification() : "softValues").
+        classMap = Caffeine.from(compilationOptionsCustomizerProvider.
+                map(CompilationOptionsCustomizer::getClassMapCacheSpecification).orElse("softValues")).
                 recordStats().
                 build(new GroovyCacheLoader());
 
@@ -253,8 +257,8 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         final Optional<TranslatorCustomizer> translatorCustomizer = listOfCustomizers.stream().
                 filter(p -> p instanceof TranslatorCustomizer).
                 map(p -> (TranslatorCustomizer) p).findFirst();
-        typeTranslator = translatorCustomizer.isPresent() ? translatorCustomizer.get().createTypeTranslator() :
-                new GroovyTranslator.DefaultTypeTranslator();
+        typeTranslator = translatorCustomizer.map(TranslatorCustomizer::createTypeTranslator).
+                orElseGet(GroovyTranslator.DefaultTypeTranslator::new);
 
         createClassLoader();
     }
@@ -347,20 +351,23 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
      */
     @Override
     public Object eval(final String script, final ScriptContext context) throws ScriptException {
-        try {
-            final String val = (String) context.getAttribute(KEY_REFERENCE_TYPE, ScriptContext.ENGINE_SCOPE);
-            ReferenceBundle bundle = ReferenceBundle.getHardBundle();
-            if (val != null && val.length() > 0) {
-                if (val.equalsIgnoreCase(REFERENCE_TYPE_SOFT)) {
-                    bundle = ReferenceBundle.getSoftBundle();
-                } else if (val.equalsIgnoreCase(REFERENCE_TYPE_WEAK)) {
-                    bundle = ReferenceBundle.getWeakBundle();
-                } else if (val.equalsIgnoreCase(REFERENCE_TYPE_PHANTOM)) {
-                    bundle = ReferenceBundle.getPhantomBundle();
+
+        if (globalFunctionCacheEnabled) {
+            try {
+                final String val = (String) context.getAttribute(KEY_REFERENCE_TYPE, ScriptContext.ENGINE_SCOPE);
+                ReferenceBundle bundle = ReferenceBundle.getHardBundle();
+                if (val != null && val.length() > 0) {
+                    if (val.equalsIgnoreCase(REFERENCE_TYPE_SOFT)) {
+                        bundle = ReferenceBundle.getSoftBundle();
+                    } else if (val.equalsIgnoreCase(REFERENCE_TYPE_WEAK)) {
+                        bundle = ReferenceBundle.getWeakBundle();
+                    } else if (val.equalsIgnoreCase(REFERENCE_TYPE_PHANTOM)) {
+                        bundle = ReferenceBundle.getPhantomBundle();
+                    }
                 }
-            }
-            globalClosures.setBundle(bundle);
-        } catch (ClassCastException cce) { /*ignore.*/ }
+                globalClosures.setBundle(bundle);
+            } catch (ClassCastException cce) { /*ignore.*/ }
+        }
 
         try {
             registerBindingTypes(context);
@@ -622,9 +629,12 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
                 return scriptClass;
             } else {
                 final Script scriptObject = InvokerHelper.createScript(scriptClass, binding);
-                for (Method m : scriptClass.getMethods()) {
-                    final String name = m.getName();
-                    globalClosures.put(name, new MethodClosure(scriptObject, name));
+
+                if (globalFunctionCacheEnabled) {
+                    for (Method m : scriptClass.getMethods()) {
+                        final String name = m.getName();
+                        globalClosures.put(name, new MethodClosure(scriptObject, name));
+                    }
                 }
 
                 final MetaClass oldMetaClass = scriptObject.getMetaClass();
@@ -669,7 +679,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
                     if (localVars != null) {
                         localVars.entrySet().forEach(e -> {
                             // closures need to be cached for later use
-                            if (e.getValue() instanceof Closure)
+                            if (globalFunctionCacheEnabled && e.getValue() instanceof Closure)
                                 globalClosures.put(e.getKey(), (Closure) e.getValue());
 
                             context.setAttribute(e.getKey(), e.getValue(), ScriptContext.ENGINE_SCOPE);

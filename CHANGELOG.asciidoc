@@ -282,6 +282,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Add python TraversalMetrics and Metrics deserializers
 * Masked sensitive configuration options in the logs of `KryoShimServiceLoader`.
+* Added `globalFunctionCacheEnabled` to the `GroovyCompilerGremlinPlugin` to allow that cache to be disabled.
+* Added `globalFunctionCacheEnabled` override to `SessionOpProcessor` configuration.
 * Fixed a concurrency issue in `TraverserSet`
 * Fixed a bug in `InlineFilterStrategy` that mixed up and's and or's when folding merging conditions together.
 
