@@ -37,13 +37,13 @@ public class BindingSerializer extends SimpleTypeSerializer<Bytecode.Binding> {
     }
 
     @Override
-    Bytecode.Binding readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Bytecode.Binding readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final String k = context.readValue(buffer, String.class, false);
         return new Bytecode.Binding<>(k, context.read(buffer));
     }
 
     @Override
-    public ByteBuf writeValue(final Bytecode.Binding value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final Bytecode.Binding value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(2);
         result.addComponent(true, context.writeValue(value.variable(), allocator, false));
         result.addComponent(true, context.write(value.value(), allocator));

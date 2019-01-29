@@ -46,12 +46,12 @@ public class TraversalExplanationSerializer extends SimpleTypeSerializer<Travers
     }
 
     @Override
-    TraversalExplanation readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected TraversalExplanation readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         throw new SerializationException("A TraversalExplanation should not be read individually");
     }
 
     @Override
-    public ByteBuf writeValue(final TraversalExplanation value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final TraversalExplanation value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         throw new SerializationException("A TraversalExplanation should not be written individually");
     }
 

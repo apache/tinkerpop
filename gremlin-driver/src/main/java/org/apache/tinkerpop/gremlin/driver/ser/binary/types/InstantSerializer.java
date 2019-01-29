@@ -36,12 +36,12 @@ public class InstantSerializer extends SimpleTypeSerializer<Instant> {
     }
 
     @Override
-    Instant readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Instant readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         return Instant.ofEpochSecond(buffer.readLong(), buffer.readInt());
     }
 
     @Override
-    public ByteBuf writeValue(final Instant value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final Instant value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         return allocator.buffer(12).writeLong(value.getEpochSecond()).writeInt(value.getNano());
     }
 }

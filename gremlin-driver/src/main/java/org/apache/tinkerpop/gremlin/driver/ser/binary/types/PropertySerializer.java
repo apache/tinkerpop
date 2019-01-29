@@ -38,7 +38,7 @@ public class PropertySerializer extends SimpleTypeSerializer<Property> {
     }
 
     @Override
-    Property readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Property readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final Property p = new ReferenceProperty<>(context.readValue(buffer, String.class, false), context.read(buffer));
 
         // discard the parent element as it's not serialized for references right now
@@ -47,7 +47,7 @@ public class PropertySerializer extends SimpleTypeSerializer<Property> {
     }
 
     @Override
-    public ByteBuf writeValue(final Property value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final Property value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(3);
         result.addComponent(true, context.writeValue(value.key(), allocator, false));
         result.addComponent(true, context.write(value.value(), allocator));

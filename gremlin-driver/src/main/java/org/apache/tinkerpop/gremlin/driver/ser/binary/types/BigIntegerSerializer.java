@@ -37,14 +37,14 @@ public class BigIntegerSerializer extends SimpleTypeSerializer<BigInteger> {
     }
 
     @Override
-    BigInteger readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected BigInteger readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final byte[] bigIntBytes = new byte[buffer.readInt()];
         buffer.readBytes(bigIntBytes);
         return new BigInteger(bigIntBytes);
     }
 
     @Override
-    public ByteBuf writeValue(final BigInteger value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final BigInteger value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final byte[] twosComplement = value.toByteArray();
         return allocator.buffer(4 + twosComplement.length).writeInt(twosComplement.length).writeBytes(twosComplement);
     }

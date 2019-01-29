@@ -37,7 +37,7 @@ public class InetAddressSerializer<T extends InetAddress> extends SimpleTypeSeri
     }
 
     @Override
-    T readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected T readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final int length = buffer.readInt();
         final byte[] bytes = new byte[length];
         buffer.readBytes(bytes);
@@ -50,7 +50,7 @@ public class InetAddressSerializer<T extends InetAddress> extends SimpleTypeSeri
     }
 
     @Override
-    public ByteBuf writeValue(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final byte[] bytes = value.getAddress();
         return allocator.buffer(4 + bytes.length).writeInt(bytes.length).writeBytes(bytes);
     }

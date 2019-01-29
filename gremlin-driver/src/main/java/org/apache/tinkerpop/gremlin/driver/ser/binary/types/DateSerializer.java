@@ -44,12 +44,12 @@ public class DateSerializer<T extends Date> extends SimpleTypeSerializer<T> {
     }
 
     @Override
-    T readValue(final ByteBuf buffer, final GraphBinaryReader context) {
+    protected T readValue(final ByteBuf buffer, final GraphBinaryReader context) {
         return reader.apply(buffer.readLong());
     }
 
     @Override
-    public ByteBuf writeValue(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) {
+    protected ByteBuf writeValue(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) {
         return allocator.buffer(8).writeLong(value.getTime());
     }
 }

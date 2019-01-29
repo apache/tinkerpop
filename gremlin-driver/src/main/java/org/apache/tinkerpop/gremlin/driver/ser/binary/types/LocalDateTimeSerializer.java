@@ -39,13 +39,13 @@ public class LocalDateTimeSerializer extends SimpleTypeSerializer<LocalDateTime>
     }
 
     @Override
-    LocalDateTime readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected LocalDateTime readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         return LocalDateTime.of(context.readValue(buffer, LocalDate.class, false),
                 context.readValue(buffer, LocalTime.class, false));
     }
 
     @Override
-    public ByteBuf writeValue(final LocalDateTime value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final LocalDateTime value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(2);
         result.addComponent(true, context.writeValue(value.toLocalDate(), allocator, false));
         result.addComponent(true, context.writeValue(value.toLocalTime(), allocator, false));

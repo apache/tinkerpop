@@ -37,12 +37,12 @@ public class ZoneOffsetSerializer extends SimpleTypeSerializer<ZoneOffset> {
     }
 
     @Override
-    ZoneOffset readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected ZoneOffset readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         return ZoneOffset.ofTotalSeconds(buffer.readInt());
     }
 
     @Override
-    public ByteBuf writeValue(final ZoneOffset value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final ZoneOffset value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         return allocator.buffer(4).writeInt(value.getTotalSeconds());
     }
 }

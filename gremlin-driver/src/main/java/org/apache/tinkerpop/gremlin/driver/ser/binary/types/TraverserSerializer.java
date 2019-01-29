@@ -38,14 +38,14 @@ public class TraverserSerializer extends SimpleTypeSerializer<Traverser> {
     }
 
     @Override
-    Traverser readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Traverser readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final long bulk = context.readValue(buffer, Long.class, false);
         final Object v = context.read(buffer);
         return new DefaultRemoteTraverser<>(v, bulk);
     }
 
     @Override
-    public ByteBuf writeValue(final Traverser value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final Traverser value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(2);
         result.addComponent(true, context.writeValue(value.bulk(), allocator, false));
         result.addComponent(true, context.write(value.get(), allocator));

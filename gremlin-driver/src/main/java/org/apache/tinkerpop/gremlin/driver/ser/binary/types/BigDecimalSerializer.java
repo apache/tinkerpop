@@ -38,14 +38,14 @@ public class BigDecimalSerializer extends SimpleTypeSerializer<BigDecimal> {
     }
 
     @Override
-    BigDecimal readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected BigDecimal readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final int scale = context.readValue(buffer, Integer.class, false);
         final BigInteger unscaled = context.readValue(buffer, BigInteger.class, false);
         return new BigDecimal(unscaled, scale);
     }
 
     @Override
-    public ByteBuf writeValue(final BigDecimal value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final BigDecimal value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(2);
         result.addComponent(true, context.writeValue(value.scale(), allocator, false));
         result.addComponent(true, context.writeValue(value.unscaledValue(), allocator, false));

@@ -45,7 +45,7 @@ public class TraversalStrategySerializer extends SimpleTypeSerializer<TraversalS
     }
 
     @Override
-    TraversalStrategy readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected TraversalStrategy readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final Class<TraversalStrategy> clazz = context.readValue(buffer, Class.class, false);
         final Map config = context.readValue(buffer, Map.class, false);
 
@@ -53,7 +53,7 @@ public class TraversalStrategySerializer extends SimpleTypeSerializer<TraversalS
     }
 
     @Override
-    public ByteBuf writeValue(final TraversalStrategy value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final TraversalStrategy value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(2);
         result.addComponent(true, context.writeValue(value.getClass(), allocator, false));
         result.addComponent(true, context.writeValue(translateToBytecode(ConfigurationConverter.getMap(value.getConfiguration())), allocator, false));

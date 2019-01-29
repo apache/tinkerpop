@@ -38,7 +38,7 @@ public class BulkSetSerializer extends SimpleTypeSerializer<BulkSet> {
     }
 
     @Override
-    BulkSet readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected BulkSet readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final int length = buffer.readInt();
 
         final BulkSet result = new BulkSet();
@@ -50,7 +50,7 @@ public class BulkSetSerializer extends SimpleTypeSerializer<BulkSet> {
     }
 
     @Override
-    public ByteBuf writeValue(final BulkSet value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final BulkSet value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final Map<Object,Long> raw = value.asBulk();
         final CompositeByteBuf result = allocator.compositeBuffer(1 + raw.size() * 2);
         result.addComponent(true, allocator.buffer(4).writeInt(raw.size()));

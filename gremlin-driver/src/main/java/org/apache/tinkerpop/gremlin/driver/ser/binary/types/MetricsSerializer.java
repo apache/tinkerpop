@@ -39,7 +39,7 @@ public class MetricsSerializer extends SimpleTypeSerializer<Metrics> {
     }
 
     @Override
-    Metrics readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Metrics readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         // Consider using a custom implementation, like "DefaultMetrics"
         final MutableMetrics result = new MutableMetrics(
                 context.readValue(buffer, String.class, false),
@@ -55,7 +55,7 @@ public class MetricsSerializer extends SimpleTypeSerializer<Metrics> {
     }
 
     @Override
-    public ByteBuf writeValue(final Metrics value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final Metrics value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         return allocator.compositeBuffer(6).addComponents(true,
                 context.writeValue(value.getId(), allocator, false),
                 context.writeValue(value.getName(), allocator, false),

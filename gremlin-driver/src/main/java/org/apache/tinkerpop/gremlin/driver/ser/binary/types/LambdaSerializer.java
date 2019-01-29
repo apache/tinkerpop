@@ -36,7 +36,7 @@ public class LambdaSerializer extends SimpleTypeSerializer<Lambda> {
     }
 
     @Override
-    Lambda readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Lambda readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final String lang = context.readValue(buffer, String.class, false);
         final String script = context.readValue(buffer, String.class, false);
         final int args = context.readValue(buffer, Integer.class, false);
@@ -52,7 +52,7 @@ public class LambdaSerializer extends SimpleTypeSerializer<Lambda> {
     }
 
     @Override
-    public ByteBuf writeValue(final Lambda value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final Lambda value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(3);
         result.addComponent(true, context.writeValue(value.getLambdaLanguage(), allocator, false));
         result.addComponent(true, context.writeValue(value.getLambdaScript(), allocator, false));

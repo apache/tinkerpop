@@ -38,7 +38,7 @@ public class EdgeSerializer extends SimpleTypeSerializer<Edge> {
     }
 
     @Override
-    public Edge readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Edge readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final Object id = context.read(buffer);
         final String label = context.readValue(buffer, String.class, false);
 
@@ -59,7 +59,7 @@ public class EdgeSerializer extends SimpleTypeSerializer<Edge> {
     }
 
     @Override
-    public ByteBuf writeValue(final Edge value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final Edge value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(8);
         result.addComponent(true, context.write(value.id(), allocator));
         result.addComponent(true, context.writeValue(value.label(), allocator, false));

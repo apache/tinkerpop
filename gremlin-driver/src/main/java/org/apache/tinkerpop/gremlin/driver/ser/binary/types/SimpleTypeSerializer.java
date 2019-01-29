@@ -66,7 +66,7 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
      * @return
      * @throws SerializationException
      */
-    abstract T readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException;
+    protected abstract T readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException;
 
     @Override
     public ByteBuf write(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
@@ -99,5 +99,5 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
      * @param context The binary writer.
      * @throws SerializationException
      */
-    public abstract ByteBuf writeValue(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException;
+    protected abstract ByteBuf writeValue(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException;
 }

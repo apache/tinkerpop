@@ -39,14 +39,14 @@ public class OffsetTimeSerializer extends SimpleTypeSerializer<OffsetTime> {
     }
 
     @Override
-    OffsetTime readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected OffsetTime readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final LocalTime ldt = context.readValue(buffer, LocalTime.class, false);
         final ZoneOffset zo = context.readValue(buffer, ZoneOffset.class, false);
         return OffsetTime.of(ldt, zo);
     }
 
     @Override
-    public ByteBuf writeValue(final OffsetTime value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final OffsetTime value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(2);
         result.addComponent(true, context.writeValue(value.toLocalTime(), allocator, false));
         result.addComponent(true, context.writeValue(value.getOffset(), allocator, false));

@@ -35,7 +35,7 @@ class CollectionSerializer extends SimpleTypeSerializer<Collection> {
     }
 
     @Override
-    Collection readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Collection readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final int length = buffer.readInt();
 
         final ArrayList result = new ArrayList(length);
@@ -47,7 +47,7 @@ class CollectionSerializer extends SimpleTypeSerializer<Collection> {
     }
 
     @Override
-    public ByteBuf writeValue(final Collection value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final Collection value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(1 + value.size());
         result.addComponent(true, allocator.buffer(4).writeInt(value.size()));
 
