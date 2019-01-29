@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.op.session;
 
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
@@ -31,6 +32,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,6 +43,12 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor.CONFIG_GLOBAL_FUNCTION_CACHE_ENABLED;
+import static org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor.CONFIG_PER_GRAPH_CLOSE_TIMEOUT;
+import static org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor.CONFIG_SESSION_TIMEOUT;
+import static org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor.DEFAULT_PER_GRAPH_CLOSE_TIMEOUT;
+import static org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor.DEFAULT_SESSION_TIMEOUT;
 
 /**
  * Defines a "session" for the {@link SessionOpProcessor} which preserves state between requests made to Gremlin
@@ -58,6 +67,7 @@ public class Session {
     private final ScheduledExecutorService scheduledExecutorService;
     private final long configuredSessionTimeout;
     private final long configuredPerGraphCloseTimeout;
+    private final boolean globalFunctionCacheEnabled;
 
     private AtomicBoolean killing = new AtomicBoolean(false);
     private AtomicReference<ScheduledFuture> kill = new AtomicReference<>();
@@ -91,9 +101,11 @@ public class Session {
         final Settings.ProcessorSettings processorSettings = this.settings.optionalProcessor(SessionOpProcessor.class).
                 orElse(SessionOpProcessor.DEFAULT_SETTINGS);
         this.configuredSessionTimeout = Long.parseLong(processorSettings.config.getOrDefault(
-                SessionOpProcessor.CONFIG_SESSION_TIMEOUT, SessionOpProcessor.DEFAULT_SESSION_TIMEOUT).toString());
+                CONFIG_SESSION_TIMEOUT, DEFAULT_SESSION_TIMEOUT).toString());
         this.configuredPerGraphCloseTimeout = Long.parseLong(processorSettings.config.getOrDefault(
-                SessionOpProcessor.CONFIG_PER_GRAPH_CLOSE_TIMEOUT, SessionOpProcessor.DEFAULT_PER_GRAPH_CLOSE_TIMEOUT).toString());
+                CONFIG_PER_GRAPH_CLOSE_TIMEOUT, DEFAULT_PER_GRAPH_CLOSE_TIMEOUT).toString());
+        this.globalFunctionCacheEnabled = Boolean.parseBoolean(
+                processorSettings.config.getOrDefault(CONFIG_GLOBAL_FUNCTION_CACHE_ENABLED, true).toString());
 
         this.gremlinExecutor = initializeGremlinExecutor().create();
 
@@ -217,8 +229,18 @@ public class Session {
         settings.scriptEngines.forEach((k, v) -> {
             // use plugins if they are present
             if (!v.plugins.isEmpty()) {
-                // make sure that server related classes are available at init - new approach. the LifeCycleHook stuff
-                // will be added explicitly via configuration using GremlinServerGremlinModule in the yaml
+                // make sure that server related classes are available at init. the LifeCycleHook stuff will be
+                // added explicitly via configuration using GremlinServerGremlinModule in the yaml. need to override
+                // scriptengine settings with SessionOpProcessor specific ones as the processing for sessions is
+                // different and a global setting may not make sense for a session
+                if (v.plugins.containsKey(GroovyCompilerGremlinPlugin.class.getName())) {
+                    v.plugins.get(GroovyCompilerGremlinPlugin.class.getName()).put(CONFIG_GLOBAL_FUNCTION_CACHE_ENABLED, globalFunctionCacheEnabled);
+                } else {
+                    final Map<String,Object> pluginConf = new HashMap<>();
+                    pluginConf.put(CONFIG_GLOBAL_FUNCTION_CACHE_ENABLED, globalFunctionCacheEnabled);
+                    v.plugins.put(GroovyCompilerGremlinPlugin.class.getName(), pluginConf);
+                }
+
                 gremlinExecutorBuilder.addPlugins(k, v.plugins);
             }
         });
