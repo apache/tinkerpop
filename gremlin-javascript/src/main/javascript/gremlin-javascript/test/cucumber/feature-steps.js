@@ -75,6 +75,9 @@ const ignoredScenarios = {
   'g_V_peerPressure_hasXclusterX': new IgnoreError(ignoreReason.computerNotSupported),
   'g_V_peerPressure_byXclusterX_byXoutEXknowsXX_pageRankX1X_byXrankX_byXoutEXknowsXX_timesX2X_group_byXclusterX_byXrank_sumX_limitX100X': new IgnoreError(ignoreReason.computerNotSupported),
   'g_V_hasXname_rippleX_inXcreatedX_peerPressure_byXoutEX_byXclusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
+  'g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
+  'g_V_group_byXoutE_countX_byXnameX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
 };
 
 defineSupportCode(function(methods) {
