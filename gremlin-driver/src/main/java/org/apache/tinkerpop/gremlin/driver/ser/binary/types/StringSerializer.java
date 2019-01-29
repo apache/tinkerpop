@@ -33,13 +33,13 @@ public class StringSerializer extends SimpleTypeSerializer<String> {
     }
 
     @Override
-    public String readValue(final ByteBuf buffer, final GraphBinaryReader context) {
+    protected String readValue(final ByteBuf buffer, final GraphBinaryReader context) {
         final int length = buffer.readInt();
         return buffer.readCharSequence(length, StandardCharsets.UTF_8).toString();
     }
 
     @Override
-    public ByteBuf writeValue(final String value, final ByteBufAllocator allocator, final GraphBinaryWriter context) {
+    protected ByteBuf writeValue(final String value, final ByteBufAllocator allocator, final GraphBinaryWriter context) {
         final byte[] stringBytes = value.getBytes(StandardCharsets.UTF_8);
         return allocator.buffer(4 + stringBytes.length).writeInt(stringBytes.length).writeBytes(stringBytes);
     }

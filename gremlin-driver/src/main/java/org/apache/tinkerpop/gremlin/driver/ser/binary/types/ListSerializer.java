@@ -35,13 +35,13 @@ public class ListSerializer extends SimpleTypeSerializer<List> {
     }
 
     @Override
-    public List readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected List readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         // The collection is a List<>
         return (List) collectionSerializer.readValue(buffer, context);
     }
 
     @Override
-    public ByteBuf writeValue(final List value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final List value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         return collectionSerializer.writeValue(value, allocator, context);
     }
 }

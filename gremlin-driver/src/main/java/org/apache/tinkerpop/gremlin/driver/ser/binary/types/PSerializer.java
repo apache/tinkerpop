@@ -50,7 +50,7 @@ public class PSerializer<T extends P> extends SimpleTypeSerializer<T> {
     }
 
     @Override
-    T readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected T readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final String predicateName = context.readValue(buffer, String.class, false);
         final int length = context.readValue(buffer, Integer.class, false);
         final Object[] args = new Object[length];
@@ -111,7 +111,7 @@ public class PSerializer<T extends P> extends SimpleTypeSerializer<T> {
     }
 
     @Override
-    public ByteBuf writeValue(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         // the predicate name is either a static method of P or an instance method when a type ConnectiveP
         final boolean isConnectedP = value instanceof ConnectiveP;
         final String predicateName = isConnectedP ?

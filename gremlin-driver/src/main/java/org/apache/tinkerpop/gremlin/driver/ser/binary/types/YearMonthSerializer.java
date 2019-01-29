@@ -36,12 +36,12 @@ public class YearMonthSerializer extends SimpleTypeSerializer<YearMonth> {
     }
 
     @Override
-    YearMonth readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected YearMonth readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         return YearMonth.of(buffer.readInt(), buffer.readByte());
     }
 
     @Override
-    public ByteBuf writeValue(final YearMonth value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final YearMonth value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         return allocator.buffer(2).writeInt(value.getYear()).writeByte(value.getMonthValue());
     }
 }

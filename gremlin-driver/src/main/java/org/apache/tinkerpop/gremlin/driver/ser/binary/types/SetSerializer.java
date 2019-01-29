@@ -36,12 +36,12 @@ public class SetSerializer extends SimpleTypeSerializer<Set>{
     }
 
     @Override
-    Set readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Set readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         return new HashSet<>(collectionSerializer.readValue(buffer, context));
     }
 
     @Override
-    public ByteBuf writeValue(final Set value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final Set value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         return collectionSerializer.writeValue(value, allocator, context);
     }
 }

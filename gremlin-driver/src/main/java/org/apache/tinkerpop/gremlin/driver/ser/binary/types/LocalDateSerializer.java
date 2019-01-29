@@ -36,12 +36,12 @@ public class LocalDateSerializer extends SimpleTypeSerializer<LocalDate> {
     }
 
     @Override
-    LocalDate readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected LocalDate readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         return LocalDate.of(buffer.readInt(), buffer.readByte(), buffer.readByte());
     }
 
     @Override
-    public ByteBuf writeValue(final LocalDate value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final LocalDate value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         return allocator.buffer(6).writeInt(value.getYear()).writeByte(value.getMonthValue()).writeByte(value.getDayOfMonth());
     }
 }

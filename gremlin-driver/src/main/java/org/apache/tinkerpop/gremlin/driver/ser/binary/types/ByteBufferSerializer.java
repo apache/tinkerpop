@@ -37,7 +37,7 @@ public class ByteBufferSerializer extends SimpleTypeSerializer<ByteBuffer> {
     }
 
     @Override
-    ByteBuffer readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected ByteBuffer readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final ByteBuffer bb = ByteBuffer.allocate(buffer.readInt());
         buffer.readBytes(bb);
         bb.rewind();
@@ -45,7 +45,7 @@ public class ByteBufferSerializer extends SimpleTypeSerializer<ByteBuffer> {
     }
 
     @Override
-    public ByteBuf writeValue(final ByteBuffer value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final ByteBuffer value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final byte[] bytes = value.array();
         return allocator.buffer(4 + bytes.length).writeInt(bytes.length).writeBytes(bytes);
     }

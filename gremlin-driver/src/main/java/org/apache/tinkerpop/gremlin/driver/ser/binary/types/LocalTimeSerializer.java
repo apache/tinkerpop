@@ -36,12 +36,12 @@ public class LocalTimeSerializer extends SimpleTypeSerializer<LocalTime> {
     }
 
     @Override
-    LocalTime readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected LocalTime readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         return LocalTime.ofNanoOfDay(buffer.readLong());
     }
 
     @Override
-    public ByteBuf writeValue(final LocalTime value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final LocalTime value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         return allocator.buffer(8).writeLong(value.toNanoOfDay());
     }
 }

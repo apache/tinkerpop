@@ -69,7 +69,7 @@ public class SingleTypeSerializer<T> extends SimpleTypeSerializer<T> {
     }
 
     @Override
-    public ByteBuf writeValue(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) {
+    protected ByteBuf writeValue(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) {
         final ByteBuf buffer = allocator.buffer(byteLength);
         writeFunc.accept(value, buffer);
         return buffer;

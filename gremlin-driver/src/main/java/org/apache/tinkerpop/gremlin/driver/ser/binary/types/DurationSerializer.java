@@ -36,12 +36,12 @@ public class DurationSerializer extends SimpleTypeSerializer<Duration> {
     }
 
     @Override
-    Duration readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Duration readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         return Duration.ofSeconds(buffer.readLong(), buffer.readInt());
     }
 
     @Override
-    public ByteBuf writeValue(final Duration value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final Duration value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         return allocator.buffer(12).writeLong(value.getSeconds()).writeInt(value.getNano());
     }
 }

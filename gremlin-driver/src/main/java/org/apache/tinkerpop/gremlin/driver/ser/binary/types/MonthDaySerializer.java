@@ -36,12 +36,12 @@ public class MonthDaySerializer extends SimpleTypeSerializer<MonthDay> {
     }
 
     @Override
-    MonthDay readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected MonthDay readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         return MonthDay.of(buffer.readByte(), buffer.readByte());
     }
 
     @Override
-    public ByteBuf writeValue(final MonthDay value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final MonthDay value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         return allocator.buffer(2).writeByte(value.getMonthValue()).writeByte(value.getDayOfMonth());
     }
 }

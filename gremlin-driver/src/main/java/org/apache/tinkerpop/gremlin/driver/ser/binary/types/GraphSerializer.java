@@ -53,7 +53,7 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
     }
 
     @Override
-    Graph readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Graph readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
 
         if (null == openMethod)
             throw new SerializationException("TinkerGraph is an optional dependency to gremlin-driver - if deserializing Graph instances it must be explicitly added as a dependency");
@@ -110,7 +110,7 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
     }
 
     @Override
-    public ByteBuf writeValue(final Graph value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final Graph value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         // this kinda looks scary memory-wise, but GraphBinary is about network derser so we are dealing with a
         // graph instance that should live in memory already - not expecting "big" stuff here.
         final List<Vertex> vertexList = IteratorUtils.list(value.vertices());

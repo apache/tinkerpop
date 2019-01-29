@@ -43,7 +43,7 @@ public class PathSerializer extends SimpleTypeSerializer<Path> {
     }
 
     @Override
-    Path readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Path readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final MutablePath path = (MutablePath) MutablePath.make();
         final List<Set<String>> labels = context.read(buffer);
         final List<Object> objects = context.read(buffer);
@@ -59,7 +59,7 @@ public class PathSerializer extends SimpleTypeSerializer<Path> {
     }
 
     @Override
-    public ByteBuf writeValue(final Path value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final Path value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(2);
         result.addComponent(true, context.write(value.labels(), allocator));
         result.addComponent(true, context.write(value.objects(), allocator));

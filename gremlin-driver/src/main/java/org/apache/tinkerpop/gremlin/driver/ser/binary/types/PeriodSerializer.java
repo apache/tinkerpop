@@ -36,12 +36,12 @@ public class PeriodSerializer extends SimpleTypeSerializer<Period> {
     }
 
     @Override
-    Period readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Period readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         return Period.of(buffer.readInt(), buffer.readInt(), buffer.readInt());
     }
 
     @Override
-    public ByteBuf writeValue(final Period value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected ByteBuf writeValue(final Period value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         return allocator.buffer(12).writeInt(value.getYears()).writeInt(value.getMonths()).writeInt(value.getDays());
     }
 }
