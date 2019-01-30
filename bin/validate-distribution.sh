@@ -137,6 +137,20 @@ echo "OK"
 
 if [ "${TYPE}" = "SOURCE" ]; then
 cd ${DIR_NAME}
+echo -n "* checking source files ... "
+find . -type f | xargs -n1 -I {} file {} --mime | grep 'charset=binary' | cut -f1 -d: |
+  grep -Pv '^\./docs/(static|(site/home))/images/((icons|logos|policy|resources)/)?[^/]*\.(png|jpg|ico|pdf)$' |
+  grep -Pv '^./gremlin-dotnet/src/images/[^/]*\.(png|ico)$' |
+  grep -Pv '^./gremlin-dotnet/.*\.snk$' |
+  grep -Pv '^./gremlin-server/src/test/resources/[^/]*\.(p12|jks)$' |
+  grep -Pv '/(resources|data)/.*\.(kryo|json)$' > ../binary-files.txt
+if [ -s ../binary-files.txt ]; then
+  echo "Found unexpected binary files (see $(cd .. ; pwd)/binary-files.txt)"
+  exit 1
+else
+  rm -f ../binary-files.txt
+  echo "OK"
+fi
 echo -n "* building project ... "
 touch {gremlin-dotnet,gremlin-dotnet/src,gremlin-dotnet/test,gremlin-python,gremlin-javascript}/.glv
 LOG_FILE="${TMP_DIR}/mvn-clean-install-${VERSION}.log"
