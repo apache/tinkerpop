@@ -49,11 +49,12 @@ TinkerPop3 implementation.
 [[graph-structure-api]]
 === Graph Structure API
 
-The graph structure API of TinkerPop3 provides the interfaces necessary to create a TinkerPop enabled system and
-exposes the basic components of a property graph to include `Graph`, `Vertex`, `Edge`, `VertexProperty` and `Property`.
-The structure API can be used directly as follows:
+The graph structure API provides the interfaces necessary to create a TinkerPop enabled system and exposes the basic
+components of a property graph to include `Graph`, `Vertex`, `Edge`, `VertexProperty` and `Property`. The structure
+API can be used directly as follows:
 
 [source,java]
+----
 Graph graph = TinkerGraph.open(); <1>
 Vertex marko = graph.addVertex(T.label, "person", T.id, 1, "name", "marko", "age", 29); <2>
 Vertex vadas = graph.addVertex(T.label, "person", T.id, 2, "name", "vadas", "age", 27);
@@ -67,6 +68,7 @@ marko.addEdge("created", lop, T.id, 9, "weight", 0.4f);
 josh.addEdge("created", ripple, T.id, 10, "weight", 1.0f);
 josh.addEdge("created", lop, T.id, 11, "weight", 0.4f);
 peter.addEdge("created", lop, T.id, 12, "weight", 0.2f);
+----
 
 <1> Create a new in-memory `TinkerGraph` and assign it to the variable `graph`.
 <2> Create a vertex along with a set of key/value pairs with `T.label` being the vertex label and `T.id` being the vertex id.
@@ -144,23 +146,42 @@ implementations for ideas and patterns.
 
 Please consider the following implementation notes:
 
-* Be sure your `Graph` implementation is named as `XXXGraph` (e.g. TinkerGraph, Neo4jGraph, HadoopGraph, etc.).
-* Use `StringHelper` to ensuring that the `toString()` representation of classes are consistent with other implementations.
-* Ensure that your implementation's `Features` (Graph, Vertex, etc.) are correct so that test cases handle particulars accordingly.
+* Use `StringHelper` to ensuring that the `toString()` representation of classes are consistent with other
+implementations.
+* Ensure that your implementation's `Features` (Graph, Vertex, etc.) are correct so that test cases handle particulars
+accordingly.
 * Use the numerous static method helper classes such as `ElementHelper`, `GraphComputerHelper`, `VertexProgramHelper`, etc.
 * There are a number of default methods on the provided interfaces that are semantically correct. However, if they are
 not efficient for the implementation, override them.
-* Implement the `structure/` package interfaces first and then, if desired, interfaces in the `process/` package interfaces.
+* Implement the `structure/` package interfaces first and then, if desired, interfaces in the `process/` package
+interfaces.
 * `ComputerGraph` is a `Wrapper` system that ensure proper semantics during a GraphComputer computation.
+* The link:http://tinkerpop.apache.org/javadocs/x.y.z/core/[javadoc] is often a good resource in understanding
+expectations from both the user's perspective as well as the graph provider's perspective. Also consider examining
+the javadoc of TinkerGraph which is often well annotated and the interfaces and classes of the test suite itself.
 
 [[oltp-implementations]]
 ==== OLTP Implementations
 
 image:pipes-character-1.png[width=110,float=right] The most important interfaces to implement are in the `structure/`
-package. These include interfaces like Graph, Vertex, Edge, Property, Transaction, etc. The `StructureStandardSuite`
-will ensure that the semantics of the methods implemented are correct. Moreover, there are numerous `Exceptions`
-classes with static exceptions that should be thrown by the graph system so that all the exceptions and their
-messages are consistent amongst all TinkerPop3 implementations.
+package. These include interfaces like `Graph`, `Vertex`, `Edge`, `Property`, `Transaction`, etc. The
+`StructureStandardSuite` will ensure that the semantics of the methods implemented are correct. Moreover, there are
+numerous `Exceptions` classes with static exceptions that should be thrown by the graph system so that all the
+exceptions and their messages are consistent amongst all TinkerPop3 implementations.
+
+The following bullets provide some tips to consider when implementing the structure interfaces:
+
+* `Graph`
+** Be sure the `Graph` implementation is named as `XXXGraph` (e.g. TinkerGraph, Neo4jGraph, HadoopGraph, etc.).
+** This implementation needs to be `GraphFactory` compatible which means that the implementation should have a static
+`Graph open(Configuration)` method where the `Configuration` is an Apache Commons class of that name. Alternatively, the
+`Graph` implementation can have the `GraphFactoryClass` annotation which specifies a class with that static
+`Graph open(Configuration)` method.
+* `VertexProperty`
+** This interface is both a `Property` and an `Element` as `VertexProperty` is a first-class graph element in that it
+can have its own properties (i.e. meta-properties). Even if the implementation does not intend to support
+meta-properties, the `VertexProperty` needs to be implemented as an `Element`.
+
 
 [[olap-implementations]]
 ==== OLAP Implementations
@@ -773,6 +794,11 @@ shared state in test execution around graph configuration.  It is therefore reco
 off for the test suite (the Maven SureFire Plugin is configured this way by default).  It may also be important to
 include this setting, `<reuseForks>false</reuseForks>`, in the SureFire configuration if tests are failing in an
 unexplainable way.
+
+WARNING: For graph implementations that require a schema, take note that TinkerPop tests were originally developed
+without too much concern for these types of graphs. While most tests utilize the standard toy graphs there are
+instances where tests will utilize their own independent schema that stands alone from all other tests. It may be
+necessary to create schemas specific to certain tests in those situations.
 
 TIP: When running the `gremlin-test` suite against your implementation, you may need to set `build.dir` as an
 environment variable, depending on your project layout. Some tests require this to find a writable directory for

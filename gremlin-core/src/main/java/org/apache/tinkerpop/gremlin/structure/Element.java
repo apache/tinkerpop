@@ -108,7 +108,8 @@ public abstract interface Element {
     }
 
     /**
-     * Get an {@link Iterator} of properties.
+     * Get an {@link Iterator} of properties where the {@code propertyKeys} is meant to be a filter on the available
+     * keys. If no keys are provide then return all the properties.
      */
     public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys);
 

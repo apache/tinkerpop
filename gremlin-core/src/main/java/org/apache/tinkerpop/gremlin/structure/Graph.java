@@ -403,6 +403,12 @@ public interface Graph extends AutoCloseable, Host {
      * should check features prior to using various functions of TinkerPop to help ensure code portability
      * across implementations.  For example, a common usage would be to check if a graph supports transactions prior
      * to calling the commit method on {@link #tx()}.
+     * <p/>
+     * As an additional notice to Graph Providers, feature methods will be used by the test suite to determine which
+     * tests will be ignored and which will be executed, therefore proper setting of these features is essential to
+     * maximizing the amount of testing performed by the suite. Further note, that these methods may be called by the
+     * TinkerPop core code to determine what operations may be appropriately executed which will have impact on
+     * features utilized by users.
      */
     public interface Features {
 
