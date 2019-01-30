@@ -41,7 +41,22 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             new Dictionary<string, IgnoreReason>
             {
                 // Add here the name of scenarios to ignore and the reason, e.g.
-                // { "g_injectX2X_chooseXisX1X__constantX10Xfold__foldX", IgnoreReason.NoReason }
+                { "g_V_localXoutE_foldX_unfold", IgnoreReason.NoReason },
+                { "g_VX1X_outEXcreatedX_inV_inE_outV_path", IgnoreReason.NoReason },
+                { "g_V_peerPressure_byXclusterX_byXoutEXknowsXX_pageRankX1X_byXrankX_byXoutEXknowsXX_timesX2X_group_byXclusterX_byXrank_sumX_limitX100X", IgnoreReason.NoReason },
+                { "g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_inV_hasXname_joshX_selectXhereX", IgnoreReason.NoReason },
+                { "g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_selectXhereX", IgnoreReason.NoReason },
+                { "g_VX1X_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_selectXhereX", IgnoreReason.NoReason },
+                { "g_VX1X_outE_asXhereX_inV_hasXname_vadasX_selectXhereX", IgnoreReason.NoReason },
+                { "g_VX1_2_3_4X_name", IgnoreReason.NoReason },
+                { "g_VX2X_inE", IgnoreReason.NoReason },
+                { "g_VX4X_bothE", IgnoreReason.NoReason },
+                { "g_VX4X_bothEXcreatedX", IgnoreReason.NoReason },
+                { "g_VX2X_outE", IgnoreReason.NoReason },
+                { "g_VX1X_outE", IgnoreReason.NoReason },
+                { "g_V_group_byXoutE_countX_byXnameX", IgnoreReason.NoReason },
+                { "g_VX1X_repeatXgroupCountXmX_byXloopsX_outX_timesX3X_capXmX", IgnoreReason.NoReason },
+                { "g_V_outXcreatedX_groupXmX_byXlabelX_pageRankX1X_byXpageRankX_byXinEX_timesX1X_inXcreatedX_groupXmX_byXpageRankX_capXmX", IgnoreReason.NoReason }
             };
         
         private static class Keywords
