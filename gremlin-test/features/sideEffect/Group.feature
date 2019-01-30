@@ -84,13 +84,15 @@ Feature: Step - group()
       | m[{"ripple":"d[2].l", "vadas":"d[1].l", "josh":"d[1].l", "lop":"d[4].l"}] |
 
   Scenario: g_V_group_byXoutE_countX_byXnameX
-    Given an unsupported test
-    Then nothing should happen because
+    Given the modern graph
+    And the traversal of
       """
-      The result returned is not supported under GraphSON 2.x and therefore cannot be properly asserted. More
-      specifically it has numeric keys which basically get toString()'d under GraphSON 2.x. This test can be supported
-      with GraphSON 3.x.
+      g.V().group().by(__.outE().count()).by("name")
       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"d[0].i":["vadas","lop","ripple"],"d[1].i":["peter"],"d[2].i":["josh"],"d[3}.i":["marko"]}] |
 
   Scenario: g_V_groupXaX_byXlabelX_byXoutE_weight_sumX_capXaX
     Given the modern graph
@@ -183,18 +185,14 @@ Feature: Step - group()
     Given an unsupported test
     Then nothing should happen because
       """
-      The result returned is not supported under GraphSON 2.x and therefore cannot be properly asserted. More
-      specifically it has numeric keys which basically get toString()'d under GraphSON 2.x. This test can be supported
-      with GraphSON 3.x.
+      The result is [a:[32:[v[4]],27:[v[2]],josh:[v[4]],ripple:[v[5],v[5]],lop:[v[3],v[3],v[3],v[3]],vadas:[v[2]]],b:[ripple:2,lop:4]] which is not supported by this test suite
       """
 
   Scenario: g_V_group_byXbothE_countX_byXgroup_byXlabelXX
     Given an unsupported test
     Then nothing should happen because
       """
-      The result returned is not supported under GraphSON 2.x and therefore cannot be properly asserted. More
-      specifically it has numeric keys which basically get toString()'d under GraphSON 2.x. This test can be supported
-      with GraphSON 3.x.
+      The result is [1:[software:[v[5]],person:[v[2],v[6]]],3:[software:[v[3]],person:[v[1],v[4]]]] which is not supported by this test suite
       """
 
   Scenario: g_V_outXfollowedByX_group_byXsongTypeX_byXbothE_group_byXlabelX_byXweight_sumXX

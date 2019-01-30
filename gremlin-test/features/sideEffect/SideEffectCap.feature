@@ -32,7 +32,5 @@ Feature: Step - cap()
     Given an unsupported test
     Then nothing should happen because
       """
-      The result returned is not supported under GraphSON 2.x and therefore cannot be properly asserted. More
-      specifically it has numeric keys which basically get toString()'d under GraphSON 2.x. This test can be supported
-      with GraphSON 3.x.
+      The result is [a:[32:1,35:1,27:1,29:1],b:[ripple:1,lop:1]] which is not supported by this test suite
       """

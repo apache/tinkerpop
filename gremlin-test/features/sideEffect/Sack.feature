@@ -56,20 +56,6 @@ Feature: Step - sack()
       | d[2.0].m |
       | d[1.4].m |
 
-  Scenario: g_withSackX0X_V_outE_sackXsum_weightX_inV_sack_sum
-    Given an unsupported test
-    Then nothing should happen because
-      """
-      This API is deprecated - will not test.
-      """
-
-  Scenario: g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack
-    Given an unsupported test
-    Then nothing should happen because
-      """
-      This API is deprecated - will not test.
-      """
-
   Scenario: g_withBulkXfalseX_withSackX1_sumX_VX1X_localXoutEXknowsX_barrierXnormSackX_inVX_inXknowsX_barrier_sack
     Given the modern graph
     And using the parameter v1Id defined as "v[marko].id"

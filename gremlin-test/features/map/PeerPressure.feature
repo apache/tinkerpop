@@ -35,13 +35,14 @@ Feature: Step - peerPressure()
     And the graph should return 6 for count of "g.withComputer().V().peerPressure().has(\"gremlin.peerPressureVertexProgram.cluster\")"
 
   Scenario: g_V_peerPressure_byXclusterX_byXoutEXknowsXX_pageRankX1X_byXrankX_byXoutEXknowsXX_timesX2X_group_byXclusterX_byXrank_sumX_limitX100X
-    Given an unsupported test
-    Then nothing should happen because
+    Given the modern graph
+    And the traversal of
       """
-      The result returned is not supported under GraphSON 2.x and therefore cannot be properly asserted. More
-      specifically it has long keys which basically get toString()'d under GraphSON 2.x. This test can be supported
-      with GraphSON 3.x.
+      g.withComputer().V().peerPressure().by("cluster").by(__.outE("knows")).pageRank(1.0d).by("rank").by(__.outE("knows")).times(1).group().by("cluster").by(__.values("rank").sum()).limit(100)
       """
+    Then the result should be unordered
+      | result |
+      | m[{"d[1].d":"d[0.5833333333333333].d","d[3].d":"d[0.1388888888888889].d","d[5].d":"d[0.1388888888888889]","d[6].d":"d[0.1388888888888889].d"}] |
 
   Scenario: g_V_hasXname_rippleX_inXcreatedX_peerPressure_byXoutEX_byXclusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX
     Given the modern graph

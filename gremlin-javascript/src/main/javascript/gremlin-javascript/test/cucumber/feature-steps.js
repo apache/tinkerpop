@@ -96,7 +96,9 @@ const ignoredScenarios = {
   'g_V_hasXsong_name_MIGHT_AS_WELLX_shortestPath_targetXhasXsong_name_MAYBE_YOU_KNOW_HOW_I_FEELXX_edgesXoutEXfollowedByXX_distanceXweightX': new IgnoreError(ignoreReason.computerNotSupported),
   'g_V_hasXname_markoX_shortestPath_maxDistanceX1X': new IgnoreError(ignoreReason.computerNotSupported),
   'g_V_hasXname_vadasX_shortestPath_distanceXweightX_maxDistanceX1_3X': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX': new IgnoreError(ignoreReason.setNotSupported)
+  'g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
+  'g_V_group_byXoutE_countX_byXnameX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
 };
 
 defineSupportCode(function(methods) {

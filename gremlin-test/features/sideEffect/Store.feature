@@ -50,7 +50,6 @@ Feature: Step - store()
 
   Scenario: g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
     And using the parameter initial defined as "s[]"
     And the traversal of
       """

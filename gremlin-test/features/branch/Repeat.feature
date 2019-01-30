@@ -168,12 +168,9 @@ Feature: Step - repeat()
       g.V(v1Id).repeat(__.groupCount("m").by(__.loops()).out()).times(3).cap("m")
       """
     When iterated to list
-    Then nothing should happen because
-      """
-      The result returned is not supported under GraphSON 2.x and therefore cannot be properly asserted. More
-      specifically it has long keys which basically get toString()'d under GraphSON 2.x. This test can be supported
-      with GraphSON 3.x.
-      """
+    Then the result should be unordered
+      | result |
+      | m[{"d[0].l":"d[1].l","d[1].l":"d[3].l","d[2].l":"d[2].l"}] |
 
   Scenario: g_V_repeatXbothX_timesX10X_asXaX_out_asXbX_selectXa_bX
     Given the modern graph

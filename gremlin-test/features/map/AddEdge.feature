@@ -17,13 +17,6 @@
 
 Feature: Step - addE()
 
-  Scenario: g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_aX
-    Given an unsupported test
-    Then nothing should happen because
-      """
-      This test is deprecated.
-      """
-
   Scenario: g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX
     Given the empty graph
     And the graph initializer of
@@ -50,13 +43,6 @@ Feature: Step - addE()
     Then the result should have a count of 1
     And the graph should return 7 for count of "g.E()"
     And the graph should return 1 for count of "g.V(v1Id).inE()"
-
-  Scenario: g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X
-    Given an unsupported test
-    Then nothing should happen because
-      """
-      This test is deprecated.
-      """
 
   Scenario: g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX_propertyXweight_2X
     Given the empty graph
@@ -85,13 +71,6 @@ Feature: Step - addE()
     And the graph should return 7 for count of "g.E()"
     And the graph should return 4 for count of "g.V(v1Id).bothE()"
     And the graph should return 1 for count of "g.V(v1Id).inE().has(\"weight\", 2.0)"
-
-  Scenario: g_withSideEffectXx__g_V_toListX_addOutEXexistsWith_x_time_nowX
-    Given an unsupported test
-    Then nothing should happen because
-      """
-      This test is marked as @Ignored in the test suite.
-      """
 
   Scenario: g_V_aggregateXxX_asXaX_selectXxX_unfold_addEXexistsWithX_toXaX_propertyXtime_nowX
     Given the empty graph
@@ -147,13 +126,6 @@ Feature: Step - addE()
     And the graph should return 6 for count of "g.V(v6Id).inE(\"existsWith\")"
     And the graph should return 6 for count of "g.V(v6Id).outE(\"existsWith\")"
     And the graph should return 12 for count of "g.V(v6Id).bothE(\"existsWith\").has(\"time\",\"now\")"
-
-  Scenario: g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_selectXa_bX_addInEXa_codeveloper_b_year_2009X
-    Given an unsupported test
-    Then nothing should happen because
-      """
-      This test is deprecated.
-      """
 
   Scenario: g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_addEXcodeveloperX_fromXaX_toXbX_propertyXyear_2009X
     Given the empty graph
@@ -248,13 +220,6 @@ Feature: Step - addE()
     And the graph should return 1 for count of "g.V(v6Id).inE(\"createdBy\")"
     And the graph should return 0 for count of "g.V(v6Id).outE(\"createdBy\")"
     And the graph should return 1 for count of "g.V(v6Id).bothE(\"createdBy\").has(\"year\",2009).has(\"acl\", \"public\")"
-
-  Scenario: g_V_asXaX_inXcreatedX_addInEXcreatedBy_a_year_2009_acl_publicX
-    Given an unsupported test
-    Then nothing should happen because
-      """
-      This test is deprecated.
-      """
 
   Scenario: g_withSideEffectXb_bX_VXaX_addEXknowsX_toXbX_propertyXweight_0_5X
     Given the empty graph

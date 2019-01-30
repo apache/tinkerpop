@@ -132,11 +132,12 @@ Feature: Step - pageRank()
       | m[{"name": ["lop"], "priors": [0.0]}] |
       | m[{"name": ["ripple"], "priors": [0.0]}] |
 
-  Scenario: g_V_outXcreatedX_groupXmX_byXlabelX_pageRankX1X_byXpageRankX_byXinEX_timesX1X_inXcreatedX_groupXmX_byXpageRankX_capXmX()
-    Given an unsupported test
-    Then nothing should happen because
+  Scenario: g_V_outXcreatedX_groupXmX_byXlabelX_pageRankX1X_byXpageRankX_byXinEX_timesX1X_inXcreatedX_groupXmX_byXpageRankX_capXmX
+    Given the modern graph
+    And the traversal of
       """
-      The result returned is not supported under GraphSON 2.x and therefore cannot be properly asserted. More
-      specifically it has long keys which basically get toString()'d under GraphSON 2.x. This test can be supported
-      with GraphSON 3.x.
+      g.withComputer().V().out("created").group("m").by(T.label).pageRank(1.0).by("pageRank").by(__.inE()).times(1).in("created").group("m").by("pageRank").cap("m")
       """
+    Then the result should be unordered
+      | result |
+      | m[{"d[1.0].d":"l[v[marko],v[marko],v[marko],v[peter],v[peter],v[peter]]","d[2.0].d":"l[v[josh],v[josh],v[josh],v[josh]]","software":"l[v[lop],v[lop],v[lop],v[lop]]"}] |
