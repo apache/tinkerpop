@@ -18,6 +18,7 @@ under the License.
 '''
 import pytest
 
+from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver.request import RequestMessage
@@ -71,8 +72,9 @@ def test_client_connection_pool_after_error(client):
         # should fire an exception
         client.submit('1/0').all().result()
         assert False
-    except Exception:
+    except GremlinServerError as gse:
         # expecting the pool size to be 1 again after query returned
+        assert gse.status_code == 597
         assert client.available_pool_size == 1
 
 

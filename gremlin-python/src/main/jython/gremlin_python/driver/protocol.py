@@ -20,6 +20,7 @@ import abc
 import base64
 
 import six
+
 try:
     import ujson as json
 except ImportError:
@@ -34,10 +35,11 @@ class GremlinServerError(Exception):
     def __init__(self, status):
         super(GremlinServerError, self).__init__("{0}: {1}".format(status["code"], status["message"]))
         self._status_attributes = status["attributes"]
+        self.status_code = status["code"]
 
     @property
     def status_attributes(self):
-        return self._status_attributes        
+        return self._status_attributes
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -74,7 +76,7 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
     def data_received(self, message, results_dict):
         # if Gremlin Server cuts off then we get a None for the message
         if message is None:
-            raise GremlinServerError("Server disconnected - please try to reconnect")
+            raise GremlinServerError({'code': 500, 'message':'Server disconnected - please try to reconnect', 'attributes': {}})
 
         message = self._message_serializer.deserialize_message(json.loads(message.decode('utf-8')))
         request_id = message['requestId']

@@ -280,11 +280,12 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-3-6]]
 === TinkerPop 3.3.6 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-* Add python TraversalMetrics and Metrics deserializers
+* Add Python `TraversalMetrics` and `Metrics` deserializers.
 * Masked sensitive configuration options in the logs of `KryoShimServiceLoader`.
 * Added `globalFunctionCacheEnabled` to the `GroovyCompilerGremlinPlugin` to allow that cache to be disabled.
 * Added `globalFunctionCacheEnabled` override to `SessionOpProcessor` configuration.
-* Fixed a concurrency issue in `TraverserSet`
+* Added status code to `GremlinServerError` so that it would be more directly accessible during failures.
+* Fixed a concurrency issue in `TraverserSet`.
 * Fixed a bug in `InlineFilterStrategy` that mixed up and's and or's when folding merging conditions together.
 
 [[release-3-3-5]]
