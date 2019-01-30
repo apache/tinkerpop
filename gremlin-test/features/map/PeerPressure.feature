@@ -38,11 +38,12 @@ Feature: Step - peerPressure()
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().peerPressure().by("cluster").by(__.outE("knows")).pageRank(1.0d).by("rank").by(__.outE("knows")).times(1).group().by("cluster").by(__.values("rank").sum()).limit(100)
+      g.withComputer().V().peerPressure().by("cluster").by(__.outE("knows")).pageRank(1.0).by("rank").by(__.outE("knows")).times(1).group().by("cluster").by(__.values("rank").sum()).limit(100)
       """
+    When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"d[1].d":"d[0.5833333333333333].d","d[3].d":"d[0.1388888888888889].d","d[5].d":"d[0.1388888888888889]","d[6].d":"d[0.1388888888888889].d"}] |
+      | m[{"d[1].l":"d[0.5833333333333333].d","d[3].l":"d[0.1388888888888889].d","d[5].l":"d[0.1388888888888889].d","d[6].l":"d[0.1388888888888889].d"}] |
 
   Scenario: g_V_hasXname_rippleX_inXcreatedX_peerPressure_byXoutEX_byXclusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX
     Given the modern graph

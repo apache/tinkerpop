@@ -138,6 +138,7 @@ Feature: Step - pageRank()
       """
       g.withComputer().V().out("created").group("m").by(T.label).pageRank(1.0).by("pageRank").by(__.inE()).times(1).in("created").group("m").by("pageRank").cap("m")
       """
+    When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"d[1.0].d":"l[v[marko],v[marko],v[marko],v[peter],v[peter],v[peter]]","d[2.0].d":"l[v[josh],v[josh],v[josh],v[josh]]","software":"l[v[lop],v[lop],v[lop],v[lop]]"}] |
+      | m[{"d[1.0].d":"l[v[marko],v[marko],v[marko],v[peter],v[peter],v[peter]]","d[2.0].d":"l[v[josh],v[josh],v[josh],v[josh]]","software":"l[v[lop],v[lop],v[lop],v[ripple]]"}] |

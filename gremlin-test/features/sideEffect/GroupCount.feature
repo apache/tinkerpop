@@ -190,4 +190,4 @@ Feature: Step - groupCount()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"v[marko]":"d[6].l","v[josh]":"d[2].l","v[lop]":"d[6].l","v[josh]":"d[6].l","v[ripple]":"d[2].l","v[peter]":"d[2].l"}] |
+      | m[{"v[marko]":"d[6].l","v[vadas]":"d[2].l","v[lop]":"d[6].l","v[josh]":"d[6].l","v[ripple]":"d[2].l","v[peter]":"d[2].l"}] |
