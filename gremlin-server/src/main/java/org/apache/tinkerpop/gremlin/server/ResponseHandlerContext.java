@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.server.handler.Frame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,6 +77,10 @@ public class ResponseHandlerContext {
         if(finalResponseWritten.compareAndSet(false, messageIsFinal)) {
             context.getChannelHandlerContext().writeAndFlush(responseMessage);
         } else {
+            if (responseMessage instanceof Frame) {
+                ((Frame) responseMessage).tryRelease();
+            }
+
             final String logMessage = String.format("Another final response message was already written for request %s, ignoring response code: %s",
                     context.getRequestMessage().getRequestId(), code);
             logger.warn(logMessage);
