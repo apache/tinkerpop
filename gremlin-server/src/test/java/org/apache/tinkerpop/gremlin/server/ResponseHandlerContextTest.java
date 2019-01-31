@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.server.handler.Frame;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.junit.After;
 import org.junit.Before;
@@ -139,5 +140,23 @@ public class ResponseHandlerContextTest {
 
         // ensure there were no other writes to the channel
         Mockito.verify(ctx, Mockito.times(1)).writeAndFlush(Mockito.any());
+    }
+
+    @Test
+    public void shouldReleaseIgnoredFrames() {
+        writeInvoker.apply(rhc, ResponseStatusCode.SERVER_ERROR_TIMEOUT);
+        Mockito.verify(ctx, Mockito.times(1)).writeAndFlush(Mockito.any());
+
+        Frame frame = Mockito.mock(Frame.class);
+        rhc.writeAndFlush(ResponseStatusCode.SUCCESS, frame);
+
+        assertTrue(recordingAppender.logContainsAny(".*" + request.getRequestId() + ".*"));
+        assertTrue(recordingAppender.logContainsAny(".*" + ResponseStatusCode.SUCCESS + "$"));
+
+        // ensure there were no other writes to the channel
+        Mockito.verify(ctx, Mockito.times(1)).writeAndFlush(Mockito.any());
+
+        // ensure the frame was released
+        Mockito.verify(frame, Mockito.times(1)).tryRelease();
     }
 }
