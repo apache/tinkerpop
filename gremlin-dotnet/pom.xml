@@ -100,12 +100,11 @@ limitations under the License.
         </plugins>
         <pluginManagement>
             <plugins>
-                <!-- bumping past 0.20 yields build errors - not sure what is amiss there -->
                 <plugin>
                     <groupId>org.eobjects.build</groupId>
                     <artifactId>dotnet-maven-plugin</artifactId>
                     <extensions>true</extensions>
-                    <version>0.20</version>
+                    <version>0.23</version>
                 </plugin>
             </plugins>
         </pluginManagement>
