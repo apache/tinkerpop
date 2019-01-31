@@ -19,7 +19,9 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.handler.codec.CodecException;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
+import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -28,6 +30,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.ws.Response;
 import java.io.IOException;
 import java.net.URI;
 import java.util.UUID;
@@ -201,8 +204,13 @@ final class Connection {
                     if (!f.isSuccess()) {
                         if (logger.isDebugEnabled())
                             logger.debug(String.format("Write on connection %s failed", thisConnection.getConnectionInfo()), f.cause());
-                        thisConnection.isDead = true;
+
+                        // if there is a ResponseException the write failed because of something to do with the server
+                        // or client side serialization - neither of these things mean that the host is dead. the
+                        // connection should be reusable.
+                        thisConnection.isDead = ExceptionUtils.indexOfThrowable(f.cause(), ResponseException.class) == -1;
                         thisConnection.returnToPool();
+
                         cluster.executor().submit(() -> future.completeExceptionally(f.cause()));
                     } else {
                         final LinkedBlockingQueue<Result> resultLinkedBlockingQueue = new LinkedBlockingQueue<>();

@@ -280,6 +280,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-3-6]]
 === TinkerPop 3.3.6 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Added a new `ResponseStatusCode` for client-side serialization errors.
+* Improved handling of client-side serialization errors that were formerly just being logged rather than being raised.
 * Add Python `TraversalMetrics` and `Metrics` deserializers.
 * Masked sensitive configuration options in the logs of `KryoShimServiceLoader`.
 * Added `globalFunctionCacheEnabled` to the `GroovyCompilerGremlinPlugin` to allow that cache to be disabled.
