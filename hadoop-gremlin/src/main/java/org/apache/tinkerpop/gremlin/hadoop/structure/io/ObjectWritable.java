@@ -22,6 +22,8 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInput;
@@ -30,13 +32,16 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ConcurrentModificationException;
+import java.util.Objects;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class ObjectWritable<T> implements WritableComparable<ObjectWritable>, Serializable {
 
-    private static final String NULL = "null";
+    private static final Logger logger = LoggerFactory.getLogger(ObjectWritable.class);
+
     private static final ObjectWritable<MapReduce.NullObject> NULL_OBJECT_WRITABLE = new ObjectWritable<>(MapReduce.NullObject.instance());
 
     T t;
@@ -45,7 +50,7 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
     }
 
     public ObjectWritable(final T t) {
-        this.t = t;
+        this.set(t);
     }
 
     public T get() {
@@ -58,7 +63,29 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
 
     @Override
     public String toString() {
-        return null == this.t ? NULL : this.t.toString();
+        // Spark's background logging apparently tries to log a `toString()` of certain objects while they're being
+        // modified, which then throws a ConcurrentModificationException. We probably can't make any arbitrary object
+        // thread-safe, but we can easily retry on such cases and eventually we should always get a result.
+        final int maxAttempts = 5;
+        for (int i = maxAttempts; ;) {
+            try {
+                return Objects.toString(this.t);
+            }
+            catch (ConcurrentModificationException cme) {
+                if (--i > 0) {
+                    logger.warn(String.format("Failed to toString() object held by ObjectWritable, retrying %d more %s.",
+                            i, i == 1 ? "time" : "times"), cme);
+                } else break;
+                if (i < maxAttempts - 1) {
+                    try {
+                        Thread.sleep((maxAttempts - i - 1) * 100);
+                    } catch (InterruptedException ignored) {
+                        break;
+                    }
+                }
+            }
+        }
+        return this.t.getClass().toString();
     }
 
     @Override
