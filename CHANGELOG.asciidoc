@@ -30,7 +30,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `globalFunctionCacheEnabled` to the `GroovyCompilerGremlinPlugin` to allow that cache to be disabled.
 * Added `globalFunctionCacheEnabled` override to `SessionOpProcessor` configuration.
 * Added status code to `GremlinServerError` so that it would be more directly accessible during failures.
-* Fixed a concurrency issue in `TraverserSet`.
+* Fixed concurrency issues in `TraverserSet.toString()` and `ObjectWritable.toString()`.
 * Fixed a bug in `InlineFilterStrategy` that mixed up and's and or's when folding merging conditions together.
 
 [[release-3-3-5]]
