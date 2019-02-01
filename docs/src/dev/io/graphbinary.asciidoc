@@ -106,6 +106,7 @@ Changes to existing types require new revision.
 - `0x2a`: BulkSet
 - `0x2b`: Tree
 - `0x2c`: Metrics
+- `0x2d`: TraversalMetrics
 - `0xfe`: Unspecified null object
 - `0x00`: Custom
 
@@ -556,6 +557,15 @@ Where:
 - `{counts}` is a `Map` composed by `String` keys and `Long` values.
 - `{annotations}` is a `Map` composed by `String` keys and a value of any type.
 - `{nested_metrics}` is a `List` composed by `Metrics` items.
+
+==== TraversalMetrics
+
+Format: `{duration}{metrics}`
+
+Where:
+
+- `{duration}` is a `Long` describing the duration in nanoseconds.
+- `{metrics}` is a `List` composed by `Metrics` items.
 
 ==== Custom
 

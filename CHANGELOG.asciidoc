@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-3-6, 3.3.6>>.
 
+* Added GraphBinary serializer for TraversalMetrics
 * Fixed up `SparqlStrategy` so that it could be used properly with `RemoteStrategy`.
 * Fixed `ByteBuffer` serialization for GraphBinary.
 * Added easier to understand exceptions for connection problems in the Gremlin.Net driver.
