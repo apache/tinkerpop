@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
@@ -229,7 +231,11 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 new Object[] {"Graph", g.E().subgraph("k").cap("k").next(), (Consumer<Graph>) graph -> {
                     IoTest.assertModernGraph(graph, true, false);
                 }},
-                new Object[] {"TraversalStrategy", SubgraphStrategy.build().vertices(hasLabel("person")).create(), (Consumer<TraversalStrategyProxy>) strategy -> {
+                new Object[] {"TraversalStrategyVertexProgram", new VertexProgramStrategy(Computer.compute()), (Consumer<TraversalStrategyProxy>) strategy -> {
+                    assertEquals(VertexProgramStrategy.class, strategy.getStrategyClass());
+                    assertEquals("org.apache.tinkerpop.gremlin.process.computer.GraphComputer", strategy.getConfiguration().getProperty(VertexProgramStrategy.GRAPH_COMPUTER));
+                }},
+                new Object[] {"TraversalStrategySubgraph", SubgraphStrategy.build().vertices(hasLabel("person")).create(), (Consumer<TraversalStrategyProxy>) strategy -> {
                     assertEquals(SubgraphStrategy.class, strategy.getStrategyClass());
                     assertEquals(hasLabel("person").asAdmin().getBytecode(), strategy.getConfiguration().getProperty(SubgraphStrategy.VERTICES));
                 }},
