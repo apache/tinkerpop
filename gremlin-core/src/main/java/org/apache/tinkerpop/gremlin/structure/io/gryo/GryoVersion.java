@@ -336,7 +336,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(GraphFilterStrategy.class, 157));
             add(GryoTypeReg.of(LambdaRestrictionStrategy.class, 158));
             add(GryoTypeReg.of(ReadOnlyStrategy.class, 159));
-            add(GryoTypeReg.of(EarlyLimitStrategy.class, 186));   // ***LAST ID***
+            add(GryoTypeReg.of(EarlyLimitStrategy.class, 188));   // ***LAST ID***
             add(GryoTypeReg.of(MatchStep.CountMatchAlgorithm.class, 160));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 164));
 
@@ -555,7 +555,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(GraphFilterStrategy.class, 157));
             add(GryoTypeReg.of(LambdaRestrictionStrategy.class, 158));
             add(GryoTypeReg.of(ReadOnlyStrategy.class, 159));
-            add(GryoTypeReg.of(EarlyLimitStrategy.class, 186));   // ***LAST ID***
+            add(GryoTypeReg.of(EarlyLimitStrategy.class, 188));   // ***LAST ID***
             add(GryoTypeReg.of(MatchStep.CountMatchAlgorithm.class, 160));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 167));
             // skip 171, 172 to sync with tp33
