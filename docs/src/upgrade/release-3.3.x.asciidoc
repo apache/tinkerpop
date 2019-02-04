@@ -91,6 +91,18 @@ now fully configurable via the `GroovyCompilerGremlinPlugin.classMapCacheSpecifi
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2038[TINKERPOP-2038],
 link:http://tinkerpop.apache.org/docs/3.3.5/reference/#gremlin-server-cache[Reference Documentation - Cache Management]
 
+==== RangeStep Optimizing Strategy
+
+A new strategy named `EarlyLimitStrategy` was added. The strategy will try to find a better spot for any `RangeStep`,
+which is as early as possible in the traversal. If possible it will also merge multiple `RangeStep`s into a single one
+by recalculating the range for the first step and removing the second. If it turns out that the merge of two steps won't
+produce a valid range (an empty result), then the `EarlyLimitStrategy` will remove the `RangeStep`s and insert a `NoneStep`
+instead.
+
+This strategy is particularly useful when a provider implementation generates the queries to the underlying database. By
+making sure that the ranges are applied as early as possible, we can ensure that the underlying database is only asked
+for the least amount of data necessary to continue the traversal evaluation.
+
 === Upgrading for Providers
 
 ==== Graph Database Providers

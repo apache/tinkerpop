@@ -291,6 +291,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed concurrency issues in `TraverserSet.toString()` and `ObjectWritable.toString()`.
 * Fixed a bug in `InlineFilterStrategy` that mixed up and's and or's when folding merging conditions together.
 * Improved handling of failing `Authenticator` instances thus improving server responses to drivers.
+* Implemented `EarlyLimitStrategy` which is supposed to significantly reduce backend operations for queries that use `range()`.
 
 [[release-3-3-5]]
 === TinkerPop 3.3.5 (Release Date: January 2, 2019)

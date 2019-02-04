@@ -173,6 +173,9 @@ class GraphFilterStrategy(TraversalStrategy):
     def __init__(self):
         TraversalStrategy.__init__(self)
 
+class EarlyLimitStrategy(TraversalStrategy):
+    def __init__(self):
+        TraversalStrategy.__init__(self)
 
 ###########################
 # VERIFICATION STRATEGIES #
