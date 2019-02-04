@@ -314,7 +314,7 @@ public enum GryoVersion {
 
             add(GryoTypeReg.of(Bytecode.class, 122, new GryoSerializersV3d0.BytecodeSerializer()));
             add(GryoTypeReg.of(P.class, 124, new GryoSerializersV3d0.PSerializer()));
-            add(GryoTypeReg.of(TextP.class, 186, new GryoSerializersV3d0.TextPSerializer())); // ***LAST ID***
+            add(GryoTypeReg.of(TextP.class, 186, new GryoSerializersV3d0.TextPSerializer()));
             add(GryoTypeReg.of(Lambda.class, 125, new GryoSerializersV3d0.LambdaSerializer()));
             add(GryoTypeReg.of(Bytecode.Binding.class, 126, new GryoSerializersV3d0.BindingSerializer()));
             add(GryoTypeReg.of(Order.class, 127));
@@ -342,7 +342,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LazyBarrierStrategy.class, 150));
             add(GryoTypeReg.of(MatchPredicateStrategy.class, 151));
             add(GryoTypeReg.of(OrderLimitStrategy.class, 152));
-            add(GryoTypeReg.of(OptionsStrategy.class, 187));                            // ***LAST ID***
+            add(GryoTypeReg.of(OptionsStrategy.class, 187));
             add(GryoTypeReg.of(PathProcessorStrategy.class, 153));
             add(GryoTypeReg.of(PathRetractionStrategy.class, 154));
             add(GryoTypeReg.of(CountStrategy.class, 155));
@@ -577,7 +577,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LazyBarrierStrategy.class, 150));
             add(GryoTypeReg.of(MatchPredicateStrategy.class, 151));
             add(GryoTypeReg.of(OrderLimitStrategy.class, 152));
-            add(GryoTypeReg.of(OptionsStrategy.class, 187));                            // ***LAST ID***
+            add(GryoTypeReg.of(OptionsStrategy.class, 187));
             add(GryoTypeReg.of(PathProcessorStrategy.class, 153));
             add(GryoTypeReg.of(PathRetractionStrategy.class, 154));
             add(GryoTypeReg.of(CountStrategy.class, 155));
