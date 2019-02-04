@@ -38,8 +38,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -140,6 +142,19 @@ public class GraphBinaryReaderWriterRoundTripTest {
         metrics.setCount("c1", 20);
         metrics.setAnnotation("a", "b");
         metrics.addNested(new MutableMetrics("idNested", "nameNested"));
+
+        // can't use the existing 'metrics' because traversal metrics modifies its nested metrics
+        final MutableMetrics metrics1 = metrics.clone();
+
+        final MutableMetrics metrics2 = new MutableMetrics("id2", "name2");
+        metrics2.setDuration(456, TimeUnit.MICROSECONDS);
+        metrics2.setCount("c2", 40);
+        metrics2.setAnnotation("c", "d");
+        metrics2.addNested(new MutableMetrics("idNested2", "nameNested2"));
+
+        List<MutableMetrics> nestedMetrics = Arrays.asList(metrics1, metrics2);
+        final DefaultTraversalMetrics traversalMetrics = new DefaultTraversalMetrics(666, nestedMetrics);
+        final DefaultTraversalMetrics emptyTraversalMetrics = new DefaultTraversalMetrics(444, Collections.emptyList());
 
         return Arrays.asList(
                 new Object[] {"String", "ABC", null},
@@ -248,6 +263,13 @@ public class GraphBinaryReaderWriterRoundTripTest {
                     assertThat(m, new ReflectionEquals(metrics, "nested", "counts"));
                     assertEquals(new ArrayList(metrics.getCounts().values()), new ArrayList(m.getCounts().values()));
                     assertThat(m.getNested(), new ReflectionEquals(metrics.getNested()));
+                }},
+                new Object[] {"EmptyTraversalMetrics", emptyTraversalMetrics, (Consumer<TraversalMetrics>) m -> {
+                    assertThat(m, new ReflectionEquals(emptyTraversalMetrics));
+                }},
+                new Object[] {"TraversalMetrics", traversalMetrics, (Consumer<TraversalMetrics>) m -> {
+                    assertEquals(m.toString(), traversalMetrics.toString());
+                    assertThat(m, new ReflectionEquals(traversalMetrics, "stepIndexedMetrics", "positionIndexedMetrics"));
                 }},
 
                 // collections

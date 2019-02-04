@@ -66,6 +66,7 @@ public enum DataType {
     BULKSET(0X2A),
     TREE(0X2B),
     METRICS(0x2C),
+    TRAVERSALMETRICS(0x2D),
 
     CHAR(0X80),
     DURATION(0X81),
