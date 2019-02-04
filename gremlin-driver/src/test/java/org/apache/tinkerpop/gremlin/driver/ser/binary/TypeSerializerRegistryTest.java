@@ -21,12 +21,15 @@ package org.apache.tinkerpop.gremlin.driver.ser.binary;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.sample.SamplePerson;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.types.sample.SamplePersonSerializer;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.junit.Test;
 
 import java.util.UUID;
 
+import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertSame;
 
 public class TypeSerializerRegistryTest {
@@ -73,6 +76,41 @@ public class TypeSerializerRegistryTest {
         assertSame(expectedForProperty, registry.getSerializer(Property.class));
         assertSame(expectedForVertexProperty, registry.getSerializer(DataType.VERTEXPROPERTY));
         assertSame(expectedForProperty, registry.getSerializer(DataType.PROPERTY));
+    }
+
+    @Test
+    public void shouldUseFallbackResolverWhenThereIsNoMatch() {
+        final int[] called = {0};
+        final TypeSerializerRegistry registry = TypeSerializerRegistry.build()
+                .withFallbackResolver(t -> {
+                    called[0]++;
+                    return null;
+                }).create();
+
+        String message = null;
+        try {
+            registry.getSerializer(SamplePerson.class);
+        } catch (SerializationException ex) {
+            message = ex.getMessage();
+        }
+
+        assertEquals("Serializer for type org.apache.tinkerpop.gremlin.driver.ser.binary.types.sample.SamplePerson not found", message);
+        assertEquals(1, called[0]);
+    }
+
+    @Test
+    public void shouldUseFallbackResolverReturnValue() throws SerializationException {
+        TypeSerializer expected = new SamplePersonSerializer();
+        final int[] called = {0};
+        final TypeSerializerRegistry registry = TypeSerializerRegistry.build()
+                .withFallbackResolver(t -> {
+                    called[0]++;
+                    return expected;
+                }).create();
+
+        TypeSerializer<SamplePerson> serializer = registry.getSerializer(SamplePerson.class);
+        assertEquals(1, called[0]);
+        assertSame(expected, serializer);
     }
 
     private static class TestVertexPropertySerializer extends TestBaseTypeSerializer<VertexProperty> {

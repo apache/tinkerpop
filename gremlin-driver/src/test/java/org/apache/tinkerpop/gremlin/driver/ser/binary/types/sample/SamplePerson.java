@@ -24,7 +24,7 @@ import java.util.Objects;
 /**
  * A sample custom data type containing few properties.
  */
-class SamplePerson {
+public class SamplePerson {
     private final String name;
     private final Date birthDate;
 
