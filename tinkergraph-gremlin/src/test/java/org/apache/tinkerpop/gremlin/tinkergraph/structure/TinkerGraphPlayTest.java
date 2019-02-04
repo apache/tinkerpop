@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -26,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
 import org.apache.tinkerpop.gremlin.structure.*;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
@@ -122,90 +124,19 @@ public class TinkerGraphPlayTest {
     @Ignore
     public void testPlayDK() throws Exception {
 
-        final Map<String, String> aliases = new HashMap<>();
-        aliases.put("marko","okram");
-        final GraphTraversalSource g = TinkerFactory.createModern().traversal();
-        /*g.withSideEffect("a", aliases).V().hasLabel("person").
-                values("name").as("n").
-                optional(select("a").select(select("n"))).
-                forEachRemaining(System.out::println);*/
+        Graph graph = TinkerGraph.open();
+        graph.io(GraphMLIo.build()).readGraph("../data/grateful-dead.xml");
 
-        // shortest path lengths (by summed weight)
-        g.withSack(0.0).V().has("person", "name", "marko").
-                repeat(__.bothE().
-                        sack(sum).
-                            by("weight").
-                        otherV().
-                        group("m").
-                            by().
-                            by(sack().min()).as("x").
-                        // where(P.eq("m")).by(sack()).by(select(select("x"))). // could be that easy, but "x" is unknown here
-                        filter(project("s","x").
-                                    by(sack()).
-                                    by(select("m").select(select("x"))).
-                                where("s", P.eq("x"))).
-                        group("p").
-                            by().
-                            by(project("path","length").
-                                    by(path().by("name").by("weight")).
-                                    by(sack()))
-                        ).
-                cap("p").unfold().
-                group().
-                    by(select(Column.keys).values("name")).
-                    by(Column.values).next().entrySet().
-                forEach(System.out::println);
-
-        System.out.println("---");
-
-        // longest path lengths (by summed weight)
-        g.withSack(0.0).V().has("person", "name", "marko").
-                repeat(__.bothE().simplePath().
-                        sack(sum).
-                          by("weight").
-                        otherV().
-                        group("m").
-                            by().
-                            by(sack().max()).as("x").
-                        filter(project("s","x").
-                                by(sack()).
-                                by(select("m").select(select("x"))).
-                                where("s", P.eq("x"))).
-                        group("p").
-                                by().
-                                by(project("path","length").
-                                        by(path().by("name").by("weight")).
-                                        by(sack()))
-                        ).
-                cap("p").unfold().
-                group().
-                    by(select(Column.keys).values("name")).
-                    by(Column.values).next().entrySet().
-                forEach(System.out::println);
-
-        System.out.println("---");
-
-        // all shortest paths (by summed weight)
-        g.withSack(0.0).V().as("a").
-                repeat(__.bothE().
-                        sack(sum).
-                            by("weight").
-                        otherV().as("b").
-                        group("m").
-                            by(select("a","b").by("name")).
-                            by(sack().min()).
-                        filter(project("s","x").
-                                by(sack()).
-                                by(select("m").select(select("a", "b").by("name"))).
-                               where("s", P.eq("x"))).
-                        group("p").
-                            by(select("a","b").by("name")).
-                            by(map(union(path().by("name").by("weight"), sack()).fold()))
-                ).
-                cap("p").unfold().
-                order().
-                    by(select(Column.keys).select("a")).
-                    by(select(Column.keys).select("b")).
+        GraphTraversalSource g = graph.traversal();//.withoutStrategies(EarlyLimitStrategy.class);
+        g.V().has("name", "Bob_Dylan").in("sungBy").as("a").
+                repeat(out().order().by(Order.shuffle).simplePath().from("a")).
+                until(out("writtenBy").has("name", "Johnny_Cash")).limit(1).as("b").
+                repeat(out().order().by(Order.shuffle).as("c").simplePath().from("b").to("c")).
+                until(out("sungBy").has("name", "Grateful_Dead")).limit(1).
+                path().from("a").unfold().
+                <List<String>>project("song", "artists").
+                by("name").
+                by(__.coalesce(out("sungBy", "writtenBy").dedup().values("name"), constant("Unknown")).fold()).
                 forEachRemaining(System.out::println);
     }
 
