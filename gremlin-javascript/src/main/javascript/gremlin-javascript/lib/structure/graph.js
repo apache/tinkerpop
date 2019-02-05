@@ -128,7 +128,7 @@ class Path {
   }
 
   toString() {
-    return 'path[' + objects.join(", ") +  ']';
+    return 'path[' + this.objects.join(", ") +  ']';
   }
 
   equals(other) {
