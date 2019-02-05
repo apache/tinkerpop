@@ -89,7 +89,7 @@ limitations under the License.
          </li>
          <li><strong>Gremlin traversal machine</strong>: Every Gremlin language variant compiles to a language agnostic <a href="https://en.wikipedia.org/wiki/Bytecode">bytecode</a> representation. That bytecode is ultimately translated to a machine-specific traversal. It is the responsibility of the Gremlin traversal machine to execute that traversal as a
             real-time <a href="https://en.wikipedia.org/wiki/Online_transaction_processing">OLTP</a> query or as an analytic <a href="https://en.wikipedia.org/wiki/Online_analytical_processing">OLAP</a> query (or both). Note that the Gremlin traversal machine is not bound to the Gremlin language. Any language can take advantage of the the
-            Gremlin traversal machine by simply translating itself to Gremlin bytecode. In fact, compilers currently exist for <a href="https://github.com/twilmes/sql-gremlin">SQL</a> and <a href="https://github.com/dkuppitz/sparql-gremlin">SPARQL</a>. However, using alternative languages for graph computing leads to significantly more complicated queries
+            Gremlin traversal machine by simply translating itself to Gremlin bytecode. In fact, compilers currently exist for <a href="https://github.com/twilmes/sql-gremlin">SQL</a> and <a href="http://tinkerpop.apache.org/docs/current/reference/#sparql-gremlin">SPARQL</a>. However, using alternative languages for graph computing leads to significantly more complicated queries
             and typically does not match the expressivity provided by Gremlin.
          </li>
          <li><strong>TinkerGraph</strong>: TinkerPop provides a simple, non-transactional, in-memory graph system called <a href="http://tinkerpop.apache.org/docs/current/reference/#tinkergraph-gremlin">TinkerGraph</a>. TinkerGraph is useful for exploring graphs that can fit
@@ -222,7 +222,7 @@ limitations under the License.
          <div class="col-sm-8 col-md-9">
             <br/>
             <strong>Distinct query language</strong>: Query languages such as SQL and SPARQL are significantly different from Gremlin in that they require a special purpose compiler in order to
-            generate a traversal. For this reason, <a href="https://github.com/twilmes/sql-gremlin">SQL</a> and <a href="https://github.com/dkuppitz/sparql-gremlin">SPARQL</a> Gremlin compilers
+            generate a traversal. For this reason, <a href="https://github.com/twilmes/sql-gremlin">SQL</a> and <a href="http://tinkerpop.apache.org/docs/current/reference/#sparql-gremlin">SPARQL</a> Gremlin compilers
             currently exist. Note that, within reason, Gremlin compilers do not need to concern themselves with an optimal compilation (only a semantically correct compilation) as the Gremlin
             traversal machine will leverage traversal strategies for both compile-time and runtime optimizations. Moreover, the language designer can rest assured that queries in their language
             will be able to evaluate as either an OLTP or OLAP query. The example on the right is a SPARQL query that determines the average rating for Gremlin's friends' projects. It is because
@@ -308,8 +308,8 @@ WHERE(Created.by(Friends.of("gremlin")))</code></pre>
       <br/>
       <div class="row">
          <div class="col-sm-6 col-md-6">
-            <a href="https://github.com/dkuppitz/sparql-gremlin"><img src="img/logos/sparql-gremlin-logo.png" style="padding-right:20px;float:left;width:35%;"></a>
-            <a href="https://github.com/dkuppitz/sparql-gremlin">SPARQL-Gremlin</a> is a compiler used to transform SPARQL queries into Gremlin bytecode. It is based on the Apache Jena SPARQL processor ARQ, which provides access to a syntax tree of a SPARQL query.
+            <a href="http://tinkerpop.apache.org/docs/current/reference/#sparql-gremlin"><img src="img/logos/sparql-gremlin-logo.png" style="padding-right:20px;float:left;width:35%;"></a>
+            <a href="http://tinkerpop.apache.org/docs/current/reference/#sparql-gremlin">SPARQL-Gremlin</a> is a compiler used to transform SPARQL queries into Gremlin bytecode. It is based on the Apache Jena SPARQL processor ARQ, which provides access to a syntax tree of a SPARQL query.
          </div>
          <div class="col-sm-6 col-md-6">
             <a href="https://github.com/twilmes/sql-gremlin"><img src="img/logos/sql-gremlin-logo.png" style="padding-right:20px;float:left;width:35%;"></a>
