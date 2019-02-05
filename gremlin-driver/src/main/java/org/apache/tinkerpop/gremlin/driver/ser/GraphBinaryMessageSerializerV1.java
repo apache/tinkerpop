@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.javatuples.Pair;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
     public static final String TOKEN_CUSTOM = "custom";
+    public static final String TOKEN_BUILDER = "builder";
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHBINARY_V1D0;
     private static final byte[] HEADER = MIME_TYPE.getBytes(UTF_8);
 
@@ -71,9 +73,23 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
 
     @Override
     public void configure(final Map<String, Object> config, final Map<String, Graph> graphs) {
-        final List<String> classNameList = getListStringFromConfig(TOKEN_IO_REGISTRIES, config);
-        final TypeSerializerRegistry.Builder builder = TypeSerializerRegistry.build();
+        final String builderClassName = (String) config.get(TOKEN_BUILDER);
+        final TypeSerializerRegistry.Builder builder;
 
+        if (builderClassName != null) {
+            try {
+                Class<?> clazz = Class.forName(builderClassName);
+                Constructor<?> ctor = clazz.getConstructor();
+                builder = (TypeSerializerRegistry.Builder) ctor.newInstance();
+            } catch (Exception ex) {
+                throw new IllegalStateException(ex);
+            }
+
+        } else {
+            builder = TypeSerializerRegistry.build();
+        }
+
+        final List<String> classNameList = getListStringFromConfig(TOKEN_IO_REGISTRIES, config);
         classNameList.forEach(className -> {
             try {
                 final Class<?> clazz = Class.forName(className);
