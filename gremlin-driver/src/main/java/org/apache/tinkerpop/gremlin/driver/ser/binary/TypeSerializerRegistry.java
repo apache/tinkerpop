@@ -82,6 +82,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 public class TypeSerializerRegistry {
 
@@ -164,6 +165,7 @@ public class TypeSerializerRegistry {
 
     public static class Builder {
         private final List<RegistryEntry> list = new LinkedList<>();
+        private Function<Class<?>, TypeSerializer<?>> fallbackResolver;
 
         /**
          * Adds a serializer for a built-in type.
@@ -214,10 +216,18 @@ public class TypeSerializerRegistry {
         }
 
         /**
+         * Provides a way to resolve the type serializer to use when there isn't any direct match.
+         */
+        public Builder withFallbackResolver(Function<Class<?>, TypeSerializer<?>> fallbackResolver) {
+            this.fallbackResolver = fallbackResolver;
+            return this;
+        }
+
+        /**
          * Creates a new {@link TypeSerializerRegistry} instance based on the serializers added.
          */
         public TypeSerializerRegistry create() {
-            return new TypeSerializerRegistry(list);
+            return new TypeSerializerRegistry(list, fallbackResolver);
         }
     }
 
@@ -256,6 +266,7 @@ public class TypeSerializerRegistry {
     private final Map<Class<?>, TypeSerializer<?>> serializersByInterface = new LinkedHashMap<>();
     private final Map<DataType, TypeSerializer<?>> serializersByDataType = new HashMap<>();
     private final Map<String, CustomTypeSerializer> serializersByCustomTypeName = new HashMap<>();
+    private Function<Class<?>, TypeSerializer<?>> fallbackResolver;
 
     /**
      * Stores serializers by class, where the class resolution involved a lookup or special conditions.
@@ -263,7 +274,8 @@ public class TypeSerializerRegistry {
      */
     private final ConcurrentHashMap<Class<?>, TypeSerializer<?>> serializersByImplementation = new ConcurrentHashMap<>();
 
-    private TypeSerializerRegistry(final Collection<RegistryEntry> entries) {
+    private TypeSerializerRegistry(final Collection<RegistryEntry> entries,
+                                   final Function<Class<?>, TypeSerializer<?>> fallbackResolver) {
         final Set<Class> providedTypes = new HashSet<>(entries.size());
 
         // Include user-provided entries first
@@ -274,6 +286,8 @@ public class TypeSerializerRegistry {
 
         // Followed by the defaults
         Arrays.stream(defaultEntries).filter(e -> !providedTypes.contains(e.type)).forEach(this::put);
+
+        this.fallbackResolver = fallbackResolver;
     }
 
     private void put(final RegistryEntry entry) {
@@ -316,15 +330,16 @@ public class TypeSerializerRegistry {
             serializer = serializersByImplementation.get(type);
         }
 
-        if (null == serializer && Enum.class.isAssignableFrom(type)) {
+        if (serializer != null) {
+            return (TypeSerializer) serializer;
+        }
+
+        // Use different lookup techniques and cache the lookup result when successful
+
+        if (Enum.class.isAssignableFrom(type)) {
             // maybe it's a enum - enums with bodies are weird in java, they are subclasses of themselves, so
             // Columns.values will be of type Column$2.
             serializer = serializers.get(type.getSuperclass());
-
-            // In case it matched, store the match
-            if (serializer != null) {
-                serializersByImplementation.put(type, serializer);
-            }
         }
 
         if (null == serializer) {
@@ -332,14 +347,21 @@ public class TypeSerializerRegistry {
             for (Map.Entry<Class<?>, TypeSerializer<?>> entry : serializersByInterface.entrySet()) {
                 if (entry.getKey().isAssignableFrom(type)) {
                     serializer = entry.getValue();
-                    // Store the type-to-interface match, to avoid looking it up in the future
-                    serializersByImplementation.put(type, serializer);
                     break;
                 }
             }
         }
 
-        return validateInstance(serializer, type.getTypeName());
+        if (null == serializer && fallbackResolver != null) {
+            serializer = fallbackResolver.apply(type);
+        }
+
+        validateInstance(serializer, type.getTypeName());
+
+        // Store the lookup match to avoid looking it up in the future
+        serializersByImplementation.put(type, serializer);
+
+        return (TypeSerializer<DT>) serializer;
     }
 
     public <DT> TypeSerializer<DT> getSerializer(final DataType dataType) throws SerializationException {
