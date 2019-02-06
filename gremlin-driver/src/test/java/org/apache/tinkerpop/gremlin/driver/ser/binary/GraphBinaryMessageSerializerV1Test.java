@@ -28,7 +28,10 @@ import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.junit.Test;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -131,6 +134,20 @@ public class GraphBinaryMessageSerializerV1Test {
         assertResponseEquals(response, deserialized);
     }
 
+    @Test
+    public void shouldSupportConfigurationOfRegistryBuilder() {
+        final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1();
+        final Map<String, Object> config = new HashMap<>();
+        int counter = SampleTypeSerializerRegistryBuilder.createCounter.get();
+
+        config.put(GraphBinaryMessageSerializerV1.TOKEN_BUILDER, "org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryMessageSerializerV1Test$SampleTypeSerializerRegistryBuilder");
+        serializer.configure(config, null);
+
+        counter = SampleTypeSerializerRegistryBuilder.createCounter.get() - counter;
+        // There should be a call to `create()`
+        assertEquals(1, counter);
+    }
+
     private static void assertResponseEquals(ResponseMessage expected, ResponseMessage actual) {
         assertEquals(expected.getRequestId(), actual.getRequestId());
         // Status
@@ -140,5 +157,15 @@ public class GraphBinaryMessageSerializerV1Test {
         // Result
         assertEquals(expected.getResult().getData(), actual.getResult().getData());
         assertEquals(expected.getResult().getMeta(), actual.getResult().getMeta());
+    }
+
+    public static class SampleTypeSerializerRegistryBuilder extends TypeSerializerRegistry.Builder {
+        public static AtomicInteger createCounter = new AtomicInteger();
+
+        @Override
+        public TypeSerializerRegistry create() {
+            createCounter.incrementAndGet();
+            return super.create();
+        }
     }
 }

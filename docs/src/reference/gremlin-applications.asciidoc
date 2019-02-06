@@ -1555,6 +1555,7 @@ It has the MIME type of `application/vnd.graphbinary-v1.0` and the following con
 |Key |Description |Default
 |custom |A list of classes with custom kryo `Serializer` implementations related to them in the form of `<class>;<serializer-class>`. |_none_
 |ioRegistries |A list of `IoRegistry` implementations to be applied to the serializer. |_none_
+|builder |Name of the `TypeSerializerRegistry.Builder` instance to be used to construct the `TypeSerializerRegistry`. |_none_
 |=========================================================
 
 As described above, there are multiple ways in which to register serializers for GraphBinary-based serialization. Note
