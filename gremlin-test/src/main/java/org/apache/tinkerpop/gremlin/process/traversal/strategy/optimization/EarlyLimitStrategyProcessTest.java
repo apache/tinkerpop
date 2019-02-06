@@ -52,17 +52,19 @@ public class EarlyLimitStrategyProcessTest extends AbstractGremlinProcessTest {
 
         final GraphTraversal<Vertex, Map<String, List<String>>> t =
                 g.V().has("artist", "name", "Bob_Dylan")
-                        .in("sungBy").as("a")
+                        .in("sungBy")
+                        .order()
+                            .by("performances", Order.desc).as("a")
                         .repeat(__.out("followedBy")
                                     .order()
-                                        .by(Order.shuffle)
+                                        .by("performances", Order.desc)
                                     .simplePath()
                                         .from("a"))
                             .until(__.out("writtenBy").has("name", "Johnny_Cash"))
                         .limit(1).as("b")
-                        .repeat(__.out()
+                        .repeat(__.out("followedBy")
                                     .order()
-                                        .by(Order.shuffle).as("c")
+                                        .by("performances", Order.desc).as("c")
                                     .simplePath()
                                         .from("b")
                                         .to("c"))
@@ -83,23 +85,23 @@ public class EarlyLimitStrategyProcessTest extends AbstractGremlinProcessTest {
         final List<Map<String, List<String>>> result = t.toList();
         final TraversalMetrics metrics = (TraversalMetrics) pt.next();
 
-        assertEquals(7, result.size());
+        assertEquals(6, result.size());
 
         assumeTrue("The following assertions apply to TinkerGraph only as provider strategies can alter the " +
                         "steps to not comply with expectations", graph.getClass().getSimpleName().equals("TinkerGraph"));
 
         if (t.asAdmin().getStrategies().toList().stream().anyMatch(s -> s instanceof EarlyLimitStrategy)) {
-            assertEquals(9, metrics.getMetrics().size());
-            assertTrue(metrics.getMetrics(4).getName().endsWith("@[d]"));
-            assertEquals("RangeGlobalStep(0,1)", metrics.getMetrics(5).getName());
-            assertEquals("PathStep@[e]", metrics.getMetrics(6).getName());
-            assertTrue(metrics.getMetrics(6).getCounts().values().stream().noneMatch(x -> x != 1L));
-        } else {
             assertEquals(10, metrics.getMetrics().size());
-            assertEquals("RangeGlobalStep(0,5)@[d]", metrics.getMetrics(5).getName());
-            assertEquals("PathStep", metrics.getMetrics(6).getName());
-            assertEquals("RangeGlobalStep(0,1)@[e]", metrics.getMetrics(7).getName());
-            assertTrue(metrics.getMetrics(6).getCounts().values().stream().allMatch(x -> x != 1L));
+            assertTrue(metrics.getMetrics(5).getName().endsWith("@[d]"));
+            assertEquals("RangeGlobalStep(0,1)", metrics.getMetrics(6).getName());
+            assertEquals("PathStep@[e]", metrics.getMetrics(7).getName());
+            assertTrue(metrics.getMetrics(7).getCounts().values().stream().noneMatch(x -> x != 1L));
+        } else {
+            assertEquals(11, metrics.getMetrics().size());
+            assertEquals("RangeGlobalStep(0,5)@[d]", metrics.getMetrics(6).getName());
+            assertEquals("PathStep", metrics.getMetrics(7).getName());
+            assertEquals("RangeGlobalStep(0,1)@[e]", metrics.getMetrics(8).getName());
+            assertTrue(metrics.getMetrics(7).getCounts().values().stream().allMatch(x -> x != 1L));
         }
     }
 }
