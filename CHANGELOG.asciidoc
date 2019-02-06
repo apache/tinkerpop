@@ -28,6 +28,7 @@ This release also includes changes from <<release-3-3-6, 3.3.6>>.
 * Added GraphBinary serializer for TraversalMetrics
 * Fixed up `SparqlStrategy` so that it could be used properly with `RemoteStrategy`.
 * Fixed `ByteBuffer` serialization for GraphBinary.
+* Added fallback resolver to `TypeSerializerRegistry` for GraphBinary.
 * Added easier to understand exceptions for connection problems in the Gremlin.Net driver.
 
 [[release-3-4-0]]
