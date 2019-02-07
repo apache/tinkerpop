@@ -70,7 +70,7 @@ namespace Gremlin.Net.Driver
             while (true)
             {
                 var nrOpened = Interlocked.CompareExchange(ref _nrConnections, PoolEmpty, PoolEmpty);
-                if (nrOpened == _poolSize) break;
+                if (nrOpened >= _poolSize) break;
                 if (nrOpened != PoolPopulationInProgress)
                 {
                     await PopulatePoolAsync().ConfigureAwait(false);
@@ -81,7 +81,7 @@ namespace Gremlin.Net.Driver
         private async Task PopulatePoolAsync()
         {
             var nrOpened = Interlocked.CompareExchange(ref _nrConnections, PoolPopulationInProgress, PoolEmpty);
-            if (nrOpened == PoolPopulationInProgress || nrOpened == _poolSize) return;
+            if (nrOpened == PoolPopulationInProgress || nrOpened >= _poolSize) return;
 
             try
             {
