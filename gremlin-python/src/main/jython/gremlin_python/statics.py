@@ -50,6 +50,16 @@ class timestamp(float):
     """
     pass
 
+class SingleByte(int):
+    """
+    Provides a way to pass a single byte via GraphSON.
+    """
+    def __new__(cls, b):
+        if -128 <= b < 128:
+            int.__new__(cls, b)
+        else:
+            raise ValueError("value must be between -128 and 127 inclusive")
+
 
 staticMethods = {}
 staticEnums = {}

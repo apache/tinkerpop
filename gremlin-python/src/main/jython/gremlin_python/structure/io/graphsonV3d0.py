@@ -29,7 +29,7 @@ import six
 from aenum import Enum
 
 from gremlin_python import statics
-from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, DictType, ListType, SetType
+from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, DictType, ListType, SetType, SingleByte
 from gremlin_python.process.traversal import Binding, Bytecode, P, Traversal, Traverser, TraversalStrategy, T
 from gremlin_python.structure.graph import Edge, Property, Vertex, VertexProperty, Path
 
@@ -564,6 +564,22 @@ class Int32IO(Int64IO):
     python_type = IntType
     graphson_type = "g:Int32"
     graphson_base_type = "Int32"
+
+
+class ByteIO(_NumberIO):
+    python_type = SingleByte
+    graphson_type = "gx:Byte"
+    graphson_base_type = "Byte"
+
+    @classmethod
+    def dictify(cls, n, writer):
+        if isinstance(n, bool):  # because isinstance(False, int) and isinstance(True, int)
+            return n
+        return GraphSONUtil.typedValue(cls.graphson_base_type, n, "gx")
+
+    @classmethod
+    def objectify(cls, v, _):
+        return int.__new__(SingleByte, v)
 
 
 class VertexDeserializer(_GraphSONTypeIO):
