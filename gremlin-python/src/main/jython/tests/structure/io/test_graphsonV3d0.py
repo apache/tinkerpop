@@ -24,6 +24,7 @@ import time
 import json
 import uuid
 import math
+from decimal import *
 
 from mock import Mock
 
@@ -127,6 +128,55 @@ class TestGraphSONReader(object):
         }))
         assert isinstance(x, float)
         assert math.isinf(x) and x < 0
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "gx:BigDecimal",
+            "@value": 31.2
+        }))
+        assert isinstance(x, Decimal)
+        assert Decimal(31.2) == x
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "gx:BigDecimal",
+            "@value": 123456789987654321123456789987654321
+        }))
+        assert isinstance(x, Decimal)
+        assert Decimal('123456789987654321123456789987654321') == x
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "gx:BigDecimal",
+            "@value": "NaN"
+        }))
+        assert isinstance(x, Decimal)
+        assert math.isnan(x)
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "gx:BigDecimal",
+            "@value": "Infinity"
+        }))
+        assert isinstance(x, Decimal)
+        assert math.isinf(x) and x > 0
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "gx:BigDecimal",
+            "@value": "-Infinity"
+        }))
+        assert isinstance(x, Decimal)
+        assert math.isinf(x) and x < 0
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "gx:BigInteger",
+            "@value": 31
+        }))
+        assert isinstance(x, long)
+        assert 31 == x
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "gx:BigInteger",
+            "@value": 123456789987654321123456789987654321
+        }))
+        assert isinstance(x, long)
+        assert 123456789987654321123456789987654321 == x
 
     def test_graph(self):
         vertex = self.graphson_reader.readObject("""
@@ -287,6 +337,15 @@ class TestGraphSONWriter(object):
         assert {"@type": "g:Int64", "@value": 2} == json.loads(self.graphson_writer.writeObject(long(2)))
         assert {"@type": "g:Int32", "@value": 1} == json.loads(self.graphson_writer.writeObject(1))
         assert {"@type": "g:Double", "@value": 3.2} == json.loads(self.graphson_writer.writeObject(3.2))
+        assert {"@type": "g:Double", "@value": "NaN"} == json.loads(self.graphson_writer.writeObject(float('nan')))
+        assert {"@type": "g:Double", "@value": "Infinity"} == json.loads(self.graphson_writer.writeObject(float('inf')))
+        assert {"@type": "g:Double", "@value": "-Infinity"} == json.loads(self.graphson_writer.writeObject(float('-inf')))
+        assert {"@type": "gx:BigDecimal", "@value": "123456789987654321123456789987654321"} == json.loads(self.graphson_writer.writeObject(Decimal('123456789987654321123456789987654321')))
+        assert {"@type": "gx:BigDecimal", "@value": "NaN"} == json.loads(self.graphson_writer.writeObject(Decimal('nan')))
+        assert {"@type": "gx:BigDecimal", "@value": "Infinity"} == json.loads(self.graphson_writer.writeObject(Decimal('inf')))
+        assert {"@type": "gx:BigDecimal", "@value": "-Infinity"} == json.loads(self.graphson_writer.writeObject(Decimal('-inf')))
+        assert {"@type": "gx:BigInteger", "@value": "123456789987654321123456789987654321"} == json.loads(self.graphson_writer.writeObject(long(123456789987654321123456789987654321)))
+        assert {"@type": "gx:BigInteger", "@value": "123456789987654321123456789987654321"} == json.loads(self.graphson_writer.writeObject(123456789987654321123456789987654321))
         assert """true""" == self.graphson_writer.writeObject(True)
 
     def test_P(self):

@@ -22,6 +22,7 @@ import time
 import uuid
 import math
 from collections import OrderedDict
+from decimal import *
 
 import six
 from aenum import Enum
@@ -422,6 +423,37 @@ class FloatIO(_NumberIO):
         return cls.python_type(v)
 
 
+class BigDecimalIO(_NumberIO):
+    python_type = Decimal
+    graphson_type = "gx:BigDecimal"
+    graphson_base_type = "BigDecimal"
+
+    @classmethod
+    def dictify(cls, n, writer):
+        if isinstance(n, bool):  # because isinstance(False, int) and isinstance(True, int)
+            return n
+        elif math.isnan(n):
+            return GraphSONUtil.typedValue(cls.graphson_base_type, "NaN", "gx")
+        elif math.isinf(n) and n > 0:
+            return GraphSONUtil.typedValue(cls.graphson_base_type, "Infinity", "gx")
+        elif math.isinf(n) and n < 0:
+            return GraphSONUtil.typedValue(cls.graphson_base_type, "-Infinity", "gx")
+        else:
+            return GraphSONUtil.typedValue(cls.graphson_base_type, str(n), "gx")
+
+    @classmethod
+    def objectify(cls, v, _):
+        if isinstance(v, str):
+            if v == 'NaN':
+                return Decimal('nan')
+            elif v == "Infinity":
+                return Decimal('inf')
+            elif v == "-Infinity":
+                return Decimal('-inf')
+
+        return Decimal(v)
+
+
 class DoubleIO(FloatIO):
     graphson_type = "g:Double"
     graphson_base_type = "Double"
@@ -432,17 +464,25 @@ class Int64IO(_NumberIO):
     graphson_type = "g:Int64"
     graphson_base_type = "Int64"
 
+    @classmethod
+    def dictify(cls, n, writer):
+        # if we exceed Java long range then we need a BigInteger 
+        if isinstance(n, bool):
+            return n
+        elif n < -9223372036854775808 or n > 9223372036854775807:
+            return GraphSONUtil.typedValue("BigInteger", str(n), "gx")
+        else:
+            return GraphSONUtil.typedValue(cls.graphson_base_type, n)
 
-class Int32IO(_NumberIO):
+
+class BigIntegerIO(Int64IO):
+    graphson_type = "gx:BigInteger"
+
+
+class Int32IO(Int64IO):
     python_type = IntType
     graphson_type = "g:Int32"
     graphson_base_type = "Int32"
-
-    @classmethod
-    def dictify(cls, n, writer):
-        if isinstance(n, bool):
-            return n
-        return GraphSONUtil.typedValue(cls.graphson_base_type, n)
 
 
 class VertexDeserializer(_GraphSONTypeIO):
