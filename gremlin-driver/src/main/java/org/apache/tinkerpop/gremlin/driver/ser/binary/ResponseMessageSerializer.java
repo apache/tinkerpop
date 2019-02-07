@@ -32,8 +32,13 @@ import java.util.UUID;
 public class ResponseMessageSerializer {
 
     public ResponseMessage readValue(final ByteBuf buffer, final GraphBinaryReader context, final boolean nullable) throws SerializationException {
-        final int version = buffer.readByte();
-        assert version >>> 31 == 1;
+        final int version = buffer.readByte() & 0xff;
+
+        if (version >>> 7 != 1) {
+            // This is an indication that the response buffer was incorrectly built
+            // Or the buffer offsets are wrong
+            throw new SerializationException("The most significant bit should be set according to the format");
+        }
 
         return ResponseMessage.build(context.readValue(buffer, UUID.class, true))
                 .code(ResponseStatusCode.getFromValue(context.readValue(buffer, Integer.class, false)))

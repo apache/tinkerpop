@@ -148,6 +148,15 @@ public class GraphBinaryMessageSerializerV1Test {
         assertEquals(1, counter);
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowWhenConfigurationOfRegistryBuilderFails() {
+        final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1();
+        final Map<String, Object> config = new HashMap<>();
+        config.put(GraphBinaryMessageSerializerV1.TOKEN_BUILDER, "org.apache.tinkerpop.gremlin.driver.ser.binary.NonExistentClass");
+
+        serializer.configure(config, null);
+    }
+
     private static void assertResponseEquals(ResponseMessage expected, ResponseMessage actual) {
         assertEquals(expected.getRequestId(), actual.getRequestId());
         // Status

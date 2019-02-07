@@ -29,8 +29,13 @@ import java.util.UUID;
 public class RequestMessageSerializer {
 
     public RequestMessage readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
-        final int version = buffer.readByte();
-        assert version >>> 31 == 1;
+        final int version = buffer.readByte() & 0xff;
+
+        if (version >>> 7 != 1) {
+            // This is an indication that the request buffer was incorrectly built
+            // Or the buffer offsets are wrong
+            throw new SerializationException("The most significant bit should be set according to the format");
+        }
 
         final UUID id = context.readValue(buffer, UUID.class, false);
         final String op = context.readValue(buffer, String.class, false);
