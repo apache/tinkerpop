@@ -29,7 +29,7 @@ import six
 from aenum import Enum
 
 from gremlin_python import statics
-from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, SingleByte, ByteBufferType
+from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, SingleByte, ByteBufferType, SingleChar
 from gremlin_python.process.traversal import Binding, Bytecode, P, Traversal, Traverser, TraversalStrategy
 from gremlin_python.structure.graph import Edge, Property, Vertex, VertexProperty, Path
 
@@ -513,7 +513,21 @@ class ByteBufferIO(_GraphSONTypeIO):
 
     @classmethod
     def objectify(cls, v, _):
-        return cls.python_type(v, "ascii")
+        return cls.python_type(v, "utf8")
+
+
+class CharIO(_GraphSONTypeIO):
+    python_type = SingleChar
+    graphson_type = "gx:Char"
+    graphson_base_type = "Char"
+
+    @classmethod
+    def dictify(cls, n, writer):
+        return GraphSONUtil.typedValue(cls.graphson_base_type, n, "gx")
+
+    @classmethod
+    def objectify(cls, v, _):
+        return str.__new__(SingleChar, v)
 
 
 class VertexDeserializer(_GraphSONTypeIO):

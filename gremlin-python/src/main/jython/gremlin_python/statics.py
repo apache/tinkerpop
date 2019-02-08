@@ -52,6 +52,7 @@ class timestamp(float):
     """
     pass
 
+
 class SingleByte(int):
     """
     Provides a way to pass a single byte via GraphSON.
@@ -61,6 +62,17 @@ class SingleByte(int):
             int.__new__(cls, b)
         else:
             raise ValueError("value must be between -128 and 127 inclusive")
+
+
+class SingleChar(str):
+    """
+    Provides a way to pass a single character via GraphSON.
+    """
+    def __new__(cls, c):
+        if len(b) == 1:
+            str.__new__(cls, c)
+        else:
+            raise ValueError("string must contain a single character")
 
 
 staticMethods = {}

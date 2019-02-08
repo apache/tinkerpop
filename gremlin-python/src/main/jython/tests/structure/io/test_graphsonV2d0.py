@@ -281,7 +281,12 @@ class TestGraphSONReader(object):
         bb = self.graphson_reader.readObject(
             json.dumps({"@type": "gx:ByteBuffer", "@value": "c29tZSBieXRlcyBmb3IgeW91"}))
         assert isinstance(bb, ByteBufferType)
-        assert ByteBufferType("c29tZSBieXRlcyBmb3IgeW91", "ascii") == bb
+        assert ByteBufferType("c29tZSBieXRlcyBmb3IgeW91", "utf8") == bb
+
+    def test_char(self):
+        c = self.graphson_reader.readObject(json.dumps({"@type": "gx:Char", "@value": "L"}))
+        assert isinstance(c, SingleChar)
+        assert chr(76) == c
 
 
 class TestGraphSONWriter(object):
@@ -443,8 +448,14 @@ class TestGraphSONWriter(object):
 
     def test_bytebuffer(self):
         expected = json.dumps({'@type': 'gx:ByteBuffer', '@value': 'c29tZSBieXRlcyBmb3IgeW91'}, separators=(',', ':'))
-        bb = ByteBufferType("c29tZSBieXRlcyBmb3IgeW91", "ascii")
+        bb = ByteBufferType("c29tZSBieXRlcyBmb3IgeW91", "utf8")
         output = self.graphson_writer.writeObject(bb)
+        assert expected == output
+
+    def test_char(self):
+        expected = json.dumps({'@type': 'gx:Char', '@value': 'L'}, separators=(',', ':'))
+        c = str.__new__(SingleChar, chr(76))
+        output = self.graphson_writer.writeObject(c)
         assert expected == output
 
 

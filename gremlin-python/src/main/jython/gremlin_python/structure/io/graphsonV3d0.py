@@ -594,7 +594,7 @@ class ByteBufferIO(_GraphSONTypeIO):
 
     @classmethod
     def objectify(cls, v, _):
-        return cls.python_type(v, "ascii")
+        return cls.python_type(v, "utf8")
 
 
 class VertexDeserializer(_GraphSONTypeIO):
