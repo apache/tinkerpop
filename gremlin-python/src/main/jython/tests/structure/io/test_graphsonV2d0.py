@@ -277,6 +277,12 @@ class TestGraphSONReader(object):
                 {'dur': 0.087637, 'counts': {}, 'name': 'ReferenceElementStep', 'annotations': {'percentDur': 5.967408283024444}, 'id': '3.0.0()'}
                 ]}]
 
+    def test_bytebuffer(self):
+        bb = self.graphson_reader.readObject(
+            json.dumps({"@type": "gx:ByteBuffer", "@value": "c29tZSBieXRlcyBmb3IgeW91"}))
+        assert isinstance(bb, ByteBufferType)
+        assert ByteBufferType("c29tZSBieXRlcyBmb3IgeW91", "ascii") == bb
+
 
 class TestGraphSONWriter(object):
     graphson_writer = GraphSONWriter()
@@ -433,6 +439,12 @@ class TestGraphSONWriter(object):
         expected = json.dumps({'@type': 'g:UUID', '@value': "41d2e28a-20a4-4ab0-b379-d810dede3786"}, separators=(',', ':'))
         prop = uuid.UUID("41d2e28a-20a4-4ab0-b379-d810dede3786")
         output = self.graphson_writer.writeObject(prop)
+        assert expected == output
+
+    def test_bytebuffer(self):
+        expected = json.dumps({'@type': 'gx:ByteBuffer', '@value': 'c29tZSBieXRlcyBmb3IgeW91'}, separators=(',', ':'))
+        bb = ByteBufferType("c29tZSBieXRlcyBmb3IgeW91", "ascii")
+        output = self.graphson_writer.writeObject(bb)
         assert expected == output
 
 

@@ -32,9 +32,11 @@ if six.PY3:
     ListType = list
     DictType = dict
     SetType = set
+    ByteBufferType = bytes
 else:
     long = long
     SetType = set
+    ByteBufferType = bytearray
     from types import FloatType
     from types import IntType
     from types import LongType
