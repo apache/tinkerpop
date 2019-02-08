@@ -1,0 +1,97 @@
+package org.apache.tinkerpop.gremlin.driver.ser.binary;
+
+import io.netty.buffer.UnpooledByteBufAllocator;
+import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyPath;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferencePath;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
+import org.apache.tinkerpop.gremlin.util.function.Lambda;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+@RunWith(Parameterized.class)
+public class TypeSerializerFailureTests {
+
+    private final GraphBinaryWriter writer = new GraphBinaryWriter();
+    private final UnpooledByteBufAllocator allocator = new UnpooledByteBufAllocator(false);
+
+    @Parameterized.Parameters(name = "Value={0}")
+    public static Collection input() {
+        final Bytecode.Binding b = new Bytecode.Binding(null, "b");
+
+        final ReferenceVertex vertex = new ReferenceVertex("a vertex", null);
+
+        final Bytecode bytecode = new Bytecode();
+        bytecode.addStep(null);
+
+        final BulkSet<Object> bulkSet = new BulkSet<>();
+        bulkSet.add(vertex, 1L);
+
+        final MutableMetrics metrics = new MutableMetrics("a metric", null);
+
+        final Tree<Vertex> tree = new Tree<>();
+        tree.put(vertex, null);
+
+        // Provide instances that are malformed for serialization to fail
+        return Arrays.asList(
+                b,
+                vertex,
+                Collections.singletonMap("one", b),
+                bulkSet,
+                bytecode,
+                Collections.singletonList(vertex),
+                new ReferenceEdge("an edge", null, vertex, vertex),
+                Lambda.supplier(null),
+                metrics,
+                new DefaultTraversalMetrics(1L, Collections.singletonList(metrics)),
+                new DefaultRemoteTraverser<>(new Object(), 1L),
+                tree,
+                new ReferenceVertexProperty<>("a prop", null, "value"),
+                new InvalidPath()
+        );
+    }
+
+    @Parameterized.Parameter(value = 0)
+    public Object value;
+
+    @Test
+    public void shouldReleaseMemoryWhenFails() {
+        try {
+            writer.write(value, allocator);
+            fail("Should throw exception");
+        } catch (SerializationException | RuntimeException e) {
+            // Do nothing
+        }
+
+        assertEquals(0, allocator.metric().usedHeapMemory());
+    }
+
+    public static class InvalidPath extends ReferencePath {
+        public InvalidPath() {
+            super(EmptyPath.instance());
+        }
+
+        @Override
+        public List<Object> objects() {
+            return Collections.singletonList(new Object());
+        }
+    }
+}

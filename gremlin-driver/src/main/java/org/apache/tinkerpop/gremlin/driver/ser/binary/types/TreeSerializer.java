@@ -49,11 +49,17 @@ public class TreeSerializer extends SimpleTypeSerializer<Tree> {
         final CompositeByteBuf result = allocator.compositeBuffer(1 + value.size() * 2);
         result.addComponent(true, allocator.buffer(4).writeInt(value.size()));
 
-        for (Object key : value.keySet()) {
-            result.addComponents(
-                    true,
-                    context.write(key, allocator),
-                    context.writeValue(value.get(key), allocator, false));
+        try {
+            for (Object key : value.keySet()) {
+                result.addComponents(
+                        true,
+                        context.write(key, allocator),
+                        context.writeValue(value.get(key), allocator, false));
+            }
+        } catch (Exception ex) {
+            // We should release it as the ByteBuf is not going to be yielded for a reader
+            result.release();
+            throw ex;
         }
 
         return result;

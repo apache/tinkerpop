@@ -55,8 +55,15 @@ public class TraversalStrategySerializer extends SimpleTypeSerializer<TraversalS
     @Override
     protected ByteBuf writeValue(final TraversalStrategy value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(2);
-        result.addComponent(true, context.writeValue(value.getClass(), allocator, false));
-        result.addComponent(true, context.writeValue(translateToBytecode(ConfigurationConverter.getMap(value.getConfiguration())), allocator, false));
+
+        try {
+            result.addComponent(true, context.writeValue(value.getClass(), allocator, false));
+            result.addComponent(true, context.writeValue(translateToBytecode(ConfigurationConverter.getMap(value.getConfiguration())), allocator, false));
+        } catch (Exception ex) {
+            result.release();
+            throw ex;
+        }
+
         return result;
     }
 

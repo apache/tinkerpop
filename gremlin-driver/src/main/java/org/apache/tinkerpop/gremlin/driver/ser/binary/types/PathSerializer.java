@@ -61,8 +61,15 @@ public class PathSerializer extends SimpleTypeSerializer<Path> {
     @Override
     protected ByteBuf writeValue(final Path value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(2);
-        result.addComponent(true, context.write(value.labels(), allocator));
-        result.addComponent(true, context.write(value.objects(), allocator));
+
+        try {
+            result.addComponent(true, context.write(value.labels(), allocator));
+            result.addComponent(true, context.write(value.objects(), allocator));
+        } catch (Exception ex) {
+            result.release();
+            throw ex;
+        }
+
         return result;
     }
 }

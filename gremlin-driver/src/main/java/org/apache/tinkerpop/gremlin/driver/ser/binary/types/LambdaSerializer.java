@@ -54,9 +54,17 @@ public class LambdaSerializer extends SimpleTypeSerializer<Lambda> {
     @Override
     protected ByteBuf writeValue(final Lambda value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(3);
-        result.addComponent(true, context.writeValue(value.getLambdaLanguage(), allocator, false));
-        result.addComponent(true, context.writeValue(value.getLambdaScript(), allocator, false));
-        result.addComponent(true, context.writeValue(value.getLambdaArguments(), allocator, false));
+
+        try {
+            result.addComponent(true, context.writeValue(value.getLambdaLanguage(), allocator, false));
+            result.addComponent(true, context.writeValue(value.getLambdaScript(), allocator, false));
+            result.addComponent(true, context.writeValue(value.getLambdaArguments(), allocator, false));
+        } catch (Exception ex) {
+            // We should release it as the ByteBuf is not going to be yielded for a reader
+            result.release();
+            throw ex;
+        }
+
         return result;
     }
 }

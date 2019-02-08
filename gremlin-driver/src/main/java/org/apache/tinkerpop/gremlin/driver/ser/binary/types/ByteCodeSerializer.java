@@ -67,8 +67,14 @@ public class ByteCodeSerializer extends SimpleTypeSerializer<Bytecode> {
         // 2 buffers for the length + plus 2 buffers per each step and source
         final CompositeByteBuf result = allocator.compositeBuffer(2 + steps.size() * 2 + sources.size() * 2);
 
-        writeInstructions(allocator, context, steps, result);
-        writeInstructions(allocator, context, sources, result);
+        try {
+            writeInstructions(allocator, context, steps, result);
+            writeInstructions(allocator, context, sources, result);
+        } catch (Exception ex) {
+            // We should release it as the ByteBuf is not going to be yielded for a reader
+            result.release();
+            throw ex;
+        }
 
         return result;
     }
@@ -79,10 +85,8 @@ public class ByteCodeSerializer extends SimpleTypeSerializer<Bytecode> {
         result.addComponent(true, context.writeValue(instructions.size(), allocator, false));
 
         for (Bytecode.Instruction instruction : instructions) {
-            result.addComponents(
-                    true,
-                    context.writeValue(instruction.getOperator(), allocator, false),
-                    getArgumentsBuffer(instruction.getArguments(), allocator, context));
+            result.addComponent(true, context.writeValue(instruction.getOperator(), allocator, false));
+            result.addComponent(true, getArgumentsBuffer(instruction.getArguments(), allocator, context));
         }
     }
 
@@ -90,8 +94,13 @@ public class ByteCodeSerializer extends SimpleTypeSerializer<Bytecode> {
         final CompositeByteBuf result = allocator.compositeBuffer(1 + arguments.length);
         result.addComponent(true, context.writeValue(arguments.length, allocator, false));
 
-        for (Object value : arguments) {
-            result.addComponent(true, context.write(value, allocator));
+        try {
+            for (Object value : arguments) {
+                result.addComponent(true, context.write(value, allocator));
+            }
+        } catch (Exception ex) {
+            result.release();
+            throw ex;
         }
 
         return result;
