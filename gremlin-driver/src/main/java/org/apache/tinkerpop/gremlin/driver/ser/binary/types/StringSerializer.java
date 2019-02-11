@@ -34,8 +34,10 @@ public class StringSerializer extends SimpleTypeSerializer<String> {
 
     @Override
     protected String readValue(final ByteBuf buffer, final GraphBinaryReader context) {
-        final int length = buffer.readInt();
-        return buffer.readCharSequence(length, StandardCharsets.UTF_8).toString();
+        // Use Netty 4.0 API (avoid ByteBuf#readCharSequence() method) to maximize compatibility
+        final byte[] bytes = new byte[buffer.readInt()];
+        buffer.readBytes(bytes);
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 
     @Override
