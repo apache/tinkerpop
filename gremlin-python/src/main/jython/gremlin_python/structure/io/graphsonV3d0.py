@@ -25,9 +25,11 @@ import base64
 from collections import OrderedDict
 from decimal import *
 import logging
+from datetime import timedelta
 
 import six
 from aenum import Enum
+from isodate import parse_duration, duration_isoformat
 
 from gremlin_python import statics
 from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, DictType, ListType, SetType, SingleByte, ByteBufferType
@@ -595,6 +597,20 @@ class ByteBufferIO(_GraphSONTypeIO):
     @classmethod
     def objectify(cls, v, _):
         return cls.python_type(v, "utf8")
+
+
+class DurationIO(_GraphSONTypeIO):
+    python_type = timedelta
+    graphson_type = "gx:Duration"
+    graphson_base_type = "Duration"
+
+    @classmethod
+    def dictify(cls, n, writer):
+        return GraphSONUtil.typedValue(cls.graphson_base_type, duration_isoformat(n), "gx")
+
+    @classmethod
+    def objectify(cls, v, _):
+        return parse_duration(v)
 
 
 class VertexDeserializer(_GraphSONTypeIO):

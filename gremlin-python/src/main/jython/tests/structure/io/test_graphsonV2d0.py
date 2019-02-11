@@ -259,6 +259,11 @@ class TestGraphSONReader(object):
         assert isinstance(dt, timestamp)
         assert float(dt) == 1481750076.295
 
+    def test_duration(self):
+        d = self.graphson_reader.readObject(json.dumps({"@type": "gx:Duration", "@value": "PT120H"}))
+        assert isinstance(d, datetime.timedelta)
+        assert d == datetime.timedelta(hours=120)
+
     def test_uuid(self):
         prop = self.graphson_reader.readObject(
             json.dumps({'@type': 'g:UUID', '@value': "41d2e28a-20a4-4ab0-b379-d810dede3786"}))
@@ -438,6 +443,12 @@ class TestGraphSONWriter(object):
         expected = json.dumps({"@type": "g:Timestamp", "@value": 1481750076295}, separators=(',', ':'))
         ts = timestamp(1481750076295 / 1000.0)
         output = self.graphson_writer.writeObject(ts)
+        assert expected == output
+
+    def test_duration(self):
+        expected = json.dumps({"@type": "gx:Duration", "@value": "P5D"}, separators=(',', ':'))
+        d = datetime.timedelta(hours=120)
+        output = self.graphson_writer.writeObject(d)
         assert expected == output
 
     def test_uuid(self):
