@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 This release also includes changes from <<release-3-3-6, 3.3.6>>.
 
 * Added GraphBinary serializer for TraversalMetrics
+* Added registration for `SparqlStrategy` for GraphSON.
 * Fixed up `SparqlStrategy` so that it could be used properly with `RemoteStrategy`.
 * Fixed `ByteBuffer` serialization for GraphBinary.
 * Added fallback resolver to `TypeSerializerRegistry` for GraphBinary.
