@@ -29,6 +29,8 @@ This release also includes changes from <<release-3-3-6, 3.3.6>>.
 * Added registration for `SparqlStrategy` for GraphSON.
 * Fixed up `SparqlStrategy` so that it could be used properly with `RemoteStrategy`.
 * Fixed `ByteBuffer` serialization for GraphBinary.
+* Fixed `Path.toString()` in `gremlin-javascript` which was referencing an invalid object.
+* Fixed potential for an infinite loop in connection creation for `gremlin-dotnet`.
 * Added fallback resolver to `TypeSerializerRegistry` for GraphBinary.
 * Added easier to understand exceptions for connection problems in the Gremlin.Net driver.
 * Support configuring the type registry builder for GraphBinary.
