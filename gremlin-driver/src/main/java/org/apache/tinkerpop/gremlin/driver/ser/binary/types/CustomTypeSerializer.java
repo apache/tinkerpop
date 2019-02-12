@@ -22,9 +22,6 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.TypeSerializer;
 
 /**
  * Represents a serializer for a custom (provider specific) serializer.
- * <p>
- *     Note that invocations to
- * </p>
  * @param <T>
  */
 public interface CustomTypeSerializer<T> extends TypeSerializer<T> {

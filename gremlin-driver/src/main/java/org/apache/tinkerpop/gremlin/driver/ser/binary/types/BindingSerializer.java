@@ -45,8 +45,13 @@ public class BindingSerializer extends SimpleTypeSerializer<Bytecode.Binding> {
     @Override
     protected ByteBuf writeValue(final Bytecode.Binding value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(2);
-        result.addComponent(true, context.writeValue(value.variable(), allocator, false));
-        result.addComponent(true, context.write(value.value(), allocator));
+        try {
+            result.addComponent(true, context.writeValue(value.variable(), allocator, false));
+            result.addComponent(true, context.write(value.value(), allocator));
+        } catch (Exception ex) {
+            result.release();
+            throw ex;
+        }
         return result;
     }
 }

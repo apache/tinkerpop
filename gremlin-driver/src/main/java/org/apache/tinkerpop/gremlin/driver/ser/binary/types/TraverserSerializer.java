@@ -47,8 +47,15 @@ public class TraverserSerializer extends SimpleTypeSerializer<Traverser> {
     @Override
     protected ByteBuf writeValue(final Traverser value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(2);
-        result.addComponent(true, context.writeValue(value.bulk(), allocator, false));
-        result.addComponent(true, context.write(value.get(), allocator));
+
+        try {
+            result.addComponent(true, context.writeValue(value.bulk(), allocator, false));
+            result.addComponent(true, context.write(value.get(), allocator));
+        } catch (Exception ex) {
+            result.release();
+            throw ex;
+        }
+
         return result;
     }
 }

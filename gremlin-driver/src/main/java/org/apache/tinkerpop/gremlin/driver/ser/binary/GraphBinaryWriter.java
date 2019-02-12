@@ -71,14 +71,16 @@ public class GraphBinaryWriter {
         final TypeSerializer<T> serializer = (TypeSerializer<T>) registry.getSerializer(objectClass);
 
         if (serializer instanceof CustomTypeSerializer) {
+            // It's a custom type
             CustomTypeSerializer customTypeSerializer = (CustomTypeSerializer) serializer;
-            // Is a custom type
-            // Write type code, custom type name and let the serializer write
-            // the rest of {custom_type_info} followed by {value_flag} and {value}
-            return allocator.compositeBuffer(3).addComponents(true,
-                    Unpooled.wrappedBuffer(customTypeCodeBytes),
-                    writeValue(customTypeSerializer.getTypeName(), allocator, false),
-                    customTypeSerializer.write(value, allocator, this));
+
+            // Try to serialize the custom value before allocating a composite buffer
+            ByteBuf customTypeValueBuffer = customTypeSerializer.write(value, allocator, this);
+
+            return allocator.compositeBuffer(3)
+                    .addComponent(true, Unpooled.wrappedBuffer(customTypeCodeBytes))
+                    .addComponent(true, writeValue(customTypeSerializer.getTypeName(), allocator, false))
+                    .addComponent(true, customTypeValueBuffer);
         }
 
         if (serializer instanceof TransformSerializer) {
@@ -88,11 +90,14 @@ public class GraphBinaryWriter {
             return write(transformSerializer.transform(value), allocator);
         }
 
+        // Try to serialize the value before creating a new composite buffer
+        ByteBuf typeInfoAndValueBuffer = serializer.write(value, allocator, this);
+
         return allocator.compositeBuffer(2).addComponents(true,
                 // {type_code}
                 Unpooled.wrappedBuffer(serializer.getDataType().getDataTypeBuffer()),
                 // {type_info}{value_flag}{value}
-                serializer.write(value, allocator, this));
+                typeInfoAndValueBuffer);
     }
 
     /**

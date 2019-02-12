@@ -51,11 +51,15 @@ public class MapSerializer extends SimpleTypeSerializer<Map> {
         final CompositeByteBuf result = allocator.compositeBuffer(1 + value.size() * 2);
         result.addComponent(true, allocator.buffer(4).writeInt(value.size()));
 
-        for (Object key : value.keySet()) {
-            result.addComponents(
-                    true,
-                    context.write(key, allocator),
-                    context.write(value.get(key), allocator));
+        try {
+            for (Object key : value.keySet()) {
+                result.addComponent(true, context.write(key, allocator));
+                result.addComponent(true, context.write(value.get(key), allocator));
+            }
+        } catch (Exception ex) {
+            // We should release it as the ByteBuf is not going to be yielded for a reader
+            result.release();
+            throw ex;
         }
 
         return result;

@@ -55,15 +55,22 @@ public class VertexPropertySerializer extends SimpleTypeSerializer<VertexPropert
     @Override
     protected ByteBuf writeValue(final VertexProperty value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
         final CompositeByteBuf result = allocator.compositeBuffer(5);
-        result.addComponent(true, context.write(value.id(), allocator));
-        result.addComponent(true, context.writeValue(value.label(), allocator, false));
-        result.addComponent(true, context.write(value.value(), allocator));
 
-        // we don't serialize the parent vertex even as a "reference", but, let's hold a place for it
-        result.addComponent(true, context.write(null, allocator));
-        // we don't serialize properties for graph elements. they are "references", but we leave a place holder
-        // here as an option for the future as we've waffled this soooooooooo many times now
-        result.addComponent(true, context.write(null, allocator));
+        try {
+            result.addComponent(true, context.write(value.id(), allocator));
+            result.addComponent(true, context.writeValue(value.label(), allocator, false));
+            result.addComponent(true, context.write(value.value(), allocator));
+
+            // we don't serialize the parent vertex even as a "reference", but, let's hold a place for it
+            result.addComponent(true, context.write(null, allocator));
+            // we don't serialize properties for graph elements. they are "references", but we leave a place holder
+            // here as an option for the future as we've waffled this soooooooooo many times now
+            result.addComponent(true, context.write(null, allocator));
+        } catch (Exception ex) {
+            // We should release it as the ByteBuf is not going to be yielded for a reader
+            result.release();
+            throw ex;
+        }
 
         return result;
     }
