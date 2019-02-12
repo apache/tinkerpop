@@ -62,4 +62,9 @@ https://groups.google.com/forum/#!forum/gremlin-users</Description>
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="../../LICENSE" Pack="true" PackagePath=""/>
+    <None Include="../../NOTICE" Pack="true" PackagePath=""/>
+  </ItemGroup>
+
 </Project>
