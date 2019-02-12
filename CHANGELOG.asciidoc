@@ -31,6 +31,7 @@ This release also includes changes from <<release-3-3-6, 3.3.6>>.
 * Added fallback resolver to `TypeSerializerRegistry` for GraphBinary.
 * Added easier to understand exceptions for connection problems in the Gremlin.Net driver.
 * Support configuring the type registry builder for GraphBinary.
+* Release working buffers in case of failure for GraphBinary.
 
 [[release-3-4-0]]
 === TinkerPop 3.4.0 (Release Date: January 2, 2019)
