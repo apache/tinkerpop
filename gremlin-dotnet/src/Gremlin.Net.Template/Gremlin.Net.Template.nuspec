@@ -3,10 +3,10 @@
     <metadata>
         <id>Gremlin.Net.Template</id>
         <title>Gremlin.Net Template</title>
-        <version>3.3.6-SNAPSHOT</version>
+        <version>3.3.6-dev-1549976765131</version>
         <description>Gremlin.Net template to create a console application with dotnet new.</description>
         <authors>Apache TinkerPop</authors>
-        <license>Apache-2.0</license>
+        <license type="expression">Apache-2.0</license>
         <projectUrl>http://tinkerpop.apache.org</projectUrl>
         <tags>TinkerPop Gremlin Gremlin.Net</tags>
         <packageTypes>
@@ -17,5 +17,7 @@
         <file src=".template.config/template.json" target="content/.template.config" />
         <file src="Gremlin.Net.Template.csproj" target="content" />
         <file src="*.cs" target="content" />
-</files>
+        <file src="../../LICENSE" target="LICENSE"/>
+        <file src="../../NOTICE" target="NOTICE"/>
+    </files>
 </package>

@@ -25,7 +25,7 @@ limitations under the License.
   </PropertyGroup>
 
   <PropertyGroup Label="Package">
-    <Version>3.3.6-SNAPSHOT</Version>
+    <Version>3.3.6-dev-1549976765131</Version>
     <FileVersion>3.3.6.0</FileVersion>
     <AssemblyVersion>3.3.0.0</AssemblyVersion>
     <Title>Gremlin.Net</Title>
@@ -60,6 +60,11 @@ https://groups.google.com/forum/#!forum/gremlin-users</Description>
     <PackageReference Include="System.Net.WebSockets" Version="4.3.0" />
     <PackageReference Include="System.Net.WebSockets.Client" Version="4.3.0" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../../LICENSE" Pack="true" PackagePath=""/>
+    <None Include="../../NOTICE" Pack="true" PackagePath=""/>
   </ItemGroup>
 
 </Project>
