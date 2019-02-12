@@ -21,18 +21,6 @@ limitations under the License.
        <a href="http://tinkerpop.apache.org/docs/current/reference/#gremlin-console">Gremlin Console</a> and <a href="http://tinkerpop.apache.org/docs/current/reference/#gremlin-server">Gremlin Server</a>
        downloads are binary distributions, which contain pre-packaged versions of these important TinkerPop applications that are designed to work out-of-the-box
        when unpackaged. The source distribution is a snapshot of the source code and files used in the building of those  binary distributions.</p>
-    <p>
-     As a convenience, TinkerPop also deploys packaged artifacts to:
-     <ul>
-       <li><a href="https://hub.docker.com/u/tinkerpop/">Docker</a></li>
-       <li><a href="http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.apache.tinkerpop%22">Maven Central</a></li>
-       <li><a href="https://pypi.python.org/pypi/gremlinpython/">PyPI</a></li>
-       <li><a href="https://www.npmjs.com/package/gremlin">npm</a></li>
-       <li><a href="https://www.nuget.org/packages/Gremlin.Net/">NuGet</a></li>
-     </ul>
-    </p>
-    <p>Instructions on how to validate downloads via their signatures can be found <a href="#verify">below</a>.</p>
-    <br/>
     <h4>Current Releases</h4>
     <table class="table">
         <tr>
@@ -94,537 +82,63 @@ limitations under the License.
         </tr>
     </table>
     <h4>Archived Releases</h4>
-    <table class="table">
-        <tr>
-            <td>
-                <strong>3.3.4</strong>
-            </td>
-            <td>
-                15-Oct-2018
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.3.4/CHANGELOG.asciidoc#release-3-3-4">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.3.4/upgrade/#_tinkerpop_3_3_4">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.3.4/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_3_4">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/tinkerpop/3.3.4/apache-tinkerpop-gremlin-console-3.3.4-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.3.4/apache-tinkerpop-gremlin-server-3.3.4-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.3.4/apache-tinkerpop-3.3.4-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.2.10</strong>
-            </td>
-            <td>
-                15-Oct-2018
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.2.10/CHANGELOG.asciidoc#release-3-2-10">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.2.10/upgrade/#_tinkerpop_3_2_10">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.2.10/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_2_10">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.10/apache-tinkerpop-gremlin-console-3.2.10-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.10/apache-tinkerpop-gremlin-server-3.2.10-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.10/apache-tinkerpop-3.2.10-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.3.3</strong>
-            </td>
-            <td>
-                8-May-2018
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.3.3/CHANGELOG.asciidoc#release-3-3-3">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.3.3/upgrade/#_tinkerpop_3_3_3">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.3.3/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_3_3">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/tinkerpop/3.3.3/apache-tinkerpop-gremlin-console-3.3.3-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.3.3/apache-tinkerpop-gremlin-server-3.3.3-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.3.3/apache-tinkerpop-3.3.3-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.2.9</strong>
-            </td>
-            <td>
-                8-May-2018
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.2.9/CHANGELOG.asciidoc#release-3-2-9">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.2.9/upgrade/#_tinkerpop_3_2_9">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.2.9/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_2_9">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.9/apache-tinkerpop-gremlin-console-3.2.9-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.9/apache-tinkerpop-gremlin-server-3.2.9-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.9/apache-tinkerpop-3.2.9-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.3.2</strong>
-            </td>
-            <td>
-                2-Apr-2018
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.3.2/CHANGELOG.asciidoc#release-3-3-2">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.3.2/upgrade/#_tinkerpop_3_3_2">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.3.2/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_3_2">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/tinkerpop/3.3.2/apache-tinkerpop-gremlin-console-3.3.2-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.3.2/apache-tinkerpop-gremlin-server-3.3.2-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.3.2/apache-tinkerpop-3.3.2-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.2.8</strong>
-            </td>
-            <td>
-                2-Apr-2018
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.2.8/CHANGELOG.asciidoc#release-3-2-8">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.2.8/upgrade/#_tinkerpop_3_2_8">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.2.8/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_2_8">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.8/apache-tinkerpop-gremlin-console-3.2.8-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.8/apache-tinkerpop-gremlin-server-3.2.8-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.8/apache-tinkerpop-3.2.8-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.3.1</strong>
-            </td>
-            <td>
-                17-Dec-2017
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.3.1/CHANGELOG.asciidoc#release-3-3-1">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.3.1/upgrade/#_tinkerpop_3_3_1">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.3.1/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_3_1">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/tinkerpop/3.3.1/apache-tinkerpop-gremlin-console-3.3.1-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.3.1/apache-tinkerpop-gremlin-server-3.3.1-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.3.1/apache-tinkerpop-3.3.1-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.2.7</strong>
-            </td>
-            <td>
-                17-Dec-2017
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.2.7/CHANGELOG.asciidoc#release-3-2-7">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.2.7/upgrade/#_tinkerpop_3_2_7">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.2.7/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_2_7">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.7/apache-tinkerpop-gremlin-console-3.2.7-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.7/apache-tinkerpop-gremlin-server-3.2.7-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.7/apache-tinkerpop-3.2.7-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.3.0</strong>
-            </td>
-            <td>
-                21-Aug-2017
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.3.0/CHANGELOG.asciidoc#release-3-3-0">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.3.0/upgrade/#_tinkerpop_3_3_0">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.3.0/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_3_0">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/tinkerpop/3.3.0/apache-tinkerpop-gremlin-console-3.3.0-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.3.0/apache-tinkerpop-gremlin-server-3.3.0-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.3.0/apache-tinkerpop-3.3.0-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.2.6</strong>
-            </td>
-            <td>
-                21-Aug-2017
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.2.6/CHANGELOG.asciidoc#release-3-2-6">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.2.6/upgrade/#_tinkerpop_3_2_6">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.2.6/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_2_6">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.6/apache-tinkerpop-gremlin-console-3.2.6-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.6/apache-tinkerpop-gremlin-server-3.2.6-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.6/apache-tinkerpop-3.2.6-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.1.8</strong>
-            </td>
-            <td>
-                21-Aug-2017
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.1.8/CHANGELOG.asciidoc#release-3-1-8">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.1.8/upgrade/#_tinkerpop_3_1_8">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.1.8/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_1_8">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/tinkerpop/3.1.8/apache-tinkerpop-gremlin-console-3.1.8-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.1.8/apache-tinkerpop-gremlin-server-3.1.8-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.1.8/apache-tinkerpop-3.1.8-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.2.5</strong>
-            </td>
-            <td>
-                12-Jun-2017
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.2.5/CHANGELOG.asciidoc#release-3-2-5">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.2.5/upgrade/#_tinkerpop_3_2_5">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.2.5/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_2_5">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.5/apache-tinkerpop-gremlin-console-3.2.5-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.5/apache-tinkerpop-gremlin-server-3.2.5-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.5/apache-tinkerpop-3.2.5-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.1.7</strong>
-            </td>
-            <td>
-                12-Jun-2017
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.1.7/CHANGELOG.asciidoc#release-3-1-7">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.1.7/upgrade/#_tinkerpop_3_1_7">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.1.7/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_1_7">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/tinkerpop/3.1.7/apache-tinkerpop-gremlin-console-3.1.7-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.1.7/apache-tinkerpop-gremlin-server-3.1.7-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.1.7/apache-tinkerpop-3.1.7-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.2.4</strong>
-            </td>
-            <td>
-                3-Feb-2017
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.2.4/CHANGELOG.asciidoc#release-3-2-4">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.2.4/upgrade/#_tinkerpop_3_2_4">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.2.4/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_2_4">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.4/apache-tinkerpop-gremlin-console-3.2.4-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.4/apache-tinkerpop-gremlin-server-3.2.4-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.4/apache-tinkerpop-3.2.4-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.1.6</strong>
-            </td>
-            <td>
-                3-Feb-2017
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.1.6/CHANGELOG.asciidoc#release-3-1-6">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.1.6/upgrade/#_tinkerpop_3_1_6">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.1.6/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_1_6">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/tinkerpop/3.1.6/apache-tinkerpop-gremlin-console-3.1.6-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.1.6/apache-tinkerpop-gremlin-server-3.1.6-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.1.6/apache-tinkerpop-3.1.6-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.2.3</strong>
-            </td>
-            <td>
-                17-Oct-2016
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.2.3/CHANGELOG.asciidoc#release-3-2-3">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.2.3/upgrade/#_tinkerpop_3_2_3">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.2.3/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_2_3">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.3/apache-tinkerpop-gremlin-console-3.2.3-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.3/apache-tinkerpop-gremlin-server-3.2.3-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.3/apache-tinkerpop-3.2.3-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.1.5</strong>
-            </td>
-            <td>
-                17-Oct-2016
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.1.5/CHANGELOG.asciidoc#release-3-1-5">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.1.5/upgrade/#_tinkerpop_3_1_5">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.1.5/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_1_5">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/tinkerpop/3.1.5/apache-tinkerpop-gremlin-console-3.1.5-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.1.5/apache-tinkerpop-gremlin-server-3.1.5-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.1.5/apache-tinkerpop-3.1.5-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.2.2</strong>
-            </td>
-            <td>
-                6-Sep-2016
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.2.2/CHANGELOG.asciidoc#release-3-2-2">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.2.2/upgrade/#_tinkerpop_3_2_2">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.2.2/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_2_2">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.2/apache-tinkerpop-gremlin-console-3.2.2-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.2/apache-tinkerpop-gremlin-server-3.2.2-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.2/apache-tinkerpop-3.2.2-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.1.4</strong>
-            </td>
-            <td>
-                6-Sep-2016
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.1.4/CHANGELOG.asciidoc#release-3-1-4">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.1.4/upgrade/#_tinkerpop_3_1_4">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.1.4/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_1_4">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/tinkerpop/3.1.4/apache-tinkerpop-gremlin-console-3.1.4-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.1.4/apache-tinkerpop-gremlin-server-3.1.4-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.1.4/apache-tinkerpop-3.1.4-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.2.1</strong>
-            </td>
-            <td>
-                18-Jul-2016
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.2.1/CHANGELOG.asciidoc#tinkerpop-321-release-date-july-18-2016">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.2.1/upgrade/#_tinkerpop_3_2_1">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.2.1/reference/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_2_1">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.1/apache-gremlin-console-3.2.1-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.1/apache-gremlin-server-3.2.1-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.2.1/apache-tinkerpop-3.2.1-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.1.3</strong>
-            </td>
-            <td>
-                18-Jul-2016
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.1.3/CHANGELOG.asciidoc#tinkerpop-313-release-date-july-18-2016">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.1.3/upgrade/#_tinkerpop_3_1_3">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.1.3/reference/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_1_3">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/tinkerpop/3.1.3/apache-gremlin-console-3.1.3-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.1.3/apache-gremlin-server-3.1.3-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/tinkerpop/3.1.3/apache-tinkerpop-3.1.3-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.2.0-incubating</strong>
-            </td>
-            <td>
-                8-Apr-2016
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.2.0-incubating/CHANGELOG.asciidoc#tinkerpop-320-release-date-april-8-2016">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.2.0-incubating/upgrade/#_tinkerpop_3_2_0_2">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.2.0-incubating/reference/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_2_0-incubating">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/incubator/tinkerpop/3.2.0-incubating/apache-gremlin-console-3.2.0-incubating-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/incubator/tinkerpop/3.2.0-incubating/apache-gremlin-server-3.2.0-incubating-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/incubator/tinkerpop/3.2.0-incubating/apache-tinkerpop-3.2.0-incubating-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.1.2-incubating</strong>
-            </td>
-            <td>
-                8-Apr-2016
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.1.2-incubating/CHANGELOG.asciidoc#tinkerpop-312-release-date-april-8-2016">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.1.2-incubating/upgrade/#_tinkerpop_3_1_2">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.1.2-incubating/reference/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_1_2-incubating">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/incubator/tinkerpop/3.1.2-incubating/apache-gremlin-console-3.1.2-incubating-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/incubator/tinkerpop/3.1.2-incubating/apache-gremlin-server-3.1.2-incubating-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/incubator/tinkerpop/3.1.2-incubating/apache-tinkerpop-3.1.2-incubating-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.1.1-incubating</strong>
-            </td>
-            <td>
-                8-Feb-2016
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.1.1-incubating/CHANGELOG.asciidoc#tinkerpop-311-release-date-february-8-2016">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.1.1-incubating/upgrade/#_tinkerpop_3_1_1">upgrade</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.1.1-incubating/reference/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_1_1-incubating">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/incubator/tinkerpop/3.1.1-incubating/apache-gremlin-console-3.1.1-incubating-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/incubator/tinkerpop/3.1.1-incubating/apache-gremlin-server-3.1.1-incubating-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/incubator/tinkerpop/3.1.1-incubating/apache-tinkerpop-3.1.1-incubating-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.1.0-incubating</strong>
-            </td>
-            <td>
-                16-Nov-2015
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.1.0-incubating/CHANGELOG.asciidoc#tinkerpop-310-release-date-november-16-2015">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.1.0-incubating/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_1_0-incubating">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/incubator/tinkerpop/3.1.0-incubating/apache-gremlin-console-3.1.0-incubating-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/incubator/tinkerpop/3.1.0-incubating/apache-gremlin-server-3.1.0-incubating-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/incubator/tinkerpop/3.1.0-incubating/apache-tinkerpop-3.1.0-incubating-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.0.2-incubating</strong>
-            </td>
-            <td>
-                19-Oct-2015
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.0.2-incubating/CHANGELOG.asciidoc#tinkerpop-302-release-date-october-19-2015">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.0.2-incubating/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_0_2-incubating">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/incubator/tinkerpop/3.0.2-incubating/apache-gremlin-console-3.0.2-incubating-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/incubator/tinkerpop/3.0.2-incubating/apache-gremlin-server-3.0.2-incubating-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/incubator/tinkerpop/3.0.2-incubating/apache-tinkerpop-3.0.2-incubating-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.0.1-incubating</strong>
-            </td>
-            <td>
-                2-Sep-2015
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.0.1-incubating/CHANGELOG.asciidoc#tinkerpop-301-release-date-september-2-2015">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.0.1-incubating/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_0_1-incubating">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/incubator/tinkerpop/3.0.1-incubating/apache-gremlin-console-3.0.1-incubating-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/incubator/tinkerpop/3.0.1-incubating/apache-gremlin-server-3.0.1-incubating-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/incubator/tinkerpop/3.0.1-incubating/apache-tinkerpop-3.0.1-incubating-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <strong>3.0.0-incubating</strong>
-            </td>
-            <td>
-                9-Jul-2015
-            </td>
-            <td>
-                <a href="https://github.com/apache/tinkerpop/blob/3.0.0-incubating/CHANGELOG.asciidoc#tinkerpop-300-release-date-july-9-2015">release notes</a> |
-                <a href="http://tinkerpop.apache.org/docs/3.0.0-incubating/">documentation</a> |
-                <a href="#" data-toggle="modal" data-target="#contributors-3_0_0-incubating">contributors</a>
-            </td>
-            <td align="right">
-                <a href="https://archive.apache.org/dist/incubator/tinkerpop/3.0.0-incubating/apache-gremlin-console-3.0.0-incubating-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/incubator/tinkerpop/3.0.0-incubating/apache-gremlin-server-3.0.0-incubating-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
-                <a href="https://archive.apache.org/dist/incubator/tinkerpop/3.0.0-incubating/apache-tinkerpop-3.0.0-incubating-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
-            </td>
-        </tr>
-    </table>
-    <p><strong>Note</strong> that upgrade documentation was only introduced at 3.1.1-incubating which is why there are no links "upgrade" links in versions prior to that one.
+    <p>
+    <select id="dropdownArchives" class="bootstrap-select">
+        <option selected="selected">3.3.4 (15-Oct-2018)</option>
+        <option>3.3.3 (8-May-2018)</option>
+        <option>3.3.2 (2-Apr-2018)</option>
+        <option>3.3.1 (17-Dec-2017)</option>
+        <option>3.3.0 (21-Aug-2017)</option>
+        <option>3.2.10 (15-Oct-2018)</option>
+        <option>3.2.9 (8-May-2018)</option>
+        <option>3.2.8 (2-Apr-2018)</option>
+        <option>3.2.7 (17-Dec-2017)</option>
+        <option>3.2.6 (21-Aug-2017)</option>
+        <option>3.2.5 (12-Jun-2017)</option>
+        <option>3.2.4 (3-Feb-2017)</option>
+        <option>3.2.3 (17-Oct-2016)</option>
+        <option>3.2.2 (6-Sep-2016)</option>
+        <option>3.2.1 (18-Jul-2016)</option>
+        <option>3.2.0-incubating (8-Apr-2016)</option>
+        <option>3.1.8 (21-Aug-2017)</option>
+        <option>3.1.7 (12-Jun-2017)</option>
+        <option>3.1.6 (3-Feb-2017)</option>
+        <option>3.1.5 (17-Oct-2016)</option>
+        <option>3.1.4 (6-Sep-2016)</option>
+        <option>3.1.3 (18-Jul-2016)</option>
+        <option>3.1.2-incubating (8-Apr-2016)</option>
+        <option>3.1.1-incubating (8-Feb-2016)</option>
+        <option>3.1.0-incubating (16-Nov-2015)</option>
+        <option>3.0.2-incubating (18-Oct-2015)</option>
+        <option>3.0.1-incubating (2-Sep-2015)</option>
+        <option>3.0.0-incubating (9-Jul-2015)</option>
+    </select>
+    </p>
+     <table class="table">
+         <tr>
+             <td>
+                 <strong id="archiveVersion"></strong>
+             </td>
+             <td id="archiveReleaseDate"></td>
+             <td>
+                 <a id="archiveReleaseNotes" href="https://github.com/apache/tinkerpop/blob/3.3.4/CHANGELOG.asciidoc#release-3-3-4">release notes</a> |
+                 <span id="archiveUpgrade"><a href="http://tinkerpop.apache.org/docs/3.3.4/upgrade/#_tinkerpop_3_3_4">upgrade</a> |</span>
+                 <a id="archiveDocs" href="http://tinkerpop.apache.org/docs/3.3.4/">documentation</a> |
+                 <a id="archiveContributors" href="#" data-toggle="modal" data-target="#contributors-3_3_4">contributors</a>
+             </td>
+             <td align="right">
+                 <a id="archiveDownloadConsole" href="https://archive.apache.org/dist/tinkerpop/3.3.4/apache-tinkerpop-gremlin-console-3.3.4-bin.zip" class="btn btn-primary">Gremlin Console <span class="glyphicon glyphicon-download-alt"></span></a>
+                 <a id="archiveDownloadServer" href="https://archive.apache.org/dist/tinkerpop/3.3.4/apache-tinkerpop-gremlin-server-3.3.4-bin.zip" class="btn btn-primary">Gremlin Server <span class="glyphicon glyphicon-download-alt"></span></a>
+                 <a id="archiveDownloadSource" href="https://archive.apache.org/dist/tinkerpop/3.3.4/apache-tinkerpop-3.3.4-src.zip" class="btn btn-primary">Source <span class="glyphicon glyphicon-download-alt"></span></a>
+             </td>
+         </tr>
+     </table>
+    <p><strong>Note</strong> that upgrade documentation was only introduced at 3.1.1-incubating which is why there are no "upgrade" links in versions prior to that one.
+    <p>As a convenience, TinkerPop also deploys packaged artifacts to the following locations:</p>
+    <p><a href="https://hub.docker.com/u/tinkerpop/">Docker</a> | <a href="http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.apache.tinkerpop%22">Maven Central</a> | <a href="https://pypi.python.org/pypi/gremlinpython/">PyPI</a> | <a href="https://www.npmjs.com/package/gremlin">npm</a> | <a href="https://www.nuget.org/packages/Gremlin.Net/">NuGet</a></p>
+
+     <p><strong>Note</strong> this page lists official Apache releases only. TinkerPop occasionally produces unofficial binary release candidates (denoted by the suffix "-RC") which are NOT promoted or announced as actual release versions. <i>Such releases are for development purposes only.</i></p>
+
     <a name="verify"></a>
     <h4>Verifying Downloads</h4>
     <p>All downloads have associated PGP and SHA512 signatures to help verify a distribution provided by a mirror. To verify a distribution via PGP or GPG first download the
@@ -1647,5 +1161,51 @@ limitations under the License.
         </div>
     </div>
 
+    <script type="text/javascript">
+        $("#dropdownArchives").change(function(){
+            var selectedVersionText = this.options[this.selectedIndex].text;
+
+            var pattern = /(\d*\.\d*\..*) \((.*)\)/;
+            var selectedVersion = pattern.exec(selectedVersionText);
+            var version = selectedVersion[1];
+            var releaseDate = selectedVersion[2];
+            var versionHyphened = version.replace(/\./g, "-");
+            var versionUnderscored = version.replace(/\./g, "_");
+
+            $("#archiveVersion").html(version);
+            $("#archiveReleaseDate").html(releaseDate);
+            $("#archiveReleaseNotes").attr("href", "https://github.com/apache/tinkerpop/blob/master/CHANGELOG.asciidoc#release-" + versionHyphened);
+            $("#archiveDocs").attr("href", "http://tinkerpop.apache.org/docs/" + version);
+            $("#archiveContributors").attr("data-target", "#contributors-" + versionUnderscored);
+
+            var versionsWithOldNaming = ["3.2.1", "3.1.3", "3.2.0-incubating", "3.1.2-incubating", "3.1.1-incubating",
+                                         "3.1.0-incubating", "3.0.2-incubating", "3.0.1-incubating", "3.0.0-incubating"];
+            var consoleFileName = "apache-tinkerpop-gremlin-console-";
+            var serverFileName = "apache-tinkerpop-gremlin-server-";
+            if (versionsWithOldNaming.includes(version)) {
+                consoleFileName = "apache-gremlin-console-";
+                serverFileName = "apache-gremlin-server-";
+            }
+
+            var incubatingVersion = version.endsWith("-incubating");
+            var archiveUrl = incubatingVersion ? "https://archive.apache.org/dist/incubator/tinkerpop/" : "https://archive.apache.org/dist/tinkerpop/";
+
+            $("#archiveDownloadConsole").attr("href", archiveUrl + version + "/" + consoleFileName + version + "-bin.zip");
+            $("#archiveDownloadServer").attr("href", archiveUrl + version + "/" + serverFileName + version + "-bin.zip");
+            $("#archiveDownloadSource").attr("href", archiveUrl + version + "/apache-tinkerpop-" + version + "-src.zip");
+
+            var versionsWithoutUpgradeDocs = ["3.1.0-incubating", "3.0.2-incubating", "3.0.1-incubating", "3.0.0-incubating"];
+            if (versionsWithoutUpgradeDocs.includes(version)) {
+                $("#archiveUpgrade a").attr("href", "#");
+                $("#archiveUpgrade").hide();
+            } else {
+                $("#archiveUpgrade a").attr("href", "http://tinkerpop.apache.org/docs/" + version + "/upgrade/#_tinkerpop_" + versionUnderscored);
+                $("#archiveUpgrade").show();
+            }
+
+        });
+
+        $("#dropdownArchives").change()
+    </script>
 
 </div>
