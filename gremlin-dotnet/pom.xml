@@ -35,6 +35,26 @@ limitations under the License.
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <filesets>
+                        <!-- kill .cache directory as it seems to cause hassles in docker builds sometimes-->
+                        <fileset>
+                            <directory>src/obj</directory>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.eobjects.build</groupId>
                 <artifactId>dotnet-maven-plugin</artifactId>
                 <extensions>true</extensions>
