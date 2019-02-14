@@ -352,9 +352,18 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         startServer();
 
         // default reconnect time is 1 second so wait some extra time to be sure it has time to try to bring it
-        // back to life
-        TimeUnit.SECONDS.sleep(3);
-        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+        // back to life. usually this passes on the first attempt, but docker is sometimes slow and we get failures
+        // waiting for Gremlin Server to pop back up
+        for (int ix = 3; ix < 13; ix++) {
+            TimeUnit.SECONDS.sleep(ix);
+            try {
+                final int result = client.submit("1+1").all().join().get(0).getInt();
+                assertEquals(2, result);
+                break;
+            } catch (Exception ignored) {
+                logger.warn("Attempt {} failed on shouldEventuallySucceedOnSameServerWithDefault", ix);
+            }
+        }
 
         cluster.close();
     }
@@ -377,9 +386,18 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         startServer();
 
         // default reconnect time is 1 second so wait some extra time to be sure it has time to try to bring it
-        // back to life
-        TimeUnit.SECONDS.sleep(3);
-        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+        // back to life. usually this passes on the first attempt, but docker is sometimes slow and we get failures
+        // waiting for Gremlin Server to pop back up
+        for (int ix = 3; ix < 13; ix++) {
+            TimeUnit.SECONDS.sleep(ix);
+            try {
+                final int result = client.submit("1+1").all().join().get(0).getInt();
+                assertEquals(2, result);
+                break;
+            } catch (Exception ignored) {
+                logger.warn("Attempt {} failed on shouldEventuallySucceedOnSameServerWithScript", ix);
+            }
+        }
 
         cluster.close();
     }
