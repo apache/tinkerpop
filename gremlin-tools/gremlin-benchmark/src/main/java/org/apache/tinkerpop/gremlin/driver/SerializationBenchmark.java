@@ -19,13 +19,18 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import org.apache.tinkerpop.benchmark.util.AbstractBenchmarkBase;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.openjdk.jmh.annotations.Benchmark;
 
 import java.nio.charset.StandardCharsets;
@@ -46,7 +51,7 @@ public class SerializationBenchmark extends AbstractBenchmarkBase {
 
     private static final ByteBuf RequestMessageBinaryBuffer1 = Unpooled.wrappedBuffer(new byte[]{
             // flag
-            0x1,
+            (byte)0x81,
             // uuid
             (byte) 0xd3, (byte) 0xfd, 0x35, 0x40, 0x67, 0x18, 0x46, (byte) 0x87,(byte) 0x95, 0x6b, (byte) 0xc8, 0x61,
             (byte) 0x8a, 0x26, (byte) 0xe3, 0x35,
@@ -60,7 +65,7 @@ public class SerializationBenchmark extends AbstractBenchmarkBase {
 
     private static final ByteBuf RequestMessageBinaryBuffer2 = Unpooled.wrappedBuffer(new byte[]{
             // flag
-            0x1,
+            (byte)0x81,
             // uuid
             (byte) 0xd3, (byte) 0xfd, 0x35, 0x40, 0x67, 0x18, 0x46, (byte) 0x87,(byte) 0x95, 0x6b, (byte) 0xc8, 0x61,
             (byte) 0x8a, 0x26, (byte) 0xe3, 0x35,
@@ -90,8 +95,25 @@ public class SerializationBenchmark extends AbstractBenchmarkBase {
 
     private static final UUID id = UUID.randomUUID();
 
+    private static final ResponseMessage response = ResponseMessage
+            .build(UUID.randomUUID()).code(ResponseStatusCode.SUCCESS).result(new ReferenceVertex(1, "person"))
+            .create();
+
+    private static final Bytecode bytecode = new Bytecode();
+    private static final RequestMessage request = RequestMessage
+            .build(Tokens.OPS_BYTECODE).processor("traversal").overrideRequestId(UUID.randomUUID())
+            .add(Tokens.ARGS_GREMLIN, bytecode)
+            .create();
+
     private static final GraphBinaryMessageSerializerV1 binarySerializer = new GraphBinaryMessageSerializerV1();
     private static final GraphSONMessageSerializerV3d0 graphsonSerializer = new GraphSONMessageSerializerV3d0();
+
+    static {
+        bytecode.addStep("V");
+        bytecode.addStep("values", "name");
+        bytecode.addStep("order");
+        bytecode.addStep("tail", 5);
+    }
 
     @Benchmark
     public RequestMessage testReadMessage1Binary() throws SerializationException {
@@ -116,6 +138,32 @@ public class SerializationBenchmark extends AbstractBenchmarkBase {
     public RequestMessage testReadMessage2GraphSON() throws SerializationException {
         RequestMessageGraphSONBuffer2.readerIndex(0);
         return graphsonSerializer.deserializeRequest(RequestMessageGraphSONBuffer2);
+    }
+
+    @Benchmark
+    public void testWriteResponseBinary() throws SerializationException {
+        ByteBuf buffer = binarySerializer.serializeResponseAsBinary(response, ByteBufAllocator.DEFAULT);
+        buffer.release();
+    }
+
+    @Benchmark
+    public void testWriteResponseGraphSON() throws SerializationException {
+        ByteBuf buffer = graphsonSerializer.serializeResponseAsBinary(response, ByteBufAllocator.DEFAULT);
+        buffer.release();
+    }
+
+    @Benchmark
+    public void testWriteBytecodeBinary() throws SerializationException {
+
+        ByteBuf buffer = binarySerializer.serializeRequestAsBinary(request, ByteBufAllocator.DEFAULT);
+        buffer.release();
+    }
+
+    @Benchmark
+    public void testWriteBytecodeGraphSON() throws SerializationException {
+
+        ByteBuf buffer = graphsonSerializer.serializeRequestAsBinary(request, ByteBufAllocator.DEFAULT);
+        buffer.release();
     }
 
     @Benchmark
