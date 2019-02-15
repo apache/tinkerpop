@@ -19,8 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types.sample;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.Unpooled;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
@@ -73,31 +71,30 @@ public final class SamplePersonSerializer implements CustomTypeSerializer<Sample
     }
 
     @Override
-    public ByteBuf write(final SamplePerson value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    public void write(final SamplePerson value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
         if (value == null) {
-            return allocator.compositeBuffer(2).addComponents(true,
-                    // No custom_type_info
-                    Unpooled.wrappedBuffer(typeInfoBuffer),
-                    // Value_flag null set
-                    context.getValueFlagNull()
-            );
+            buffer.writeBytes(typeInfoBuffer);
+            context.writeValueFlagNull(buffer);
+            return;
         }
 
-        final ByteBuf valueBuffer = allocator.compositeBuffer(2).addComponents(true,
-                context.writeValue(value.getName(), allocator, false),
-                context.writeValue(value.getBirthDate(), allocator, false));
+        buffer.writeBytes(typeInfoBuffer);
+        context.writeValueFlagNone(buffer);
 
-        return allocator.compositeBuffer(4).addComponents(true,
-                // No custom_type_info
-                Unpooled.wrappedBuffer(typeInfoBuffer),
-                // value_flag empty
-                context.getValueFlagNone(),
-                allocator.buffer(4).writeInt(valueBuffer.readableBytes()),
-                valueBuffer);
+        final ByteBuf valueBuffer = buffer.alloc().buffer();
+        try {
+            context.writeValue(value.getName(), valueBuffer, false);
+            context.writeValue(value.getBirthDate(), valueBuffer, false);
+
+            buffer.writeInt(valueBuffer.readableBytes());
+            buffer.writeBytes(valueBuffer);
+        } finally {
+            valueBuffer.release();
+        }
     }
 
     @Override
-    public ByteBuf writeValue(final SamplePerson value, final ByteBufAllocator allocator, final GraphBinaryWriter context, final boolean nullable) throws SerializationException {
+    public void writeValue(final SamplePerson value, final ByteBuf buffer, final GraphBinaryWriter context, final boolean nullable) throws SerializationException {
         throw new SerializationException("SamplePersonSerializer can not write a value without type information");
     }
 }

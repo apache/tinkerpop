@@ -19,8 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.CompositeByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
@@ -47,20 +45,11 @@ class CollectionSerializer extends SimpleTypeSerializer<Collection> {
     }
 
     @Override
-    protected ByteBuf writeValue(final Collection value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
-        final CompositeByteBuf result = allocator.compositeBuffer(1 + value.size());
-        result.addComponent(true, allocator.buffer(4).writeInt(value.size()));
+    protected void writeValue(final Collection value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+        buffer.writeInt(value.size());
 
-        try {
-            for (Object item : value) {
-                result.addComponent(true, context.write(item, allocator));
-            }
-        } catch (Exception ex) {
-            // We should release it as the ByteBuf is not going to be yielded for a reader
-            result.release();
-            throw ex;
+        for (Object item : value) {
+            context.write(item, buffer);
         }
-
-        return result;
     }
 }

@@ -19,8 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.CompositeByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
@@ -61,48 +59,32 @@ public class ByteCodeSerializer extends SimpleTypeSerializer<Bytecode> {
     }
 
     @Override
-    protected ByteBuf writeValue(final Bytecode value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final Bytecode value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
         final List<Bytecode.Instruction> steps = value.getStepInstructions();
         final List<Bytecode.Instruction> sources = value.getSourceInstructions();
         // 2 buffers for the length + plus 2 buffers per each step and source
-        final CompositeByteBuf result = allocator.compositeBuffer(2 + steps.size() * 2 + sources.size() * 2);
 
-        try {
-            writeInstructions(allocator, context, steps, result);
-            writeInstructions(allocator, context, sources, result);
-        } catch (Exception ex) {
-            // We should release it as the ByteBuf is not going to be yielded for a reader
-            result.release();
-            throw ex;
-        }
-
-        return result;
+        writeInstructions(buffer, context, steps);
+        writeInstructions(buffer, context, sources);
     }
 
-    private void writeInstructions(final ByteBufAllocator allocator, final GraphBinaryWriter context,
-                                   final List<Bytecode.Instruction> instructions, final CompositeByteBuf result) throws SerializationException {
+    private void writeInstructions(final ByteBuf buffer, final GraphBinaryWriter context,
+                                   final List<Bytecode.Instruction> instructions) throws SerializationException {
 
-        result.addComponent(true, context.writeValue(instructions.size(), allocator, false));
+        context.writeValue(instructions.size(), buffer, false);
 
         for (Bytecode.Instruction instruction : instructions) {
-            result.addComponent(true, context.writeValue(instruction.getOperator(), allocator, false));
-            result.addComponent(true, getArgumentsBuffer(instruction.getArguments(), allocator, context));
+            context.writeValue(instruction.getOperator(), buffer, false);
+            fillArgumentsBuffer(instruction.getArguments(), buffer, context);
         }
     }
 
-    private static ByteBuf getArgumentsBuffer(final Object[] arguments, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
-        final CompositeByteBuf result = allocator.compositeBuffer(1 + arguments.length);
-        result.addComponent(true, context.writeValue(arguments.length, allocator, false));
+    private static void fillArgumentsBuffer(final Object[] arguments, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
 
-        try {
-            for (Object value : arguments) {
-                result.addComponent(true, context.write(value, allocator));
-            }
-        } catch (Exception ex) {
-            result.release();
-            throw ex;
+        context.writeValue(arguments.length, buffer, false);
+
+        for (Object value : arguments) {
+            context.write(value, buffer);
         }
-
-        return result;
     }
 }

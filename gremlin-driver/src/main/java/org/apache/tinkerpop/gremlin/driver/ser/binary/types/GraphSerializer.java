@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.CompositeByteBuf;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
@@ -99,7 +98,7 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
                 final List<Property> edgeProperties = context.readValue(buffer, ArrayList.class, false);
                 for (Property p : edgeProperties) {
                     e.property(p.key(), p.value());
-                } 
+                }
             }
 
             return graph;
@@ -110,90 +109,64 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
     }
 
     @Override
-    protected ByteBuf writeValue(final Graph value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final Graph value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
         // this kinda looks scary memory-wise, but GraphBinary is about network derser so we are dealing with a
         // graph instance that should live in memory already - not expecting "big" stuff here.
         final List<Vertex> vertexList = IteratorUtils.list(value.vertices());
         final List<Edge> edgeList = IteratorUtils.list(value.edges());
-        final CompositeByteBuf result = allocator.compositeBuffer(2 + edgeList.size() + vertexList.size());
 
-        try {
-            result.addComponent(true, context.writeValue(vertexList.size(), allocator, false));
+        context.writeValue(vertexList.size(), buffer, false);
 
-            for (Vertex v : vertexList) {
-                result.addComponent(true, writeVertex(allocator, context, v));
-            }
-
-            result.addComponent(true, context.writeValue(edgeList.size(), allocator, false));
-
-            for (Edge e : edgeList) {
-                result.addComponent(true, writeEdge(allocator, context, e));
-            }
-
-        } catch (Exception ex) {
-            result.release();
-            throw ex;
+        for (Vertex v : vertexList) {
+            writeVertex(buffer, context, v);
         }
 
-        return result;
+        context.writeValue(edgeList.size(), buffer, false);
+
+        for (Edge e : edgeList) {
+            writeEdge(buffer, context, e);
+        }
     }
 
-    private ByteBuf writeVertex(ByteBufAllocator allocator, GraphBinaryWriter context, Vertex vertex) throws SerializationException {
+    private void writeVertex(ByteBuf buffer, GraphBinaryWriter context, Vertex vertex) throws SerializationException {
         final List<VertexProperty<Object>> vertexProperties = IteratorUtils.list(vertex.properties());
-        final CompositeByteBuf vbb = allocator.compositeBuffer(3 + vertexProperties.size() * 5);
 
-        try {
-            vbb.addComponent(true, context.write(vertex.id(), allocator));
-            vbb.addComponent(true, context.writeValue(vertex.label(), allocator, false));
+        context.write(vertex.id(), buffer);
+        context.writeValue(vertex.label(), buffer, false);
+        context.writeValue(vertexProperties.size(), buffer, false);
 
-            vbb.addComponent(true, context.writeValue(vertexProperties.size(), allocator, false));
-            for (VertexProperty<Object> vp : vertexProperties) {
-                vbb.addComponent(true, context.write(vp.id(), allocator));
-                vbb.addComponent(true, context.writeValue(vp.label(), allocator, false));
-                vbb.addComponent(true, context.write(vp.value(), allocator));
+        for (VertexProperty<Object> vp : vertexProperties) {
+            context.write(vp.id(), buffer);
+            context.writeValue(vp.label(), buffer, false);
+            context.write(vp.value(), buffer);
 
-                // maintain the VertexProperty format we have with this empty parent.........
-                vbb.addComponent(true, context.write(null, allocator));
-
-                // write those properties out using the standard Property serializer
-                vbb.addComponent(true, context.writeValue(IteratorUtils.list(vp.properties()), allocator, false));
-            }
-        } catch (Exception ex) {
-            vbb.release();
-            throw ex;
-        }
-
-        return vbb;
-    }
-
-    private ByteBuf writeEdge(ByteBufAllocator allocator, GraphBinaryWriter context, Edge edge) throws SerializationException {
-        final CompositeByteBuf ebb = allocator.compositeBuffer(8);
-
-        try {
-            ebb.addComponent(true, context.write(edge.id(), allocator));
-            ebb.addComponent(true, context.writeValue(edge.label(), allocator, false));
-
-            ebb.addComponent(true, context.write(edge.inVertex().id(), allocator));
-
-            // vertex labels aren't needed but maintaining the Edge form that we have
-            ebb.addComponent(true, context.write(null, allocator));
-
-            ebb.addComponent(true, context.write(edge.outVertex().id(), allocator));
-
-            // vertex labels aren't needed but maintaining the Edge form that we have
-            ebb.addComponent(true, context.write(null, allocator));
-
-            // maintain the Edge format we have with this empty parent..................
-            ebb.addComponent(true, context.write(null, allocator));
+            // maintain the VertexProperty format we have with this empty parent.........
+            context.write(null, buffer);
 
             // write those properties out using the standard Property serializer
-            ebb.addComponent(true, context.writeValue(IteratorUtils.list(edge.properties()), allocator, false));
-        } catch (Exception ex) {
-            ebb.release();
-            throw ex;
+            context.writeValue(IteratorUtils.list(vp.properties()), buffer, false);
         }
+    }
 
-        return ebb;
+    private void writeEdge(ByteBuf buffer, GraphBinaryWriter context, Edge edge) throws SerializationException {
+        context.write(edge.id(), buffer);
+        context.writeValue(edge.label(), buffer, false);
+
+        context.write(edge.inVertex().id(), buffer);
+
+        // vertex labels aren't needed but maintaining the Edge form that we have
+        context.write(null, buffer);
+
+        context.write(edge.outVertex().id(), buffer);
+
+        // vertex labels aren't needed but maintaining the Edge form that we have
+        context.write(null, buffer);
+
+        // maintain the Edge format we have with this empty parent..................
+        context.write(null, buffer);
+
+        // write those properties out using the standard Property serializer
+        context.writeValue(IteratorUtils.list(edge.properties()), buffer, false);
     }
 
     private static Map<String, List<VertexProperty>> indexedVertexProperties(final Vertex v) {

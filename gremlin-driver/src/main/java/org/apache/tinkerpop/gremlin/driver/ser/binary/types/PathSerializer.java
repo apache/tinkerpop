@@ -18,10 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.CompositeByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
@@ -59,17 +56,8 @@ public class PathSerializer extends SimpleTypeSerializer<Path> {
     }
 
     @Override
-    protected ByteBuf writeValue(final Path value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
-        final CompositeByteBuf result = allocator.compositeBuffer(2);
-
-        try {
-            result.addComponent(true, context.write(value.labels(), allocator));
-            result.addComponent(true, context.write(value.objects(), allocator));
-        } catch (Exception ex) {
-            result.release();
-            throw ex;
-        }
-
-        return result;
+    protected void writeValue(final Path value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+        context.write(value.labels(), buffer);
+        context.write(value.objects(), buffer);
     }
 }

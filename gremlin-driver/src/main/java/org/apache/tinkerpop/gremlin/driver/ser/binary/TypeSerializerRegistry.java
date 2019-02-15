@@ -159,7 +159,9 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(Year.class, SingleTypeSerializer.YearSerializer),
             new RegistryEntry<>(YearMonth.class, new YearMonthSerializer()),
             new RegistryEntry<>(ZonedDateTime.class, new ZonedDateTimeSerializer()),
-            new RegistryEntry<>(ZoneOffset.class, new ZoneOffsetSerializer()) };
+            new RegistryEntry<>(ZoneOffset.class, new ZoneOffsetSerializer())
+
+    };
 
     public static final TypeSerializerRegistry INSTANCE = build().create();
 

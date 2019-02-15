@@ -49,17 +49,16 @@ public class RequestMessageSerializer {
         return builder.create();
     }
 
-    public ByteBuf writeValue(final RequestMessage value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
-        return allocator.compositeBuffer(5).addComponents(true,
-                // Version
-                allocator.buffer(1).writeByte(0x81),
-                // RequestId
-                context.writeValue(value.getRequestId(), allocator, false),
-                // Op
-                context.writeValue(value.getOp(), allocator, false),
-                // Processor
-                context.writeValue(value.getProcessor(), allocator, false),
-                // Args
-                context.writeValue(value.getArgs(), allocator, false));
+    public void writeValue(final RequestMessage value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+        // Version
+        buffer.writeByte(0x81);
+        // RequestId
+        context.writeValue(value.getRequestId(), buffer, false);
+        // Op
+        context.writeValue(value.getOp(), buffer, false);
+        // Processor
+        context.writeValue(value.getProcessor(), buffer, false);
+        // Args
+        context.writeValue(value.getArgs(), buffer, false);
     }
 }

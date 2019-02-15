@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
@@ -49,7 +48,7 @@ public class DateSerializer<T extends Date> extends SimpleTypeSerializer<T> {
     }
 
     @Override
-    protected ByteBuf writeValue(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) {
-        return allocator.buffer(8).writeLong(value.getTime());
+    protected void writeValue(final T value, final ByteBuf buffer, final GraphBinaryWriter context) {
+        buffer.writeLong(value.getTime());
     }
 }

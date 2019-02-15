@@ -120,16 +120,30 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
 
     @Override
     public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
-        return responseSerializer.writeValue(responseMessage, allocator, writer, false);
+        final ByteBuf buffer = allocator.buffer();
+
+        try {
+            responseSerializer.writeValue(responseMessage, buffer, writer, false);
+        } catch (Exception ex) {
+            buffer.release();
+            throw ex;
+        }
+
+        return buffer;
     }
 
     @Override
     public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator) throws SerializationException {
-        final CompositeByteBuf result = allocator.compositeBuffer(3);
-        result.addComponent(true, allocator.buffer(1).writeByte(HEADER.length));
-        result.addComponent(true, allocator.buffer(HEADER.length).writeBytes(HEADER));
-        result.addComponent(true, requestSerializer.writeValue(requestMessage, allocator, writer));
-        return result;
+        final ByteBuf buffer = allocator.buffer().writeByte(HEADER.length).writeBytes(HEADER);
+
+        try {
+            requestSerializer.writeValue(requestMessage, buffer, writer);
+        } catch (Exception ex) {
+            buffer.release();
+            throw ex;
+        }
+
+        return buffer;
     }
 
     @Override

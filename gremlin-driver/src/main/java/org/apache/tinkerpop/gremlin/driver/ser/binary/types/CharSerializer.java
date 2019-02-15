@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
@@ -61,8 +60,8 @@ public class CharSerializer extends SimpleTypeSerializer<Character> {
     }
 
     @Override
-    protected ByteBuf writeValue(final Character value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final Character value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
         final String stringValue = Character.toString(value);
-        return Unpooled.wrappedBuffer(stringValue.getBytes(StandardCharsets.UTF_8));
+        buffer.writeBytes(stringValue.getBytes(StandardCharsets.UTF_8));
     }
 }

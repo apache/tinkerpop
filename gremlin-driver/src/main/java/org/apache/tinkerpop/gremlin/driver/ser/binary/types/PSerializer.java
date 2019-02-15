@@ -19,8 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.CompositeByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
@@ -111,7 +109,7 @@ public class PSerializer<T extends P> extends SimpleTypeSerializer<T> {
     }
 
     @Override
-    protected ByteBuf writeValue(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final T value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
         // the predicate name is either a static method of P or an instance method when a type ConnectiveP
         final boolean isConnectedP = value instanceof ConnectiveP;
         final String predicateName = isConnectedP ?
@@ -121,15 +119,12 @@ public class PSerializer<T extends P> extends SimpleTypeSerializer<T> {
 
         final List<Object> argsAsList = args instanceof Collection ? new ArrayList<>((Collection) args) : Collections.singletonList(args);
         final int length = argsAsList.size();
-        final CompositeByteBuf result = allocator.compositeBuffer(2 + length);
 
-        result.addComponent(true, context.writeValue(predicateName, allocator, false));
-        result.addComponent(true, context.writeValue(length, allocator, false));
+        context.writeValue(predicateName, buffer, false);
+        context.writeValue(length, buffer, false);
 
         for (Object o : argsAsList) {
-            result.addComponent(true, context.write(o, allocator));
+            context.write(o, buffer);
         }
-
-        return result;
     }
 }

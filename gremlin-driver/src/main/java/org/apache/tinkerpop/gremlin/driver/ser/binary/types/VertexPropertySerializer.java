@@ -19,8 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.CompositeByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
@@ -53,25 +51,15 @@ public class VertexPropertySerializer extends SimpleTypeSerializer<VertexPropert
     }
 
     @Override
-    protected ByteBuf writeValue(final VertexProperty value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
-        final CompositeByteBuf result = allocator.compositeBuffer(5);
+    protected void writeValue(final VertexProperty value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+        context.write(value.id(), buffer);
+        context.writeValue(value.label(), buffer, false);
+        context.write(value.value(), buffer);
 
-        try {
-            result.addComponent(true, context.write(value.id(), allocator));
-            result.addComponent(true, context.writeValue(value.label(), allocator, false));
-            result.addComponent(true, context.write(value.value(), allocator));
-
-            // we don't serialize the parent vertex even as a "reference", but, let's hold a place for it
-            result.addComponent(true, context.write(null, allocator));
-            // we don't serialize properties for graph elements. they are "references", but we leave a place holder
-            // here as an option for the future as we've waffled this soooooooooo many times now
-            result.addComponent(true, context.write(null, allocator));
-        } catch (Exception ex) {
-            // We should release it as the ByteBuf is not going to be yielded for a reader
-            result.release();
-            throw ex;
-        }
-
-        return result;
+        // we don't serialize the parent vertex even as a "reference", but, let's hold a place for it
+        context.write(null, buffer);
+        // we don't serialize properties for graph elements. they are "references", but we leave a place holder
+        // here as an option for the future as we've waffled this soooooooooo many times now
+        context.write(null, buffer);
     }
 }

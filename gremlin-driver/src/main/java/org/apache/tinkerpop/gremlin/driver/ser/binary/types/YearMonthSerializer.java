@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
@@ -41,7 +40,7 @@ public class YearMonthSerializer extends SimpleTypeSerializer<YearMonth> {
     }
 
     @Override
-    protected ByteBuf writeValue(final YearMonth value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
-        return allocator.buffer(2).writeInt(value.getYear()).writeByte(value.getMonthValue());
+    protected void writeValue(final YearMonth value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+        buffer.writeInt(value.getYear()).writeByte(value.getMonthValue());
     }
 }

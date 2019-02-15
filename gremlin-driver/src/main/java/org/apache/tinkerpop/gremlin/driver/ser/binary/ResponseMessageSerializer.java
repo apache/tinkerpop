@@ -49,24 +49,23 @@ public class ResponseMessageSerializer {
                 .create();
     }
 
-    public ByteBuf writeValue(final ResponseMessage value, final ByteBufAllocator allocator, final GraphBinaryWriter context, final boolean nullable) throws SerializationException {
+    public void writeValue(final ResponseMessage value, final ByteBuf buffer, final GraphBinaryWriter context, final boolean nullable) throws SerializationException {
         final ResponseResult result = value.getResult();
         final ResponseStatus status = value.getStatus();
 
-        return allocator.compositeBuffer(8).addComponents(true,
-                // Version
-                allocator.buffer(1).writeByte(0x81),
-                // Nullable request id
-                context.writeValue(value.getRequestId(), allocator, true),
-                // Status code
-                context.writeValue(status.getCode().getValue(), allocator, false),
-                // Nullable status message
-                context.writeValue(status.getMessage(), allocator, true),
-                // Status attributes
-                context.writeValue(status.getAttributes(), allocator, false),
-                // Result meta
-                context.writeValue(result.getMeta(), allocator, false),
-                // Fully-qualified value
-                context.write(result.getData(), allocator));
+        // Version
+        buffer.writeByte(0x81);
+        // Nullable request id
+        context.writeValue(value.getRequestId(), buffer, true);
+        // Status code
+        context.writeValue(status.getCode().getValue(), buffer, false);
+        // Nullable status message
+        context.writeValue(status.getMessage(), buffer, true);
+        // Status attributes
+        context.writeValue(status.getAttributes(), buffer, false);
+        // Result meta
+        context.writeValue(result.getMeta(), buffer, false);
+        // Fully-qualified value
+        context.write(result.getData(), buffer);
     }
 }
