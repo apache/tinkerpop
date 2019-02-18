@@ -24,11 +24,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ConsoleMutationListener;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Ignore;
@@ -137,19 +140,25 @@ public class TinkerGraphPlayTest {
     @Ignore
     public void testPlayDK() throws Exception {
 
-        GraphTraversalSource g = TinkerFactory.createModern().traversal();
-        System.out.println(g./*withComputer().*/V().hasLabel("person")
-                .project("name", "age", "comments")
-                    .by("name")
-                    .by("age")
-                    .by(branch(values("age"))
-                            .option(TraversalOptionParent.Pick.any, constant("foo"))
-                            .option(29, constant("almost old"))
-                            .option(__.is(32), constant("looks like josh"))
-                            .option(lt(29), constant("pretty young"))
-                            .option(lt(35), constant("younger than peter"))
-                            .option(gte(30), constant("pretty old")).fold()).explain());
-                //.forEachRemaining(System.out::println);
+        final Graph graph = TinkerGraph.open();
+        final EventStrategy strategy = EventStrategy.build().addListener(new ConsoleMutationListener(graph)).create();
+        final GraphTraversalSource g = graph.traversal().withStrategies(strategy);
+
+        g.addV().property(T.id, 1).iterate();
+        g.V(1).property("name", "name1").iterate();
+        g.V(1).property("name", "name2").iterate();
+        g.V(1).property("name", "name2").iterate();
+
+        g.addV().property(T.id, 2).iterate();
+        g.V(2).property(VertexProperty.Cardinality.list, "name", "name1").iterate();
+        g.V(2).property(VertexProperty.Cardinality.list, "name", "name2").iterate();
+        g.V(2).property(VertexProperty.Cardinality.list, "name", "name2").iterate();
+
+
+        g.addV().property(T.id, 3).iterate();
+        g.V(3).property(VertexProperty.Cardinality.set, "name", "name1", "ping", "pong").iterate();
+        g.V(3).property(VertexProperty.Cardinality.set, "name", "name2", "ping", "pong").iterate();
+        g.V(3).property(VertexProperty.Cardinality.set, "name", "name2", "pong", "ping").iterate();
     }
 
     @Test

@@ -3484,6 +3484,12 @@ l = new ConsoleMutationListener(graph)
 strategy = EventStrategy.build().addListener(l).create()
 g = graph.traversal().withStrategies(strategy)
 g.addV().property('name','stephen')
+g.V().has('name','stephen').
+  property(list, 'location', 'centreville', 'startTime', 1990, 'endTime', 2000).
+  property(list, 'location', 'dulles', 'startTime', 2000, 'endTime', 2006).
+  property(list, 'location', 'purcellville', 'startTime', 2006)
+g.V().has('name','stephen').
+  property(set, 'location', 'purcellville', 'startTime', 2006, 'endTime', 2019)
 g.E().drop()
 ----
 

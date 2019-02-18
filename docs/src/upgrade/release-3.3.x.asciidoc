@@ -113,6 +113,19 @@ gremlin> g.V().hasLabel('person').aggregate('p').out('created').union(fold(),cap
 
 link:https://issues.apache.org/jira/browse/TINKERPOP-2265[TINKERPOP-2265]
 
+==== EventStrategy
+
+Prior TinkerPop 3.3.6 `EventStrategy` did not work with multi-properties. The `EventStrategy` behavior for single-valued properties has not changed; if a property is added to a multi-valued
+`VertexProperty`, then a `VertexPropertyChangedEvent` will be now be fired. The arguments passed to the event depend on the cardinality type.
+
+[width="100%",cols="2"]
+|=========================================================
+|`Cardinality.list` | Since properties will always be added and never be overwritten, the old property passed to the change event will always be an empty property.
+|`Cardinality.set`  | The old property passed to the change event will be empty if no other property with the same value exists, otherwise, it will be the existing property.
+|=========================================================
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2159[TINKERPOP-2159]
+
 == TinkerPop 3.3.7
 
 *Release Date: May 28, 2019*
