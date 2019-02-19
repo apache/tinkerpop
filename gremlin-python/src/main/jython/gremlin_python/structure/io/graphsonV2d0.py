@@ -21,13 +21,17 @@ import json
 import time
 import uuid
 import math
+import base64
 from collections import OrderedDict
+from decimal import *
+from datetime import timedelta
 
 import six
 from aenum import Enum
+from isodate import parse_duration, duration_isoformat
 
 from gremlin_python import statics
-from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType
+from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, SingleByte, ByteBufferType, SingleChar
 from gremlin_python.process.traversal import Binding, Bytecode, P, Traversal, Traverser, TraversalStrategy
 from gremlin_python.structure.graph import Edge, Property, Vertex, VertexProperty, Path
 
@@ -422,6 +426,37 @@ class FloatIO(_NumberIO):
         return cls.python_type(v)
 
 
+class BigDecimalIO(_NumberIO):
+    python_type = Decimal
+    graphson_type = "gx:BigDecimal"
+    graphson_base_type = "BigDecimal"
+
+    @classmethod
+    def dictify(cls, n, writer):
+        if isinstance(n, bool):  # because isinstance(False, int) and isinstance(True, int)
+            return n
+        elif math.isnan(n):
+            return GraphSONUtil.typedValue(cls.graphson_base_type, "NaN", "gx")
+        elif math.isinf(n) and n > 0:
+            return GraphSONUtil.typedValue(cls.graphson_base_type, "Infinity", "gx")
+        elif math.isinf(n) and n < 0:
+            return GraphSONUtil.typedValue(cls.graphson_base_type, "-Infinity", "gx")
+        else:
+            return GraphSONUtil.typedValue(cls.graphson_base_type, str(n), "gx")
+
+    @classmethod
+    def objectify(cls, v, _):
+        if isinstance(v, str):
+            if v == 'NaN':
+                return Decimal('nan')
+            elif v == "Infinity":
+                return Decimal('inf')
+            elif v == "-Infinity":
+                return Decimal('-inf')
+
+        return Decimal(v)
+
+
 class DoubleIO(FloatIO):
     graphson_type = "g:Double"
     graphson_base_type = "Double"
@@ -432,17 +467,83 @@ class Int64IO(_NumberIO):
     graphson_type = "g:Int64"
     graphson_base_type = "Int64"
 
+    @classmethod
+    def dictify(cls, n, writer):
+        # if we exceed Java long range then we need a BigInteger 
+        if isinstance(n, bool):
+            return n
+        elif n < -9223372036854775808 or n > 9223372036854775807:
+            return GraphSONUtil.typedValue("BigInteger", str(n), "gx")
+        else:
+            return GraphSONUtil.typedValue(cls.graphson_base_type, n)
 
-class Int32IO(_NumberIO):
+
+class BigIntegerIO(Int64IO):
+    graphson_type = "gx:BigInteger"
+
+
+class Int32IO(Int64IO):
     python_type = IntType
     graphson_type = "g:Int32"
     graphson_base_type = "Int32"
 
+
+class ByteIO(_NumberIO):
+    python_type = SingleByte
+    graphson_type = "gx:Byte"
+    graphson_base_type = "Byte"
+
     @classmethod
     def dictify(cls, n, writer):
-        if isinstance(n, bool):
+        if isinstance(n, bool):  # because isinstance(False, int) and isinstance(True, int)
             return n
-        return GraphSONUtil.typedValue(cls.graphson_base_type, n)
+        return GraphSONUtil.typedValue(cls.graphson_base_type, n, "gx")
+
+    @classmethod
+    def objectify(cls, v, _):
+        return int.__new__(SingleByte, v)
+
+
+class ByteBufferIO(_GraphSONTypeIO):
+    python_type = ByteBufferType
+    graphson_type = "gx:ByteBuffer"
+    graphson_base_type = "ByteBuffer"
+
+    @classmethod
+    def dictify(cls, n, writer):
+        return GraphSONUtil.typedValue(cls.graphson_base_type, "".join(chr(x) for x in n), "gx")
+
+    @classmethod
+    def objectify(cls, v, _):
+        return cls.python_type(v, "utf8")
+
+
+class CharIO(_GraphSONTypeIO):
+    python_type = SingleChar
+    graphson_type = "gx:Char"
+    graphson_base_type = "Char"
+
+    @classmethod
+    def dictify(cls, n, writer):
+        return GraphSONUtil.typedValue(cls.graphson_base_type, n, "gx")
+
+    @classmethod
+    def objectify(cls, v, _):
+        return str.__new__(SingleChar, v)
+
+
+class DurationIO(_GraphSONTypeIO):
+    python_type = timedelta
+    graphson_type = "gx:Duration"
+    graphson_base_type = "Duration"
+
+    @classmethod
+    def dictify(cls, n, writer):
+        return GraphSONUtil.typedValue(cls.graphson_base_type, duration_isoformat(n), "gx")
+
+    @classmethod
+    def objectify(cls, v, _):
+        return parse_duration(v)
 
 
 class VertexDeserializer(_GraphSONTypeIO):
