@@ -82,7 +82,7 @@ g.withComputer().V().pageRank()                                                 
 with a `VertexProgram` for OLAP based traversals - for example, see
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[Spark]
 
-IMPORTANT: How you instantiate the `GraphTraversalSource` is highly depending on the graph database implementation that
+IMPORTANT: How you instantiate the `GraphTraversalSource` is highly dependent on the graph database implementation
 you are using. Typically, they are instantiated from a `Graph` instance with the `traversal()` method, but some graph
 databases, ones that are managed or "server-oriented", will simply give you a `g` to work with. Consult the
 documentation of your graph database to determine how the `GraphTraversalSource` is constructed.
@@ -162,7 +162,7 @@ Terminal steps are different from the `GraphTraversal` steps in that terminal st
 instance, but instead return the result of the `GraphTraversal`. In the case of the example, `next()` is the terminal
 step and it returns the `Map` constructed in the `groupCount()`-step. Other examples of terminal steps include:
 `hasNext()`, `toList()`, and `iterate()`. Without terminal steps, you don't have a result. You only have a
-`GraphTraversal`
+`GraphTraversal`.
 
 NOTE: You can read more about traversal iteration in the
 link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/#result-iteration[Gremlin Console Tutorial].
@@ -177,7 +177,7 @@ can make Gremlin easier to read, write and maintain. Common examples of expressi
 values, and classes with static methods that might spawn certain required values.
 
 A concrete example would be the class from which `within()` is called - `P`. The `P` class spawns `Predicate` values
-that can be used as arguments for certain traversals teps. Another example would be the `T` enum which provides a type
+that can be used as arguments for certain traversal steps. Another example would be the `T` enum which provides a type
 safe way to reference `id` and `label` keys in a traversal. Like anonymous traversals, these classes are usually
 statically imported so that instead of having to write `P.within()`, you can simply write `within()`, as shown in the
 example.
@@ -185,5 +185,5 @@ example.
 == Conclusion
 
 There's much more to a traversal than just a bunch of steps. Gremlin's Anatomy puts names to each of these component
-parts of a traversal and explains how they connect together. Understanding these components part should help provide
+parts of a traversal and explains how they connect together. Understanding these component parts should help provide
 more insight into how Gremlin works and help you grow in your Gremlin abilities.
