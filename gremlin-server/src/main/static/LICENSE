@@ -223,9 +223,9 @@ MIT Licenses
 
 The Apache TinkerPop project bundles the following components under the MIT License:
 
-     JCL 1.1.1 implemented over SLF4J (org.slf4j:jcl-over-slf4j:1.7.21 - http://www.slf4j.org) - for details, see licenses/slf4j
-     SLF4J API Module (org.slf4j:slf4j-api:1.7.21 - http://www.slf4j.org) - for details, see licenses/slf4j
-     SLF4J LOG4J-12 Binding (org.slf4j:slf4j-log4j12:1.7.21 - http://www.slf4j.org) - for details, see licenses/slf4j
+     JCL 1.1.1 implemented over SLF4J (org.slf4j:jcl-over-slf4j:1.7.25 - http://www.slf4j.org) - for details, see licenses/slf4j
+     SLF4J API Module (org.slf4j:slf4j-api:1.7.25 - http://www.slf4j.org) - for details, see licenses/slf4j
+     SLF4J LOG4J-12 Binding (org.slf4j:slf4j-log4j12:1.7.25 - http://www.slf4j.org) - for details, see licenses/slf4j
      Foundation stylesheet for CodeRay (http://foundation.zurb.com) - for details, see licenses/foundation
      normalize.css 2.1.2 (http://necolas.github.io/normalize.css/) - for details, see licenses/normalize
 
