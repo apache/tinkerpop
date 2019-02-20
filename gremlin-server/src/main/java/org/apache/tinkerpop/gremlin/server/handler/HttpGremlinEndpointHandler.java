@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.server.handler;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
 import io.netty.handler.codec.TooLongFrameException;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -35,7 +35,6 @@ import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
-import org.apache.tinkerpop.gremlin.util.function.ThrowingBiConsumer;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -476,7 +475,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 			node.put("Exception-Class", t.get().getClass().getName());
             final ArrayNode exceptionList = node.putArray(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS);
             ExceptionUtils.getThrowableList(t.get()).forEach(throwable -> exceptionList.add(throwable.getClass().getName()));
-            node.put(Tokens.STATUS_ATTRIBUTE_STACK_TRACE, ExceptionUtils.getFullStackTrace(t.get()));
+            node.put(Tokens.STATUS_ATTRIBUTE_STACK_TRACE, ExceptionUtils.getStackTrace(t.get()));
 		}
 		
         final FullHttpResponse response = new DefaultFullHttpResponse(

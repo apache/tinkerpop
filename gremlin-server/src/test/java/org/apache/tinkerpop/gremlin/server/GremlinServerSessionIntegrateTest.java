@@ -18,8 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import groovy.lang.MissingMethodException;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.driver.Client;

@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.op;
 
 import io.netty.channel.ChannelHandlerContext;
-import org.apache.commons.lang.time.StopWatch;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
