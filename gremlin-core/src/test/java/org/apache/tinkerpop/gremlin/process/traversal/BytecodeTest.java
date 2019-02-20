@@ -144,4 +144,28 @@ public class BytecodeTest {
         assertEquals(VertexProgramStrategy.build().workers(10).create().getConfiguration().getInt(VertexProgramStrategy.WORKERS),
                 ((VertexProgramStrategy) bytecode.getSourceInstructions().iterator().next().getArguments()[0]).getConfiguration().getInt(VertexProgramStrategy.WORKERS));
     }
+
+    @Test
+    public void bindingShouldNotHaveHashCollisions() {
+        // ideally we should be using guava's EqualsTester to test equals/hashCode but the equals/hashCode contract allows hash collisions.
+        // Yet we should avoid hash collisions in case these objects are being used in data structures that rely on hashCode
+        Bytecode.Binding<String> first = new Bytecode.Binding<>("3", "7");
+        Bytecode.Binding<String> second = new Bytecode.Binding<>("7", "3");
+        assertNotEquals(first, second);
+        assertNotEquals(first.hashCode(), second.hashCode());
+    }
+
+    @Test
+    public void bytecodeShouldNotHaveHashCollisions() {
+        // ideally we should be using guava's EqualsTester to test equals/hashCode but the equals/hashCode contract allows hash collisions.
+        // Yet we should avoid hash collisions in case these objects are being used in data structures that rely on hashCode
+        Bytecode first = new Bytecode();
+        first.addSource("3", "7");
+        first.addStep("7", "3");
+        Bytecode second = new Bytecode();
+        second.addSource("7", "3");
+        second.addStep("3", "7");
+        assertNotEquals(first, second);
+        assertNotEquals(first.hashCode(), second.hashCode());
+    }
 }

@@ -32,6 +32,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -154,15 +155,17 @@ public final class Bytecode implements Cloneable, Serializable {
     }
 
     @Override
-    public boolean equals(final Object object) {
-        return object instanceof Bytecode &&
-                this.sourceInstructions.equals(((Bytecode) object).sourceInstructions) &&
-                this.stepInstructions.equals(((Bytecode) object).stepInstructions);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Bytecode bytecode = (Bytecode) o;
+        return Objects.equals(sourceInstructions, bytecode.sourceInstructions) &&
+                Objects.equals(stepInstructions, bytecode.stepInstructions);
     }
 
     @Override
     public int hashCode() {
-        return this.sourceInstructions.hashCode() + this.stepInstructions.hashCode();
+        return Objects.hash(sourceInstructions, stepInstructions);
     }
 
     @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
@@ -202,15 +205,19 @@ public final class Bytecode implements Cloneable, Serializable {
         }
 
         @Override
-        public boolean equals(final Object object) {
-            return object instanceof Instruction &&
-                    this.operator.equals(((Instruction) object).operator) &&
-                    Arrays.equals(this.arguments, ((Instruction) object).arguments);
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Instruction that = (Instruction) o;
+            return Objects.equals(operator, that.operator) &&
+                    Arrays.equals(arguments, that.arguments);
         }
 
         @Override
         public int hashCode() {
-            return this.operator.hashCode() + Arrays.hashCode(this.arguments);
+            int result = Objects.hash(operator);
+            result = 31 * result + Arrays.hashCode(arguments);
+            return result;
         }
     }
 
@@ -238,15 +245,17 @@ public final class Bytecode implements Cloneable, Serializable {
         }
 
         @Override
-        public boolean equals(final Object object) {
-            return object instanceof Binding &&
-                    this.key.equals(((Binding) object).key) &&
-                    this.value.equals(((Binding) object).value);
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Binding<?> binding = (Binding<?>) o;
+            return Objects.equals(key, binding.key) &&
+                    Objects.equals(value, binding.value);
         }
 
         @Override
         public int hashCode() {
-            return this.key.hashCode() + this.value.hashCode();
+            return Objects.hash(key, value);
         }
     }
 
