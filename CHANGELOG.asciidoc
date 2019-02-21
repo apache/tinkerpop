@@ -296,6 +296,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `globalFunctionCacheEnabled` override to `SessionOpProcessor` configuration.
 * Added status code to `GremlinServerError` so that it would be more directly accessible during failures.
 * Added GraphSON serialization support for `Duration`, `Char`, `ByteBuffer`, `Byte`, `BigInteger` and `BigDecimal` in `gremlin-python`.
+* Bumped `httpclient` to 4.5.7.
+* Bumped `slf4j` to 1.7.25.
+* Bumped `commons-codec` to 1.12.
 * Fixed concurrency issues in `TraverserSet.toString()` and `ObjectWritable.toString()`.
 * Fixed a bug in `InlineFilterStrategy` that mixed up and's and or's when folding merging conditions together.
 * Improved handling of failing `Authenticator` instances thus improving server responses to drivers.
