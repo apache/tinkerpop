@@ -29,10 +29,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTravers
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.FunctionTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ProfilingAware;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LocalBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -50,12 +52,13 @@ import java.util.function.BinaryOperator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> implements ByModulating, TraversalParent {
+public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> implements ByModulating, TraversalParent, ProfilingAware {
 
     private char state = 'k';
     private Traversal.Admin<S, K> keyTraversal;
     private Traversal.Admin<S, V> valueTraversal;
     private Barrier barrierStep;
+    private boolean resetBarrierForProfiling = false;
 
     public GroupStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -68,18 +71,33 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     /**
      * Determines the first (non-local) barrier step in the provided traversal. This method is used by {@link GroupStep}
      * and {@link org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStep} to ultimately
-     * determine the reducing reducing bi-operator.
+     * determine the reducing bi-operator.
      *
      * @param traversal The traversal to inspect.
      * @return The first non-local barrier step or {@code null} if no such step was found.
      */
     public static <S, V> Barrier determineBarrierStep(final Traversal.Admin<S, V> traversal) {
-        for (final Step step : traversal.getSteps()) {
+        final List<Step> steps = traversal.getSteps();
+        for (int ix = 0; ix < steps.size(); ix++) {
+            final Step step = steps.get(ix);
             if (step instanceof Barrier && !(step instanceof LocalBarrier)) {
-                return (Barrier) step;
+                final Barrier b = (Barrier) step;
+                if (ix < steps.size() - 1 && steps.get(ix + 1) instanceof ProfileStep)
+                    return new ProfilingAware.ProfiledBarrier(b, (ProfileStep) steps.get(ix + 1));
+                else
+                    return b;
             }
         }
         return null;
+    }
+
+    /**
+     * Reset the {@link Barrier} on the step to be wrapped in a {@link ProfiledBarrier} which can properly start/stop
+     * the timer on the associated {@link ProfileStep}.
+     */
+    @Override
+    public void prepareForProfiling() {
+        resetBarrierForProfiling = barrierStep != null;
     }
 
     @Override
@@ -102,6 +120,11 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         final Map<K, V> map = new HashMap<>(1);
         this.valueTraversal.reset();
         this.valueTraversal.addStart(traverser);
+
+        // reset the barrierStep as there are now ProfileStep instances present and the timers won't start right
+        // without specific configuration through wrapping both the Barrier and ProfileStep in ProfiledBarrier
+        if (resetBarrierForProfiling) barrierStep = determineBarrierStep(valueTraversal);
+
         if (null == this.barrierStep) {
             if (this.valueTraversal.hasNext())
                 map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), (V) this.valueTraversal.next());

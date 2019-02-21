@@ -24,9 +24,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ProfilingAware;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -42,12 +44,13 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implements SideEffectCapable<Map<K, ?>, Map<K, V>>, TraversalParent, ByModulating {
+public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implements SideEffectCapable<Map<K, ?>, Map<K, V>>, TraversalParent, ByModulating, ProfilingAware {
 
     private char state = 'k';
     private Traversal.Admin<S, K> keyTraversal;
     private Traversal.Admin<S, V> valueTraversal;
     private Barrier barrierStep;
+    private boolean resetBarrierForProfiling = false;
     ///
     private String sideEffectKey;
 
@@ -60,6 +63,15 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
                 new GroupStep.GroupBiOperator<>(null == this.barrierStep ?
                         Operator.assign :
                         this.barrierStep.getMemoryComputeKey().getReducer()));
+    }
+
+    /**
+     * Reset the {@link Barrier} on the step to be wrapped in a {@link ProfilingAware.ProfiledBarrier} which can
+     * properly start/stop the timer on the associated {@link ProfileStep}.
+     */
+    @Override
+    public void prepareForProfiling() {
+        resetBarrierForProfiling = barrierStep != null;
     }
 
     @Override
@@ -85,6 +97,11 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
         final Map<K, V> map = new HashMap<>(1);
         this.valueTraversal.reset();
         this.valueTraversal.addStart(traverser);
+
+        // reset the barrierStep as there are now ProfileStep instances present and the timers won't start right
+        // without specific configuration through wrapping both the Barrier and ProfileStep in ProfiledBarrier
+        if (resetBarrierForProfiling) barrierStep = GroupStep.determineBarrierStep(valueTraversal);
+
         if (null == this.barrierStep) {
             if (this.valueTraversal.hasNext())
                 map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), (V) this.valueTraversal.next());

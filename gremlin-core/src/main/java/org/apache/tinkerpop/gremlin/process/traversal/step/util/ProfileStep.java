@@ -46,6 +46,15 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MemoryCo
         return metrics;
     }
 
+    public void start() {
+        this.initializeIfNeeded();
+        this.metrics.start();
+    }
+
+    public void stop() {
+        this.metrics.stop();
+    }
+
     @Override
     public Traverser.Admin<S> next() {
         Traverser.Admin<S> start = null;
