@@ -36,6 +36,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Improved handling of failing `Authenticator` instances thus improving server responses to drivers.
 * Improved performance of `JavaTranslator` by reducing calls to `Method.getParameters()`.
 * Implemented `EarlyLimitStrategy` which is supposed to significantly reduce backend operations for queries that use `range()`.
+* Reduced chance of hash collisions in `Bytecode` and its inner classes
 
 [[release-3-3-5]]
 === TinkerPop 3.3.5 (Release Date: January 2, 2019)
