@@ -82,6 +82,9 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
             final Step step = steps.get(ix);
             if (step instanceof Barrier && !(step instanceof LocalBarrier)) {
                 final Barrier b = (Barrier) step;
+
+                // when profile() is enabled the step needs to be wrapped up with the barrier so that the timer on
+                // the ProfileStep is properly triggered
                 if (ix < steps.size() - 1 && steps.get(ix + 1) instanceof ProfileStep)
                     return new ProfilingAware.ProfiledBarrier(b, (ProfileStep) steps.get(ix + 1));
                 else
