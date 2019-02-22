@@ -126,7 +126,12 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
         // reset the barrierStep as there are now ProfileStep instances present and the timers won't start right
         // without specific configuration through wrapping both the Barrier and ProfileStep in ProfiledBarrier
-        if (resetBarrierForProfiling) barrierStep = determineBarrierStep(valueTraversal);
+        if (resetBarrierForProfiling) {
+            barrierStep = determineBarrierStep(valueTraversal);
+
+            // the barrier only needs to be reset once
+            resetBarrierForProfiling = false;
+        }
 
         if (null == this.barrierStep) {
             if (this.valueTraversal.hasNext())
