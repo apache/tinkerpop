@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 
@@ -51,7 +50,7 @@ public class RequestMessageSerializer {
 
     public void writeValue(final RequestMessage value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
         // Version
-        buffer.writeByte(0x81);
+        buffer.writeByte(GraphBinaryWriter.VERSION_BYTE);
         // RequestId
         context.writeValue(value.getRequestId(), buffer, false);
         // Op

@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseResult;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatus;
@@ -31,7 +30,7 @@ import java.util.UUID;
 
 public class ResponseMessageSerializer {
 
-    public ResponseMessage readValue(final ByteBuf buffer, final GraphBinaryReader context, final boolean nullable) throws SerializationException {
+    public ResponseMessage readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
         final int version = buffer.readByte() & 0xff;
 
         if (version >>> 7 != 1) {
@@ -49,12 +48,12 @@ public class ResponseMessageSerializer {
                 .create();
     }
 
-    public void writeValue(final ResponseMessage value, final ByteBuf buffer, final GraphBinaryWriter context, final boolean nullable) throws SerializationException {
+    public void writeValue(final ResponseMessage value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
         final ResponseResult result = value.getResult();
         final ResponseStatus status = value.getStatus();
 
         // Version
-        buffer.writeByte(0x81);
+        buffer.writeByte(GraphBinaryWriter.VERSION_BYTE);
         // Nullable request id
         context.writeValue(value.getRequestId(), buffer, true);
         // Status code

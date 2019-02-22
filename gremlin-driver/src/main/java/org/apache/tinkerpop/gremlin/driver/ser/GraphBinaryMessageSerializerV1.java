@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.driver.ser;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.CompositeByteBuf;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryIo;
@@ -123,7 +122,7 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
         final ByteBuf buffer = allocator.buffer();
 
         try {
-            responseSerializer.writeValue(responseMessage, buffer, writer, false);
+            responseSerializer.writeValue(responseMessage, buffer, writer);
         } catch (Exception ex) {
             buffer.release();
             throw ex;
@@ -153,7 +152,7 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
 
     @Override
     public ResponseMessage deserializeResponse(final ByteBuf msg) throws SerializationException {
-        return responseSerializer.readValue(msg, reader, false);
+        return responseSerializer.readValue(msg, reader);
     }
 
     @Override

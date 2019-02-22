@@ -28,6 +28,7 @@ public class GraphBinaryWriter {
     private final TypeSerializerRegistry registry;
     private final static byte VALUE_FLAG_NULL = 1;
     private final static byte VALUE_FLAG_NONE = 0;
+    public final static byte VERSION_BYTE = (byte)0x81;
     private final static byte[] unspecifiedNullBytes = new byte[] { DataType.UNSPECIFIED_NULL.getCodeByte(), 0x01};
     private final static byte[] customTypeCodeBytes = new byte[] { DataType.CUSTOM.getCodeByte() };
 
