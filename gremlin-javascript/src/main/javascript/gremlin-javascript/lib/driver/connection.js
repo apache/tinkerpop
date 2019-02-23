@@ -232,7 +232,6 @@ class Connection extends EventEmitter {
     if(msg.data instanceof ArrayBuffer ) {
       //if in browser javascript, the data are sent as Uint8
       var data = String.fromCharCode.apply(null, new Uint8Array(msg.data));
-      console.log("Received: " + data);
     }else{
       data = msg;
     }
