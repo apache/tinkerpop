@@ -16,7 +16,8 @@
   "dependencies": {
     "ws": "^6.0.0",
     "util": "^0.11.1",
-    "events": "^3.0.0"
+    "events": "^3.0.0",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "mocha": "~5.2.0",
