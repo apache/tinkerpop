@@ -37,6 +37,13 @@ class Traversal {
     this._traversersIteratorIndex = 0;
   }
 
+  /**
+   * Async iterable method implementation.
+   */
+  [Symbol.asyncIterator]() {
+    return this
+  }
+
   /** @returns {Bytecode} */
   getBytecode() {
     return this.bytecode;
