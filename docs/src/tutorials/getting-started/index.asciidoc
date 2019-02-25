@@ -142,7 +142,7 @@ g.V(1).out('knows').has('age', gt(30)).values('name')    <7>
 <4> Get the edges with the label "knows" for the vertex with the unique identifier of "1".
 <5> Get the names of the people that the vertex with the unique identifier of "1" "knows".
 <6> Note that when one uses `outE().inV()` as shown in the previous command, this can be shortened to just `out()`
-(similar to `inE().inV()` and `in` for incoming edges).
+(similar to `inE().outV()` and `in()` for incoming edges).
 <7> Get the names of the people vertex "1" knows who are over the age of 30.
 
 IMPORTANT: A `Traversal` is essentially an `Iterator` so if you have code like `x = g.V()`, the `x` does not contain
