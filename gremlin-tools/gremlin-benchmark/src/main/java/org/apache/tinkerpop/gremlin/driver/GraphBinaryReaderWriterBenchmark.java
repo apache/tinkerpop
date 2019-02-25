@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -53,6 +54,7 @@ public class GraphBinaryReaderWriterBenchmark extends AbstractBenchmarkBase {
     public static class BenchmarkState {
         public ByteBuf bytecodeBuffer1 = allocator.buffer(2048);
         public ByteBuf bytecodeBuffer2 = allocator.buffer(2048);
+        public ByteBuf pBuffer1 = allocator.buffer(2048);
         public final Bytecode bytecode1 = new Bytecode();
 
         public ByteBuf bufferWrite = allocator.buffer(2048);
@@ -79,12 +81,14 @@ public class GraphBinaryReaderWriterBenchmark extends AbstractBenchmarkBase {
 
             writer.writeValue(bytecode1, bytecodeBuffer1, false);
             writer.writeValue(bytecode2, bytecodeBuffer2, false);
+            writer.writeValue(P.between(1, 2), pBuffer1, false);
         }
 
         @Setup(Level.Invocation)
         public void setupInvocation() {
             bytecodeBuffer1.readerIndex(0);
             bytecodeBuffer2.readerIndex(0);
+            pBuffer1.readerIndex(0);
             bufferWrite.readerIndex(0);
             bufferWrite.writerIndex(0);
         }
@@ -115,5 +119,10 @@ public class GraphBinaryReaderWriterBenchmark extends AbstractBenchmarkBase {
     @Benchmark
     public void readBytecode2(BenchmarkState state) throws SerializationException {
         reader.readValue(state.bytecodeBuffer2, Bytecode.class, false);
+    }
+
+    @Benchmark
+    public void readP1(BenchmarkState state) throws SerializationException {
+        reader.readValue(state.pBuffer1, P.class, false);
     }
 }
