@@ -34,6 +34,9 @@ npm install gremlin
 
 Please see the [reference documentation][docs] at Apache TinkerPop for more information.
 
+NOTE that versions suffixed with "-rc" are considered release candidates (i.e. pre-alpha, alpha, beta, etc.) and 
+thus for early testing purposes only.
+
 [tk]: http://tinkerpop.apache.org
 [gremlin]: http://tinkerpop.apache.org/gremlin.html
 [docs]: http://tinkerpop.apache.org/docs/current/reference/#gremlin-javascript
