@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.engine;
 
-import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.jsr223.CachedGremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin;

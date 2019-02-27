@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.junit.Test;
 
