@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
@@ -93,13 +94,16 @@ public class TypeSerializerFailureTests {
 
     @Test
     public void shouldReleaseMemoryWhenFails() {
+        final ByteBuf buffer = allocator.buffer();
         try {
-            writer.write(value, allocator);
+            writer.write(value, buffer);
             fail("Should throw exception");
         } catch (SerializationException | RuntimeException e) {
-            // Do nothing
+            // We are the owner of the buffer, we should release it
+            buffer.release();
         }
 
+        // Make sure all allocations where released
         assertEquals(0, allocator.metric().usedHeapMemory());
     }
 

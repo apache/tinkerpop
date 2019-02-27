@@ -19,9 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.CompositeByteBuf;
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
@@ -53,18 +50,9 @@ public class TraversalStrategySerializer extends SimpleTypeSerializer<TraversalS
     }
 
     @Override
-    protected ByteBuf writeValue(final TraversalStrategy value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
-        final CompositeByteBuf result = allocator.compositeBuffer(2);
-
-        try {
-            result.addComponent(true, context.writeValue(value.getClass(), allocator, false));
-            result.addComponent(true, context.writeValue(translateToBytecode(ConfigurationConverter.getMap(value.getConfiguration())), allocator, false));
-        } catch (Exception ex) {
-            result.release();
-            throw ex;
-        }
-
-        return result;
+    protected void writeValue(final TraversalStrategy value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+        context.writeValue(value.getClass(), buffer, false);
+        context.writeValue(translateToBytecode(ConfigurationConverter.getMap(value.getConfiguration())), buffer, false);
     }
 
     private static Map<Object,Object> translateToBytecode(final Map<Object,Object> conf) {

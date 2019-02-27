@@ -19,8 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.CompositeByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
@@ -28,6 +26,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class MapSerializer extends SimpleTypeSerializer<Map> {
     public MapSerializer() {
@@ -47,21 +46,12 @@ public class MapSerializer extends SimpleTypeSerializer<Map> {
     }
 
     @Override
-    protected ByteBuf writeValue(final Map value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
-        final CompositeByteBuf result = allocator.compositeBuffer(1 + value.size() * 2);
-        result.addComponent(true, allocator.buffer(4).writeInt(value.size()));
+    protected void writeValue(final Map value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+        buffer.writeInt(value.size());
 
-        try {
-            for (Object key : value.keySet()) {
-                result.addComponent(true, context.write(key, allocator));
-                result.addComponent(true, context.write(value.get(key), allocator));
-            }
-        } catch (Exception ex) {
-            // We should release it as the ByteBuf is not going to be yielded for a reader
-            result.release();
-            throw ex;
+        for (Map.Entry entry : (Set<Map.Entry>) value.entrySet()) {
+            context.write(entry.getKey(), buffer);
+            context.write(entry.getValue(), buffer);
         }
-
-        return result;
     }
 }

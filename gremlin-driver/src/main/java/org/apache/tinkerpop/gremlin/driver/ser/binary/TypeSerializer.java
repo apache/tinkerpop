@@ -49,10 +49,10 @@ public interface TypeSerializer<T> {
     /**
      * Writes the type code, information and value to a buffer using the provided allocator.
      */
-    ByteBuf write(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException;
+    void write(final T value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException;
 
     /**
      * Writes the value to a buffer, composed by the value flag and the sequence of bytes.
      */
-    ByteBuf writeValue(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context, final boolean nullable)throws SerializationException;
+    void writeValue(final T value, final ByteBuf buffer, final GraphBinaryWriter context, final boolean nullable) throws SerializationException;
 }

@@ -294,7 +294,8 @@ public class GraphBinaryReaderWriterRoundTripTest {
     public void shouldWriteAndRead() throws Exception {
         // Test it multiple times as the type registry might change its internal state
         for (int i = 0; i < 5; i++) {
-            final ByteBuf buffer = writer.write(value, allocator);
+            final ByteBuf buffer = allocator.buffer();
+            writer.write(value, buffer);
             buffer.readerIndex(0);
             final Object result = reader.read(buffer);
 

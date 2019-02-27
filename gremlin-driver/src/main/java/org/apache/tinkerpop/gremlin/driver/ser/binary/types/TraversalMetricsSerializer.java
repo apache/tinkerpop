@@ -19,8 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.CompositeByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
@@ -48,18 +46,8 @@ public class TraversalMetricsSerializer extends SimpleTypeSerializer<TraversalMe
     }
 
     @Override
-    protected ByteBuf writeValue(TraversalMetrics value, ByteBufAllocator allocator, GraphBinaryWriter context) throws SerializationException {
-        final CompositeByteBuf result = allocator.compositeBuffer(2);
-
-        try {
-            result.addComponent(true, context.writeValue(value.getDuration(TimeUnit.NANOSECONDS), allocator, false));
-            result.addComponent(true, collectionSerializer.writeValue(value.getMetrics(), allocator, context));
-        } catch (Exception ex) {
-            // We should release it as the ByteBuf is not going to be yielded for a reader
-            result.release();
-            throw ex;
-        }
-
-        return result;
+    protected void writeValue(TraversalMetrics value, ByteBuf buffer, GraphBinaryWriter context) throws SerializationException {
+        context.writeValue(value.getDuration(TimeUnit.NANOSECONDS), buffer, false);
+        collectionSerializer.writeValue(value.getMetrics(), buffer, context);
     }
 }

@@ -27,6 +27,18 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.1/CHANGELOG.asciidoc#release-3-4-1[changelog] for a complete list of all the modifications that are part of this release.
 
+=== Upgrading for Providers
+
+==== Graph Database Providers
+
+===== GraphBinary Serializer Changes
+
+In GraphBinary serialization, Java `write()` and `writeValue()` from `TypeSerializer<T>` interface now take a Netty's
+`ByteBuf` instance instead of an `ByteBufAllocator`, that way the same buffer instance gets reused during the write
+of a message. Additionally, we took the opportunity to remove the unused parameter from `ResponseMessageSerializer`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2161[TINKERPOP-2161]
+
 == TinkerPop 3.4.0
 
 *Release Date: January 2, 2019*

@@ -19,8 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.CompositeByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
@@ -56,24 +54,14 @@ public class MetricsSerializer extends SimpleTypeSerializer<Metrics> {
     }
 
     @Override
-    protected ByteBuf writeValue(final Metrics value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
-        final CompositeByteBuf result = allocator.compositeBuffer(6);
+    protected void writeValue(final Metrics value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+        context.writeValue(value.getId(), buffer, false);
+        context.writeValue(value.getName(), buffer, false);
+        context.writeValue(value.getDuration(TimeUnit.NANOSECONDS), buffer, false);
+        context.writeValue(value.getCounts(), buffer, false);
+        context.writeValue(value.getAnnotations(), buffer, false);
 
-        try {
-            result.addComponent(true, context.writeValue(value.getId(), allocator, false));
-            result.addComponent(true, context.writeValue(value.getName(), allocator, false));
-            result.addComponent(true, context.writeValue(value.getDuration(TimeUnit.NANOSECONDS), allocator, false));
-            result.addComponent(true, context.writeValue(value.getCounts(), allocator, false));
-            result.addComponent(true, context.writeValue(value.getAnnotations(), allocator, false));
-
-            // Avoid changing type to List
-            result.addComponent(true, collectionSerializer.writeValue(value.getNested(), allocator, context));
-        } catch (Exception ex) {
-            // We should release the CompositeByteBuf as it's not going to be yielded for a reader
-            result.release();
-            throw ex;
-        }
-
-        return result;
+        // Avoid changing type to List
+        collectionSerializer.writeValue(value.getNested(), buffer, context);
     }
 }

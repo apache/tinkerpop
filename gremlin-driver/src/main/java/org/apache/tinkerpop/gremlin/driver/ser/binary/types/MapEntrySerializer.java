@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
@@ -38,7 +37,7 @@ public class MapEntrySerializer extends SimpleTypeSerializer<Map.Entry> implemen
     }
 
     @Override
-    protected ByteBuf writeValue(final Map.Entry value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final Map.Entry value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
         throw new SerializationException("A map entry should not be written individually");
     }
 

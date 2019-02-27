@@ -19,8 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.CompositeByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
@@ -52,19 +50,9 @@ public class LambdaSerializer extends SimpleTypeSerializer<Lambda> {
     }
 
     @Override
-    protected ByteBuf writeValue(final Lambda value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
-        final CompositeByteBuf result = allocator.compositeBuffer(3);
-
-        try {
-            result.addComponent(true, context.writeValue(value.getLambdaLanguage(), allocator, false));
-            result.addComponent(true, context.writeValue(value.getLambdaScript(), allocator, false));
-            result.addComponent(true, context.writeValue(value.getLambdaArguments(), allocator, false));
-        } catch (Exception ex) {
-            // We should release it as the ByteBuf is not going to be yielded for a reader
-            result.release();
-            throw ex;
-        }
-
-        return result;
+    protected void writeValue(final Lambda value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+        context.writeValue(value.getLambdaLanguage(), buffer, false);
+        context.writeValue(value.getLambdaScript(), buffer, false);
+        context.writeValue(value.getLambdaArguments(), buffer, false);
     }
 }

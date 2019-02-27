@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
@@ -51,7 +50,7 @@ public class TraversalExplanationSerializer extends SimpleTypeSerializer<Travers
     }
 
     @Override
-    protected ByteBuf writeValue(final TraversalExplanation value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final TraversalExplanation value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
         throw new SerializationException("A TraversalExplanation should not be written individually");
     }
 

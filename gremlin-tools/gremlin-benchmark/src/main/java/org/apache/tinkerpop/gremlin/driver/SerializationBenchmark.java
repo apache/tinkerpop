@@ -19,8 +19,8 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.tinkerpop.benchmark.util.AbstractBenchmarkBase;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -32,11 +32,17 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.Warmup;
 
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
+@Warmup(time = 200, timeUnit = MILLISECONDS)
 public class SerializationBenchmark extends AbstractBenchmarkBase {
+
+    private static final UnpooledByteBufAllocator allocator = new UnpooledByteBufAllocator(false);
 
     private static final ByteBuf RequestMessageGraphSONBuffer1 = Unpooled.wrappedBuffer(
             ("{\"requestId\":{\"@type\":\"g:UUID\",\"@value\":\"9b6d17c0-c5a9-418e-bff6-a25fbb1b175e\"}," +
@@ -142,27 +148,25 @@ public class SerializationBenchmark extends AbstractBenchmarkBase {
 
     @Benchmark
     public void testWriteResponseBinary() throws SerializationException {
-        ByteBuf buffer = binarySerializer.serializeResponseAsBinary(response, ByteBufAllocator.DEFAULT);
+        final ByteBuf buffer = binarySerializer.serializeResponseAsBinary(response, allocator);
         buffer.release();
     }
 
     @Benchmark
     public void testWriteResponseGraphSON() throws SerializationException {
-        ByteBuf buffer = graphsonSerializer.serializeResponseAsBinary(response, ByteBufAllocator.DEFAULT);
+        final ByteBuf buffer = graphsonSerializer.serializeResponseAsBinary(response, allocator);
         buffer.release();
     }
 
     @Benchmark
     public void testWriteBytecodeBinary() throws SerializationException {
-
-        ByteBuf buffer = binarySerializer.serializeRequestAsBinary(request, ByteBufAllocator.DEFAULT);
+        final ByteBuf buffer = binarySerializer.serializeRequestAsBinary(request, allocator);
         buffer.release();
     }
 
     @Benchmark
     public void testWriteBytecodeGraphSON() throws SerializationException {
-
-        ByteBuf buffer = graphsonSerializer.serializeRequestAsBinary(request, ByteBufAllocator.DEFAULT);
+        final ByteBuf buffer = graphsonSerializer.serializeRequestAsBinary(request, allocator);
         buffer.release();
     }
 

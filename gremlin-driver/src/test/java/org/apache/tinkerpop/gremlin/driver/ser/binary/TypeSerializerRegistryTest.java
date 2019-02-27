@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.sample.SamplePerson;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.sample.SamplePersonSerializer;
@@ -149,13 +148,13 @@ public class TypeSerializerRegistryTest {
         }
 
         @Override
-        public ByteBuf write(T value, ByteBufAllocator allocator, GraphBinaryWriter context) {
-            return null;
+        public void write(T value, ByteBuf buffer, GraphBinaryWriter context) {
+
         }
 
         @Override
-        public ByteBuf writeValue(T value, ByteBufAllocator allocator, GraphBinaryWriter context, boolean nullable) {
-            return null;
+        public void writeValue(T value, ByteBuf buffer, GraphBinaryWriter context, boolean nullable) {
+
         }
     }
 }

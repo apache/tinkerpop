@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
@@ -41,7 +40,7 @@ public class InstantSerializer extends SimpleTypeSerializer<Instant> {
     }
 
     @Override
-    protected ByteBuf writeValue(final Instant value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
-        return allocator.buffer(12).writeLong(value.getEpochSecond()).writeInt(value.getNano());
+    protected void writeValue(final Instant value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+        buffer.writeLong(value.getEpochSecond()).writeInt(value.getNano());
     }
 }

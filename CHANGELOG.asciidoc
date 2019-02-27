@@ -36,6 +36,9 @@ This release also includes changes from <<release-3-3-6, 3.3.6>>.
 * Support configuring the type registry builder for GraphBinary.
 * Bump to Groovy 2.5.6.
 * Release working buffers in case of failure for GraphBinary.
+* GraphBinary: Use the same `ByteBuf` instance to write during serialization. Changed signature of write methods in type serializers.
+* Remove unused parameter in GraphBinary's `ResponseMessageSerializer`.
+
 
 [[release-3-4-0]]
 === TinkerPop 3.4.0 (Release Date: January 2, 2019)

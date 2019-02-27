@@ -19,8 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.CompositeByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
@@ -47,14 +45,11 @@ public class PropertySerializer extends SimpleTypeSerializer<Property> {
     }
 
     @Override
-    protected ByteBuf writeValue(final Property value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
-        final CompositeByteBuf result = allocator.compositeBuffer(3);
-        result.addComponent(true, context.writeValue(value.key(), allocator, false));
-        result.addComponent(true, context.write(value.value(), allocator));
+    protected void writeValue(final Property value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+        context.writeValue(value.key(), buffer, false);
+        context.write(value.value(), buffer);
 
         // leave space for the parent reference element as it's not serialized for references
-        result.addComponent(true, context.write(null, allocator));
-
-        return result;
+        context.write(null, buffer);
     }
 }

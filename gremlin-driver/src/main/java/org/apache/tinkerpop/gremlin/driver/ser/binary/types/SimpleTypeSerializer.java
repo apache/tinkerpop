@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
@@ -69,35 +68,34 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
     protected abstract T readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException;
 
     @Override
-    public ByteBuf write(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
-        return writeValue(value, allocator, context, true);
+    public void write(final T value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+        writeValue(value, buffer, context, true);
     }
 
     @Override
-    public ByteBuf writeValue(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context, final boolean nullable) throws SerializationException {
+    public void writeValue(final T value, final ByteBuf buffer, final GraphBinaryWriter context, final boolean nullable) throws SerializationException {
         if (value == null) {
             if (!nullable) {
                 throw new SerializationException("Unexpected null value when nullable is false");
             }
 
-            return context.getValueFlagNull();
+            context.writeValueFlagNull(buffer);
+            return;
         }
 
-        final ByteBuf valueSequence = writeValue(value, allocator, context);
-
-        if (!nullable) {
-            return valueSequence;
+        if (nullable) {
+            context.writeValueFlagNone(buffer);
         }
 
-        return allocator.compositeBuffer(2).addComponents(true, context.getValueFlagNone(), valueSequence);
+        writeValue(value, buffer, context);
     }
 
     /**
      * Writes a non-nullable value into a buffer using the provided allocator.
      * @param value A non-nullable value.
-     * @param allocator The buffer allocator to use.
+     * @param buffer The buffer allocator to use.
      * @param context The binary writer.
      * @throws SerializationException
      */
-    protected abstract ByteBuf writeValue(final T value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException;
+    protected abstract void writeValue(final T value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException;
 }

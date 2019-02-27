@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
@@ -41,7 +40,7 @@ public class ClassSerializer extends SimpleTypeSerializer<Class> {
     }
 
     @Override
-    protected ByteBuf writeValue(final Class value, final ByteBufAllocator allocator, final GraphBinaryWriter context) throws SerializationException {
-        return context.writeValue(value.getName(), allocator, false);
+    protected void writeValue(final Class value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+        context.writeValue(value.getName(), buffer, false);
     }
 }
