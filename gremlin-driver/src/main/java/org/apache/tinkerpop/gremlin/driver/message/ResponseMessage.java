@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver.message;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -110,7 +110,7 @@ public final class ResponseMessage {
         public Builder statusAttributeException(final Throwable ex) {
             statusAttribute(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS, IteratorUtils.asList(
                     IteratorUtils.map(ExceptionUtils.getThrowableList(ex), t -> t.getClass().getName())));
-            statusAttribute(Tokens.STATUS_ATTRIBUTE_STACK_TRACE, ExceptionUtils.getFullStackTrace(ex));
+            statusAttribute(Tokens.STATUS_ATTRIBUTE_STACK_TRACE, ExceptionUtils.getStackTrace(ex));
             return this;
         }
 

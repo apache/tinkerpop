@@ -151,7 +151,7 @@ limitations under the License.
     <properties>
         <commons.configuration.version>1.10</commons.configuration.version>
         <commons.lang.version>2.6</commons.lang.version>
-        <commons.lang3.version>3.3.1</commons.lang3.version>
+        <commons.lang3.version>3.8.1</commons.lang3.version>
         <groovy.version>2.5.6</groovy.version>
         <hadoop.version>2.7.2</hadoop.version>
         <java.tuples.version>1.2</java.tuples.version>
@@ -626,6 +626,7 @@ limitations under the License.
 
     <dependencyManagement>
         <dependencies>
+            <!-- commons-configuration drags in the old commons-lang. need to update someday -->
             <dependency>
                 <groupId>commons-configuration</groupId>
                 <artifactId>commons-configuration</artifactId>

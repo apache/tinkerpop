@@ -23,7 +23,7 @@ import com.codahale.metrics.Timer;
 import io.netty.handler.codec.TooLongFrameException;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpUtil;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -456,7 +456,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 			node.put("Exception-Class", t.get().getClass().getName());
             final ArrayNode exceptionList = node.putArray(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS);
             ExceptionUtils.getThrowableList(t.get()).forEach(throwable -> exceptionList.add(throwable.getClass().getName()));
-            node.put(Tokens.STATUS_ATTRIBUTE_STACK_TRACE, ExceptionUtils.getFullStackTrace(t.get()));
+            node.put(Tokens.STATUS_ATTRIBUTE_STACK_TRACE, ExceptionUtils.getStackTrace(t.get()));
 		}
 		
         final FullHttpResponse response = new DefaultFullHttpResponse(

@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver.remote;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Host;
 import org.apache.tinkerpop.gremlin.driver.Result;
@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
