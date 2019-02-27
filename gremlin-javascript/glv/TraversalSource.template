@@ -24,6 +24,7 @@
 
 const utils = require('../utils');
 const itemDone = Object.freeze({ value: null, done: true });
+const asyncIteratorSymbol = Symbol.asyncIterator || Symbol('@@asyncIterator');
 
 class Traversal {
   constructor(graph, traversalStrategies, bytecode) {
@@ -40,8 +41,8 @@ class Traversal {
   /**
    * Async iterable method implementation.
    */
-  [Symbol.asyncIterator]() {
-    return this
+  [asyncIteratorSymbol]() {
+    return this;
   }
 
   /** @returns {Bytecode} */
