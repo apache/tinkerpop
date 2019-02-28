@@ -110,6 +110,21 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MemoryCo
         return clone;
     }
 
+    /**
+     * Starts the metrics timer.
+     */
+    public void start() {
+        this.initializeIfNeeded();
+        this.metrics.start();
+    }
+
+    /**
+     * Stops the metrics timer.
+     */
+    public void stop() {
+        this.metrics.stop();
+    }
+
     /////
 
     public static class ProfileBiOperator implements BinaryOperator<MutableMetrics>, Serializable {

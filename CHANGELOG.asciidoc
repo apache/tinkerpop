@@ -301,6 +301,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `globalFunctionCacheEnabled` override to `SessionOpProcessor` configuration.
 * Added status code to `GremlinServerError` so that it would be more directly accessible during failures.
 * Added GraphSON serialization support for `Duration`, `Char`, `ByteBuffer`, `Byte`, `BigInteger` and `BigDecimal` in `gremlin-python`.
+* Added `ProfilingAware` interface to allow steps to be notified that `profile()` was being called.
+* Fixed bug where `profile()` could produce negative timings when `group()` contained a reducing barrier.
 * Bumped `httpclient` to 4.5.7.
 * Bumped `slf4j` to 1.7.25.
 * Bumped `commons-codec` to 1.12.
