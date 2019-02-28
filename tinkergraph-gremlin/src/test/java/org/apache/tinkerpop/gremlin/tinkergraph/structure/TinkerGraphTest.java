@@ -24,6 +24,9 @@ import org.apache.tinkerpop.gremlin.GraphHelper;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -66,9 +69,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
@@ -622,6 +628,25 @@ public class TinkerGraphTest {
         assertNotSame("cloned elements should reference to different objects",
             original.traversal().V().has("name", "stephen").next(),
             clone.traversal().V().has("name", "stephen").next());
+    }
+
+    /**
+     * This isn't a TinkerGraph specific test, but TinkerGraph is probably best suited for the testing of this
+     * particular problem originally noted in TINKERPOP-1992.
+     */
+    @Test
+    public void shouldProperlyTimeReducingBarrierForProfile() {
+        final GraphTraversalSource g = TinkerFactory.createModern().traversal();
+
+        TraversalMetrics m = g.V().group().by().by(__.bothE().count()).profile().next();
+        for (Metrics i : m.getMetrics(1).getNested()) {
+            assertThat(i.getDuration(TimeUnit.NANOSECONDS), greaterThan(0L));
+        }
+
+        m = g.withComputer().V().group().by().by(__.bothE().count()).profile().next();
+        for (Metrics i : m.getMetrics(1).getNested()) {
+            assertThat(i.getDuration(TimeUnit.NANOSECONDS), greaterThan(0L));
+        }
     }
 
     /**

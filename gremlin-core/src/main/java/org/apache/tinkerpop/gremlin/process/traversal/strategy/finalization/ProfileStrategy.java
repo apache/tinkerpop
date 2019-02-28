@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexPr
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ProfilingAware;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
@@ -57,7 +58,13 @@ public final class ProfileStrategy extends AbstractTraversalStrategy<TraversalSt
                 if (steps.get(i * 2) instanceof ProfileSideEffectStep)
                     break;
                 // Create and inject ProfileStep
-                traversal.addStep((i * 2) + 1, new ProfileStep(traversal));
+                final ProfileStep profileStepToAdd = new ProfileStep(traversal);
+                traversal.addStep((i * 2) + 1, profileStepToAdd);
+
+                final Step stepToBeProfiled = traversal.getSteps().get(i * 2);
+                if (stepToBeProfiled instanceof ProfilingAware) {
+                    ((ProfilingAware) stepToBeProfiled).prepareForProfiling();
+                }
             }
         }
     }
