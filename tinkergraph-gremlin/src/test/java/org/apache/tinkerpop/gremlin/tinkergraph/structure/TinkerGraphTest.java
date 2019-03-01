@@ -75,6 +75,7 @@ import java.util.function.Supplier;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
@@ -647,6 +648,24 @@ public class TinkerGraphTest {
         for (Metrics i : m.getMetrics(1).getNested()) {
             assertThat(i.getDuration(TimeUnit.NANOSECONDS), greaterThan(0L));
         }
+    }
+
+    /**
+     * Just validating that property folding works nicely given TINKERPOP-2112
+     */
+    @Test
+    public void shouldFoldPropertyStepForTokens() {
+        final GraphTraversalSource g = TinkerGraph.open().traversal();
+
+        g.addV("person").property(VertexProperty.Cardinality.single, "k", "v").
+                property(T.id , "id").
+                property(VertexProperty.Cardinality.list, "l", 1).
+                property("x", "y").
+                property(VertexProperty.Cardinality.list, "l", 2).
+                property("m", "m", "mm", "mm").
+                property("y", "z").iterate();
+
+        assertThat(g.V("id").hasNext(), is(true));
     }
 
     /**
