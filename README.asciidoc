@@ -16,23 +16,24 @@ limitations under the License.
 ////
 == TinkerPop4
 
-* gremlin-core: A collection of Gremlin machine and language components
-* gremlin-data
-** gremlin-graphs
-*** gremlin-neo4j: A Neo4j implementation of the Gremlin graph primitives
-*** gremlin-tinkergraph: A TinkerGraph implementation of the Gremlin graph primitives
-* gremlin-machines
-** gremlin-beam: Apache Beam implementation of the Gremlin traversal machine
-** gremlin-akka: Akka implementation of the Gremlin traversal machine
-** gremlin-pipes: Java iterator implementation of the Gremlin traversal machine
-* gremlin-languages
-** gremlin-variants
-*** gremlin-groovy: Groovy implementation of the Gremlin traversal language
-*** gremlin-python: Python implementation of the Gremlin traversal language
-*** gremlin-javascript: JavaScript implementation of the Gremlin traversal language
-*** gremlin-dotnet: C# implementation of the Gremlin traversal language
-** gremlin-uniques
-*** gremlin-sparql: A SPARQL to Gremlin bytecode compiler
-*** gremlin-sql: An SQL to Gremlin bytecode compiler
-*** gremlin-cypher: A Cypher to Gremlin bytecode compiler
-* gremlin-test: language test suite
+* *gremlin-core*: A collection of Gremlin machine and language components
+* *gremlin-data*
+** *gremlin-graph*: Operators for processing property graph data.
+*** *gremlin-neo4j*: A Neo4j implementation of the Gremlin graph primitives
+*** *gremlin-tinkergraph*: A TinkerGraph implementation of the Gremlin graph primitives
+* *gremlin-machines*
+** *gremlin-pipes*: Java iterator implementation of the Gremlin traversal machine
+** *gremlin-rxjava*: RxJava implementation of the Gremlin traversal machine
+** *gremlin-beam*: Apache Beam implementation of the Gremlin traversal machine
+** *gremlin-akka*: Akka implementation of the Gremlin traversal machine
+* *gremlin-languages*
+** *gremlin-variants*
+*** *gremlin-groovy*: Groovy implementation of the Gremlin traversal language
+*** *gremlin-python*: Python implementation of the Gremlin traversal language
+*** *gremlin-javascript*: JavaScript implementation of the Gremlin traversal language
+*** *gremlin-dotnet*: C# implementation of the Gremlin traversal language
+** *gremlin-uniques*
+*** *gremlin-sparql*: A SPARQL to Gremlin bytecode compiler
+*** *gremlin-sql*: An SQL to Gremlin bytecode compiler
+*** *gremlin-cypher*: A Cypher to Gremlin bytecode compiler
+* *gremlin-test*: language test suite
