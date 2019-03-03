@@ -16,32 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.machine;
+package org.apache.tinkerpop.machines.pipes;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class Instruction<C> {
-
-    private final C coefficient;
-    private final String op;
-    private final Object[] args;
-
-    public Instruction(final C coefficient, final String op, final Object... args) {
-        this.coefficient = coefficient;
-        this.op = op;
-        this.args = args;
-    }
-
-    public C getCoefficient() {
-        return this.coefficient;
-    }
-
-    public String getOp() {
-        return this.op;
-    }
-
-    public Object[] getArgs() {
-        return this.args;
-    }
+public class PipeTest {
 }

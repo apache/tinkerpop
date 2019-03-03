@@ -16,30 +16,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.machine.functions;
+package org.apache.tinkerpop.gremlin.machine.util;
 
-import org.apache.tinkerpop.gremlin.machine.Traverser;
-import org.apache.tinkerpop.gremlin.machine.coefficients.Coefficients;
-
-import java.util.function.Function;
+import java.util.NoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MapFunction<C, A, B> implements GFunction<C, A,B> {
+public class FastNoSuchElementException extends NoSuchElementException {
 
-    private final C coefficient;
-    private final Coefficients<C> coefficients;
-    private final Function<A, B> mapFunction;
+    private static final long serialVersionUID = 2303108654138257697L;
+    private static final FastNoSuchElementException INSTANCE = new FastNoSuchElementException();
 
-    public MapFunction(final Coefficients<C> coefficients, final C coefficient, final Function<A, B> mapFunction) {
-        this.coefficients = coefficients;
-        this.coefficient = coefficient;
-        this.mapFunction = mapFunction;
+    private FastNoSuchElementException() {
+    }
+
+    /**
+     * Retrieve a singleton, fast {@link NoSuchElementException} without a stack trace.
+     */
+    public static NoSuchElementException instance() {
+        return INSTANCE;
     }
 
     @Override
-    public Traverser<C, B> apply(final Traverser<C, A> traverser) {
-        return traverser.split(this.coefficients.multiply(traverser.getCoefficient(), this.coefficient), this.mapFunction.apply(traverser.getObject()));
+    public synchronized Throwable fillInStackTrace() {
+        return this;
     }
 }

@@ -16,30 +16,37 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.machine.functions;
+package org.apache.tinkerpop.machines.pipes;
 
 import org.apache.tinkerpop.gremlin.machine.Traverser;
-import org.apache.tinkerpop.gremlin.machine.coefficients.Coefficients;
+import org.apache.tinkerpop.gremlin.machine.functions.GFunction;
+import org.apache.tinkerpop.gremlin.machine.traversers.TraverserSet;
 
-import java.util.function.Function;
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MapFunction<C, A, B> implements GFunction<C, A,B> {
+public class Step<S, E> implements Iterator<Traverser<?, E>> {
 
-    private final C coefficient;
-    private final Coefficients<C> coefficients;
-    private final Function<A, B> mapFunction;
+    private final GFunction<?, S, E> function;
+    private TraverserSet<?, S> set = new TraverserSet<>();
 
-    public MapFunction(final Coefficients<C> coefficients, final C coefficient, final Function<A, B> mapFunction) {
-        this.coefficients = coefficients;
-        this.coefficient = coefficient;
-        this.mapFunction = mapFunction;
+    public Step(final GFunction<?, S, E> function) {
+        this.function = function;
+    }
+
+    public void addStart(final Traverser<?, S> start) {
+        this.set.add((Traverser) start);
     }
 
     @Override
-    public Traverser<C, B> apply(final Traverser<C, A> traverser) {
-        return traverser.split(this.coefficients.multiply(traverser.getCoefficient(), this.coefficient), this.mapFunction.apply(traverser.getObject()));
+    public boolean hasNext() {
+        return false;
+    }
+
+    @Override
+    public Traverser<?, E> next() {
+        return null;
     }
 }

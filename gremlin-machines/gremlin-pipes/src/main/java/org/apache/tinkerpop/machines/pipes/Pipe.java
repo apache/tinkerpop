@@ -16,30 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.machine.functions;
+package org.apache.tinkerpop.machines.pipes;
 
-import org.apache.tinkerpop.gremlin.machine.Traverser;
-import org.apache.tinkerpop.gremlin.machine.coefficients.Coefficients;
-
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MapFunction<C, A, B> implements GFunction<C, A,B> {
+public class Pipe<S, E> implements Iterator<E>, AutoCloseable {
 
-    private final C coefficient;
-    private final Coefficients<C> coefficients;
-    private final Function<A, B> mapFunction;
+    private final List<Step<?, ?>> steps = new ArrayList<>();
 
-    public MapFunction(final Coefficients<C> coefficients, final C coefficient, final Function<A, B> mapFunction) {
-        this.coefficients = coefficients;
-        this.coefficient = coefficient;
-        this.mapFunction = mapFunction;
+    @Override
+    public void close() throws Exception {
+
     }
 
     @Override
-    public Traverser<C, B> apply(final Traverser<C, A> traverser) {
-        return traverser.split(this.coefficients.multiply(traverser.getCoefficient(), this.coefficient), this.mapFunction.apply(traverser.getObject()));
+    public boolean hasNext() {
+        return false;
+    }
+
+    @Override
+    public E next() {
+        return null;
     }
 }

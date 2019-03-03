@@ -42,4 +42,9 @@ public class Traverser<C, A> {
     public <B> Traverser<C, B> split(final C coefficient, final B object) {
         return new Traverser<>(coefficient, object);
     }
+
+    @Override
+    public boolean equals(final Object other) {
+        return other instanceof Traverser && ((Traverser<C, A>) other).object.equals(this.object);
+    }
 }

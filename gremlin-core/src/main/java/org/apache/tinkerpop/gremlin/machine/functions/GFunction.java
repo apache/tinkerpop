@@ -19,27 +19,12 @@
 package org.apache.tinkerpop.gremlin.machine.functions;
 
 import org.apache.tinkerpop.gremlin.machine.Traverser;
-import org.apache.tinkerpop.gremlin.machine.coefficients.Coefficients;
 
+import java.util.Iterator;
 import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MapFunction<C, A, B> implements GFunction<C, A,B> {
-
-    private final C coefficient;
-    private final Coefficients<C> coefficients;
-    private final Function<A, B> mapFunction;
-
-    public MapFunction(final Coefficients<C> coefficients, final C coefficient, final Function<A, B> mapFunction) {
-        this.coefficients = coefficients;
-        this.coefficient = coefficient;
-        this.mapFunction = mapFunction;
-    }
-
-    @Override
-    public Traverser<C, B> apply(final Traverser<C, A> traverser) {
-        return traverser.split(this.coefficients.multiply(traverser.getCoefficient(), this.coefficient), this.mapFunction.apply(traverser.getObject()));
-    }
+public interface GFunction<C, S, E> extends Function<Traverser<C, S>, Traverser<C, E>> {
 }
