@@ -14,18 +14,205 @@ limitations under the License.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.apache</groupId>
+        <artifactId>apache</artifactId>
+        <version>21</version>
+    </parent>
+    <groupId>org.apache.tinkerpop</groupId>
+    <artifactId>tinkerpop</artifactId>
+    <version>4.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
+    <name>Apache TinkerPop</name>
+    <description>A Virtual Machine and Language</description>
+    <url>http://tinkerpop.apache.org/</url>
+    <mailingLists>
+        <mailingList>
+            <name>Users</name>
+            <subscribe>http://groups.google.com/group/gremlin-users</subscribe>
+            <unsubscribe>http://groups.google.com/group/gremlin-users</unsubscribe>
+            <archive>http://groups.google.com/group/gremlin-users/topics</archive>
+        </mailingList>
+        <mailingList>
+            <name>Developers</name>
+            <subscribe>dev-subscribe@tinkerpop.apache.org</subscribe>
+            <unsubscribe>dev-unsubscribe@tinkerpop.apache.org</unsubscribe>
+            <archive>dev-digest-subscribe@tinkerpop.apache.org</archive>
+        </mailingList>
+    </mailingLists>
+    <inceptionYear>2019</inceptionYear>
+    <licenses>
+        <license>
+            <name>Apache 2</name>
+            <url>http://www.opensource.org/licenses/Apache-2.0</url>
+        </license>
+    </licenses>
+    <organization>
+        <name>Apache Software Foundation</name>
+        <url>http://www.apache.org/</url>
+    </organization>
+    <developers>
+        <developer>
+            <name>Marko A. Rodriguez</name>
+            <email>okram@apache.org</email>
+            <url>http://markorodriguez.com</url>
+        </developer>
+    </developers>
+    <prerequisites>
+        <maven>3.2.5</maven>
+    </prerequisites>
     <modules>
         <module>core</module>
         <module>machine</module>
     </modules>
-    <parent>
-        <artifactId>tinkerpop</artifactId>
-        <groupId>org.apache.tinkerpop</groupId>
-        <version>4.0.0-SNAPSHOT</version>
-    </parent>
-    <name>Apache TinkerPop :: Java</name>
-    <artifactId>java</artifactId>
+    <scm>
+        <connection>scm:git:git@github.com:apache/tinkerpop.git</connection>
+        <developerConnection>scm:git:git@github.com:apache/tinkerpop.git</developerConnection>
+        <url>https://github.com/apache/tinkerpop</url>
+    </scm>
+    <properties>
+        <junit.version>5.4.0</junit.version>
+    </properties>
+    <dependencies>
+        <!-- TESTING -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <directory>${basedir}/target</directory>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>1.4.1</version>
+                <executions>
+                    <execution>
+                        <id>enforce-all</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <DependencyConvergence/>
+                                <requireJavaVersion>
+                                    <version>[11.0,)</version>
+                                </requireJavaVersion>
+                                <requireMavenVersion>
+                                    <version>[3.2.5,)</version>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <version>0.12</version>
+                <executions>
+                    <execution>
+                        <id>rat-checks</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <excludeSubProjects>false</excludeSubProjects>
+                    <excludes>
+                        <exclude>fileTemplates/</exclude>
+                        <exclude>**/*.iml</exclude>
+                        <exclude>**/target/**</exclude>
+                    </excludes>
+                    <licenses>
+                        <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
+                    </licenses>
+                </configuration>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.0</version>
+                    <configuration>
+                        <source>11</source>
+                        <target>11</target>
+                        <compilerArgs>
+                            <arg>-parameters</arg>
+                        </compilerArgs>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.8.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.22.1</version>
+                    <configuration>
+                        <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true
+                        </argLine>
+                        <excludes>
+                            <exclude>**/*IntegrateTest.java</exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>2.22.1</version>
+                    <executions>
+                        <execution>
+                            <id>integration-test</id>
+                            <goals>
+                                <goal>integration-test</goal>
+                            </goals>
+                            <configuration>
+                                <includes>
+                                    <include>**/*IntegrateTest.java</include>
+                                </includes>
+                                <skipTests>${skipIntegrationTests}</skipTests>
+                                <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182
+                                    -Dbuild.dir=${project.build.directory} -Dis.testing=true
+                                </argLine>
+                                <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>verify-integration-test</id>
+                            <goals>
+                                <goal>verify</goal>
+                            </goals>
+                            <configuration>
+                                <skipTests>${skipIntegrationTests}</skipTests>
+                                <summaryFiles>
+                                    <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
+                                </summaryFiles>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>
