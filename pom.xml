@@ -152,7 +152,7 @@ limitations under the License.
         <groovy.version>3.0.3</groovy.version>
         <hadoop.version>2.7.2</hadoop.version>
         <java.tuples.version>1.2</java.tuples.version>
-        <javadoc-plugin.version>2.10.4</javadoc-plugin.version>
+        <javadoc-plugin.version>3.1.0</javadoc-plugin.version>
         <jcabi.version>1.1</jcabi.version>
         <log4j.version>1.2.17</log4j.version>
         <metrics.version>3.0.2</metrics.version>
@@ -188,7 +188,9 @@ limitations under the License.
                 <artifactId>maven-compiler-plugin</artifactId>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0-M2</version>
                 <executions>
                     <execution>
                         <id>enforce-all</id>
@@ -237,7 +239,7 @@ limitations under the License.
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
-                    <additionalparam>-Xdoclint:none</additionalparam>
+                    <additionalJOption>-Xdoclint:none</additionalJOption>
                     <tags>
                         <tag>
                             <name>example</name>
@@ -254,7 +256,7 @@ limitations under the License.
                         </goals>
                         <phase>site</phase>
                         <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
+                            <additionalJOption>-Xdoclint:none</additionalJOption>
                             <includeDependencySources>true</includeDependencySources>
                             <dependencySourceIncludes>
                                 <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
@@ -448,8 +450,7 @@ limitations under the License.
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.8.1</version>
                     <configuration>
-                        <source>1.8</source>
-                        <target>1.8</target>
+                        <release>11</release>
                         <compilerArgs>
                             <arg>-parameters</arg>
                         </compilerArgs>
@@ -463,9 +464,10 @@ limitations under the License.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.21.0</version>
+                    <version>2.22.0</version>
                     <configuration>
-                        <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true
+                        <argLine>
+                            -Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true
                         </argLine>
                         <trimStackTrace>false</trimStackTrace>
                         <excludes>
@@ -488,7 +490,8 @@ limitations under the License.
                                     <include>**/*IntegrateTest.java</include>
                                 </includes>
                                 <skipTests>${skipIntegrationTests}</skipTests>
-                                <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182 -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true
+                                <argLine>
+                                    -Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182 -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true
                                 </argLine>
                                 <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
                             </configuration>
@@ -531,7 +534,7 @@ limitations under the License.
                     <artifactId>gmavenplus-plugin</artifactId>
                     <version>1.9.0</version>
                     <configuration>
-                        <targetBytecode>1.8</targetBytecode>
+                        <targetBytecode>11</targetBytecode>
                         <invokeDynamic>true</invokeDynamic>
                     </configuration>
                 </plugin>
@@ -1203,12 +1206,16 @@ limitations under the License.
                                 <inherited>false</inherited>
                                 <configuration>
                                     <destDir>full</destDir>
-                                    <additionalparam>-Xdoclint:none</additionalparam>
+                                    <additionalJOption>-Xdoclint:none</additionalJOption>
                                     <overview>${basedir}/docs/javadoc/overview.html</overview>
                                     <quiet>true</quiet>
                                     <sourcepath>
                                         gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-python/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:hadoop-gremlin/src/main/java:neo4j-gremlin/src/main/java:spark-gremlin/src/main/java:tinkergraph-gremlin/src/main/java
                                     </sourcepath>
+                                    <includeDependencySources>true</includeDependencySources>
+                                    <dependencySourceIncludes>
+                                        <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
+                                    </dependencySourceIncludes>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1220,7 +1227,7 @@ limitations under the License.
                                 <inherited>false</inherited>
                                 <configuration>
                                     <destDir>core</destDir>
-                                    <additionalparam>-Xdoclint:none</additionalparam>
+                                    <additionalJOption>-Xdoclint:none</additionalJOption>
                                     <overview>${basedir}/docs/javadoc/overview.html</overview>
                                     <quiet>true</quiet>
                                     <sourcepath>

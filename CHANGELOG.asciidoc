@@ -859,6 +859,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Bumped `httpclient` to 4.5.7.
 * Bumped `slf4j` to 1.7.25.
 * Bumped `commons-codec` to 1.12.
+* Bumped to Groovy 2.5.6.
 * Fixed partial response failures when using authentication in `gremlin-python`.
 * Fixed concurrency issues in `TraverserSet.toString()` and `ObjectWritable.toString()`.
 * Fixed a bug in `InlineFilterStrategy` that mixed up and's and or's when folding merging conditions together.
