@@ -26,7 +26,7 @@ limitations under the License.
     <version>4.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Apache TinkerPop</name>
-    <description>A Distributed Virtual Machine and Language</description>
+    <description>A Virtual Machine and Language</description>
     <url>http://tinkerpop.apache.org/</url>
     <mailingLists>
         <mailingList>
@@ -64,8 +64,7 @@ limitations under the License.
         <maven>3.2.5</maven>
     </prerequisites>
     <modules>
-        <module>gremlin-core</module>
-        <module>gremlin-machines</module>
+        <module>java</module>
     </modules>
     <scm>
         <connection>scm:git:git@github.com:apache/tinkerpop.git</connection>
@@ -80,13 +79,13 @@ limitations under the License.
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.4.0</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.4.0</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
