@@ -15,13 +15,15 @@
 # specific language governing permissions and limitations
 # under the License.
 
-FROM tinkerpop:hadoop-HADOOP_VERSION
+FROM tinkerpop/gremlin-server:GREMLIN_SERVER_VERSION
 
 RUN mkdir -p /opt
 WORKDIR /opt
-COPY gremlin-server/target/apache-tinkerpop-gremlin-server-*-distribution.zip /opt/
-RUN unzip *.zip && rm *.zip
 COPY gremlin-server/src/test /opt/test/
-COPY docker/gremlin-server/run.sh /opt/
-RUN chmod 755 /opt/run.sh
-CMD /opt/run.sh
+COPY docker/gremlin-server/docker-entrypoint.sh /opt/
+RUN chmod 755 /opt/docker-entrypoint.sh
+
+EXPOSE 45940
+
+ENTRYPOINT ["/opt/docker-entrypoint.sh"]
+CMD ["conf/gremlin-server-integration.yaml"]

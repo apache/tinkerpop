@@ -19,7 +19,9 @@
 #
 
 # Build docker images first
-# Build gremlin-server:  mvn clean install -pl :gremlin-server -am
+# Build gremlin-server:  mvn clean install -pl :gremlin-server -am && mvn install -Pdocker-images -pl :gremlin-server
+
+# set -x
 
 DIR=`dirname $0`
 PROJECT_HOME=${DIR}/../
@@ -39,16 +41,18 @@ REMOVE_CONTAINER="--rm"
 
 pushd ${PROJECT_HOME} > /dev/null
 
-#mvn clean package -DskipTests=true -pl :gremlin-server || mvn clean install -pl :gremlin-server -am
+GREMLIN_SERVER_VERSION="$1"
+shift
+if [[ -z "$GREMLIN_SERVER_VERSION" ]]; then
+GREMLIN_SERVER_VERSION=latest
+fi
 
-HADOOP_VERSION=$(cat pom.xml | grep -o '<hadoop.version>[^<]*' | head -n1 | cut -d '>' -f2)
+echo "Using Gremlin Server $GREMLIN_SERVER_VERSION"
 
-docker/build-containers.sh -h "${HADOOP_VERSION}"
-
-sed -e "s/HADOOP_VERSION\$/${HADOOP_VERSION}/" docker/gremlin-server/Dockerfile.template > Dockerfile
+sed -e "s/GREMLIN_SERVER_VERSION\$/${GREMLIN_SERVER_VERSION}/" docker/gremlin-server/Dockerfile.template > Dockerfile
 
 docker build -t tinkerpop:${BUILD_TAG} .
-docker run ${TINKERPOP_DOCKER_OPTS} ${REMOVE_CONTAINER} -ti tinkerpop:${BUILD_TAG}
+docker run ${TINKERPOP_TEST_DOCKER_OPTS} ${REMOVE_CONTAINER} -ti tinkerpop:${BUILD_TAG} ${@}
 
 status=$?
 popd > /dev/null

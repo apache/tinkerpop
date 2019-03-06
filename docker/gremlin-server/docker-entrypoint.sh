@@ -18,16 +18,15 @@
 # under the License.
 #
 
-TINKERPOP_HOME=$(find . -type d -name 'apache-tinkerpop-gremlin-server-*' -print -quit)
+TINKERPOP_HOME=/opt/gremlin-server
 
 cp /opt/test/scripts/* ${TINKERPOP_HOME}/scripts
 
-IP=$(hostname -I)
+IP=$(hostname -i)
 echo "#######################"
 echo IP is $IP
 echo "#######################"
 
-cat /opt/test/resources/org/apache/tinkerpop/gremlin/server/gremlin-server-integration.yaml | sed "s/host: localhost/host: 0.0.0.0/" > ${TINKERPOP_HOME}/conf/gremlin-server-integration.yaml
+cat /opt/test/resources/org/apache/tinkerpop/gremlin/server/gremlin-server-integration.yaml | sed "s/^host:.*/host: 0.0.0.0/" > ${TINKERPOP_HOME}/conf/gremlin-server-integration.yaml
 
-cd ${TINKERPOP_HOME}
-./bin/gremlin-server.sh conf/gremlin-server-integration.yaml
+exec /opt/gremlin-server/bin/gremlin-server.sh "$@"
