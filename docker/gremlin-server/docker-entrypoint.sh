@@ -27,8 +27,7 @@ echo "#######################"
 echo IP is $IP
 echo "#######################"
 
-#cat /opt/test/resources/org/apache/tinkerpop/gremlin/server/gremlin-server-integration.yaml | sed "s/^host:.*/host: 0.0.0.0/" > ${TINKERPOP_HOME}/conf/gremlin-server-integration.yaml
-cp /opt/test/resources/org/apache/tinkerpop/gremlin/server/*.yaml ${TINKERPOP_HOME}/conf/
+cp *.yaml ${TINKERPOP_HOME}/conf/
 
 java -version
 
