@@ -40,6 +40,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Bumped `commons-codec` to 1.12.
 * Fixed concurrency issues in `TraverserSet.toString()` and `ObjectWritable.toString()`.
 * Fixed a bug in `InlineFilterStrategy` that mixed up and's and or's when folding merging conditions together.
+* Fixed a bug in `PartitionStrategy` where `addE()` as a start step was not applying the partition.
 * Improved handling of failing `Authenticator` instances thus improving server responses to drivers.
 * Improved performance of `JavaTranslator` by reducing calls to `Method.getParameters()`.
 * Implemented `EarlyLimitStrategy` which is supposed to significantly reduce backend operations for queries that use `range()`.
