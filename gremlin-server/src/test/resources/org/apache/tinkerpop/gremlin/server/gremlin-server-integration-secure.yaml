@@ -16,7 +16,7 @@
 # under the License.
 
 host: 0.0.0.0
-port: 45940
+port: 45941
 scriptEvaluationTimeout: 30000
 graphs: {
   graph: conf/tinkergraph-empty.properties,
@@ -60,3 +60,7 @@ maxAccumulationBufferComponents: 1024
 resultIterationBatchSize: 64
 writeBufferLowWaterMark: 32768
 writeBufferHighWaterMark: 65536
+authentication: {
+  authenticator: org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator,
+  config: {
+    credentialsDb: conf/tinkergraph-credentials.properties}}

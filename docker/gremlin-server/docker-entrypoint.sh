@@ -27,6 +27,9 @@ echo "#######################"
 echo IP is $IP
 echo "#######################"
 
-cat /opt/test/resources/org/apache/tinkerpop/gremlin/server/gremlin-server-integration.yaml | sed "s/^host:.*/host: 0.0.0.0/" > ${TINKERPOP_HOME}/conf/gremlin-server-integration.yaml
+#cat /opt/test/resources/org/apache/tinkerpop/gremlin/server/gremlin-server-integration.yaml | sed "s/^host:.*/host: 0.0.0.0/" > ${TINKERPOP_HOME}/conf/gremlin-server-integration.yaml
+cp /opt/test/resources/org/apache/tinkerpop/gremlin/server/*.yaml ${TINKERPOP_HOME}/conf/
 
-exec /opt/gremlin-server/bin/gremlin-server.sh "$@"
+/opt/gremlin-server/bin/gremlin-server.sh install org.apache.tinkerpop gremlin-python 3.4.0
+/opt/gremlin-server/bin/gremlin-server.sh conf/gremlin-server-integration.yaml &
+exec /opt/gremlin-server/bin/gremlin-server.sh conf/gremlin-server-integration-secure.yaml
