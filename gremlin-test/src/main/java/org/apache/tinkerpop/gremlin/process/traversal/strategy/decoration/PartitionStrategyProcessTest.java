@@ -297,7 +297,7 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
         final GraphTraversalSource source = g.withStrategies(partitionStrategy);
         final Vertex v1 = source.addV().property("any", "thing").next();
         final Vertex v2 = source.addV().property("some", "thing").next();
-        final Edge e1 = source.withSideEffect("v2", v2).V(v1.id()).addE("connectsTo").from("v2").property("every", "thing").next();
+        final Edge e1 = source.V(v1).addE("connectsTo").from(v2).property("every", "thing").next();
         final Edge e2 = source.addE("relatesTo").from(v2).to(v1).property("every", "thing").next();
 
         assertNotNull(v1);
