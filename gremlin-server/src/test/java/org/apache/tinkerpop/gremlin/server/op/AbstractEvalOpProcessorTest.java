@@ -42,7 +42,6 @@ import static org.mockito.Matchers.anyString;
 
 public class AbstractEvalOpProcessorTest {
 
-    @org.junit.Ignore
     @Test
     public void evalOpInternalShouldHandleAllEvaluationExceptions() throws OpProcessorException {
         final AbstractEvalOpProcessor processor = new StandardOpProcessor();
