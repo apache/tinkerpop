@@ -16,31 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine.pipes;
 
+import org.apache.tinkerpop.machine.functions.MapFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
-
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IsFilter<C, A> extends AbstractFunction<C> implements FilterFunction<C, A> {
+public class MapStep<C, S, E> extends AbstractStep<C, S, E> {
 
-    private final A object;
-
-    public IsFilter(final C coefficient, final Set<String> labels, final A object) {
-        super(coefficient, labels);
-        this.object = object;
+    public MapStep(final AbstractStep previousStep, final MapFunction<C, S, E> mapFunction) {
+        super(previousStep, mapFunction);
     }
 
     @Override
-    public boolean test(final Traverser<C, A> traverser) {
-        return traverser.object().equals(this.object);
-    }
-
-    @Override
-    public String toString() {
-        return "[" + this.coefficient + "]" + this.getClass().getSimpleName() + ":" + this.object;
+    public Traverser<C, E> next() {
+        return ((MapFunction<C, S, E>) this.function).apply(super.getNextTraverser());
     }
 }

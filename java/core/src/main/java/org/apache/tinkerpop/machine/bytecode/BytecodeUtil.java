@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.compiler;
+package org.apache.tinkerpop.machine.bytecode;
 
 import org.apache.tinkerpop.language.Symbols;
-import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.functions.CFunction;
-import org.apache.tinkerpop.machine.functions.IncrMap;
-import org.apache.tinkerpop.machine.functions.InjectInitial;
-import org.apache.tinkerpop.machine.functions.IsFilter;
-import org.apache.tinkerpop.machine.functions.PathMap;
+import org.apache.tinkerpop.machine.functions.filter.IdentityFilter;
+import org.apache.tinkerpop.machine.functions.map.IncrMap;
+import org.apache.tinkerpop.machine.functions.initial.InjectInitial;
+import org.apache.tinkerpop.machine.functions.filter.IsFilter;
+import org.apache.tinkerpop.machine.functions.map.MapMap;
+import org.apache.tinkerpop.machine.functions.map.PathMap;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,12 +34,22 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class BytecodeToFunction {
+public final class BytecodeUtil {
+
+    public static <C> Bytecode<C> optimize(final Bytecode<C> bytecode) {
+        Instruction<C> toRemove = null;
+        for (Instruction<C> instruction : bytecode.getInstructions()) {
+            if (instruction.op().equals(Symbols.IDENTITY))
+                toRemove = instruction;
+        }
+        bytecode.removeInstruction(toRemove);
+        return bytecode;
+    }
 
     public static <C> List<CFunction<C>> compile(final Bytecode<C> bytecode) throws Exception {
         final List<CFunction<C>> functions = new ArrayList<>();
         for (final Instruction<C> instruction : bytecode.getInstructions()) {
-            functions.add(BytecodeToFunction.generateFunction(instruction));
+            functions.add(BytecodeUtil.generateFunction(instruction));
         }
         return functions;
     }
@@ -49,12 +59,16 @@ public final class BytecodeToFunction {
         final C coefficient = instruction.coefficient();
         final Set<String> labels = instruction.labels();
         switch (op) {
+            case Symbols.IDENTITY:
+                return new IdentityFilter<>(coefficient, labels);
             case Symbols.INJECT:
                 return new InjectInitial<>(coefficient, labels, instruction.args());
             case Symbols.IS:
                 return new IsFilter<>(coefficient, labels, instruction.args()[0]);
             case Symbols.INCR:
                 return new IncrMap<>(coefficient, labels);
+            case Symbols.MAP:
+                return new MapMap<>(coefficient, labels, compile((Bytecode<C>) instruction.args()[0]));
             case Symbols.PATH:
                 return new PathMap<>(coefficient, labels);
             default:

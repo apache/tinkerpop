@@ -145,7 +145,7 @@ public class TraverserSet<C, S> extends AbstractSet<Traverser<C, S>> implements 
         final List<Traverser<C, S>> list = new ArrayList<>(this.map.size());
         IteratorUtils.removeOnNext(this.map.values().iterator()).forEachRemaining(list::add);
         Collections.sort(list, comparator);
-        this.map.clear();
+        this.map.reset();
         list.forEach(traverser -> this.map.put(traverser, traverser));
     }
 
@@ -153,7 +153,7 @@ public class TraverserSet<C, S> extends AbstractSet<Traverser<C, S>> implements 
         final List<Traverser<C, S>> list = new ArrayList<>(this.map.size());
         IteratorUtils.removeOnNext(this.map.values().iterator()).forEachRemaining(list::add);
         Collections.shuffle(list);
-        this.map.clear();
+        this.map.reset();
         list.forEach(traverser -> this.map.put(traverser, traverser));
     }*/
 

@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.machine.bytecode;
 
+import org.apache.tinkerpop.language.Traversal;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -29,7 +31,7 @@ public final class Instruction<C> {
 
     private final C coefficient;
     private final String op;
-    private final Object[] args;
+    private Object[] args;
     private final Set<String> labels = new HashSet<>();
 
     public Instruction(final C coefficient, final String op, final Object... args) {
@@ -56,6 +58,11 @@ public final class Instruction<C> {
 
     public void addLabel(final String label) {
         this.labels.add(label);
+    }
+
+    public void addArg(final Object arg) {
+        this.args = Arrays.copyOf(this.args, this.args.length + 1);
+        this.args[this.args.length - 1] = arg instanceof Traversal ? ((Traversal) arg).getBytecode() : arg;
     }
 
     @Override

@@ -16,24 +16,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine.pipes;
 
-import org.apache.tinkerpop.machine.traversers.Path;
+import org.apache.tinkerpop.machine.functions.InitialFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
-import java.util.Set;
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PathMap<C, A> extends AbstractFunction<C> implements MapFunction<C, A, Path> {
+public class InitialStep<C, S> extends AbstractStep<C, S, S> {
 
-    public PathMap(final C coefficient, final Set<String> labels) {
-        super(coefficient, labels);
+    private final Iterator<Traverser<C, S>> objects;
+
+    public InitialStep(final InitialFunction<C, S> initialFunction) {
+        super(EmptyStep.instance(), initialFunction);
+        this.objects = initialFunction.get();
     }
 
     @Override
-    public Traverser<C, Path> apply(final Traverser<C, A> traverser) {
-        return traverser.split(this.coefficient, traverser.path());
+    public boolean hasNext() {
+        return this.objects.hasNext();
     }
+
+    @Override
+    public Traverser<C, S> next() {
+        return this.objects.next();
+    }
+
 }

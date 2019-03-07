@@ -16,45 +16,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine.pipes;
 
 import org.apache.tinkerpop.machine.traversers.Traverser;
-
-import java.util.Set;
+import org.apache.tinkerpop.machine.util.FastNoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class AbstractFunction<C> implements CFunction<C> {
+public final class EmptyStep<C, S, E> extends AbstractStep<C, S, E> {
 
-    protected final C coefficient;
-    private Set<String> labels;
+    private static final EmptyStep INSTANCE = new EmptyStep<>();
 
-    public AbstractFunction(final C coefficient, final Set<String> labels) {
-        this.coefficient = coefficient;
-        this.labels = labels;
+    private EmptyStep() {
+        super(null, null);
     }
 
     @Override
-    public C coefficient() {
-        return this.coefficient;
+    public boolean hasNext() {
+        return false;
     }
 
     @Override
-    public Set<String> labels() {
-        return this.labels;
+    public Traverser<C, E> next() {
+        throw FastNoSuchElementException.instance();
     }
 
-    protected <A> Traverser<C, A> postProcess(final Traverser<C, A> traverser) {
-        for (final String label : labels) {
-            traverser.addLabel(label);
-        }
-        return traverser;
-    }
-
-
-    @Override
-    public String toString() {
-        return "[" + this.coefficient + "]" + this.getClass().getSimpleName() + "@" + this.labels;
+    public static <C, S, E> EmptyStep<C, S, E> instance() {
+        return INSTANCE;
     }
 }

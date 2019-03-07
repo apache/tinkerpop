@@ -16,21 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.compiler;
+package org.apache.tinkerpop.machine.functions.map;
 
-import org.apache.tinkerpop.language.Traversal;
-import org.junit.jupiter.api.Test;
+import org.apache.tinkerpop.machine.functions.AbstractFunction;
+import org.apache.tinkerpop.machine.functions.MapFunction;
+import org.apache.tinkerpop.machine.traversers.Traverser;
+
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BytecodeToFunctionTest {
+public class IncrMap<C> extends AbstractFunction<C> implements MapFunction<C, Long, Long> {
 
-    @Test
-    public void shouldHaveBytecode() throws Exception {
-        final Traversal<Long, Long, Long> traversal = new Traversal<>(1L);
-        traversal.incr().is(2L);
-        System.out.println(traversal.getBytecode());
-        System.out.println(BytecodeToFunction.compile(traversal.getBytecode()));
+    public IncrMap(final C coefficient, final Set<String> labels) {
+        super(coefficient, labels);
+    }
+
+    @Override
+    public Traverser<C, Long> apply(final Traverser<C, Long> traverser) {
+        return postProcess(traverser.split(traverser.coefficient(), traverser.object() + 1));
     }
 }

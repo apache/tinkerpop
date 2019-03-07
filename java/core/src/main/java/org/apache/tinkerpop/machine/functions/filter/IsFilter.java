@@ -16,38 +16,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine.functions.filter;
 
+import org.apache.tinkerpop.machine.functions.AbstractFunction;
+import org.apache.tinkerpop.machine.functions.FilterFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class InjectInitial<C, A> extends AbstractFunction<C> implements InitialFunction<C, A> {
+public class IsFilter<C, A> extends AbstractFunction<C> implements FilterFunction<C, A> {
 
-    private final List<Traverser<C, A>> traversers;
+    private final A object;
 
-    public InjectInitial(final C coefficient, final Set<String> labels, final A... objects) {
+    public IsFilter(final C coefficient, final Set<String> labels, final A object) {
         super(coefficient, labels);
-        this.traversers = new ArrayList<>();
-        for (final A object : objects) {
-            this.traversers.add(new Traverser<>(this.coefficient, object));
-        }
-
+        this.object = object;
     }
 
     @Override
-    public Iterator<Traverser<C, A>> get() {
-        return this.traversers.iterator();
+    public boolean test(final Traverser<C, A> traverser) {
+        return traverser.object().equals(this.object);
     }
 
     @Override
     public String toString() {
-        return "[" + this.coefficient + "]" + this.getClass().getSimpleName() + ":" + this.traversers;
+        return "[" + this.coefficient + "]" + this.getClass().getSimpleName() + ":" + this.object;
     }
 }

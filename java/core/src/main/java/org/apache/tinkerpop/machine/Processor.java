@@ -16,45 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine;
 
 import org.apache.tinkerpop.machine.traversers.Traverser;
-
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class AbstractFunction<C> implements CFunction<C> {
+public interface Processor<C, S, E> {
 
-    protected final C coefficient;
-    private Set<String> labels;
+    public void addStart(final Traverser<C, S> traverser);
 
-    public AbstractFunction(final C coefficient, final Set<String> labels) {
-        this.coefficient = coefficient;
-        this.labels = labels;
-    }
+    public Traverser<C, E> nextTraverser();
 
-    @Override
-    public C coefficient() {
-        return this.coefficient;
-    }
+    public boolean hasNextTraverser();
 
-    @Override
-    public Set<String> labels() {
-        return this.labels;
-    }
-
-    protected <A> Traverser<C, A> postProcess(final Traverser<C, A> traverser) {
-        for (final String label : labels) {
-            traverser.addLabel(label);
-        }
-        return traverser;
-    }
-
-
-    @Override
-    public String toString() {
-        return "[" + this.coefficient + "]" + this.getClass().getSimpleName() + "@" + this.labels;
-    }
+    public void reset();
 }

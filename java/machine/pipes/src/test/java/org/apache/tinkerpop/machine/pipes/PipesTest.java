@@ -21,6 +21,7 @@ package org.apache.tinkerpop.machine.pipes;
 import org.apache.tinkerpop.language.Gremlin;
 import org.apache.tinkerpop.language.Traversal;
 import org.apache.tinkerpop.language.TraversalSource;
+import org.apache.tinkerpop.language.__;
 import org.apache.tinkerpop.machine.coefficients.LongCoefficients;
 import org.junit.jupiter.api.Test;
 
@@ -32,11 +33,13 @@ public class PipesTest {
     @Test
     public void shouldWork() throws Exception {
         final TraversalSource<Long> g = Gremlin.<Long>traversal().coefficients(LongCoefficients.instance());
-        final Traversal<Long, Long, Long> traversal = g.inject(7L, 10L, 12L).incr().incr().incr();
-        final Pipes pipes = new Pipes<Long, Long, Long>(traversal.getBytecode());
-        System.out.println(pipes.hasNext());
-        System.out.println(pipes.toList());
-        System.out.println(pipes.hasNext());
-        System.out.println(new Pipes<>(g.inject(7L, 10L, 12L).incr().as("a").incr().incr().path().getBytecode()).toList());
+        //final Traversal<Long, Long, Long> traversal = g.inject(7L, 10L, 12L).incr().incr().incr();
+        //final Pipes pipes = new Pipes<Long, Long, Long>(traversal.getBytecode());
+        //System.out.println(pipes.hasNext());
+        //System.out.println(pipes.toList());
+        //System.out.println(pipes.hasNext());
+        System.out.println(g.inject(7L, 10L, 12L).map(__.incr()).identity().getBytecode());
+        System.out.println(new Pipes<>(g.inject(7L, 10L, 12L).map(__.incr()).identity().getBytecode()));
+        System.out.println(new Pipes<>(g.inject(7L, 10L, 12L).map(__.incr()).identity().getBytecode()).toList());
     }
 }

@@ -16,8 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine.functions.map;
 
+import org.apache.tinkerpop.machine.functions.AbstractFunction;
+import org.apache.tinkerpop.machine.functions.MapFunction;
+import org.apache.tinkerpop.machine.traversers.Path;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
 import java.util.Set;
@@ -25,36 +28,14 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class AbstractFunction<C> implements CFunction<C> {
+public class PathMap<C, A> extends AbstractFunction<C> implements MapFunction<C, A, Path> {
 
-    protected final C coefficient;
-    private Set<String> labels;
-
-    public AbstractFunction(final C coefficient, final Set<String> labels) {
-        this.coefficient = coefficient;
-        this.labels = labels;
+    public PathMap(final C coefficient, final Set<String> labels) {
+        super(coefficient, labels);
     }
 
     @Override
-    public C coefficient() {
-        return this.coefficient;
-    }
-
-    @Override
-    public Set<String> labels() {
-        return this.labels;
-    }
-
-    protected <A> Traverser<C, A> postProcess(final Traverser<C, A> traverser) {
-        for (final String label : labels) {
-            traverser.addLabel(label);
-        }
-        return traverser;
-    }
-
-
-    @Override
-    public String toString() {
-        return "[" + this.coefficient + "]" + this.getClass().getSimpleName() + "@" + this.labels;
+    public Traverser<C, Path> apply(final Traverser<C, A> traverser) {
+        return traverser.split(this.coefficient, traverser.path());
     }
 }

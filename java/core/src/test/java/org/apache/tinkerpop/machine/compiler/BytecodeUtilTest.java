@@ -16,18 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.language;
+package org.apache.tinkerpop.machine.compiler;
+
+import org.apache.tinkerpop.language.Traversal;
+import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class Symbols {
+public class BytecodeUtilTest {
 
-    public static final String AS = "as";
-    public static final String IDENTITY = "identity";
-    public static final String IS = "is";
-    public static final String INCR = "incr";
-    public static final String INJECT = "inject";
-    public static final String MAP = "map";
-    public static final String PATH = "path";
+    @Test
+    public void shouldHaveBytecode() throws Exception {
+        final Traversal<Long, Long, Long> traversal = new Traversal<>(1L);
+        traversal.incr().is(2L);
+        System.out.println(traversal.getBytecode());
+        System.out.println(BytecodeUtil.compile(traversal.getBytecode()));
+    }
 }

@@ -21,13 +21,9 @@ package org.apache.tinkerpop.language;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class Symbols {
+public class __ {
 
-    public static final String AS = "as";
-    public static final String IDENTITY = "identity";
-    public static final String IS = "is";
-    public static final String INCR = "incr";
-    public static final String INJECT = "inject";
-    public static final String MAP = "map";
-    public static final String PATH = "path";
+    public static <C> Traversal<C, Long, Long> incr() {
+        return (Traversal) new Traversal<>(1L).incr();
+    }
 }

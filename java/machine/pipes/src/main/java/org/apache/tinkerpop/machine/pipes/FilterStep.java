@@ -16,23 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine.pipes;
 
+import org.apache.tinkerpop.machine.functions.FilterFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
-
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IncrMap<C> extends AbstractFunction<C> implements MapFunction<C, Long, Long> {
+public class FilterStep<C, S> extends AbstractStep<C, S, S> {
 
-    public IncrMap(final C coefficient, final Set<String> labels) {
-        super(coefficient, labels);
+    public FilterStep(final AbstractStep previousStep, final FilterFunction<C, S> filterFunction) {
+        super(previousStep, filterFunction);
     }
 
     @Override
-    public Traverser<C, Long> apply(final Traverser<C, Long> traverser) {
-        return postProcess(traverser.split(traverser.coefficient(), traverser.object() + 1));
+    public Traverser<C, S> next() {
+        Traverser<C, S> traverser = this.getNextTraverser();
+        while (true) {
+            if (((FilterFunction<C, S>) this.function).test(traverser))
+                return traverser;
+            traverser = this.getNextTraverser();
+        }
     }
 }

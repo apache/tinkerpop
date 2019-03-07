@@ -21,8 +21,9 @@ package org.apache.tinkerpop.machine;
 import org.apache.tinkerpop.language.Gremlin;
 import org.apache.tinkerpop.language.Traversal;
 import org.apache.tinkerpop.language.TraversalSource;
+import org.apache.tinkerpop.language.__;
 import org.apache.tinkerpop.machine.coefficients.LongCoefficients;
-import org.apache.tinkerpop.machine.compiler.BytecodeToFunction;
+import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -34,8 +35,8 @@ public class TraversalTest {
     public void shouldHaveBytecode() throws Exception {
         TraversalSource<Long> g = Gremlin.traversal();
         g = g.coefficients(LongCoefficients.instance());
-        final Traversal<Long, Long, Long> traversal = g.inject(7L).is(7L).incr().as("a").incr();
+        final Traversal<Long, Long, Long> traversal = g.inject(7L).is(7L).incr().as("a").is(8L).by(__.incr());
         System.out.println(traversal.getBytecode());
-        System.out.println(BytecodeToFunction.compile(traversal.getBytecode()));
+        System.out.println(BytecodeUtil.compile(traversal.getBytecode()));
     }
 }

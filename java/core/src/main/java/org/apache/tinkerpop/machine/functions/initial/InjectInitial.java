@@ -16,45 +16,40 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine.functions.initial;
 
+import org.apache.tinkerpop.machine.functions.AbstractFunction;
+import org.apache.tinkerpop.machine.functions.InitialFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class AbstractFunction<C> implements CFunction<C> {
+public class InjectInitial<C, A> extends AbstractFunction<C> implements InitialFunction<C, A> {
 
-    protected final C coefficient;
-    private Set<String> labels;
+    private final List<Traverser<C, A>> traversers;
 
-    public AbstractFunction(final C coefficient, final Set<String> labels) {
-        this.coefficient = coefficient;
-        this.labels = labels;
-    }
-
-    @Override
-    public C coefficient() {
-        return this.coefficient;
-    }
-
-    @Override
-    public Set<String> labels() {
-        return this.labels;
-    }
-
-    protected <A> Traverser<C, A> postProcess(final Traverser<C, A> traverser) {
-        for (final String label : labels) {
-            traverser.addLabel(label);
+    public InjectInitial(final C coefficient, final Set<String> labels, final A... objects) {
+        super(coefficient, labels);
+        this.traversers = new ArrayList<>();
+        for (final A object : objects) {
+            this.traversers.add(new Traverser<>(this.coefficient, object));
         }
-        return traverser;
+
     }
 
+    @Override
+    public Iterator<Traverser<C, A>> get() {
+        return this.traversers.iterator();
+    }
 
     @Override
     public String toString() {
-        return "[" + this.coefficient + "]" + this.getClass().getSimpleName() + "@" + this.labels;
+        return "[" + this.coefficient + "]" + this.getClass().getSimpleName() + ":" + this.traversers;
     }
 }

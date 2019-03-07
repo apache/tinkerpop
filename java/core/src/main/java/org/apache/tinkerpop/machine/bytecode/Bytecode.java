@@ -40,6 +40,10 @@ public class Bytecode<C> {
         return this.instructions;
     }
 
+    public void removeInstruction(final Instruction<C> instruction) {
+        this.instructions.remove(instruction);
+    }
+
     public Instruction<C> lastInstruction() {
         return this.instructions.get(this.instructions.size() - 1);
     }
