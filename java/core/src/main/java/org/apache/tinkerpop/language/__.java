@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.language;
 
+import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
 import org.apache.tinkerpop.machine.processor.EmptyProcessorFactory;
 
 /**
@@ -26,6 +27,7 @@ import org.apache.tinkerpop.machine.processor.EmptyProcessorFactory;
 public class __ {
 
     public static <C> Traversal<C, Long, Long> incr() {
-        return (Traversal) new Traversal<>(1L, EmptyProcessorFactory.instance()).incr();
+        // this is bad -- it needs to know how to get the coefficient of the parent traversal
+        return (Traversal) new Traversal<>(LongCoefficient.create(), EmptyProcessorFactory.instance()).incr();
     }
 }

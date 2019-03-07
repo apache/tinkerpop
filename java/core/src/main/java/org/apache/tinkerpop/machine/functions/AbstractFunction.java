@@ -18,7 +18,9 @@
  */
 package org.apache.tinkerpop.machine.functions;
 
+import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.util.StringFactory;
 
 import java.util.Set;
 
@@ -27,16 +29,16 @@ import java.util.Set;
  */
 public abstract class AbstractFunction<C, S, E> implements CFunction<C> {
 
-    protected final C coefficient;
+    protected final Coefficient<C> coefficient;
     private Set<String> labels;
 
-    public AbstractFunction(final C coefficient, final Set<String> labels) {
+    public AbstractFunction(final Coefficient<C> coefficient, final Set<String> labels) {
         this.coefficient = coefficient;
         this.labels = labels;
     }
 
     @Override
-    public C coefficient() {
+    public Coefficient<C> coefficient() {
         return this.coefficient;
     }
 
@@ -46,7 +48,8 @@ public abstract class AbstractFunction<C, S, E> implements CFunction<C> {
     }
 
     protected Traverser<C, E> postProcess(final Traverser<C, E> traverser) {
-        for (final String label : labels) {
+        traverser.coefficient().multiply(this.coefficient.value());
+        for (final String label : this.labels) {
             traverser.addLabel(label);
         }
         return traverser;
@@ -55,6 +58,6 @@ public abstract class AbstractFunction<C, S, E> implements CFunction<C> {
 
     @Override
     public String toString() {
-        return "[" + this.coefficient + "]" + this.getClass().getSimpleName() + "@" + this.labels;
+        return StringFactory.makeFunctionString(this);
     }
 }

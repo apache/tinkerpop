@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.machine.pipes;
 
-import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.functions.CFunction;
@@ -26,18 +25,18 @@ import org.apache.tinkerpop.machine.functions.FilterFunction;
 import org.apache.tinkerpop.machine.functions.InitialFunction;
 import org.apache.tinkerpop.machine.functions.MapFunction;
 import org.apache.tinkerpop.machine.functions.NestedFunction;
+import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Pipes<C, S, E> implements Iterator<E>, Processor<C, S, E> {
+public class Pipes<C, S, E> implements Processor<C, S, E> {
 
-    private final List<AbstractStep<?, ?, ?>> steps = new ArrayList<>();
+    private final List<Step<?, ?, ?>> steps = new ArrayList<>();
     private Step<C, ?, E> endStep;
     private Step<C, S, ?> startStep = EmptyStep.instance();
 
@@ -70,42 +69,25 @@ public class Pipes<C, S, E> implements Iterator<E>, Processor<C, S, E> {
     }
 
     @Override
+    public void addStart(final Traverser<C, S> traverser) {
+        this.startStep.addStart(traverser);
+    }
+
+    @Override
+    public Traverser<C, E> next() {
+        return this.endStep.next();
+    }
+
+    @Override
     public boolean hasNext() {
         return this.endStep.hasNext();
     }
 
     @Override
-    public E next() {
-        return this.endStep.next().object();
-    }
-
-    public List<E> toList() {
-        final List<E> list = new ArrayList<>();
-        while (this.hasNext()) {
-            list.add(this.next());
-        }
-        return list;
-    }
-
-    @Override
-    public void addStart(final Traverser<C, S> traverser) {
-        this.startStep.addTraverser(traverser);
-    }
-
-    @Override
-    public Traverser<C, E> nextTraverser() {
-        return this.endStep.next();
-    }
-
-    @Override
-    public boolean hasNextTraverser() {
-        return this.endStep.hasNext();
-    }
-
-    @Override
     public void reset() {
-        while (hasNext())
-            next();
+        for (final Step<?, ?, ?> step : this.steps) {
+            step.reset();
+        }
     }
 
     @Override

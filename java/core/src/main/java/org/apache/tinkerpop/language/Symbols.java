@@ -24,6 +24,7 @@ package org.apache.tinkerpop.language;
 public final class Symbols {
 
     public static final String AS = "as";
+    public static final String C = "c";
     public static final String IDENTITY = "identity";
     public static final String IS = "is";
     public static final String INCR = "incr";

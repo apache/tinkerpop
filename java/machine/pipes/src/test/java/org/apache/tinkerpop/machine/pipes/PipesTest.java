@@ -19,10 +19,11 @@
 package org.apache.tinkerpop.machine.pipes;
 
 import org.apache.tinkerpop.language.Gremlin;
+import org.apache.tinkerpop.language.Traversal;
 import org.apache.tinkerpop.language.TraversalSource;
 import org.apache.tinkerpop.language.TraversalUtil;
 import org.apache.tinkerpop.language.__;
-import org.apache.tinkerpop.machine.coefficients.LongCoefficients;
+import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -33,9 +34,11 @@ public class PipesTest {
     @Test
     public void shouldWork() {
         final TraversalSource<Long> g = Gremlin.<Long>traversal()
-                .coefficients(LongCoefficients.instance())
+                .coefficient(LongCoefficient.create())
                 .processor(PipesProcessor.class);
-        System.out.println(g.inject(7L, 10L, 12L).map(__.incr()).identity().toList());
-        System.out.println(TraversalUtil.getBytecode(g.inject(7L, 10L, 12L).map(__.incr()).identity()));
+        final Traversal<Long, Long, Long> traversal = g.inject(7L, 10L, 12L).as("a").c(3L).map(__.incr()).identity().incr();
+        System.out.println(TraversalUtil.getBytecode(traversal));
+        System.out.println(traversal);
+        System.out.println(traversal.toList());
     }
 }

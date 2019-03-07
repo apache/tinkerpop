@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.machine.processor;
 
 import org.apache.tinkerpop.machine.traversers.Traverser;
-import org.apache.tinkerpop.machine.util.FastNoSuchElementException;
+import org.apache.tinkerpop.util.FastNoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -37,12 +37,12 @@ public class EmptyProcessor<C, S, E> implements Processor<C, S, E> {
     }
 
     @Override
-    public Traverser<C, E> nextTraverser() {
+    public Traverser<C, E> next() {
         throw FastNoSuchElementException.instance();
     }
 
     @Override
-    public boolean hasNextTraverser() {
+    public boolean hasNext() {
         return false;
     }
 

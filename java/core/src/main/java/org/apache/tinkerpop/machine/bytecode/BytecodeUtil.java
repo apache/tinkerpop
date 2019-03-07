@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.machine.bytecode;
 
 import org.apache.tinkerpop.language.Symbols;
+import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.functions.filter.IdentityFilter;
 import org.apache.tinkerpop.machine.functions.filter.IsFilter;
@@ -56,7 +57,7 @@ public final class BytecodeUtil {
 
     private static <C> CFunction<C> generateFunction(final Instruction<C> instruction) {
         final String op = instruction.op();
-        final C coefficient = instruction.coefficient();
+        final Coefficient<C> coefficient = instruction.coefficient();
         final Set<String> labels = instruction.labels();
         switch (op) {
             case Symbols.IDENTITY:

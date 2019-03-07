@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.machine.functions.filter;
 
+import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.AbstractFunction;
 import org.apache.tinkerpop.machine.functions.FilterFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
@@ -29,12 +30,13 @@ import java.util.Set;
  */
 public class IdentityFilter<C, S> extends AbstractFunction<C,S,S> implements FilterFunction<C, S> {
 
-    public IdentityFilter(final C coefficient, final Set<String> labels) {
+    public IdentityFilter(final Coefficient<C> coefficient, final Set<String> labels) {
         super(coefficient, labels);
     }
 
     @Override
     public boolean test(final Traverser<C, S> traverser) {
+        super.postProcess(traverser);
         return true;
     }
 }

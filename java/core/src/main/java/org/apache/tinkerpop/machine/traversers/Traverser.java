@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.machine.traversers;
 
+import org.apache.tinkerpop.machine.coefficients.Coefficient;
+
 import java.util.Collections;
 import java.util.HashSet;
 
@@ -26,16 +28,16 @@ import java.util.HashSet;
  */
 public class Traverser<C, S> {
 
-    private final C coefficient;
+    private final Coefficient<C> coefficient;
     private final S object;
     private Path path = new Path();
 
-    public Traverser(final C coefficient, final S object) {
+    public Traverser(final Coefficient<C> coefficient, final S object) {
         this.coefficient = coefficient;
         this.object = object;
     }
 
-    public C coefficient() {
+    public Coefficient<C> coefficient() {
         return this.coefficient;
     }
 
@@ -51,8 +53,8 @@ public class Traverser<C, S> {
         this.path.addLabels(Collections.singleton(label));
     }
 
-    public <B> Traverser<C, B> split(final C coefficient, final B object) {
-        final Traverser<C, B> traverser = new Traverser<>(coefficient, object);
+    public <B> Traverser<C, B> split(final B object) {
+        final Traverser<C, B> traverser = new Traverser<>(this.coefficient.clone(), object);
         traverser.path = new Path(this.path);
         traverser.path.add(new HashSet<>(), object);
         return traverser;

@@ -18,12 +18,14 @@
  */
 package org.apache.tinkerpop.machine.functions.map;
 
-import org.apache.tinkerpop.machine.processor.Processor;
+import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.AbstractFunction;
 import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.functions.MapFunction;
 import org.apache.tinkerpop.machine.functions.NestedFunction;
+import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.util.StringFactory;
 
 import java.util.List;
 import java.util.Set;
@@ -31,12 +33,12 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MapMap<C, S, E> extends AbstractFunction<C,S,E> implements MapFunction<C, S, E>, NestedFunction<C, S, E> {
+public class MapMap<C, S, E> extends AbstractFunction<C, S, E> implements MapFunction<C, S, E>, NestedFunction<C, S, E> {
 
     private final List<CFunction<C>> mapFunctions;
     private Processor<C, S, E> processor;
 
-    public MapMap(final C coefficient, final Set<String> labels, final List<CFunction<C>> mapFunctions) {
+    public MapMap(final Coefficient<C> coefficient, final Set<String> labels, final List<CFunction<C>> mapFunctions) {
         super(coefficient, labels);
         this.mapFunctions = mapFunctions;
     }
@@ -45,7 +47,7 @@ public class MapMap<C, S, E> extends AbstractFunction<C,S,E> implements MapFunct
     public Traverser<C, E> apply(final Traverser<C, S> traverser) {
         this.processor.reset();
         this.processor.addStart(traverser);
-        return traverser.split(this.coefficient, this.processor.nextTraverser().object());
+        return super.postProcess(traverser.split(this.processor.next().object()));
     }
 
     public void setProcessor(final Processor<C, S, E> processor) {
@@ -58,6 +60,6 @@ public class MapMap<C, S, E> extends AbstractFunction<C,S,E> implements MapFunct
 
     @Override
     public String toString() {
-        return super.toString() + this.processor;
+        return StringFactory.makeFunctionString(this, this.mapFunctions.toArray());
     }
 }

@@ -21,7 +21,6 @@ package org.apache.tinkerpop.machine.pipes;
 import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.machine.traversers.TraverserSet;
-import org.apache.tinkerpop.machine.util.FastNoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -37,7 +36,7 @@ public abstract class AbstractStep<C, S, E> implements Step<C, S, E> {
         this.function = function;
     }
 
-    public void addTraverser(final Traverser<C, S> traverser) {
+    public void addStart(final Traverser<C, S> traverser) {
         this.traverserSet.add(traverser);
     }
 
@@ -52,10 +51,13 @@ public abstract class AbstractStep<C, S, E> implements Step<C, S, E> {
     protected Traverser<C, S> processNextTraverser() {
         if (!this.traverserSet.isEmpty())
             return this.traverserSet.remove();
-        else if (this.previousStep.hasNext())
-            return this.previousStep.next();
         else
-            throw FastNoSuchElementException.instance();
+            return this.previousStep.next();
+    }
+
+    @Override
+    public void reset() {
+        this.traverserSet.clear();
     }
 
     @Override

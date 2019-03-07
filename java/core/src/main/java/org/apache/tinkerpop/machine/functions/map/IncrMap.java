@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.machine.functions.map;
 
+import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.AbstractFunction;
 import org.apache.tinkerpop.machine.functions.MapFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
@@ -29,12 +30,12 @@ import java.util.Set;
  */
 public class IncrMap<C> extends AbstractFunction<C, Long, Long> implements MapFunction<C, Long, Long> {
 
-    public IncrMap(final C coefficient, final Set<String> labels) {
+    public IncrMap(final Coefficient<C> coefficient, final Set<String> labels) {
         super(coefficient, labels);
     }
 
     @Override
     public Traverser<C, Long> apply(final Traverser<C, Long> traverser) {
-        return postProcess(traverser.split(traverser.coefficient(), traverser.object() + 1));
+        return postProcess(traverser.split(traverser.object() + 1));
     }
 }

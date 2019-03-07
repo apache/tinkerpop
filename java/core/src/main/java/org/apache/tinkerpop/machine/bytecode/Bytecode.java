@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.machine.bytecode;
 
+import org.apache.tinkerpop.machine.coefficients.Coefficient;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,8 +34,9 @@ public class Bytecode<C> {
         this.instructions = new ArrayList<>();
     }
 
-    public void addInstruction(final C coefficient, final String op, final Object... args) {
-        this.instructions.add(new Instruction<>(coefficient, op, args));
+    public void addInstruction(final Coefficient<C> coefficient, final String op, final Object... args) {
+        this.instructions.add(new Instruction<>(coefficient.clone(), op, args));
+        coefficient.unity();
     }
 
     public List<Instruction<C>> getInstructions() {

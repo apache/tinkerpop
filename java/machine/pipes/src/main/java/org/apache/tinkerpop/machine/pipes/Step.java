@@ -27,7 +27,7 @@ import java.util.Iterator;
  */
 public interface Step<C, S, E> extends Iterator<Traverser<C, E>> {
 
-    public void addTraverser(final Traverser<C, S> traverser);
+    public void addStart(final Traverser<C, S> traverser);
 
-    // public void reset();
+    public void reset();
 }

@@ -20,16 +20,18 @@ package org.apache.tinkerpop.machine.processor;
 
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
+import java.util.Iterator;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Processor<C, S, E> {
+public interface Processor<C, S, E> extends Iterator<Traverser<C, E>> {
 
     public void addStart(final Traverser<C, S> traverser);
 
-    public Traverser<C, E> nextTraverser();
+    public Traverser<C, E> next();
 
-    public boolean hasNextTraverser();
+    public boolean hasNext();
 
     public void reset();
 }

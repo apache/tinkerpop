@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.machine.functions;
 
+import org.apache.tinkerpop.machine.coefficients.Coefficient;
+
 import java.util.Set;
 
 /**
@@ -25,7 +27,7 @@ import java.util.Set;
  */
 public interface CFunction<C> {
 
-    public C coefficient();
+    public Coefficient<C> coefficient();
 
     public Set<String> labels();
 

@@ -21,16 +21,23 @@ package org.apache.tinkerpop.machine.coefficients;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Coefficients<C> {
+public interface Coefficient<C> extends Cloneable {
 
-    public C sum(final C coefficientA, final C coefficientB);
+    public Coefficient<C> sum(final C other);
 
-    public C multiply(final C coefficientA, final C coefficientB);
+    public Coefficient<C> multiply(final C other);
 
-    public C unity();
+    public Coefficient<C> set(final C other);
 
-    public C zero();
+    public Coefficient<C> unity();
 
-    public Long count(final Long coefficient);
+    public Coefficient<C> zero();
 
+    public boolean isUnity();
+
+    public C value();
+
+    public Long count();
+
+    public Coefficient<C> clone();
 }

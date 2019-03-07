@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.machine.traversers;
 
 
-import org.apache.tinkerpop.machine.util.FastNoSuchElementException;
+import org.apache.tinkerpop.util.FastNoSuchElementException;
 
 import java.util.AbstractSet;
 import java.util.Collections;
@@ -61,12 +61,11 @@ public class TraverserSet<C, S> extends AbstractSet<Traverser<C, S>> implements 
     }
 
     public long bulkSize() {
-        /*long bulk = 0L;
-        for (final Traverser<C,S> traverser : this.map.values()) {
-            bulk = bulk + traverser.bulk();
+        long bulk = 0L;
+        for (final Traverser<C, S> traverser : this.map.values()) {
+            bulk = bulk + traverser.coefficient().count();
         }
-        return bulk;*/
-        return 1L;
+        return bulk;
     }
 
     @Override
@@ -86,7 +85,7 @@ public class TraverserSet<C, S> extends AbstractSet<Traverser<C, S>> implements 
             this.map.put(traverser, traverser);
             return true;
         } else {
-            //existing.
+            existing.coefficient().sum(traverser.coefficient().value());
             return false;
         }
     }

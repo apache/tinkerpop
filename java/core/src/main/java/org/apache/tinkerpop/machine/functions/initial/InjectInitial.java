@@ -18,11 +18,12 @@
  */
 package org.apache.tinkerpop.machine.functions.initial;
 
+import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.AbstractFunction;
 import org.apache.tinkerpop.machine.functions.InitialFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.util.StringFactory;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -34,18 +35,18 @@ public class InjectInitial<C, S> extends AbstractFunction<C, S, S> implements In
 
     private final S[] objects;
 
-    public InjectInitial(final C coefficient, final Set<String> labels, final S... objects) {
+    public InjectInitial(final Coefficient<C> coefficient, final Set<String> labels, final S... objects) {
         super(coefficient, labels);
         this.objects = objects;
     }
 
     @Override
     public Iterator<Traverser<C, S>> get() {
-        return Stream.of(this.objects).map(a -> new Traverser<>(this.coefficient, a)).iterator();
+        return Stream.of(this.objects).map(object -> new Traverser<>(this.coefficient.clone(), object)).iterator();
     }
 
     @Override
     public String toString() {
-        return "[" + this.coefficient + "]" + this.getClass().getSimpleName() + ":" + Arrays.toString(this.objects);
+        return StringFactory.makeFunctionString(this, this.objects);
     }
 }

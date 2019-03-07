@@ -18,24 +18,31 @@
  */
 package org.apache.tinkerpop.language;
 
+import org.apache.tinkerpop.machine.coefficients.Coefficient;
+import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
+import org.apache.tinkerpop.machine.compiler.Strategy;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
-import org.apache.tinkerpop.machine.coefficients.Coefficients;
-import org.apache.tinkerpop.machine.coefficients.LongCoefficients;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class TraversalSource<C> {
 
-    private Coefficients<C> coefficients = (Coefficients) new LongCoefficients();
+    private Coefficient<C> coefficient;
     private ProcessorFactory factory;
+    private List<Strategy> strategies = new ArrayList<>();
 
 
     protected TraversalSource() {
+        this.coefficient = (Coefficient<C>) LongCoefficient.create();
     }
 
-    public TraversalSource<C> coefficients(final Coefficients coefficients) {
-        this.coefficients = coefficients;
+    public TraversalSource<C> coefficient(final Coefficient<C> coefficient) {
+        this.coefficient = coefficient.clone();
+        this.coefficient.unity();
         return this;
     }
 
@@ -48,8 +55,13 @@ public class TraversalSource<C> {
         return this;
     }
 
+    public TraversalSource<C> strategy(final Strategy strategy) {
+        this.strategies.add(strategy);
+        return this;
+    }
+
     public <S> Traversal<C, S, S> inject(final S... objects) {
-        final Traversal<C, S, S> traversal = new Traversal<>(this.coefficients.unity(), this.factory);
+        final Traversal<C, S, S> traversal = new Traversal<>(this.coefficient, this.factory);
         return traversal.inject(objects);
     }
 }

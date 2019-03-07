@@ -19,8 +19,8 @@
 package org.apache.tinkerpop.machine.compiler;
 
 import org.apache.tinkerpop.language.Traversal;
+import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
 import org.apache.tinkerpop.machine.processor.EmptyProcessorFactory;
-import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -30,7 +30,7 @@ public class BytecodeUtilTest {
 
     @Test
     public void shouldHaveBytecode() throws Exception {
-        final Traversal<Long, Long, Long> traversal = new Traversal<>(1L, EmptyProcessorFactory.instance());
+        final Traversal<Long, Long, Long> traversal = new Traversal<>(LongCoefficient.create(), EmptyProcessorFactory.instance());
         traversal.incr().is(2L);
         //System.out.println(traversal.bytecode);
         //System.out.println(BytecodeUtil.compile(traversal.getBytecode()));

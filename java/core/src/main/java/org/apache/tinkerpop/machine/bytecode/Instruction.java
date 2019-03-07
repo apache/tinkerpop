@@ -20,6 +20,8 @@ package org.apache.tinkerpop.machine.bytecode;
 
 import org.apache.tinkerpop.language.Traversal;
 import org.apache.tinkerpop.language.TraversalUtil;
+import org.apache.tinkerpop.machine.coefficients.Coefficient;
+import org.apache.tinkerpop.util.StringFactory;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -30,18 +32,18 @@ import java.util.Set;
  */
 public final class Instruction<C> {
 
-    private final C coefficient;
+    private final Coefficient<C> coefficient;
     private final String op;
     private Object[] args;
     private final Set<String> labels = new HashSet<>();
 
-    public Instruction(final C coefficient, final String op, final Object... args) {
+    public Instruction(final Coefficient<C> coefficient, final String op, final Object... args) {
         this.coefficient = coefficient;
         this.op = op;
         this.args = args;
     }
 
-    public C coefficient() {
+    public Coefficient<C> coefficient() {
         return this.coefficient;
     }
 
@@ -68,6 +70,6 @@ public final class Instruction<C> {
 
     @Override
     public String toString() {
-        return "[" + this.coefficient + "]" + this.op + ":" + Arrays.toString(this.args).replace("[", "").replace("]", "" + "@" + this.labels);
+        return StringFactory.makeInstructionString(this);
     }
 }

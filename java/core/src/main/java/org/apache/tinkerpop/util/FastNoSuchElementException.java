@@ -16,41 +16,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.coefficients;
+package org.apache.tinkerpop.util;
+
+import java.util.NoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LongCoefficients implements Coefficients<Long> {
+public class FastNoSuchElementException extends NoSuchElementException {
 
-    private static final LongCoefficients INSTANCE = new LongCoefficients();
+    private static final long serialVersionUID = 2303108654138257697L;
+    private static final FastNoSuchElementException INSTANCE = new FastNoSuchElementException();
 
-    @Override
-    public final Long sum(final Long coefficientA, final Long coefficientB) {
-        return coefficientA + coefficientB;
+    private FastNoSuchElementException() {
     }
 
-    @Override
-    public final Long multiply(final Long coefficientA, final Long coefficientB) {
-        return coefficientA * coefficientB;
-    }
-
-    @Override
-    public final Long unity() {
-        return 1L;
-    }
-
-    @Override
-    public final Long zero() {
-        return 0L;
-    }
-
-    @Override
-    public final Long count(final Long coefficient) {
-        return coefficient;
-    }
-
-    public static LongCoefficients instance() {
+    /**
+     * Retrieve a singleton, fast {@link NoSuchElementException} without a stack trace.
+     */
+    public static NoSuchElementException instance() {
         return INSTANCE;
+    }
+
+    @Override
+    public synchronized Throwable fillInStackTrace() {
+        return this;
     }
 }
