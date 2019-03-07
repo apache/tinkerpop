@@ -773,7 +773,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             final JsonNode node = mapper.readTree(json);
             assertEquals("java.lang.ArithmeticException", node.get(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS).get(0).asText());
             assertEquals(1, node.get(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS).size());
-            assertThat(node.get(Tokens.STATUS_ATTRIBUTE_STACK_TRACE).asText(), startsWith("java.lang.ArithmeticException: Division by zero\n\tat java.math.BigDecimal.divide(BigDecimal.java"));
+            assertThat(node.get(Tokens.STATUS_ATTRIBUTE_STACK_TRACE).asText(), startsWith("java.lang.ArithmeticException: Division by zero\n\tat java.base/java.math.BigDecimal.divide(BigDecimal.java"));
         }
     }
 
