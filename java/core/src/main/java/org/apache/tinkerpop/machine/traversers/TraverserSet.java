@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.machine.traversers;
 
 
-import org.apache.tinkerpop.machine.Traverser;
 import org.apache.tinkerpop.machine.util.FastNoSuchElementException;
 
 import java.util.AbstractSet;

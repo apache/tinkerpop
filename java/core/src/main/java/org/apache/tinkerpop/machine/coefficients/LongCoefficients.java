@@ -23,6 +23,8 @@ package org.apache.tinkerpop.machine.coefficients;
  */
 public final class LongCoefficients implements Coefficients<Long> {
 
+    private static final LongCoefficients INSTANCE = new LongCoefficients();
+
     @Override
     public final Long sum(final Long coefficientA, final Long coefficientB) {
         return coefficientA + coefficientB;
@@ -46,5 +48,9 @@ public final class LongCoefficients implements Coefficients<Long> {
     @Override
     public final Long count(final Long coefficient) {
         return coefficient;
+    }
+
+    public static LongCoefficients instance() {
+        return INSTANCE;
     }
 }

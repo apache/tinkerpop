@@ -16,27 +16,39 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine;
+package org.apache.tinkerpop.machine.bytecode;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Bytecode<C> {
+public final class Instruction<C> {
 
-    public List<Instruction<C>> instructions;
+    private final C coefficient;
+    private final String op;
+    private final Object[] args;
 
-    public Bytecode() {
-        this.instructions = new ArrayList<>();
+    public Instruction(final C coefficient, final String op, final Object... args) {
+        this.coefficient = coefficient;
+        this.op = op;
+        this.args = args;
     }
 
-    public void addInstruction(final C coefficient, final String op, final Object... args) {
-        this.instructions.add(new Instruction<>(coefficient, op, args));
+    public C coefficient() {
+        return this.coefficient;
     }
 
-    public List<Instruction<C>> getInstructions() {
-        return this.instructions;
+    public String op() {
+        return this.op;
+    }
+
+    public Object[] args() {
+        return this.args;
+    }
+
+    @Override
+    public String toString() {
+        return "[" + this.coefficient + "]" + this.op + ":" + Arrays.toString(this.args).replace("[", "").replace("]", "");
     }
 }

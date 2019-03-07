@@ -16,25 +16,32 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine.bytecode;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GFunction<C> {
+public class Bytecode<C> {
 
-    protected final C coefficient;
+    public List<Instruction<C>> instructions;
 
-    public GFunction(final C coefficient) {
-        this.coefficient = coefficient;
+    public Bytecode() {
+        this.instructions = new ArrayList<>();
     }
 
-    public C coefficient() {
-        return this.coefficient;
+    public void addInstruction(final C coefficient, final String op, final Object... args) {
+        this.instructions.add(new Instruction<>(coefficient, op, args));
+    }
+
+    public List<Instruction<C>> getInstructions() {
+        return this.instructions;
     }
 
     @Override
     public String toString() {
-        return "[" + this.coefficient + "]" + this.getClass().getSimpleName();
+        return this.instructions.toString();
     }
 }

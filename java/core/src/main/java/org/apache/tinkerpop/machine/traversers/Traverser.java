@@ -16,30 +16,35 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine;
-
-import java.util.function.Function;
+package org.apache.tinkerpop.machine.traversers;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Traversal<C, A, B> {
+public class Traverser<C, A> {
 
-    private final Bytecode<C> bytecode;
-    private C currentCoefficient;
+    private final C coefficient;
+    private final A object;
 
-    public Traversal(final C unity) {
-        this.currentCoefficient = unity;
-        this.bytecode = new Bytecode<>();
+    public Traverser(final C coefficient, final A object) {
+        this.coefficient = coefficient;
+        this.object = object;
     }
 
-    public <E> Traversal<C, A, E> map(final Function<B, E> mapFunction) {
-        this.bytecode.addInstruction(this.currentCoefficient, "map", mapFunction);
-        return (Traversal) this;
+    public C coefficient() {
+        return this.coefficient;
     }
 
-    public Bytecode<C> getBytecode() {
-        return this.bytecode;
+    public A object() {
+        return this.object;
     }
 
+    public <B> Traverser<C, B> split(final C coefficient, final B object) {
+        return new Traverser<>(coefficient, object);
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return other instanceof Traverser && ((Traverser<C, A>) other).object.equals(this.object);
+    }
 }

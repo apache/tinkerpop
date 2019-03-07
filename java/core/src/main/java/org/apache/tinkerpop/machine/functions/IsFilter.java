@@ -18,23 +18,27 @@
  */
 package org.apache.tinkerpop.machine.functions;
 
+import org.apache.tinkerpop.machine.traversers.Traverser;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GFunction<C> {
+public class IsFilter<C, A> extends GFunction<C> implements FilterFunction<C, A> {
 
-    protected final C coefficient;
+    private final A object;
 
-    public GFunction(final C coefficient) {
-        this.coefficient = coefficient;
+    public IsFilter(final C coefficient, final A object) {
+        super(coefficient);
+        this.object = object;
     }
 
-    public C coefficient() {
-        return this.coefficient;
+    @Override
+    public boolean test(final Traverser<C, A> traverser) {
+        return traverser.object().equals(this.object);
     }
 
     @Override
     public String toString() {
-        return "[" + this.coefficient + "]" + this.getClass().getSimpleName();
+        return "[" + this.coefficient + "]" + this.getClass().getSimpleName() + ":" + this.object;
     }
 }

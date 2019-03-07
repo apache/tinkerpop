@@ -18,9 +18,12 @@
  */
 package org.apache.tinkerpop.machine;
 
+import org.apache.tinkerpop.language.Gremlin;
+import org.apache.tinkerpop.language.Traversal;
+import org.apache.tinkerpop.language.TraversalSource;
+import org.apache.tinkerpop.machine.coefficients.LongCoefficients;
+import org.apache.tinkerpop.machine.compiler.BytecodeToFunction;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -28,9 +31,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class TraversalTest {
 
     @Test
-    public void shouldHaveBytecode() {
-        final Traversal<Long, Integer, Integer> traversal = new Traversal<>(1L);
-        traversal.map(a -> a + 1);
-        assertEquals("map", traversal.getBytecode().getInstructions().get(0).getOp());
+    public void shouldHaveBytecode() throws Exception {
+        TraversalSource<Long> g = Gremlin.traversal();
+        g = g.coefficients(LongCoefficients.instance());
+        final Traversal<Long, Long, Long> traversal = g.inject(7L).is(7L).incr().incr();
+        System.out.println(traversal.getBytecode());
+        System.out.println(BytecodeToFunction.compile(traversal.getBytecode()));
     }
 }

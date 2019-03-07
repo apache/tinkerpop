@@ -18,23 +18,35 @@
  */
 package org.apache.tinkerpop.machine.functions;
 
+import org.apache.tinkerpop.machine.traversers.Traverser;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GFunction<C> {
+public class InjectInitial<C, A> extends GFunction<C> implements InitialFunction<C, A> {
 
-    protected final C coefficient;
+    private final List<Traverser<C, A>> traversers;
 
-    public GFunction(final C coefficient) {
-        this.coefficient = coefficient;
+    public InjectInitial(final C coefficient, final A... objects) {
+        super(coefficient);
+        this.traversers = new ArrayList<>();
+        for (final A object : objects) {
+            this.traversers.add(new Traverser<>(this.coefficient, object));
+        }
+
     }
 
-    public C coefficient() {
-        return this.coefficient;
+    @Override
+    public Iterator<Traverser<C, A>> get() {
+        return this.traversers.iterator();
     }
 
     @Override
     public String toString() {
-        return "[" + this.coefficient + "]" + this.getClass().getSimpleName();
+        return "[" + this.coefficient + "]" + this.getClass().getSimpleName() + ":" + this.traversers;
     }
 }

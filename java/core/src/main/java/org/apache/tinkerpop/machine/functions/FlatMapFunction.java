@@ -18,23 +18,13 @@
  */
 package org.apache.tinkerpop.machine.functions;
 
+import org.apache.tinkerpop.machine.traversers.Traverser;
+
+import java.util.Iterator;
+import java.util.function.Function;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GFunction<C> {
-
-    protected final C coefficient;
-
-    public GFunction(final C coefficient) {
-        this.coefficient = coefficient;
-    }
-
-    public C coefficient() {
-        return this.coefficient;
-    }
-
-    @Override
-    public String toString() {
-        return "[" + this.coefficient + "]" + this.getClass().getSimpleName();
-    }
+public interface FlatMapFunction<C, A, B> extends Function<Traverser<C, A>, Iterator<Traverser<C, B>>> {
 }

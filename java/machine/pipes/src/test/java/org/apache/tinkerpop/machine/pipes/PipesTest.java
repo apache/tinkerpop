@@ -16,14 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.language;
+package org.apache.tinkerpop.machine.pipes;
+
+import org.apache.tinkerpop.language.Gremlin;
+import org.apache.tinkerpop.language.Traversal;
+import org.apache.tinkerpop.language.TraversalSource;
+import org.apache.tinkerpop.machine.coefficients.LongCoefficients;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface GremlinCore {
+public class PipesTest {
 
-    public default GremlinCore select() {
-        return null;
+    @Test
+    public void shouldWork() throws Exception {
+        final TraversalSource<Long> g = Gremlin.<Long>traversal().coefficients(LongCoefficients.instance());
+        final Traversal<Long, Long, Long> traversal = g.inject(7L, 10L, 12L).incr().incr().incr();
+        final Pipes pipes = new Pipes<Long, Long, Long>(traversal.getBytecode());
+        System.out.println(pipes.hasNext());
+        System.out.println(pipes.toList());
+        System.out.println(pipes.hasNext());
     }
 }

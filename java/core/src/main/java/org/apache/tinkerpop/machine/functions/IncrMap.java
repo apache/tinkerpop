@@ -16,35 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine;
+package org.apache.tinkerpop.machine.functions;
+
+import org.apache.tinkerpop.machine.traversers.Traverser;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Traverser<C, A> {
+public class IncrMap<C> extends GFunction<C> implements MapFunction<C, Long, Long> {
 
-    private final C coefficient;
-    private final A object;
-
-    public Traverser(final C coefficient, final A object) {
-        this.coefficient = coefficient;
-        this.object = object;
-    }
-
-    public C getCoefficient() {
-        return this.coefficient;
-    }
-
-    public A getObject() {
-        return this.object;
-    }
-
-    public <B> Traverser<C, B> split(final C coefficient, final B object) {
-        return new Traverser<>(coefficient, object);
+    public IncrMap(final C coefficient) {
+        super(coefficient);
     }
 
     @Override
-    public boolean equals(final Object other) {
-        return other instanceof Traverser && ((Traverser<C, A>) other).object.equals(this.object);
+    public Traverser<C, Long> apply(final Traverser<C, Long> traverser) {
+        return traverser.split(traverser.coefficient(), traverser.object() + 1);
     }
 }

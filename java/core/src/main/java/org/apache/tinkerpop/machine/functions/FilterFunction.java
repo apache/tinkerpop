@@ -16,31 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.pipes;
+package org.apache.tinkerpop.machine.functions;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import org.apache.tinkerpop.machine.traversers.Traverser;
+
+import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Pipe <S, E> implements Iterator<E>, AutoCloseable {
-
-    private final List<Step<?, ?>> steps = new ArrayList<>();
-
-    @Override
-    public void close() throws Exception {
-
-    }
-
-    @Override
-    public boolean hasNext() {
-        return false;
-    }
-
-    @Override
-    public E next() {
-        return null;
-    }
+public interface FilterFunction<C, A> extends Predicate<Traverser<C, A>> {
 }

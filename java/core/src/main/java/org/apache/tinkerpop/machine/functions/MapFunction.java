@@ -18,28 +18,13 @@
  */
 package org.apache.tinkerpop.machine.functions;
 
-import org.apache.tinkerpop.machine.Traverser;
-import org.apache.tinkerpop.machine.coefficients.Coefficients;
+import org.apache.tinkerpop.machine.traversers.Traverser;
 
 import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MapFunction<C, A, B> implements GFunction<C, A,B> {
+public interface MapFunction<C, A, B> extends Function<Traverser<C, A>, Traverser<C, B>> {
 
-    private final C coefficient;
-    private final Coefficients<C> coefficients;
-    private final Function<A, B> mapFunction;
-
-    public MapFunction(final Coefficients<C> coefficients, final C coefficient, final Function<A, B> mapFunction) {
-        this.coefficients = coefficients;
-        this.coefficient = coefficient;
-        this.mapFunction = mapFunction;
-    }
-
-    @Override
-    public Traverser<C, B> apply(final Traverser<C, A> traverser) {
-        return traverser.split(this.coefficients.multiply(traverser.getCoefficient(), this.coefficient), this.mapFunction.apply(traverser.getObject()));
-    }
 }

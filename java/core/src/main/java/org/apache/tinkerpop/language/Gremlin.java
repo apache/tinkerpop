@@ -16,25 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.language;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GFunction<C> {
+public final class Gremlin {
 
-    protected final C coefficient;
-
-    public GFunction(final C coefficient) {
-        this.coefficient = coefficient;
-    }
-
-    public C coefficient() {
-        return this.coefficient;
-    }
-
-    @Override
-    public String toString() {
-        return "[" + this.coefficient + "]" + this.getClass().getSimpleName();
+    public static <C> TraversalSource<C> traversal() {
+        return new TraversalSource<>();
     }
 }

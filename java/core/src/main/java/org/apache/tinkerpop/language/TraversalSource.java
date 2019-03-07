@@ -16,32 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine;
+package org.apache.tinkerpop.language;
+
+import org.apache.tinkerpop.machine.coefficients.Coefficients;
+import org.apache.tinkerpop.machine.coefficients.LongCoefficients;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class Instruction<C> {
+public class TraversalSource<C> {
 
-    private final C coefficient;
-    private final String op;
-    private final Object[] args;
+    private Coefficients<C> coefficients = (Coefficients) new LongCoefficients();
 
-    public Instruction(final C coefficient, final String op, final Object... args) {
-        this.coefficient = coefficient;
-        this.op = op;
-        this.args = args;
+    protected TraversalSource() {
     }
 
-    public C getCoefficient() {
-        return this.coefficient;
+    public TraversalSource<C> coefficients(final Coefficients coefficients) {
+        this.coefficients = coefficients;
+        return this;
     }
 
-    public String getOp() {
-        return this.op;
-    }
-
-    public Object[] getArgs() {
-        return this.args;
+    public <A> Traversal<C, A, A> inject(final A... objects) {
+        final Traversal<C, A, A> traversal = new Traversal<>(this.coefficients.unity());
+        return traversal.inject(objects);
     }
 }

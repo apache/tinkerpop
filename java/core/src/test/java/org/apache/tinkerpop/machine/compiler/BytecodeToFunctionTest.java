@@ -16,25 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine.compiler;
+
+import org.apache.tinkerpop.language.Traversal;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GFunction<C> {
+public class BytecodeToFunctionTest {
 
-    protected final C coefficient;
-
-    public GFunction(final C coefficient) {
-        this.coefficient = coefficient;
-    }
-
-    public C coefficient() {
-        return this.coefficient;
-    }
-
-    @Override
-    public String toString() {
-        return "[" + this.coefficient + "]" + this.getClass().getSimpleName();
+    @Test
+    public void shouldHaveBytecode() throws Exception {
+        final Traversal<Long, Long, Long> traversal = new Traversal<>(1L);
+        traversal.incr().is(2L);
+        System.out.println(traversal.getBytecode());
+        System.out.println(BytecodeToFunction.compile(traversal.getBytecode()));
     }
 }
