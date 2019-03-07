@@ -18,23 +18,15 @@
  */
 package org.apache.tinkerpop.machine.functions;
 
+import java.util.Set;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GFunction<C> {
+public interface CFunction<C> {
 
-    protected final C coefficient;
+    public C coefficient();
 
-    public GFunction(final C coefficient) {
-        this.coefficient = coefficient;
-    }
+    public Set<String> labels();
 
-    public C coefficient() {
-        return this.coefficient;
-    }
-
-    @Override
-    public String toString() {
-        return "[" + this.coefficient + "]" + this.getClass().getSimpleName();
-    }
 }

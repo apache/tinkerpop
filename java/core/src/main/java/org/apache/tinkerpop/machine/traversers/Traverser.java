@@ -18,6 +18,9 @@
  */
 package org.apache.tinkerpop.machine.traversers;
 
+import java.util.Collections;
+import java.util.HashSet;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -25,6 +28,7 @@ public class Traverser<C, A> {
 
     private final C coefficient;
     private final A object;
+    private Path path = new Path();
 
     public Traverser(final C coefficient, final A object) {
         this.coefficient = coefficient;
@@ -39,12 +43,28 @@ public class Traverser<C, A> {
         return this.object;
     }
 
+    public Path path() {
+        return this.path;
+    }
+
+    public void addLabel(final String label) {
+        this.path.addLabels(Collections.singleton(label));
+    }
+
     public <B> Traverser<C, B> split(final C coefficient, final B object) {
-        return new Traverser<>(coefficient, object);
+        final Traverser<C, B> traverser = new Traverser<>(coefficient, object);
+        traverser.path = new Path(this.path);
+        traverser.path.add(new HashSet<>(), object);
+        return traverser;
     }
 
     @Override
     public boolean equals(final Object other) {
         return other instanceof Traverser && ((Traverser<C, A>) other).object.equals(this.object);
+    }
+
+    @Override
+    public String toString() {
+        return this.object.toString();
     }
 }

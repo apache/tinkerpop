@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.machine.bytecode;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -28,6 +30,7 @@ public final class Instruction<C> {
     private final C coefficient;
     private final String op;
     private final Object[] args;
+    private final Set<String> labels = new HashSet<>();
 
     public Instruction(final C coefficient, final String op, final Object... args) {
         this.coefficient = coefficient;
@@ -47,8 +50,16 @@ public final class Instruction<C> {
         return this.args;
     }
 
+    public Set<String> labels() {
+        return this.labels;
+    }
+
+    public void addLabel(final String label) {
+        this.labels.add(label);
+    }
+
     @Override
     public String toString() {
-        return "[" + this.coefficient + "]" + this.op + ":" + Arrays.toString(this.args).replace("[", "").replace("]", "");
+        return "[" + this.coefficient + "]" + this.op + ":" + Arrays.toString(this.args).replace("[", "").replace("]", "" + "@" + this.labels);
     }
 }

@@ -40,6 +40,10 @@ public class Bytecode<C> {
         return this.instructions;
     }
 
+    public Instruction<C> lastInstruction() {
+        return this.instructions.get(this.instructions.size() - 1);
+    }
+
     @Override
     public String toString() {
         return this.instructions.toString();

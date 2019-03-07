@@ -25,5 +25,5 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface FilterFunction<C, A> extends Predicate<Traverser<C, A>> {
+public interface FilterFunction<C, A> extends Predicate<Traverser<C, A>>, CFunction<C> {
 }

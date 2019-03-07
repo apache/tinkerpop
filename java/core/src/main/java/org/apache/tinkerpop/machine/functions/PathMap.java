@@ -16,14 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.compiler;
+package org.apache.tinkerpop.machine.functions;
+
+import org.apache.tinkerpop.machine.traversers.Path;
+import org.apache.tinkerpop.machine.traversers.Traverser;
+
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class Symbols {
+public class PathMap<C, A> extends AbstractFunction<C> implements MapFunction<C, A, Path> {
 
-    public static final String IS = "is";
-    public static final String INCR = "incr";
-    public static final String INJECT = "inject";
+    public PathMap(final C coefficient, final Set<String> labels) {
+        super(coefficient, labels);
+    }
+
+    @Override
+    public Traverser<C, Path> apply(final Traverser<C, A> traverser) {
+        return traverser.split(this.coefficient, traverser.path());
+    }
 }

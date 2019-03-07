@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.machine.pipes;
 
-import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.functions.FilterFunction;
-import org.apache.tinkerpop.machine.functions.GFunction;
 import org.apache.tinkerpop.machine.functions.InitialFunction;
 import org.apache.tinkerpop.machine.functions.MapFunction;
+import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.machine.util.FastNoSuchElementException;
 
 import java.util.Iterator;
@@ -32,11 +32,11 @@ import java.util.Iterator;
  */
 public class Step<C, S, E> implements Iterator<Traverser<?, E>> {
 
-    private final GFunction<C> function;
+    private final CFunction<C> function;
     private final Step previousStep;
     private Iterator<Traverser<C, E>> currentIterator = null;
 
-    public Step(final Step previousStep, final GFunction<C> function) {
+    public Step(final Step previousStep, final CFunction<C> function) {
         this.previousStep = previousStep;
         this.function = function;
         if (this.function instanceof InitialFunction) {

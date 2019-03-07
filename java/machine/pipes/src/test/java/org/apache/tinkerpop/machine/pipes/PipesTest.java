@@ -37,5 +37,6 @@ public class PipesTest {
         System.out.println(pipes.hasNext());
         System.out.println(pipes.toList());
         System.out.println(pipes.hasNext());
+        System.out.println(new Pipes<>(g.inject(7L, 10L, 12L).incr().as("a").incr().incr().path().getBytecode()).toList());
     }
 }

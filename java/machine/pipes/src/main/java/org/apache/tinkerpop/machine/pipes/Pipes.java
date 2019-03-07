@@ -20,7 +20,7 @@ package org.apache.tinkerpop.machine.pipes;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.compiler.BytecodeToFunction;
-import org.apache.tinkerpop.machine.functions.GFunction;
+import org.apache.tinkerpop.machine.functions.CFunction;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -34,10 +34,10 @@ public class Pipes<C, S, E> implements Iterator<E> {
     private final List<Step<?, ?, ?>> steps = new ArrayList<>();
 
     public Pipes(final Bytecode<C> bytecode) throws Exception {
-        final List<GFunction<C>> functions = BytecodeToFunction.compile(bytecode);
+        final List<CFunction<C>> functions = BytecodeToFunction.compile(bytecode);
         Step previousStep = null;
-        for (final GFunction<?> function : functions) {
-            previousStep = new Step(previousStep, function);
+        for (final CFunction<?> function : functions) {
+            previousStep = new Step<>(previousStep, function);
             this.steps.add(previousStep);
         }
     }

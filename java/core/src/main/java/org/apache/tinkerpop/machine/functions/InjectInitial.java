@@ -23,16 +23,17 @@ import org.apache.tinkerpop.machine.traversers.Traverser;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class InjectInitial<C, A> extends GFunction<C> implements InitialFunction<C, A> {
+public class InjectInitial<C, A> extends AbstractFunction<C> implements InitialFunction<C, A> {
 
     private final List<Traverser<C, A>> traversers;
 
-    public InjectInitial(final C coefficient, final A... objects) {
-        super(coefficient);
+    public InjectInitial(final C coefficient, final Set<String> labels, final A... objects) {
+        super(coefficient, labels);
         this.traversers = new ArrayList<>();
         for (final A object : objects) {
             this.traversers.add(new Traverser<>(this.coefficient, object));

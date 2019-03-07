@@ -20,15 +20,17 @@ package org.apache.tinkerpop.machine.functions;
 
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
+import java.util.Set;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IsFilter<C, A> extends GFunction<C> implements FilterFunction<C, A> {
+public class IsFilter<C, A> extends AbstractFunction<C> implements FilterFunction<C, A> {
 
     private final A object;
 
-    public IsFilter(final C coefficient, final A object) {
-        super(coefficient);
+    public IsFilter(final C coefficient, final Set<String> labels, final A object) {
+        super(coefficient, labels);
         this.object = object;
     }
 

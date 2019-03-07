@@ -20,11 +20,41 @@ package org.apache.tinkerpop.machine.functions;
 
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
-import java.util.function.Function;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface MapFunction<C, A, B> extends Function<Traverser<C, A>, Traverser<C, B>>, CFunction<C> {
+abstract class AbstractFunction<C> implements CFunction<C> {
 
+    protected final C coefficient;
+    private Set<String> labels;
+
+    public AbstractFunction(final C coefficient, final Set<String> labels) {
+        this.coefficient = coefficient;
+        this.labels = labels;
+    }
+
+    @Override
+    public C coefficient() {
+        return this.coefficient;
+    }
+
+    @Override
+    public Set<String> labels() {
+        return this.labels;
+    }
+
+    protected <A> Traverser<C, A> postProcess(final Traverser<C, A> traverser) {
+        for (final String label : labels) {
+            traverser.addLabel(label);
+        }
+        return traverser;
+    }
+
+
+    @Override
+    public String toString() {
+        return "[" + this.coefficient + "]" + this.getClass().getSimpleName() + "@" + this.labels;
+    }
 }

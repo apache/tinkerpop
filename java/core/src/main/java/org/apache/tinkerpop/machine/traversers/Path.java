@@ -16,15 +16,39 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine.traversers;
 
-import org.apache.tinkerpop.machine.traversers.Traverser;
-
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface MapFunction<C, A, B> extends Function<Traverser<C, A>, Traverser<C, B>>, CFunction<C> {
+public class Path {
 
+    private final List<Object> objects = new ArrayList<>();
+    private final List<Set<String>> labels = new ArrayList<>();
+
+    public Path() {
+    }
+
+    public Path(final Path path) {
+        path.objects.forEach(o -> objects.add(o));
+        path.labels.forEach(l -> labels.add(l));
+    }
+
+    public void add(final Set<String> labels, final Object object) {
+        this.labels.add(labels);
+        this.objects.add(object);
+    }
+
+    public void addLabels(final Set<String> labels) {
+        this.labels.get(this.labels.size() - 1).addAll(labels);
+    }
+
+    @Override
+    public String toString() {
+        return this.objects.toString();
+    }
 }

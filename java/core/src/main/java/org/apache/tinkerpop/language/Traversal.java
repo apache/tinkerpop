@@ -19,7 +19,8 @@
 package org.apache.tinkerpop.language;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.compiler.Symbols;
+
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -32,6 +33,11 @@ public class Traversal<C, A, B> {
     public Traversal(final C unity) {
         this.currentCoefficient = unity;
         this.bytecode = new Bytecode<>();
+    }
+
+    public Traversal<C, A, B> as(final String label) {
+        this.bytecode.lastInstruction().addLabel(label);
+        return this;
     }
 
     public Traversal<C, A, B> is(final B object) {
@@ -48,6 +54,12 @@ public class Traversal<C, A, B> {
         this.bytecode.addInstruction(this.currentCoefficient, Symbols.INJECT, objects);
         return (Traversal) this;
     }
+
+    public Traversal<C, A, Map<String, ?>> path() {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.PATH);
+        return (Traversal) this;
+    }
+
 
     public Bytecode<C> getBytecode() {
         return this.bytecode;

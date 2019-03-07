@@ -16,15 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
-
-import org.apache.tinkerpop.machine.traversers.Traverser;
-
-import java.util.function.Function;
+package org.apache.tinkerpop.language;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface MapFunction<C, A, B> extends Function<Traverser<C, A>, Traverser<C, B>>, CFunction<C> {
+public final class Symbols {
 
+    public static final String AS = "as";
+    public static final String IS = "is";
+    public static final String INCR = "incr";
+    public static final String INJECT = "inject";
+    public static final String PATH = "path";
 }

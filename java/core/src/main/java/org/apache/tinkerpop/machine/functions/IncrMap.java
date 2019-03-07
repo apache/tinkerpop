@@ -20,17 +20,19 @@ package org.apache.tinkerpop.machine.functions;
 
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
+import java.util.Set;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IncrMap<C> extends GFunction<C> implements MapFunction<C, Long, Long> {
+public class IncrMap<C> extends AbstractFunction<C> implements MapFunction<C, Long, Long> {
 
-    public IncrMap(final C coefficient) {
-        super(coefficient);
+    public IncrMap(final C coefficient, final Set<String> labels) {
+        super(coefficient, labels);
     }
 
     @Override
     public Traverser<C, Long> apply(final Traverser<C, Long> traverser) {
-        return traverser.split(traverser.coefficient(), traverser.object() + 1);
+        return postProcess(traverser.split(traverser.coefficient(), traverser.object() + 1));
     }
 }
