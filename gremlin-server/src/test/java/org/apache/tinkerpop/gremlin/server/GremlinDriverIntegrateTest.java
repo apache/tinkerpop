@@ -485,7 +485,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final ResponseException rex = (ResponseException) inner;
             assertEquals("java.lang.ArithmeticException", rex.getRemoteExceptionHierarchy().get().get(0));
             assertEquals(1, rex.getRemoteExceptionHierarchy().get().size());
-            assertThat(rex.getRemoteStackTrace().get(), startsWith("java.lang.ArithmeticException: Division by zero\n\tat java.math.BigDecimal.divide(BigDecimal.java"));
+            assertThat(rex.getRemoteStackTrace().get(), startsWith("java.lang.ArithmeticException: Division by zero\n\tat java.base/java.math.BigDecimal.divide(BigDecimal.java"));
         }
 
         // should not die completely just because we had a bad serialization error.  that kind of stuff happens
@@ -902,12 +902,11 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V2D0).create();
         final Client client = cluster.connect();
 
-        final Instant now = Instant.now();
-        final List<Result> r = client.submit("java.time.Instant.ofEpochMilli(" + now.toEpochMilli() + ")").all().join();
+        final List<Result> r = client.submit("java.time.Instant.EPOCH").all().join();
         assertEquals(1, r.size());
 
         final Instant then = r.get(0).get(Instant.class);
-        assertEquals(now, then);
+        assertEquals(Instant.EPOCH, then);
 
         cluster.close();
     }
@@ -936,12 +935,11 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3D0).create();
         final Client client = cluster.connect();
 
-        final Instant now = Instant.now();
-        final List<Result> r = client.submit("java.time.Instant.ofEpochMilli(" + now.toEpochMilli() + ")").all().join();
+        final List<Result> r = client.submit("java.time.Instant.EPOCH").all().join();
         assertEquals(1, r.size());
 
         final Instant then = r.get(0).get(Instant.class);
-        assertEquals(now, then);
+        assertEquals(Instant.EPOCH, then);
 
         cluster.close();
     }
