@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine;
+package org.apache.tinkerpop.machine.processor;
 
 import org.apache.tinkerpop.machine.traversers.Traverser;
 

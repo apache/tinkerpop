@@ -27,17 +27,17 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IsFilter<C, A> extends AbstractFunction<C> implements FilterFunction<C, A> {
+public class IsFilter<C, S> extends AbstractFunction<C, S, S> implements FilterFunction<C, S> {
 
-    private final A object;
+    private final S object;
 
-    public IsFilter(final C coefficient, final Set<String> labels, final A object) {
+    public IsFilter(final C coefficient, final Set<String> labels, final S object) {
         super(coefficient, labels);
         this.object = object;
     }
 
     @Override
-    public boolean test(final Traverser<C, A> traverser) {
+    public boolean test(final Traverser<C, S> traverser) {
         return traverser.object().equals(this.object);
     }
 

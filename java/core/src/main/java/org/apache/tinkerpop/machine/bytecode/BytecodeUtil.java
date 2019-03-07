@@ -21,9 +21,9 @@ package org.apache.tinkerpop.machine.bytecode;
 import org.apache.tinkerpop.language.Symbols;
 import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.functions.filter.IdentityFilter;
-import org.apache.tinkerpop.machine.functions.map.IncrMap;
-import org.apache.tinkerpop.machine.functions.initial.InjectInitial;
 import org.apache.tinkerpop.machine.functions.filter.IsFilter;
+import org.apache.tinkerpop.machine.functions.initial.InjectInitial;
+import org.apache.tinkerpop.machine.functions.map.IncrMap;
 import org.apache.tinkerpop.machine.functions.map.MapMap;
 import org.apache.tinkerpop.machine.functions.map.PathMap;
 
@@ -46,7 +46,7 @@ public final class BytecodeUtil {
         return bytecode;
     }
 
-    public static <C> List<CFunction<C>> compile(final Bytecode<C> bytecode) throws Exception {
+    public static <C> List<CFunction<C>> compile(final Bytecode<C> bytecode) {
         final List<CFunction<C>> functions = new ArrayList<>();
         for (final Instruction<C> instruction : bytecode.getInstructions()) {
             functions.add(BytecodeUtil.generateFunction(instruction));
@@ -54,7 +54,7 @@ public final class BytecodeUtil {
         return functions;
     }
 
-    private static <C> CFunction<C> generateFunction(final Instruction<C> instruction) throws Exception {
+    private static <C> CFunction<C> generateFunction(final Instruction<C> instruction) {
         final String op = instruction.op();
         final C coefficient = instruction.coefficient();
         final Set<String> labels = instruction.labels();
@@ -72,7 +72,7 @@ public final class BytecodeUtil {
             case Symbols.PATH:
                 return new PathMap<>(coefficient, labels);
             default:
-                throw new Exception("This is an unknown instruction:" + instruction.op());
+                throw new RuntimeException("This is an unknown instruction:" + instruction.op());
         }
     }
 }

@@ -18,12 +18,14 @@
  */
 package org.apache.tinkerpop.language;
 
+import org.apache.tinkerpop.machine.processor.EmptyProcessorFactory;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class __ {
 
     public static <C> Traversal<C, Long, Long> incr() {
-        return (Traversal) new Traversal<>(1L).incr();
+        return (Traversal) new Traversal<>(1L, EmptyProcessorFactory.instance()).incr();
     }
 }

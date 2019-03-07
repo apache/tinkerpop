@@ -26,12 +26,12 @@ import org.apache.tinkerpop.machine.traversers.Traverser;
  */
 public class MapStep<C, S, E> extends AbstractStep<C, S, E> {
 
-    public MapStep(final AbstractStep previousStep, final MapFunction<C, S, E> mapFunction) {
+    public MapStep(final AbstractStep<C, ?, S> previousStep, final MapFunction<C, S, E> mapFunction) {
         super(previousStep, mapFunction);
     }
 
     @Override
     public Traverser<C, E> next() {
-        return ((MapFunction<C, S, E>) this.function).apply(super.getNextTraverser());
+        return ((MapFunction<C, S, E>) this.function).apply(super.processNextTraverser());
     }
 }

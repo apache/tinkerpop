@@ -19,19 +19,28 @@
 package org.apache.tinkerpop.language;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
+import org.apache.tinkerpop.machine.processor.Processor;
+import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.traversers.Path;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 /**
- * @author Marko S. Rodriguez (http://markorodriguez.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Traversal<C, S, E> {
+public class Traversal<C, S, E> implements Iterator<E> {
 
-    private final Bytecode<C> bytecode;
+    protected final Bytecode<C> bytecode;
     private C currentCoefficient;
+    private final ProcessorFactory factory;
+    private Processor<C, S, E> processor;
 
-    public Traversal(final C unity) {
+    public Traversal(final C unity, final ProcessorFactory factory) {
         this.currentCoefficient = unity;
         this.bytecode = new Bytecode<>();
+        this.factory = factory;
     }
 
     public Traversal<C, S, E> as(final String label) {
@@ -65,7 +74,7 @@ public class Traversal<C, S, E> {
     }
 
     public <R> Traversal<C, S, R> map(final Traversal<C, E, R> mapTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.MAP, mapTraversal.getBytecode());
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.MAP, mapTraversal.bytecode);
         return (Traversal) this;
     }
 
@@ -74,10 +83,29 @@ public class Traversal<C, S, E> {
         return (Traversal) this;
     }
 
-
-    // create a utility class that directly access the class field so we don't have to do the Admin stuff in TP4.
-    public Bytecode<C> getBytecode() {
-        return this.bytecode;
+    private void setupProcessor() {
+        if (null == this.processor)
+            this.processor = this.factory.mint(this.bytecode);
     }
 
+    @Override
+    public boolean hasNext() {
+        this.setupProcessor();
+        return this.processor.hasNextTraverser();
+    }
+
+    @Override
+    public E next() {
+        this.setupProcessor();
+        return this.processor.nextTraverser().object();
+    }
+
+    public List<E> toList() {
+        this.setupProcessor();
+        final List<E> list = new ArrayList<>();
+        while (this.hasNext()) {
+            list.add(this.next());
+        }
+        return list;
+    }
 }

@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.machine.bytecode;
 
 import org.apache.tinkerpop.language.Traversal;
+import org.apache.tinkerpop.language.TraversalUtil;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -62,7 +63,7 @@ public final class Instruction<C> {
 
     public void addArg(final Object arg) {
         this.args = Arrays.copyOf(this.args, this.args.length + 1);
-        this.args[this.args.length - 1] = arg instanceof Traversal ? ((Traversal) arg).getBytecode() : arg;
+        this.args[this.args.length - 1] = arg instanceof Traversal ? TraversalUtil.getBytecode(((Traversal) arg)) : arg;
     }
 
     @Override

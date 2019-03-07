@@ -23,15 +23,13 @@ import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.machine.traversers.TraverserSet;
 import org.apache.tinkerpop.machine.util.FastNoSuchElementException;
 
-import java.util.Iterator;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class AbstractStep<C, S, E> implements Iterator<Traverser<C, E>> {
+public abstract class AbstractStep<C, S, E> implements Step<C, S, E> {
 
     protected final CFunction<C> function;
-    protected final AbstractStep previousStep;
+    protected final AbstractStep<C, ?, S> previousStep;
     protected TraverserSet<C, S> traverserSet = new TraverserSet<>();
 
     public AbstractStep(final AbstractStep<C, ?, S> previousStep, final CFunction<C> function) {
@@ -51,15 +49,13 @@ public abstract class AbstractStep<C, S, E> implements Iterator<Traverser<C, E>>
     @Override
     public abstract Traverser<C, E> next();
 
-    protected Traverser<C, S> getNextTraverser() {
-        Traverser<C, S> traverser = null;
+    protected Traverser<C, S> processNextTraverser() {
         if (!this.traverserSet.isEmpty())
-            traverser = this.traverserSet.remove();
+            return this.traverserSet.remove();
         else if (this.previousStep.hasNext())
-            traverser = this.previousStep.next();
-        if (null == traverser)
+            return this.previousStep.next();
+        else
             throw FastNoSuchElementException.instance();
-        return traverser;
     }
 
     @Override

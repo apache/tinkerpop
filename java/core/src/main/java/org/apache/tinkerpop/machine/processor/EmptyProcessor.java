@@ -16,14 +16,42 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine.processor;
 
 import org.apache.tinkerpop.machine.traversers.Traverser;
-
-import java.util.function.Predicate;
+import org.apache.tinkerpop.machine.util.FastNoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface FilterFunction<C, S> extends Predicate<Traverser<C, S>>, CFunction<C> {
+public class EmptyProcessor<C, S, E> implements Processor<C, S, E> {
+
+    private static final EmptyProcessor INSTANCE = new EmptyProcessor();
+
+    private EmptyProcessor() {
+    }
+
+    @Override
+    public void addStart(Traverser<C, S> traverser) {
+
+    }
+
+    @Override
+    public Traverser<C, E> nextTraverser() {
+        throw FastNoSuchElementException.instance();
+    }
+
+    @Override
+    public boolean hasNextTraverser() {
+        return false;
+    }
+
+    @Override
+    public void reset() {
+
+    }
+
+    public static <C, S, E> EmptyProcessor<C, S, E> instance() {
+        return INSTANCE;
+    }
 }

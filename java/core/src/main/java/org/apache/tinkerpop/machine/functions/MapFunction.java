@@ -25,6 +25,6 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface MapFunction<C, A, B> extends Function<Traverser<C, A>, Traverser<C, B>>, CFunction<C> {
+public interface MapFunction<C, S, E> extends Function<Traverser<C, S>, Traverser<C, E>>, CFunction<C> {
 
 }

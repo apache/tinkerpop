@@ -22,34 +22,30 @@ import org.apache.tinkerpop.machine.functions.AbstractFunction;
 import org.apache.tinkerpop.machine.functions.InitialFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class InjectInitial<C, A> extends AbstractFunction<C> implements InitialFunction<C, A> {
+public class InjectInitial<C, S> extends AbstractFunction<C, S, S> implements InitialFunction<C, S> {
 
-    private final List<Traverser<C, A>> traversers;
+    private final S[] objects;
 
-    public InjectInitial(final C coefficient, final Set<String> labels, final A... objects) {
+    public InjectInitial(final C coefficient, final Set<String> labels, final S... objects) {
         super(coefficient, labels);
-        this.traversers = new ArrayList<>();
-        for (final A object : objects) {
-            this.traversers.add(new Traverser<>(this.coefficient, object));
-        }
-
+        this.objects = objects;
     }
 
     @Override
-    public Iterator<Traverser<C, A>> get() {
-        return this.traversers.iterator();
+    public Iterator<Traverser<C, S>> get() {
+        return Stream.of(this.objects).map(a -> new Traverser<>(this.coefficient, a)).iterator();
     }
 
     @Override
     public String toString() {
-        return "[" + this.coefficient + "]" + this.getClass().getSimpleName() + ":" + this.traversers;
+        return "[" + this.coefficient + "]" + this.getClass().getSimpleName() + ":" + Arrays.toString(this.objects);
     }
 }

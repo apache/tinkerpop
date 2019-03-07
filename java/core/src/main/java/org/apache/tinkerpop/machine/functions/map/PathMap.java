@@ -28,14 +28,14 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PathMap<C, A> extends AbstractFunction<C> implements MapFunction<C, A, Path> {
+public class PathMap<C, S> extends AbstractFunction<C, S, Path> implements MapFunction<C, S, Path> {
 
     public PathMap(final C coefficient, final Set<String> labels) {
         super(coefficient, labels);
     }
 
     @Override
-    public Traverser<C, Path> apply(final Traverser<C, A> traverser) {
+    public Traverser<C, Path> apply(final Traverser<C, S> traverser) {
         return traverser.split(this.coefficient, traverser.path());
     }
 }

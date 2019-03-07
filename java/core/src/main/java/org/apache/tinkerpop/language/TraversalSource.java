@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.language;
 
+import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.coefficients.Coefficients;
 import org.apache.tinkerpop.machine.coefficients.LongCoefficients;
 
@@ -27,6 +28,8 @@ import org.apache.tinkerpop.machine.coefficients.LongCoefficients;
 public class TraversalSource<C> {
 
     private Coefficients<C> coefficients = (Coefficients) new LongCoefficients();
+    private ProcessorFactory factory;
+
 
     protected TraversalSource() {
     }
@@ -36,8 +39,17 @@ public class TraversalSource<C> {
         return this;
     }
 
-    public <A> Traversal<C, A, A> inject(final A... objects) {
-        final Traversal<C, A, A> traversal = new Traversal<>(this.coefficients.unity());
+    public TraversalSource<C> processor(final Class<? extends ProcessorFactory> processor) {
+        try {
+            this.factory = processor.newInstance();
+        } catch (final Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+        return this;
+    }
+
+    public <S> Traversal<C, S, S> inject(final S... objects) {
+        final Traversal<C, S, S> traversal = new Traversal<>(this.coefficients.unity(), this.factory);
         return traversal.inject(objects);
     }
 }

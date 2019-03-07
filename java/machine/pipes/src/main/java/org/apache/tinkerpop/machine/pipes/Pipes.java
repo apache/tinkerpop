@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.pipes;
 
-import org.apache.tinkerpop.machine.Processor;
+import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.functions.CFunction;
@@ -38,19 +38,19 @@ import java.util.List;
 public class Pipes<C, S, E> implements Iterator<E>, Processor<C, S, E> {
 
     private final List<AbstractStep<?, ?, ?>> steps = new ArrayList<>();
-    private AbstractStep<C, ?, E> endStep;
-    private AbstractStep<C, S, ?> startStep = EmptyStep.instance();
+    private Step<C, ?, E> endStep;
+    private Step<C, S, ?> startStep = EmptyStep.instance();
 
     private Pipes(final List<CFunction<C>> functions) {
-        AbstractStep previousStep = EmptyStep.instance();
+        AbstractStep<C, ?, ?> previousStep = EmptyStep.instance();
         for (final CFunction<?> function : functions) {
             if (function instanceof NestedFunction)
-                ((NestedFunction<C, S, E>) function).setProcessor(new Pipes<>(((NestedFunction<C, S, E>) function).getFunctions()));
+                ((NestedFunction<C, ?, ?>) function).setProcessor(new Pipes<>(((NestedFunction<C, ?, ?>) function).getFunctions()));
             final AbstractStep nextStep;
             if (function instanceof FilterFunction)
-                nextStep = new FilterStep<>(previousStep, (FilterFunction<C, ?>) function);
+                nextStep = new FilterStep(previousStep, (FilterFunction<C, ?>) function);
             else if (function instanceof MapFunction)
-                nextStep = new MapStep<>(previousStep, (MapFunction<C, ?, ?>) function);
+                nextStep = new MapStep(previousStep, (MapFunction<C, ?, ?>) function);
             else if (function instanceof InitialFunction)
                 nextStep = new InitialStep<>((InitialFunction<C, S>) function);
             else
@@ -62,10 +62,10 @@ public class Pipes<C, S, E> implements Iterator<E>, Processor<C, S, E> {
             this.steps.add(nextStep);
             previousStep = nextStep;
         }
-        this.endStep = previousStep;
+        this.endStep = (Step<C, ?, E>) previousStep;
     }
 
-    public Pipes(final Bytecode<C> bytecode) throws Exception {
+    public Pipes(final Bytecode<C> bytecode) {
         this(BytecodeUtil.compile(BytecodeUtil.optimize(bytecode)));
     }
 

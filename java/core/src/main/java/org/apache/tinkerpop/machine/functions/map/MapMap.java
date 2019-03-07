@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.functions.map;
 
-import org.apache.tinkerpop.machine.Processor;
+import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.functions.AbstractFunction;
 import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.functions.MapFunction;
@@ -31,7 +31,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MapMap<C, S, E> extends AbstractFunction<C> implements MapFunction<C, S, E>, NestedFunction<C, S, E> {
+public class MapMap<C, S, E> extends AbstractFunction<C,S,E> implements MapFunction<C, S, E>, NestedFunction<C, S, E> {
 
     private final List<CFunction<C>> mapFunctions;
     private Processor<C, S, E> processor;

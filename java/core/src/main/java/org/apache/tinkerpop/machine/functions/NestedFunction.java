@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.functions;
 
-import org.apache.tinkerpop.machine.Processor;
+import org.apache.tinkerpop.machine.processor.Processor;
 
 import java.util.List;
 

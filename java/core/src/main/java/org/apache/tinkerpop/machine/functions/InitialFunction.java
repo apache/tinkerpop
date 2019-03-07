@@ -26,5 +26,5 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface InitialFunction<C,A> extends Supplier<Iterator<Traverser<C,A>>>, CFunction<C> {
+public interface InitialFunction<C, S> extends Supplier<Iterator<Traverser<C, S>>>, CFunction<C> {
 }

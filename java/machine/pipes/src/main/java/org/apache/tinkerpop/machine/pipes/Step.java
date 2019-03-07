@@ -16,14 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine.pipes;
 
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
-import java.util.function.Predicate;
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface FilterFunction<C, S> extends Predicate<Traverser<C, S>>, CFunction<C> {
+public interface Step<C, S, E> extends Iterator<Traverser<C, E>> {
+
+    public void addTraverser(final Traverser<C, S> traverser);
+
+    // public void reset();
 }

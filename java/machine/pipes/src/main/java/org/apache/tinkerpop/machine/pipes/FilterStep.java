@@ -26,17 +26,17 @@ import org.apache.tinkerpop.machine.traversers.Traverser;
  */
 public class FilterStep<C, S> extends AbstractStep<C, S, S> {
 
-    public FilterStep(final AbstractStep previousStep, final FilterFunction<C, S> filterFunction) {
+    public FilterStep(final AbstractStep<C, ?, S> previousStep, final FilterFunction<C, S> filterFunction) {
         super(previousStep, filterFunction);
     }
 
     @Override
     public Traverser<C, S> next() {
-        Traverser<C, S> traverser = this.getNextTraverser();
+        Traverser<C, S> traverser;
         while (true) {
+            traverser = this.processNextTraverser();
             if (((FilterFunction<C, S>) this.function).test(traverser))
                 return traverser;
-            traverser = this.getNextTraverser();
         }
     }
 }

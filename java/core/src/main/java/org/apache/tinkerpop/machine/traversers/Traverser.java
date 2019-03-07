@@ -24,13 +24,13 @@ import java.util.HashSet;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Traverser<C, A> {
+public class Traverser<C, S> {
 
     private final C coefficient;
-    private final A object;
+    private final S object;
     private Path path = new Path();
 
-    public Traverser(final C coefficient, final A object) {
+    public Traverser(final C coefficient, final S object) {
         this.coefficient = coefficient;
         this.object = object;
     }
@@ -39,7 +39,7 @@ public class Traverser<C, A> {
         return this.coefficient;
     }
 
-    public A object() {
+    public S object() {
         return this.object;
     }
 
@@ -60,7 +60,7 @@ public class Traverser<C, A> {
 
     @Override
     public boolean equals(final Object other) {
-        return other instanceof Traverser && ((Traverser<C, A>) other).object.equals(this.object);
+        return other instanceof Traverser && ((Traverser<C, S>) other).object.equals(this.object);
     }
 
     @Override
