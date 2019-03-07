@@ -22,7 +22,6 @@
 #endregion
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,13 +32,16 @@ namespace Gremlin.Net.Driver
 {
     internal class ConnectionPool : IDisposable
     {
+        private const int ConnectionIndexOverflowLimit = int.MaxValue - 1000000;
+        
         private readonly ConnectionFactory _connectionFactory;
-        private readonly ConcurrentBag<Connection> _connections = new ConcurrentBag<Connection>();
+        private readonly CopyOnWriteCollection<Connection> _connections = new CopyOnWriteCollection<Connection>();
         private readonly int _poolSize;
         private readonly int _maxInProcessPerConnection;
-        private int _nrConnections;
-        private const int PoolEmpty = 0;
-        private const int PoolPopulationInProgress = -1;
+        private int _connectionIndex;
+        private int _poolState;
+        private const int PoolIdle = 0;
+        private const int PoolPopulationInProgress = 1;
 
         public ConnectionPool(ConnectionFactory connectionFactory, ConnectionPoolSettings settings)
         {
@@ -49,15 +51,8 @@ namespace Gremlin.Net.Driver
             PopulatePoolAsync().WaitUnwrap();
         }
         
-        public int NrConnections
-        {
-            get
-            {
-                var nrConnections = Interlocked.CompareExchange(ref _nrConnections, PoolEmpty, PoolEmpty);
-                return nrConnections < 0 ? 0 : nrConnections;
-            }
-        }
-        
+        public int NrConnections => _connections.Count;
+
         public async Task<IConnection> GetAvailableConnectionAsync()
         {
             await EnsurePoolIsPopulatedAsync().ConfigureAwait(false);
@@ -66,42 +61,35 @@ namespace Gremlin.Net.Driver
 
         private async Task EnsurePoolIsPopulatedAsync()
         {
-            // The pool could have been empty because of connection problems. So, we need to populate it again.
+            // The pool could have been (partially) empty because of connection problems. So, we need to populate it again.
             while (true)
             {
-                var nrOpened = Interlocked.CompareExchange(ref _nrConnections, PoolEmpty, PoolEmpty);
-                if (nrOpened >= _poolSize) break;
-                if (nrOpened != PoolPopulationInProgress)
+                if (NrConnections >= _poolSize) break;
+                var poolState = Interlocked.CompareExchange(ref _poolState, PoolPopulationInProgress, PoolIdle);
+                if (poolState == PoolPopulationInProgress) continue;
+                try
                 {
                     await PopulatePoolAsync().ConfigureAwait(false);
+                }
+                finally
+                {
+                    // We need to remove the PoolPopulationInProgress flag again even if an exception occurred, so we don't block the pool population for ever
+                    Interlocked.CompareExchange(ref _poolState, PoolIdle, PoolPopulationInProgress);
                 }
             }
         }
         
         private async Task PopulatePoolAsync()
         {
-            var nrOpened = Interlocked.CompareExchange(ref _nrConnections, PoolPopulationInProgress, PoolEmpty);
-            if (nrOpened == PoolPopulationInProgress || nrOpened >= _poolSize) return;
-
-            try
+            var nrConnectionsToCreate = _poolSize - _connections.Count;
+            var connectionCreationTasks = new List<Task<Connection>>(nrConnectionsToCreate);
+            for (var i = 0; i < nrConnectionsToCreate; i++)
             {
-                var connectionCreationTasks = new List<Task<Connection>>(_poolSize);
-                for (var i = 0; i < _poolSize; i++)
-                {
-                    connectionCreationTasks.Add(CreateNewConnectionAsync());
-                }
+                connectionCreationTasks.Add(CreateNewConnectionAsync());
+            }
 
-                var createdConnections = await Task.WhenAll(connectionCreationTasks).ConfigureAwait(false);
-                foreach (var c in createdConnections)
-                {
-                    _connections.Add(c);
-                }
-            }
-            finally
-            {
-                // We need to remove the PoolPopulationInProgress flag again even if an exception occurred, so we don't block the pool population for ever
-                Interlocked.CompareExchange(ref _nrConnections, _connections.Count, PoolPopulationInProgress);
-            }
+            var createdConnections = await Task.WhenAll(connectionCreationTasks).ConfigureAwait(false);
+            _connections.AddRange(createdConnections);
         }
         
         private async Task<Connection> CreateNewConnectionAsync()
@@ -113,32 +101,44 @@ namespace Gremlin.Net.Driver
 
         private Connection GetConnectionFromPool()
         {
-            while (true)
-            {
-                var connection = SelectLeastUsedConnection();
-                if (connection == null)
-                    throw new ServerUnavailableException();
-                if (connection.NrRequestsInFlight >= _maxInProcessPerConnection)
-                    throw new ConnectionPoolBusyException(_poolSize, _maxInProcessPerConnection);
-                if (connection.IsOpen) return connection;
-                DefinitelyDestroyConnection(connection);
-            }
+            var connections = _connections.Snapshot;
+            if (connections.Length == 0) throw new ServerUnavailableException();
+
+            if (GetAvailableConnection(connections, out var connection))
+                return connection;
+            throw new ConnectionPoolBusyException(_poolSize, _maxInProcessPerConnection);
         }
 
-        private Connection SelectLeastUsedConnection()
+        private bool GetAvailableConnection(Connection[] connections, out Connection connection)
         {
-            if (_connections.IsEmpty) return null;
-            var nrMinInFlightConnections = int.MaxValue;
-            Connection leastBusy = null;
-            foreach (var connection in _connections)
-            {
-                var nrInFlight = connection.NrRequestsInFlight;
-                if (nrInFlight >= nrMinInFlightConnections) continue;
-                nrMinInFlightConnections = nrInFlight;
-                leastBusy = connection;
-            }
+            var index = Interlocked.Increment(ref _connectionIndex);
+            ProtectIndexFromOverflowing(index);
 
-            return leastBusy;
+            connection = null;
+            for (var i = 0; i < connections.Length; i++)
+            {
+                connection = connections[(index + i) % connections.Length];
+                if (connection.NrRequestsInFlight >= _maxInProcessPerConnection) continue;
+                if (!connection.IsOpen)
+                {
+                    RemoveConnectionFromPool(connection);
+                    continue;
+                }
+                return true;
+            }
+            return false;
+        }
+
+        private void ProtectIndexFromOverflowing(int currentIndex)
+        {
+            if (currentIndex > ConnectionIndexOverflowLimit)
+                Interlocked.Exchange(ref _connectionIndex, 0);
+        }
+
+        private void RemoveConnectionFromPool(Connection connection)
+        {
+            if (_connections.TryRemove(connection))
+                DefinitelyDestroyConnection(connection);
         }
         
         private IConnection ProxiedConnection(Connection connection)
@@ -159,7 +159,7 @@ namespace Gremlin.Net.Driver
 
         private async Task CloseAndRemoveAllConnectionsAsync()
         {
-            while (_connections.TryTake(out var connection))
+            foreach (var connection in _connections.RemoveAndGetAll())
             {
                 await connection.CloseAsync().ConfigureAwait(false);
                 DefinitelyDestroyConnection(connection);
@@ -169,7 +169,6 @@ namespace Gremlin.Net.Driver
         private void DefinitelyDestroyConnection(Connection connection)
         {
             connection.Dispose();
-            Interlocked.Decrement(ref _nrConnections);
         }
 
         #region IDisposable Support

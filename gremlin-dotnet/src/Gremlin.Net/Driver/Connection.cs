@@ -79,7 +79,7 @@ namespace Gremlin.Net.Driver
 
         public int NrRequestsInFlight => _callbackByRequestId.Count;
 
-        public bool IsOpen => _webSocketConnection.IsOpen;
+        public bool IsOpen => _webSocketConnection.IsOpen && Volatile.Read(ref _connectionState) != Closed;
 
         public Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage)
         {
