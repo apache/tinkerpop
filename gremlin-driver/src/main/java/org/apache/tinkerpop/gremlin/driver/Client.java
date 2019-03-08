@@ -365,7 +365,7 @@ public abstract class Client {
      */
     public final static class ClusteredClient extends Client {
 
-        private ConcurrentMap<Host, ConnectionPool> hostConnectionPools = new ConcurrentHashMap<>();
+        protected ConcurrentMap<Host, ConnectionPool> hostConnectionPools = new ConcurrentHashMap<>();
         private final AtomicReference<CompletableFuture<Void>> closing = new AtomicReference<>(null);
 
         ClusteredClient(final Cluster cluster, final Client.Settings settings) {

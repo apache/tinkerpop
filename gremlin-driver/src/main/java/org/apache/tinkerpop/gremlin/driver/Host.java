@@ -71,6 +71,8 @@ public final class Host {
     void makeUnavailable(final Function<Host, Boolean> reconnect) {
         isAvailable = false;
 
+        logger.warn("Marking {} as unavailable. Trying to reconnect.", this);
+
         // only do a connection re-attempt if one is not already in progress
         if (retryInProgress.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
             retryThread = this.cluster.executor().scheduleAtFixedRate(() -> {
