@@ -47,7 +47,6 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
-import org.apache.tinkerpop.gremlin.structure.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -57,6 +56,7 @@ import org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler;
 import org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.RemoteGraph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
@@ -66,9 +66,7 @@ import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import java.lang.reflect.Field;
-import java.nio.channels.ClosedChannelException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -84,7 +82,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
 import static org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin.Compilation.COMPILE_STATIC;
 import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE;
 import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE_CONNECTION_CLASS;
@@ -95,18 +92,16 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.StringStartsWith.startsWith;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assert.assertEquals;
-
 /**
  * Integration tests for server-side settings and processing.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegrationTest {
-
     private static final String PEM_SERVER_KEY = "src/test/resources/server.key.pk8";
     private static final String PEM_SERVER_CRT = "src/test/resources/server.crt";
     private static final String PEM_CLIENT_KEY = "src/test/resources/client.key.pk8";
@@ -1080,7 +1075,10 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             // it seems ok to pass in this case.
         } catch (Exception re) {
             final Throwable root = ExceptionUtils.getRootCause(re);
-            assertEquals("Connection reset by peer", root.getMessage());
+            // Netty closes the channel to the server on a non-recoverable error such as CorruptedFrameException
+            // and the connection is subsequently destroyed. Each of the pending requests are given an error with
+            // the following error message.
+            assertEquals("Connection to server is no longer active", root.getMessage());
 
             // validate that we can still send messages to the server
             assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
@@ -1102,10 +1100,12 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
         try {
             // try to re-issue a request now that the server is down
-            client.submit("1+1").all().join();
-            fail();
+            client.submit("g").all().join();
+            fail("Should throw an exception.");
         } catch (RuntimeException re) {
-            assertThat(re.getCause().getCause() instanceof ClosedChannelException, is(true));
+            // Client would have no active connections to the host, hence it would encounter a timeout
+            // trying to find an alive connection to the host.
+            assertThat(re.getCause().getCause() instanceof TimeoutException, is(true));
 
             //
             // should recover when the server comes back
