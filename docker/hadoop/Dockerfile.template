@@ -17,7 +17,7 @@
 
 FROM tinkerpop:base
 
-MAINTAINER Daniel Kuppitz <me@gremlin.guru>
+LABEL maintainer="Daniel Kuppitz <me@gremlin.guru>"
 
 ENV HADOOP_VERSION HADOOP_VERSION
 
