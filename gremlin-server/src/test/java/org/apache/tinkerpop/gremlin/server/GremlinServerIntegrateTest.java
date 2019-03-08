@@ -141,7 +141,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         if (name.getMethodName().equals("shouldPingChannelIfClientDies")||
                 name.getMethodName().equals("shouldCloseChannelIfClientDoesntRespond")) {
             final org.apache.log4j.Logger webSocketClientHandlerLogger = org.apache.log4j.Logger.getLogger(OpSelectorHandler.class);
-            previousLogLevel = webSocketClientHandlerLogger.getLevel();
             webSocketClientHandlerLogger.setLevel(previousLogLevel);
         }
 
