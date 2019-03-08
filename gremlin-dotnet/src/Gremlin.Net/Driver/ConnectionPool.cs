@@ -62,9 +62,8 @@ namespace Gremlin.Net.Driver
         private async Task EnsurePoolIsPopulatedAsync()
         {
             // The pool could have been (partially) empty because of connection problems. So, we need to populate it again.
-            while (true)
+            while (_poolSize < NrConnections)
             {
-                if (NrConnections >= _poolSize) break;
                 var poolState = Interlocked.CompareExchange(ref _poolState, PoolPopulationInProgress, PoolIdle);
                 if (poolState == PoolPopulationInProgress) continue;
                 try
@@ -83,13 +82,25 @@ namespace Gremlin.Net.Driver
         {
             var nrConnectionsToCreate = _poolSize - _connections.Count;
             var connectionCreationTasks = new List<Task<Connection>>(nrConnectionsToCreate);
-            for (var i = 0; i < nrConnectionsToCreate; i++)
+            try
             {
-                connectionCreationTasks.Add(CreateNewConnectionAsync());
+                for (var i = 0; i < nrConnectionsToCreate; i++)
+                {
+                    connectionCreationTasks.Add(CreateNewConnectionAsync());
+                }
+                var createdConnections = await Task.WhenAll(connectionCreationTasks).ConfigureAwait(false);
+                _connections.AddRange(createdConnections);
             }
-
-            var createdConnections = await Task.WhenAll(connectionCreationTasks).ConfigureAwait(false);
-            _connections.AddRange(createdConnections);
+            catch(Exception)
+            {
+                // Dispose created connections if the connection establishment failed
+                foreach (var creationTask in connectionCreationTasks)
+                {
+                    if (!creationTask.IsFaulted)
+                        creationTask.Result?.Dispose();
+                }
+                throw;
+            }
         }
         
         private async Task<Connection> CreateNewConnectionAsync()
