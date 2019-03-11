@@ -71,6 +71,11 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return (Traversal) this;
     }
 
+    public Traversal<C, S, E> filter(final Traversal<C, E, ?> filterTraversal) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, filterTraversal.bytecode);
+        return this;
+    }
+
     public Traversal<C, S, E> identity() {
         this.bytecode.addInstruction(this.currentCoefficient, Symbols.IDENTITY);
         return this;

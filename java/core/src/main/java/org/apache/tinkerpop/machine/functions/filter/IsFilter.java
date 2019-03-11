@@ -21,7 +21,6 @@ package org.apache.tinkerpop.machine.functions.filter;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.AbstractFunction;
 import org.apache.tinkerpop.machine.functions.FilterFunction;
-import org.apache.tinkerpop.machine.traversers.CompleteTraverser;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.util.StringFactory;
 
@@ -30,7 +29,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IsFilter<C, S> extends AbstractFunction<C, S, S> implements FilterFunction<C, S> {
+public final class IsFilter<C, S> extends AbstractFunction<C, S, S> implements FilterFunction<C, S> {
 
     private S object;
 

@@ -21,6 +21,7 @@ package org.apache.tinkerpop.machine.bytecode;
 import org.apache.tinkerpop.language.Symbols;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.CFunction;
+import org.apache.tinkerpop.machine.functions.filter.FilterFilter;
 import org.apache.tinkerpop.machine.functions.filter.IdentityFilter;
 import org.apache.tinkerpop.machine.functions.filter.IsFilter;
 import org.apache.tinkerpop.machine.functions.flatMap.UnionFlatMap;
@@ -121,6 +122,8 @@ public final class BytecodeUtil {
         switch (op) {
             case Symbols.COUNT:
                 return new CountReduce<>(coefficient, labels);
+            case Symbols.FILTER:
+                return new FilterFilter<>(coefficient, labels, compile((Bytecode<C>) instruction.args()[0]));
             case Symbols.IDENTITY:
                 return new IdentityFilter<>(coefficient, labels);
             case Symbols.INJECT:

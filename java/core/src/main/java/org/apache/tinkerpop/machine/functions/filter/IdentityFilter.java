@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IdentityFilter<C, S> extends AbstractFunction<C, S, S> implements FilterFunction<C, S> {
+public final class IdentityFilter<C, S> extends AbstractFunction<C, S, S> implements FilterFunction<C, S> {
 
     public IdentityFilter(final Coefficient<C> coefficient, final Set<String> labels) {
         super(coefficient, labels);

@@ -16,70 +16,62 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions.flatMap;
+package org.apache.tinkerpop.machine.functions.filter;
 
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.AbstractFunction;
 import org.apache.tinkerpop.machine.functions.CFunction;
-import org.apache.tinkerpop.machine.functions.FlatMapFunction;
+import org.apache.tinkerpop.machine.functions.FilterFunction;
 import org.apache.tinkerpop.machine.functions.NestedFunction;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.machine.traversers.TraverserFactory;
-import org.apache.tinkerpop.util.IteratorUtils;
-import org.apache.tinkerpop.util.MultiIterator;
 import org.apache.tinkerpop.util.StringFactory;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class UnionFlatMap<C, S, E> extends AbstractFunction<C, S, Iterator<E>> implements FlatMapFunction<C, S, E>, NestedFunction.Branching<C, S, E> {
-    // TODO: we need a branch/ package as these need to be NOT flatMap functions.
-    private final List<List<CFunction<C>>> branchFunctions;
-    private transient List<Processor<C, S, E>> processors;
+public final class FilterFilter<C, S> extends AbstractFunction<C, S, S> implements FilterFunction<C, S>, NestedFunction.Internal<C, S, S> {
+
+    private final List<CFunction<C>> filterFunctions;
     private TraverserFactory<C> traverserFactory;
     private ProcessorFactory processorFactory;
 
-    public UnionFlatMap(final Coefficient<C> coefficient, final Set<String> labels, final List<List<CFunction<C>>> branchFunctions) {
+    private transient Processor<C, S, S> processor;
+
+    public FilterFilter(final Coefficient<C> coefficient, final Set<String> labels, final List<CFunction<C>> filterFunctions) {
         super(coefficient, labels);
-        this.branchFunctions = branchFunctions;
+        this.filterFunctions = filterFunctions;
     }
 
     @Override
-    public Iterator<E> apply(final Traverser<C, S> traverser) {
-        if (null == this.processors) {
-            this.processors = new ArrayList<>(this.branchFunctions.size());
-            for (final List<CFunction<C>> functions : this.branchFunctions) {
-                this.processors.add(processorFactory.mint(traverserFactory, functions));
-            }
-        }
-        final MultiIterator<E> iterator = new MultiIterator<>();
-        for (final Processor<C, S, E> processor : this.processors) {
-            processor.reset();
-            processor.addStart(traverser.clone());
-            iterator.addIterator(IteratorUtils.map(processor, Traverser::object));
-        }
-
-        return iterator;
+    public boolean test(final Traverser<C, S> traverser) {
+        if (null == this.processor)
+            this.processor = processorFactory.mint(traverserFactory, this.filterFunctions);
+        else
+            this.processor.reset();
+        this.processor.addStart(traverser);
+        return this.processor.hasNext();
     }
 
+    @Override
     public void setProcessor(final TraverserFactory<C> traverserFactory, final ProcessorFactory processorFactory) {
         this.traverserFactory = traverserFactory;
         this.processorFactory = processorFactory;
     }
 
+    @Override
     public List<List<CFunction<C>>> getFunctions() {
-        return this.branchFunctions;
+        return Collections.singletonList(this.filterFunctions);
     }
 
     @Override
     public String toString() {
-        return StringFactory.makeFunctionString(this, this.branchFunctions.toArray());
+        return StringFactory.makeFunctionString(this, this.filterFunctions.toArray());
     }
 }

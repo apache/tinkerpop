@@ -25,6 +25,10 @@ import org.apache.tinkerpop.machine.bytecode.Bytecode;
  */
 public class __ {
 
+    private __() {
+        // static class
+    }
+
     private static <C, S> Traversal<C, S, S> start() {
         return new Traversal<>(new Bytecode<>());
     }
