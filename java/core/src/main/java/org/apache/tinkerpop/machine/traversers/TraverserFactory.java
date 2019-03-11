@@ -20,10 +20,12 @@ package org.apache.tinkerpop.machine.traversers;
 
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 
+import java.io.Serializable;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TraverserFactory<C, S> {
+public interface TraverserFactory<C> extends Serializable {
 
-    public Traverser<C, S> create(final Coefficient<C> coefficient, final S object);
+    public <S> Traverser<C, S> create(final Coefficient<C> coefficient, final S object);
 }

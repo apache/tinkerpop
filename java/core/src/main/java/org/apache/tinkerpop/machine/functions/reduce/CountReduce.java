@@ -40,6 +40,11 @@ public class CountReduce<C, S> extends AbstractFunction<C, S, Long> implements R
     }
 
     @Override
+    public Long merge(final Long valueA, final Long valueB) {
+        return valueA + valueB;
+    }
+
+    @Override
     public Long getInitialValue() {
         return 0L;
     }

@@ -31,8 +31,8 @@ import java.util.List;
  */
 public class Bytecode<C> implements Cloneable {
 
-    public List<Strategy> strategies = new ArrayList<>();
-    public List<Instruction<C>> instructions = new ArrayList<>();
+    private List<Strategy> strategies = new ArrayList<>();
+    private List<Instruction<C>> instructions = new ArrayList<>();
 
 
     public void addStrategy(final Strategy strategy) {
@@ -63,7 +63,7 @@ public class Bytecode<C> implements Cloneable {
     }
 
     // this should be part of processor!
-    public <S> TraverserFactory<C, S> getTraverserFactory() {
+    public <S> TraverserFactory<C> getTraverserFactory() {
         return new CompleteTraverserFactory<>();
     }
 

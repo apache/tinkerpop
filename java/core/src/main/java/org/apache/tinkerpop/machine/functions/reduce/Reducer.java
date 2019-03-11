@@ -18,10 +18,12 @@
  */
 package org.apache.tinkerpop.machine.functions.reduce;
 
+import java.io.Serializable;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Reducer<S> {
+public interface Reducer<S> extends Serializable {
 
     public S get();
 

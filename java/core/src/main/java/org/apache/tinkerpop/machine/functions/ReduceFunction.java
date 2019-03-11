@@ -28,5 +28,7 @@ import java.util.function.BiFunction;
 public interface ReduceFunction<C, S, E> extends BiFunction<Traverser<C, S>, E, E>, CFunction<C> {
 
     public E getInitialValue();
+
+    public E merge(final E valueA, final E valueB);
 }
 

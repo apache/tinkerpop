@@ -20,6 +20,7 @@ package org.apache.tinkerpop.machine.beam;
 
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.options.PipelineOptions;
+import org.apache.beam.sdk.transforms.Combine;
 import org.apache.beam.sdk.transforms.Create;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.ParDo;
@@ -34,6 +35,7 @@ import org.apache.tinkerpop.machine.functions.MapFunction;
 import org.apache.tinkerpop.machine.functions.ReduceFunction;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.traversers.CompleteTraverser;
+import org.apache.tinkerpop.machine.traversers.CompleteTraverserFactory;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
 import java.util.ArrayList;
@@ -47,7 +49,7 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
 
     private final Pipeline pipeline;
     public static List<Traverser> OUTPUT = new ArrayList<>(); // FIX THIS!
-    private final List<DoFn> functions = new ArrayList<>();
+    private final List<Fn> functions = new ArrayList<>();
     Iterator<Traverser> iterator = null;
 
     public Beam(final List<CFunction<C>> functions) {
@@ -65,14 +67,22 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
             } else if (function instanceof MapFunction) {
                 fn = new MapFn<>((MapFunction) function);
             } else if (function instanceof ReduceFunction) {
-                //fn = new ReduceFn<>((ReduceFunction)function)
+                final ReduceFn combine = new ReduceFn<>((ReduceFunction) function, new CompleteTraverserFactory<>());
+                collection = (PCollection) collection.apply(Combine.globally(combine));
+                this.functions.add(combine);
             } else
                 throw new RuntimeException("You need a new step type:" + function);
-            this.functions.add(fn);
-            collection = (PCollection) collection.apply(ParDo.of(fn));
+
+            if (!(function instanceof ReduceFunction)) {
+                this.functions.add((Fn) fn);
+                collection = (PCollection) collection.apply(ParDo.of(fn));
+
+            }
             collection.setCoder(new TraverserCoder());
+
+
         }
-        collection = (PCollection) collection.apply(ParDo.of(new OutputStep()));
+        collection.apply(ParDo.of(new OutputStep()));
         this.pipeline.getOptions().setRunner(new PipelineOptions.DirectRunner().create(this.pipeline.getOptions()));
     }
 

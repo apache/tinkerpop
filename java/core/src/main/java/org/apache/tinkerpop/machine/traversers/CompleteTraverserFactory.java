@@ -23,9 +23,10 @@ import org.apache.tinkerpop.machine.coefficients.Coefficient;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class CompleteTraverserFactory<C, S> implements TraverserFactory<C, S> {
+public class CompleteTraverserFactory<C> implements TraverserFactory<C> {
+
     @Override
-    public Traverser<C, S> create(final Coefficient<C> coefficient, final S object) {
+    public <S> Traverser<C, S> create(final Coefficient<C> coefficient, final S object) {
         return new CompleteTraverser<>(coefficient.clone(), object);
     }
 }

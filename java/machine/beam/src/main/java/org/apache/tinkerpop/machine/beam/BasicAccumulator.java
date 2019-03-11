@@ -16,48 +16,49 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.pipes;
+package org.apache.tinkerpop.machine.beam;
 
+import org.apache.beam.sdk.coders.DefaultCoder;
+import org.apache.beam.sdk.transforms.Combine;
 import org.apache.tinkerpop.machine.functions.ReduceFunction;
-import org.apache.tinkerpop.machine.functions.reduce.Reducer;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.machine.traversers.TraverserFactory;
+
+import java.io.Serializable;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReduceStep<C, S, E> extends AbstractStep<C, S, E> {
+@DefaultCoder(ReducerCoder.class)
+public class BasicAccumulator<C, S, E> implements Combine.AccumulatingCombineFn.Accumulator<Traverser<C, S>, BasicAccumulator<C, S, E>, Traverser<C, E>>, Serializable {
 
+    private E value;
     private final ReduceFunction<C, S, E> reduceFunction;
-    private final Reducer<E> reducer;
     private final TraverserFactory<C> traverserFactory;
-    private boolean done = false;
 
-    public ReduceStep(final AbstractStep<C, ?, S> previousStep,
-                      final ReduceFunction<C, S, E> reduceFunction,
-                      final Reducer<E> reducer,
-                      final TraverserFactory<C> traverserFactory) {
-        super(previousStep, reduceFunction);
+    public BasicAccumulator(final ReduceFunction<C, S, E> reduceFunction, final TraverserFactory<C> traverserFactory) {
+        super();
+        this.value = reduceFunction.getInitialValue();
         this.reduceFunction = reduceFunction;
-        this.reducer = reducer;
         this.traverserFactory = traverserFactory;
     }
 
-    @Override
-    public Traverser<C, E> next() {
-        this.done = true;
-        Traverser<C, S> traverser = null;
-        while (this.hasNext()) {
-            traverser = getPreviousTraverser();
-            this.reducer.update(this.reduceFunction.apply(traverser, this.reducer.get()));
-        }
-        return null == traverser ?
-                this.traverserFactory.create(this.function.coefficient(), this.reduceFunction.getInitialValue()) :
-                traverser.reduce(this.reducer);
+    public void setValue(final E value) {
+        this.value = value;
     }
 
     @Override
-    public boolean hasNext() {
-        return !this.done;
+    public void addInput(final Traverser<C, S> input) {
+        this.value = reduceFunction.apply(input, this.value);
+    }
+
+    @Override
+    public void mergeAccumulator(final BasicAccumulator<C, S, E> other) {
+        this.value = this.reduceFunction.apply(this.traverserFactory.create(this.reduceFunction.coefficient(), (S) this.value), other.value);
+    }
+
+    @Override
+    public Traverser<C, E> extractOutput() {
+        return this.traverserFactory.create(this.reduceFunction.coefficient(), this.value);
     }
 }
