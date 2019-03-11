@@ -29,7 +29,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class IdentityTest {
 
-    public void g_injectX2X_identity(final Traversal<Long, Long, Long> traversal) {
+    private IdentityTest() {
+        // static class
+    }
+
+    public static void g_injectX2X_identity(final Traversal<Long, Long, Long> traversal) {
         final List<Long> list = traversal.toList();
         assertEquals(1, list.size());
         assertEquals(2L, list.get(0));

@@ -30,10 +30,9 @@ import org.junit.jupiter.api.Test;
 public class PipesIdentityTest {
 
     private TraversalSource<Long> g = Gremlin.<Long>traversal().withProcessor(PipesProcessor.class).withCoefficient(LongCoefficient.class);
-    private IdentityTest test = new IdentityTest();
 
     @Test
     public void g_injectX2X_identity() {
-        test.g_injectX2X_identity(g.inject(2L).identity());
+        IdentityTest.g_injectX2X_identity(g.inject(2L).identity());
     }
 }
