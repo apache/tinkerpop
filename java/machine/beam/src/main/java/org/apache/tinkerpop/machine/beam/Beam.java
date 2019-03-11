@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.machine.beam;
 
 import org.apache.beam.sdk.Pipeline;
+import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.transforms.Create;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.ParDo;
@@ -44,17 +45,16 @@ import java.util.List;
  */
 public class Beam<C, S, E> implements Processor<C, S, E> {
 
-    final Pipeline pipeline;
-    PCollection collection;
-    public static List<Traverser> OUTPUT = new ArrayList<>();
-    Iterator<Traverser> iterator = null;
+    private final Pipeline pipeline;
+    public static List<Traverser> OUTPUT = new ArrayList<>(); // FIX THIS!
     private final List<DoFn> functions = new ArrayList<>();
+    Iterator<Traverser> iterator = null;
 
     public Beam(final List<CFunction<C>> functions) {
         this.pipeline = Pipeline.create();
         this.pipeline.getCoderRegistry().registerCoderForClass(Traverser.class, new TraverserCoder<>());
-        this.collection = this.pipeline.apply(Create.of(new CompleteTraverser(LongCoefficient.create(), 1L)));
-        this.collection.setCoder(new TraverserCoder());
+        PCollection collection = this.pipeline.apply(Create.of(new CompleteTraverser(LongCoefficient.create(), 1L)));
+        collection.setCoder(new TraverserCoder());
 
         DoFn fn = null;
         for (final CFunction<?> function : functions) {
@@ -69,10 +69,11 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
             } else
                 throw new RuntimeException("You need a new step type:" + function);
             this.functions.add(fn);
-            this.collection = (PCollection) collection.apply(ParDo.of(fn));
-            this.collection.setCoder(new TraverserCoder());
+            collection = (PCollection) collection.apply(ParDo.of(fn));
+            collection.setCoder(new TraverserCoder());
         }
         collection = (PCollection) collection.apply(ParDo.of(new OutputStep()));
+        this.pipeline.getOptions().setRunner(new PipelineOptions.DirectRunner().create(this.pipeline.getOptions()));
     }
 
     public Beam(final Bytecode<C> bytecode) {
@@ -108,7 +109,7 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
 
     private final void setupPipeline() {
         if (null == this.iterator) {
-            pipeline.run().waitUntilFinish();
+            this.pipeline.run().waitUntilFinish();
             this.iterator = new ArrayList<>(OUTPUT).iterator();
             OUTPUT.clear();
         }

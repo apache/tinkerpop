@@ -23,6 +23,11 @@ package org.apache.tinkerpop.language;
  */
 public final class Symbols {
 
+    // SOURCE OPS
+    public static final String COEFFICIENT = "coefficient";
+
+
+    // INSTRUCTION OPS
     public static final String AS = "as";
     public static final String C = "c";
     public static final String COUNT = "count";
