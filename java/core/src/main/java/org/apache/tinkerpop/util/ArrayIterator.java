@@ -16,33 +16,41 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.beam;
+package org.apache.tinkerpop.util;
 
-import org.apache.tinkerpop.machine.functions.MapFunction;
-import org.apache.tinkerpop.machine.functions.NestedFunction;
-import org.apache.tinkerpop.machine.pipes.Pipes;
-import org.apache.tinkerpop.machine.traversers.CompleteTraverserFactory;
-import org.apache.tinkerpop.machine.traversers.Traverser;
-
-import java.util.NoSuchElementException;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MapFn<C, S, E> extends AbstractFn<C, S, E> {
+public final class ArrayIterator<T> implements Iterator<T>, Serializable {
 
-    private final MapFunction<C, S, E> mapFunction;
-    private boolean first = true;
+    private final T[] array;
+    private int current = 0;
 
-    public MapFn(final MapFunction<C, S, E> mapFunction) {
-       super(mapFunction);
-        this.mapFunction = mapFunction;
+    public ArrayIterator(final T[] array) {
+        this.array = array;
     }
 
-    @ProcessElement
-    public void processElement(final @Element Traverser<C, S> traverser, final OutputReceiver<Traverser<C, E>> output) {
+    @Override
+    public boolean hasNext() {
+        return this.current < this.array.length;
+    }
 
-            output.output(traverser.map(this.mapFunction));
+    @Override
+    public T next() {
+        if (this.hasNext()) {
+            this.current++;
+            return this.array[this.current - 1];
+        } else {
+            throw FastNoSuchElementException.instance();
+        }
+    }
 
+    @Override
+    public String toString() {
+        return Arrays.asList(array).toString();
     }
 }

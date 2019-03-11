@@ -25,7 +25,6 @@ import org.apache.tinkerpop.language.TraversalUtil;
 import org.apache.tinkerpop.language.__;
 import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
 import org.apache.tinkerpop.machine.strategies.IdentityStrategy;
-import org.apache.tinkerpop.machine.traversers.Path;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -46,6 +45,11 @@ public class PipesTest {
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
         traversal = g.inject(7L, 10L, 12L).as("a").c(3L).map(__.incr()).identity().incr().is(14L).count().c(10L).incr().sum();
+        System.out.println(TraversalUtil.getBytecode(traversal));
+        System.out.println(traversal);
+        System.out.println(traversal.toList());
+        System.out.println("\n----------\n");
+        traversal = g.inject(7L).union(__.<Long>incr().incr().count(), __.<Long, Long>c(10L).incr().sum()).count();
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

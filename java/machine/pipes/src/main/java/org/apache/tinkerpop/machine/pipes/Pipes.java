@@ -18,10 +18,9 @@
  */
 package org.apache.tinkerpop.machine.pipes;
 
-import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.functions.FilterFunction;
+import org.apache.tinkerpop.machine.functions.FlatMapFunction;
 import org.apache.tinkerpop.machine.functions.InitialFunction;
 import org.apache.tinkerpop.machine.functions.MapFunction;
 import org.apache.tinkerpop.machine.functions.NestedFunction;
@@ -43,18 +42,20 @@ public class Pipes<C, S, E> implements Processor<C, S, E> {
     private Step<C, ?, E> endStep;
     private Step<C, S, ?> startStep = EmptyStep.instance();
 
-    public Pipes(final List<CFunction<C>> functions, final TraverserFactory<C> traverserFactory) {
+    public Pipes(final TraverserFactory<C> traverserFactory, final List<CFunction<C>> functions) {
         AbstractStep<C, ?, ?> previousStep = EmptyStep.instance();
         for (final CFunction<?> function : functions) {
             if (function instanceof NestedFunction)
-                ((NestedFunction<C, ?, ?>) function).setProcessor(new Pipes(((NestedFunction<C, S, E>) function).getFunctions(), traverserFactory));
+                ((NestedFunction<C, ?, ?>) function).setProcessor(traverserFactory, new PipesProcessor());
+            /////////
             final AbstractStep nextStep;
             if (function instanceof FilterFunction)
                 nextStep = new FilterStep(previousStep, (FilterFunction<C, ?>) function);
+            else if (function instanceof FlatMapFunction)
+                nextStep = new FlatMapStep(previousStep, (FlatMapFunction<C, ?, ?>) function);
             else if (function instanceof MapFunction)
                 nextStep = new MapStep(previousStep, (MapFunction<C, ?, ?>) function);
             else if (function instanceof InitialFunction)
-                // TODO: traverser factory
                 nextStep = new InitialStep((InitialFunction<C, S>) function, traverserFactory);
             else if (function instanceof ReduceFunction)
                 nextStep = new ReduceStep(previousStep, (ReduceFunction<C, ?, ?>) function, new BasicReducer<>(((ReduceFunction<C, ?, ?>) function).getInitialValue()), traverserFactory);
@@ -68,10 +69,6 @@ public class Pipes<C, S, E> implements Processor<C, S, E> {
             previousStep = nextStep;
         }
         this.endStep = (Step<C, ?, E>) previousStep;
-    }
-
-    public Pipes(final Bytecode<C> bytecode) {
-        this(BytecodeUtil.compile(BytecodeUtil.strategize(bytecode)), BytecodeUtil.getTraverserFactory(bytecode).get());
     }
 
     @Override

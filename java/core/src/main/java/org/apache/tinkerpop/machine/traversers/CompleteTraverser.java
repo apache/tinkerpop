@@ -79,5 +79,17 @@ public class CompleteTraverser<C, S> implements Traverser<C, S> {
         return this.object.toString();
     }
 
+    @Override
+    public CompleteTraverser<C, S> clone() {
+        try {
+            final CompleteTraverser<C, S> clone = (CompleteTraverser<C, S>) super.clone();
+            clone.object = this.object;
+            clone.coefficient = this.coefficient.clone();
+            clone.path = new Path(this.path);
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
 
 }

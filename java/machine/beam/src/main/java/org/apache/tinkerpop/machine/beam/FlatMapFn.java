@@ -18,31 +18,27 @@
  */
 package org.apache.tinkerpop.machine.beam;
 
-import org.apache.tinkerpop.machine.functions.MapFunction;
-import org.apache.tinkerpop.machine.functions.NestedFunction;
-import org.apache.tinkerpop.machine.pipes.Pipes;
-import org.apache.tinkerpop.machine.traversers.CompleteTraverserFactory;
+import org.apache.tinkerpop.machine.functions.FlatMapFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
-import java.util.NoSuchElementException;
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MapFn<C, S, E> extends AbstractFn<C, S, E> {
+public class FlatMapFn<C, S, E> extends AbstractFn<C, S, E> {
 
-    private final MapFunction<C, S, E> mapFunction;
-    private boolean first = true;
+    private FlatMapFunction<C, S, E> flatMapFunction;
 
-    public MapFn(final MapFunction<C, S, E> mapFunction) {
-       super(mapFunction);
-        this.mapFunction = mapFunction;
+    public FlatMapFn(final FlatMapFunction<C, S, E> flatMapFunction) {
+        super(flatMapFunction);
+        this.flatMapFunction = flatMapFunction;
     }
 
     @ProcessElement
     public void processElement(final @Element Traverser<C, S> traverser, final OutputReceiver<Traverser<C, E>> output) {
-
-            output.output(traverser.map(this.mapFunction));
-
+        Iterator<Traverser<C, E>> iterator = traverser.flatMap(this.flatMapFunction);
+        while (iterator.hasNext())
+            output.output(iterator.next());
     }
 }

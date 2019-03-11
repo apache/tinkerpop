@@ -26,5 +26,5 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface FlatMapFunction<C, S, E> extends Function<Traverser<C, S>, Iterator<Traverser<C, E>>>, CFunction<C> {
+public interface FlatMapFunction<C, S, E> extends Function<Traverser<C, S>, Iterator<E>>, CFunction<C> {
 }

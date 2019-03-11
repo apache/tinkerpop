@@ -31,9 +31,12 @@ import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
 import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.functions.FilterFunction;
+import org.apache.tinkerpop.machine.functions.FlatMapFunction;
 import org.apache.tinkerpop.machine.functions.InitialFunction;
 import org.apache.tinkerpop.machine.functions.MapFunction;
+import org.apache.tinkerpop.machine.functions.NestedFunction;
 import org.apache.tinkerpop.machine.functions.ReduceFunction;
+import org.apache.tinkerpop.machine.pipes.PipesProcessor;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.machine.traversers.TraverserFactory;
@@ -54,7 +57,7 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
     Iterator<Traverser> iterator = null;
 
 
-    public Beam(final List<CFunction<C>> functions, final TraverserFactory<C> traverserFactory) {
+    public Beam(final TraverserFactory<C> traverserFactory, final List<CFunction<C>> functions) {
         this.pipeline = Pipeline.create();
         this.pipeline.getCoderRegistry().registerCoderForClass(Traverser.class, new TraverserCoder<>());
         PCollection collection = this.pipeline.apply(Create.of(traverserFactory.create((Coefficient) LongCoefficient.create(), 1L)));
@@ -62,10 +65,15 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
 
         DoFn fn = null;
         for (final CFunction<?> function : functions) {
+            if (function instanceof NestedFunction)
+                ((NestedFunction<C, ?, ?>) function).setProcessor(traverserFactory, new PipesProcessor());
+
             if (function instanceof InitialFunction) {
                 fn = new InitialFn<>((InitialFunction) function, traverserFactory);
             } else if (function instanceof FilterFunction) {
                 fn = new FilterFn<>((FilterFunction) function);
+            } else if (function instanceof FlatMapFunction) {
+                fn = new FlatMapFn<>((FlatMapFunction) function);
             } else if (function instanceof MapFunction) {
                 fn = new MapFn<>((MapFunction) function);
             } else if (function instanceof ReduceFunction) {
@@ -88,7 +96,7 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
     }
 
     public Beam(final Bytecode<C> bytecode) {
-        this(BytecodeUtil.compile(BytecodeUtil.strategize(bytecode)), BytecodeUtil.getTraverserFactory(bytecode).get());
+        this(BytecodeUtil.getTraverserFactory(bytecode).get(), BytecodeUtil.compile(BytecodeUtil.strategize(bytecode)));
     }
 
     @Override

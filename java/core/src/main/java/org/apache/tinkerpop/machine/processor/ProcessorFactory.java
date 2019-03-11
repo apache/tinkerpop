@@ -19,11 +19,21 @@
 package org.apache.tinkerpop.machine.processor;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
+import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
+import org.apache.tinkerpop.machine.functions.CFunction;
+import org.apache.tinkerpop.machine.traversers.TraverserFactory;
+
+import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface ProcessorFactory {
+public interface ProcessorFactory extends Serializable {
 
-    public <C, S, E> Processor<C, S, E> mint(final Bytecode<C> bytecode);
+    public default <C, S, E> Processor<C, S, E> mint(final Bytecode<C> bytecode) {
+        return this.mint(BytecodeUtil.getTraverserFactory(bytecode).get(), BytecodeUtil.compile(BytecodeUtil.strategize(bytecode)));
+    }
+
+    public <C, S, E> Processor<C, S, E> mint(final TraverserFactory<C> traverserFactory, final List<CFunction<C>> functions);
 }

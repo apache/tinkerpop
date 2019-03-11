@@ -23,6 +23,7 @@ import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.functions.filter.IdentityFilter;
 import org.apache.tinkerpop.machine.functions.filter.IsFilter;
+import org.apache.tinkerpop.machine.functions.flatMap.UnionFlatMap;
 import org.apache.tinkerpop.machine.functions.initial.InjectInitial;
 import org.apache.tinkerpop.machine.functions.map.IncrMap;
 import org.apache.tinkerpop.machine.functions.map.MapMap;
@@ -56,14 +57,6 @@ public final class BytecodeUtil {
             }
         }
         return bytecode;
-    }
-
-    public static <C> List<CFunction<C>> compile(final Bytecode<C> bytecode) {
-        final List<CFunction<C>> functions = new ArrayList<>();
-        for (final Instruction<C> instruction : bytecode.getInstructions()) {
-            functions.add(BytecodeUtil.generateFunction(instruction));
-        }
-        return functions;
     }
 
     public static <C> List<Strategy> getStrategies(final Bytecode<C> bytecode) {
@@ -113,6 +106,14 @@ public final class BytecodeUtil {
         return Optional.of(new CompleteTraverserFactory<C>());
     }
 
+    public static <C> List<CFunction<C>> compile(final Bytecode<C> bytecode) {
+        final List<CFunction<C>> functions = new ArrayList<>();
+        for (final Instruction<C> instruction : bytecode.getInstructions()) {
+            functions.add(BytecodeUtil.generateFunction(instruction));
+        }
+        return functions;
+    }
+
     private static <C> CFunction<C> generateFunction(final Instruction<C> instruction) {
         final String op = instruction.op();
         final Coefficient<C> coefficient = instruction.coefficient();
@@ -134,6 +135,12 @@ public final class BytecodeUtil {
                 return new PathMap<>(coefficient, labels);
             case Symbols.SUM:
                 return new SumReduce<>(coefficient, labels);
+            case Symbols.UNION:
+                final List<List<CFunction<C>>> branchFunctions = new ArrayList<>();
+                for (final Bytecode<C> arg : (Bytecode<C>[]) instruction.args()) {
+                    branchFunctions.add(compile(arg));
+                }
+                return new UnionFlatMap<>(coefficient, labels, branchFunctions);
             default:
                 throw new RuntimeException("This is an unknown instruction:" + instruction.op());
         }

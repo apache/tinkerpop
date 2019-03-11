@@ -16,33 +16,37 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.beam;
+package org.apache.tinkerpop.machine.pipes;
 
-import org.apache.tinkerpop.machine.functions.MapFunction;
-import org.apache.tinkerpop.machine.functions.NestedFunction;
-import org.apache.tinkerpop.machine.pipes.Pipes;
-import org.apache.tinkerpop.machine.traversers.CompleteTraverserFactory;
+import org.apache.tinkerpop.machine.functions.FlatMapFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
-import java.util.NoSuchElementException;
+import java.util.Collections;
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MapFn<C, S, E> extends AbstractFn<C, S, E> {
+public class FlatMapStep<C, S, E> extends AbstractStep<C, S, E> {
 
-    private final MapFunction<C, S, E> mapFunction;
-    private boolean first = true;
+    private final FlatMapFunction<C, S, E> flatMapFunction;
+    private Iterator<Traverser<C, E>> iterator = Collections.emptyIterator();
 
-    public MapFn(final MapFunction<C, S, E> mapFunction) {
-       super(mapFunction);
-        this.mapFunction = mapFunction;
+    public FlatMapStep(final AbstractStep<C, ?, S> previousStep, final FlatMapFunction<C, S, E> flatMapFunction) {
+        super(previousStep, flatMapFunction);
+        this.flatMapFunction = flatMapFunction;
     }
 
-    @ProcessElement
-    public void processElement(final @Element Traverser<C, S> traverser, final OutputReceiver<Traverser<C, E>> output) {
+    @Override
+    public boolean hasNext() {
+        return this.iterator.hasNext() || super.hasNext();
+    }
 
-            output.output(traverser.map(this.mapFunction));
-
+    @Override
+    public Traverser<C, E> next() {
+        if (!this.iterator.hasNext()) {
+            this.iterator = super.getPreviousTraverser().flatMap(this.flatMapFunction);
+        }
+        return this.iterator.next();
     }
 }

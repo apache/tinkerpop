@@ -22,6 +22,7 @@ import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
+import org.apache.tinkerpop.machine.processor.EmptyProcessorFactory;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.traversers.Path;
@@ -47,7 +48,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     public Traversal(final Bytecode<C> bytecode) {
         this.bytecode = bytecode;
         this.currentCoefficient = BytecodeUtil.getCoefficient(this.bytecode).orElse((Coefficient<C>) LongCoefficient.create());
-        this.processorFactory = BytecodeUtil.getProcessorFactory(this.bytecode).orElse(null);
+        this.processorFactory = BytecodeUtil.getProcessorFactory(this.bytecode).orElse(EmptyProcessorFactory.instance());
     }
 
     public Traversal<C, S, E> as(final String label) {
@@ -102,6 +103,15 @@ public class Traversal<C, S, E> implements Iterator<E> {
 
     public <R extends Number> Traversal<C, S, R> sum() {
         this.bytecode.addInstruction(this.currentCoefficient, Symbols.SUM);
+        return (Traversal) this;
+    }
+
+    public <R> Traversal<C, S, R> union(final Traversal<C, E, R>... traversals) {
+        final Bytecode<C>[] bytecodes = new Bytecode[traversals.length];
+        for (int i = 0; i < traversals.length; i++) {
+            bytecodes[i] = traversals[i].bytecode;
+        }
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.UNION, bytecodes);
         return (Traversal) this;
     }
 

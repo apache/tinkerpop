@@ -24,16 +24,16 @@ import org.apache.tinkerpop.machine.functions.FilterFunction;
 import org.apache.tinkerpop.machine.functions.FlatMapFunction;
 import org.apache.tinkerpop.machine.functions.MapFunction;
 import org.apache.tinkerpop.machine.functions.ReduceFunction;
+import org.apache.tinkerpop.util.IteratorUtils;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Traverser<C, S> extends Serializable {
+public interface Traverser<C, S> extends Serializable, Cloneable {
 
     public Coefficient<C> coefficient();
 
@@ -63,7 +63,7 @@ public interface Traverser<C, S> extends Serializable {
     }
 
     public default <E> Iterator<Traverser<C, E>> flatMap(final FlatMapFunction<C, S, E> function) {
-        return Collections.emptyIterator();
+        return IteratorUtils.map(function.apply(this), e -> this.split(function, e));
     }
 
     //public default void sideEffect(final SideEffectFunction<C,S> function);
@@ -73,4 +73,6 @@ public interface Traverser<C, S> extends Serializable {
     }
 
     public <E> Traverser<C, E> split(final CFunction<C> function, final E object);
+
+    public Traverser<C, S> clone();
 }

@@ -19,16 +19,29 @@
 package org.apache.tinkerpop.language;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
-import org.apache.tinkerpop.machine.processor.EmptyProcessorFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class __ {
 
+    private static <C, S> Traversal<C, S, S> start() {
+        return new Traversal<>(new Bytecode<>());
+    }
+
+    public static <C, S> Traversal<C, S, S> c(final C coefficient) {
+        return __.<C, S>start().c(coefficient);
+    }
+
     public static <C> Traversal<C, Long, Long> incr() {
-        // this is bad -- it needs to know how to get the withCoefficient of the parent traversal
-        return (Traversal) new Traversal<>(new Bytecode<>()).incr();
+        return __.<C, Long>start().incr();
+    }
+
+    public static <C, S extends Number> Traversal<C, S, S> sum() {
+        return __.<C, S>start().sum();
+    }
+
+    public static <C, S> Traversal<C, S, Long> count() {
+        return __.<C, S>start().count();
     }
 }

@@ -16,33 +16,40 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.beam;
+package org.apache.tinkerpop.util;
 
-import org.apache.tinkerpop.machine.functions.MapFunction;
-import org.apache.tinkerpop.machine.functions.NestedFunction;
-import org.apache.tinkerpop.machine.pipes.Pipes;
-import org.apache.tinkerpop.machine.traversers.CompleteTraverserFactory;
-import org.apache.tinkerpop.machine.traversers.Traverser;
-
-import java.util.NoSuchElementException;
+import java.io.Serializable;
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MapFn<C, S, E> extends AbstractFn<C, S, E> {
+final class SingleIterator<T> implements Iterator<T>, Serializable {
 
-    private final MapFunction<C, S, E> mapFunction;
-    private boolean first = true;
+    private T t;
+    private boolean alive = true;
 
-    public MapFn(final MapFunction<C, S, E> mapFunction) {
-       super(mapFunction);
-        this.mapFunction = mapFunction;
+    protected SingleIterator(final T t) {
+        this.t = t;
     }
 
-    @ProcessElement
-    public void processElement(final @Element Traverser<C, S> traverser, final OutputReceiver<Traverser<C, E>> output) {
+    @Override
+    public boolean hasNext() {
+        return this.alive;
+    }
 
-            output.output(traverser.map(this.mapFunction));
+    @Override
+    public void remove() {
+        this.t = null;
+    }
 
+    @Override
+    public T next() {
+        if (!this.alive)
+            throw FastNoSuchElementException.instance();
+        else {
+            this.alive = false;
+            return t;
+        }
     }
 }

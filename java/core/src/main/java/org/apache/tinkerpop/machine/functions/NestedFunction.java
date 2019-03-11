@@ -18,7 +18,8 @@
  */
 package org.apache.tinkerpop.machine.functions;
 
-import org.apache.tinkerpop.machine.processor.Processor;
+import org.apache.tinkerpop.machine.processor.ProcessorFactory;
+import org.apache.tinkerpop.machine.traversers.TraverserFactory;
 
 import java.util.List;
 
@@ -27,7 +28,7 @@ import java.util.List;
  */
 public interface NestedFunction<C, S, E> extends CFunction<C> {
 
-    public void setProcessor(final Processor<C, S, E> processor);
+    public void setProcessor(final TraverserFactory<C> traverserFactory, final ProcessorFactory processorFactory);
 
-    public List<CFunction<C>> getFunctions();
+    public List<List<CFunction<C>>> getFunctions();
 }
