@@ -30,9 +30,9 @@ public class BytecodeUtilTest {
 
     @Test
     public void shouldHaveBytecode() throws Exception {
-        final Traversal<Long, Long, Long> traversal = new Traversal<>(LongCoefficient.create(), EmptyProcessorFactory.instance());
-        traversal.incr().is(2L);
+        //final Traversal<Long, Long, Long> traversal = new Traversal<>(LongCoefficient.create(), EmptyProcessorFactory.instance());
+        //traversal.incr().is(2L);
         //System.out.println(traversal.bytecode);
-        //System.out.println(BytecodeUtil.compile(traversal.getBytecode()));
+        //System.out.println(BytecodeUtil.apply(traversal.getBytecode()));
     }
 }

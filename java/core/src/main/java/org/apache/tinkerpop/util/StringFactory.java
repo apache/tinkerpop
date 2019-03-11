@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.util;
 
 import org.apache.tinkerpop.machine.bytecode.Instruction;
+import org.apache.tinkerpop.machine.bytecode.SourceInstruction;
 import org.apache.tinkerpop.machine.functions.CFunction;
 
 /**
@@ -45,6 +46,20 @@ public final class StringFactory {
         }
         if (!instruction.labels().isEmpty())
             name = name + "@" + instruction.labels();
+        return name;
+    }
+
+    public static String makeSourceInstructionString(final SourceInstruction sourceInstruction) {
+        String name = sourceInstruction.op();
+        if (sourceInstruction.args().length > 0)
+            name = name + "(";
+        for (final Object object : sourceInstruction.args()) {
+            name = name + object + ",";
+        }
+        if (sourceInstruction.args().length > 0) {
+            name = name.substring(0, name.length() - 1);
+            name = name + ")";
+        }
         return name;
     }
 

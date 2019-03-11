@@ -16,27 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.language;
+package org.apache.tinkerpop.machine.strategies;
+
+import org.apache.tinkerpop.language.Symbols;
+import org.apache.tinkerpop.machine.bytecode.Bytecode;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class Symbols {
+public final class IdentityStrategy implements Strategy {
 
-    // SOURCE OPS
-    public static final String WITH_COEFFICIENT = "withCoefficient";
-    public static final String WITH_PROCESSOR = "withProcessor";
-    public static final String WITH_STRATEGY = "withStrategy";
-
-
-    // INSTRUCTION OPS
-    public static final String AS = "as";
-    public static final String C = "c";
-    public static final String COUNT = "count";
-    public static final String IDENTITY = "identity";
-    public static final String IS = "is";
-    public static final String INCR = "incr";
-    public static final String INJECT = "inject";
-    public static final String MAP = "map";
-    public static final String PATH = "path";
+    @Override
+    public <C> void apply(final Bytecode<C> bytecode) {
+        bytecode.getInstructions().removeIf(instruction -> instruction.op().equals(Symbols.IDENTITY));
+    }
 }

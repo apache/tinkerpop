@@ -71,7 +71,7 @@ public class Pipes<C, S, E> implements Processor<C, S, E> {
     }
 
     public Pipes(final Bytecode<C> bytecode) {
-        this(BytecodeUtil.compile(BytecodeUtil.optimize(bytecode)), bytecode.getTraverserFactory());
+        this(BytecodeUtil.compile(BytecodeUtil.strategize(bytecode)), bytecode.getTraverserFactory());
     }
 
     @Override

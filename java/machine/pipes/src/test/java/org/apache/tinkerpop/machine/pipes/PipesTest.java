@@ -24,6 +24,7 @@ import org.apache.tinkerpop.language.TraversalSource;
 import org.apache.tinkerpop.language.TraversalUtil;
 import org.apache.tinkerpop.language.__;
 import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
+import org.apache.tinkerpop.machine.strategies.IdentityStrategy;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -34,9 +35,11 @@ public class PipesTest {
     @Test
     public void shouldWork() {
         final TraversalSource<Long> g = Gremlin.<Long>traversal()
-                .coefficient(LongCoefficient.create())
-                .processor(PipesProcessor.class);
-        Traversal<Long, Long, Long> traversal = g.inject(7L, 10L, 12L).as("a").c(3L).map(__.incr()).identity().incr();
+                .withCoefficient(LongCoefficient.class)
+                .withProcessor(PipesProcessor.class)
+                .withStrategy(IdentityStrategy.class);
+
+        Traversal<Long, Long, Long> traversal = g.inject(7L, 10L, 12L).as("a").c(3L).map(__.incr()).identity().incr().identity().identity();
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

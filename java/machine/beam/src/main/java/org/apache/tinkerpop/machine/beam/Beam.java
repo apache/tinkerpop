@@ -87,7 +87,7 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
     }
 
     public Beam(final Bytecode<C> bytecode) {
-        this(BytecodeUtil.compile(bytecode));
+        this(BytecodeUtil.compile(BytecodeUtil.strategize(bytecode)));
     }
 
     @Override

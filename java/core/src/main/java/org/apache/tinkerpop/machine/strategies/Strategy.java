@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.compiler;
+package org.apache.tinkerpop.machine.strategies;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 
@@ -25,5 +25,5 @@ import org.apache.tinkerpop.machine.bytecode.Bytecode;
  */
 public interface Strategy {
 
-    public <C> void process(final Bytecode<C> bytecode);
+    public <C> void apply(final Bytecode<C> bytecode);
 }

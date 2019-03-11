@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.machine.bytecode;
 
+import org.apache.tinkerpop.util.StringFactory;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -37,5 +39,10 @@ public final class SourceInstruction {
 
     public Object[] args() {
         return this.args;
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.makeSourceInstructionString(this);
     }
 }

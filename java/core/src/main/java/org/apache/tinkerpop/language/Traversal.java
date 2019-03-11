@@ -19,7 +19,9 @@
 package org.apache.tinkerpop.language;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
+import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
+import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.traversers.Path;
@@ -36,15 +38,16 @@ public class Traversal<C, S, E> implements Iterator<E> {
 
     protected final Bytecode<C> bytecode;
     private Coefficient<C> currentCoefficient;
-    private final ProcessorFactory factory;
+    private final ProcessorFactory processorFactory;
     private Processor<C, S, E> processor;
+    //
     private long lastCount = 0L;
     private E lastObject = null;
 
-    public Traversal(final Coefficient<C> unity, final ProcessorFactory factory) {
-        this.currentCoefficient = unity;
-        this.bytecode = new Bytecode<>();
-        this.factory = factory;
+    public Traversal(final Bytecode<C> bytecode) {
+        this.bytecode = bytecode;
+        this.currentCoefficient = BytecodeUtil.getCoefficient(this.bytecode).orElse((Coefficient<C>) LongCoefficient.create());
+        this.processorFactory = BytecodeUtil.getProcessorFactory(this.bytecode).orElse(null);
     }
 
     public Traversal<C, S, E> as(final String label) {
@@ -102,7 +105,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
 
     private void setupProcessor() {
         if (null == this.processor)
-            this.processor = this.factory.mint(this.bytecode);
+            this.processor = this.processorFactory.mint(this.bytecode);
     }
 
     @Override

@@ -37,11 +37,9 @@ public class ReduceFn<C, S, E> extends Combine.CombineFn<Traverser<C, S>, BasicA
 
     public ReduceFn(final ReduceFunction<C, S, E> reduceFunction,
                     final TraverserFactory<C> traverserFactory) {
-        //super(reduceFunction);
         this.reduceFunction = reduceFunction;
         this.traverserFactory = traverserFactory;
     }
-
 
     @Override
     public void addStart(Traverser<C, S> traverser) {

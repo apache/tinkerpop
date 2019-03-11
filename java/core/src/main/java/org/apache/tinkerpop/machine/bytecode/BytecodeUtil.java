@@ -28,9 +28,13 @@ import org.apache.tinkerpop.machine.functions.map.IncrMap;
 import org.apache.tinkerpop.machine.functions.map.MapMap;
 import org.apache.tinkerpop.machine.functions.map.PathMap;
 import org.apache.tinkerpop.machine.functions.reduce.CountReduce;
+import org.apache.tinkerpop.machine.processor.ProcessorFactory;
+import org.apache.tinkerpop.machine.strategies.Strategy;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -38,13 +42,16 @@ import java.util.Set;
  */
 public final class BytecodeUtil {
 
-    public static <C> Bytecode<C> optimize(final Bytecode<C> bytecode) {
-        Instruction<C> toRemove = null;
-        for (Instruction<C> instruction : bytecode.getInstructions()) {
-            if (instruction.op().equals(Symbols.IDENTITY))
-                toRemove = instruction;
+    public static <C> Bytecode<C> strategize(final Bytecode<C> bytecode) {
+        for (final Strategy strategy : BytecodeUtil.getStrategies(bytecode)) {
+            strategy.apply(bytecode);
+            for (final Instruction<C> instruction : bytecode.getInstructions()) {
+                for (Object arg : instruction.args()) {
+                    if (arg instanceof Bytecode)
+                        strategy.apply((Bytecode<C>) arg);
+                }
+            }
         }
-        bytecode.removeInstruction(toRemove);
         return bytecode;
     }
 
@@ -54,6 +61,49 @@ public final class BytecodeUtil {
             functions.add(BytecodeUtil.generateFunction(instruction));
         }
         return functions;
+    }
+
+    public static <C> List<Strategy> getStrategies(final Bytecode<C> bytecode) {
+        try {
+            final List<Strategy> strategies = new ArrayList<>();
+            for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
+                if (sourceInstruction.op().equals(Symbols.WITH_STRATEGY))
+                    strategies.add((Strategy) Class.forName(sourceInstruction.args()[0].toString()).getConstructor().newInstance());
+            }
+            // sort strategies
+            return strategies;
+        } catch (final ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    public static <C> Optional<Coefficient<C>> getCoefficient(final Bytecode<C> bytecode) {
+        try {
+            Coefficient<C> coefficient = null;
+            for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
+                if (sourceInstruction.op().equals(Symbols.WITH_COEFFICIENT)) {
+                    coefficient = (Coefficient<C>) Class.forName(sourceInstruction.args()[0].toString()).getConstructor().newInstance();
+                }
+            }
+
+            return Optional.ofNullable(coefficient);
+        } catch (final ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    public static <C> Optional<ProcessorFactory> getProcessorFactory(final Bytecode<C> bytecode) {
+        try {
+            ProcessorFactory processor = null;
+            for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
+                if (sourceInstruction.op().equals(Symbols.WITH_PROCESSOR)) {
+                    processor = (ProcessorFactory) Class.forName(sourceInstruction.args()[0].toString()).getConstructor().newInstance();
+                }
+            }
+            return Optional.ofNullable(processor);
+        } catch (final ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 
     private static <C> CFunction<C> generateFunction(final Instruction<C> instruction) {

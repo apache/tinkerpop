@@ -20,50 +20,39 @@ package org.apache.tinkerpop.language;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
-import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
-import org.apache.tinkerpop.machine.compiler.Strategy;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.tinkerpop.machine.strategies.Strategy;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class TraversalSource<C> {
 
-    private Bytecode<C> bytecode = new Bytecode<>();
-    private Coefficient<C> coefficient;
-    private ProcessorFactory factory;
-    private List<Strategy> strategies = new ArrayList<>();
-
+    private Bytecode<C> bytecode;
 
     protected TraversalSource() {
-        this.coefficient = (Coefficient<C>) LongCoefficient.create();
+        this.bytecode = new Bytecode<>();
     }
 
-    public TraversalSource<C> coefficient(final Coefficient<C> coefficient) {
-        this.coefficient = coefficient.clone();
-        this.coefficient.unity();
+    public TraversalSource<C> withCoefficient(final Class<? extends Coefficient<C>> coefficient) {
+        this.bytecode = this.bytecode.clone();
+        this.bytecode.addSourceInstruction(Symbols.WITH_COEFFICIENT, coefficient.getCanonicalName());
         return this;
     }
 
-    public TraversalSource<C> processor(final Class<? extends ProcessorFactory> processor) {
-        try {
-            this.factory = processor.newInstance();
-        } catch (final Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
+    public TraversalSource<C> withProcessor(final Class<? extends ProcessorFactory> processor) {
+        this.bytecode = this.bytecode.clone();
+        this.bytecode.addSourceInstruction(Symbols.WITH_PROCESSOR, processor.getCanonicalName());
         return this;
     }
 
-    public TraversalSource<C> strategy(final Strategy strategy) {
-        this.strategies.add(strategy);
+    public TraversalSource<C> withStrategy(final Class<? extends Strategy> strategy) {
+        this.bytecode = this.bytecode.clone();
+        this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, strategy.getCanonicalName());
         return this;
     }
 
     public <S> Traversal<C, S, S> inject(final S... objects) {
-        final Traversal<C, S, S> traversal = new Traversal<>(this.coefficient, this.factory);
-        return traversal.inject(objects);
+        return (Traversal<C, S, S>) new Traversal<>(this.bytecode.clone()).inject(objects);
     }
 }

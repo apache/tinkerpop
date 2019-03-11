@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.machine.bytecode;
 
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
-import org.apache.tinkerpop.machine.compiler.Strategy;
 import org.apache.tinkerpop.machine.traversers.CompleteTraverserFactory;
 import org.apache.tinkerpop.machine.traversers.TraverserFactory;
 
@@ -31,16 +30,15 @@ import java.util.List;
  */
 public class Bytecode<C> implements Cloneable {
 
-    private List<Strategy> strategies = new ArrayList<>();
     private List<Instruction<C>> instructions = new ArrayList<>();
+    private List<SourceInstruction> sourceInstructions = new ArrayList<>();
 
-
-    public void addStrategy(final Strategy strategy) {
-        this.strategies.add(strategy);
+    public void addSourceInstruction(final String op, final Object... args) {
+        this.sourceInstructions.add(new SourceInstruction(op, args));
     }
 
-    public List<Strategy> getStrategies() {
-        return this.strategies;
+    public List<SourceInstruction> getSourceInstructions() {
+        return this.sourceInstructions;
     }
 
     ///
@@ -62,7 +60,7 @@ public class Bytecode<C> implements Cloneable {
         return this.instructions.get(this.instructions.size() - 1);
     }
 
-    // this should be part of processor!
+    // this should be part of withProcessor!
     public <S> TraverserFactory<C> getTraverserFactory() {
         return new CompleteTraverserFactory<>();
     }
@@ -76,7 +74,7 @@ public class Bytecode<C> implements Cloneable {
     public Bytecode<C> clone() {
         try {
             final Bytecode<C> clone = (Bytecode<C>) super.clone();
-            clone.strategies = new ArrayList<>(this.strategies);
+            clone.sourceInstructions = new ArrayList<>(this.sourceInstructions);
             clone.instructions = new ArrayList<>(this.instructions);
             return clone;
         } catch (final CloneNotSupportedException e) {
