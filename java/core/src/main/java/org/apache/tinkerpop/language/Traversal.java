@@ -100,6 +100,11 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return (Traversal) this;
     }
 
+    public <R extends Number> Traversal<C, S, R> sum() {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.SUM);
+        return (Traversal) this;
+    }
+
     ///////
 
 

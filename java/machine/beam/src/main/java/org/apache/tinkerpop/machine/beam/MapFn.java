@@ -45,8 +45,8 @@ public class MapFn<C, S, E> extends AbstractFn<C, S, E> {
             if (this.mapFunction instanceof NestedFunction) {
                 Pipes beam  = new Pipes(((NestedFunction) this.mapFunction).getFunctions(), new CompleteTraverserFactory());
                 ((NestedFunction) this.mapFunction).setProcessor(beam);
-                while (!this.traversers.isEmpty()) {
-                    beam.addStart(this.traversers.remove());
+                while (!this.traverserSet.isEmpty()) {
+                    beam.addStart(this.traverserSet.remove());
                 }
             }
             this.first = false;

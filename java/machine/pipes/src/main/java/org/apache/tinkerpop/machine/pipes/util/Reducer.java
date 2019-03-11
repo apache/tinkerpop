@@ -16,26 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions.reduce;
+package org.apache.tinkerpop.machine.pipes.util;
+
+import java.io.Serializable;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BasicReducer<S> implements Reducer<S> {
+public interface Reducer<S> extends Serializable {
 
-    private S value;
+    public S get();
 
-    public BasicReducer(final S initialValue) {
-        this.value = initialValue;
-    }
-
-    public S get() {
-        return this.value;
-    }
-
-    public void update(final S newValue) {
-        this.value = newValue;
-    }
-
-
+    public void update(final S newValue);
 }

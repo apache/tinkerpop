@@ -28,8 +28,11 @@ import org.apache.tinkerpop.machine.functions.map.IncrMap;
 import org.apache.tinkerpop.machine.functions.map.MapMap;
 import org.apache.tinkerpop.machine.functions.map.PathMap;
 import org.apache.tinkerpop.machine.functions.reduce.CountReduce;
+import org.apache.tinkerpop.machine.functions.reduce.SumReduce;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.strategies.Strategy;
+import org.apache.tinkerpop.machine.traversers.CompleteTraverserFactory;
+import org.apache.tinkerpop.machine.traversers.TraverserFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -106,6 +109,10 @@ public final class BytecodeUtil {
         }
     }
 
+    public static <C> Optional<TraverserFactory<C>> getTraverserFactory(final Bytecode<C> bytecode) {
+        return Optional.of(new CompleteTraverserFactory<C>());
+    }
+
     private static <C> CFunction<C> generateFunction(final Instruction<C> instruction) {
         final String op = instruction.op();
         final Coefficient<C> coefficient = instruction.coefficient();
@@ -125,6 +132,8 @@ public final class BytecodeUtil {
                 return new MapMap<>(coefficient, labels, compile((Bytecode<C>) instruction.args()[0]));
             case Symbols.PATH:
                 return new PathMap<>(coefficient, labels);
+            case Symbols.SUM:
+                return new SumReduce<>(coefficient, labels);
             default:
                 throw new RuntimeException("This is an unknown instruction:" + instruction.op());
         }

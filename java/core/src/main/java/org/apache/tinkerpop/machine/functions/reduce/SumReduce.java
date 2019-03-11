@@ -16,33 +16,37 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.beam;
+package org.apache.tinkerpop.machine.functions.reduce;
 
-import org.apache.beam.sdk.transforms.DoFn;
-import org.apache.tinkerpop.machine.functions.CFunction;
+import org.apache.tinkerpop.machine.coefficients.Coefficient;
+import org.apache.tinkerpop.machine.functions.AbstractFunction;
+import org.apache.tinkerpop.machine.functions.ReduceFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
-import org.apache.tinkerpop.machine.traversers.TraverserSet;
+import org.apache.tinkerpop.util.NumberHelper;
+
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class AbstractFn<C, S, E> extends DoFn<Traverser<C, S>, Traverser<C, E>> implements Fn<C, S, E> {
+public class SumReduce<C, S extends Number> extends AbstractFunction<C, S, S> implements ReduceFunction<C, S, S> {
 
-    protected final TraverserSet<C, S> traverserSet = new TraverserSet<>();
-    protected final CFunction<C> function;
-
-    protected AbstractFn(final CFunction<C> function) {
-        this.function = function;
+    public SumReduce(final Coefficient<C> coefficient, final Set<String> labels) {
+        super(coefficient, labels);
     }
 
     @Override
-    public void addStart(final Traverser<C, S> traverser) {
-        this.traverserSet.add(traverser);
+    public S apply(final Traverser<C, S> traverser, final S currentValue) {
+        return (S) NumberHelper.add(currentValue, NumberHelper.mul(traverser.object(), traverser.coefficient().count()));
     }
 
     @Override
-    public String toString() {
-        return this.function.toString();
+    public S merge(final S valueA, final S valueB) {
+        return (S) NumberHelper.add(valueA, valueB);
     }
 
+    @Override
+    public S getInitialValue() {
+        return (S) NumberHelper.add(0, 0);
+    }
 }

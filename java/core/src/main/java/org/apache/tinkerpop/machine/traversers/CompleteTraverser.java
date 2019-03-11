@@ -19,8 +19,9 @@
 package org.apache.tinkerpop.machine.traversers;
 
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
+import org.apache.tinkerpop.machine.functions.CFunction;
+import org.apache.tinkerpop.machine.functions.ReduceFunction;
 
-import java.io.Serializable;
 import java.util.Collections;
 
 /**
@@ -58,9 +59,13 @@ public class CompleteTraverser<C, S> implements Traverser<C, S> {
     }
 
     @Override
-    public <E> Traverser<C, E> split(final Coefficient<C> eCoefficient, final E eObject) {
-        final CompleteTraverser<C, E> clone = new CompleteTraverser<>(eCoefficient, eObject);
-        clone.path = new Path(this.path);
+    public <E> Traverser<C, E> split(final CFunction<C> function, final E eObject) {
+        final CompleteTraverser<C, E> clone = new CompleteTraverser<>(
+                function instanceof ReduceFunction ?
+                        function.coefficient().clone().unity() :
+                        function.coefficient().clone().multiply(this.coefficient().value()), eObject);
+        clone.path = function instanceof ReduceFunction ? new Path() : new Path(this.path);
+        clone.path.add(function.labels(), eObject);
         return clone;
     }
 

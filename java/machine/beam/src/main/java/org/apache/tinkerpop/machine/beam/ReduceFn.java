@@ -35,8 +35,7 @@ public class ReduceFn<C, S, E> extends Combine.CombineFn<Traverser<C, S>, BasicA
     private final TraverserFactory<C> traverserFactory;
 
 
-    public ReduceFn(final ReduceFunction<C, S, E> reduceFunction,
-                    final TraverserFactory<C> traverserFactory) {
+    public ReduceFn(final ReduceFunction<C, S, E> reduceFunction, final TraverserFactory<C> traverserFactory) {
         this.reduceFunction = reduceFunction;
         this.traverserFactory = traverserFactory;
     }
@@ -71,7 +70,7 @@ public class ReduceFn<C, S, E> extends Combine.CombineFn<Traverser<C, S>, BasicA
     }
 
     @Override
-    public Traverser<C, E> extractOutput(BasicAccumulator<C, S, E> accumulator) {
+    public Traverser<C, E> extractOutput(final BasicAccumulator<C, S, E> accumulator) {
         return accumulator.extractOutput();
     }
 

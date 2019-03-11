@@ -19,8 +19,6 @@
 package org.apache.tinkerpop.machine.bytecode;
 
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
-import org.apache.tinkerpop.machine.traversers.CompleteTraverserFactory;
-import org.apache.tinkerpop.machine.traversers.TraverserFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,11 +56,6 @@ public class Bytecode<C> implements Cloneable {
 
     public Instruction<C> lastInstruction() {
         return this.instructions.get(this.instructions.size() - 1);
-    }
-
-    // this should be part of withProcessor!
-    public <S> TraverserFactory<C> getTraverserFactory() {
-        return new CompleteTraverserFactory<>();
     }
 
     @Override

@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.machine.pipes;
 
 import org.apache.tinkerpop.machine.functions.ReduceFunction;
-import org.apache.tinkerpop.machine.functions.reduce.Reducer;
+import org.apache.tinkerpop.machine.pipes.util.Reducer;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.machine.traversers.TraverserFactory;
 
@@ -45,19 +45,19 @@ public class ReduceStep<C, S, E> extends AbstractStep<C, S, E> {
 
     @Override
     public Traverser<C, E> next() {
-        this.done = true;
         Traverser<C, S> traverser = null;
         while (this.hasNext()) {
             traverser = getPreviousTraverser();
             this.reducer.update(this.reduceFunction.apply(traverser, this.reducer.get()));
         }
+        this.done = true;
         return null == traverser ?
                 this.traverserFactory.create(this.function.coefficient(), this.reduceFunction.getInitialValue()) :
-                traverser.reduce(this.reducer);
+                traverser.reduce(this.reduceFunction, this.reducer.get());
     }
 
     @Override
     public boolean hasNext() {
-        return !this.done;
+        return !this.done && super.hasNext();
     }
 }

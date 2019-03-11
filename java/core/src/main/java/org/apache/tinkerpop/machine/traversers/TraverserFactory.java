@@ -28,4 +28,5 @@ import java.io.Serializable;
 public interface TraverserFactory<C> extends Serializable {
 
     public <S> Traverser<C, S> create(final Coefficient<C> coefficient, final S object);
+
 }

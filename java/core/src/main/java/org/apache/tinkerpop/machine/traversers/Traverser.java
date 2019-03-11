@@ -19,10 +19,11 @@
 package org.apache.tinkerpop.machine.traversers;
 
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
+import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.functions.FilterFunction;
 import org.apache.tinkerpop.machine.functions.FlatMapFunction;
 import org.apache.tinkerpop.machine.functions.MapFunction;
-import org.apache.tinkerpop.machine.functions.reduce.Reducer;
+import org.apache.tinkerpop.machine.functions.ReduceFunction;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -50,7 +51,6 @@ public interface Traverser<C, S> extends Serializable {
 
     public default boolean filter(final FilterFunction<C, S> function) {
         if (function.test(this)) {
-            this.coefficient().multiply(function.coefficient().value());
             this.addLabels(function.labels());
             return true;
         } else {
@@ -59,11 +59,7 @@ public interface Traverser<C, S> extends Serializable {
     }
 
     public default <E> Traverser<C, E> map(final MapFunction<C, S, E> function) {
-        final Coefficient<C> eCoefficient = this.coefficient().clone().multiply(function.coefficient().value());
-        final E eObject = function.apply(this);
-        final Traverser<C, E> traverser = this.split(eCoefficient, eObject);
-        traverser.addLabels(function.labels());
-        return traverser;
+        return this.split(function, function.apply(this));
     }
 
     public default <E> Iterator<Traverser<C, E>> flatMap(final FlatMapFunction<C, S, E> function) {
@@ -72,10 +68,9 @@ public interface Traverser<C, S> extends Serializable {
 
     //public default void sideEffect(final SideEffectFunction<C,S> function);
 
-    public default <E> Traverser<C, E> reduce(final Reducer<E> reducer) {
-        final Traverser<C, E> traverser = this.split(this.coefficient().clone().unity(), reducer.get());
-        return traverser;
+    public default <E> Traverser<C, E> reduce(final ReduceFunction<C, S, E> function, final E reducedValue) {
+        return this.split(function, reducedValue);
     }
 
-    public <E> Traverser<C, E> split(final Coefficient<C> coefficient, final E object);
+    public <E> Traverser<C, E> split(final CFunction<C> function, final E object);
 }

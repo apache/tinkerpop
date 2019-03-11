@@ -18,10 +18,9 @@
  */
 package org.apache.tinkerpop.machine.beam;
 
-import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
 import org.apache.tinkerpop.machine.functions.InitialFunction;
-import org.apache.tinkerpop.machine.traversers.CompleteTraverser;
 import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.machine.traversers.TraverserFactory;
 
 import java.util.Iterator;
 
@@ -31,17 +30,19 @@ import java.util.Iterator;
 public class InitialFn<C, S> extends AbstractFn<C, S, S> {
 
     private final InitialFunction<C, S> initialFunction;
+    private final TraverserFactory traverserFactory;
 
-    public InitialFn(final InitialFunction<C, S> initialFunction) {
+    public InitialFn(final InitialFunction<C, S> initialFunction, final TraverserFactory<C> traverserFactory) {
         super(initialFunction);
         this.initialFunction = initialFunction;
+        this.traverserFactory = traverserFactory;
     }
 
     @ProcessElement
     public void processElement(final @Element Traverser<C, S> traverser, final OutputReceiver<Traverser<C, S>> output) {
         final Iterator<S> iterator = this.initialFunction.get();
         while (iterator.hasNext()) {
-            output.output(new CompleteTraverser(LongCoefficient.create(), iterator.next()));
+            output.output(this.traverserFactory.create(this.initialFunction.coefficient(), iterator.next()));
         }
     }
 }

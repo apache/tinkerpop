@@ -39,4 +39,5 @@ public final class Symbols {
     public static final String INJECT = "inject";
     public static final String MAP = "map";
     public static final String PATH = "path";
+    public static final String SUM = "sum";
 }

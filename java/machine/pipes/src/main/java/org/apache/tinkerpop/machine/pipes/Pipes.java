@@ -26,7 +26,7 @@ import org.apache.tinkerpop.machine.functions.InitialFunction;
 import org.apache.tinkerpop.machine.functions.MapFunction;
 import org.apache.tinkerpop.machine.functions.NestedFunction;
 import org.apache.tinkerpop.machine.functions.ReduceFunction;
-import org.apache.tinkerpop.machine.functions.reduce.BasicReducer;
+import org.apache.tinkerpop.machine.pipes.util.BasicReducer;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.machine.traversers.TraverserFactory;
@@ -71,7 +71,7 @@ public class Pipes<C, S, E> implements Processor<C, S, E> {
     }
 
     public Pipes(final Bytecode<C> bytecode) {
-        this(BytecodeUtil.compile(BytecodeUtil.strategize(bytecode)), bytecode.getTraverserFactory());
+        this(BytecodeUtil.compile(BytecodeUtil.strategize(bytecode)), BytecodeUtil.getTraverserFactory(bytecode).get());
     }
 
     @Override
