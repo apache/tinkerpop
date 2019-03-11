@@ -35,8 +35,8 @@ public class Path implements Serializable {
     }
 
     public Path(final Path path) {
-        path.objects.forEach(o -> objects.add(o));
-        path.labels.forEach(l -> labels.add(l));
+        this.objects.addAll(path.objects);
+        this.labels.addAll(path.labels);
     }
 
     public void add(final Set<String> labels, final Object object) {

@@ -28,7 +28,6 @@ import org.apache.tinkerpop.util.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.Iterator;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -41,17 +40,9 @@ public interface Traverser<C, S> extends Serializable, Cloneable {
 
     public Path path();
 
-    public void addLabel(final String label);
-
-    public default void addLabels(final Set<String> labels) {
-        for (final String label : labels) {
-            this.addLabel(label);
-        }
-    }
-
     public default boolean filter(final FilterFunction<C, S> function) {
         if (function.test(this)) {
-            this.addLabels(function.labels());
+            this.path().addLabels(function.labels());
             return true;
         } else {
             return false;

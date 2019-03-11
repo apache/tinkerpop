@@ -35,7 +35,8 @@ public class FilterFn<C, S> extends AbstractFn<C, S, S> {
 
     @ProcessElement
     public void processElement(final @Element Traverser<C, S> traverser, final OutputReceiver<Traverser<C, S>> output) {
-        if (traverser.filter(this.filterFunction))
-            output.output(traverser);
+        final Traverser<C,S> clone = traverser.split(this.filterFunction,traverser.object());
+        if (clone.filter(this.filterFunction))
+            output.output(clone);
     }
 }

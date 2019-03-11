@@ -34,7 +34,7 @@ import java.util.Spliterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraverserSet<C, S> extends AbstractSet<Traverser<C, S>> implements Set<Traverser<C, S>>, Queue<Traverser<C, S>>, Serializable {
+public final class TraverserSet<C, S> extends AbstractSet<Traverser<C, S>> implements Set<Traverser<C, S>>, Queue<Traverser<C, S>>, Serializable {
 
     private final Map<Traverser<C, S>, Traverser<C, S>> map = Collections.synchronizedMap(new LinkedHashMap<>());
 

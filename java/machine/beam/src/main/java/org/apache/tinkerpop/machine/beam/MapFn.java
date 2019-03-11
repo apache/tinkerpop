@@ -19,12 +19,7 @@
 package org.apache.tinkerpop.machine.beam;
 
 import org.apache.tinkerpop.machine.functions.MapFunction;
-import org.apache.tinkerpop.machine.functions.NestedFunction;
-import org.apache.tinkerpop.machine.pipes.Pipes;
-import org.apache.tinkerpop.machine.traversers.CompleteTraverserFactory;
 import org.apache.tinkerpop.machine.traversers.Traverser;
-
-import java.util.NoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -35,14 +30,12 @@ public class MapFn<C, S, E> extends AbstractFn<C, S, E> {
     private boolean first = true;
 
     public MapFn(final MapFunction<C, S, E> mapFunction) {
-       super(mapFunction);
+        super(mapFunction);
         this.mapFunction = mapFunction;
     }
 
     @ProcessElement
     public void processElement(final @Element Traverser<C, S> traverser, final OutputReceiver<Traverser<C, E>> output) {
-
-            output.output(traverser.map(this.mapFunction));
-
+        output.output(traverser.map(this.mapFunction));
     }
 }

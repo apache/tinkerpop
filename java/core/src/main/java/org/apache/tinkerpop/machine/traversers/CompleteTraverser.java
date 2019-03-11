@@ -22,8 +22,6 @@ import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.functions.ReduceFunction;
 
-import java.util.Collections;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -32,10 +30,6 @@ public class CompleteTraverser<C, S> implements Traverser<C, S> {
     private Coefficient<C> coefficient;
     private S object;
     private Path path = new Path();
-
-    public CompleteTraverser() {
-
-    }
 
     public CompleteTraverser(final Coefficient<C> coefficient, final S object) {
         this.coefficient = coefficient;
@@ -52,10 +46,6 @@ public class CompleteTraverser<C, S> implements Traverser<C, S> {
 
     public Path path() {
         return this.path;
-    }
-
-    public void addLabel(final String label) {
-        this.path.addLabels(Collections.singleton(label));
     }
 
     @Override
