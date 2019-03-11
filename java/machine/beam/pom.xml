@@ -79,6 +79,11 @@ limitations under the License.
             <version>2.11.0</version>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>pipes</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
     <build>
         <directory>${basedir}/target</directory>

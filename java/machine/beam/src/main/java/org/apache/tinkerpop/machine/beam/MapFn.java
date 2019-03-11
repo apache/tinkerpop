@@ -18,24 +18,43 @@
  */
 package org.apache.tinkerpop.machine.beam;
 
-import org.apache.beam.sdk.transforms.DoFn;
-import org.apache.beam.sdk.values.TypeDescriptor;
 import org.apache.tinkerpop.machine.functions.MapFunction;
+import org.apache.tinkerpop.machine.functions.NestedFunction;
+import org.apache.tinkerpop.machine.pipes.Pipes;
+import org.apache.tinkerpop.machine.traversers.CompleteTraverserFactory;
 import org.apache.tinkerpop.machine.traversers.Traverser;
+
+import java.util.NoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MapFn<C, S, E> extends DoFn<Traverser<C, S>, Traverser<C, E>> {
+public class MapFn<C, S, E> extends AbstractFn<C, S, E> {
 
     private final MapFunction<C, S, E> mapFunction;
+    private boolean first = true;
 
     public MapFn(final MapFunction<C, S, E> mapFunction) {
+       super(mapFunction);
         this.mapFunction = mapFunction;
     }
 
     @ProcessElement
     public void processElement(final @Element Traverser<C, S> traverser, final OutputReceiver<Traverser<C, E>> output) {
-        output.output(traverser.map(this.mapFunction));
+        if (this.first) {
+            if (this.mapFunction instanceof NestedFunction) {
+                Pipes beam  = new Pipes(((NestedFunction) this.mapFunction).getFunctions(), new CompleteTraverserFactory());
+                ((NestedFunction) this.mapFunction).setProcessor(beam);
+                while (!this.traversers.isEmpty()) {
+                    beam.addStart(this.traversers.remove());
+                }
+            }
+            this.first = false;
+        }
+        try {
+            output.output(traverser.map(this.mapFunction));
+        } catch(final NoSuchElementException e) {
+            // do nothing
+        }
     }
 }

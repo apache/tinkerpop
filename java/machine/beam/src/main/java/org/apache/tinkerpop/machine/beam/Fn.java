@@ -18,24 +18,13 @@
  */
 package org.apache.tinkerpop.machine.beam;
 
-import org.apache.tinkerpop.machine.functions.FilterFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class FilterFn<C, S> extends AbstractFn<C, S, S> {
+public interface Fn<C, S,E> {
 
-    private FilterFunction<C, S> filterFunction;
+    public void addStart(final Traverser<C, S> traverser);
 
-    public FilterFn(final FilterFunction<C, S> filterFunction) {
-        super(filterFunction);
-        this.filterFunction = filterFunction;
-    }
-
-    @ProcessElement
-    public void processElement(final @Element Traverser<C, S> traverser, final OutputReceiver<Traverser<C, S>> output) {
-        if (traverser.filter(this.filterFunction))
-            output.output(traverser);
-    }
 }

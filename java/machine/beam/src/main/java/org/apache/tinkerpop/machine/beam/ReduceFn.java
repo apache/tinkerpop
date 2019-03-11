@@ -18,24 +18,25 @@
  */
 package org.apache.tinkerpop.machine.beam;
 
-import org.apache.tinkerpop.machine.functions.FilterFunction;
-import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.machine.functions.ReduceFunction;
+import org.apache.tinkerpop.machine.functions.reduce.Reducer;
+import org.apache.tinkerpop.machine.traversers.TraverserFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class FilterFn<C, S> extends AbstractFn<C, S, S> {
+public class ReduceFn<C, S, E> extends AbstractFn<C, S, E> {
 
-    private FilterFunction<C, S> filterFunction;
+    private final ReduceFunction<C, S, E> reduceFunction;
+    private final Reducer<E> reducer;
+    private final TraverserFactory<C, E> traverserFactory;
 
-    public FilterFn(final FilterFunction<C, S> filterFunction) {
-        super(filterFunction);
-        this.filterFunction = filterFunction;
-    }
-
-    @ProcessElement
-    public void processElement(final @Element Traverser<C, S> traverser, final OutputReceiver<Traverser<C, S>> output) {
-        if (traverser.filter(this.filterFunction))
-            output.output(traverser);
+    public ReduceFn(final ReduceFunction<C, S, E> reduceFunction,
+                    final Reducer<E> reducer,
+                    final TraverserFactory<C, E> traverserFactory) {
+        super(reduceFunction);
+        this.reduceFunction = reduceFunction;
+        this.reducer = reducer;
+        this.traverserFactory = traverserFactory;
     }
 }

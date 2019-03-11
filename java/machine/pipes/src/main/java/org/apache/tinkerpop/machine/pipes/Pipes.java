@@ -43,7 +43,7 @@ public class Pipes<C, S, E> implements Processor<C, S, E> {
     private Step<C, ?, E> endStep;
     private Step<C, S, ?> startStep = EmptyStep.instance();
 
-    private Pipes(final List<CFunction<C>> functions, final TraverserFactory<C, S> traverserFactory) {
+    public Pipes(final List<CFunction<C>> functions, final TraverserFactory<C, S> traverserFactory) {
         AbstractStep<C, ?, ?> previousStep = EmptyStep.instance();
         for (final CFunction<?> function : functions) {
             if (function instanceof NestedFunction)

@@ -20,6 +20,7 @@ package org.apache.tinkerpop.machine.beam;
 
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.transforms.Create;
+import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
@@ -27,8 +28,9 @@ import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
 import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.functions.FilterFunction;
+import org.apache.tinkerpop.machine.functions.InitialFunction;
 import org.apache.tinkerpop.machine.functions.MapFunction;
-import org.apache.tinkerpop.machine.functions.initial.InjectInitial;
+import org.apache.tinkerpop.machine.functions.ReduceFunction;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.traversers.CompleteTraverser;
 import org.apache.tinkerpop.machine.traversers.Traverser;
@@ -46,51 +48,51 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
     PCollection collection;
     public static List<Traverser> OUTPUT = new ArrayList<>();
     Iterator<Traverser> iterator = null;
+    private final List<DoFn> functions = new ArrayList<>();
 
-    public Beam(final Bytecode<C> bytecode) {
+    public Beam(final List<CFunction<C>> functions) {
         this.pipeline = Pipeline.create();
         this.pipeline.getCoderRegistry().registerCoderForClass(Traverser.class, new TraverserCoder<>());
+        this.collection = this.pipeline.apply(Create.of(new CompleteTraverser(LongCoefficient.create(), 1L)));
+        this.collection.setCoder(new TraverserCoder());
 
-        for (final CFunction<?> function : BytecodeUtil.compile(bytecode)) {
-            if (function instanceof InjectInitial) {
-                final List<Traverser<C, S>> objects = new ArrayList<>();
-                final Iterator<S> iterator = ((InjectInitial) function).get();
-                while (iterator.hasNext())
-                    objects.add(new CompleteTraverser(LongCoefficient.create(), iterator.next()));
-                this.collection = this.pipeline.apply(Create.of(objects).withCoder(new TraverserCoder<>()));
+        DoFn fn = null;
+        for (final CFunction<?> function : functions) {
+            if (function instanceof InitialFunction) {
+                fn = new InitialFn<>((InitialFunction) function);
             } else if (function instanceof FilterFunction) {
-                collection = (PCollection) collection.apply(ParDo.of(new FilterFn<>((FilterFunction<C, S>) function)));
-                collection.setCoder(new TraverserCoder());
+                fn = new FilterFn<>((FilterFunction) function);
             } else if (function instanceof MapFunction) {
-                collection = (PCollection) collection.apply(ParDo.of(new MapFn<>((MapFunction<C, S, E>) function)));
-                collection.setCoder(new TraverserCoder());
+                fn = new MapFn<>((MapFunction) function);
+            } else if (function instanceof ReduceFunction) {
+                //fn = new ReduceFn<>((ReduceFunction)function)
             } else
                 throw new RuntimeException("You need a new step type:" + function);
+            this.functions.add(fn);
+            this.collection = (PCollection) collection.apply(ParDo.of(fn));
+            this.collection.setCoder(new TraverserCoder());
         }
         collection = (PCollection) collection.apply(ParDo.of(new OutputStep()));
+    }
 
+    public Beam(final Bytecode<C> bytecode) {
+        this(BytecodeUtil.compile(bytecode));
     }
 
     @Override
     public void addStart(Traverser<C, S> traverser) {
-
+        ((Fn) this.functions.get(0)).addStart(traverser);
     }
 
     @Override
     public Traverser<C, E> next() {
-        if (null == this.iterator) {
-            pipeline.run().waitUntilFinish();
-            this.iterator = OUTPUT.iterator();
-        }
+        this.setupPipeline();
         return this.iterator.next();
     }
 
     @Override
     public boolean hasNext() {
-        if (null == this.iterator) {
-            pipeline.run().waitUntilFinish();
-            this.iterator = OUTPUT.iterator();
-        }
+        this.setupPipeline();
         return this.iterator.hasNext();
     }
 
@@ -101,6 +103,15 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
 
     @Override
     public String toString() {
-        return this.pipeline.toString();
+        return this.functions.toString();
     }
+
+    private final void setupPipeline() {
+        if (null == this.iterator) {
+            pipeline.run().waitUntilFinish();
+            this.iterator = new ArrayList<>(OUTPUT).iterator();
+            OUTPUT.clear();
+        }
+    }
+
 }

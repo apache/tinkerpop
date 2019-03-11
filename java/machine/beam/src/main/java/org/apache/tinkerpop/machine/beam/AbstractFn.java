@@ -18,24 +18,31 @@
  */
 package org.apache.tinkerpop.machine.beam;
 
-import org.apache.tinkerpop.machine.functions.FilterFunction;
+import org.apache.beam.sdk.transforms.DoFn;
+import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.machine.traversers.TraverserSet;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class FilterFn<C, S> extends AbstractFn<C, S, S> {
+public abstract class AbstractFn<C, S, E> extends DoFn<Traverser<C, S>, Traverser<C, E>> implements Fn<C, S, E> {
 
-    private FilterFunction<C, S> filterFunction;
+    protected final TraverserSet<C, S> traversers = new TraverserSet<>();
+    protected final CFunction<C> function;
 
-    public FilterFn(final FilterFunction<C, S> filterFunction) {
-        super(filterFunction);
-        this.filterFunction = filterFunction;
+    protected AbstractFn(final CFunction<C> function) {
+        this.function = function;
     }
 
-    @ProcessElement
-    public void processElement(final @Element Traverser<C, S> traverser, final OutputReceiver<Traverser<C, S>> output) {
-        if (traverser.filter(this.filterFunction))
-            output.output(traverser);
+    @Override
+    public void addStart(final Traverser<C, S> traverser) {
+        this.traversers.add(traverser);
     }
+
+    @Override
+    public String toString() {
+        return this.function.toString();
+    }
+
 }

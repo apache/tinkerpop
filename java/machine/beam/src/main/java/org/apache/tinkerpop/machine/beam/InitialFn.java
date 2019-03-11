@@ -18,24 +18,30 @@
  */
 package org.apache.tinkerpop.machine.beam;
 
-import org.apache.tinkerpop.machine.functions.FilterFunction;
+import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
+import org.apache.tinkerpop.machine.functions.InitialFunction;
+import org.apache.tinkerpop.machine.traversers.CompleteTraverser;
 import org.apache.tinkerpop.machine.traversers.Traverser;
+
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class FilterFn<C, S> extends AbstractFn<C, S, S> {
+public class InitialFn<C, S> extends AbstractFn<C, S, S> {
 
-    private FilterFunction<C, S> filterFunction;
+    private final InitialFunction<C, S> initialFunction;
 
-    public FilterFn(final FilterFunction<C, S> filterFunction) {
-        super(filterFunction);
-        this.filterFunction = filterFunction;
+    public InitialFn(final InitialFunction<C, S> initialFunction) {
+        super(initialFunction);
+        this.initialFunction = initialFunction;
     }
 
     @ProcessElement
     public void processElement(final @Element Traverser<C, S> traverser, final OutputReceiver<Traverser<C, S>> output) {
-        if (traverser.filter(this.filterFunction))
-            output.output(traverser);
+        final Iterator<S> iterator = this.initialFunction.get();
+        while (iterator.hasNext()) {
+            output.output(new CompleteTraverser(LongCoefficient.create(), iterator.next()));
+        }
     }
 }

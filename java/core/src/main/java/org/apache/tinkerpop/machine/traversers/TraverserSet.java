@@ -21,6 +21,7 @@ package org.apache.tinkerpop.machine.traversers;
 
 import org.apache.tinkerpop.util.FastNoSuchElementException;
 
+import java.io.Serializable;
 import java.util.AbstractSet;
 import java.util.Collections;
 import java.util.Iterator;
@@ -33,7 +34,7 @@ import java.util.Spliterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraverserSet<C, S> extends AbstractSet<Traverser<C, S>> implements Set<Traverser<C, S>>, Queue<Traverser<C, S>> {
+public class TraverserSet<C, S> extends AbstractSet<Traverser<C, S>> implements Set<Traverser<C, S>>, Queue<Traverser<C, S>>, Serializable {
 
     private final Map<Traverser<C, S>, Traverser<C, S>> map = Collections.synchronizedMap(new LinkedHashMap<>());
 

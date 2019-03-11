@@ -22,6 +22,7 @@ import org.apache.tinkerpop.language.Gremlin;
 import org.apache.tinkerpop.language.Traversal;
 import org.apache.tinkerpop.language.TraversalSource;
 import org.apache.tinkerpop.language.TraversalUtil;
+import org.apache.tinkerpop.language.__;
 import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
 import org.junit.jupiter.api.Test;
 
@@ -34,12 +35,12 @@ public class BeamTest {
         final TraversalSource<Long> g = Gremlin.<Long>traversal()
                 .coefficient(LongCoefficient.create())
                 .processor(BeamProcessor.class);
-        Traversal<Long, Long, Long> traversal = g.inject(7L, 10L, 12L).as("a").c(3L).identity().incr();
+        Traversal<Long, Long, Long> traversal = g.inject(7L, 10L, 12L).as("a").c(3L).map(__.incr()).identity().incr();
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
-        traversal = g.inject(7L, 10L, 12L).as("a").c(3L).identity().incr().is(44L);//.count();
+        traversal = g.inject(7L, 10L, 12L).as("a").c(3L).map(__.incr()).identity().incr().is(9L);//.count();
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

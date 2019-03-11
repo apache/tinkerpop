@@ -20,8 +20,6 @@ package org.apache.tinkerpop.machine.beam;
 
 import org.apache.beam.sdk.coders.Coder;
 import org.apache.beam.sdk.coders.CoderException;
-import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
-import org.apache.tinkerpop.machine.traversers.CompleteTraverser;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
 import java.io.IOException;
@@ -40,14 +38,14 @@ public class TraverserCoder<C, S> extends Coder<Traverser<C, S>> {
     @Override
     public void encode(final Traverser<C, S> value, final OutputStream outStream) throws CoderException, IOException {
         ObjectOutputStream outputStream = new ObjectOutputStream(outStream);
-        outputStream.writeObject(value.object());
+        outputStream.writeObject(value);
     }
 
     @Override
     public Traverser<C, S> decode(InputStream inStream) throws CoderException, IOException {
         try {
             ObjectInputStream inputStream = new ObjectInputStream(inStream);
-            return new CompleteTraverser(LongCoefficient.create(), inputStream.readObject());
+            return (Traverser<C, S>) inputStream.readObject();
         } catch (final ClassNotFoundException e) {
             throw new IOException(e.getMessage(), e);
         }
