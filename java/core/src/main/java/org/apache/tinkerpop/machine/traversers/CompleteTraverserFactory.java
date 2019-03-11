@@ -16,13 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine.traversers;
 
-import java.util.Iterator;
-import java.util.function.Supplier;
+import org.apache.tinkerpop.machine.coefficients.Coefficient;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface InitialFunction<C, S> extends Supplier<Iterator<S>>, CFunction<C> {
+public class CompleteTraverserFactory<C, S> implements TraverserFactory<C, S> {
+    @Override
+    public Traverser<C, S> create(final Coefficient<C> coefficient, final S object) {
+        return new CompleteTraverser<>(coefficient.clone(), object);
+    }
 }

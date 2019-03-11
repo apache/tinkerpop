@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.pipes;
 
-import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.machine.traversers.CompleteTraverser;
 import org.apache.tinkerpop.util.FastNoSuchElementException;
 
 /**
@@ -38,7 +38,7 @@ public final class EmptyStep<C, S, E> extends AbstractStep<C, S, E> {
     }
 
     @Override
-    public Traverser<C, E> next() {
+    public CompleteTraverser<C, E> next() {
         throw FastNoSuchElementException.instance();
     }
 

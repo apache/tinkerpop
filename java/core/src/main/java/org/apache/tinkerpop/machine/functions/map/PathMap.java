@@ -36,7 +36,7 @@ public class PathMap<C, S> extends AbstractFunction<C, S, Path> implements MapFu
     }
 
     @Override
-    public Traverser<C, Path> apply(final Traverser<C, S> traverser) {
-        return super.postProcess(traverser.split(traverser.path()));
+    public Path apply(final Traverser<C, S> traverser) {
+        return traverser.path();
     }
 }

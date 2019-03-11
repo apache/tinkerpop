@@ -18,10 +18,12 @@
  */
 package org.apache.tinkerpop.machine.coefficients;
 
+import java.io.Serializable;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Coefficient<C> extends Cloneable {
+public interface Coefficient<C> extends Cloneable, Serializable {
 
     public Coefficient<C> sum(final C other);
 

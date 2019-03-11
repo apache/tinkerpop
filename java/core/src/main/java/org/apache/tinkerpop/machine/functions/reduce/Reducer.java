@@ -16,13 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
-
-import java.util.Iterator;
-import java.util.function.Supplier;
+package org.apache.tinkerpop.machine.functions.reduce;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface InitialFunction<C, S> extends Supplier<Iterator<S>>, CFunction<C> {
+public interface Reducer<S> {
+
+    public S get();
+
+    public void update(final S newValue);
 }

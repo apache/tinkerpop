@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.machine.traversers;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -25,7 +26,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Path {
+public class Path implements Serializable {
 
     private final List<Object> objects = new ArrayList<>();
     private final List<Set<String>> labels = new ArrayList<>();

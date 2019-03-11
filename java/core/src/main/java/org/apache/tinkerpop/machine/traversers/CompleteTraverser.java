@@ -16,38 +16,63 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine.traversers;
 
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
-import org.apache.tinkerpop.util.StringFactory;
 
-import java.util.Set;
+import java.io.Serializable;
+import java.util.Collections;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class AbstractFunction<C, S, E> implements CFunction<C> {
+public class CompleteTraverser<C, S> implements Traverser<C, S> {
 
     private Coefficient<C> coefficient;
-    private Set<String> labels;
+    private S object;
+    private Path path = new Path();
 
-    public AbstractFunction(final Coefficient<C> coefficient, final Set<String> labels) {
-        this.coefficient = coefficient;
-        this.labels = labels;
+    public CompleteTraverser() {
+
     }
 
-    @Override
+    public CompleteTraverser(final Coefficient<C> coefficient, final S object) {
+        this.coefficient = coefficient;
+        this.object = object;
+    }
+
     public Coefficient<C> coefficient() {
         return this.coefficient;
     }
 
+    public S object() {
+        return this.object;
+    }
+
+    public Path path() {
+        return this.path;
+    }
+
+    public void addLabel(final String label) {
+        this.path.addLabels(Collections.singleton(label));
+    }
+
     @Override
-    public Set<String> labels() {
-        return this.labels;
+    public <E> Traverser<C, E> split(final Coefficient<C> eCoefficient, final E eObject) {
+        final CompleteTraverser<C, E> clone = new CompleteTraverser<>(eCoefficient, eObject);
+        clone.path = new Path(this.path);
+        return clone;
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return other instanceof CompleteTraverser && ((CompleteTraverser<C, S>) other).object.equals(this.object);
     }
 
     @Override
     public String toString() {
-        return StringFactory.makeFunctionString(this);
+        return this.object.toString();
     }
+
+
 }

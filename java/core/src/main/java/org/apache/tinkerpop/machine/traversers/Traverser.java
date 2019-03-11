@@ -19,54 +19,63 @@
 package org.apache.tinkerpop.machine.traversers;
 
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
+import org.apache.tinkerpop.machine.functions.FilterFunction;
+import org.apache.tinkerpop.machine.functions.FlatMapFunction;
+import org.apache.tinkerpop.machine.functions.MapFunction;
+import org.apache.tinkerpop.machine.functions.reduce.Reducer;
 
+import java.io.Serializable;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Traverser<C, S> {
+public interface Traverser<C, S> extends Serializable {
 
-    private final Coefficient<C> coefficient;
-    private final S object;
-    private Path path = new Path();
+    public Coefficient<C> coefficient();
 
-    public Traverser(final Coefficient<C> coefficient, final S object) {
-        this.coefficient = coefficient;
-        this.object = object;
+    public S object();
+
+    public Path path();
+
+    public void addLabel(final String label);
+
+    public default void addLabels(final Set<String> labels) {
+        for (final String label : labels) {
+            this.addLabel(label);
+        }
     }
 
-    public Coefficient<C> coefficient() {
-        return this.coefficient;
+    public default boolean filter(final FilterFunction<C, S> function) {
+        if (function.test(this)) {
+            this.coefficient().multiply(function.coefficient().value());
+            this.addLabels(function.labels());
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    public S object() {
-        return this.object;
-    }
-
-    public Path path() {
-        return this.path;
-    }
-
-    public void addLabel(final String label) {
-        this.path.addLabels(Collections.singleton(label));
-    }
-
-    public <B> Traverser<C, B> split(final B object) {
-        final Traverser<C, B> traverser = new Traverser<>(this.coefficient.clone(), object);
-        traverser.path = new Path(this.path);
-        traverser.path.add(new HashSet<>(), object);
+    public default <E> Traverser<C, E> map(final MapFunction<C, S, E> function) {
+        final Coefficient<C> eCoefficient = this.coefficient().clone().multiply(function.coefficient().value());
+        final E eObject = function.apply(this);
+        final Traverser<C, E> traverser = this.split(eCoefficient, eObject);
+        traverser.addLabels(function.labels());
         return traverser;
     }
 
-    @Override
-    public boolean equals(final Object other) {
-        return other instanceof Traverser && ((Traverser<C, S>) other).object.equals(this.object);
+    public default <E> Iterator<Traverser<C, E>> flatMap(final FlatMapFunction<C, S, E> function) {
+        return Collections.emptyIterator();
     }
 
-    @Override
-    public String toString() {
-        return this.object.toString();
+    //public default void sideEffect(final SideEffectFunction<C,S> function);
+
+    public default <E> Traverser<C, E> reduce(final Reducer<E> reducer) {
+        final Traverser<C, E> traverser = this.split(this.coefficient().clone().unity(), reducer.get());
+        return traverser;
     }
+
+    public <E> Traverser<C, E> split(final Coefficient<C> coefficient, final E object);
 }

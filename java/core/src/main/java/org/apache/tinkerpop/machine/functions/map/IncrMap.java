@@ -35,7 +35,8 @@ public class IncrMap<C> extends AbstractFunction<C, Long, Long> implements MapFu
     }
 
     @Override
-    public Traverser<C, Long> apply(final Traverser<C, Long> traverser) {
-        return postProcess(traverser.split(traverser.object() + 1));
+    public Long apply(final Traverser<C, Long> traverser) {
+        return traverser.object() + 1L;
     }
+
 }

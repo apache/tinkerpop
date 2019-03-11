@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.language;
 
+import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
 import org.apache.tinkerpop.machine.compiler.Strategy;
@@ -31,6 +32,7 @@ import java.util.List;
  */
 public class TraversalSource<C> {
 
+    private Bytecode<C> bytecode = new Bytecode<>();
     private Coefficient<C> coefficient;
     private ProcessorFactory factory;
     private List<Strategy> strategies = new ArrayList<>();

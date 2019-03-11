@@ -20,11 +20,12 @@ package org.apache.tinkerpop.machine.functions;
 
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
+import java.io.Serializable;
 import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface MapFunction<C, S, E> extends Function<Traverser<C, S>, Traverser<C, E>>, CFunction<C> {
+public interface MapFunction<C, S, E> extends Function<Traverser<C, S>, E>, CFunction<C> {
 
 }

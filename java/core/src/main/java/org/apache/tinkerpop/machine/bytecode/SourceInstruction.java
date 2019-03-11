@@ -16,13 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
-
-import java.util.Iterator;
-import java.util.function.Supplier;
+package org.apache.tinkerpop.machine.bytecode;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface InitialFunction<C, S> extends Supplier<Iterator<S>>, CFunction<C> {
+public final class SourceInstruction {
+
+    private final String op;
+    private final Object[] args;
+
+    public SourceInstruction(final String op, final Object[] args) {
+        this.op = op;
+        this.args = args;
+    }
+
+    public String op() {
+        return this.op;
+    }
+
+    public Object[] args() {
+        return this.args;
+    }
 }

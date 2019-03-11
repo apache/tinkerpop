@@ -21,6 +21,7 @@ package org.apache.tinkerpop.machine.functions.filter;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.AbstractFunction;
 import org.apache.tinkerpop.machine.functions.FilterFunction;
+import org.apache.tinkerpop.machine.traversers.CompleteTraverser;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.util.StringFactory;
 
@@ -31,7 +32,7 @@ import java.util.Set;
  */
 public class IsFilter<C, S> extends AbstractFunction<C, S, S> implements FilterFunction<C, S> {
 
-    private final S object;
+    private S object;
 
     public IsFilter(final Coefficient<C> coefficient, final Set<String> labels, final S object) {
         super(coefficient, labels);
@@ -40,7 +41,6 @@ public class IsFilter<C, S> extends AbstractFunction<C, S, S> implements FilterF
 
     @Override
     public boolean test(final Traverser<C, S> traverser) {
-        super.postProcess(traverser);
         return traverser.object().equals(this.object);
     }
 

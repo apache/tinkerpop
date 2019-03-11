@@ -16,13 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine.functions.reduce;
 
-import java.util.Iterator;
-import java.util.function.Supplier;
+import org.apache.tinkerpop.machine.coefficients.Coefficient;
+import org.apache.tinkerpop.machine.functions.AbstractFunction;
+import org.apache.tinkerpop.machine.functions.ReduceFunction;
+import org.apache.tinkerpop.machine.traversers.Traverser;
+
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface InitialFunction<C, S> extends Supplier<Iterator<S>>, CFunction<C> {
+public class CountReduce<C, S> extends AbstractFunction<C, S, Long> implements ReduceFunction<C, S, Long> {
+
+    public CountReduce(final Coefficient<C> coefficient, final Set<String> labels) {
+        super(coefficient, labels);
+    }
+
+    @Override
+    public Long apply(final Traverser<C, S> traverser, final Long currentValue) {
+        return currentValue + traverser.coefficient().count();
+    }
+
+    @Override
+    public Long getInitialValue() {
+        return 0L;
+    }
 }

@@ -18,11 +18,15 @@
  */
 package org.apache.tinkerpop.machine.functions;
 
-import java.util.Iterator;
-import java.util.function.Supplier;
+import org.apache.tinkerpop.machine.traversers.Traverser;
+
+import java.util.function.BiFunction;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface InitialFunction<C, S> extends Supplier<Iterator<S>>, CFunction<C> {
+public interface ReduceFunction<C, S, E> extends BiFunction<Traverser<C, S>, E, E>, CFunction<C> {
+
+    public E getInitialValue();
 }
+

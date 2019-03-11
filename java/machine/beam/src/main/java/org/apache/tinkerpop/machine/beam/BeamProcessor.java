@@ -16,13 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine.beam;
 
-import java.util.Iterator;
-import java.util.function.Supplier;
+import org.apache.tinkerpop.machine.bytecode.Bytecode;
+import org.apache.tinkerpop.machine.processor.Processor;
+import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface InitialFunction<C, S> extends Supplier<Iterator<S>>, CFunction<C> {
+public class BeamProcessor implements ProcessorFactory {
+
+    @Override
+    public <C, S, E> Processor<C, S, E> mint(final Bytecode<C> bytecode) {
+        return new Beam<>(bytecode);
+    }
 }

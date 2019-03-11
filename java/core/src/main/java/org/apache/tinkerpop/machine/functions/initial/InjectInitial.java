@@ -21,7 +21,6 @@ package org.apache.tinkerpop.machine.functions.initial;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.AbstractFunction;
 import org.apache.tinkerpop.machine.functions.InitialFunction;
-import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.util.StringFactory;
 
 import java.util.Iterator;
@@ -41,8 +40,8 @@ public class InjectInitial<C, S> extends AbstractFunction<C, S, S> implements In
     }
 
     @Override
-    public Iterator<Traverser<C, S>> get() {
-        return Stream.of(this.objects).map(object -> new Traverser<>(this.coefficient.clone(), object)).iterator();
+    public Iterator<S> get() {
+        return Stream.of(this.objects).iterator();
     }
 
     @Override

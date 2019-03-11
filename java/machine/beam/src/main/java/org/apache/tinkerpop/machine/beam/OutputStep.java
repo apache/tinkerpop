@@ -16,13 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine.beam;
 
-import java.util.Iterator;
-import java.util.function.Supplier;
+import org.apache.beam.sdk.transforms.DoFn;
+import org.apache.tinkerpop.machine.traversers.Traverser;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface InitialFunction<C, S> extends Supplier<Iterator<S>>, CFunction<C> {
+public class OutputStep<C, S> extends DoFn<Traverser<C, S>, String> {
+
+
+    public OutputStep() {
+
+    }
+
+    @ProcessElement
+    public void processElement(final @Element Traverser<C, S> traverser, final OutputReceiver<String> output) {
+        Beam.OUTPUT.add(traverser);
+    }
 }

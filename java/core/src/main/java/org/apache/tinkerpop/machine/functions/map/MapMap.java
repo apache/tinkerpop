@@ -24,6 +24,7 @@ import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.functions.MapFunction;
 import org.apache.tinkerpop.machine.functions.NestedFunction;
 import org.apache.tinkerpop.machine.processor.Processor;
+import org.apache.tinkerpop.machine.traversers.CompleteTraverser;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.util.StringFactory;
 
@@ -44,10 +45,10 @@ public class MapMap<C, S, E> extends AbstractFunction<C, S, E> implements MapFun
     }
 
     @Override
-    public Traverser<C, E> apply(final Traverser<C, S> traverser) {
+    public E apply(final Traverser<C, S> traverser) {
         this.processor.reset();
         this.processor.addStart(traverser);
-        return super.postProcess(traverser.split(this.processor.next().object()));
+        return this.processor.next().object();
     }
 
     public void setProcessor(final Processor<C, S, E> processor) {

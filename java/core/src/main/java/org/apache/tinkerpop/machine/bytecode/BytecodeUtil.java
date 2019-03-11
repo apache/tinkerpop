@@ -27,6 +27,7 @@ import org.apache.tinkerpop.machine.functions.initial.InjectInitial;
 import org.apache.tinkerpop.machine.functions.map.IncrMap;
 import org.apache.tinkerpop.machine.functions.map.MapMap;
 import org.apache.tinkerpop.machine.functions.map.PathMap;
+import org.apache.tinkerpop.machine.functions.reduce.CountReduce;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,6 +61,8 @@ public final class BytecodeUtil {
         final Coefficient<C> coefficient = instruction.coefficient();
         final Set<String> labels = instruction.labels();
         switch (op) {
+            case Symbols.COUNT:
+                return new CountReduce<>(coefficient, labels);
             case Symbols.IDENTITY:
                 return new IdentityFilter<>(coefficient, labels);
             case Symbols.INJECT:

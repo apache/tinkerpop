@@ -20,12 +20,13 @@ package org.apache.tinkerpop.machine.functions;
 
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 
+import java.io.Serializable;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface CFunction<C> {
+public interface CFunction<C> extends Serializable {
 
     public Coefficient<C> coefficient();
 

@@ -26,5 +26,6 @@ limitations under the License.
     <artifactId>machine</artifactId>
     <modules>
         <module>pipes</module>
+        <module>beam</module>
     </modules>
 </project>

@@ -23,10 +23,13 @@ package org.apache.tinkerpop.machine.coefficients;
  */
 public class LongCoefficient implements Coefficient<Long> {
 
-    private Long value;
+    protected Long value;
 
     private LongCoefficient(final Long value) {
         this.value = value;
+    }
+
+    public LongCoefficient() {
     }
 
     @Override

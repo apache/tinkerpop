@@ -20,6 +20,7 @@ package org.apache.tinkerpop.machine.pipes;
 
 import org.apache.tinkerpop.machine.functions.InitialFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.machine.traversers.TraverserFactory;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -29,11 +30,13 @@ import java.util.Iterator;
  */
 public class InitialStep<C, S> extends AbstractStep<C, S, S> {
 
-    private Iterator<Traverser<C, S>> objects;
+    private Iterator<S> objects;
+    private final TraverserFactory<C, S> traverserFactory;
 
-    public InitialStep(final InitialFunction<C, S> initialFunction) {
+    public InitialStep(final InitialFunction<C, S> initialFunction, final TraverserFactory<C, S> traverserFactory) {
         super(EmptyStep.instance(), initialFunction);
         this.objects = initialFunction.get();
+        this.traverserFactory = traverserFactory;
     }
 
     @Override
@@ -43,7 +46,7 @@ public class InitialStep<C, S> extends AbstractStep<C, S, S> {
 
     @Override
     public Traverser<C, S> next() {
-        return this.objects.next();
+        return this.traverserFactory.create(this.function.coefficient(), this.objects.next());
     }
 
     @Override

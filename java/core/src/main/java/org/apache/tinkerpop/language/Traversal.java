@@ -62,6 +62,11 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return this;
     }
 
+    public Traversal<C, S, Long> count() {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.COUNT);
+        return (Traversal) this;
+    }
+
     public Traversal<C, S, E> identity() {
         this.bytecode.addInstruction(this.currentCoefficient, Symbols.IDENTITY);
         return this;

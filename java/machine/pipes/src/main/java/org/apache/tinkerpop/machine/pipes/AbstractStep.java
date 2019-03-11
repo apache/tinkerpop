@@ -48,7 +48,7 @@ public abstract class AbstractStep<C, S, E> implements Step<C, S, E> {
     @Override
     public abstract Traverser<C, E> next();
 
-    protected Traverser<C, S> processNextTraverser() {
+    protected Traverser<C, S> getPreviousTraverser() {
         if (!this.traverserSet.isEmpty())
             return this.traverserSet.remove();
         else
