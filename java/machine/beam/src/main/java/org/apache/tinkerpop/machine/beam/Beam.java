@@ -23,8 +23,10 @@ import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.transforms.Combine;
 import org.apache.beam.sdk.transforms.Create;
 import org.apache.beam.sdk.transforms.DoFn;
+import org.apache.beam.sdk.transforms.Flatten;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.PCollection;
+import org.apache.beam.sdk.values.PCollectionList;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
@@ -54,45 +56,62 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
     private final Pipeline pipeline;
     public static List<Traverser> OUTPUT = new ArrayList<>(); // FIX THIS!
     private final List<Fn> functions = new ArrayList<>();
-    Iterator<Traverser> iterator = null;
+    Iterator<Traverser<C, E>> iterator = null;
+    private TraverserFactory<C> traverserFactory;
 
 
     public Beam(final TraverserFactory<C> traverserFactory, final List<CFunction<C>> functions) {
+        this.traverserFactory = traverserFactory;
         this.pipeline = Pipeline.create();
         this.pipeline.getCoderRegistry().registerCoderForClass(Traverser.class, new TraverserCoder<>());
-        PCollection collection = this.pipeline.apply(Create.of(traverserFactory.create((Coefficient) LongCoefficient.create(), 1L)));
+        PCollection<Traverser<C, ?>> collection = this.pipeline.apply(Create.of(traverserFactory.create((Coefficient) LongCoefficient.create(), 1L)));
         collection.setCoder(new TraverserCoder());
-
-        DoFn fn = null;
         for (final CFunction<?> function : functions) {
-            if (function instanceof NestedFunction)
-                ((NestedFunction<C, ?, ?>) function).setProcessor(traverserFactory, new PipesProcessor());
-
-            if (function instanceof InitialFunction) {
-                fn = new InitialFn<>((InitialFunction) function, traverserFactory);
-            } else if (function instanceof FilterFunction) {
-                fn = new FilterFn<>((FilterFunction) function);
-            } else if (function instanceof FlatMapFunction) {
-                fn = new FlatMapFn<>((FlatMapFunction) function);
-            } else if (function instanceof MapFunction) {
-                fn = new MapFn<>((MapFunction) function);
-            } else if (function instanceof ReduceFunction) {
-                final ReduceFn combine = new ReduceFn<>((ReduceFunction) function, traverserFactory);
-                collection = (PCollection) collection.apply(Combine.globally(combine));
-                this.functions.add(combine);
-            } else
-                throw new RuntimeException("You need a new step type:" + function);
-
-            if (!(function instanceof ReduceFunction)) {
-                this.functions.add((Fn) fn);
-                collection = (PCollection) collection.apply(ParDo.of(fn));
-            }
-            collection.setCoder(new TraverserCoder());
-
-
+            collection = processFunction(collection, function, false);
         }
         collection.apply(ParDo.of(new OutputStep()));
         this.pipeline.getOptions().setRunner(new PipelineOptions.DirectRunner().create(this.pipeline.getOptions()));
+    }
+
+    private PCollection<Traverser<C, ?>> processFunction(PCollection<Traverser<C, ?>> collection, final CFunction<?> function, final boolean branching) {
+        DoFn<Traverser<C, S>, Traverser<C, E>> fn = null;
+        if (function instanceof NestedFunction.Internal)
+            ((NestedFunction<C, ?, ?>) function).setProcessor(this.traverserFactory, new PipesProcessor());
+
+        if (function instanceof NestedFunction.Branching) {
+            final List<List<CFunction<C>>> branches = ((NestedFunction.Branching) function).getFunctions();
+            final List<PCollection<Traverser<C, ?>>> collections = new ArrayList<>(branches.size());
+            for (final List<CFunction<C>> branch : branches) {
+                PCollection<Traverser<C, ?>> branchCollection = collection;
+                for (final CFunction<C> branchFunction : branch) {
+                    branchCollection = this.processFunction(branchCollection, branchFunction, true);
+                }
+                collections.add(branchCollection);
+            }
+            collection = PCollectionList.of(collections).apply(Flatten.pCollections());
+            this.functions.add(new FlatMapFn<>((FlatMapFunction<C, S, E>) function));
+        } else if (function instanceof InitialFunction) {
+            fn = new InitialFn((InitialFunction<C, S>) function, this.traverserFactory);
+        } else if (function instanceof FilterFunction) {
+            fn = new FilterFn((FilterFunction<C, S>) function);
+        } else if (function instanceof FlatMapFunction) {
+            fn = new FlatMapFn<>((FlatMapFunction<C, S, E>) function);
+        } else if (function instanceof MapFunction) {
+            fn = new MapFn<>((MapFunction<C, S, E>) function);
+        } else if (function instanceof ReduceFunction) {
+            final ReduceFn<C, S, E> combine = new ReduceFn<>((ReduceFunction<C, S, E>) function, this.traverserFactory);
+            collection = (PCollection<Traverser<C, ?>>) collection.apply(Combine.globally((ReduceFn) combine));
+            this.functions.add(combine);
+        } else
+            throw new RuntimeException("You need a new step type:" + function);
+
+        if (!(function instanceof ReduceFunction) && !(function instanceof NestedFunction.Branching)) {
+            if (!branching)
+                this.functions.add((Fn) fn);
+            collection = (PCollection<Traverser<C, ?>>) collection.apply(ParDo.of((DoFn) fn));
+        }
+        collection.setCoder(new TraverserCoder());
+        return collection;
     }
 
     public Beam(final Bytecode<C> bytecode) {
@@ -100,8 +119,8 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
     }
 
     @Override
-    public void addStart(Traverser<C, S> traverser) {
-        ((Fn) this.functions.get(0)).addStart(traverser);
+    public void addStart(final Traverser<C, S> traverser) {
+        this.functions.get(0).addStart(traverser);
     }
 
     @Override
@@ -129,7 +148,7 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
     private final void setupPipeline() {
         if (null == this.iterator) {
             this.pipeline.run().waitUntilFinish();
-            this.iterator = new ArrayList<>(OUTPUT).iterator();
+            this.iterator = (Iterator) new ArrayList<>(OUTPUT).iterator();
             OUTPUT.clear();
         }
     }

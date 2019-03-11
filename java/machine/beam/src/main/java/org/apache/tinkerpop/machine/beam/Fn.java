@@ -20,12 +20,10 @@ package org.apache.tinkerpop.machine.beam;
 
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
-import java.io.Serializable;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Fn<C, S,E> {
+public interface Fn<C, S, E> {
 
     public void addStart(final Traverser<C, S> traverser);
 

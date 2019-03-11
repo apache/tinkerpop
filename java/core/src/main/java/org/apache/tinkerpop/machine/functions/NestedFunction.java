@@ -31,4 +31,11 @@ public interface NestedFunction<C, S, E> extends CFunction<C> {
     public void setProcessor(final TraverserFactory<C> traverserFactory, final ProcessorFactory processorFactory);
 
     public List<List<CFunction<C>>> getFunctions();
+
+    public interface Branching<C, S, E> extends NestedFunction<C, S, E> {
+    }
+
+    public interface Internal<C, S, E> extends NestedFunction<C, S, E> {
+
+    }
 }

@@ -39,7 +39,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class UnionFlatMap<C, S, E> extends AbstractFunction<C, S, Iterator<E>> implements FlatMapFunction<C, S, E>, NestedFunction<C, S, E> {
+public class UnionFlatMap<C, S, E> extends AbstractFunction<C, S, Iterator<E>> implements FlatMapFunction<C, S, E>, NestedFunction.Branching<C, S, E> {
 
     private final List<List<CFunction<C>>> branchFunctions;
     private transient List<Processor<C, S, E>> processors;
