@@ -15,17 +15,21 @@
 # specific language governing permissions and limitations
 # under the License.
 
-FROM openjdk:8u151-jre-alpine3.7
+FROM openjdk:8-jre-alpine
+
+LABEL maintainer="dev@tinkerpop.apache.org"
 
 ARG GREMLIN_CONSOLE_DIR
 
-RUN apk add --update \
-    bash \
-    && rm -rf /var/cache/apk/*
+RUN apk add --no-cache --update bash
 
 COPY src/main/docker/docker-entrypoint.sh /
 COPY ${GREMLIN_CONSOLE_DIR} /opt/gremlin-console
 
 WORKDIR /opt/gremlin-console
+
+RUN addgroup -S gremlin && adduser -S -s /bin/false -G gremlin gremlin
+RUN chown -R gremlin:gremlin /opt/gremlin-console
+USER gremlin
 
 ENTRYPOINT ["/docker-entrypoint.sh"]

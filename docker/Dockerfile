@@ -17,7 +17,7 @@
 
 FROM ubuntu:trusty
 
-MAINTAINER Daniel Kuppitz <me@gremlin.guru>
+LABEL maintainer="Daniel Kuppitz <me@gremlin.guru>"
 
 RUN apt-get update \
     && apt-get -y install software-properties-common python-software-properties apt-transport-https curl dpkg \
