@@ -18,12 +18,13 @@
  */
 package org.apache.tinkerpop.machine.pipes;
 
+import org.apache.tinkerpop.machine.functions.BranchFunction;
 import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.functions.FilterFunction;
 import org.apache.tinkerpop.machine.functions.FlatMapFunction;
 import org.apache.tinkerpop.machine.functions.InitialFunction;
+import org.apache.tinkerpop.machine.functions.InternalFunction;
 import org.apache.tinkerpop.machine.functions.MapFunction;
-import org.apache.tinkerpop.machine.functions.NestedFunction;
 import org.apache.tinkerpop.machine.functions.ReduceFunction;
 import org.apache.tinkerpop.machine.pipes.util.BasicReducer;
 import org.apache.tinkerpop.machine.processor.Processor;
@@ -45,11 +46,13 @@ public class Pipes<C, S, E> implements Processor<C, S, E> {
     public Pipes(final TraverserFactory<C> traverserFactory, final List<CFunction<C>> functions) {
         AbstractStep<C, ?, ?> previousStep = EmptyStep.instance();
         for (final CFunction<?> function : functions) {
-            if (function instanceof NestedFunction)
-                ((NestedFunction<C, ?, ?>) function).setProcessor(traverserFactory, new PipesProcessor());
+            if (function instanceof InternalFunction)
+                ((InternalFunction<C>) function).setProcessor(traverserFactory, new PipesProcessor());
             /////////
             final AbstractStep nextStep;
-            if (function instanceof FilterFunction)
+            if (function instanceof BranchFunction)
+                nextStep = new BranchStep(previousStep, (BranchFunction<C, ?, ?>) function);
+            else if (function instanceof FilterFunction)
                 nextStep = new FilterStep(previousStep, (FilterFunction<C, ?>) function);
             else if (function instanceof FlatMapFunction)
                 nextStep = new FlatMapStep(previousStep, (FlatMapFunction<C, ?, ?>) function);

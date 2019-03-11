@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MapMap<C, S, E> extends AbstractFunction<C, S, E> implements MapFunction<C, S, E>, NestedFunction.Internal<C, S, E> {
+public class MapMap<C, S, E> extends AbstractFunction<C, S, E> implements MapFunction<C, S, E>, NestedFunction<C> {
 
     private final List<CFunction<C>> mapFunctions;
     private TraverserFactory<C> traverserFactory;

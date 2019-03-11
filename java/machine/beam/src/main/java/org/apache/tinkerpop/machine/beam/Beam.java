@@ -31,12 +31,13 @@ import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
+import org.apache.tinkerpop.machine.functions.BranchFunction;
 import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.functions.FilterFunction;
 import org.apache.tinkerpop.machine.functions.FlatMapFunction;
 import org.apache.tinkerpop.machine.functions.InitialFunction;
+import org.apache.tinkerpop.machine.functions.InternalFunction;
 import org.apache.tinkerpop.machine.functions.MapFunction;
-import org.apache.tinkerpop.machine.functions.NestedFunction;
 import org.apache.tinkerpop.machine.functions.ReduceFunction;
 import org.apache.tinkerpop.machine.pipes.PipesProcessor;
 import org.apache.tinkerpop.machine.processor.Processor;
@@ -75,11 +76,11 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
 
     private PCollection<Traverser<C, ?>> processFunction(PCollection<Traverser<C, ?>> collection, final CFunction<?> function, final boolean branching) {
         DoFn<Traverser<C, S>, Traverser<C, E>> fn = null;
-        if (function instanceof NestedFunction.Internal)
-            ((NestedFunction<C, ?, ?>) function).setProcessor(this.traverserFactory, new PipesProcessor());
+        if (function instanceof InternalFunction)
+            ((InternalFunction<C>) function).setProcessor(this.traverserFactory, new PipesProcessor());
 
-        if (function instanceof NestedFunction.Branching) {
-            final List<List<CFunction<C>>> branches = ((NestedFunction.Branching) function).getFunctions();
+        if (function instanceof BranchFunction) {
+            final List<List<CFunction<C>>> branches = ((BranchFunction) function).getBranches();
             final List<PCollection<Traverser<C, ?>>> collections = new ArrayList<>(branches.size());
             for (final List<CFunction<C>> branch : branches) {
                 PCollection<Traverser<C, ?>> branchCollection = collection;
@@ -89,7 +90,7 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
                 collections.add(branchCollection);
             }
             collection = PCollectionList.of(collections).apply(Flatten.pCollections());
-            this.functions.add(new FlatMapFn<>((FlatMapFunction<C, S, E>) function));
+            this.functions.add(new BranchFn<>((BranchFunction<C, S, E>) function));
         } else if (function instanceof InitialFunction) {
             fn = new InitialFn((InitialFunction<C, S>) function, this.traverserFactory);
         } else if (function instanceof FilterFunction) {
@@ -105,7 +106,7 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
         } else
             throw new RuntimeException("You need a new step type:" + function);
 
-        if (!(function instanceof ReduceFunction) && !(function instanceof NestedFunction.Branching)) {
+        if (!(function instanceof ReduceFunction) && !(function instanceof BranchFunction)) {
             if (!branching)
                 this.functions.add((Fn) fn);
             collection = (PCollection<Traverser<C, ?>>) collection.apply(ParDo.of((DoFn) fn));

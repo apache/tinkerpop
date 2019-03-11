@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.pipes;
 
-import org.apache.tinkerpop.machine.functions.FlatMapFunction;
+import org.apache.tinkerpop.machine.functions.BranchFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
 import java.util.Collections;
@@ -27,14 +27,14 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class FlatMapStep<C, S, E> extends AbstractStep<C, S, E> {
+public class BranchStep<C, S, E> extends AbstractStep<C, S, E> {
 
-    private final FlatMapFunction<C, S, E> flatMapFunction;
+    private final BranchFunction<C, S, E> branchFunction;
     private Iterator<Traverser<C, E>> iterator = Collections.emptyIterator();
 
-    public FlatMapStep(final AbstractStep<C, ?, S> previousStep, final FlatMapFunction<C, S, E> flatMapFunction) {
-        super(previousStep, flatMapFunction);
-        this.flatMapFunction = flatMapFunction;
+    public BranchStep(final AbstractStep<C, ?, S> previousStep, final BranchFunction<C, S, E> branchFunction) {
+        super(previousStep, branchFunction);
+        this.branchFunction = branchFunction;
     }
 
     @Override
@@ -43,7 +43,7 @@ public class FlatMapStep<C, S, E> extends AbstractStep<C, S, E> {
             if (this.iterator.hasNext())
                 return true;
             else if (super.hasNext())
-                this.iterator = super.getPreviousTraverser().flatMap(this.flatMapFunction);
+                this.iterator = super.getPreviousTraverser().branch(this.branchFunction);
             else
                 return false;
         }
@@ -52,7 +52,7 @@ public class FlatMapStep<C, S, E> extends AbstractStep<C, S, E> {
     @Override
     public Traverser<C, E> next() {
         if (!this.iterator.hasNext()) {
-            this.iterator = super.getPreviousTraverser().flatMap(this.flatMapFunction);
+            this.iterator = super.getPreviousTraverser().branch(this.branchFunction);
         }
         return this.iterator.next();
     }

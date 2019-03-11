@@ -16,15 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine.pipes;
 
-import java.util.List;
+import org.apache.tinkerpop.language.Gremlin;
+import org.apache.tinkerpop.language.TraversalSource;
+import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
+import org.apache.tinkerpop.machine.functions.filters.IdentityTest;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface NestedFunction<C> extends InternalFunction<C> {
+public class PipesIdentityTest {
 
-    public List<List<CFunction<C>>> getFunctions();
+    private TraversalSource<Long> g = Gremlin.<Long>traversal().withProcessor(PipesProcessor.class).withCoefficient(LongCoefficient.class);
+    private IdentityTest test = new IdentityTest();
 
+    @Test
+    public void g_injectX2X_identity() {
+        test.g_injectX2X_identity(g.inject(2L).identity());
+    }
 }

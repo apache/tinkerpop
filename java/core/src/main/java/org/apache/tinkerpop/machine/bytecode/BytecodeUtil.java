@@ -24,7 +24,7 @@ import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.functions.filter.FilterFilter;
 import org.apache.tinkerpop.machine.functions.filter.IdentityFilter;
 import org.apache.tinkerpop.machine.functions.filter.IsFilter;
-import org.apache.tinkerpop.machine.functions.flatMap.UnionFlatMap;
+import org.apache.tinkerpop.machine.functions.branch.UnionBranch;
 import org.apache.tinkerpop.machine.functions.initial.InjectInitial;
 import org.apache.tinkerpop.machine.functions.map.IncrMap;
 import org.apache.tinkerpop.machine.functions.map.MapMap;
@@ -143,7 +143,7 @@ public final class BytecodeUtil {
                 for (final Bytecode<C> arg : (Bytecode<C>[]) instruction.args()) {
                     branchFunctions.add(compile(arg));
                 }
-                return new UnionFlatMap<>(coefficient, labels, branchFunctions);
+                return new UnionBranch<>(coefficient, labels, branchFunctions);
             default:
                 throw new RuntimeException("This is an unknown instruction:" + instruction.op());
         }

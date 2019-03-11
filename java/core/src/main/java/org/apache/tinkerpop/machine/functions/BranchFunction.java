@@ -18,13 +18,16 @@
  */
 package org.apache.tinkerpop.machine.functions;
 
+import org.apache.tinkerpop.machine.traversers.Traverser;
+
+import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface NestedFunction<C> extends InternalFunction<C> {
+public interface BranchFunction<C, S, E> extends Function<Traverser<C, S>, Iterator<Traverser<C, E>>>, InternalFunction<C> {
 
-    public List<List<CFunction<C>>> getFunctions();
-
+    public List<List<CFunction<C>>> getBranches();
 }

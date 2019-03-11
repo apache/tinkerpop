@@ -16,15 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine.beam;
 
-import java.util.List;
+import org.apache.tinkerpop.machine.functions.BranchFunction;
+import org.apache.tinkerpop.machine.traversers.Traverser;
+
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface NestedFunction<C> extends InternalFunction<C> {
+public class BranchFn<C, S, E> extends AbstractFn<C, S, E> {
 
-    public List<List<CFunction<C>>> getFunctions();
+    private BranchFunction<C, S, E> branchFunction;
 
+    public BranchFn(final BranchFunction<C, S, E> branchFunction) {
+        super(branchFunction);
+        this.branchFunction = branchFunction;
+    }
+
+    @ProcessElement
+    public void processElement(final @Element Traverser<C, S> traverser, final OutputReceiver<Traverser<C, E>> output) {
+        Iterator<Traverser<C, E>> iterator = traverser.branch(this.branchFunction);
+        while (iterator.hasNext())
+            output.output(iterator.next());
+    }
 }

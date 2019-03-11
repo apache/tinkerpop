@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class FilterFilter<C, S> extends AbstractFunction<C, S, S> implements FilterFunction<C, S>, NestedFunction.Internal<C, S, S> {
+public final class FilterFilter<C, S> extends AbstractFunction<C, S, S> implements FilterFunction<C, S>, NestedFunction<C> {
 
     private final List<CFunction<C>> filterFunctions;
     private TraverserFactory<C> traverserFactory;

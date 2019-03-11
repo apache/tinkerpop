@@ -39,7 +39,7 @@ public class PipesTest {
                 .withProcessor(PipesProcessor.class)
                 .withStrategy(IdentityStrategy.class);
 
-        Traversal<Long, Long, ?> traversal = g.inject(7L, 10L, 12L).as("a").c(3L).map(__.incr()).identity().incr().identity().identity().sum().path();
+        Traversal<Long, Long, ?> traversal = g.inject(7L, 10L, 12L).as("a").c(3L).map(__.incr()).identity().incr().identity().identity().sum().path().identity();
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());
@@ -49,7 +49,7 @@ public class PipesTest {
         System.out.println(traversal);
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
-        traversal = g.inject(7L).union(__.<Long>incr().incr().count(), __.<Long, Long>c(10L).incr().sum()).count();
+        traversal = g.inject(7L).union(__.<Long>incr().incr().count(), __.<Long, Long>c(10L).incr().sum());
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

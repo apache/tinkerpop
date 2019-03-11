@@ -16,25 +16,29 @@ limitations under the License.
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
-        <artifactId>machine</artifactId>
+        <artifactId>java</artifactId>
         <groupId>org.apache.tinkerpop</groupId>
         <version>4.0.0-SNAPSHOT</version>
     </parent>
-    <name>Apache TinkerPop (Java) :: Machine :: Pipes</name>
-    <artifactId>pipes</artifactId>
+    <name>Apache TinkerPop (Java) :: Test</name>
+    <artifactId>test</artifactId>
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>core</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- TESTING -->
         <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>test</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.version}</version>
         </dependency>
     </dependencies>
     <build>

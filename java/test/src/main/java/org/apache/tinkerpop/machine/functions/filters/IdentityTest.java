@@ -16,15 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine.functions.filters;
+
+import org.apache.tinkerpop.language.Traversal;
 
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface NestedFunction<C> extends InternalFunction<C> {
+public class IdentityTest {
 
-    public List<List<CFunction<C>>> getFunctions();
-
+    public void g_injectX2X_identity(final Traversal<Long, Long, Long> traversal) {
+        final List<Long> list = traversal.toList();
+        assertEquals(1, list.size());
+        assertEquals(2L, list.get(0));
+    }
 }

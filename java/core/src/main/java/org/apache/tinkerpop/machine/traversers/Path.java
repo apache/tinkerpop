@@ -20,6 +20,7 @@ package org.apache.tinkerpop.machine.traversers;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -45,6 +46,8 @@ public class Path implements Serializable {
     }
 
     public void addLabels(final Set<String> labels) {
+        if (this.labels.isEmpty())
+            this.labels.add(new HashSet<>());
         this.labels.get(this.labels.size() - 1).addAll(labels);
     }
 

@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.machine.traversers;
 
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
+import org.apache.tinkerpop.machine.functions.BranchFunction;
 import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.functions.FilterFunction;
 import org.apache.tinkerpop.machine.functions.FlatMapFunction;
@@ -55,6 +56,10 @@ public interface Traverser<C, S> extends Serializable, Cloneable {
 
     public default <E> Iterator<Traverser<C, E>> flatMap(final FlatMapFunction<C, S, E> function) {
         return IteratorUtils.map(function.apply(this), e -> this.split(function, e));
+    }
+
+    public default <E> Iterator<Traverser<C, E>> branch(final BranchFunction<C, S, E> function) {
+        return function.apply(this);
     }
 
     //public default void sideEffect(final SideEffectFunction<C,S> function);
