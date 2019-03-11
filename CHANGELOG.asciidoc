@@ -291,6 +291,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-3-6]]
 === TinkerPop 3.3.6 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Docker images use user `gremlin` instead of `root`
 * Added a new `ResponseStatusCode` for client-side serialization errors.
 * Refactored use of `commons-lang` to use `common-lang3` only, though dependencies may still use `commons-lang`.
 * Bumped `commons-lang3`to 3.8.1.
