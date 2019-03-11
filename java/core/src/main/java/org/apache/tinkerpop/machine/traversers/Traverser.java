@@ -44,6 +44,7 @@ public interface Traverser<C, S> extends Serializable, Cloneable {
     public default boolean filter(final FilterFunction<C, S> function) {
         if (function.test(this)) {
             this.path().addLabels(function.labels());
+            this.coefficient().multiply(function.coefficient().value());
             return true;
         } else {
             return false;

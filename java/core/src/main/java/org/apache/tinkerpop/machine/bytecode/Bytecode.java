@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Bytecode<C> implements Cloneable {
+public final class Bytecode<C> implements Cloneable {
 
     private List<Instruction<C>> instructions = new ArrayList<>();
     private List<SourceInstruction> sourceInstructions = new ArrayList<>();

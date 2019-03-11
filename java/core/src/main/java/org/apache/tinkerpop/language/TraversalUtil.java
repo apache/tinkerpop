@@ -33,4 +33,8 @@ public final class TraversalUtil {
         return traversal.bytecode;
     }
 
+    public static <C, S, E> Traversal<C, S, E> getTraversal(final Bytecode<C> bytecode) {
+        return new Traversal<>(bytecode);
+    }
+
 }

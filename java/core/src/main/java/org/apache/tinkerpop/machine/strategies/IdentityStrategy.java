@@ -30,7 +30,7 @@ public final class IdentityStrategy implements Strategy {
     public <C> void apply(final Bytecode<C> bytecode) {
         bytecode.getInstructions().removeIf(instruction ->
                 instruction.op().equals(Symbols.IDENTITY) &&
-                        instruction.labels().isEmpty());
-        //!instruction.coefficient().equals(unity));
+                        instruction.labels().isEmpty() &&
+                        instruction.coefficient().isUnity());
     }
 }

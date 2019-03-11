@@ -45,7 +45,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     private long lastCount = 0L;
     private E lastObject = null;
 
-    public Traversal(final Bytecode<C> bytecode) {
+    protected Traversal(final Bytecode<C> bytecode) {
         this.bytecode = bytecode;
         this.currentCoefficient = BytecodeUtil.getCoefficient(this.bytecode).orElse((Coefficient<C>) LongCoefficient.create());
         this.processorFactory = BytecodeUtil.getProcessorFactory(this.bytecode).orElse(EmptyProcessorFactory.instance());

@@ -18,24 +18,52 @@
  */
 package org.apache.tinkerpop.machine.functions.filters;
 
-import org.apache.tinkerpop.language.Traversal;
+import org.apache.tinkerpop.language.TraversalSource;
+import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IdentityTest {
+public abstract class IdentityTest {
 
-    private IdentityTest() {
-        // static class
+    private List<TraversalSource<Long>> sources;
+
+    public IdentityTest(final TraversalSource<Long>... sources) {
+        this.sources = Arrays.asList(sources);
     }
 
-    public static void g_injectX2X_identity(final Traversal<Long, Long, Long> traversal) {
-        final List<Long> list = traversal.toList();
-        assertEquals(1, list.size());
-        assertEquals(2L, list.get(0));
+    @Test
+    public void g_injectX2X_identity() {
+        for (final TraversalSource<Long> g : this.sources) {
+            final List<Long> list = g.inject(2L).identity().toList();
+            assertEquals(1, list.size());
+            assertEquals(2L, list.get(0));
+        }
+    }
+
+    @Test
+    public void g_injectX1_2X_identity_asXaX() {
+        for (final TraversalSource<Long> g : this.sources) {
+            final List<Long> list = g.inject(1L, 2L).identity().as("a").toList();
+            assertEquals(2, list.size());
+            assertTrue(list.contains(1L));
+            assertTrue(list.contains(2L));
+        }
+    }
+
+    @Test
+    public void g_injectX1_2X_cX3X_identity() {
+        for (final TraversalSource<Long> g : this.sources) {
+            final List<Long> list = g.inject(1L, 2L).c(3L).identity().toList();
+            assertEquals(6, list.size());
+            assertTrue(list.contains(1L));
+            assertTrue(list.contains(2L));
+        }
     }
 }

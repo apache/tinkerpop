@@ -19,20 +19,20 @@
 package org.apache.tinkerpop.machine.pipes;
 
 import org.apache.tinkerpop.language.Gremlin;
-import org.apache.tinkerpop.language.TraversalSource;
 import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
 import org.apache.tinkerpop.machine.functions.filters.IdentityTest;
-import org.junit.jupiter.api.Test;
+import org.apache.tinkerpop.machine.strategies.IdentityStrategy;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PipesIdentityTest {
+public class PipesIdentityTest extends IdentityTest {
 
-    private TraversalSource<Long> g = Gremlin.<Long>traversal().withProcessor(PipesProcessor.class).withCoefficient(LongCoefficient.class);
-
-    @Test
-    public void g_injectX2X_identity() {
-        IdentityTest.g_injectX2X_identity(g.inject(2L).identity());
+    public PipesIdentityTest() {
+        super(
+                Gremlin.<Long>traversal().withProcessor(PipesProcessor.class),
+                Gremlin.<Long>traversal().withCoefficient(LongCoefficient.class).withProcessor(PipesProcessor.class),
+                Gremlin.<Long>traversal().withProcessor(PipesProcessor.class).withStrategy(IdentityStrategy.class));
     }
+
 }

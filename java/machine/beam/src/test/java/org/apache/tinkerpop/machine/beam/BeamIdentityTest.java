@@ -18,26 +18,21 @@
  */
 package org.apache.tinkerpop.machine.beam;
 
-import org.apache.tinkerpop.machine.functions.FilterFunction;
-import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.language.Gremlin;
+import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
+import org.apache.tinkerpop.machine.functions.filters.IdentityTest;
+import org.apache.tinkerpop.machine.strategies.IdentityStrategy;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class FilterFn<C, S> extends AbstractFn<C, S, S> {
+public class BeamIdentityTest extends IdentityTest {
 
-    private FilterFunction<C, S> filterFunction;
-
-    public FilterFn(final FilterFunction<C, S> filterFunction) {
-        super(filterFunction);
-        this.filterFunction = filterFunction;
+    public BeamIdentityTest() {
+        super(
+                Gremlin.<Long>traversal().withProcessor(BeamProcessor.class),
+                Gremlin.<Long>traversal().withCoefficient(LongCoefficient.class).withProcessor(BeamProcessor.class),
+                Gremlin.<Long>traversal().withProcessor(BeamProcessor.class).withStrategy(IdentityStrategy.class));
     }
 
-    @ProcessElement
-    public void processElement(final @Element Traverser<C, S> traverser, final OutputReceiver<Traverser<C, S>> output) {
-        final Traverser<C, S> clone = traverser.split(this.filterFunction, traverser.object());
-        clone.coefficient().set(traverser.coefficient().clone().value()); // TODO: get rid of this
-        if (clone.filter(this.filterFunction))
-            output.output(clone);
-    }
 }

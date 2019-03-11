@@ -84,6 +84,12 @@ limitations under the License.
             <artifactId>pipes</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!-- TESTING -->
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>test</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
     <build>
         <directory>${basedir}/target</directory>
