@@ -62,15 +62,18 @@ public class SparqlStrategy extends AbstractTraversalStrategy<TraversalStrategy.
         if (!(traversal.getParent() instanceof EmptyStep))
             return;
 
-        if (traversal.getSteps().size() == 1 && traversal.getEndStep() instanceof InjectStep) {
-            final InjectStep stepWithSparql = (InjectStep) traversal.getEndStep();
+        // assumes that the traversal starts with the single inject step that holds the sparql query
+        if (traversal.getStartStep() instanceof InjectStep) {
+            final InjectStep stepWithSparql = (InjectStep) traversal.getStartStep();
             final Object[] injections = stepWithSparql.getInjections();
+
+            // further assumes that there is just one argument to that injection which is a string (i.e. sparql query)
             if (injections.length == 1 && injections[0] instanceof String) {
                 final String sparql = (String) injections[0];
                 final Traversal<Vertex, ?> sparqlTraversal = SparqlToGremlinCompiler.compile(
                         traversal.getGraph().get(), sparql);
-                TraversalHelper.removeAllSteps(traversal);
-                sparqlTraversal.asAdmin().getSteps().forEach(s -> traversal.addStep(s));
+                TraversalHelper.insertTraversal(stepWithSparql, sparqlTraversal.asAdmin(), traversal);
+                traversal.removeStep(stepWithSparql);
             }
         }
     }

@@ -413,3 +413,20 @@ WHERE {
   ?software v:lang ?lang .
   ?software v:name ?name . }""")
 ----
+
+[[sparql-with-gremlin]]
+=== With Gremlin
+
+The `sparql()`-step takes a SPARQL query and returns a result. That result can be further processed by standard Gremlin
+steps, which introduces some interesting possibilities.
+
+[gremlin-groovy,modern]
+----
+g.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age }")
+g.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age }").select("name")
+g.sparql("SELECT * WHERE { }").out("knows").values("name")
+g.withSack(1.0f).sparql("SELECT * WHERE { }").
+  repeat(outE().sack(mult).by("weight").inV()).
+    times(2).
+  sack()
+----

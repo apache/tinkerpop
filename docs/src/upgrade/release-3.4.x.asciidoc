@@ -27,6 +27,44 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.1/CHANGELOG.asciidoc#release-3-4-1[changelog] for a complete list of all the modifications that are part of this release.
 
+=== Upgrading for Users
+
+==== Mix SPARQL and Gremlin
+
+In the initial release of `sparql-gremlin` it was only possible to execute a SPARQL query and have it translate to
+Gremlin. Therefore, it was only possible to write a query like this:
+
+```text
+gremlin> g.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age }")
+==>[name:marko,age:29]
+==>[name:vadas,age:27]
+==>[name:josh,age:32]
+==>[name:peter,age:35]
+gremlin> g.sparql("SELECT * WHERE { }")
+==>v[1]
+==>v[2]
+==>v[3]
+==>v[4]
+==>v[5]
+==>v[6]
+```
+
+In this release, however, it is now possible to further process that result with Gremlin steps:
+
+```text
+gremlin> g.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age }").select("name")
+==>marko
+==>vadas
+==>josh
+==>peter
+gremlin> g.sparql("SELECT * WHERE { }").out("knows").values("name")
+==>vadas
+==>josh
+```
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2171[TINKERPOP-2171],
+link:http://tinkerpop.apache.org/docs/3.4.1/reference/#sparql-with-gremlin[Reference Documentation]
+
 === Upgrading for Providers
 
 ==== Graph Database Providers

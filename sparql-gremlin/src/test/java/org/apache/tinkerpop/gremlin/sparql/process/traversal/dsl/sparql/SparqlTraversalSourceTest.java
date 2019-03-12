@@ -18,7 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.sparql.process.traversal.dsl.sparql;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
@@ -28,6 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.Operator.mult;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
@@ -42,6 +46,25 @@ public class SparqlTraversalSourceTest {
     private static final SparqlTraversalSource g = graph.traversal(SparqlTraversalSource.class);
     private static final GraphTraversalSource _g = graph.traversal();
 
+    @Test
+    public void shouldStartWithSparqlReturningMapAndEndWithGremlin() {
+        final List<?> x = g.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age }").select("name").toList();
+        assertThat(x, containsInAnyOrder("marko", "vadas", "josh", "peter"));
+    }
+
+    @Test
+    public void shouldStartWithSparqlReturningVertexAndEndWithGremlin() {
+        final List<?> x = g.sparql("SELECT * WHERE { }").out("knows").values("name").toList();
+        assertThat(x, containsInAnyOrder("vadas", "josh"));
+    }
+
+    @Test
+    public void shouldStartWithSparqlUsingSacksAndEndWithGremlin() {
+        final List<?> x = g.withSack(1.0f).sparql("SELECT * WHERE { }").repeat(
+                (Traversal) outE().sack(mult).by("weight").inV()).times(2).sack().toList();
+        assertThat(x, containsInAnyOrder(1.0, 0.4));
+    }
+    
     @Test
     public void shouldFindAllPersonsNamesAndAges() {
         final List<?> x = g.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age }").toList();
