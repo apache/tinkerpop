@@ -122,6 +122,15 @@ describe('Traversal', function () {
     });
   });
 
+  if (Symbol.asyncIterator) {
+    describe('@@asyncIterator', function () {
+      it('should expose the async iterator', function () {
+        const traversal = new t.Traversal(null, null, null);
+        assert.strictEqual(typeof traversal[Symbol.asyncIterator], 'function');
+      });
+    });
+  }
+
   describe('#toList()', function () {
 
     it('should apply the strategies and return a Promise with an array', function () {
