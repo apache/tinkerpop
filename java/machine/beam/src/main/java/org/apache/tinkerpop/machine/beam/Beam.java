@@ -36,10 +36,8 @@ import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.functions.FilterFunction;
 import org.apache.tinkerpop.machine.functions.FlatMapFunction;
 import org.apache.tinkerpop.machine.functions.InitialFunction;
-import org.apache.tinkerpop.machine.functions.InternalFunction;
 import org.apache.tinkerpop.machine.functions.MapFunction;
 import org.apache.tinkerpop.machine.functions.ReduceFunction;
-import org.apache.tinkerpop.machine.pipes.PipesProcessor;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.machine.traversers.TraverserFactory;
@@ -76,9 +74,6 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
 
     private PCollection<Traverser<C, ?>> processFunction(PCollection<Traverser<C, ?>> collection, final CFunction<?> function, final boolean branching) {
         DoFn<Traverser<C, S>, Traverser<C, E>> fn = null;
-        if (function instanceof InternalFunction)
-            ((InternalFunction<C>) function).setProcessor(this.traverserFactory, new PipesProcessor());
-
         if (function instanceof BranchFunction) {
             final List<List<CFunction<C>>> branches = ((BranchFunction) function).getBranches();
             final List<PCollection<Traverser<C, ?>>> collections = new ArrayList<>(branches.size());

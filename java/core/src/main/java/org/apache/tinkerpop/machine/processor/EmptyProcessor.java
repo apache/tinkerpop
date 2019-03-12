@@ -24,7 +24,7 @@ import org.apache.tinkerpop.util.FastNoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EmptyProcessor<C, S, E> implements Processor<C, S, E> {
+public final class EmptyProcessor<C, S, E> implements Processor<C, S, E> {
 
     private static final EmptyProcessor INSTANCE = new EmptyProcessor();
 

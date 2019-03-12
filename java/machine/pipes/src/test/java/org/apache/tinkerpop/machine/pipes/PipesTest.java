@@ -39,7 +39,7 @@ public class PipesTest {
                 .withProcessor(PipesProcessor.class)
                 .withStrategy(IdentityStrategy.class);
 
-        Traversal<Long, Long, ?> traversal = g.inject(7L, 10L, 12L).as("a").c(3L).map(__.incr()).identity().incr().identity().identity().sum().path().identity();
+        Traversal<Long, Long, ?> traversal = g.inject(7L, 10L, 12L).identity().incr().incr().path();
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

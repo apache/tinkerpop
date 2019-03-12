@@ -21,9 +21,11 @@ package org.apache.tinkerpop.machine.processor;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.functions.CFunction;
+import org.apache.tinkerpop.machine.strategies.Strategy;
 import org.apache.tinkerpop.machine.traversers.TraverserFactory;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
@@ -36,4 +38,14 @@ public interface ProcessorFactory extends Serializable {
     }
 
     public <C, S, E> Processor<C, S, E> mint(final TraverserFactory<C> traverserFactory, final List<CFunction<C>> functions);
+
+    public List<Strategy> getStrategies();
+
+    public static List<Strategy> processorStrategies(final Class<? extends ProcessorFactory> processFactoryClass) {
+        try {
+            return processFactoryClass.getConstructor().newInstance().getStrategies();
+        } catch (final NoSuchMethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
 }

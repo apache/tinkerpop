@@ -18,13 +18,10 @@
  */
 package org.apache.tinkerpop.machine.functions;
 
-import java.util.List;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface NestedFunction<C> extends InternalFunction<C> {
 
-    public List<List<CFunction<C>>> getFunctions();
 
 }

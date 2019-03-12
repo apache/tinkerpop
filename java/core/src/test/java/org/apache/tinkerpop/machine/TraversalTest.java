@@ -32,8 +32,8 @@ public class TraversalTest {
 
     @Test
     public void shouldHaveBytecode() throws Exception {
-        TraversalSource<Long> g = Gremlin.traversal();
-        final Traversal<Long, Long, Long> traversal = g.inject(7L).is(7L).incr().as("a").is(8L).by(__.incr());
+        //TraversalSource<Long> g = Gremlin.traversal();
+        //final Traversal<Long, Long, Long> traversal = g.inject(7L).is(7L).incr().as("a").is(8L).by(__.incr());
         //System.out.println(traversal.bytecode);
         //System.out.println(BytecodeUtil.apply(traversal.getBytecode()));
     }

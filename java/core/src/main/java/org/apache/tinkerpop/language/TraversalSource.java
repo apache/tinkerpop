@@ -36,19 +36,22 @@ public class TraversalSource<C> {
 
     public TraversalSource<C> withCoefficient(final Class<? extends Coefficient<C>> coefficient) {
         this.bytecode = this.bytecode.clone();
-        this.bytecode.addSourceInstruction(Symbols.WITH_COEFFICIENT, coefficient.getCanonicalName());
+        this.bytecode.addSourceInstruction(Symbols.WITH_COEFFICIENT, coefficient);
         return this;
     }
 
     public TraversalSource<C> withProcessor(final Class<? extends ProcessorFactory> processor) {
         this.bytecode = this.bytecode.clone();
-        this.bytecode.addSourceInstruction(Symbols.WITH_PROCESSOR, processor.getCanonicalName());
+        this.bytecode.addSourceInstruction(Symbols.WITH_PROCESSOR, processor);
+        for (final Strategy strategy : ProcessorFactory.processorStrategies(processor)) {
+            this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, strategy.getClass());
+        }
         return this;
     }
 
     public TraversalSource<C> withStrategy(final Class<? extends Strategy> strategy) {
         this.bytecode = this.bytecode.clone();
-        this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, strategy.getCanonicalName());
+        this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, strategy);
         return this;
     }
 

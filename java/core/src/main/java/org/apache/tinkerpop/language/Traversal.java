@@ -20,11 +20,9 @@ package org.apache.tinkerpop.language;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
+import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
-import org.apache.tinkerpop.machine.processor.EmptyProcessorFactory;
-import org.apache.tinkerpop.machine.processor.Processor;
-import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.traversers.Path;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
@@ -39,8 +37,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
 
     protected final Bytecode<C> bytecode;
     private Coefficient<C> currentCoefficient;
-    private final ProcessorFactory processorFactory;
-    private Processor<C, S, E> processor;
+    private Compilation<C, S, E> compilation;
     //
     private long lastCount = 0L;
     private E lastObject = null;
@@ -48,7 +45,6 @@ public class Traversal<C, S, E> implements Iterator<E> {
     protected Traversal(final Bytecode<C> bytecode) {
         this.bytecode = bytecode;
         this.currentCoefficient = BytecodeUtil.getCoefficient(this.bytecode).orElse((Coefficient<C>) LongCoefficient.create());
-        this.processorFactory = BytecodeUtil.getProcessorFactory(this.bytecode).orElse(EmptyProcessorFactory.instance());
     }
 
     public Traversal<C, S, E> as(final String label) {
@@ -122,26 +118,25 @@ public class Traversal<C, S, E> implements Iterator<E> {
 
     ///////
 
-
-    private void setupProcessor() {
-        if (null == this.processor)
-            this.processor = this.processorFactory.mint(this.bytecode);
+    private final void prepareTraversal() {
+        if (null == this.compilation)
+            this.compilation = Compilation.compile(bytecode);
     }
 
     @Override
     public boolean hasNext() {
-        this.setupProcessor();
-        return this.lastCount > 0 || this.processor.hasNext();
+        this.prepareTraversal();
+        return this.lastCount > 0 || this.compilation.getProcessor().hasNext();
     }
 
     @Override
     public E next() {
-        this.setupProcessor();
+        this.prepareTraversal();
         if (this.lastCount > 0) {
             this.lastCount--;
             return this.lastObject;
         } else {
-            final Traverser<C, E> traverser = this.processor.next();
+            final Traverser<C, E> traverser = this.compilation.getProcessor().next();
             if (traverser.coefficient().count() > 1) {
                 this.lastObject = traverser.object();
                 this.lastCount = traverser.coefficient().count() - 1L;
@@ -151,7 +146,6 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public List<E> toList() {
-        this.setupProcessor();
         final List<E> list = new ArrayList<>();
         while (this.hasNext()) {
             list.add(this.next());
@@ -161,7 +155,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
 
     @Override
     public String toString() {
-        this.setupProcessor();
-        return this.processor.toString();
+        this.prepareTraversal();
+        return this.compilation.getProcessor().toString();
     }
 }

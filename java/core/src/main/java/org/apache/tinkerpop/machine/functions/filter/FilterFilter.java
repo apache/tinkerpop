@@ -18,19 +18,14 @@
  */
 package org.apache.tinkerpop.machine.functions.filter;
 
+import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.AbstractFunction;
-import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.functions.FilterFunction;
 import org.apache.tinkerpop.machine.functions.NestedFunction;
-import org.apache.tinkerpop.machine.processor.Processor;
-import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.traversers.Traverser;
-import org.apache.tinkerpop.machine.traversers.TraverserFactory;
 import org.apache.tinkerpop.util.StringFactory;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -38,40 +33,20 @@ import java.util.Set;
  */
 public final class FilterFilter<C, S> extends AbstractFunction<C, S, S> implements FilterFunction<C, S>, NestedFunction<C> {
 
-    private final List<CFunction<C>> filterFunctions;
-    private TraverserFactory<C> traverserFactory;
-    private ProcessorFactory processorFactory;
+    private final Compilation<C, S, ?> internalFilter;
 
-    private transient Processor<C, S, S> processor;
-
-    public FilterFilter(final Coefficient<C> coefficient, final Set<String> labels, final List<CFunction<C>> filterFunctions) {
+    public FilterFilter(final Coefficient<C> coefficient, final Set<String> labels, final Compilation<C, S, ?> internalFilter) {
         super(coefficient, labels);
-        this.filterFunctions = filterFunctions;
+        this.internalFilter = internalFilter;
     }
 
     @Override
     public boolean test(final Traverser<C, S> traverser) {
-        if (null == this.processor)
-            this.processor = processorFactory.mint(traverserFactory, this.filterFunctions);
-        else
-            this.processor.reset();
-        this.processor.addStart(traverser);
-        return this.processor.hasNext();
-    }
-
-    @Override
-    public void setProcessor(final TraverserFactory<C> traverserFactory, final ProcessorFactory processorFactory) {
-        this.traverserFactory = traverserFactory;
-        this.processorFactory = processorFactory;
-    }
-
-    @Override
-    public List<List<CFunction<C>>> getFunctions() {
-        return Collections.singletonList(this.filterFunctions);
+        return this.internalFilter.filterTraverser(traverser);
     }
 
     @Override
     public String toString() {
-        return StringFactory.makeFunctionString(this, this.filterFunctions.toArray());
+        return StringFactory.makeFunctionString(this, this.internalFilter);
     }
 }

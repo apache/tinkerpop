@@ -65,7 +65,7 @@ public class LongCoefficient implements Coefficient<Long> {
 
     @Override
     public boolean isUnity() {
-        return this.value == 1L;
+        return 1L == this.value;
     }
 
     @Override

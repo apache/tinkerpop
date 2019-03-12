@@ -30,4 +30,5 @@ import java.util.function.Function;
 public interface BranchFunction<C, S, E> extends Function<Traverser<C, S>, Iterator<Traverser<C, E>>>, InternalFunction<C> {
 
     public List<List<CFunction<C>>> getBranches();
+
 }

@@ -21,10 +21,10 @@ package org.apache.tinkerpop.machine.bytecode;
 import org.apache.tinkerpop.language.Symbols;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.CFunction;
+import org.apache.tinkerpop.machine.functions.branch.UnionBranch;
 import org.apache.tinkerpop.machine.functions.filter.FilterFilter;
 import org.apache.tinkerpop.machine.functions.filter.IdentityFilter;
 import org.apache.tinkerpop.machine.functions.filter.IsFilter;
-import org.apache.tinkerpop.machine.functions.branch.UnionBranch;
 import org.apache.tinkerpop.machine.functions.initial.InjectInitial;
 import org.apache.tinkerpop.machine.functions.map.IncrMap;
 import org.apache.tinkerpop.machine.functions.map.MapMap;
@@ -49,15 +49,19 @@ public final class BytecodeUtil {
 
     public static <C> Bytecode<C> strategize(final Bytecode<C> bytecode) {
         for (final Strategy strategy : BytecodeUtil.getStrategies(bytecode)) {
-            strategy.apply(bytecode);
-            for (final Instruction<C> instruction : bytecode.getInstructions()) {
-                for (Object arg : instruction.args()) {
-                    if (arg instanceof Bytecode)
-                        strategy.apply((Bytecode<C>) arg);
-                }
-            }
+            BytecodeUtil.strategize(bytecode, strategy);
         }
         return bytecode;
+    }
+
+    private static <C> void strategize(final Bytecode<C> bytecode, Strategy strategy) {
+        strategy.apply(bytecode);
+        for (final Instruction<C> instruction : bytecode.getInstructions()) {
+            for (Object arg : instruction.args()) {
+                if (arg instanceof Bytecode)
+                    BytecodeUtil.strategize((Bytecode<C>) arg, strategy);
+            }
+        }
     }
 
     public static <C> List<Strategy> getStrategies(final Bytecode<C> bytecode) {
@@ -65,11 +69,11 @@ public final class BytecodeUtil {
             final List<Strategy> strategies = new ArrayList<>();
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
                 if (sourceInstruction.op().equals(Symbols.WITH_STRATEGY))
-                    strategies.add((Strategy) Class.forName(sourceInstruction.args()[0].toString()).getConstructor().newInstance());
+                    strategies.add(((Class<? extends Strategy>) sourceInstruction.args()[0]).getConstructor().newInstance());
             }
             // sort strategies
             return strategies;
-        } catch (final ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
@@ -79,12 +83,12 @@ public final class BytecodeUtil {
             Coefficient<C> coefficient = null;
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
                 if (sourceInstruction.op().equals(Symbols.WITH_COEFFICIENT)) {
-                    coefficient = (Coefficient<C>) Class.forName(sourceInstruction.args()[0].toString()).getConstructor().newInstance();
+                    coefficient = ((Class<? extends Coefficient<C>>) sourceInstruction.args()[0]).getConstructor().newInstance();
                 }
             }
 
             return Optional.ofNullable(coefficient);
-        } catch (final ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
@@ -94,13 +98,21 @@ public final class BytecodeUtil {
             ProcessorFactory processor = null;
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
                 if (sourceInstruction.op().equals(Symbols.WITH_PROCESSOR)) {
-                    processor = (ProcessorFactory) Class.forName(sourceInstruction.args()[0].toString()).getConstructor().newInstance();
+                    processor = (ProcessorFactory) ((Class<? extends Coefficient<C>>) sourceInstruction.args()[0]).getConstructor().newInstance();
                 }
             }
             return Optional.ofNullable(processor);
-        } catch (final ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    public static boolean hasSourceInstruction(final Bytecode<?> bytecode, final String op) {
+        for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
+            if (sourceInstruction.op().equals(op))
+                return true;
+        }
+        return false;
     }
 
     public static <C> Optional<TraverserFactory<C>> getTraverserFactory(final Bytecode<C> bytecode) {
@@ -123,7 +135,7 @@ public final class BytecodeUtil {
             case Symbols.COUNT:
                 return new CountReduce<>(coefficient, labels);
             case Symbols.FILTER:
-                return new FilterFilter<>(coefficient, labels, compile((Bytecode<C>) instruction.args()[0]));
+                return new FilterFilter<>(coefficient, labels, Compilation.compileOne(instruction.args()[0]));
             case Symbols.IDENTITY:
                 return new IdentityFilter<>(coefficient, labels);
             case Symbols.INJECT:
@@ -133,17 +145,13 @@ public final class BytecodeUtil {
             case Symbols.INCR:
                 return new IncrMap<>(coefficient, labels);
             case Symbols.MAP:
-                return new MapMap<>(coefficient, labels, compile((Bytecode<C>) instruction.args()[0]));
+                return new MapMap<>(coefficient, labels, Compilation.compileOne(instruction.args()[0]));
             case Symbols.PATH:
                 return new PathMap<>(coefficient, labels);
             case Symbols.SUM:
                 return new SumReduce<>(coefficient, labels);
             case Symbols.UNION:
-                final List<List<CFunction<C>>> branchFunctions = new ArrayList<>();
-                for (final Bytecode<C> arg : (Bytecode<C>[]) instruction.args()) {
-                    branchFunctions.add(compile(arg));
-                }
-                return new UnionBranch<>(coefficient, labels, branchFunctions);
+                return new UnionBranch<>(coefficient, labels, Compilation.compile(instruction.args()));
             default:
                 throw new RuntimeException("This is an unknown instruction:" + instruction.op());
         }

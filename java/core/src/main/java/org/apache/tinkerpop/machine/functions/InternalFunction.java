@@ -26,5 +26,4 @@ import org.apache.tinkerpop.machine.traversers.TraverserFactory;
  */
 public interface InternalFunction<C> extends CFunction<C> {
 
-    public void setProcessor(final TraverserFactory<C> traverserFactory, final ProcessorFactory processorFactory);
 }

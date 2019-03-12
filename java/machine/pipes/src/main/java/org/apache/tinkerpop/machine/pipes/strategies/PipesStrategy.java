@@ -16,32 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.pipes;
+package org.apache.tinkerpop.machine.pipes.strategies;
 
-import org.apache.tinkerpop.machine.functions.CFunction;
-import org.apache.tinkerpop.machine.pipes.strategies.PipesStrategy;
-import org.apache.tinkerpop.machine.processor.Processor;
-import org.apache.tinkerpop.machine.processor.ProcessorFactory;
+import org.apache.tinkerpop.language.Symbols;
+import org.apache.tinkerpop.machine.bytecode.Bytecode;
+import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
+import org.apache.tinkerpop.machine.pipes.PipesProcessor;
 import org.apache.tinkerpop.machine.strategies.Strategy;
-import org.apache.tinkerpop.machine.traversers.TraverserFactory;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PipesProcessor implements ProcessorFactory {
-
-    public PipesProcessor() {}
-
+public class PipesStrategy implements Strategy {
     @Override
-    public <C, S, E> Processor<C, S, E> mint(final TraverserFactory<C> traverserFactory, final List<CFunction<C>> functions) {
-        return new Pipes<>(traverserFactory, functions);
-    }
-
-    @Override
-    public List<Strategy> getStrategies() {
-        return Collections.singletonList(new PipesStrategy());
+    public <C> void apply(final Bytecode<C> bytecode) {
+        if (!BytecodeUtil.hasSourceInstruction(bytecode, Symbols.WITH_PROCESSOR))
+            bytecode.addSourceInstruction(Symbols.WITH_PROCESSOR, PipesProcessor.class);
     }
 }

@@ -19,14 +19,16 @@
 package org.apache.tinkerpop.machine.processor;
 
 import org.apache.tinkerpop.machine.functions.CFunction;
+import org.apache.tinkerpop.machine.strategies.Strategy;
 import org.apache.tinkerpop.machine.traversers.TraverserFactory;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EmptyProcessorFactory implements ProcessorFactory {
+public final class EmptyProcessorFactory implements ProcessorFactory {
 
     private static final EmptyProcessorFactory INSTANCE = new EmptyProcessorFactory();
 
@@ -37,6 +39,11 @@ public class EmptyProcessorFactory implements ProcessorFactory {
     @Override
     public <C, S, E> Processor<C, S, E> mint(final TraverserFactory<C> traverserFactory, final List<CFunction<C>> functions) {
         return EmptyProcessor.instance();
+    }
+
+    @Override
+    public List<Strategy> getStrategies() {
+        return Collections.emptyList();
     }
 
     public static EmptyProcessorFactory instance() {

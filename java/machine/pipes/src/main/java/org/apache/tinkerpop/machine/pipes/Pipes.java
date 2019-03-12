@@ -46,9 +46,6 @@ public class Pipes<C, S, E> implements Processor<C, S, E> {
     public Pipes(final TraverserFactory<C> traverserFactory, final List<CFunction<C>> functions) {
         AbstractStep<C, ?, ?> previousStep = EmptyStep.instance();
         for (final CFunction<?> function : functions) {
-            if (function instanceof InternalFunction)
-                ((InternalFunction<C>) function).setProcessor(traverserFactory, new PipesProcessor());
-            /////////
             final AbstractStep nextStep;
             if (function instanceof BranchFunction)
                 nextStep = new BranchStep(previousStep, (BranchFunction<C, ?, ?>) function);

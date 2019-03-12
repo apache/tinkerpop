@@ -51,6 +51,18 @@ public class Path implements Serializable {
         this.labels.get(this.labels.size() - 1).addAll(labels);
     }
 
+    public Object object(final int index) {
+        return this.objects.get(index);
+    }
+
+    public Set<String> labels(final int index) {
+        return this.labels.get(index);
+    }
+
+    public int size() {
+        return this.objects.size();
+    }
+
     @Override
     public String toString() {
         return this.objects.toString();
