@@ -55,11 +55,6 @@ public final class Compilation<C, S, E> implements Serializable {
         return this.processor;
     }
 
-    public void addTraverser(final Traverser<C, S> traverser) {
-        this.prepareProcessor();
-        this.processor.addStart(traverser);
-    }
-
     public void reset() {
         if (null != this.processor)
             this.processor.reset();

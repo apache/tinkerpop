@@ -23,9 +23,9 @@ import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.AbstractFunction;
 import org.apache.tinkerpop.machine.functions.BranchFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.util.IteratorUtils;
 import org.apache.tinkerpop.util.StringFactory;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -47,17 +47,15 @@ public class RepeatBranch<C, S> extends AbstractFunction<C, S, Iterator<Traverse
 
     @Override
     public Iterator<Traverser<C, S>> apply(final Traverser<C, S> traverser) {
-        this.repeat.addTraverser(traverser);
-        final List<Traverser<C, S>> toGo = new ArrayList<>();
-        while (this.repeat.getProcessor().hasNext()) {
-            Traverser<C, S> t = this.repeat.getProcessor().next();
-            boolean loop = !this.until.filterTraverser(t);
-            if (loop)
+        this.repeat.getProcessor().addStart(traverser);
+        return IteratorUtils.filter(this.repeat.getProcessor(), t -> {
+            if (!this.until.filterTraverser(t)) {
                 this.repeat.getProcessor().addStart(t);
-            else
-                toGo.add(t);
-        }
-        return toGo.iterator();
+                return false;
+            } else
+                return true;
+
+        });
     }
 
     @Override
