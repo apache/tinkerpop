@@ -22,6 +22,7 @@ import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.AbstractFunction;
 import org.apache.tinkerpop.machine.functions.BranchFunction;
+import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.util.IteratorUtils;
 import org.apache.tinkerpop.util.StringFactory;
@@ -47,14 +48,14 @@ public class RepeatBranch<C, S> extends AbstractFunction<C, S, Iterator<Traverse
 
     @Override
     public Iterator<Traverser<C, S>> apply(final Traverser<C, S> traverser) {
-        this.repeat.getProcessor().addStart(traverser);
-        return IteratorUtils.filter(this.repeat.getProcessor(), t -> {
+        final Processor<C, S, S> repeatProcessor = this.repeat.getProcessor();
+        repeatProcessor.addStart(traverser);
+        return IteratorUtils.filter(repeatProcessor, t -> {
             if (!this.until.filterTraverser(t)) {
-                this.repeat.getProcessor().addStart(t);
+                repeatProcessor.addStart(t);
                 return false;
             } else
                 return true;
-
         });
     }
 
@@ -67,4 +68,13 @@ public class RepeatBranch<C, S> extends AbstractFunction<C, S, Iterator<Traverse
     public List<Compilation<C, ?, ?>> getInternals() {
         return Arrays.asList(this.repeat, this.until);
     }
+
+    public Compilation<C, S, S> getRepeat() {
+        return this.repeat;
+    }
+
+    public Compilation<C, S, ?> getUntil() {
+        return this.until;
+    }
+
 }

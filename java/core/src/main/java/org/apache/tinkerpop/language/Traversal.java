@@ -153,6 +153,11 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return (Traversal) this;
     }
 
+    public <R> Traversal<C, S, R> unfold() {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.UNFOLD);
+        return (Traversal) this;
+    }
+
     public <R> Traversal<C, S, R> union(final Traversal<C, E, R> traversal, Traversal<C, E, R>... traversals) {
         this.bytecode.addInstruction(this.currentCoefficient, Symbols.UNION, traversal, traversals);
         return (Traversal) this;

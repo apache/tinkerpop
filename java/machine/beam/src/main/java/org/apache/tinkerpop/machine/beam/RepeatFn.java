@@ -18,20 +18,34 @@
  */
 package org.apache.tinkerpop.machine.beam;
 
-import org.apache.tinkerpop.machine.functions.BranchFunction;
+import org.apache.beam.sdk.transforms.DoFn;
+import org.apache.beam.sdk.values.TupleTag;
+import org.apache.tinkerpop.machine.bytecode.Compilation;
+import org.apache.tinkerpop.machine.functions.branch.RepeatBranch;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BranchFn<C, S, E> extends AbstractFn<C, S, E> {
+public class RepeatFn<C, S> extends AbstractFn<C, S, S> {
 
-    public BranchFn(final BranchFunction<C, S, E> branchFunction) {
-        super(branchFunction);
+    private final Compilation<C, S, ?> until;
+    private final TupleTag repeatDone;
+    private final TupleTag repeatLoop;
+
+
+    public RepeatFn(final RepeatBranch<C, S> repeatBranch, final TupleTag repeatDone, final TupleTag repeatLoop) {
+        super(repeatBranch);
+        this.until = repeatBranch.getUntil();
+        this.repeatDone = repeatDone;
+        this.repeatLoop = repeatLoop;
     }
 
     @ProcessElement
-    public void processElement(final @Element Traverser<C, S> traverser, final OutputReceiver<Traverser<C, E>> output) {
-        throw new IllegalStateException("Branching is implemented using split/merge streams in Beam");
+    public void processElement(final @DoFn.Element Traverser<C, S> traverser, final MultiOutputReceiver out) {
+        if (this.until.filterTraverser(traverser))
+            out.get(this.repeatDone).output(traverser.clone());
+        else
+            out.get(this.repeatLoop).output(traverser.clone());
     }
 }

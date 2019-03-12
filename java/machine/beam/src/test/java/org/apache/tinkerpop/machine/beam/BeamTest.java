@@ -23,9 +23,11 @@ import org.apache.tinkerpop.language.Traversal;
 import org.apache.tinkerpop.language.TraversalSource;
 import org.apache.tinkerpop.language.TraversalUtil;
 import org.apache.tinkerpop.language.__;
-import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
 import org.apache.tinkerpop.machine.strategies.IdentityStrategy;
 import org.junit.jupiter.api.Test;
+
+import static org.apache.tinkerpop.language.__.incr;
+import static org.apache.tinkerpop.language.__.is;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -38,18 +40,18 @@ public class BeamTest {
                 .withProcessor(BeamProcessor.class)
                 .withStrategy(IdentityStrategy.class);
 
-        Traversal<Long, ?,?> traversal = g.inject(7L, 7L, 10L, 12L).identity().incr().groupCount().by(__.incr());
+        Traversal<Long, ?, ?> traversal = g.inject(5L).repeat(incr()).until(is(10L));
         System.out.println(TraversalUtil.getBytecode(traversal).getSourceInstructions());
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
-        traversal = g.inject(7L, 10L, 12L).as("a").c(3L).map(__.incr()).identity().incr().count();
+        traversal = g.inject(7L, 10L, 12L).as("a").c(3L).map(incr()).identity().incr().count();
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
-        traversal = g.inject(7L).union(__.<Long>incr().incr().union(__.<Long>incr().as("b").identity().as("a"),__.<Long>incr().identity()),__.incr());
+        traversal = g.inject(7L).union(__.<Long>incr().incr().union(__.<Long>incr().as("b").identity().as("a"), __.<Long>incr().identity()), __.incr());
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

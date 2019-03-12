@@ -28,6 +28,7 @@ import org.apache.tinkerpop.machine.functions.filter.HasKeyFilter;
 import org.apache.tinkerpop.machine.functions.filter.HasKeyValueFilter;
 import org.apache.tinkerpop.machine.functions.filter.IdentityFilter;
 import org.apache.tinkerpop.machine.functions.filter.IsFilter;
+import org.apache.tinkerpop.machine.functions.flatmap.UnfoldFlatMap;
 import org.apache.tinkerpop.machine.functions.initial.InjectInitial;
 import org.apache.tinkerpop.machine.functions.map.IncrMap;
 import org.apache.tinkerpop.machine.functions.map.MapMap;
@@ -161,6 +162,8 @@ public final class BytecodeUtil {
                 return new RepeatBranch(coefficient, labels, Compilation.compile(instruction.args()));
             case Symbols.SUM:
                 return new SumReduce<>(coefficient, labels);
+            case Symbols.UNFOLD:
+                return new UnfoldFlatMap<>(coefficient, labels);
             case Symbols.UNION:
                 return new UnionBranch<>(coefficient, labels, Compilation.compile(instruction.args()));
             default:

@@ -27,6 +27,8 @@ import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
 import org.apache.tinkerpop.machine.strategies.IdentityStrategy;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+
 import static org.apache.tinkerpop.language.__.incr;
 import static org.apache.tinkerpop.language.__.is;
 
@@ -42,7 +44,7 @@ public class PipesTest {
                 .withProcessor(PipesProcessor.class)
                 .withStrategy(IdentityStrategy.class);
 
-        Traversal<Long, ?, ?> traversal = g.inject(1L,1L).repeat(incr()).until(is(10L));
+        Traversal<Long, ?, ?> traversal = g.inject(Arrays.asList(1L, 1L)).<Long>unfold().repeat(incr()).until(is(10L));
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

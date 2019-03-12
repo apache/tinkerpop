@@ -27,9 +27,9 @@ import org.apache.beam.sdk.transforms.Flatten;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.PCollectionList;
-import org.apache.beam.sdk.values.TypeDescriptor;
-import org.apache.tinkerpop.machine.beam.serialization.CoefficientCoder;
-import org.apache.tinkerpop.machine.beam.serialization.ObjectCoder;
+import org.apache.beam.sdk.values.PCollectionTuple;
+import org.apache.beam.sdk.values.TupleTag;
+import org.apache.beam.sdk.values.TupleTagList;
 import org.apache.tinkerpop.machine.beam.serialization.TraverserCoder;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
@@ -41,6 +41,7 @@ import org.apache.tinkerpop.machine.functions.FlatMapFunction;
 import org.apache.tinkerpop.machine.functions.InitialFunction;
 import org.apache.tinkerpop.machine.functions.MapFunction;
 import org.apache.tinkerpop.machine.functions.ReduceFunction;
+import org.apache.tinkerpop.machine.functions.branch.RepeatBranch;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.machine.traversers.TraverserFactory;
@@ -77,7 +78,25 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
             final CFunction<?> function,
             final boolean branching) {
         DoFn<Traverser<C, S>, Traverser<C, E>> fn = null;
-        if (function instanceof BranchFunction) {
+        if (function instanceof RepeatBranch) {
+            final Compilation<C, S, S> repeat = ((RepeatBranch) function).getRepeat();
+            final List<PCollection> outputs = new ArrayList<>();
+            final TupleTag repeatDone = new TupleTag<>();
+            final TupleTag repeatLoop = new TupleTag<>();
+            for (int i = 0; i < 10; i++) {
+                fn = new RepeatFn((RepeatBranch) function, repeatDone, repeatLoop);
+                PCollectionTuple branches = (PCollectionTuple) collection.apply(ParDo.of(fn).withOutputTags(repeatLoop, TupleTagList.of(repeatDone)));
+                branches.get(repeatLoop).setCoder(new TraverserCoder());
+                branches.get(repeatDone).setCoder(new TraverserCoder());
+                outputs.add(branches.get(repeatDone));
+                for (final CFunction<C> repeatFunction : repeat.getFunctions()) {
+                    collection = this.processFunction(branches.get(repeatLoop), traverserFactory, repeatFunction, true);
+                }
+            }
+            this.functions.add((Fn) fn);
+            collection = (PCollection) PCollectionList.of((Iterable) outputs).apply(Flatten.pCollections());
+            collection.setCoder(new TraverserCoder());
+        } else if (function instanceof BranchFunction) {
             final List<Compilation<C, ?, ?>> branches = ((BranchFunction<C, ?, ?>) function).getInternals();
             final List<PCollection<Traverser<C, ?>>> collections = new ArrayList<>(branches.size());
             for (final Compilation<C, ?, ?> branch : branches) {

@@ -47,6 +47,7 @@ public final class Symbols {
     public static final String PATH = "path";
     public static final String REPEAT = "repeat";
     public static final String SUM = "sum";
+    public static final String UNFOLD = "unfold";
     public static final String UNION = "union";
 
     public Type getOpType(final String op) {
@@ -77,6 +78,8 @@ public final class Symbols {
                 return Type.BRANCH;
             case SUM:
                 return Type.REDUCE;
+            case UNFOLD:
+                return Type.FLATMAP;
             case UNION:
                 return Type.BRANCH;
             default:
