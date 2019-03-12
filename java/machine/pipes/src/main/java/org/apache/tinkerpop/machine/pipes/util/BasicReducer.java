@@ -21,7 +21,7 @@ package org.apache.tinkerpop.machine.pipes.util;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BasicReducer<S> implements Reducer<S> {
+public final class BasicReducer<S> implements Reducer<S> {
 
     private S value;
     private final S initialValue;

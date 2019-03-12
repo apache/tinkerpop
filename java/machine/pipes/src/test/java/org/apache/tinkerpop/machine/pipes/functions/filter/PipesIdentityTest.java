@@ -16,25 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.pipes;
+package org.apache.tinkerpop.machine.pipes.functions.filter;
 
-import org.apache.tinkerpop.machine.functions.MapFunction;
-import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.machine.functions.filter.IdentityTest;
+import org.apache.tinkerpop.machine.pipes.functions.TraversalSourceLibrary;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MapStep<C, S, E> extends AbstractStep<C, S, E> {
+public class PipesIdentityTest extends IdentityTest {
 
-    private final MapFunction<C, S, E> mapFunction;
-
-    public MapStep(final AbstractStep<C, ?, S> previousStep, final MapFunction<C, S, E> mapFunction) {
-        super(previousStep, mapFunction);
-        this.mapFunction = mapFunction;
+    public PipesIdentityTest() {
+        super(TraversalSourceLibrary.LONG_SOURCES);
     }
 
-    @Override
-    public Traverser<C, E> next() {
-        return super.getPreviousTraverser().map(this.mapFunction);
-    }
 }

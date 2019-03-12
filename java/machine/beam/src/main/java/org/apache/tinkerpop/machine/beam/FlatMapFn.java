@@ -37,7 +37,7 @@ public class FlatMapFn<C, S, E> extends AbstractFn<C, S, E> {
 
     @ProcessElement
     public void processElement(final @Element Traverser<C, S> traverser, final OutputReceiver<Traverser<C, E>> output) {
-        Iterator<Traverser<C, E>> iterator = traverser.flatMap(this.flatMapFunction);
+        final Iterator<Traverser<C, E>> iterator = traverser.flatMap(this.flatMapFunction);
         while (iterator.hasNext())
             output.output(iterator.next());
     }

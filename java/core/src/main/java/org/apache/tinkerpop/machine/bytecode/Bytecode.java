@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.machine.bytecode;
 
+import org.apache.tinkerpop.language.Traversal;
+import org.apache.tinkerpop.language.TraversalUtil;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 
 import java.util.ArrayList;

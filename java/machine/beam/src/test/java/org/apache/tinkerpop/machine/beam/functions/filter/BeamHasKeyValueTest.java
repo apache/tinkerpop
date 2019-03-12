@@ -16,25 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.pipes;
+package org.apache.tinkerpop.machine.beam.functions.filter;
 
-import org.apache.tinkerpop.machine.functions.MapFunction;
-import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.machine.beam.functions.TraversalSourceLibrary;
+import org.apache.tinkerpop.machine.functions.filter.HasKeyValueTest;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MapStep<C, S, E> extends AbstractStep<C, S, E> {
+public class BeamHasKeyValueTest extends HasKeyValueTest {
 
-    private final MapFunction<C, S, E> mapFunction;
-
-    public MapStep(final AbstractStep<C, ?, S> previousStep, final MapFunction<C, S, E> mapFunction) {
-        super(previousStep, mapFunction);
-        this.mapFunction = mapFunction;
-    }
-
-    @Override
-    public Traverser<C, E> next() {
-        return super.getPreviousTraverser().map(this.mapFunction);
+    public BeamHasKeyValueTest() {
+        super(TraversalSourceLibrary.LONG_SOURCES);
     }
 }

@@ -29,6 +29,7 @@ import org.apache.tinkerpop.machine.traversers.Traverser;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -68,8 +69,43 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, E> filter(final Traversal<C, E, ?> filterTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, filterTraversal.bytecode);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, filterTraversal);
         return this;
+    }
+
+    public Traversal<C, S, Map<E, Long>> groupCount() {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.GROUP_COUNT);
+        return (Traversal) this;
+    }
+
+    public <K, V> Traversal<C, S, Map<K, V>> has(final K key) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY, key);
+        return (Traversal) this;
+    }
+
+    public <K, V> Traversal<C, S, Map<K, V>> has(final Traversal<C, Map<K, V>, K> keyTraversal) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY, keyTraversal);
+        return (Traversal) this;
+    }
+
+    public <K, V> Traversal<C, S, Map<K, V>> has(final K key, final V value) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY_VALUE, key, value);
+        return (Traversal) this;
+    }
+
+    public <K, V> Traversal<C, S, Map<K, V>> has(final Traversal<C, Map<K, V>, K> keyTraversal, final V value) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY_VALUE, keyTraversal, value);
+        return (Traversal) this;
+    }
+
+    public <K, V> Traversal<C, S, Map<K, V>> has(final K key, final Traversal<C, Map<K, V>, V> valueTraversal) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY_VALUE, key, valueTraversal);
+        return (Traversal) this;
+    }
+
+    public <K, V> Traversal<C, S, Map<K, V>> has(final Traversal<C, Map<K, V>, K> keyTraversal, final Traversal<C, Map<K, V>, V> valueTraversal) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY_VALUE, keyTraversal, valueTraversal);
+        return (Traversal) this;
     }
 
     public Traversal<C, S, E> identity() {
@@ -79,6 +115,11 @@ public class Traversal<C, S, E> implements Iterator<E> {
 
     public Traversal<C, S, E> is(final E object) {
         this.bytecode.addInstruction(this.currentCoefficient, Symbols.IS, object);
+        return this;
+    }
+
+    public Traversal<C, S, E> is(final Traversal<C, E, E> objectTraversal) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IS, objectTraversal);
         return this;
     }
 
@@ -93,7 +134,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public <R> Traversal<C, S, R> map(final Traversal<C, E, R> mapTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.MAP, mapTraversal.bytecode);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.MAP, mapTraversal);
         return (Traversal) this;
     }
 
@@ -107,12 +148,8 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return (Traversal) this;
     }
 
-    public <R> Traversal<C, S, R> union(final Traversal<C, E, R>... traversals) {
-        final Bytecode<C>[] bytecodes = new Bytecode[traversals.length];
-        for (int i = 0; i < traversals.length; i++) {
-            bytecodes[i] = traversals[i].bytecode;
-        }
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.UNION, bytecodes);
+    public <R> Traversal<C, S, R> union(final Traversal<C, E, R> traversal, Traversal<C, E, R>... traversals) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.UNION, traversal, traversals);
         return (Traversal) this;
     }
 

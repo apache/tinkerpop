@@ -36,7 +36,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Pipes<C, S, E> implements Processor<C, S, E> {
+public final class Pipes<C, S, E> implements Processor<C, S, E> {
 
     private final List<Step<?, ?, ?>> steps = new ArrayList<>();
     private Step<C, ?, E> endStep;
@@ -57,7 +57,8 @@ public class Pipes<C, S, E> implements Processor<C, S, E> {
             else if (function instanceof InitialFunction)
                 nextStep = new InitialStep((InitialFunction<C, S>) function, compilation.getTraverserFactory());
             else if (function instanceof ReduceFunction)
-                nextStep = new ReduceStep(previousStep, (ReduceFunction<C, ?, ?>) function, new BasicReducer<>(((ReduceFunction<C, ?, ?>) function).getInitialValue()), compilation.getTraverserFactory());
+                nextStep = new ReduceStep(previousStep, (ReduceFunction<C, ?, ?>) function,
+                        new BasicReducer<>(((ReduceFunction<C, ?, ?>) function).getInitialValue()), compilation.getTraverserFactory());
             else
                 throw new RuntimeException("You need a new step type:" + function);
 

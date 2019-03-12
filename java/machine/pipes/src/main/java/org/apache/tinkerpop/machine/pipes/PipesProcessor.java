@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PipesProcessor implements ProcessorFactory {
+public final class PipesProcessor implements ProcessorFactory {
 
     public PipesProcessor() {
     }

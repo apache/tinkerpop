@@ -16,10 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.beam;
+package org.apache.tinkerpop.machine.beam.serialization;
 
 import org.apache.beam.sdk.coders.Coder;
 import org.apache.beam.sdk.coders.CoderException;
+import org.apache.tinkerpop.machine.traversers.Traverser;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,19 +33,19 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReducerCoder<C, S, E> extends Coder<BasicAccumulator<C, S, E>> {
+public class TraverserCoder<C, S> extends Coder<Traverser<C, S>> {
 
     @Override
-    public void encode(final BasicAccumulator<C, S, E> value, final OutputStream outStream) throws CoderException, IOException {
+    public void encode(final Traverser<C, S> value, final OutputStream outStream) throws CoderException, IOException {
         ObjectOutputStream outputStream = new ObjectOutputStream(outStream);
         outputStream.writeObject(value);
     }
 
     @Override
-    public BasicAccumulator<C, S, E> decode(InputStream inStream) throws CoderException, IOException {
+    public Traverser<C, S> decode(InputStream inStream) throws CoderException, IOException {
         try {
             ObjectInputStream inputStream = new ObjectInputStream(inStream);
-            return (BasicAccumulator<C, S, E>) inputStream.readObject();
+            return (Traverser<C, S>) inputStream.readObject();
         } catch (final ClassNotFoundException e) {
             throw new IOException(e.getMessage(), e);
         }

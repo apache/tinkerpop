@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -113,6 +114,14 @@ public final class Compilation<C, S, E> implements Serializable {
 
     public static <C, S, E> Compilation<C, S, E> compileOne(final Object arg) {
         return new Compilation<>((Bytecode<C>) arg);
+    }
+
+    public static <C, S, E> Optional<Compilation<C, S, E>> compileMaybe(final Object... args) {
+        for (final Object arg : args) {
+            if (arg instanceof Bytecode)
+                return Optional.of(new Compilation<>((Bytecode<C>) arg));
+        }
+        return Optional.empty();
     }
 
     public static <C, S, E> List<Compilation<C, S, E>> compile(final Object... args) {

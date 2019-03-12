@@ -23,6 +23,8 @@ import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.functions.branch.UnionBranch;
 import org.apache.tinkerpop.machine.functions.filter.FilterFilter;
+import org.apache.tinkerpop.machine.functions.filter.HasKeyFilter;
+import org.apache.tinkerpop.machine.functions.filter.HasKeyValueFilter;
 import org.apache.tinkerpop.machine.functions.filter.IdentityFilter;
 import org.apache.tinkerpop.machine.functions.filter.IsFilter;
 import org.apache.tinkerpop.machine.functions.initial.InjectInitial;
@@ -30,6 +32,7 @@ import org.apache.tinkerpop.machine.functions.map.IncrMap;
 import org.apache.tinkerpop.machine.functions.map.MapMap;
 import org.apache.tinkerpop.machine.functions.map.PathMap;
 import org.apache.tinkerpop.machine.functions.reduce.CountReduce;
+import org.apache.tinkerpop.machine.functions.reduce.GroupCountReduce;
 import org.apache.tinkerpop.machine.functions.reduce.SumReduce;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.strategies.Strategy;
@@ -135,6 +138,12 @@ public final class BytecodeUtil {
                 return new CountReduce<>(coefficient, labels);
             case Symbols.FILTER:
                 return new FilterFilter<>(coefficient, labels, Compilation.compileOne(instruction.args()[0]));
+            case Symbols.GROUP_COUNT:
+                return new GroupCountReduce<>(coefficient, labels, Compilation.<C, Object, Object>compileMaybe(instruction.args()).orElse(null));
+            case Symbols.HAS_KEY:
+                return new HasKeyFilter<>(coefficient, labels, Argument.create(instruction.args()[0]));
+            case Symbols.HAS_KEY_VALUE:
+                return new HasKeyValueFilter<>(coefficient, labels, Argument.create(instruction.args()[0]), Argument.create(instruction.args()[1]));
             case Symbols.IDENTITY:
                 return new IdentityFilter<>(coefficient, labels);
             case Symbols.INJECT:

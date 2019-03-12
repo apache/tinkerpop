@@ -27,6 +27,10 @@ import org.apache.beam.sdk.transforms.Flatten;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.PCollectionList;
+import org.apache.beam.sdk.values.TypeDescriptor;
+import org.apache.tinkerpop.machine.beam.serialization.CoefficientCoder;
+import org.apache.tinkerpop.machine.beam.serialization.ObjectCoder;
+import org.apache.tinkerpop.machine.beam.serialization.TraverserCoder;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
@@ -53,12 +57,11 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
     private final Pipeline pipeline;
     public static List<Traverser> OUTPUT = new ArrayList<>(); // FIX THIS!
     private final List<Fn> functions = new ArrayList<>();
-    Iterator<Traverser<C, E>> iterator = null;
+    private Iterator<Traverser<C, E>> iterator = null;
 
     public Beam(final Compilation<C, S, E> compilation) {
 
         this.pipeline = Pipeline.create();
-        this.pipeline.getCoderRegistry().registerCoderForClass(Traverser.class, new TraverserCoder<>());
         PCollection<Traverser<C, ?>> collection = this.pipeline.apply(Create.of(compilation.getTraverserFactory().create((Coefficient) LongCoefficient.create(), 1L)));
         collection.setCoder(new TraverserCoder());
         for (final CFunction<?> function : compilation.getFunctions()) {

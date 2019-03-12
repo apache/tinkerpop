@@ -16,23 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.beam;
+package org.apache.tinkerpop.machine.pipes.functions;
 
 import org.apache.tinkerpop.language.Gremlin;
+import org.apache.tinkerpop.language.TraversalSource;
 import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
-import org.apache.tinkerpop.machine.functions.filters.IdentityTest;
+import org.apache.tinkerpop.machine.pipes.PipesProcessor;
 import org.apache.tinkerpop.machine.strategies.IdentityStrategy;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BeamIdentityTest extends IdentityTest {
+public class TraversalSourceLibrary {
 
-    public BeamIdentityTest() {
-        super(
-                Gremlin.<Long>traversal().withProcessor(BeamProcessor.class),
-                Gremlin.<Long>traversal().withCoefficient(LongCoefficient.class).withProcessor(BeamProcessor.class),
-                Gremlin.<Long>traversal().withProcessor(BeamProcessor.class).withStrategy(IdentityStrategy.class));
-    }
+    public static final TraversalSource<Long>[] LONG_SOURCES = new TraversalSource[]{
+            Gremlin.<Long>traversal().withProcessor(PipesProcessor.class),
+            Gremlin.<Long>traversal().withCoefficient(LongCoefficient.class).withProcessor(PipesProcessor.class),
+            Gremlin.<Long>traversal().withProcessor(PipesProcessor.class).withStrategy(IdentityStrategy.class)};
 
 }

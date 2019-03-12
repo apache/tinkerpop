@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class CompilationRing<C, S, E> implements Serializable {
+public final class CompilationRing<C, S, E> implements Serializable {
 
     private List<Compilation<C, S, E>> compilations;
     private int currentCompilation = -1;

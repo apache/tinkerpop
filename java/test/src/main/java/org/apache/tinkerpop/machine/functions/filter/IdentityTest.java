@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions.filters;
+package org.apache.tinkerpop.machine.functions.filter;
 
 import org.apache.tinkerpop.language.TraversalSource;
 import org.junit.jupiter.api.Test;

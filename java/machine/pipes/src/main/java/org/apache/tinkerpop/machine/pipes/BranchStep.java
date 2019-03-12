@@ -27,7 +27,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BranchStep<C, S, E> extends AbstractStep<C, S, E> {
+public final class BranchStep<C, S, E> extends AbstractStep<C, S, E> {
 
     private final BranchFunction<C, S, E> branchFunction;
     private Iterator<Traverser<C, E>> iterator = Collections.emptyIterator();
@@ -51,9 +51,8 @@ public class BranchStep<C, S, E> extends AbstractStep<C, S, E> {
 
     @Override
     public Traverser<C, E> next() {
-        if (!this.iterator.hasNext()) {
+        if (!this.iterator.hasNext())
             this.iterator = super.getPreviousTraverser().branch(this.branchFunction);
-        }
         return this.iterator.next();
     }
 }

@@ -27,7 +27,7 @@ import org.apache.tinkerpop.machine.strategies.Strategy;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PipesStrategy implements Strategy {
+public final class PipesStrategy implements Strategy {
     @Override
     public <C> void apply(final Bytecode<C> bytecode) {
         if (!BytecodeUtil.hasSourceInstruction(bytecode, Symbols.WITH_PROCESSOR))

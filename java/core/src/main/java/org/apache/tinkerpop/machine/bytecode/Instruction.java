@@ -41,6 +41,10 @@ public final class Instruction<C> {
         this.coefficient = coefficient;
         this.op = op;
         this.args = args;
+        for (int i = 0; i < this.args.length; i++) {
+            if (this.args[i] instanceof Traversal)
+                this.args[i] = TraversalUtil.getBytecode((Traversal) this.args[i]);
+        }
     }
 
     public Coefficient<C> coefficient() {

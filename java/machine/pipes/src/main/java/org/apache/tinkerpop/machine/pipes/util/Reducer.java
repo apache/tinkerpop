@@ -25,9 +25,9 @@ import java.io.Serializable;
  */
 public interface Reducer<S> extends Serializable {
 
-    public void reset();
-
     public S get();
 
     public void update(final S newValue);
+
+    public void reset();
 }

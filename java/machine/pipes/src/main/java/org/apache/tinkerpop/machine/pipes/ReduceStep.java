@@ -26,7 +26,7 @@ import org.apache.tinkerpop.machine.traversers.TraverserFactory;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReduceStep<C, S, E> extends AbstractStep<C, S, E> {
+public final class ReduceStep<C, S, E> extends AbstractStep<C, S, E> {
 
     private final ReduceFunction<C, S, E> reduceFunction;
     private final Reducer<E> reducer;
@@ -47,7 +47,7 @@ public class ReduceStep<C, S, E> extends AbstractStep<C, S, E> {
     public Traverser<C, E> next() {
         Traverser<C, S> traverser = null;
         while (this.hasNext()) {
-            traverser = getPreviousTraverser();
+            traverser = super.getPreviousTraverser();
             this.reducer.update(this.reduceFunction.apply(traverser, this.reducer.get()));
         }
         this.done = true;

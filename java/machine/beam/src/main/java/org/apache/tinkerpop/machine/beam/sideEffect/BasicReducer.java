@@ -16,10 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.beam;
+package org.apache.tinkerpop.machine.beam.sideEffect;
 
 import org.apache.beam.sdk.coders.DefaultCoder;
 import org.apache.beam.sdk.transforms.Combine;
+import org.apache.tinkerpop.machine.beam.serialization.ReducerCoder;
 import org.apache.tinkerpop.machine.functions.ReduceFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.machine.traversers.TraverserFactory;
@@ -30,13 +31,13 @@ import java.io.Serializable;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @DefaultCoder(ReducerCoder.class)
-public class BasicAccumulator<C, S, E> implements Combine.AccumulatingCombineFn.Accumulator<Traverser<C, S>, BasicAccumulator<C, S, E>, Traverser<C, E>>, Serializable {
+public class BasicReducer<C, S, E> implements Combine.AccumulatingCombineFn.Accumulator<Traverser<C, S>, BasicReducer<C, S, E>, Traverser<C, E>>, Serializable {
 
     private E value;
     private final ReduceFunction<C, S, E> reduceFunction;
     private final TraverserFactory<C> traverserFactory;
 
-    public BasicAccumulator(final ReduceFunction<C, S, E> reduceFunction, final TraverserFactory<C> traverserFactory) {
+    public BasicReducer(final ReduceFunction<C, S, E> reduceFunction, final TraverserFactory<C> traverserFactory) {
         super();
         this.value = reduceFunction.getInitialValue();
         this.reduceFunction = reduceFunction;
@@ -53,7 +54,7 @@ public class BasicAccumulator<C, S, E> implements Combine.AccumulatingCombineFn.
     }
 
     @Override
-    public void mergeAccumulator(final BasicAccumulator<C, S, E> other) {
+    public void mergeAccumulator(final BasicReducer<C, S, E> other) {
         this.value = this.reduceFunction.apply(this.traverserFactory.create(this.reduceFunction.coefficient(), (S) this.value), other.value);
     }
 

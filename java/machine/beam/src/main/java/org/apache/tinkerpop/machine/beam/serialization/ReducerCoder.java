@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.beam;
+package org.apache.tinkerpop.machine.beam.serialization;
 
 import org.apache.beam.sdk.coders.Coder;
 import org.apache.beam.sdk.coders.CoderException;
-import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.machine.beam.sideEffect.BasicReducer;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,19 +33,19 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraverserCoder<C, S> extends Coder<Traverser<C, S>> {
+public class ReducerCoder<C, S, E> extends Coder<BasicReducer<C, S, E>> {
 
     @Override
-    public void encode(final Traverser<C, S> value, final OutputStream outStream) throws CoderException, IOException {
+    public void encode(final BasicReducer<C, S, E> value, final OutputStream outStream) throws CoderException, IOException {
         ObjectOutputStream outputStream = new ObjectOutputStream(outStream);
         outputStream.writeObject(value);
     }
 
     @Override
-    public Traverser<C, S> decode(InputStream inStream) throws CoderException, IOException {
+    public BasicReducer<C, S, E> decode(InputStream inStream) throws CoderException, IOException {
         try {
             ObjectInputStream inputStream = new ObjectInputStream(inStream);
-            return (Traverser<C, S>) inputStream.readObject();
+            return (BasicReducer<C, S, E>) inputStream.readObject();
         } catch (final ClassNotFoundException e) {
             throw new IOException(e.getMessage(), e);
         }

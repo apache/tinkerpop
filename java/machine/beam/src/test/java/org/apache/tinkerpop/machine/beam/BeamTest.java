@@ -38,7 +38,7 @@ public class BeamTest {
                 .withProcessor(BeamProcessor.class)
                 .withStrategy(IdentityStrategy.class);
 
-        Traversal<Long, Long, Long> traversal = g.inject(7L, 10L, 12L).identity().incr().sum();
+        Traversal<Long, ?,?> traversal = g.inject(7L, 7L, 10L, 12L).identity().incr().groupCount().by(__.incr());
         System.out.println(TraversalUtil.getBytecode(traversal).getSourceInstructions());
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);

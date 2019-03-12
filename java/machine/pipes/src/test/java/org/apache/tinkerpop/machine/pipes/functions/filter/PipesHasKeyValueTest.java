@@ -16,23 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.pipes;
+package org.apache.tinkerpop.machine.pipes.functions.filter;
 
-import org.apache.tinkerpop.language.Gremlin;
-import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
-import org.apache.tinkerpop.machine.functions.filters.IdentityTest;
-import org.apache.tinkerpop.machine.strategies.IdentityStrategy;
+import org.apache.tinkerpop.machine.functions.filter.HasKeyValueTest;
+import org.apache.tinkerpop.machine.pipes.functions.TraversalSourceLibrary;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PipesIdentityTest extends IdentityTest {
+public class PipesHasKeyValueTest extends HasKeyValueTest {
 
-    public PipesIdentityTest() {
-        super(
-                Gremlin.<Long>traversal().withProcessor(PipesProcessor.class),
-                Gremlin.<Long>traversal().withCoefficient(LongCoefficient.class).withProcessor(PipesProcessor.class),
-                Gremlin.<Long>traversal().withProcessor(PipesProcessor.class).withStrategy(IdentityStrategy.class));
+    public PipesHasKeyValueTest() {
+        super(TraversalSourceLibrary.LONG_SOURCES);
     }
-
 }

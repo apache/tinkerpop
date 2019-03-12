@@ -24,7 +24,7 @@ import org.apache.tinkerpop.machine.traversers.Traverser;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class FilterStep<C, S> extends AbstractStep<C, S, S> {
+public final class FilterStep<C, S> extends AbstractStep<C, S, S> {
 
     private final FilterFunction<C, S> filterFunction;
     private Traverser<C, S> nextTraverser = null;

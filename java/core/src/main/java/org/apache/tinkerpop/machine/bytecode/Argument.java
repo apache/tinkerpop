@@ -16,25 +16,38 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.pipes;
+package org.apache.tinkerpop.machine.bytecode;
 
-import org.apache.tinkerpop.machine.functions.MapFunction;
-import org.apache.tinkerpop.machine.traversers.Traverser;
+import java.io.Serializable;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MapStep<C, S, E> extends AbstractStep<C, S, E> {
+public final class Argument<E> implements Serializable {
 
-    private final MapFunction<C, S, E> mapFunction;
+    private final E arg;
+    private final boolean isPrimitive;
 
-    public MapStep(final AbstractStep<C, ?, S> previousStep, final MapFunction<C, S, E> mapFunction) {
-        super(previousStep, mapFunction);
-        this.mapFunction = mapFunction;
+    private Argument(final Object arg) {
+        this.isPrimitive = !(arg instanceof Bytecode);
+        this.arg = this.isPrimitive ? (E) arg : (E) Compilation.compileOne(arg);
+    }
+
+    private <C, S> Compilation<C, S, E> getCompilation() {
+        return (Compilation<C, S, E>) this.arg;
+    }
+
+
+    public final <C, S> E getArg(final S object) {
+        return this.isPrimitive ? this.arg : this.getCompilation().mapObject(object).object();
+    }
+
+    public static <E> Argument<E> create(final Object arg) {
+        return new Argument<>(arg);
     }
 
     @Override
-    public Traverser<C, E> next() {
-        return super.getPreviousTraverser().map(this.mapFunction);
+    public String toString() {
+        return this.arg.toString();
     }
 }

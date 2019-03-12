@@ -21,24 +21,17 @@ package org.apache.tinkerpop.machine.beam;
 import org.apache.tinkerpop.machine.functions.BranchFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
-import java.util.Iterator;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class BranchFn<C, S, E> extends AbstractFn<C, S, E> {
 
-    private BranchFunction<C, S, E> branchFunction;
-
     public BranchFn(final BranchFunction<C, S, E> branchFunction) {
         super(branchFunction);
-        this.branchFunction = branchFunction;
     }
 
     @ProcessElement
     public void processElement(final @Element Traverser<C, S> traverser, final OutputReceiver<Traverser<C, E>> output) {
-        Iterator<Traverser<C, E>> iterator = traverser.branch(this.branchFunction);
-        while (iterator.hasNext())
-            output.output(iterator.next());
+        throw new IllegalStateException("Branching is implementing using split/merge streams in Beam");
     }
 }
