@@ -19,11 +19,10 @@
 package org.apache.tinkerpop.machine.beam;
 
 import org.apache.tinkerpop.machine.beam.strategies.BeamStrategy;
-import org.apache.tinkerpop.machine.functions.CFunction;
+import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.strategies.Strategy;
-import org.apache.tinkerpop.machine.traversers.TraverserFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -34,8 +33,8 @@ import java.util.List;
 public class BeamProcessor implements ProcessorFactory {
 
     @Override
-    public <C, S, E> Processor<C, S, E> mint(TraverserFactory<C> traverserFactory, List<CFunction<C>> cFunctions) {
-        return new Beam<>(traverserFactory, cFunctions);
+    public <C, S, E> Processor<C, S, E> mint(final Compilation<C, S, E> compilation) {
+        return new Beam<>(compilation);
     }
 
     @Override

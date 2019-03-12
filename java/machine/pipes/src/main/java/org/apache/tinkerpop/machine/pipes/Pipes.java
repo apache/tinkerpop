@@ -18,18 +18,17 @@
  */
 package org.apache.tinkerpop.machine.pipes;
 
+import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.functions.BranchFunction;
 import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.functions.FilterFunction;
 import org.apache.tinkerpop.machine.functions.FlatMapFunction;
 import org.apache.tinkerpop.machine.functions.InitialFunction;
-import org.apache.tinkerpop.machine.functions.InternalFunction;
 import org.apache.tinkerpop.machine.functions.MapFunction;
 import org.apache.tinkerpop.machine.functions.ReduceFunction;
 import org.apache.tinkerpop.machine.pipes.util.BasicReducer;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.traversers.Traverser;
-import org.apache.tinkerpop.machine.traversers.TraverserFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,9 +42,9 @@ public class Pipes<C, S, E> implements Processor<C, S, E> {
     private Step<C, ?, E> endStep;
     private Step<C, S, ?> startStep = EmptyStep.instance();
 
-    public Pipes(final TraverserFactory<C> traverserFactory, final List<CFunction<C>> functions) {
+    public Pipes(final Compilation<C, S, E> compilation) {
         AbstractStep<C, ?, ?> previousStep = EmptyStep.instance();
-        for (final CFunction<?> function : functions) {
+        for (final CFunction<?> function : compilation.getFunctions()) {
             final AbstractStep nextStep;
             if (function instanceof BranchFunction)
                 nextStep = new BranchStep(previousStep, (BranchFunction<C, ?, ?>) function);
@@ -56,9 +55,9 @@ public class Pipes<C, S, E> implements Processor<C, S, E> {
             else if (function instanceof MapFunction)
                 nextStep = new MapStep(previousStep, (MapFunction<C, ?, ?>) function);
             else if (function instanceof InitialFunction)
-                nextStep = new InitialStep((InitialFunction<C, S>) function, traverserFactory);
+                nextStep = new InitialStep((InitialFunction<C, S>) function, compilation.getTraverserFactory());
             else if (function instanceof ReduceFunction)
-                nextStep = new ReduceStep(previousStep, (ReduceFunction<C, ?, ?>) function, new BasicReducer<>(((ReduceFunction<C, ?, ?>) function).getInitialValue()), traverserFactory);
+                nextStep = new ReduceStep(previousStep, (ReduceFunction<C, ?, ?>) function, new BasicReducer<>(((ReduceFunction<C, ?, ?>) function).getInitialValue()), compilation.getTraverserFactory());
             else
                 throw new RuntimeException("You need a new step type:" + function);
 

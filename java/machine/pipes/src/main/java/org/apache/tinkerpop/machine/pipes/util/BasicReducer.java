@@ -24,9 +24,16 @@ package org.apache.tinkerpop.machine.pipes.util;
 public class BasicReducer<S> implements Reducer<S> {
 
     private S value;
+    private final S initialValue;
 
     public BasicReducer(final S initialValue) {
+        this.initialValue = initialValue;
         this.value = initialValue;
+    }
+
+    @Override
+    public void reset() {
+        this.value = this.initialValue;
     }
 
     public S get() {

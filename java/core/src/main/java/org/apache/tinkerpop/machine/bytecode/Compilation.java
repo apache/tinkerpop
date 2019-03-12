@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.machine.bytecode;
 
+import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
@@ -37,14 +38,15 @@ public final class Compilation<C, S, E> implements Serializable {
     private final List<CFunction<C>> functions;
     private final ProcessorFactory processorFactory;
     private final TraverserFactory<C> traverserFactory;
+    private final Coefficient<C> unity;
     private transient Processor<C, S, E> processor;
 
     public Compilation(final Bytecode<C> bytecode) {
         BytecodeUtil.strategize(bytecode);
         this.processorFactory = BytecodeUtil.getProcessorFactory(bytecode).get();
         this.traverserFactory = BytecodeUtil.getTraverserFactory(bytecode).get();
+        this.unity = BytecodeUtil.getCoefficient(bytecode).get().clone().unity();
         this.functions = BytecodeUtil.compile(bytecode);
-
     }
 
     public Processor<C, S, E> getProcessor() {
@@ -59,13 +61,20 @@ public final class Compilation<C, S, E> implements Serializable {
 
     private void prepareProcessor() {
         if (null == this.processor)
-            this.processor = this.processorFactory.mint(this.traverserFactory, this.functions);
+            this.processor = this.processorFactory.mint(this);
     }
 
     public Traverser<C, E> mapTraverser(final Traverser<C, S> traverser) {
         this.reset();
         this.prepareProcessor();
         this.processor.addStart(traverser);
+        return this.processor.next();
+    }
+
+    public Traverser<C, E> mapObject(final S object) {
+        this.reset();
+        this.prepareProcessor();
+        this.processor.addStart(this.traverserFactory.create(this.unity, object));
         return this.processor.next();
     }
 
@@ -90,6 +99,10 @@ public final class Compilation<C, S, E> implements Serializable {
 
     public List<CFunction<C>> getFunctions() {
         return this.functions;
+    }
+
+    public TraverserFactory<C> getTraverserFactory() {
+        return this.traverserFactory;
     }
 
     ////////

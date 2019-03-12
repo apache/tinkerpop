@@ -21,6 +21,7 @@ package org.apache.tinkerpop.language;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
+import org.apache.tinkerpop.machine.strategies.CoefficientStrategy;
 import org.apache.tinkerpop.machine.strategies.Strategy;
 
 /**
@@ -32,6 +33,7 @@ public class TraversalSource<C> {
 
     protected TraversalSource() {
         this.bytecode = new Bytecode<>();
+        this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, CoefficientStrategy.class);
     }
 
     public TraversalSource<C> withCoefficient(final Class<? extends Coefficient<C>> coefficient) {

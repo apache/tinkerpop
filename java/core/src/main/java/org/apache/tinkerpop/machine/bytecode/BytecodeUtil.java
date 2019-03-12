@@ -47,11 +47,10 @@ import java.util.Set;
  */
 public final class BytecodeUtil {
 
-    public static <C> Bytecode<C> strategize(final Bytecode<C> bytecode) {
+    public static <C> void strategize(final Bytecode<C> bytecode) {
         for (final Strategy strategy : BytecodeUtil.getStrategies(bytecode)) {
             BytecodeUtil.strategize(bytecode, strategy);
         }
-        return bytecode;
     }
 
     private static <C> void strategize(final Bytecode<C> bytecode, Strategy strategy) {
@@ -147,7 +146,7 @@ public final class BytecodeUtil {
             case Symbols.MAP:
                 return new MapMap<>(coefficient, labels, Compilation.compileOne(instruction.args()[0]));
             case Symbols.PATH:
-                return new PathMap<>(coefficient, labels);
+                return new PathMap<>(coefficient, labels, Compilation.compile(instruction.args()));
             case Symbols.SUM:
                 return new SumReduce<>(coefficient, labels);
             case Symbols.UNION:

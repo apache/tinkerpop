@@ -60,4 +60,11 @@ public class ReduceStep<C, S, E> extends AbstractStep<C, S, E> {
     public boolean hasNext() {
         return !this.done && super.hasNext();
     }
+
+    @Override
+    public void reset() {
+        super.reset();
+        this.reducer.reset();
+        this.done = false;
+    }
 }

@@ -16,29 +16,47 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor;
-
-import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.strategies.Strategy;
+package org.apache.tinkerpop.machine.bytecode;
 
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface ProcessorFactory extends Serializable {
+public class CompilationRing<C, S, E> implements Serializable {
 
-    public <C, S, E> Processor<C, S, E> mint(final Compilation<C, S, E> compilation);
+    private List<Compilation<C, S, E>> compilations;
+    private int currentCompilation = -1;
 
-    public List<Strategy> getStrategies();
+    public CompilationRing(final List<Compilation<C, S, E>> compilations) {
+        this.compilations = compilations;
+    }
 
-    public static List<Strategy> processorStrategies(final Class<? extends ProcessorFactory> processFactoryClass) {
-        try {
-            return processFactoryClass.getConstructor().newInstance().getStrategies();
-        } catch (final NoSuchMethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException e) {
-            throw new RuntimeException(e.getMessage(), e);
+    public Compilation<C, S, E> next() {
+        if (this.compilations.isEmpty()) {
+            return null;
+        } else {
+            this.currentCompilation = (this.currentCompilation + 1) % this.compilations.size();
+            return this.compilations.get(this.currentCompilation);
         }
+    }
+
+    public boolean isEmpty() {
+        return this.compilations.isEmpty();
+    }
+
+    public void reset() {
+        this.currentCompilation = -1;
+    }
+
+    public int size() {
+        return this.compilations.size();
+    }
+
+
+    @Override
+    public String toString() {
+        return this.compilations.toString();
     }
 }

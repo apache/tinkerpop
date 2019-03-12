@@ -52,7 +52,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return this;
     }
 
-    public Traversal<C, S, E> by(final Traversal<C, E, ?> byTraversal) {
+    public Traversal<C, S, E> by(final Traversal<C, ?, ?> byTraversal) {
         this.bytecode.lastInstruction().addArg(byTraversal);
         return this;
     }
@@ -120,7 +120,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
 
     private final void prepareTraversal() {
         if (null == this.compilation)
-            this.compilation = Compilation.compile(bytecode);
+            this.compilation = Compilation.compile(this.bytecode);
     }
 
     @Override

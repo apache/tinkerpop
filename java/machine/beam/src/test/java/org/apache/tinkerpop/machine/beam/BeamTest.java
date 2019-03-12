@@ -34,11 +34,12 @@ public class BeamTest {
     @Test
     public void shouldWork() {
         final TraversalSource<Long> g = Gremlin.<Long>traversal()
-                .withCoefficient(LongCoefficient.class)
+                //.withCoefficient(LongCoefficient.class)
                 .withProcessor(BeamProcessor.class)
                 .withStrategy(IdentityStrategy.class);
 
-        Traversal<Long, Long, Long> traversal = g.inject(7L, 10L, 12L).as("a").c(3L).map(__.incr()).identity().incr().sum();
+        Traversal<Long, Long, Long> traversal = g.inject(7L, 10L, 12L).identity().incr().sum();
+        System.out.println(TraversalUtil.getBytecode(traversal).getSourceInstructions());
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

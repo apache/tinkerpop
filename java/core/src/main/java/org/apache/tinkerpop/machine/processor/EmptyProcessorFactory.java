@@ -18,9 +18,8 @@
  */
 package org.apache.tinkerpop.machine.processor;
 
-import org.apache.tinkerpop.machine.functions.CFunction;
+import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.strategies.Strategy;
-import org.apache.tinkerpop.machine.traversers.TraverserFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +36,7 @@ public final class EmptyProcessorFactory implements ProcessorFactory {
     }
 
     @Override
-    public <C, S, E> Processor<C, S, E> mint(final TraverserFactory<C> traverserFactory, final List<CFunction<C>> functions) {
+    public <C, S, E> Processor<C, S, E> mint(final Compilation<C, S, E> compilation) {
         return EmptyProcessor.instance();
     }
 

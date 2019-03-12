@@ -18,7 +18,12 @@
  */
 package org.apache.tinkerpop.machine.strategies;
 
+import org.apache.tinkerpop.language.Symbols;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
+import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
+import org.apache.tinkerpop.machine.bytecode.Instruction;
+import org.apache.tinkerpop.machine.coefficients.Coefficient;
+import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -26,6 +31,20 @@ import org.apache.tinkerpop.machine.bytecode.Bytecode;
 public final class CoefficientStrategy implements Strategy {
     @Override
     public <C> void apply(Bytecode<C> bytecode) {
-        // todo: propagate root coefficient to all child bytecode;
+        Coefficient<C> coefficient = BytecodeUtil.getCoefficient(bytecode).orElse(null);
+        if (null == coefficient) {
+            coefficient = (Coefficient<C>) LongCoefficient.create();
+            bytecode.addSourceInstruction(Symbols.WITH_COEFFICIENT, coefficient.getClass());
+        }
+        for (final Instruction<C> instruction : bytecode.getInstructions()) {
+            for (final Object arg : instruction.args()) {
+                if (arg instanceof Bytecode) {
+                    final Bytecode<C> next = (Bytecode<C>) arg;
+                    if (!BytecodeUtil.hasSourceInstruction(next, Symbols.WITH_COEFFICIENT)) {
+                        next.addSourceInstruction(Symbols.WITH_COEFFICIENT, coefficient.getClass());
+                    }
+                }
+            }
+        }
     }
 }

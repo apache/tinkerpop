@@ -27,8 +27,6 @@ import org.apache.beam.sdk.transforms.Flatten;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.PCollectionList;
-import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
@@ -52,28 +50,29 @@ import java.util.List;
  */
 public class Beam<C, S, E> implements Processor<C, S, E> {
 
-
     private final Pipeline pipeline;
     public static List<Traverser> OUTPUT = new ArrayList<>(); // FIX THIS!
     private final List<Fn> functions = new ArrayList<>();
     Iterator<Traverser<C, E>> iterator = null;
-    private TraverserFactory<C> traverserFactory;
 
+    public Beam(final Compilation<C, S, E> compilation) {
 
-    public Beam(final TraverserFactory<C> traverserFactory, final List<CFunction<C>> functions) {
-        this.traverserFactory = traverserFactory;
         this.pipeline = Pipeline.create();
         this.pipeline.getCoderRegistry().registerCoderForClass(Traverser.class, new TraverserCoder<>());
-        PCollection<Traverser<C, ?>> collection = this.pipeline.apply(Create.of(traverserFactory.create((Coefficient) LongCoefficient.create(), 1L)));
+        PCollection<Traverser<C, ?>> collection = this.pipeline.apply(Create.of(compilation.getTraverserFactory().create((Coefficient) LongCoefficient.create(), 1L)));
         collection.setCoder(new TraverserCoder());
-        for (final CFunction<?> function : functions) {
-            collection = processFunction(collection, function, false);
+        for (final CFunction<?> function : compilation.getFunctions()) {
+            collection = processFunction(collection, compilation.getTraverserFactory(), function, false);
         }
         collection.apply(ParDo.of(new OutputStep()));
         this.pipeline.getOptions().setRunner(new PipelineOptions.DirectRunner().create(this.pipeline.getOptions()));
     }
 
-    private PCollection<Traverser<C, ?>> processFunction(PCollection<Traverser<C, ?>> collection, final CFunction<?> function, final boolean branching) {
+    private PCollection<Traverser<C, ?>> processFunction(
+            PCollection<Traverser<C, ?>> collection,
+            final TraverserFactory<C> traverserFactory,
+            final CFunction<?> function,
+            final boolean branching) {
         DoFn<Traverser<C, S>, Traverser<C, E>> fn = null;
         if (function instanceof BranchFunction) {
             final List<Compilation<C, ?, ?>> branches = ((BranchFunction<C, ?, ?>) function).getInternals();
@@ -81,14 +80,14 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
             for (final Compilation<C, ?, ?> branch : branches) {
                 PCollection<Traverser<C, ?>> branchCollection = collection;
                 for (final CFunction<C> branchFunction : branch.getFunctions()) {
-                    branchCollection = this.processFunction(branchCollection, branchFunction, true);
+                    branchCollection = this.processFunction(branchCollection, traverserFactory, branchFunction, true);
                 }
                 collections.add(branchCollection);
             }
             collection = PCollectionList.of(collections).apply(Flatten.pCollections());
             this.functions.add(new BranchFn<>((BranchFunction<C, S, E>) function));
         } else if (function instanceof InitialFunction) {
-            fn = new InitialFn((InitialFunction<C, S>) function, this.traverserFactory);
+            fn = new InitialFn((InitialFunction<C, S>) function, traverserFactory);
         } else if (function instanceof FilterFunction) {
             fn = new FilterFn((FilterFunction<C, S>) function);
         } else if (function instanceof FlatMapFunction) {
@@ -96,7 +95,7 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
         } else if (function instanceof MapFunction) {
             fn = new MapFn<>((MapFunction<C, S, E>) function);
         } else if (function instanceof ReduceFunction) {
-            final ReduceFn<C, S, E> combine = new ReduceFn<>((ReduceFunction<C, S, E>) function, this.traverserFactory);
+            final ReduceFn<C, S, E> combine = new ReduceFn<>((ReduceFunction<C, S, E>) function, traverserFactory);
             collection = (PCollection<Traverser<C, ?>>) collection.apply(Combine.globally((ReduceFn) combine));
             this.functions.add(combine);
         } else
@@ -109,10 +108,6 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
         }
         collection.setCoder(new TraverserCoder());
         return collection;
-    }
-
-    public Beam(final Bytecode<C> bytecode) {
-        this(BytecodeUtil.getTraverserFactory(bytecode).get(), BytecodeUtil.compile(BytecodeUtil.strategize(bytecode)));
     }
 
     @Override
