@@ -22,12 +22,10 @@ import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.AbstractFunction;
 import org.apache.tinkerpop.machine.functions.BranchFunction;
-import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.util.MultiIterator;
 import org.apache.tinkerpop.util.StringFactory;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -60,11 +58,7 @@ public final class UnionBranch<C, S, E> extends AbstractFunction<C, S, Iterator<
     }
 
     @Override
-    public List<List<CFunction<C>>> getBranches() {
-        final List<List<CFunction<C>>> branches = new ArrayList<>();
-        for (final Compilation compilation : this.branches) {
-            branches.add(compilation.getFunctions());
-        }
-        return branches;
+    public List<Compilation<C, ?, ?>> getInternals() {
+        return (List) this.branches;
     }
 }

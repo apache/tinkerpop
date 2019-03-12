@@ -29,6 +29,7 @@ import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.PCollectionList;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
+import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
 import org.apache.tinkerpop.machine.functions.BranchFunction;
@@ -75,11 +76,11 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
     private PCollection<Traverser<C, ?>> processFunction(PCollection<Traverser<C, ?>> collection, final CFunction<?> function, final boolean branching) {
         DoFn<Traverser<C, S>, Traverser<C, E>> fn = null;
         if (function instanceof BranchFunction) {
-            final List<List<CFunction<C>>> branches = ((BranchFunction) function).getBranches();
+            final List<Compilation<C, ?, ?>> branches = ((BranchFunction<C, ?, ?>) function).getInternals();
             final List<PCollection<Traverser<C, ?>>> collections = new ArrayList<>(branches.size());
-            for (final List<CFunction<C>> branch : branches) {
+            for (final Compilation<C, ?, ?> branch : branches) {
                 PCollection<Traverser<C, ?>> branchCollection = collection;
-                for (final CFunction<C> branchFunction : branch) {
+                for (final CFunction<C> branchFunction : branch.getFunctions()) {
                     branchCollection = this.processFunction(branchCollection, branchFunction, true);
                 }
                 collections.add(branchCollection);

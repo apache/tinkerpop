@@ -26,6 +26,8 @@ import org.apache.tinkerpop.machine.functions.NestedFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.util.StringFactory;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -48,5 +50,10 @@ public final class FilterFilter<C, S> extends AbstractFunction<C, S, S> implemen
     @Override
     public String toString() {
         return StringFactory.makeFunctionString(this, this.internalFilter);
+    }
+
+    @Override
+    public List<Compilation<C, ?, ?>> getInternals() {
+        return Collections.singletonList(this.internalFilter);
     }
 }

@@ -26,6 +26,8 @@ import org.apache.tinkerpop.machine.functions.NestedFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.util.StringFactory;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -48,5 +50,10 @@ public class MapMap<C, S, E> extends AbstractFunction<C, S, E> implements MapFun
     @Override
     public String toString() {
         return StringFactory.makeFunctionString(this, this.internalMap);
+    }
+
+    @Override
+    public List<Compilation<C, ?, ?>> getInternals() {
+        return Collections.singletonList(this.internalMap);
     }
 }
