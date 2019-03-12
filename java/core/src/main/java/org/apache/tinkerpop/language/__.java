@@ -41,6 +41,10 @@ public class __ {
         return __.<C, Long>start().incr();
     }
 
+    public static <C, S> Traversal<C, S, S> is(final S object) {
+        return __.<C, S>start().is(object);
+    }
+
     public static <C, S extends Number> Traversal<C, S, S> sum() {
         return __.<C, S>start().sum();
     }

@@ -143,6 +143,11 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return (Traversal) this;
     }
 
+    public Traversal<C, S, E> repeat(final Traversal<C, E, E> repeatTraversal) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.REPEAT, repeatTraversal);
+        return this;
+    }
+
     public <R extends Number> Traversal<C, S, R> sum() {
         this.bytecode.addInstruction(this.currentCoefficient, Symbols.SUM);
         return (Traversal) this;
@@ -151,6 +156,11 @@ public class Traversal<C, S, E> implements Iterator<E> {
     public <R> Traversal<C, S, R> union(final Traversal<C, E, R> traversal, Traversal<C, E, R>... traversals) {
         this.bytecode.addInstruction(this.currentCoefficient, Symbols.UNION, traversal, traversals);
         return (Traversal) this;
+    }
+
+    public Traversal<C, S, E> until(final Traversal<C, E, ?> untilTraversal) {
+        this.bytecode.lastInstruction().addArg(untilTraversal);
+        return this;
     }
 
     ///////

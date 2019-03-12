@@ -21,6 +21,7 @@ package org.apache.tinkerpop.machine.bytecode;
 import org.apache.tinkerpop.language.Symbols;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.CFunction;
+import org.apache.tinkerpop.machine.functions.branch.RepeatBranch;
 import org.apache.tinkerpop.machine.functions.branch.UnionBranch;
 import org.apache.tinkerpop.machine.functions.filter.FilterFilter;
 import org.apache.tinkerpop.machine.functions.filter.HasKeyFilter;
@@ -156,6 +157,8 @@ public final class BytecodeUtil {
                 return new MapMap<>(coefficient, labels, Compilation.compileOne(instruction.args()[0]));
             case Symbols.PATH:
                 return new PathMap<>(coefficient, labels, Compilation.compile(instruction.args()));
+            case Symbols.REPEAT:
+                return new RepeatBranch(coefficient, labels, Compilation.compile(instruction.args()));
             case Symbols.SUM:
                 return new SumReduce<>(coefficient, labels);
             case Symbols.UNION:
