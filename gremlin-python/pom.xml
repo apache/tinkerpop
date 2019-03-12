@@ -316,7 +316,7 @@ limitations under the License.
                                         </exec>
                                         <exec dir="${project.build.directory}/python2" executable="env/bin/pip"
                                               failonerror="true">
-                                            <arg line="install wheel radish-bdd PyHamcrest aenum"/>
+                                            <arg line="install wheel radish-bdd PyHamcrest aenum isodate"/>
                                         </exec>
                                         <exec dir="${project.build.directory}/python3" executable="virtualenv"
                                               failonerror="true">
@@ -324,7 +324,7 @@ limitations under the License.
                                         </exec>
                                         <exec dir="${project.build.directory}/python3" executable="env/bin/pip"
                                               failonerror="true">
-                                            <arg line="install wheel radish-bdd PyHamcrest aenum"/>
+                                            <arg line="install wheel radish-bdd PyHamcrest aenum isodate"/>
                                         </exec>
                                         <exec dir="${project.build.directory}/python-packaged" executable="virtualenv"
                                               failonerror="true">
