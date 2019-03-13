@@ -28,7 +28,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-import static org.apache.tinkerpop.language.__.incr;
 import static org.apache.tinkerpop.language.__.is;
 
 /**
@@ -42,18 +41,24 @@ public class BeamTest {
                 .withProcessor(BeamProcessor.class)
                 .withStrategy(IdentityStrategy.class);
 
-        Traversal<Long, ?, ?> traversal = g.inject(Arrays.asList(2L, 5L, 10L)).<Long>unfold().repeat(__.<Long>incr().identity().map(__.incr())).until(is(10L));
+        Traversal<Long, ?, ?> traversal = g.inject(Arrays.asList(2L, 5L, 3L, 10L)).<Long>unfold().repeat(__.<Long>incr().identity().map(__.incr())).until(is(10L));
         System.out.println(TraversalUtil.getBytecode(traversal).getSourceInstructions());
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
-        traversal = g.inject(10L).choose(__.is(7L),__.incr(),__.<Long>incr().incr());
+        traversal = g.inject(1L, 2L, 3L).repeat(__.<Long>incr().incr().incr()).until(is(10L));
+        System.out.println(TraversalUtil.getBytecode(traversal).getSourceInstructions());
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
-        traversal = g.inject(7L).union(__.incr(),__.<Long>incr().incr().union(__.incr(),__.incr()));
+        traversal = g.inject(10L).choose(__.is(7L), __.incr(), __.<Long>incr().incr());
+        System.out.println(TraversalUtil.getBytecode(traversal));
+        System.out.println(traversal);
+        System.out.println(traversal.toList());
+        System.out.println("\n----------\n");
+        traversal = g.inject(7L).union(__.incr(), __.<Long>incr().incr().union(__.incr(), __.incr()));
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

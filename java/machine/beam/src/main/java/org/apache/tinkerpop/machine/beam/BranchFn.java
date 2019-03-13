@@ -29,12 +29,12 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BranchFn<C, S, E, M> extends AbstractFn<C, S, E> {
+public class BranchFn<C, S, E, M> extends AbstractFn<C, S, S> {
 
-    private final Map<M, TupleTag> branches;
+    private final Map<M, TupleTag<Traverser<C, S>>> branches;
     private final Selector<C, S, M> branchSelector;
 
-    public BranchFn(final BranchFunction<C, S, E, M> branchFunction, final Map<M, TupleTag> branches) {
+    public BranchFn(final BranchFunction<C, S, E, M> branchFunction, final Map<M, TupleTag<Traverser<C, S>>> branches) {
         super(branchFunction);
         this.branches = branches;
         this.branchSelector = branchFunction.getBranchSelector();

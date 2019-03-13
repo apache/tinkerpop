@@ -52,8 +52,7 @@ public final class UnionBranch<C, S, E> extends AbstractFunction<C, S, Iterator<
     public Iterator<Traverser<C, E>> apply(final Traverser<C, S> traverser) {
         final MultiIterator<Traverser<C, E>> iterator = new MultiIterator<>();
         for (final Compilation<C, S, E> branch : this.branches.get(Boolean.TRUE)) {
-            branch.getProcessor().addStart(traverser.clone());
-            iterator.addIterator(branch.getProcessor());
+            iterator.addIterator(branch.addTraverser(traverser));
         }
         return iterator;
     }

@@ -32,20 +32,24 @@ public class RepeatFn<C, S> extends AbstractFn<C, S, S> {
     private final Compilation<C, S, ?> until;
     private final TupleTag repeatDone;
     private final TupleTag repeatLoop;
+    private final boolean deadEnd;
 
 
-    public RepeatFn(final RepeatBranch<C, S> repeatBranch, final TupleTag repeatDone, final TupleTag repeatLoop) {
+    public RepeatFn(final RepeatBranch<C, S> repeatBranch, final TupleTag repeatDone, final TupleTag repeatLoop, final boolean deadEnd) {
         super(repeatBranch);
         this.until = repeatBranch.getUntil();
         this.repeatDone = repeatDone;
         this.repeatLoop = repeatLoop;
+        this.deadEnd = deadEnd;
     }
 
     @ProcessElement
     public void processElement(final @DoFn.Element Traverser<C, S> traverser, final MultiOutputReceiver out) {
-        if (this.until.filterTraverser(traverser))
+        if (this.until.filterTraverser(traverser.clone()))
             out.get(this.repeatDone).output(traverser.clone());
-        else
+        else if (!this.deadEnd)
             out.get(this.repeatLoop).output(traverser.clone());
+        else
+            throw new IllegalStateException("There are not enough repetition to account for this traveral");
     }
 }
