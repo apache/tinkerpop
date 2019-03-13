@@ -16,23 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine.functions.branch.selector;
 
-import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.functions.branch.selector.Selector;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
+import java.io.Serializable;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface BranchFunction<C, S, E, M> extends Function<Traverser<C, S>, Iterator<Traverser<C, E>>>, InternalFunction<C> {
+public interface Selector<C, S, E> extends Serializable {
 
-    public Selector<C, S, M> getBranchSelector();
-
-    public Map<M, List<Compilation<C, S, E>>> getBranches();
+    public Optional<E> from(final Traverser<C, S> traverser);
 }

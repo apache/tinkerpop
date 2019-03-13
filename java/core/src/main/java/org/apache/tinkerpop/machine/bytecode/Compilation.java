@@ -93,6 +93,12 @@ public final class Compilation<C, S, E> implements Serializable {
         return this.processor.hasNext();
     }
 
+    public Processor<C, S, E> addTraverser(final Traverser<C, S> traverser) {
+        this.prepareProcessor();
+        this.processor.addStart(traverser);
+        return this.processor;
+    }
+
     @Override
     public String toString() {
         return this.functions.toString();

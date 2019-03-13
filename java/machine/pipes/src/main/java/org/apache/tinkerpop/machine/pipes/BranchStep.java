@@ -27,12 +27,12 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class BranchStep<C, S, E> extends AbstractStep<C, S, E> {
+public final class BranchStep<C, S, E, M> extends AbstractStep<C, S, E> {
 
-    private final BranchFunction<C, S, E> branchFunction;
+    private final BranchFunction<C, S, E, M> branchFunction;
     private Iterator<Traverser<C, E>> iterator = Collections.emptyIterator();
 
-    public BranchStep(final AbstractStep<C, ?, S> previousStep, final BranchFunction<C, S, E> branchFunction) {
+    public BranchStep(final AbstractStep<C, ?, S> previousStep, final BranchFunction<C, S, E, M> branchFunction) {
         super(previousStep, branchFunction);
         this.branchFunction = branchFunction;
     }

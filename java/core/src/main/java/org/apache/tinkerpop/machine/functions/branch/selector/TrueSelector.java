@@ -16,23 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.functions;
+package org.apache.tinkerpop.machine.functions.branch.selector;
 
-import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.functions.branch.selector.Selector;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface BranchFunction<C, S, E, M> extends Function<Traverser<C, S>, Iterator<Traverser<C, E>>>, InternalFunction<C> {
+public final class TrueSelector<C, S> implements Selector<C, S, Boolean> {
 
-    public Selector<C, S, M> getBranchSelector();
+    private static final TrueSelector INSTANCE = new TrueSelector<>();
 
-    public Map<M, List<Compilation<C, S, E>>> getBranches();
+    @Override
+    public Optional<Boolean> from(final Traverser<C, S> traverser) {
+        return Optional.of(Boolean.TRUE);
+    }
+
+    public static <C, S> TrueSelector<C, S> instance() {
+        return INSTANCE;
+    }
 }

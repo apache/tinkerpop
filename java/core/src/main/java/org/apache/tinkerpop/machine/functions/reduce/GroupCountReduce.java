@@ -63,8 +63,4 @@ public class GroupCountReduce<C, S, E> extends AbstractFunction<C, S, Map<E, Lon
         return new HashMap<>();
     }
 
-    @Override
-    public List<Compilation<C, ?, ?>> getInternals() {
-        return Collections.singletonList(this.byCompilation);
-    }
 }

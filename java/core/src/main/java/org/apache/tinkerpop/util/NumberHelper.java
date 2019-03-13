@@ -311,7 +311,7 @@ public final class NumberHelper {
             } else /*if (clazz.equals(BigDecimal.class))*/ {
                 bits = bits < 128 ? 128 : bits;
                 fp = true;
-                break; // maxed out, no need to check remaining numbers
+                break; // maxed out, no need to from remaining numbers
             }
         }
         return determineNumberClass(bits, fp);

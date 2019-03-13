@@ -22,12 +22,12 @@ import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.AbstractFunction;
 import org.apache.tinkerpop.machine.functions.BranchFunction;
+import org.apache.tinkerpop.machine.functions.branch.selector.HasNextSelector;
 import org.apache.tinkerpop.machine.functions.branch.selector.Selector;
-import org.apache.tinkerpop.machine.functions.branch.selector.TrueSelector;
 import org.apache.tinkerpop.machine.traversers.Traverser;
-import org.apache.tinkerpop.util.MultiIterator;
 import org.apache.tinkerpop.util.StringFactory;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -37,35 +37,46 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class UnionBranch<C, S, E> extends AbstractFunction<C, S, Iterator<Traverser<C, E>>> implements BranchFunction<C, S, E, Boolean> {
+public class ChooseBranch<C, S, E> extends AbstractFunction<C, S, Iterator<Traverser<C, E>>> implements BranchFunction<C, S, E, Boolean> {
 
+    private final HasNextSelector<C, S> branchSelector;
     private final Map<Boolean, List<Compilation<C, S, E>>> branches;
+    /////
+    private final Compilation<C, S, ?> predicate;
+    private final Compilation<C, S, E> trueBranch;
+    private final Compilation<C, S, E> falseBranch;
 
 
-    public UnionBranch(final Coefficient<C> coefficient, final Set<String> labels, final List<Compilation<C, S, E>> branches) {
+    public ChooseBranch(final Coefficient<C> coefficient, final Set<String> labels,
+                        final Compilation<C, S, ?> predicate,
+                        final Compilation<C, S, E> trueBranch,
+                        final Compilation<C, S, E> falseBranch) {
         super(coefficient, labels);
+        this.predicate = predicate;
+        this.trueBranch = trueBranch;
+        this.falseBranch = falseBranch;
+
+        this.branchSelector = new HasNextSelector<>(predicate);
         this.branches = new HashMap<>();
-        this.branches.put(Boolean.TRUE, branches);
+        this.branches.put(Boolean.TRUE, Collections.singletonList(trueBranch));
+        this.branches.put(Boolean.FALSE, Collections.singletonList(falseBranch));
     }
 
     @Override
     public Iterator<Traverser<C, E>> apply(final Traverser<C, S> traverser) {
-        final MultiIterator<Traverser<C, E>> iterator = new MultiIterator<>();
-        for (final Compilation<C, S, E> branch : this.branches.get(Boolean.TRUE)) {
-            branch.getProcessor().addStart(traverser.clone());
-            iterator.addIterator(branch.getProcessor());
-        }
-        return iterator;
+        return this.predicate.filterTraverser(traverser) ?
+                this.trueBranch.addTraverser(traverser) :
+                this.falseBranch.addTraverser(traverser);
     }
 
     @Override
     public String toString() {
-        return StringFactory.makeFunctionString(this, this.branches.values().iterator().next()); // make a flat array
+        return StringFactory.makeFunctionString(this, this.predicate, this.trueBranch, this.falseBranch);
     }
 
     @Override
     public Selector<C, S, Boolean> getBranchSelector() {
-        return TrueSelector.instance();
+        return this.branchSelector;
     }
 
     @Override

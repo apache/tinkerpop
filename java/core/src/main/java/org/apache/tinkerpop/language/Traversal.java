@@ -63,6 +63,11 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return this;
     }
 
+    public <R> Traversal<C, S, R> choose(final Traversal<C, E, ?> predicate, final Traversal<C, S, R> trueTraversal, final Traversal<C, S, R> falseTraversal) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.CHOOSE_IF_THEN_ELSE, predicate, trueTraversal, falseTraversal);
+        return (Traversal) this;
+    }
+
     public Traversal<C, S, Long> count() {
         this.bytecode.addInstruction(this.currentCoefficient, Symbols.COUNT);
         return (Traversal) this;
@@ -158,8 +163,13 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return (Traversal) this;
     }
 
-    public <R> Traversal<C, S, R> union(final Traversal<C, E, R> traversal, Traversal<C, E, R>... traversals) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.UNION, traversal, traversals);
+    public <R> Traversal<C, S, R> union(final Traversal<C, E, R> traversalA, final Traversal<C, E, R> traversalB) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.UNION, traversalA, traversalB);
+        return (Traversal) this;
+    }
+
+    public <R> Traversal<C, S, R> union(final Traversal<C, E, R> traversalA, final Traversal<C, E, R> traversalB, final Traversal<C, E, R> traversalC) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.UNION, traversalA, traversalB, traversalC);
         return (Traversal) this;
     }
 

@@ -22,20 +22,21 @@ import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.AbstractFunction;
 import org.apache.tinkerpop.machine.functions.BranchFunction;
+import org.apache.tinkerpop.machine.functions.branch.selector.Selector;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.util.IteratorUtils;
 import org.apache.tinkerpop.util.StringFactory;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class RepeatBranch<C, S> extends AbstractFunction<C, S, Iterator<Traverser<C, S>>> implements BranchFunction<C, S, S> {
+public class RepeatBranch<C, S> extends AbstractFunction<C, S, Iterator<Traverser<C, S>>> implements BranchFunction<C, S, S, Boolean> {
 
     private final Compilation<C, S, S> repeat;
     private final Compilation<C, S, ?> until;
@@ -64,11 +65,6 @@ public class RepeatBranch<C, S> extends AbstractFunction<C, S, Iterator<Traverse
         return StringFactory.makeFunctionString(this, this.repeat, this.until);
     }
 
-    @Override
-    public List<Compilation<C, ?, ?>> getInternals() {
-        return Arrays.asList(this.repeat, this.until);
-    }
-
     public Compilation<C, S, S> getRepeat() {
         return this.repeat;
     }
@@ -77,4 +73,13 @@ public class RepeatBranch<C, S> extends AbstractFunction<C, S, Iterator<Traverse
         return this.until;
     }
 
+    @Override
+    public Selector<C, S, Boolean> getBranchSelector() {
+        return null;
+    }
+
+    @Override
+    public Map<Boolean, List<Compilation<C, S, S>>> getBranches() {
+        return null;
+    }
 }

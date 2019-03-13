@@ -21,6 +21,7 @@ package org.apache.tinkerpop.machine.bytecode;
 import org.apache.tinkerpop.language.Symbols;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.CFunction;
+import org.apache.tinkerpop.machine.functions.branch.ChooseBranch;
 import org.apache.tinkerpop.machine.functions.branch.RepeatBranch;
 import org.apache.tinkerpop.machine.functions.branch.UnionBranch;
 import org.apache.tinkerpop.machine.functions.filter.FilterFilter;
@@ -136,6 +137,11 @@ public final class BytecodeUtil {
         final Coefficient<C> coefficient = instruction.coefficient();
         final Set<String> labels = instruction.labels();
         switch (op) {
+            case Symbols.CHOOSE_IF_THEN_ELSE:
+                return new ChooseBranch<>(coefficient, labels,
+                        Compilation.compileOne(instruction.args()[0]),
+                        Compilation.compileOne(instruction.args()[1]),
+                        Compilation.compileOne(instruction.args()[2]));
             case Symbols.COUNT:
                 return new CountReduce<>(coefficient, labels);
             case Symbols.FILTER:

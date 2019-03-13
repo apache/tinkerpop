@@ -52,8 +52,4 @@ public final class FilterFilter<C, S> extends AbstractFunction<C, S, S> implemen
         return StringFactory.makeFunctionString(this, this.internalFilter);
     }
 
-    @Override
-    public List<Compilation<C, ?, ?>> getInternals() {
-        return Collections.singletonList(this.internalFilter);
-    }
 }

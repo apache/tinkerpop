@@ -51,9 +51,4 @@ public class MapMap<C, S, E> extends AbstractFunction<C, S, E> implements MapFun
     public String toString() {
         return StringFactory.makeFunctionString(this, this.internalMap);
     }
-
-    @Override
-    public List<Compilation<C, ?, ?>> getInternals() {
-        return Collections.singletonList(this.internalMap);
-    }
 }

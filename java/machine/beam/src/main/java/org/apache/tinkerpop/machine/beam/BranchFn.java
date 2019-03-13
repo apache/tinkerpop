@@ -18,20 +18,33 @@
  */
 package org.apache.tinkerpop.machine.beam;
 
+import org.apache.beam.sdk.values.TupleTag;
 import org.apache.tinkerpop.machine.functions.BranchFunction;
+import org.apache.tinkerpop.machine.functions.branch.selector.Selector;
 import org.apache.tinkerpop.machine.traversers.Traverser;
+
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BranchFn<C, S, E> extends AbstractFn<C, S, E> {
+public class BranchFn<C, S, E, M> extends AbstractFn<C, S, E> {
 
-    public BranchFn(final BranchFunction<C, S, E> branchFunction) {
+    private final Map<M, TupleTag> branches;
+    private final Selector<C, S, M> branchSelector;
+
+    public BranchFn(final BranchFunction<C, S, E, M> branchFunction, final Map<M, TupleTag> branches) {
         super(branchFunction);
+        this.branches = branches;
+        this.branchSelector = branchFunction.getBranchSelector();
     }
 
     @ProcessElement
-    public void processElement(final @Element Traverser<C, S> traverser, final OutputReceiver<Traverser<C, E>> output) {
-        throw new IllegalStateException("Branching is implemented using split/merge streams in Beam");
+    public void processElement(final @Element Traverser<C, S> traverser, final MultiOutputReceiver out) {
+        final Optional<M> selector = this.branchSelector.from(traverser);
+        if (selector.isPresent())
+            out.get(this.branches.get(selector.get())).output(traverser.clone());
+
     }
 }

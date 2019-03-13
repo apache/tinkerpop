@@ -18,15 +18,9 @@
  */
 package org.apache.tinkerpop.machine.functions;
 
-import org.apache.tinkerpop.machine.bytecode.Compilation;
-
-import java.util.List;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface InternalFunction<C> extends CFunction<C> {
-
-    public List<Compilation<C, ?, ?>> getInternals();
 
 }

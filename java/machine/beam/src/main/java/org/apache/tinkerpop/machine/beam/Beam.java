@@ -48,7 +48,9 @@ import org.apache.tinkerpop.machine.traversers.TraverserFactory;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -80,7 +82,6 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
             final boolean branching) {
         DoFn<Traverser<C, S>, Traverser<C, E>> fn = null;
         if (function instanceof RepeatBranch) {
-            ;
             final List<PCollection> outputs = new ArrayList<>();
             final TupleTag repeatDone = new TupleTag<>();
             final TupleTag repeatLoop = new TupleTag<>();
@@ -98,17 +99,28 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
             collection = (PCollection) PCollectionList.of((Iterable) outputs).apply(Flatten.pCollections());
             collection.setCoder(new TraverserCoder());
         } else if (function instanceof BranchFunction) {
-            final List<Compilation<C, ?, ?>> branches = ((BranchFunction<C, ?, ?>) function).getInternals();
-            final List<PCollection<Traverser<C, S>>> collections = new ArrayList<>(branches.size());
-            for (final Compilation<C, ?, ?> branch : branches) {
-                PCollection<Traverser<C, S>> branchCollection = collection;
-                for (final CFunction<C> branchFunction : branch.getFunctions()) {
-                    branchCollection = this.processFunction(branchCollection, traverserFactory, branchFunction, true);
+            final BranchFunction<C, Object, Object, Object> branchFunction = (BranchFunction) function;
+            final Map<Object, TupleTag> branches = new LinkedHashMap<>();
+            for (final Map.Entry<Object, List<Compilation<C, Object, Object>>> b : branchFunction.getBranches().entrySet()) {
+                branches.put(b.getKey(), new TupleTag());
+            }
+            final BranchFn<C, Object, Object, Object> branchFn = new BranchFn<>(branchFunction, branches);
+            final List<TupleTag<?>> tags = new ArrayList(branches.values());
+            PCollectionTuple collectionTuple = (PCollectionTuple) collection.apply(ParDo.of((DoFn) branchFn).withOutputTags(tags.get(0), TupleTagList.of(tags.subList(1, tags.size()))));
+            collectionTuple.getAll().values().forEach(c -> c.setCoder(new TraverserCoder()));
+            final List<PCollection<Traverser<C, S>>> collections = new ArrayList<>();
+            for (final Map.Entry<Object, List<Compilation<C, Object, Object>>> b : branchFunction.getBranches().entrySet()) {
+                for (final Compilation<C, Object, Object> compilation : b.getValue()) {
+                    PCollection<Traverser<C, S>> branchCollection = collectionTuple.get(branches.get(b.getKey()));
+                    for (final CFunction<C> f : compilation.getFunctions()) {
+                        branchCollection = this.processFunction(branchCollection, traverserFactory, f, true);
+                    }
+
+                    collections.add(branchCollection);
                 }
-                collections.add(branchCollection);
             }
             collection = PCollectionList.of(collections).apply(Flatten.pCollections());
-            this.functions.add(new BranchFn<>((BranchFunction<C, S, E>) function));
+            this.functions.add(branchFn);
         } else if (function instanceof InitialFunction) {
             fn = new InitialFn((InitialFunction<C, S>) function, traverserFactory);
         } else if (function instanceof FilterFunction) {

@@ -34,6 +34,7 @@ public final class Symbols {
 
 
     // INSTRUCTION OPS
+    public static final String CHOOSE_IF_THEN_ELSE = "chooseIfThenElse";
     public static final String COUNT = "count";
     public static final String FILTER = "filter";
     public static final String GROUP_COUNT = "groupCount";
