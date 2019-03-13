@@ -169,3 +169,46 @@ def test_big_result_set(client):
     for result in result_set:
         results += result
     assert len(results) == 10000
+
+
+def test_big_result_set_secure(secure_client):
+    g = Graph().traversal()
+    t = g.inject(1).repeat(__.addV('person').property('name', __.loops())).times(20000).count()
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
+    result_set = secure_client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 1
+
+    t = g.V().limit(10)
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
+    result_set = secure_client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 10
+
+    t = g.V().limit(100)
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
+    result_set = secure_client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 100
+
+    t = g.V().limit(1000)
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
+    result_set = secure_client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 1000
+
+    t = g.V().limit(10000)
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
+    result_set = secure_client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 10000

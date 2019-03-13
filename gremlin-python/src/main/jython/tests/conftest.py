@@ -53,6 +53,7 @@ def connection(request):
         request.addfinalizer(fin)
         return conn
 
+
 @pytest.fixture
 def client(request):
     try:
@@ -64,6 +65,20 @@ def client(request):
             client.close()
         request.addfinalizer(fin)
         return client
+
+
+@pytest.fixture
+def secure_client(request):
+    try:
+        client = Client('ws://localhost:45941/gremlin', 'gmodern', username='stephen', password='password')
+    except OSError:
+        pytest.skip('Gremlin Server is not running')
+    else:
+        def fin():
+            client.close()
+        request.addfinalizer(fin)
+        return client
+
 
 @pytest.fixture(params=['v2', 'v3'])
 def remote_connection(request):
@@ -80,6 +95,7 @@ def remote_connection(request):
             remote_conn.close()
         request.addfinalizer(fin)
         return remote_conn
+
 
 @pytest.fixture
 def remote_connection_v2(request):
