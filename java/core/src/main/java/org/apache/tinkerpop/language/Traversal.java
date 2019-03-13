@@ -53,6 +53,11 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return this;
     }
 
+    public Traversal<C, S, E> barrier() {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.BARRIER);
+        return this;
+    }
+
     public Traversal<C, S, E> by(final Traversal<C, ?, ?> byTraversal) {
         this.bytecode.lastInstruction().addArg(byTraversal);
         return this;
@@ -188,6 +193,11 @@ public class Traversal<C, S, E> implements Iterator<E> {
     private final void prepareTraversal() {
         if (null == this.compilation)
             this.compilation = Compilation.compile(this.bytecode);
+    }
+
+    public Traverser<C, E> nextTraverser() {
+        this.prepareTraversal();
+        return this.compilation.getProcessor().next(); // TODO: interaction with hasNext/next and counts
     }
 
     @Override

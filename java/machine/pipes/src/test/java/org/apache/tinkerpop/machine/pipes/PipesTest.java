@@ -49,14 +49,21 @@ public class PipesTest {
         System.out.println(traversal);
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
-        traversal = g.inject(7L).union(__.incr(),__.<Long>incr().incr().union(__.incr(),__.incr()));
+        traversal = g.inject(7L).union(__.incr(), __.<Long>incr().incr().union(__.incr(), __.incr()));
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
-        traversal = g.inject(7L).choose(__.is(7L),__.incr());
+        traversal = g.inject(7L).choose(__.is(7L), __.incr());
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());
+        System.out.println("\n----------\n");
+        traversal = g.inject(7L,7L,7L,2L).incr().barrier();
+        System.out.println(TraversalUtil.getBytecode(traversal));
+        System.out.println(traversal);
+        System.out.println(traversal.nextTraverser());
+        System.out.println(traversal.nextTraverser());
+        System.out.println(traversal.hasNext());
     }
 }

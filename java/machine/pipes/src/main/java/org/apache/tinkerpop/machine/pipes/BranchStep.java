@@ -62,9 +62,14 @@ public final class BranchStep<C, S, E, M> extends AbstractStep<C, S, E> {
             final Traverser<C, S> traverser = super.getPreviousTraverser();
             final Optional<M> token = this.branchSelector.from(traverser);
             if (token.isPresent()) {
-                this.output = new MultiIterator<>();
-                for (final Compilation<C, S, E> branch : this.branches.get(token.get())) {
-                    ((MultiIterator<Traverser<C, E>>) this.output).addIterator(branch.addTraverser(traverser.clone()));
+                final List<Compilation<C, S, E>> matches = this.branches.get(token.get());
+                if (1 == matches.size())
+                    this.output = matches.get(0).addTraverser(traverser.clone());
+                else {
+                    this.output = new MultiIterator<>();
+                    for (final Compilation<C, S, E> branch : matches) {
+                        ((MultiIterator<Traverser<C, E>>) this.output).addIterator(branch.addTraverser(traverser.clone()));
+                    }
                 }
             }
         }

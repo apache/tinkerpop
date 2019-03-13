@@ -24,7 +24,7 @@ package org.apache.tinkerpop.language;
 public final class Symbols {
 
     public static enum Type {
-        INITIAL, MAP, FLATMAP, FILTER, REDUCE, BRANCH
+        BARRIER, INITIAL, MAP, FLATMAP, FILTER, REDUCE, BRANCH
     }
 
     // SOURCE OPS
@@ -34,6 +34,7 @@ public final class Symbols {
 
 
     // INSTRUCTION OPS
+    public static final String BARRIER = "barrier";
     public static final String CHOOSE_IF_THEN = "chooseIfThen";
     public static final String CHOOSE_IF_THEN_ELSE = "chooseIfThenElse";
     public static final String COUNT = "count";
@@ -54,6 +55,8 @@ public final class Symbols {
 
     public Type getOpType(final String op) {
         switch (op) {
+            case BARRIER:
+                return Type.BARRIER;
             case CHOOSE_IF_THEN:
                 return Type.BRANCH;
             case CHOOSE_IF_THEN_ELSE:

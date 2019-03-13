@@ -41,8 +41,6 @@ public class ChooseBranch<C, S, E> extends AbstractFunction<C> implements Branch
     private final Map<Boolean, List<Compilation<C, S, E>>> branches;
     /////
     private final Compilation<C, S, ?> predicate;
-    private final Compilation<C, S, E> trueBranch;
-    private final Compilation<C, S, E> falseBranch;
 
 
     public ChooseBranch(final Coefficient<C> coefficient, final Set<String> labels,
@@ -51,19 +49,16 @@ public class ChooseBranch<C, S, E> extends AbstractFunction<C> implements Branch
                         final Compilation<C, S, E> falseBranch) {
         super(coefficient, labels);
         this.predicate = predicate;
-        this.trueBranch = trueBranch;
-        this.falseBranch = falseBranch;
-
         this.branchSelector = new HasNextSelector<>(predicate);
         this.branches = new HashMap<>();
         this.branches.put(Boolean.TRUE, Collections.singletonList(trueBranch));
-        if (null != this.falseBranch)
+        if (null != falseBranch)
             this.branches.put(Boolean.FALSE, Collections.singletonList(falseBranch));
     }
 
     @Override
     public String toString() {
-        return StringFactory.makeFunctionString(this, this.predicate, this.trueBranch, this.falseBranch);
+        return StringFactory.makeFunctionString(this, this.predicate, this.branches);
     }
 
     @Override

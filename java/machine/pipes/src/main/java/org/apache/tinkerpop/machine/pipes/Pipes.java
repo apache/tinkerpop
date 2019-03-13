@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.machine.pipes;
 
 import org.apache.tinkerpop.machine.bytecode.Compilation;
+import org.apache.tinkerpop.machine.functions.BarrierFunction;
 import org.apache.tinkerpop.machine.functions.BranchFunction;
 import org.apache.tinkerpop.machine.functions.CFunction;
 import org.apache.tinkerpop.machine.functions.FilterFunction;
@@ -59,6 +60,8 @@ public final class Pipes<C, S, E> implements Processor<C, S, E> {
                 nextStep = new MapStep(previousStep, (MapFunction<C, ?, ?>) function);
             else if (function instanceof InitialFunction)
                 nextStep = new InitialStep((InitialFunction<C, S>) function, compilation.getTraverserFactory());
+            else if (function instanceof BarrierFunction)
+                nextStep = new BarrierStep(previousStep, (BarrierFunction) function);
             else if (function instanceof ReduceFunction)
                 nextStep = new ReduceStep(previousStep, (ReduceFunction<C, ?, ?>) function,
                         new BasicReducer<>(((ReduceFunction<C, ?, ?>) function).getInitialValue()), compilation.getTraverserFactory());

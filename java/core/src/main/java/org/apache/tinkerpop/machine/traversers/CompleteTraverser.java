@@ -65,6 +65,11 @@ public class CompleteTraverser<C, S> implements Traverser<C, S> {
     }
 
     @Override
+    public int hashCode() {
+        return this.object.hashCode(); // TODO: include path
+    }
+
+    @Override
     public String toString() {
         return this.object.toString();
     }

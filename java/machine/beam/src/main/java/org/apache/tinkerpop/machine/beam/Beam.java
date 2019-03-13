@@ -20,10 +20,13 @@ package org.apache.tinkerpop.machine.beam;
 
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.options.PipelineOptions;
+import org.apache.beam.sdk.runners.TransformHierarchy;
 import org.apache.beam.sdk.transforms.Create;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.PCollection;
+import org.apache.beam.sdk.values.PValue;
 import org.apache.tinkerpop.machine.beam.serialization.TraverserCoder;
+import org.apache.tinkerpop.machine.beam.util.PrimitiveVisitor;
 import org.apache.tinkerpop.machine.beam.util.TopologyUtil;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.processor.Processor;
@@ -52,7 +55,8 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
         final PCollection<Traverser<C, S>> source = this.pipeline.apply(Create.of(EmptyTraverser.instance()));
         source.setCoder(new TraverserCoder<>());
         final PCollection<Traverser<C, E>> sink = TopologyUtil.compile(source, compilation);
-        sink.apply(ParDo.of(new OutputStep<>()));
+        sink.apply(ParDo.of(new OutputStep<>())); // TODO: we need an in-memory router of outgoing data
+
     }
 
     @Override
@@ -80,7 +84,9 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
 
     @Override
     public String toString() {
-        return this.functions.toString();
+        final PrimitiveVisitor visitor = new PrimitiveVisitor();
+        this.pipeline.traverseTopologically(visitor);
+        return visitor.toString();
     }
 
     private final void setupPipeline() {

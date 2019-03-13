@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.machine.bytecode;
 
-import org.apache.tinkerpop.language.Traversal;
-import org.apache.tinkerpop.language.TraversalUtil;
 import org.apache.tinkerpop.machine.coefficients.Coefficient;
 
 import java.util.ArrayList;
@@ -50,10 +48,6 @@ public final class Bytecode<C> implements Cloneable {
 
     public List<Instruction<C>> getInstructions() {
         return this.instructions;
-    }
-
-    public void removeInstruction(final Instruction<C> instruction) {
-        this.instructions.remove(instruction);
     }
 
     public Instruction<C> lastInstruction() {
