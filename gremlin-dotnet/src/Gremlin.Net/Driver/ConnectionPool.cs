@@ -62,19 +62,17 @@ namespace Gremlin.Net.Driver
         private async Task EnsurePoolIsPopulatedAsync()
         {
             // The pool could have been (partially) empty because of connection problems. So, we need to populate it again.
-            while (_poolSize < NrConnections)
+            if (_poolSize >= NrConnections) return;
+            var poolState = Interlocked.CompareExchange(ref _poolState, PoolPopulationInProgress, PoolIdle);
+            if (poolState == PoolPopulationInProgress) return;
+            try
             {
-                var poolState = Interlocked.CompareExchange(ref _poolState, PoolPopulationInProgress, PoolIdle);
-                if (poolState == PoolPopulationInProgress) continue;
-                try
-                {
-                    await PopulatePoolAsync().ConfigureAwait(false);
-                }
-                finally
-                {
-                    // We need to remove the PoolPopulationInProgress flag again even if an exception occurred, so we don't block the pool population for ever
-                    Interlocked.CompareExchange(ref _poolState, PoolIdle, PoolPopulationInProgress);
-                }
+                await PopulatePoolAsync().ConfigureAwait(false);
+            }
+            finally
+            {
+                // We need to remove the PoolPopulationInProgress flag again even if an exception occurred, so we don't block the pool population for ever
+                Interlocked.CompareExchange(ref _poolState, PoolIdle, PoolPopulationInProgress);
             }
         }
         
@@ -114,30 +112,26 @@ namespace Gremlin.Net.Driver
         {
             var connections = _connections.Snapshot;
             if (connections.Length == 0) throw new ServerUnavailableException();
-
-            if (GetAvailableConnection(connections, out var connection))
-                return connection;
-            throw new ConnectionPoolBusyException(_poolSize, _maxInProcessPerConnection);
+            return TryGetAvailableConnection(connections);
         }
 
-        private bool GetAvailableConnection(Connection[] connections, out Connection connection)
+        private Connection TryGetAvailableConnection(Connection[] connections)
         {
             var index = Interlocked.Increment(ref _connectionIndex);
             ProtectIndexFromOverflowing(index);
 
-            connection = null;
             for (var i = 0; i < connections.Length; i++)
             {
-                connection = connections[(index + i) % connections.Length];
+                var connection = connections[(index + i) % connections.Length];
                 if (connection.NrRequestsInFlight >= _maxInProcessPerConnection) continue;
                 if (!connection.IsOpen)
                 {
                     RemoveConnectionFromPool(connection);
                     continue;
                 }
-                return true;
+                return connection;
             }
-            return false;
+            throw new ConnectionPoolBusyException(_poolSize, _maxInProcessPerConnection);
         }
 
         private void ProtectIndexFromOverflowing(int currentIndex)
