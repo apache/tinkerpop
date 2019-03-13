@@ -24,12 +24,10 @@ import org.apache.tinkerpop.machine.functions.AbstractFunction;
 import org.apache.tinkerpop.machine.functions.BranchFunction;
 import org.apache.tinkerpop.machine.functions.branch.selector.HasNextSelector;
 import org.apache.tinkerpop.machine.functions.branch.selector.Selector;
-import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.util.StringFactory;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,7 +35,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ChooseBranch<C, S, E> extends AbstractFunction<C, S, Iterator<Traverser<C, E>>> implements BranchFunction<C, S, E, Boolean> {
+public class ChooseBranch<C, S, E> extends AbstractFunction<C> implements BranchFunction<C, S, E, Boolean> {
 
     private final HasNextSelector<C, S> branchSelector;
     private final Map<Boolean, List<Compilation<C, S, E>>> branches;
@@ -59,14 +57,8 @@ public class ChooseBranch<C, S, E> extends AbstractFunction<C, S, Iterator<Trave
         this.branchSelector = new HasNextSelector<>(predicate);
         this.branches = new HashMap<>();
         this.branches.put(Boolean.TRUE, Collections.singletonList(trueBranch));
-        this.branches.put(Boolean.FALSE, Collections.singletonList(falseBranch));
-    }
-
-    @Override
-    public Iterator<Traverser<C, E>> apply(final Traverser<C, S> traverser) {
-        return this.predicate.filterTraverser(traverser) ?
-                this.trueBranch.addTraverser(traverser) :
-                this.falseBranch.addTraverser(traverser);
+        if (null != this.falseBranch)
+            this.branches.put(Boolean.FALSE, Collections.singletonList(falseBranch));
     }
 
     @Override

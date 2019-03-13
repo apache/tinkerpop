@@ -34,6 +34,7 @@ public final class Symbols {
 
 
     // INSTRUCTION OPS
+    public static final String CHOOSE_IF_THEN = "chooseIfThen";
     public static final String CHOOSE_IF_THEN_ELSE = "chooseIfThenElse";
     public static final String COUNT = "count";
     public static final String FILTER = "filter";
@@ -53,6 +54,10 @@ public final class Symbols {
 
     public Type getOpType(final String op) {
         switch (op) {
+            case CHOOSE_IF_THEN:
+                return Type.BRANCH;
+            case CHOOSE_IF_THEN_ELSE:
+                return Type.BRANCH;
             case COUNT:
                 return Type.REDUCE;
             case FILTER:

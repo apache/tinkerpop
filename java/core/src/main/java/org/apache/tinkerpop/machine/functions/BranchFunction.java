@@ -20,17 +20,14 @@ package org.apache.tinkerpop.machine.functions;
 
 import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.functions.branch.selector.Selector;
-import org.apache.tinkerpop.machine.traversers.Traverser;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface BranchFunction<C, S, E, M> extends Function<Traverser<C, S>, Iterator<Traverser<C, E>>>, InternalFunction<C> {
+public interface BranchFunction<C, S, E, M> extends InternalFunction<C> {
 
     public Selector<C, S, M> getBranchSelector();
 

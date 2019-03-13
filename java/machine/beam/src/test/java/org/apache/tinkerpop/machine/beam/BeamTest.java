@@ -62,5 +62,10 @@ public class BeamTest {
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());
+
+        traversal = g.inject(8L).choose(__.is(7L),__.incr());
+        System.out.println(TraversalUtil.getBytecode(traversal));
+        System.out.println(traversal);
+        System.out.println(traversal.toList());
     }
 }

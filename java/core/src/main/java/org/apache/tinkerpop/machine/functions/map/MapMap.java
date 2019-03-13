@@ -33,7 +33,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MapMap<C, S, E> extends AbstractFunction<C, S, E> implements MapFunction<C, S, E>, NestedFunction<C> {
+public class MapMap<C, S, E> extends AbstractFunction<C> implements MapFunction<C, S, E>, NestedFunction<C> {
 
     private final Compilation<C, S, E> internalMap;
 

@@ -31,7 +31,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class HasKeyValueFilter<C, K, V> extends AbstractFunction<C, Map<K, V>, Map<K, V>> implements FilterFunction<C, Map<K, V>> {
+public final class HasKeyValueFilter<C, K, V> extends AbstractFunction<C> implements FilterFunction<C, Map<K, V>> {
 
     private final Argument<K> key;
     private final Argument<V> value;

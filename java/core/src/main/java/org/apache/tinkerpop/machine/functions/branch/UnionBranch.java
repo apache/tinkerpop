@@ -24,12 +24,9 @@ import org.apache.tinkerpop.machine.functions.AbstractFunction;
 import org.apache.tinkerpop.machine.functions.BranchFunction;
 import org.apache.tinkerpop.machine.functions.branch.selector.Selector;
 import org.apache.tinkerpop.machine.functions.branch.selector.TrueSelector;
-import org.apache.tinkerpop.machine.traversers.Traverser;
-import org.apache.tinkerpop.util.MultiIterator;
 import org.apache.tinkerpop.util.StringFactory;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,24 +34,14 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class UnionBranch<C, S, E> extends AbstractFunction<C, S, Iterator<Traverser<C, E>>> implements BranchFunction<C, S, E, Boolean> {
+public final class UnionBranch<C, S, E> extends AbstractFunction<C> implements BranchFunction<C, S, E, Boolean> {
 
     private final Map<Boolean, List<Compilation<C, S, E>>> branches;
-
 
     public UnionBranch(final Coefficient<C> coefficient, final Set<String> labels, final List<Compilation<C, S, E>> branches) {
         super(coefficient, labels);
         this.branches = new HashMap<>();
         this.branches.put(Boolean.TRUE, branches);
-    }
-
-    @Override
-    public Iterator<Traverser<C, E>> apply(final Traverser<C, S> traverser) {
-        final MultiIterator<Traverser<C, E>> iterator = new MultiIterator<>();
-        for (final Compilation<C, S, E> branch : this.branches.get(Boolean.TRUE)) {
-            iterator.addIterator(branch.addTraverser(traverser));
-        }
-        return iterator;
     }
 
     @Override

@@ -26,6 +26,7 @@ import org.apache.tinkerpop.machine.functions.FlatMapFunction;
 import org.apache.tinkerpop.machine.functions.InitialFunction;
 import org.apache.tinkerpop.machine.functions.MapFunction;
 import org.apache.tinkerpop.machine.functions.ReduceFunction;
+import org.apache.tinkerpop.machine.functions.branch.RepeatBranch;
 import org.apache.tinkerpop.machine.pipes.util.BasicReducer;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.traversers.Traverser;
@@ -46,8 +47,10 @@ public final class Pipes<C, S, E> implements Processor<C, S, E> {
         AbstractStep<C, ?, ?> previousStep = EmptyStep.instance();
         for (final CFunction<?> function : compilation.getFunctions()) {
             final AbstractStep nextStep;
-            if (function instanceof BranchFunction)
-                nextStep = new BranchStep(previousStep, (BranchFunction<C, ?, ?,?>) function);
+            if (function instanceof RepeatBranch)
+                nextStep = new RepeatStep(previousStep, (RepeatBranch<C, ?>) function);
+            else if (function instanceof BranchFunction)
+                nextStep = new BranchStep(previousStep, (BranchFunction<C, ?, ?, ?>) function);
             else if (function instanceof FilterFunction)
                 nextStep = new FilterStep(previousStep, (FilterFunction<C, ?>) function);
             else if (function instanceof FlatMapFunction)

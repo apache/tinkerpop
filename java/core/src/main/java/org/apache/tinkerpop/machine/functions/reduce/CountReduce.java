@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class CountReduce<C, S> extends AbstractFunction<C, S, Long> implements ReduceFunction<C, S, Long> {
+public class CountReduce<C, S> extends AbstractFunction<C> implements ReduceFunction<C, S, Long> {
 
     public CountReduce(final Coefficient<C> coefficient, final Set<String> labels) {
         super(coefficient, labels);

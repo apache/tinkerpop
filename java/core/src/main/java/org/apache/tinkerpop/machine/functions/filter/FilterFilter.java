@@ -26,14 +26,12 @@ import org.apache.tinkerpop.machine.functions.NestedFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.util.StringFactory;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class FilterFilter<C, S> extends AbstractFunction<C, S, S> implements FilterFunction<C, S>, NestedFunction<C> {
+public final class FilterFilter<C, S> extends AbstractFunction<C> implements FilterFunction<C, S>, NestedFunction<C> {
 
     private final Compilation<C, S, ?> internalFilter;
 

@@ -29,7 +29,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SumReduce<C, S extends Number> extends AbstractFunction<C, S, S> implements ReduceFunction<C, S, S> {
+public class SumReduce<C, S extends Number> extends AbstractFunction<C> implements ReduceFunction<C, S, S> {
 
     public SumReduce(final Coefficient<C> coefficient, final Set<String> labels) {
         super(coefficient, labels);

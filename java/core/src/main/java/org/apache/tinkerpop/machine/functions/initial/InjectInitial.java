@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class InjectInitial<C, S> extends AbstractFunction<C, S, S> implements InitialFunction<C, S> {
+public class InjectInitial<C, S> extends AbstractFunction<C> implements InitialFunction<C, S> {
 
     private final S[] objects;
 

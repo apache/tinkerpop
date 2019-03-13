@@ -32,7 +32,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PathMap<C, S> extends AbstractFunction<C, S, Path> implements MapFunction<C, S, Path> {
+public class PathMap<C, S> extends AbstractFunction<C> implements MapFunction<C, S, Path> {
 
     private final CompilationRing<C, Object, Object> compilationRing;
 

@@ -41,10 +41,13 @@ public class BranchFn<C, S, E, M> extends AbstractFn<C, S, S> {
     }
 
     @ProcessElement
-    public void processElement(final @Element Traverser<C, S> traverser, final MultiOutputReceiver out) {
-        final Optional<M> selector = this.branchSelector.from(traverser);
-        if (selector.isPresent())
-            out.get(this.branches.get(selector.get())).output(traverser.clone());
+    public void processElement(final @Element Traverser<C, S> traverser, final MultiOutputReceiver outputs) {
+        final Optional<M> selector = this.branchSelector.from(traverser.clone());
+        if (selector.isPresent()) {
+            final TupleTag<Traverser<C, S>> outputTag = this.branches.get(selector.get());
+            if (null != outputTag)
+                outputs.get(outputTag).output(traverser.clone());
+        }
 
     }
 }

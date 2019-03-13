@@ -54,7 +54,7 @@ public class PipesTest {
         System.out.println(traversal);
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
-        traversal = g.inject(8L).choose(__.is(7L),__.incr(),__.<Long>incr().incr());
+        traversal = g.inject(7L).choose(__.is(7L),__.incr());
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

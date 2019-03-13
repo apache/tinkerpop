@@ -23,12 +23,8 @@ import org.apache.tinkerpop.machine.coefficients.Coefficient;
 import org.apache.tinkerpop.machine.functions.AbstractFunction;
 import org.apache.tinkerpop.machine.functions.BranchFunction;
 import org.apache.tinkerpop.machine.functions.branch.selector.Selector;
-import org.apache.tinkerpop.machine.processor.Processor;
-import org.apache.tinkerpop.machine.traversers.Traverser;
-import org.apache.tinkerpop.util.IteratorUtils;
 import org.apache.tinkerpop.util.StringFactory;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,7 +32,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class RepeatBranch<C, S> extends AbstractFunction<C, S, Iterator<Traverser<C, S>>> implements BranchFunction<C, S, S, Boolean> {
+public class RepeatBranch<C, S> extends AbstractFunction<C> implements BranchFunction<C, S, S, Boolean> {
 
     private final Compilation<C, S, S> repeat;
     private final Compilation<C, S, ?> until;
@@ -45,19 +41,6 @@ public class RepeatBranch<C, S> extends AbstractFunction<C, S, Iterator<Traverse
         super(coefficient, labels);
         this.repeat = (Compilation<C, S, S>) repeatCompilations.get(0);
         this.until = repeatCompilations.get(1);
-    }
-
-    @Override
-    public Iterator<Traverser<C, S>> apply(final Traverser<C, S> traverser) {
-        final Processor<C, S, S> repeatProcessor = this.repeat.getProcessor();
-        repeatProcessor.addStart(traverser);
-        return IteratorUtils.filter(repeatProcessor, t -> {
-            if (!this.until.filterTraverser(t)) {
-                repeatProcessor.addStart(t);
-                return false;
-            } else
-                return true;
-        });
     }
 
     @Override

@@ -59,10 +59,6 @@ public interface Traverser<C, S> extends Serializable, Cloneable {
         return IteratorUtils.map(function.apply(this), e -> this.split(function, e));
     }
 
-    public default <E,M> Iterator<Traverser<C, E>> branch(final BranchFunction<C, S, E,M> function) {
-        return function.apply(this);
-    }
-
     //public default void sideEffect(final SideEffectFunction<C,S> function);
 
     public default <E> Traverser<C, E> reduce(final ReduceFunction<C, S, E> function, final E reducedValue) {

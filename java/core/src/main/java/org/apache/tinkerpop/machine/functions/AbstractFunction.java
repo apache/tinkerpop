@@ -26,7 +26,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class AbstractFunction<C, S, E> implements CFunction<C> {
+public abstract class AbstractFunction<C> implements CFunction<C> {
 
     private Coefficient<C> coefficient;
     private Set<String> labels;

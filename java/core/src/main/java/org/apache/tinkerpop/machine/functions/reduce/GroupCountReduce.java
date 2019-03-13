@@ -34,7 +34,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroupCountReduce<C, S, E> extends AbstractFunction<C, S, Map<E, Long>> implements ReduceFunction<C, S, Map<E, Long>>, NestedFunction<C> {
+public class GroupCountReduce<C, S, E> extends AbstractFunction<C> implements ReduceFunction<C, S, Map<E, Long>>, NestedFunction<C> {
 
     private final Compilation<C, S, E> byCompilation;
 

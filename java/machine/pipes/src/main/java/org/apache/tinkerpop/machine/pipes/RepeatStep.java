@@ -19,30 +19,32 @@
 package org.apache.tinkerpop.machine.pipes;
 
 import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.functions.BranchFunction;
-import org.apache.tinkerpop.machine.functions.branch.selector.Selector;
+import org.apache.tinkerpop.machine.functions.branch.RepeatBranch;
 import org.apache.tinkerpop.machine.traversers.Traverser;
-import org.apache.tinkerpop.util.MultiIterator;
+import org.apache.tinkerpop.util.IteratorUtils;
 
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class BranchStep<C, S, E, M> extends AbstractStep<C, S, E> {
+public final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
 
-    private final Selector<C, S, M> branchSelector;
-    private final Map<M, List<Compilation<C, S, E>>> branches;
-    private Iterator<Traverser<C, E>> output = Collections.emptyIterator();
+    private final Compilation<C, S, ?> until;
+    private final Compilation<C, S, S> repeat;
+    private final Iterator<Traverser<C, S>> output;
 
-    public BranchStep(final AbstractStep<C, ?, S> previousStep, final BranchFunction<C, S, E, M> branchFunction) {
-        super(previousStep, branchFunction);
-        this.branchSelector = branchFunction.getBranchSelector();
-        this.branches = branchFunction.getBranches();
+    public RepeatStep(final AbstractStep<C, ?, S> previousStep, final RepeatBranch<C, S> repeatFunction) {
+        super(previousStep, repeatFunction);
+        this.until = repeatFunction.getUntil();
+        this.repeat = repeatFunction.getRepeat();
+        this.output = IteratorUtils.filter(this.repeat.getProcessor(), t -> {
+            if (!this.until.filterTraverser(t)) {
+                this.repeat.getProcessor().addStart(t);
+                return false;
+            } else
+                return true;
+        });
     }
 
     @Override
@@ -52,22 +54,17 @@ public final class BranchStep<C, S, E, M> extends AbstractStep<C, S, E> {
     }
 
     @Override
-    public Traverser<C, E> next() {
+    public Traverser<C, S> next() {
         this.stageOutput();
         return this.output.next();
     }
 
     private final void stageOutput() {
         while (!this.output.hasNext() && super.hasNext()) {
-            final Traverser<C, S> traverser = super.getPreviousTraverser();
-            final Optional<M> token = this.branchSelector.from(traverser);
-            if (token.isPresent()) {
-                this.output = new MultiIterator<>();
-                for (final Compilation<C, S, E> branch : this.branches.get(token.get())) {
-                    ((MultiIterator<Traverser<C, E>>) this.output).addIterator(branch.addTraverser(traverser.clone()));
-                }
-            }
+            this.repeat.addTraverser(super.getPreviousTraverser());
         }
+
     }
 
 }
+

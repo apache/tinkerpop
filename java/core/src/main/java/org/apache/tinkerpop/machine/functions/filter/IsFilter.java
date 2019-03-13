@@ -29,7 +29,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class IsFilter<C, S> extends AbstractFunction<C, S, S> implements FilterFunction<C, S> {
+public final class IsFilter<C, S> extends AbstractFunction<C> implements FilterFunction<C, S> {
 
     private S object;
 

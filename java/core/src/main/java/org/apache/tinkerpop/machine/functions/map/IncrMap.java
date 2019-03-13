@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IncrMap<C> extends AbstractFunction<C, Long, Long> implements MapFunction<C, Long, Long> {
+public class IncrMap<C> extends AbstractFunction<C> implements MapFunction<C, Long, Long> {
 
     public IncrMap(final Coefficient<C> coefficient, final Set<String> labels) {
         super(coefficient, labels);

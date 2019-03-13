@@ -68,6 +68,11 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return (Traversal) this;
     }
 
+    public <R> Traversal<C, S, R> choose(final Traversal<C, E, ?> predicate, final Traversal<C, S, R> trueTraversal) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.CHOOSE_IF_THEN, predicate, trueTraversal);
+        return (Traversal) this;
+    }
+
     public Traversal<C, S, Long> count() {
         this.bytecode.addInstruction(this.currentCoefficient, Symbols.COUNT);
         return (Traversal) this;

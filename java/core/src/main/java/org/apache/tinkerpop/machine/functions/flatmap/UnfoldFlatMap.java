@@ -33,7 +33,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class UnfoldFlatMap<C, S, E> extends AbstractFunction<C, S, E> implements FlatMapFunction<C, S, E> {
+public class UnfoldFlatMap<C, S, E> extends AbstractFunction<C> implements FlatMapFunction<C, S, E> {
 
     public UnfoldFlatMap(final Coefficient<C> coefficient, final Set<String> labels) {
         super(coefficient, labels);
