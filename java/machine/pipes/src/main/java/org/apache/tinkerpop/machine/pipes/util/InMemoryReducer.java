@@ -16,51 +16,36 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.pipes;
+package org.apache.tinkerpop.machine.pipes.util;
 
 import org.apache.tinkerpop.machine.functions.ReduceFunction;
-import org.apache.tinkerpop.machine.pipes.util.Reducer;
 import org.apache.tinkerpop.machine.traversers.Traverser;
-import org.apache.tinkerpop.machine.traversers.TraverserFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ReduceStep<C, S, E> extends AbstractStep<C, S, E> {
+public class InMemoryReducer<C, S, E> implements Reducer<C, S, E> {
 
     private final ReduceFunction<C, S, E> reduceFunction;
-    private final Reducer<C, S, E> reducer;
-    private final TraverserFactory<C> traverserFactory;
-    private boolean done = false;
+    private E value;
 
-    public ReduceStep(final AbstractStep<C, ?, S> previousStep,
-                      final ReduceFunction<C, S, E> reduceFunction,
-                      final Reducer<C, S, E> reducer,
-                      final TraverserFactory<C> traverserFactory) {
-        super(previousStep, reduceFunction);
+    public InMemoryReducer(final ReduceFunction<C, S, E> reduceFunction) {
         this.reduceFunction = reduceFunction;
-        this.reducer = reducer;
-        this.traverserFactory = traverserFactory;
+        this.value = this.reduceFunction.getInitialValue();
     }
 
     @Override
-    public Traverser<C, E> next() {
-        while (this.hasNext()) {
-            this.reducer.add(super.getPreviousTraverser());
-        }
-        this.done = true;
-        return this.traverserFactory.create(this.reduceFunction.coefficient(), this.reducer.get());
+    public E get() {
+        return this.value;
     }
 
     @Override
-    public boolean hasNext() {
-        return !this.done && super.hasNext();
+    public void add(final Traverser<C, S> traverser) {
+        this.value = this.reduceFunction.apply(traverser, this.value);
     }
 
     @Override
     public void reset() {
-        super.reset();
-        this.reducer.reset();
-        this.done = false;
+        this.value = this.reduceFunction.getInitialValue();
     }
 }

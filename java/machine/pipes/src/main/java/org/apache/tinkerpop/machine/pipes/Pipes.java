@@ -28,7 +28,7 @@ import org.apache.tinkerpop.machine.functions.InitialFunction;
 import org.apache.tinkerpop.machine.functions.MapFunction;
 import org.apache.tinkerpop.machine.functions.ReduceFunction;
 import org.apache.tinkerpop.machine.functions.branch.RepeatBranch;
-import org.apache.tinkerpop.machine.pipes.util.BasicReducer;
+import org.apache.tinkerpop.machine.pipes.util.InMemoryReducer;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
@@ -64,7 +64,7 @@ public final class Pipes<C, S, E> implements Processor<C, S, E> {
                 nextStep = new BarrierStep(previousStep, (BarrierFunction) function);
             else if (function instanceof ReduceFunction)
                 nextStep = new ReduceStep(previousStep, (ReduceFunction<C, ?, ?>) function,
-                        new BasicReducer<>(((ReduceFunction<C, ?, ?>) function).getInitialValue()), compilation.getTraverserFactory());
+                        new InMemoryReducer((ReduceFunction<C, ?, ?>) function), compilation.getTraverserFactory());
             else
                 throw new RuntimeException("You need a new step type:" + function);
 

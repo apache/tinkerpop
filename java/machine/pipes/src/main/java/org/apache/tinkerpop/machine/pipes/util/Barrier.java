@@ -18,31 +18,16 @@
  */
 package org.apache.tinkerpop.machine.pipes.util;
 
+import java.io.Serializable;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class BasicReducer<S> implements Reducer<S> {
+public interface Barrier<S> extends Serializable {
 
-    private S value;
-    private final S initialValue;
+    public S get();
 
-    public BasicReducer(final S initialValue) {
-        this.initialValue = initialValue;
-        this.value = initialValue;
-    }
+    public void update(final S newValue);
 
-    @Override
-    public void reset() {
-        this.value = this.initialValue;
-    }
-
-    public S get() {
-        return this.value;
-    }
-
-    public void update(final S newValue) {
-        this.value = newValue;
-    }
-
-
+    public void reset();
 }

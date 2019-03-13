@@ -19,8 +19,8 @@
 package org.apache.tinkerpop.machine.pipes;
 
 import org.apache.tinkerpop.machine.functions.BarrierFunction;
-import org.apache.tinkerpop.machine.pipes.util.BasicReducer;
-import org.apache.tinkerpop.machine.pipes.util.Reducer;
+import org.apache.tinkerpop.machine.pipes.util.InMemoryBarrier;
+import org.apache.tinkerpop.machine.pipes.util.Barrier;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
 import java.util.Collections;
@@ -31,14 +31,14 @@ import java.util.Iterator;
  */
 public class BarrierStep<C, S, E, B> extends AbstractStep<C, S, E> {
 
-    private final Reducer<B> reducer;
+    private final Barrier<B> barrier;
     private final BarrierFunction<C, S, E, B> barrierFunction;
     private boolean done = false;
     private Iterator<E> output = Collections.emptyIterator();
 
     public BarrierStep(final AbstractStep<C, ?, S> previousStep, final BarrierFunction<C, S, E, B> barrierFunction) {
         super(previousStep, barrierFunction);
-        this.reducer = new BasicReducer<>(barrierFunction.getInitialValue());
+        this.barrier = new InMemoryBarrier<>(barrierFunction.getInitialValue()); // move to strategy determination
         this.barrierFunction = barrierFunction;
     }
 
@@ -46,10 +46,10 @@ public class BarrierStep<C, S, E, B> extends AbstractStep<C, S, E> {
     public Traverser<C, E> next() {
         if (!this.done) {
             while (super.hasNext()) {
-                this.reducer.update(this.barrierFunction.apply(super.getPreviousTraverser(), this.reducer.get()));
+                this.barrier.update(this.barrierFunction.apply(super.getPreviousTraverser(), this.barrier.get()));
             }
             this.done = true;
-            this.output = (Iterator<E>) this.barrierFunction.createIterator(this.reducer.get());
+            this.output = (Iterator<E>) this.barrierFunction.createIterator(this.barrier.get());
         }
         return (Traverser<C, E>) this.output.next();
     }
@@ -62,7 +62,7 @@ public class BarrierStep<C, S, E, B> extends AbstractStep<C, S, E> {
     @Override
     public void reset() {
         super.reset();
-        this.reducer.reset();
+        this.barrier.reset();
         this.done = false;
     }
 }

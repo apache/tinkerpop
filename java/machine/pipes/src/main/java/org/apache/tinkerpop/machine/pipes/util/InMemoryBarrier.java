@@ -18,20 +18,31 @@
  */
 package org.apache.tinkerpop.machine.pipes.util;
 
-import org.apache.tinkerpop.machine.traversers.Traverser;
-
-import java.io.Serializable;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Reducer<C, S, E> extends Serializable {
+public final class InMemoryBarrier<S> implements Barrier<S> {
 
-    public E get();
+    private S value;
+    private final S initialValue;
 
-    public void add(final Traverser<C, S> traverser);
+    public InMemoryBarrier(final S initialValue) {
+        this.initialValue = initialValue;
+        this.value = initialValue;
+    }
 
-    public void reset();
+    @Override
+    public void reset() {
+        this.value = this.initialValue;
+    }
+
+    public S get() {
+        return this.value;
+    }
+
+    public void update(final S newValue) {
+        this.value = newValue;
+    }
 
 
 }
