@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
@@ -195,7 +196,8 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
 
         final List<Step> stepsToInsertPropertyMutations = traversal.getSteps().stream().filter(step ->
                 step instanceof AddEdgeStep || step instanceof AddVertexStep ||
-                        step instanceof AddVertexStartStep || (includeMetaProperties && step instanceof AddPropertyStep)
+                step instanceof AddEdgeStartStep || step instanceof AddVertexStartStep ||
+                (includeMetaProperties && step instanceof AddPropertyStep)
         ).collect(Collectors.toList());
 
         stepsToInsertPropertyMutations.forEach(step -> {
