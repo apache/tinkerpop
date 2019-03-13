@@ -94,7 +94,7 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
             self.write(request_id, request_message)
             data = self._transport.read()
             # Allow recursive call for auth
-            self.data_received(data, results_dict)
+            return self.data_received(data, results_dict)
         elif status_code == 204:
             result_set.stream.put_nowait([])
             del results_dict[request_id]
