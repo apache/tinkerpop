@@ -54,6 +54,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Path
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
@@ -183,6 +184,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                             ReadOnlyStrategy.class,
                             StandardVerificationStrategy.class,
                             EarlyLimitStrategy.class,
+                            EdgeLabelVerificationStrategy.class,
                             //
                             GraphFilterStrategy.class,
                             VertexProgramStrategy.class
@@ -300,6 +302,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     ReadOnlyStrategy.class,
                     StandardVerificationStrategy.class,
                     EarlyLimitStrategy.class,
+                    EdgeLabelVerificationStrategy.class,
                     //
                     GraphFilterStrategy.class,
                     VertexProgramStrategy.class
@@ -400,6 +403,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                             ReadOnlyStrategy.class,
                             StandardVerificationStrategy.class,
                             EarlyLimitStrategy.class,
+                            EdgeLabelVerificationStrategy.class,
                             //
                             GraphFilterStrategy.class,
                             VertexProgramStrategy.class
@@ -509,6 +513,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     ReadOnlyStrategy.class,
                     StandardVerificationStrategy.class,
                     EarlyLimitStrategy.class,
+                    EdgeLabelVerificationStrategy.class,
                     //
                     GraphFilterStrategy.class,
                     VertexProgramStrategy.class
