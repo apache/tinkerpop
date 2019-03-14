@@ -61,7 +61,7 @@ limitations under the License.
         </developer>
     </developers>
     <prerequisites>
-        <maven>3.2.5</maven>
+        <maven>3.3.9</maven>
     </prerequisites>
     <modules>
         <module>core</module>
@@ -90,6 +90,20 @@ limitations under the License.
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.8.0-beta4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j18-impl</artifactId>
+                <version>2.11.2</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <build>
         <directory>${basedir}/target</directory>
         <plugins>

@@ -61,7 +61,6 @@ limitations under the License.
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.25</version>
         </dependency>
         <dependency>
             <groupId>org.xerial.snappy</groupId>
@@ -83,6 +82,11 @@ limitations under the License.
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>pipes</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j18-impl</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
     <build>
