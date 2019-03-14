@@ -36,6 +36,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added GraphSON serialization support for `Duration`, `Char`, `ByteBuffer`, `Byte`, `BigInteger` and `BigDecimal` in `gremlin-python`.
 * Added `ProfilingAware` interface to allow steps to be notified that `profile()` was being called.
 * Fixed bug where `profile()` could produce negative timings when `group()` contained a reducing barrier.
+* Improved logic determining the dead or alive state of a Java driver `Connection`.
+* Improved handling of dead connections and the availability of hosts.
 * Bumped `httpclient` to 4.5.7.
 * Bumped `slf4j` to 1.7.25.
 * Bumped `commons-codec` to 1.12.
