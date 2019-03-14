@@ -1101,7 +1101,10 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             // Netty closes the channel to the server on a non-recoverable error such as CorruptedFrameException
             // and the connection is subsequently destroyed. Each of the pending requests are given an error with
             // the following error message.
-            assertEquals("Connection reset by peer", root.getMessage());
+            //
+            // went with two possible error messages here as i think that there is some either non-deterministic
+            // behavior around the error message or it's environmentally dependent (e.g. different jdk, versions, etc)
+            assertThat(root.getMessage(), Matchers.anyOf(is("Connection to server is no longer active"), is("Connection reset by peer")));
 
             // validate that we can still send messages to the server
             assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
