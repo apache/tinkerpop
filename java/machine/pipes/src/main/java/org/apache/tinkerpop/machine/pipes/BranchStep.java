@@ -37,9 +37,9 @@ public final class BranchStep<C, S, E, M> extends AbstractStep<C, S, E> {
 
     private final Selector<C, S, M> branchSelector;
     private final Map<M, List<Compilation<C, S, E>>> branches;
-    private Iterator<Traverser<C, E>> output = Collections.emptyIterator();
+    private Iterator<Traverser<C, E>> nextTraversers = Collections.emptyIterator();
 
-    public BranchStep(final AbstractStep<C, ?, S> previousStep, final BranchFunction<C, S, E, M> branchFunction) {
+    BranchStep(final Step<C, ?, S> previousStep, final BranchFunction<C, S, E, M> branchFunction) {
         super(previousStep, branchFunction);
         this.branchSelector = branchFunction.getBranchSelector();
         this.branches = branchFunction.getBranches();
@@ -48,27 +48,27 @@ public final class BranchStep<C, S, E, M> extends AbstractStep<C, S, E> {
     @Override
     public boolean hasNext() {
         this.stageOutput();
-        return this.output.hasNext();
+        return this.nextTraversers.hasNext();
     }
 
     @Override
     public Traverser<C, E> next() {
         this.stageOutput();
-        return this.output.next();
+        return this.nextTraversers.next();
     }
 
     private final void stageOutput() {
-        while (!this.output.hasNext() && super.hasNext()) {
+        while (!this.nextTraversers.hasNext() && super.hasNext()) {
             final Traverser<C, S> traverser = super.getPreviousTraverser();
             final Optional<M> token = this.branchSelector.from(traverser);
             if (token.isPresent()) {
                 final List<Compilation<C, S, E>> matches = this.branches.get(token.get());
                 if (1 == matches.size())
-                    this.output = matches.get(0).addTraverser(traverser.clone());
+                    this.nextTraversers = matches.get(0).addTraverser(traverser.clone());
                 else {
-                    this.output = new MultiIterator<>();
+                    this.nextTraversers = new MultiIterator<>();
                     for (final Compilation<C, S, E> branch : matches) {
-                        ((MultiIterator<Traverser<C, E>>) this.output).addIterator(branch.addTraverser(traverser.clone()));
+                        ((MultiIterator<Traverser<C, E>>) this.nextTraversers).addIterator(branch.addTraverser(traverser.clone()));
                     }
                 }
             }

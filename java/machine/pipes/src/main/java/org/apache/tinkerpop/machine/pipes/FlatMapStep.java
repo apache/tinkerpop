@@ -32,7 +32,7 @@ public final class FlatMapStep<C, S, E> extends AbstractStep<C, S, E> {
     private final FlatMapFunction<C, S, E> flatMapFunction;
     private Iterator<Traverser<C, E>> iterator = Collections.emptyIterator();
 
-    public FlatMapStep(final AbstractStep<C, ?, S> previousStep, final FlatMapFunction<C, S, E> flatMapFunction) {
+    public FlatMapStep(final Step<C, ?, S> previousStep, final FlatMapFunction<C, S, E> flatMapFunction) {
         super(previousStep, flatMapFunction);
         this.flatMapFunction = flatMapFunction;
     }
@@ -51,7 +51,7 @@ public final class FlatMapStep<C, S, E> extends AbstractStep<C, S, E> {
 
     @Override
     public Traverser<C, E> next() {
-        if (!this.iterator.hasNext())
+        while (!this.iterator.hasNext())
             this.iterator = super.getPreviousTraverser().flatMap(this.flatMapFunction);
         return this.iterator.next();
     }

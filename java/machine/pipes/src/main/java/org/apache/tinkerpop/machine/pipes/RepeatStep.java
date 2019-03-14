@@ -32,13 +32,13 @@ public final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
 
     private final Compilation<C, S, ?> until;
     private final Compilation<C, S, S> repeat;
-    private final Iterator<Traverser<C, S>> output;
+    private final Iterator<Traverser<C, S>> nextTraversers;
 
-    public RepeatStep(final AbstractStep<C, ?, S> previousStep, final RepeatBranch<C, S> repeatFunction) {
+    RepeatStep(final Step<C, ?, S> previousStep, final RepeatBranch<C, S> repeatFunction) {
         super(previousStep, repeatFunction);
         this.until = repeatFunction.getUntil();
         this.repeat = repeatFunction.getRepeat();
-        this.output = IteratorUtils.filter(this.repeat.getProcessor(), t -> {
+        this.nextTraversers = IteratorUtils.filter(this.repeat.getProcessor(), t -> {
             if (!this.until.filterTraverser(t)) {
                 this.repeat.getProcessor().addStart(t);
                 return false;
@@ -50,17 +50,17 @@ public final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
     @Override
     public boolean hasNext() {
         this.stageOutput();
-        return this.output.hasNext();
+        return this.nextTraversers.hasNext();
     }
 
     @Override
     public Traverser<C, S> next() {
         this.stageOutput();
-        return this.output.next();
+        return this.nextTraversers.next();
     }
 
     private final void stageOutput() {
-        while (!this.output.hasNext() && super.hasNext()) {
+        while (!this.nextTraversers.hasNext() && super.hasNext()) {
             this.repeat.addTraverser(super.getPreviousTraverser());
         }
 

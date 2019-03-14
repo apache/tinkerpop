@@ -28,7 +28,7 @@ public final class MapStep<C, S, E> extends AbstractStep<C, S, E> {
 
     private final MapFunction<C, S, E> mapFunction;
 
-    public MapStep(final AbstractStep<C, ?, S> previousStep, final MapFunction<C, S, E> mapFunction) {
+    MapStep(final Step<C, ?, S> previousStep, final MapFunction<C, S, E> mapFunction) {
         super(previousStep, mapFunction);
         this.mapFunction = mapFunction;
     }

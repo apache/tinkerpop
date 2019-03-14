@@ -33,7 +33,7 @@ public final class InitialStep<C, S> extends AbstractStep<C, S, S> {
     private Iterator<S> objects;
     private final TraverserFactory<C> traverserFactory;
 
-    public InitialStep(final InitialFunction<C, S> initialFunction, final TraverserFactory<C> traverserFactory) {
+    InitialStep(final InitialFunction<C, S> initialFunction, final TraverserFactory<C> traverserFactory) {
         super(EmptyStep.instance(), initialFunction);
         this.objects = initialFunction.get();
         this.traverserFactory = traverserFactory;

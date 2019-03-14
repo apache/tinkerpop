@@ -27,11 +27,11 @@ import org.apache.tinkerpop.machine.traversers.TraverserSet;
  */
 public abstract class AbstractStep<C, S, E> implements Step<C, S, E> {
 
-    protected final CFunction<C> function;
-    protected final AbstractStep<C, ?, S> previousStep;
-    protected TraverserSet<C, S> traverserSet = new TraverserSet<>();
+    final CFunction<C> function;
+    private final Step<C, ?, S> previousStep;
+    private TraverserSet<C, S> traverserSet = new TraverserSet<>();
 
-    public AbstractStep(final AbstractStep<C, ?, S> previousStep, final CFunction<C> function) {
+    public AbstractStep(final Step<C, ?, S> previousStep, final CFunction<C> function) {
         this.previousStep = previousStep;
         this.function = function;
     }
@@ -48,11 +48,10 @@ public abstract class AbstractStep<C, S, E> implements Step<C, S, E> {
     @Override
     public abstract Traverser<C, E> next();
 
-    protected Traverser<C, S> getPreviousTraverser() {
-        if (!this.traverserSet.isEmpty())
-            return this.traverserSet.remove();
-        else
-            return this.previousStep.next();
+    final Traverser<C, S> getPreviousTraverser() {
+        return this.traverserSet.isEmpty() ?
+                this.previousStep.next() :
+                this.traverserSet.remove();
     }
 
     @Override

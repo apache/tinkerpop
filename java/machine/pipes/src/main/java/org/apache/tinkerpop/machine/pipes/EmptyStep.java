@@ -42,7 +42,7 @@ public final class EmptyStep<C, S, E> extends AbstractStep<C, S, E> {
         throw FastNoSuchElementException.instance();
     }
 
-    public static <C, S, E> EmptyStep<C, S, E> instance() {
+    static <C, S, E> EmptyStep<C, S, E> instance() {
         return INSTANCE;
     }
 }

@@ -36,9 +36,9 @@ public class BarrierStep<C, S, E, B> extends AbstractStep<C, S, E> {
     private boolean done = false;
     private Iterator<E> output = Collections.emptyIterator();
 
-    public BarrierStep(final AbstractStep<C, ?, S> previousStep, final BarrierFunction<C, S, E, B> barrierFunction) {
+    BarrierStep(final Step<C, ?, S> previousStep, final BarrierFunction<C, S, E, B> barrierFunction) {
         super(previousStep, barrierFunction);
-        this.barrier = new InMemoryBarrier<>(barrierFunction.getInitialValue()); // move to strategy determination
+        this.barrier = new InMemoryBarrier<>(barrierFunction.getInitialValue()); // TODO: move to strategy determination
         this.barrierFunction = barrierFunction;
     }
 

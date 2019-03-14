@@ -20,6 +20,7 @@ package org.apache.tinkerpop.machine.pipes;
 
 import org.apache.tinkerpop.machine.functions.FilterFunction;
 import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.util.FastNoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -29,41 +30,37 @@ public final class FilterStep<C, S> extends AbstractStep<C, S, S> {
     private final FilterFunction<C, S> filterFunction;
     private Traverser<C, S> nextTraverser = null;
 
-    public FilterStep(final AbstractStep<C, ?, S> previousStep, final FilterFunction<C, S> filterFunction) {
+    FilterStep(final Step<C, ?, S> previousStep, final FilterFunction<C, S> filterFunction) {
         super(previousStep, filterFunction);
         this.filterFunction = filterFunction;
     }
 
     @Override
     public Traverser<C, S> next() {
-        if (null != this.nextTraverser) {
+        this.stageNextTraverser();
+        if (null == this.nextTraverser)
+            throw FastNoSuchElementException.instance();
+        else {
             final Traverser<C, S> traverser = this.nextTraverser;
             this.nextTraverser = null;
             return traverser;
-        } else {
-            Traverser<C, S> traverser;
-            while (true) {
-                traverser = super.getPreviousTraverser();
-                if (traverser.filter(this.filterFunction))
-                    return traverser;
-            }
         }
     }
 
     @Override
     public boolean hasNext() {
-        if (null != this.nextTraverser)
-            return true;
-        else {
-            Traverser<C, S> traverser;
+        this.stageNextTraverser();
+        return null != this.nextTraverser;
+    }
+
+    private void stageNextTraverser() {
+        if (null == this.nextTraverser) {
             while (super.hasNext()) {
-                traverser = super.getPreviousTraverser();
-                if (traverser.filter(this.filterFunction)) {
-                    this.nextTraverser = traverser;
-                    return true;
-                }
+                this.nextTraverser = super.getPreviousTraverser();
+                if (this.nextTraverser.filter(this.filterFunction))
+                    return;
             }
-            return false;
+            this.nextTraverser = null;
         }
     }
 
