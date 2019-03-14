@@ -66,7 +66,6 @@ limitations under the License.
     <modules>
         <module>core</module>
         <module>machine</module>
-        <module>test</module>
     </modules>
     <scm>
         <connection>scm:git:git@github.com:apache/tinkerpop.git</connection>
@@ -100,7 +99,7 @@ limitations under the License.
             </plugin>
             <plugin>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>1.4.1</version>
+                <version>3.0.0-M2</version>
                 <executions>
                     <execution>
                         <id>enforce-all</id>
@@ -114,7 +113,7 @@ limitations under the License.
                                     <version>[11.0,)</version>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
-                                    <version>[3.2.5,)</version>
+                                    <version>[3.3.9,)</version>
                                 </requireMavenVersion>
                             </rules>
                         </configuration>
@@ -170,49 +169,6 @@ limitations under the License.
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.22.1</version>
-                    <configuration>
-                        <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory}
-                            -Dis.testing=true
-                        </argLine>
-                        <excludes>
-                            <exclude>**/*IntegrateTest.java</exclude>
-                        </excludes>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>2.22.1</version>
-                    <executions>
-                        <execution>
-                            <id>integration-test</id>
-                            <goals>
-                                <goal>integration-test</goal>
-                            </goals>
-                            <configuration>
-                                <includes>
-                                    <include>**/*IntegrateTest.java</include>
-                                </includes>
-                                <skipTests>${skipIntegrationTests}</skipTests>
-                                <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182
-                                    -Dbuild.dir=${project.build.directory} -Dis.testing=true
-                                </argLine>
-                                <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>verify-integration-test</id>
-                            <goals>
-                                <goal>verify</goal>
-                            </goals>
-                            <configuration>
-                                <skipTests>${skipIntegrationTests}</skipTests>
-                                <summaryFiles>
-                                    <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
-                                </summaryFiles>
-                            </configuration>
-                        </execution>
-                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
