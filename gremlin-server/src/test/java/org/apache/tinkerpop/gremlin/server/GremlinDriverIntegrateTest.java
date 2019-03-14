@@ -119,7 +119,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         if (name.getMethodName().equals("shouldKeepAliveForWebSockets")) {
             final org.apache.log4j.Logger webSocketClientHandlerLogger = org.apache.log4j.Logger.getLogger(WebSocketClientHandler.class);
-            previousLogLevel = webSocketClientHandlerLogger.getLevel();
             webSocketClientHandlerLogger.setLevel(previousLogLevel);
         }
 
