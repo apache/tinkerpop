@@ -31,6 +31,7 @@ import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrationTest {
@@ -88,18 +89,19 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
             }
 
             // Assert that the host has not been marked unavailable
-            Assert.assertEquals(1, cluster.availableHosts().size());
+            assertEquals(1, cluster.availableHosts().size());
 
             // Assert that there is no connection leak and all connections have been closed
-            Assert.assertEquals(0, client.hostConnectionPools.values().stream()
+            assertEquals(0, client.hostConnectionPools.values().stream()
                                                              .findFirst().get()
                                                              .numConnectionsWaitingToCleanup());
-
-            // Assert that the connection has been destroyed. Specifically check for the string with
-            // isDead=true indicating the connection that was closed due to CorruptedFrameException.
-            assertThat(recordingAppender.logContainsAny("^(?!.*(isDead=false)).*isDead=true.*destroyed successfully.$"), is(true));
         } finally {
             cluster.close();
         }
+
+        // Assert that the connection has been destroyed. Specifically check for the string with
+        // isDead=true indicating the connection that was closed due to CorruptedFrameException.
+        assertThat(recordingAppender.logContainsAny("^(?!.*(isDead=false)).*isDead=true.*destroyed successfully.$"), is(true));
+
     }
 }
