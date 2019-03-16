@@ -37,12 +37,20 @@ public class __ {
         return __.<C, S>start().c(coefficient);
     }
 
+    public static <C, S> Traversal<C, S, S> constant(final S constant) {
+        return __.<C, S>start().constance(constant);
+    }
+
     public static <C> Traversal<C, Long, Long> incr() {
         return __.<C, Long>start().incr();
     }
 
     public static <C, S> Traversal<C, S, S> is(final S object) {
         return __.<C, S>start().is(object);
+    }
+
+    public static <C, S> Traversal<C, S, S> is(final Traversal<C, S, S> objectTraversal) {
+        return __.<C, S>start().is(objectTraversal);
     }
 
     public static <C, S extends Number> Traversal<C, S, S> sum() {

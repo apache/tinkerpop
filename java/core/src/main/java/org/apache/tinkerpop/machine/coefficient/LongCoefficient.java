@@ -69,6 +69,11 @@ public class LongCoefficient implements Coefficient<Long> {
     }
 
     @Override
+    public boolean isZero() {
+        return 0L == this.value;
+    }
+
+    @Override
     public Long value() {
         return this.value;
     }

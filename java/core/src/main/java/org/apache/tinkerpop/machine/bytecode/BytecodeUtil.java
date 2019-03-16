@@ -31,6 +31,7 @@ import org.apache.tinkerpop.machine.function.filter.IdentityFilter;
 import org.apache.tinkerpop.machine.function.filter.IsFilter;
 import org.apache.tinkerpop.machine.function.flatmap.UnfoldFlatMap;
 import org.apache.tinkerpop.machine.function.initial.InjectInitial;
+import org.apache.tinkerpop.machine.function.map.ConstantMap;
 import org.apache.tinkerpop.machine.function.map.IncrMap;
 import org.apache.tinkerpop.machine.function.map.MapMap;
 import org.apache.tinkerpop.machine.function.map.PathMap;
@@ -149,6 +150,8 @@ public final class BytecodeUtil {
                         Compilation.compileOne(instruction.args()[0]),
                         Compilation.compileOne(instruction.args()[1]),
                         Compilation.compileOne(instruction.args()[2]));
+            case Symbols.CONSTANT:
+                return new ConstantMap<>(coefficient, labels, instruction.args()[0]);
             case Symbols.COUNT:
                 return new CountReduce<>(coefficient, labels);
             case Symbols.FILTER:
@@ -164,7 +167,7 @@ public final class BytecodeUtil {
             case Symbols.INJECT:
                 return new InjectInitial<>(coefficient, labels, instruction.args());
             case Symbols.IS:
-                return new IsFilter<>(coefficient, labels, instruction.args()[0]);
+                return new IsFilter<>(coefficient, labels, Argument.create(instruction.args()[0]));
             case Symbols.INCR:
                 return new IncrMap<>(coefficient, labels);
             case Symbols.MAP:

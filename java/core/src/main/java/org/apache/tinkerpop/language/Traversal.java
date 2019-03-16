@@ -79,6 +79,11 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return (Traversal) this;
     }
 
+    public <R> Traversal<C, S, R> constance(final R constant) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.CONSTANT, constant);
+        return (Traversal) this;
+    }
+
     public Traversal<C, S, Long> count() {
         this.bytecode.addInstruction(this.currentCoefficient, Symbols.COUNT);
         return (Traversal) this;

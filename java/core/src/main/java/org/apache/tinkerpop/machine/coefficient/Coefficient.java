@@ -37,6 +37,8 @@ public interface Coefficient<C> extends Cloneable, Serializable {
 
     public boolean isUnity();
 
+    public boolean isZero();
+
     public C value();
 
     public Long count();

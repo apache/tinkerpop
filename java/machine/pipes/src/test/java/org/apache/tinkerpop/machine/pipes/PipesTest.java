@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
+import static org.apache.tinkerpop.language.__.constant;
 import static org.apache.tinkerpop.language.__.incr;
 import static org.apache.tinkerpop.language.__.is;
 
@@ -44,7 +45,7 @@ public class PipesTest {
                 .withProcessor(PipesProcessor.class)
                 .withStrategy(IdentityStrategy.class);
 
-        Traversal<Long, ?, ?> traversal = g.inject(Arrays.asList(1L, 1L)).<Long>unfold().map(incr()).repeat(incr()).until(is(10L)).sum();
+        Traversal<Long, ?, ?> traversal = g.inject(Arrays.asList(1L, 1L)).<Long>unfold().map(incr()).repeat(incr()).until(__.is(__.<Long,Long>constant(8L).incr().incr())).sum();
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

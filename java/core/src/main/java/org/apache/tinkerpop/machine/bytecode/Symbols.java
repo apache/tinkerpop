@@ -37,6 +37,7 @@ public final class Symbols {
     public static final String BARRIER = "barrier";
     public static final String CHOOSE_IF_THEN = "chooseIfThen";
     public static final String CHOOSE_IF_THEN_ELSE = "chooseIfThenElse";
+    public static final String CONSTANT = "constant";
     public static final String COUNT = "count";
     public static final String FILTER = "filter";
     public static final String GROUP_COUNT = "groupCount";
@@ -61,6 +62,8 @@ public final class Symbols {
                 return Type.BRANCH;
             case CHOOSE_IF_THEN_ELSE:
                 return Type.BRANCH;
+            case CONSTANT:
+                return Type.MAP;
             case COUNT:
                 return Type.REDUCE;
             case FILTER:
