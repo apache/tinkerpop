@@ -138,4 +138,15 @@ public final class Compilation<C, S, E> implements Serializable {
         }
         return compilations;
     }
+
+    public static List<Object> repeatCompile(final Object... args) {
+        final List<Object> objects = new ArrayList<>();
+        for (final Object arg : args) {
+            if (arg instanceof Bytecode)
+                objects.add(new Compilation<>((Bytecode) arg));
+            else
+                objects.add(arg);
+        }
+        return objects;
+    }
 }

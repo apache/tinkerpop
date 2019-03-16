@@ -21,10 +21,11 @@ package org.apache.tinkerpop.machine.function.branch;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
-import org.apache.tinkerpop.machine.function.branch.selector.Selector;
 import org.apache.tinkerpop.machine.function.BranchFunction;
+import org.apache.tinkerpop.machine.function.branch.selector.Selector;
 import org.apache.tinkerpop.util.StringFactory;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,18 +35,24 @@ import java.util.Set;
  */
 public class RepeatBranch<C, S> extends AbstractFunction<C> implements BranchFunction<C, S, S, Boolean> {
 
+    private final Map<Character, Compilation<C, S, S>> compilations;
     private final Compilation<C, S, S> repeat;
-    private final Compilation<C, S, ?> until;
+    private final Compilation<C, S, S> until;
 
-    public RepeatBranch(final Coefficient<C> coefficient, final Set<String> labels, final List<Compilation<C, S, ?>> repeatCompilations) {
+    public RepeatBranch(final Coefficient<C> coefficient, final Set<String> labels, final List<Object> arguments) {
         super(coefficient, labels);
-        this.repeat = (Compilation<C, S, S>) repeatCompilations.get(0);
-        this.until = repeatCompilations.get(1);
+        this.compilations = new LinkedHashMap<>();
+        for (int i = 0; i < arguments.size(); i = i + 2) {
+            this.compilations.put((Character) arguments.get(i), (Compilation<C, S, S>) arguments.get(i + 1));
+        }
+
+        this.repeat = this.compilations.get('r');
+        this.until = this.compilations.get('u');
     }
 
     @Override
     public String toString() {
-        return StringFactory.makeFunctionString(this, this.repeat, this.until);
+        return StringFactory.makeFunctionString(this, this.compilations);
     }
 
     public Compilation<C, S, S> getRepeat() {
@@ -54,6 +61,10 @@ public class RepeatBranch<C, S> extends AbstractFunction<C> implements BranchFun
 
     public Compilation<C, S, ?> getUntil() {
         return this.until;
+    }
+
+    public Map<Character, Compilation<C, S, S>> getCompilations() {
+        return this.compilations;
     }
 
     @Override

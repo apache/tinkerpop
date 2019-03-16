@@ -175,7 +175,7 @@ public final class BytecodeUtil {
             case Symbols.PATH:
                 return new PathMap<>(coefficient, labels, Compilation.compile(instruction.args()));
             case Symbols.REPEAT:
-                return new RepeatBranch(coefficient, labels, Compilation.compile(instruction.args()));
+                return new RepeatBranch<>(coefficient, labels, Compilation.repeatCompile(instruction.args()));
             case Symbols.SUM:
                 return new SumReduce<>(coefficient, labels);
             case Symbols.UNFOLD:

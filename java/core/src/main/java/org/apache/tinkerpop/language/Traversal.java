@@ -21,6 +21,7 @@ package org.apache.tinkerpop.language;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
+import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.bytecode.Symbols;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
@@ -87,6 +88,15 @@ public class Traversal<C, S, E> implements Iterator<E> {
     public Traversal<C, S, Long> count() {
         this.bytecode.addInstruction(this.currentCoefficient, Symbols.COUNT);
         return (Traversal) this;
+    }
+
+    public Traversal<C, S, E> emit(final Traversal<C, E, ?> emitTraversal) {
+        final Instruction<C> lastInstruction = this.bytecode.lastInstruction();
+        if (lastInstruction.op().equals(Symbols.REPEAT))
+            lastInstruction.addArgs('e', emitTraversal.bytecode);
+        else
+            this.bytecode.addInstruction(this.currentCoefficient, Symbols.REPEAT, 'e', emitTraversal.bytecode);
+        return this;
     }
 
     public Traversal<C, S, E> filter(final Traversal<C, E, ?> filterTraversal) {
@@ -165,7 +175,11 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, E> repeat(final Traversal<C, E, E> repeatTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.REPEAT, repeatTraversal.bytecode);
+        final Instruction<C> lastInstruction = this.bytecode.lastInstruction();
+        if (lastInstruction.op().equals(Symbols.REPEAT))
+            lastInstruction.addArgs('r', repeatTraversal.bytecode);
+        else
+            this.bytecode.addInstruction(this.currentCoefficient, Symbols.REPEAT, 'r', repeatTraversal.bytecode);
         return this;
     }
 
@@ -192,7 +206,11 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, E> until(final Traversal<C, E, ?> untilTraversal) {
-        this.bytecode.lastInstruction().addArg(untilTraversal.bytecode);
+        final Instruction<C> lastInstruction = this.bytecode.lastInstruction();
+        if (lastInstruction.op().equals(Symbols.REPEAT))
+            lastInstruction.addArgs('u', untilTraversal.bytecode);
+        else
+            this.bytecode.addInstruction(this.currentCoefficient, Symbols.REPEAT, 'u', untilTraversal.bytecode);
         return this;
     }
 

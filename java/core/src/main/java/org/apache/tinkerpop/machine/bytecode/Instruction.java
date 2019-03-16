@@ -66,6 +66,12 @@ public final class Instruction<C> {
         this.args[this.args.length - 1] = arg;
     }
 
+    public void addArgs(final Object... args) {
+        for (final Object arg : args) {
+            this.addArg(arg);
+        }
+    }
+
     @Override
     public String toString() {
         return StringFactory.makeInstructionString(this);

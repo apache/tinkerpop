@@ -50,6 +50,6 @@ public class RepeatFn<C, S> extends AbstractFn<C, S, S> {
         else if (!this.deadEnd)
             out.get(this.repeatLoop).output(traverser.clone());
         else
-            throw new IllegalStateException("There are not enough repetition to account for this traveral");
+            throw new IllegalStateException("There are not enough repetitions to account for this traversal");
     }
 }
