@@ -77,7 +77,7 @@ public final class BytecodeUtil {
                 if (sourceInstruction.op().equals(Symbols.WITH_STRATEGY))
                     strategies.add(((Class<? extends Strategy>) sourceInstruction.args()[0]).getConstructor().newInstance());
             }
-            // sort strategy
+            // TODO: sort strategies
             return strategies;
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new RuntimeException(e.getMessage(), e);

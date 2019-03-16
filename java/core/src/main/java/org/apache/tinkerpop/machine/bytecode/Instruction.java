@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.machine.bytecode;
 
-import org.apache.tinkerpop.language.Traversal;
-import org.apache.tinkerpop.language.TraversalUtil;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.util.StringFactory;
 
@@ -41,10 +39,6 @@ public final class Instruction<C> {
         this.coefficient = coefficient;
         this.op = op;
         this.args = args;
-        for (int i = 0; i < this.args.length; i++) {
-            if (this.args[i] instanceof Traversal)
-                this.args[i] = TraversalUtil.getBytecode((Traversal) this.args[i]);
-        }
     }
 
     public Coefficient<C> coefficient() {
@@ -69,7 +63,7 @@ public final class Instruction<C> {
 
     public void addArg(final Object arg) {
         this.args = Arrays.copyOf(this.args, this.args.length + 1);
-        this.args[this.args.length - 1] = arg instanceof Traversal ? TraversalUtil.getBytecode(((Traversal) arg)) : arg;
+        this.args[this.args.length - 1] = arg;
     }
 
     @Override

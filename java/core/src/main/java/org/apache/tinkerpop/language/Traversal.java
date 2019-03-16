@@ -60,7 +60,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, E> by(final Traversal<C, ?, ?> byTraversal) {
-        this.bytecode.lastInstruction().addArg(byTraversal);
+        this.bytecode.lastInstruction().addArg(byTraversal.bytecode);
         return this;
     }
 
@@ -70,12 +70,12 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public <R> Traversal<C, S, R> choose(final Traversal<C, E, ?> predicate, final Traversal<C, S, R> trueTraversal, final Traversal<C, S, R> falseTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.CHOOSE_IF_THEN_ELSE, predicate, trueTraversal, falseTraversal);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.CHOOSE_IF_THEN_ELSE, predicate.bytecode, trueTraversal.bytecode, falseTraversal.bytecode);
         return (Traversal) this;
     }
 
     public <R> Traversal<C, S, R> choose(final Traversal<C, E, ?> predicate, final Traversal<C, S, R> trueTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.CHOOSE_IF_THEN, predicate, trueTraversal);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.CHOOSE_IF_THEN, predicate.bytecode, trueTraversal.bytecode);
         return (Traversal) this;
     }
 
@@ -90,7 +90,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, E> filter(final Traversal<C, E, ?> filterTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, filterTraversal);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, filterTraversal.bytecode);
         return this;
     }
 
@@ -105,7 +105,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public <K, V> Traversal<C, S, Map<K, V>> has(final Traversal<C, Map<K, V>, K> keyTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY, keyTraversal);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY, keyTraversal.bytecode);
         return (Traversal) this;
     }
 
@@ -115,17 +115,17 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public <K, V> Traversal<C, S, Map<K, V>> has(final Traversal<C, Map<K, V>, K> keyTraversal, final V value) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY_VALUE, keyTraversal, value);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY_VALUE, keyTraversal.bytecode, value);
         return (Traversal) this;
     }
 
     public <K, V> Traversal<C, S, Map<K, V>> has(final K key, final Traversal<C, Map<K, V>, V> valueTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY_VALUE, key, valueTraversal);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY_VALUE, key, valueTraversal.bytecode);
         return (Traversal) this;
     }
 
     public <K, V> Traversal<C, S, Map<K, V>> has(final Traversal<C, Map<K, V>, K> keyTraversal, final Traversal<C, Map<K, V>, V> valueTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY_VALUE, keyTraversal, valueTraversal);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY_VALUE, keyTraversal.bytecode, valueTraversal.bytecode);
         return (Traversal) this;
     }
 
@@ -140,7 +140,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, E> is(final Traversal<C, E, E> objectTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IS, objectTraversal);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IS, objectTraversal.bytecode);
         return this;
     }
 
@@ -155,7 +155,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public <R> Traversal<C, S, R> map(final Traversal<C, E, R> mapTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.MAP, mapTraversal);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.MAP, mapTraversal.bytecode);
         return (Traversal) this;
     }
 
@@ -165,7 +165,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, E> repeat(final Traversal<C, E, E> repeatTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.REPEAT, repeatTraversal);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.REPEAT, repeatTraversal.bytecode);
         return this;
     }
 
@@ -179,18 +179,20 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return (Traversal) this;
     }
 
+    // TODO: for some reason var args are not working...Java11
+
     public <R> Traversal<C, S, R> union(final Traversal<C, E, R> traversalA, final Traversal<C, E, R> traversalB) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.UNION, traversalA, traversalB);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.UNION, traversalA.bytecode, traversalB.bytecode);
         return (Traversal) this;
     }
 
     public <R> Traversal<C, S, R> union(final Traversal<C, E, R> traversalA, final Traversal<C, E, R> traversalB, final Traversal<C, E, R> traversalC) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.UNION, traversalA, traversalB, traversalC);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.UNION, traversalA.bytecode, traversalB.bytecode, traversalC.bytecode);
         return (Traversal) this;
     }
 
     public Traversal<C, S, E> until(final Traversal<C, E, ?> untilTraversal) {
-        this.bytecode.lastInstruction().addArg(untilTraversal);
+        this.bytecode.lastInstruction().addArg(untilTraversal.bytecode);
         return this;
     }
 
