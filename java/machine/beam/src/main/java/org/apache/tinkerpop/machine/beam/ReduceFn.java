@@ -24,10 +24,10 @@ import org.apache.beam.sdk.coders.CoderRegistry;
 import org.apache.beam.sdk.transforms.Combine;
 import org.apache.tinkerpop.machine.beam.serialization.ReducerCoder;
 import org.apache.tinkerpop.machine.beam.serialization.TraverserCoder;
-import org.apache.tinkerpop.machine.beam.sideEffect.BasicReducer;
-import org.apache.tinkerpop.machine.functions.ReduceFunction;
-import org.apache.tinkerpop.machine.traversers.Traverser;
-import org.apache.tinkerpop.machine.traversers.TraverserFactory;
+import org.apache.tinkerpop.machine.beam.sideeffect.BasicReducer;
+import org.apache.tinkerpop.machine.function.ReduceFunction;
+import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

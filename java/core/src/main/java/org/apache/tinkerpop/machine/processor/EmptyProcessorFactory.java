@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.machine.processor;
 
 import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.strategies.Strategy;
+import org.apache.tinkerpop.machine.strategy.Strategy;
 
 import java.util.Collections;
 import java.util.List;

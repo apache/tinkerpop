@@ -20,7 +20,7 @@ package org.apache.tinkerpop.machine.beam.serialization;
 
 import org.apache.beam.sdk.coders.Coder;
 import org.apache.beam.sdk.coders.CoderException;
-import org.apache.tinkerpop.machine.beam.sideEffect.BasicReducer;
+import org.apache.tinkerpop.machine.beam.sideeffect.BasicReducer;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -23,7 +23,7 @@ import org.apache.tinkerpop.language.Traversal;
 import org.apache.tinkerpop.language.TraversalSource;
 import org.apache.tinkerpop.language.TraversalUtil;
 import org.apache.tinkerpop.language.__;
-import org.apache.tinkerpop.machine.strategies.IdentityStrategy;
+import org.apache.tinkerpop.machine.strategy.IdentityStrategy;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;

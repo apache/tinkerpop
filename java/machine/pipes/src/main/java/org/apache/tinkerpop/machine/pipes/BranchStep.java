@@ -19,12 +19,12 @@
 package org.apache.tinkerpop.machine.pipes;
 
 import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.functions.BranchFunction;
-import org.apache.tinkerpop.machine.functions.branch.selector.Selector;
-import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.machine.function.BranchFunction;
+import org.apache.tinkerpop.machine.function.branch.selector.Selector;
+import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.util.EmptyIterator;
 import org.apache.tinkerpop.util.MultiIterator;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +37,7 @@ public final class BranchStep<C, S, E, M> extends AbstractStep<C, S, E> {
 
     private final Selector<C, S, M> branchSelector;
     private final Map<M, List<Compilation<C, S, E>>> branches;
-    private Iterator<Traverser<C, E>> nextTraversers = Collections.emptyIterator();
+    private Iterator<Traverser<C, E>> nextTraversers = EmptyIterator.instance();
 
     BranchStep(final Step<C, ?, S> previousStep, final BranchFunction<C, S, E, M> branchFunction) {
         super(previousStep, branchFunction);
@@ -77,6 +77,6 @@ public final class BranchStep<C, S, E, M> extends AbstractStep<C, S, E> {
 
     @Override
     public void reset() {
-        this.nextTraversers = Collections.emptyIterator();
+        this.nextTraversers = EmptyIterator.instance();
     }
 }

@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.pipes;
 
-import org.apache.tinkerpop.machine.functions.CFunction;
+import org.apache.tinkerpop.machine.function.CFunction;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

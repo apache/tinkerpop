@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.machine.pipes;
 
-import org.apache.tinkerpop.machine.functions.FilterFunction;
-import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.machine.function.FilterFunction;
+import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.util.FastNoSuchElementException;
 
 /**

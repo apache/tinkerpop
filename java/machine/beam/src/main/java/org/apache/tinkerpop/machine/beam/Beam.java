@@ -20,18 +20,16 @@ package org.apache.tinkerpop.machine.beam;
 
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.options.PipelineOptions;
-import org.apache.beam.sdk.runners.TransformHierarchy;
 import org.apache.beam.sdk.transforms.Create;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.PCollection;
-import org.apache.beam.sdk.values.PValue;
 import org.apache.tinkerpop.machine.beam.serialization.TraverserCoder;
 import org.apache.tinkerpop.machine.beam.util.PrimitiveVisitor;
 import org.apache.tinkerpop.machine.beam.util.TopologyUtil;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.processor.Processor;
-import org.apache.tinkerpop.machine.traversers.EmptyTraverser;
-import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.machine.traverser.EmptyTraverser;
+import org.apache.tinkerpop.machine.traverser.Traverser;
 
 import java.util.ArrayList;
 import java.util.Iterator;

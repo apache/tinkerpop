@@ -19,18 +19,18 @@
 package org.apache.tinkerpop.machine.pipes;
 
 import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.functions.BarrierFunction;
-import org.apache.tinkerpop.machine.functions.BranchFunction;
-import org.apache.tinkerpop.machine.functions.CFunction;
-import org.apache.tinkerpop.machine.functions.FilterFunction;
-import org.apache.tinkerpop.machine.functions.FlatMapFunction;
-import org.apache.tinkerpop.machine.functions.InitialFunction;
-import org.apache.tinkerpop.machine.functions.MapFunction;
-import org.apache.tinkerpop.machine.functions.ReduceFunction;
-import org.apache.tinkerpop.machine.functions.branch.RepeatBranch;
+import org.apache.tinkerpop.machine.function.BarrierFunction;
+import org.apache.tinkerpop.machine.function.BranchFunction;
+import org.apache.tinkerpop.machine.function.CFunction;
+import org.apache.tinkerpop.machine.function.FilterFunction;
+import org.apache.tinkerpop.machine.function.FlatMapFunction;
+import org.apache.tinkerpop.machine.function.InitialFunction;
+import org.apache.tinkerpop.machine.function.MapFunction;
+import org.apache.tinkerpop.machine.function.ReduceFunction;
+import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
 import org.apache.tinkerpop.machine.pipes.util.InMemoryReducer;
 import org.apache.tinkerpop.machine.processor.Processor;
-import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.machine.traverser.Traverser;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -18,11 +18,6 @@
  */
 package org.apache.tinkerpop.machine;
 
-import org.apache.tinkerpop.language.Gremlin;
-import org.apache.tinkerpop.language.Traversal;
-import org.apache.tinkerpop.language.TraversalSource;
-import org.apache.tinkerpop.language.__;
-import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
 import org.junit.jupiter.api.Test;
 
 /**

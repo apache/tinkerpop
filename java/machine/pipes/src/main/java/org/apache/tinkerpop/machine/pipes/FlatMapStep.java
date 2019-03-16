@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.machine.pipes;
 
-import org.apache.tinkerpop.machine.functions.FlatMapFunction;
-import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.machine.function.FlatMapFunction;
+import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.util.EmptyIterator;
 
-import java.util.Collections;
 import java.util.Iterator;
 
 /**
@@ -30,7 +30,7 @@ import java.util.Iterator;
 public final class FlatMapStep<C, S, E> extends AbstractStep<C, S, E> {
 
     private final FlatMapFunction<C, S, E> flatMapFunction;
-    private Iterator<Traverser<C, E>> iterator = Collections.emptyIterator();
+    private Iterator<Traverser<C, E>> iterator = EmptyIterator.instance();
 
     public FlatMapStep(final Step<C, ?, S> previousStep, final FlatMapFunction<C, S, E> flatMapFunction) {
         super(previousStep, flatMapFunction);
@@ -60,6 +60,6 @@ public final class FlatMapStep<C, S, E> extends AbstractStep<C, S, E> {
 
     @Override
     public void reset() {
-        this.iterator = Collections.emptyIterator();
+        this.iterator = EmptyIterator.instance();
     }
 }

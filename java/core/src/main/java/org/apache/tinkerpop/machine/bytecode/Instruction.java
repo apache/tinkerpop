@@ -20,7 +20,7 @@ package org.apache.tinkerpop.machine.bytecode;
 
 import org.apache.tinkerpop.language.Traversal;
 import org.apache.tinkerpop.language.TraversalUtil;
-import org.apache.tinkerpop.machine.coefficients.Coefficient;
+import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.util.StringFactory;
 
 import java.util.Arrays;

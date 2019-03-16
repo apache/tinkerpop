@@ -20,7 +20,7 @@ package org.apache.tinkerpop.util;
 
 import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.bytecode.SourceInstruction;
-import org.apache.tinkerpop.machine.functions.CFunction;
+import org.apache.tinkerpop.machine.function.CFunction;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

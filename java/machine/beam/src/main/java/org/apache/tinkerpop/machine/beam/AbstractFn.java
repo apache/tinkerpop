@@ -19,9 +19,9 @@
 package org.apache.tinkerpop.machine.beam;
 
 import org.apache.beam.sdk.transforms.DoFn;
-import org.apache.tinkerpop.machine.functions.CFunction;
-import org.apache.tinkerpop.machine.traversers.Traverser;
-import org.apache.tinkerpop.machine.traversers.TraverserSet;
+import org.apache.tinkerpop.machine.function.CFunction;
+import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.traverser.TraverserSet;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

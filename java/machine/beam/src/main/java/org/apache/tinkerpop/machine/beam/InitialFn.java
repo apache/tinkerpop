@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.machine.beam;
 
-import org.apache.tinkerpop.machine.functions.InitialFunction;
-import org.apache.tinkerpop.machine.traversers.Traverser;
-import org.apache.tinkerpop.machine.traversers.TraverserFactory;
+import org.apache.tinkerpop.machine.function.InitialFunction;
+import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
 import java.util.Iterator;
 

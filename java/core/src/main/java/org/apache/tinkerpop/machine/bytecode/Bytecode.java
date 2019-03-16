@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.bytecode;
 
-import org.apache.tinkerpop.machine.coefficients.Coefficient;
+import org.apache.tinkerpop.machine.coefficient.Coefficient;
 
 import java.util.ArrayList;
 import java.util.List;

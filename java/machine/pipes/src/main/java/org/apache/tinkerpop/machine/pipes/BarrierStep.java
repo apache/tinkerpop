@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.machine.pipes;
 
-import org.apache.tinkerpop.machine.functions.BarrierFunction;
+import org.apache.tinkerpop.machine.function.BarrierFunction;
 import org.apache.tinkerpop.machine.pipes.util.Barrier;
 import org.apache.tinkerpop.machine.pipes.util.InMemoryBarrier;
-import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.util.EmptyIterator;
 
-import java.util.Collections;
 import java.util.Iterator;
 
 /**
@@ -34,7 +34,7 @@ public class BarrierStep<C, S, E, B> extends AbstractStep<C, S, E> {
     private final Barrier<B> barrier;
     private final BarrierFunction<C, S, E, B> barrierFunction;
     private boolean done = false;
-    private Iterator<E> output = Collections.emptyIterator();
+    private Iterator<E> output = EmptyIterator.instance();
 
     BarrierStep(final Step<C, ?, S> previousStep, final BarrierFunction<C, S, E, B> barrierFunction) {
         super(previousStep, barrierFunction);
@@ -62,6 +62,7 @@ public class BarrierStep<C, S, E, B> extends AbstractStep<C, S, E> {
     @Override
     public void reset() {
         this.barrier.reset();
+        this.output = EmptyIterator.instance();
         this.done = false;
     }
 }

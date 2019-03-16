@@ -21,8 +21,8 @@ package org.apache.tinkerpop.machine.beam.functions;
 import org.apache.tinkerpop.language.Gremlin;
 import org.apache.tinkerpop.language.TraversalSource;
 import org.apache.tinkerpop.machine.beam.BeamProcessor;
-import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
-import org.apache.tinkerpop.machine.strategies.IdentityStrategy;
+import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
+import org.apache.tinkerpop.machine.strategy.IdentityStrategy;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

@@ -19,9 +19,9 @@
 package org.apache.tinkerpop.machine.beam;
 
 import org.apache.beam.sdk.values.TupleTag;
-import org.apache.tinkerpop.machine.functions.BranchFunction;
-import org.apache.tinkerpop.machine.functions.branch.selector.Selector;
-import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.machine.function.BranchFunction;
+import org.apache.tinkerpop.machine.function.branch.selector.Selector;
+import org.apache.tinkerpop.machine.traverser.Traverser;
 
 import java.util.Map;
 import java.util.Optional;

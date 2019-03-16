@@ -19,29 +19,29 @@
 package org.apache.tinkerpop.machine.bytecode;
 
 import org.apache.tinkerpop.language.Symbols;
-import org.apache.tinkerpop.machine.coefficients.Coefficient;
-import org.apache.tinkerpop.machine.functions.CFunction;
-import org.apache.tinkerpop.machine.functions.barrier.StallBarrier;
-import org.apache.tinkerpop.machine.functions.branch.ChooseBranch;
-import org.apache.tinkerpop.machine.functions.branch.RepeatBranch;
-import org.apache.tinkerpop.machine.functions.branch.UnionBranch;
-import org.apache.tinkerpop.machine.functions.filter.FilterFilter;
-import org.apache.tinkerpop.machine.functions.filter.HasKeyFilter;
-import org.apache.tinkerpop.machine.functions.filter.HasKeyValueFilter;
-import org.apache.tinkerpop.machine.functions.filter.IdentityFilter;
-import org.apache.tinkerpop.machine.functions.filter.IsFilter;
-import org.apache.tinkerpop.machine.functions.flatmap.UnfoldFlatMap;
-import org.apache.tinkerpop.machine.functions.initial.InjectInitial;
-import org.apache.tinkerpop.machine.functions.map.IncrMap;
-import org.apache.tinkerpop.machine.functions.map.MapMap;
-import org.apache.tinkerpop.machine.functions.map.PathMap;
-import org.apache.tinkerpop.machine.functions.reduce.CountReduce;
-import org.apache.tinkerpop.machine.functions.reduce.GroupCountReduce;
-import org.apache.tinkerpop.machine.functions.reduce.SumReduce;
+import org.apache.tinkerpop.machine.coefficient.Coefficient;
+import org.apache.tinkerpop.machine.function.CFunction;
+import org.apache.tinkerpop.machine.function.barrier.StallBarrier;
+import org.apache.tinkerpop.machine.function.branch.ChooseBranch;
+import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
+import org.apache.tinkerpop.machine.function.branch.UnionBranch;
+import org.apache.tinkerpop.machine.function.filter.FilterFilter;
+import org.apache.tinkerpop.machine.function.filter.HasKeyFilter;
+import org.apache.tinkerpop.machine.function.filter.HasKeyValueFilter;
+import org.apache.tinkerpop.machine.function.filter.IdentityFilter;
+import org.apache.tinkerpop.machine.function.filter.IsFilter;
+import org.apache.tinkerpop.machine.function.flatmap.UnfoldFlatMap;
+import org.apache.tinkerpop.machine.function.initial.InjectInitial;
+import org.apache.tinkerpop.machine.function.map.IncrMap;
+import org.apache.tinkerpop.machine.function.map.MapMap;
+import org.apache.tinkerpop.machine.function.map.PathMap;
+import org.apache.tinkerpop.machine.function.reduce.CountReduce;
+import org.apache.tinkerpop.machine.function.reduce.GroupCountReduce;
+import org.apache.tinkerpop.machine.function.reduce.SumReduce;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
-import org.apache.tinkerpop.machine.strategies.Strategy;
-import org.apache.tinkerpop.machine.traversers.CompleteTraverserFactory;
-import org.apache.tinkerpop.machine.traversers.TraverserFactory;
+import org.apache.tinkerpop.machine.strategy.Strategy;
+import org.apache.tinkerpop.machine.traverser.CompleteTraverserFactory;
+import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -77,7 +77,7 @@ public final class BytecodeUtil {
                 if (sourceInstruction.op().equals(Symbols.WITH_STRATEGY))
                     strategies.add(((Class<? extends Strategy>) sourceInstruction.args()[0]).getConstructor().newInstance());
             }
-            // sort strategies
+            // sort strategy
             return strategies;
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new RuntimeException(e.getMessage(), e);

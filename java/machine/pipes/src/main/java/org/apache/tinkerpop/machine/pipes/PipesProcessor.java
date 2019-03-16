@@ -19,10 +19,10 @@
 package org.apache.tinkerpop.machine.pipes;
 
 import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.pipes.strategies.PipesStrategy;
+import org.apache.tinkerpop.machine.pipes.strategy.PipesStrategy;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
-import org.apache.tinkerpop.machine.strategies.Strategy;
+import org.apache.tinkerpop.machine.strategy.Strategy;
 
 import java.util.Collections;
 import java.util.List;

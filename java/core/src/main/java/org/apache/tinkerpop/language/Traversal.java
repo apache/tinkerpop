@@ -21,10 +21,10 @@ package org.apache.tinkerpop.language;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.coefficients.Coefficient;
-import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
-import org.apache.tinkerpop.machine.traversers.Path;
-import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.machine.coefficient.Coefficient;
+import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
+import org.apache.tinkerpop.machine.traverser.Path;
+import org.apache.tinkerpop.machine.traverser.Traverser;
 
 import java.util.ArrayList;
 import java.util.Iterator;

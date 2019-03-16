@@ -19,10 +19,10 @@
 package org.apache.tinkerpop.language;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.coefficients.Coefficient;
+import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
-import org.apache.tinkerpop.machine.strategies.CoefficientStrategy;
-import org.apache.tinkerpop.machine.strategies.Strategy;
+import org.apache.tinkerpop.machine.strategy.CoefficientStrategy;
+import org.apache.tinkerpop.machine.strategy.Strategy;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

@@ -18,9 +18,6 @@
  */
 package org.apache.tinkerpop.machine.compiler;
 
-import org.apache.tinkerpop.language.Traversal;
-import org.apache.tinkerpop.machine.coefficients.LongCoefficient;
-import org.apache.tinkerpop.machine.processor.EmptyProcessorFactory;
 import org.junit.jupiter.api.Test;
 
 /**

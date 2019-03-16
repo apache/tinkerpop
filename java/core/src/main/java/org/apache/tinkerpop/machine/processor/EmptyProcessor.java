@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.processor;
 
-import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.util.FastNoSuchElementException;
 
 /**

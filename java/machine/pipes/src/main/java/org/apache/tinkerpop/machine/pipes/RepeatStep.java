@@ -19,8 +19,8 @@
 package org.apache.tinkerpop.machine.pipes;
 
 import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.functions.branch.RepeatBranch;
-import org.apache.tinkerpop.machine.traversers.Traverser;
+import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
+import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.util.IteratorUtils;
 
 import java.util.Collections;
