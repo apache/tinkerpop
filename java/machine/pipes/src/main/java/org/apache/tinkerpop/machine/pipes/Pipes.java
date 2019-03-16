@@ -42,12 +42,18 @@ public final class Pipes<C, S, E> implements Processor<C, S, E> {
 
     private final List<Step<?, ?, ?>> steps = new ArrayList<>();
     private Step<C, ?, E> endStep;
-    private Step<C, S, ?> startStep = EmptyStep.instance();
+    private SourceStep<C, S> startStep;
 
     public Pipes(final Compilation<C, S, E> compilation) {
-        AbstractStep<C, ?, ?> previousStep = EmptyStep.instance();
+        Step<C, ?, ?> previousStep = EmptyStep.instance();
         for (final CFunction<?> function : compilation.getFunctions()) {
-            final AbstractStep nextStep;
+            final Step nextStep;
+            if (this.steps.isEmpty() && !(function instanceof InitialFunction)) {
+                this.startStep = new SourceStep<>();
+                this.steps.add(this.startStep);
+                previousStep = this.startStep;
+            }
+
             if (function instanceof RepeatBranch)
                 nextStep = new RepeatStep(previousStep, (RepeatBranch<C, ?>) function);
             else if (function instanceof BranchFunction)
@@ -67,9 +73,6 @@ public final class Pipes<C, S, E> implements Processor<C, S, E> {
                         new InMemoryReducer((ReduceFunction<C, ?, ?>) function), compilation.getTraverserFactory());
             else
                 throw new RuntimeException("You need a new step type:" + function);
-
-            if (EmptyStep.instance() == this.startStep)
-                this.startStep = nextStep;
 
             this.steps.add(nextStep);
             previousStep = nextStep;

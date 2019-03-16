@@ -19,8 +19,8 @@
 package org.apache.tinkerpop.machine.pipes;
 
 import org.apache.tinkerpop.machine.functions.BarrierFunction;
-import org.apache.tinkerpop.machine.pipes.util.InMemoryBarrier;
 import org.apache.tinkerpop.machine.pipes.util.Barrier;
+import org.apache.tinkerpop.machine.pipes.util.InMemoryBarrier;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 
 import java.util.Collections;
@@ -45,8 +45,8 @@ public class BarrierStep<C, S, E, B> extends AbstractStep<C, S, E> {
     @Override
     public Traverser<C, E> next() {
         if (!this.done) {
-            while (super.hasNext()) {
-                this.barrier.update(this.barrierFunction.apply(super.getPreviousTraverser(), this.barrier.get()));
+            while (this.previousStep.hasNext()) {
+                this.barrier.update(this.barrierFunction.apply(super.previousStep.next(), this.barrier.get()));
             }
             this.done = true;
             this.output = (Iterator<E>) this.barrierFunction.createIterator(this.barrier.get());
@@ -56,12 +56,11 @@ public class BarrierStep<C, S, E, B> extends AbstractStep<C, S, E> {
 
     @Override
     public boolean hasNext() {
-        return this.output.hasNext() || (!this.done && super.hasNext());
+        return this.output.hasNext() || (!this.done && this.previousStep.hasNext());
     }
 
     @Override
     public void reset() {
-        super.reset();
         this.barrier.reset();
         this.done = false;
     }

@@ -23,6 +23,7 @@ import org.apache.tinkerpop.machine.functions.branch.RepeatBranch;
 import org.apache.tinkerpop.machine.traversers.Traverser;
 import org.apache.tinkerpop.util.IteratorUtils;
 
+import java.util.Collections;
 import java.util.Iterator;
 
 /**
@@ -32,7 +33,7 @@ public final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
 
     private final Compilation<C, S, ?> until;
     private final Compilation<C, S, S> repeat;
-    private final Iterator<Traverser<C, S>> nextTraversers;
+    private Iterator<Traverser<C, S>> nextTraversers;
 
     RepeatStep(final Step<C, ?, S> previousStep, final RepeatBranch<C, S> repeatFunction) {
         super(previousStep, repeatFunction);
@@ -60,11 +61,15 @@ public final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
     }
 
     private final void stageOutput() {
-        while (!this.nextTraversers.hasNext() && super.hasNext()) {
-            this.repeat.addTraverser(super.getPreviousTraverser());
+        while (!this.nextTraversers.hasNext() && this.previousStep.hasNext()) {
+            this.repeat.addTraverser(super.previousStep.next());
         }
 
     }
 
+    @Override
+    public void reset() {
+        this.nextTraversers = Collections.emptyIterator();
+    }
 }
 

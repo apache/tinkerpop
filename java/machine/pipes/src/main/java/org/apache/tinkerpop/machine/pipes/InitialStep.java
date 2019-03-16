@@ -41,17 +41,18 @@ public final class InitialStep<C, S> extends AbstractStep<C, S, S> {
 
     @Override
     public boolean hasNext() {
-        return this.objects.hasNext();
+        return this.objects.hasNext() || this.previousStep.hasNext();
     }
 
     @Override
     public Traverser<C, S> next() {
-        return this.traverserFactory.create(this.function.coefficient(), this.objects.next());
+        return this.objects.hasNext() ?
+                this.traverserFactory.create(this.function.coefficient(), this.objects.next()) :
+                this.previousStep.next();
     }
 
     @Override
     public void reset() {
-        super.reset();
         this.objects = Collections.emptyIterator();
     }
 

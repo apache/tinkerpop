@@ -19,8 +19,6 @@
 package org.apache.tinkerpop.machine.pipes;
 
 import org.apache.tinkerpop.machine.functions.CFunction;
-import org.apache.tinkerpop.machine.traversers.Traverser;
-import org.apache.tinkerpop.machine.traversers.TraverserSet;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -28,35 +26,11 @@ import org.apache.tinkerpop.machine.traversers.TraverserSet;
 public abstract class AbstractStep<C, S, E> implements Step<C, S, E> {
 
     final CFunction<C> function;
-    private final Step<C, ?, S> previousStep;
-    private TraverserSet<C, S> traverserSet = new TraverserSet<>();
+    protected final Step<C, ?, S> previousStep;
 
     public AbstractStep(final Step<C, ?, S> previousStep, final CFunction<C> function) {
         this.previousStep = previousStep;
         this.function = function;
-    }
-
-    public void addStart(final Traverser<C, S> traverser) {
-        this.traverserSet.add(traverser);
-    }
-
-    @Override
-    public boolean hasNext() {
-        return !this.traverserSet.isEmpty() || this.previousStep.hasNext();
-    }
-
-    @Override
-    public abstract Traverser<C, E> next();
-
-    final Traverser<C, S> getPreviousTraverser() {
-        return this.traverserSet.isEmpty() ?
-                this.previousStep.next() :
-                this.traverserSet.remove();
-    }
-
-    @Override
-    public void reset() {
-        this.traverserSet.clear();
     }
 
     @Override

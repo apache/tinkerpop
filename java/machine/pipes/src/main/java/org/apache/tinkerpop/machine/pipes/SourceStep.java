@@ -19,13 +19,36 @@
 package org.apache.tinkerpop.machine.pipes;
 
 import org.apache.tinkerpop.machine.traversers.Traverser;
-
-import java.util.Iterator;
+import org.apache.tinkerpop.machine.traversers.TraverserSet;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Step<C, S, E> extends Iterator<Traverser<C, E>> {
+public final class SourceStep<C, S> implements Step<C, S, S> {
 
-    public void reset();
+    private final TraverserSet<C, S> traverserSet = new TraverserSet<>();
+
+    @Override
+    public boolean hasNext() {
+        return !this.traverserSet.isEmpty();
+    }
+
+    @Override
+    public Traverser<C, S> next() {
+        return this.traverserSet.remove();
+    }
+
+    @Override
+    public void reset() {
+        this.traverserSet.clear();
+    }
+
+    public void addStart(final Traverser<C, S> traverser) {
+        this.traverserSet.add(traverser);
+    }
+
+    @Override
+    public String toString() {
+        return "Source";
+    }
 }

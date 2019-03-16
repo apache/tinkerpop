@@ -45,4 +45,9 @@ public final class EmptyStep<C, S, E> extends AbstractStep<C, S, E> {
     static <C, S, E> EmptyStep<C, S, E> instance() {
         return INSTANCE;
     }
+
+    @Override
+    public void reset() {
+
+    }
 }

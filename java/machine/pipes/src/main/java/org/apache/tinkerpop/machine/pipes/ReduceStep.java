@@ -45,8 +45,8 @@ public final class ReduceStep<C, S, E> extends AbstractStep<C, S, E> {
 
     @Override
     public Traverser<C, E> next() {
-        while (super.hasNext()) {
-            this.reducer.add(super.getPreviousTraverser());
+        while (this.previousStep.hasNext()) {
+            this.reducer.add(super.previousStep.next());
         }
         this.done = true;
         return this.traverserFactory.create(this.reduceFunction.coefficient(), this.reducer.get());
@@ -54,12 +54,11 @@ public final class ReduceStep<C, S, E> extends AbstractStep<C, S, E> {
 
     @Override
     public boolean hasNext() {
-        return !this.done && super.hasNext();
+        return !this.done && this.previousStep.hasNext();
     }
 
     @Override
     public void reset() {
-        super.reset();
         this.reducer.reset();
         this.done = false;
     }

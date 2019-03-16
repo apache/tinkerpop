@@ -39,20 +39,27 @@ public final class FlatMapStep<C, S, E> extends AbstractStep<C, S, E> {
 
     @Override
     public boolean hasNext() {
-        while (true) {
-            if (this.iterator.hasNext())
-                return true;
-            else if (super.hasNext())
-                this.iterator = super.getPreviousTraverser().flatMap(this.flatMapFunction);
-            else
-                return false;
-        }
+        this.stageNextTraversers();
+        return this.iterator.hasNext();
     }
 
     @Override
     public Traverser<C, E> next() {
-        while (!this.iterator.hasNext())
-            this.iterator = super.getPreviousTraverser().flatMap(this.flatMapFunction);
+        this.stageNextTraversers();
         return this.iterator.next();
+    }
+
+    private void stageNextTraversers() {
+        while (!this.iterator.hasNext()) {
+            if (this.previousStep.hasNext())
+                this.iterator = this.previousStep.next().flatMap(this.flatMapFunction);
+            else
+                return;
+        }
+    }
+
+    @Override
+    public void reset() {
+        this.iterator = Collections.emptyIterator();
     }
 }

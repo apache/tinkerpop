@@ -34,7 +34,17 @@ public final class MapStep<C, S, E> extends AbstractStep<C, S, E> {
     }
 
     @Override
+    public boolean hasNext() {
+        return this.previousStep.hasNext();
+    }
+
+    @Override
     public Traverser<C, E> next() {
-        return super.getPreviousTraverser().map(this.mapFunction);
+        return super.previousStep.next().map(this.mapFunction);
+    }
+
+    @Override
+    public void reset() {
+
     }
 }
