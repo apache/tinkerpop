@@ -27,7 +27,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class FlatMapStep<C, S, E> extends AbstractStep<C, S, E> {
+final class FlatMapStep<C, S, E> extends AbstractStep<C, S, E> {
 
     private final FlatMapFunction<C, S, E> flatMapFunction;
     private Iterator<Traverser<C, E>> iterator = EmptyIterator.instance();

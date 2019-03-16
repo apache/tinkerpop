@@ -32,4 +32,6 @@ public interface CFunction<C> extends Serializable {
 
     public Set<String> labels();
 
+    // TODO: reset() -- some functions do have state that needs resetting. E.g. nested compilation functions.
+
 }

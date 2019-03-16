@@ -25,7 +25,7 @@ import org.apache.tinkerpop.util.FastNoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class FilterStep<C, S> extends AbstractStep<C, S, S> {
+final class FilterStep<C, S> extends AbstractStep<C, S, S> {
 
     private final FilterFunction<C, S> filterFunction;
     private Traverser<C, S> nextTraverser = null;

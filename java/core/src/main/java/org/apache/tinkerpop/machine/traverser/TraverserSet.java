@@ -38,15 +38,6 @@ public final class TraverserSet<C, S> extends AbstractSet<Traverser<C, S>> imple
 
     private final Map<Traverser<C, S>, Traverser<C, S>> map = Collections.synchronizedMap(new LinkedHashMap<>());
 
-    public TraverserSet() {
-
-    }
-
-    public TraverserSet(final Traverser<C, S> traverser) {
-        if (traverser != null)
-            this.map.put(traverser, traverser);
-    }
-
     @Override
     public Iterator<Traverser<C, S>> iterator() {
         return this.map.values().iterator();
@@ -61,12 +52,12 @@ public final class TraverserSet<C, S> extends AbstractSet<Traverser<C, S>> imple
         return this.map.size();
     }
 
-    public long bulkSize() {
-        long bulk = 0L;
+    public long count() {
+        long count = 0L;
         for (final Traverser<C, S> traverser : this.map.values()) {
-            bulk = bulk + traverser.coefficient().count();
+            count = count + traverser.coefficient().count();
         }
-        return bulk;
+        return count;
     }
 
     @Override

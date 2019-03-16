@@ -23,10 +23,10 @@ import org.apache.tinkerpop.machine.function.CFunction;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class AbstractStep<C, S, E> implements Step<C, S, E> {
+abstract class AbstractStep<C, S, E> implements Step<C, S, E> {
 
     final CFunction<C> function;
-    protected final Step<C, ?, S> previousStep;
+    final Step<C, ?, S> previousStep;
 
     public AbstractStep(final Step<C, ?, S> previousStep, final CFunction<C> function) {
         this.previousStep = previousStep;

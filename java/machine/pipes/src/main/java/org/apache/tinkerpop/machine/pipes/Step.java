@@ -25,7 +25,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Step<C, S, E> extends Iterator<Traverser<C, E>> {
+interface Step<C, S, E> extends Iterator<Traverser<C, E>> {
 
     public void reset();
 }

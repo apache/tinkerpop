@@ -24,7 +24,7 @@ import org.apache.tinkerpop.machine.traverser.TraverserSet;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SourceStep<C, S> implements Step<C, S, S> {
+final class SourceStep<C, S> implements Step<C, S, S> {
 
     private final TraverserSet<C, S> traverserSet = new TraverserSet<>();
 

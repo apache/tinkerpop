@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.machine.bytecode;
 
-import org.apache.tinkerpop.language.Symbols;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.function.barrier.StallBarrier;

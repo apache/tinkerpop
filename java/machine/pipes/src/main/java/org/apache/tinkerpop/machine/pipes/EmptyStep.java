@@ -24,7 +24,7 @@ import org.apache.tinkerpop.util.FastNoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class EmptyStep<C, S, E> extends AbstractStep<C, S, E> {
+final class EmptyStep<C, S, E> extends AbstractStep<C, S, E> {
 
     private static final EmptyStep INSTANCE = new EmptyStep<>();
 

@@ -23,7 +23,7 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class FastNoSuchElementException extends NoSuchElementException {
+public final class FastNoSuchElementException extends NoSuchElementException {
 
     private static final long serialVersionUID = 2303108654138257697L;
     private static final FastNoSuchElementException INSTANCE = new FastNoSuchElementException();

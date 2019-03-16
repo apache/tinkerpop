@@ -29,7 +29,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BarrierStep<C, S, E, B> extends AbstractStep<C, S, E> {
+class BarrierStep<C, S, E, B> extends AbstractStep<C, S, E> {
 
     private final Barrier<B> barrier;
     private final BarrierFunction<C, S, E, B> barrierFunction;

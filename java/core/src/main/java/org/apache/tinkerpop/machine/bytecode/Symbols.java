@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.language;
+package org.apache.tinkerpop.machine.bytecode;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

@@ -33,7 +33,7 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class BranchStep<C, S, E, M> extends AbstractStep<C, S, E> {
+final class BranchStep<C, S, E, M> extends AbstractStep<C, S, E> {
 
     private final Selector<C, S, M> branchSelector;
     private final Map<M, List<Compilation<C, S, E>>> branches;

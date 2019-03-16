@@ -24,7 +24,7 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MapStep<C, S, E> extends AbstractStep<C, S, E> {
+final class MapStep<C, S, E> extends AbstractStep<C, S, E> {
 
     private final MapFunction<C, S, E> mapFunction;
 

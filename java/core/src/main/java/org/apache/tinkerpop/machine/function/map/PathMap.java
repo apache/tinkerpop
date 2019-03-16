@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.machine.function.map;
 
 import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.bytecode.CompilationRing;
+import org.apache.tinkerpop.machine.bytecode.CompilationCircle;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.MapFunction;
@@ -34,20 +34,20 @@ import java.util.Set;
  */
 public class PathMap<C, S> extends AbstractFunction<C> implements MapFunction<C, S, Path> {
 
-    private final CompilationRing<C, Object, Object> compilationRing;
+    private final CompilationCircle<C, Object, Object> compilationCircle;
 
     public PathMap(final Coefficient<C> coefficient, final Set<String> labels, final List<Compilation<C, Object, Object>> byMaps) {
         super(coefficient, labels);
-        this.compilationRing = new CompilationRing<>(byMaps);
+        this.compilationCircle = new CompilationCircle<>(byMaps);
     }
 
     @Override
     public Path apply(final Traverser<C, S> traverser) {
-        if (!this.compilationRing.isEmpty()) {
+        if (!this.compilationCircle.isEmpty()) {
             final Path oldPath = traverser.path();
             final Path newPath = new Path();
             for (int i = 0; i < oldPath.size(); i++) {
-                newPath.add(oldPath.labels(i), this.compilationRing.next().mapObject(oldPath.object(i)).object());
+                newPath.add(oldPath.labels(i), this.compilationCircle.next().mapObject(oldPath.object(i)).object());
             }
             return newPath;
         } else

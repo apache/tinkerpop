@@ -24,12 +24,12 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class CompilationRing<C, S, E> implements Serializable {
+public final class CompilationCircle<C, S, E> implements Serializable {
 
     private List<Compilation<C, S, E>> compilations;
     private int currentCompilation = -1;
 
-    public CompilationRing(final List<Compilation<C, S, E>> compilations) {
+    public CompilationCircle(final List<Compilation<C, S, E>> compilations) {
         this.compilations = compilations;
     }
 
@@ -49,11 +49,6 @@ public final class CompilationRing<C, S, E> implements Serializable {
     public void reset() {
         this.currentCompilation = -1;
     }
-
-    public int size() {
-        return this.compilations.size();
-    }
-
 
     @Override
     public String toString() {

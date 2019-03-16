@@ -29,7 +29,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
+final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
 
     private final Compilation<C, S, ?> until;
     private final Compilation<C, S, S> repeat;

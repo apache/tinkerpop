@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.strategy;
 
-import org.apache.tinkerpop.language.Symbols;
+import org.apache.tinkerpop.machine.bytecode.Symbols;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 
 /**

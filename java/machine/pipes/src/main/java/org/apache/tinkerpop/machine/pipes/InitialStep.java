@@ -28,7 +28,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class InitialStep<C, S> extends AbstractStep<C, S, S> {
+final class InitialStep<C, S> extends AbstractStep<C, S, S> {
 
     private Iterator<S> objects;
     private final TraverserFactory<C> traverserFactory;

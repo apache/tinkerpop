@@ -26,7 +26,7 @@ import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ReduceStep<C, S, E> extends AbstractStep<C, S, E> {
+final class ReduceStep<C, S, E> extends AbstractStep<C, S, E> {
 
     private final ReduceFunction<C, S, E> reduceFunction;
     private final Reducer<C, S, E> reducer;
