@@ -38,7 +38,7 @@ public class __ {
     }
 
     public static <C, S> Traversal<C, S, S> constant(final S constant) {
-        return __.<C, S>start().constance(constant);
+        return __.<C, S>start().constant(constant);
     }
 
     public static <C> Traversal<C, Long, Long> incr() {

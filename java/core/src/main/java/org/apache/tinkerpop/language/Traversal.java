@@ -79,7 +79,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return (Traversal) this;
     }
 
-    public <R> Traversal<C, S, R> constance(final R constant) {
+    public <R> Traversal<C, S, R> constant(final R constant) {
         this.bytecode.addInstruction(this.currentCoefficient, Symbols.CONSTANT, constant);
         return (Traversal) this;
     }
