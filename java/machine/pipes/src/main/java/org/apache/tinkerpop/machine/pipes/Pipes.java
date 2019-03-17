@@ -67,7 +67,7 @@ public final class Pipes<C, S, E> implements Processor<C, S, E> {
             else if (function instanceof InitialFunction)
                 nextStep = new InitialStep((InitialFunction<C, S>) function, compilation.getTraverserFactory());
             else if (function instanceof BarrierFunction)
-                nextStep = new BarrierStep(previousStep, (BarrierFunction) function);
+                nextStep = new BarrierStep(previousStep, (BarrierFunction) function, compilation.getTraverserFactory());
             else if (function instanceof ReduceFunction)
                 nextStep = new ReduceStep(previousStep, (ReduceFunction<C, ?, ?>) function,
                         new InMemoryReducer((ReduceFunction<C, ?, ?>) function), compilation.getTraverserFactory());

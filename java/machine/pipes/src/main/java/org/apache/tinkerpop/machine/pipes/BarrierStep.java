@@ -22,7 +22,9 @@ import org.apache.tinkerpop.machine.function.BarrierFunction;
 import org.apache.tinkerpop.machine.pipes.util.Barrier;
 import org.apache.tinkerpop.machine.pipes.util.InMemoryBarrier;
 import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 import org.apache.tinkerpop.util.EmptyIterator;
+import org.apache.tinkerpop.util.IteratorUtils;
 
 import java.util.Iterator;
 
@@ -34,12 +36,14 @@ class BarrierStep<C, S, E, B> extends AbstractStep<C, S, E> {
     private final Barrier<B> barrier;
     private final BarrierFunction<C, S, E, B> barrierFunction;
     private boolean done = false;
-    private Iterator<E> output = EmptyIterator.instance();
+    private Iterator<Traverser<C, E>> output = EmptyIterator.instance();
+    private final TraverserFactory<C> traverserFactory;
 
-    BarrierStep(final Step<C, ?, S> previousStep, final BarrierFunction<C, S, E, B> barrierFunction) {
+    BarrierStep(final Step<C, ?, S> previousStep, final BarrierFunction<C, S, E, B> barrierFunction, final TraverserFactory<C> traverserFactory) {
         super(previousStep, barrierFunction);
         this.barrier = new InMemoryBarrier<>(barrierFunction.getInitialValue()); // TODO: move to strategy determination
         this.barrierFunction = barrierFunction;
+        this.traverserFactory = traverserFactory;
     }
 
     @Override
@@ -49,9 +53,12 @@ class BarrierStep<C, S, E, B> extends AbstractStep<C, S, E> {
                 this.barrier.update(this.barrierFunction.apply(super.previousStep.next(), this.barrier.get()));
             }
             this.done = true;
-            this.output = (Iterator<E>) this.barrierFunction.createIterator(this.barrier.get());
+            this.output = this.barrierFunction.returnsTraversers() ?
+                    (Iterator<Traverser<C, E>>) this.barrierFunction.createIterator(this.barrier.get()) :
+                    IteratorUtils.map(this.barrierFunction.createIterator(this.barrier.get()),
+                            e -> this.traverserFactory.create(this.barrierFunction, e));
         }
-        return (Traverser<C, E>) this.output.next();
+        return this.output.next();
     }
 
     @Override

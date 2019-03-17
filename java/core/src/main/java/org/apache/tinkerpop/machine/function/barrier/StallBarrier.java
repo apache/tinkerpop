@@ -30,7 +30,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StallBarrier<C, S> extends AbstractFunction<C> implements BarrierFunction<C, S, S, TraverserSet<C, S>> {
+public class StallBarrier<C, S, E> extends AbstractFunction<C> implements BarrierFunction<C, S, Traverser<C, S>, TraverserSet<C, S>> {
 
     private final int drainThreshold;
 
@@ -54,5 +54,10 @@ public class StallBarrier<C, S> extends AbstractFunction<C> implements BarrierFu
     @Override
     public Iterator<Traverser<C, S>> createIterator(final TraverserSet<C, S> barrier) {
         return barrier.iterator();
+    }
+
+    @Override
+    public boolean returnsTraversers() {
+        return true;
     }
 }

@@ -51,6 +51,7 @@ public final class Symbols {
     public static final String INCR = "incr";
     public static final String INJECT = "inject";
     public static final String IS = "is";
+    public static final String JOIN = "join";
     public static final String LOOPS = "loops";
     public static final String MAP = "map";
     public static final String PATH = "path";
@@ -87,6 +88,8 @@ public final class Symbols {
                 return Type.INITIAL;
             case IS:
                 return Type.FILTER;
+            case JOIN:
+                return Type.BARRIER;
             case LOOPS:
                 return Type.MAP;
             case MAP:

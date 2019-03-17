@@ -27,6 +27,7 @@ import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -81,11 +82,11 @@ public final class Compilation<C, S, E> implements Serializable {
         return this.processor.next();
     }
 
-    /*public Iterator<Traverser<C, E>> flatMapTraverser(final Traverser<C, S> traverser) {
+    public Iterator<Traverser<C, E>> flatMapTraverser(final Traverser<C, S> traverser) {
         this.prepareProcessor();
         this.processor.addStart(this.prepareTraverser(traverser));
         return this.processor;
-    }*/
+    }
 
     public boolean filterTraverser(final Traverser<C, S> traverser) {
         this.prepareProcessor();

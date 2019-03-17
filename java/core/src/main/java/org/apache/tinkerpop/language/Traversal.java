@@ -65,6 +65,11 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return this;
     }
 
+    public <R> Traversal<C, S, E> by(final R byObject) {
+        this.bytecode.lastInstruction().addArg(byObject);
+        return this;
+    }
+
     public Traversal<C, S, E> c(final C coefficient) {
         this.currentCoefficient.set(coefficient);
         return this;
@@ -165,6 +170,11 @@ public class Traversal<C, S, E> implements Iterator<E> {
 
     public <R> Traversal<C, S, R> inject(final R... objects) {
         this.bytecode.addInstruction(this.currentCoefficient, Symbols.INJECT, objects);
+        return (Traversal) this;
+    }
+
+    public <K, V> Traversal<C, S, Map<K, V>> join(final Traversal<C, Map<K, V>, Map<K, V>> joinTraversal) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.JOIN, joinTraversal.bytecode);
         return (Traversal) this;
     }
 

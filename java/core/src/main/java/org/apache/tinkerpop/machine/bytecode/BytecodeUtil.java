@@ -20,6 +20,7 @@ package org.apache.tinkerpop.machine.bytecode;
 
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
+import org.apache.tinkerpop.machine.function.barrier.JoinBarrier;
 import org.apache.tinkerpop.machine.function.barrier.StallBarrier;
 import org.apache.tinkerpop.machine.function.branch.ChooseBranch;
 import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
@@ -179,6 +180,8 @@ public final class BytecodeUtil {
                 return new IsFilter<>(coefficient, labels, Argument.create(instruction.args()[0]));
             case Symbols.INCR:
                 return new IncrMap<>(coefficient, labels);
+            case Symbols.JOIN:
+                return new JoinBarrier<>(coefficient, labels, Compilation.compileOne(instruction.args()[0]), Argument.create(instruction.args()[1]));
             case Symbols.LOOPS:
                 return new LoopsMap<>(coefficient, labels);
             case Symbols.MAP:
