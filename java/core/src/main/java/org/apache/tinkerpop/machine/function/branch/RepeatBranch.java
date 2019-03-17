@@ -36,18 +36,31 @@ import java.util.Set;
 public class RepeatBranch<C, S> extends AbstractFunction<C> implements BranchFunction<C, S, S, Boolean> {
 
     private final Map<Character, Compilation<C, S, S>> compilations;
-    private final Compilation<C, S, S> repeat;
-    private final Compilation<C, S, S> until;
+    private Compilation<C, S, S> repeatCompilation;
+    private Compilation<C, S, ?> untilCompilation;
+    private Compilation<C, S, ?> emitCompilation;
+    private int untilLocation = 0;
+    private int emitLocation = 0;
 
     public RepeatBranch(final Coefficient<C> coefficient, final Set<String> labels, final List<Object> arguments) {
         super(coefficient, labels);
+        int location = 1;
         this.compilations = new LinkedHashMap<>();
         for (int i = 0; i < arguments.size(); i = i + 2) {
+            final Character type = (Character) arguments.get(i);
+            if ('e' == type) {
+                this.emitCompilation = (Compilation<C, S, ?>) arguments.get(i + 1);
+                this.emitLocation = location++;
+            } else if ('u' == type) {
+                this.untilCompilation = (Compilation<C, S, ?>) arguments.get(i + 1);
+                this.untilLocation = location++;
+            } else {
+                this.repeatCompilation = (Compilation<C, S, S>) arguments.get(i + 1);
+                location = 3;
+            }
+
             this.compilations.put((Character) arguments.get(i), (Compilation<C, S, S>) arguments.get(i + 1));
         }
-
-        this.repeat = this.compilations.get('r');
-        this.until = this.compilations.get('u');
     }
 
     @Override
@@ -56,11 +69,23 @@ public class RepeatBranch<C, S> extends AbstractFunction<C> implements BranchFun
     }
 
     public Compilation<C, S, S> getRepeat() {
-        return this.repeat;
+        return this.repeatCompilation;
     }
 
     public Compilation<C, S, ?> getUntil() {
-        return this.until;
+        return this.untilCompilation;
+    }
+
+    public Compilation<C, S, ?> getEmit() {
+        return this.emitCompilation;
+    }
+
+    public int getEmitLocation() {
+        return this.emitLocation;
+    }
+
+    public int getUntilLocation() {
+        return this.untilLocation;
     }
 
     public Map<Character, Compilation<C, S, S>> getCompilations() {

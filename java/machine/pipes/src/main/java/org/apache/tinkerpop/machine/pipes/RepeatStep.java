@@ -21,55 +21,95 @@ package org.apache.tinkerpop.machine.pipes;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
 import org.apache.tinkerpop.machine.traverser.Traverser;
-import org.apache.tinkerpop.util.IteratorUtils;
-
-import java.util.Collections;
-import java.util.Iterator;
+import org.apache.tinkerpop.machine.traverser.TraverserSet;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
 
-    private final Compilation<C, S, ?> until;
+    private final int untilLocation;
+    private final int emitLocation;
+    private final Compilation<C, S, ?> untilCompilation;
+    private final Compilation<C, S, ?> emitCompilation;
     private final Compilation<C, S, S> repeat;
-    private Iterator<Traverser<C, S>> nextTraversers;
+    private TraverserSet<C, S> outputTraversers = new TraverserSet<>();
+    private TraverserSet<C, S> inputTraversers = new TraverserSet<>();
 
     RepeatStep(final Step<C, ?, S> previousStep, final RepeatBranch<C, S> repeatFunction) {
         super(previousStep, repeatFunction);
-        this.until = repeatFunction.getUntil();
+        this.untilCompilation = repeatFunction.getUntil();
+        this.emitCompilation = repeatFunction.getEmit();
         this.repeat = repeatFunction.getRepeat();
-        this.nextTraversers = IteratorUtils.filter(this.repeat.getProcessor(), t -> {
-            if (!this.until.filterTraverser(t)) {
-                this.repeat.getProcessor().addStart(t);
-                return false;
-            } else
-                return true;
-        });
+        this.untilLocation = repeatFunction.getUntilLocation();
+        this.emitLocation = repeatFunction.getEmitLocation();
     }
 
     @Override
     public boolean hasNext() {
         this.stageOutput();
-        return this.nextTraversers.hasNext();
+        return !this.outputTraversers.isEmpty();
     }
 
     @Override
     public Traverser<C, S> next() {
         this.stageOutput();
-        return this.nextTraversers.next();
+        return this.outputTraversers.remove();
+    }
+
+    private final void stageInput() {
+        final Traverser<C, S> traverser = this.inputTraversers.isEmpty() ? this.previousStep.next() : this.inputTraversers.remove();
+        if (1 == this.untilLocation) {
+            if (this.untilCompilation.filterTraverser(traverser.clone())) {
+                this.outputTraversers.add(traverser);
+            } else if (2 == this.emitLocation && this.emitCompilation.filterTraverser(traverser.clone())) {
+                this.outputTraversers.add(traverser);
+                this.repeat.addTraverser(traverser);
+            } else
+                this.repeat.addTraverser(traverser);
+        } else if (1 == this.emitLocation) {
+            if (this.emitCompilation.filterTraverser(traverser.clone()))
+                this.outputTraversers.add(traverser);
+            if (2 == this.untilLocation && this.untilCompilation.filterTraverser(traverser.clone()))
+                this.outputTraversers.add(traverser);
+            else
+                this.repeat.addTraverser(traverser);
+        } else {
+            this.repeat.addTraverser(traverser);
+        }
     }
 
     private final void stageOutput() {
-        while (!this.nextTraversers.hasNext() && this.previousStep.hasNext()) {
-            this.repeat.addTraverser(super.previousStep.next());
+        while (this.outputTraversers.isEmpty() && (this.previousStep.hasNext() || !this.inputTraversers.isEmpty())) {
+            this.stageInput();
+            if (this.repeat.getProcessor().hasNext()) {
+                final Traverser<C, S> traverser = this.repeat.getProcessor().next();
+                if (3 == this.untilLocation) {
+                    if (this.untilCompilation.filterTraverser(traverser.clone())) {
+                        this.outputTraversers.add(traverser);
+                    } else if (4 == this.emitLocation && this.emitCompilation.filterTraverser(traverser.clone())) {
+                        this.outputTraversers.add(traverser);
+                        this.inputTraversers.add(traverser);
+                    } else
+                        this.inputTraversers.add(traverser);
+                } else if (3 == this.emitLocation) {
+                    if (this.emitCompilation.filterTraverser(traverser.clone()))
+                        this.outputTraversers.add(traverser);
+                    if (4 == this.untilLocation && this.untilCompilation.filterTraverser(traverser.clone()))
+                        this.outputTraversers.add(traverser);
+                    else
+                        this.inputTraversers.add(traverser);
+                } else {
+                    this.inputTraversers.add(traverser);
+                }
+            }
         }
-
     }
 
     @Override
     public void reset() {
-        this.nextTraversers = Collections.emptyIterator();
+        this.inputTraversers.clear();
+        this.outputTraversers.clear();
     }
 }
 

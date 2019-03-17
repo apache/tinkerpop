@@ -29,27 +29,83 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
  */
 public class RepeatFn<C, S> extends AbstractFn<C, S, S> {
 
-    private final Compilation<C, S, ?> until;
-    private final TupleTag repeatDone;
-    private final TupleTag repeatLoop;
+    private final int untilLocation;
+    private final int emitLocation;
+    private final Compilation<C, S, ?> untilCompilation;
+    private final Compilation<C, S, ?> emitCompilation;
+    private final TupleTag<Traverser<C, S>> repeatDone;
+    private final TupleTag<Traverser<C, S>> repeatLoop;
     private final boolean deadEnd;
+    private final boolean first;
 
 
-    public RepeatFn(final RepeatBranch<C, S> repeatBranch, final TupleTag repeatDone, final TupleTag repeatLoop, final boolean deadEnd) {
+    public RepeatFn(final RepeatBranch<C, S> repeatBranch,
+                    final TupleTag<Traverser<C, S>> repeatDone,
+                    final TupleTag<Traverser<C, S>> repeatLoop,
+                    final boolean deadEnd, final boolean first) {
         super(repeatBranch);
-        this.until = repeatBranch.getUntil();
+        this.untilLocation = repeatBranch.getUntilLocation();
+        this.untilCompilation = repeatBranch.getUntil();
+        this.emitLocation = repeatBranch.getEmitLocation();
+        this.emitCompilation = repeatBranch.getEmit();
         this.repeatDone = repeatDone;
         this.repeatLoop = repeatLoop;
         this.deadEnd = deadEnd;
+        this.first = first;
     }
 
     @ProcessElement
     public void processElement(final @DoFn.Element Traverser<C, S> traverser, final MultiOutputReceiver out) {
-        if (this.until.filterTraverser(traverser.clone()))
-            out.get(this.repeatDone).output(traverser.clone());
-        else if (!this.deadEnd)
+        if (1 == this.untilLocation) {
+            if (this.untilCompilation.filterTraverser(traverser.clone())) {
+                out.get(this.repeatDone).output(traverser.clone());
+            } else if (2 == this.emitLocation && this.emitCompilation.filterTraverser(traverser.clone())) {
+                out.get(this.repeatDone).output(traverser.clone());
+                out.get(this.repeatLoop).output(traverser.clone());
+            } else {
+                out.get(this.repeatLoop).output(traverser.clone());
+            }
+            return;
+        } else if (1 == this.emitLocation) {
+            if (this.emitCompilation.filterTraverser(traverser.clone()))
+                out.get(this.repeatDone).output(traverser.clone());
+            if (2 == this.untilLocation && this.untilCompilation.filterTraverser(traverser.clone()))
+                out.get(this.repeatDone).output(traverser.clone());
+            else
+                out.get(this.repeatLoop).output(traverser.clone());
+            return;
+        } else if (this.first) {
             out.get(this.repeatLoop).output(traverser.clone());
-        else
-            throw new IllegalStateException("There are not enough repetitions to account for this traversal");
+            return;
+        }
+
+
+        if (3 == this.untilLocation) {
+            if (this.untilCompilation.filterTraverser(traverser.clone())) {
+                out.get(this.repeatDone).output(traverser.clone());
+            } else if (4 == this.emitLocation && this.emitCompilation.filterTraverser(traverser.clone())) {
+                out.get(this.repeatDone).output(traverser.clone());
+                out.get(this.repeatLoop).output(traverser.clone());
+            } else
+                out.get(this.repeatLoop).output(traverser.clone());
+        } else if (3 == this.emitLocation) {
+            if (this.emitCompilation.filterTraverser(traverser.clone()))
+                out.get(this.repeatDone).output(traverser.clone());
+            if (4 == this.untilLocation && this.untilCompilation.filterTraverser(traverser.clone()))
+                out.get(this.repeatDone).output(traverser.clone());
+            else
+                out.get(this.repeatLoop).output(traverser.clone());
+        } else {
+            out.get(this.repeatLoop).output(traverser.clone());
+        }
+
     }
+
+    /*private void outputDone(final Traverser<C, S> traverser) {
+        if (this.deadEnd)
+            throw new IllegalStateException("There are not enough repetitions to account for this traversal");
+        else {
+            //
+        }
+    }*/
 }

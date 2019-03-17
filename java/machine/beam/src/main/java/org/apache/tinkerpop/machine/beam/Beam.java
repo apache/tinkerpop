@@ -40,7 +40,7 @@ import java.util.List;
  */
 public class Beam<C, S, E> implements Processor<C, S, E> {
 
-    public static final int MAX_REPETIONS = 10;
+    public static final int MAX_REPETIONS = 10; // TODO: this needs to be a dynamic configuration
 
     private final Pipeline pipeline;
     public static List<Traverser> OUTPUT = new ArrayList<>(); // FIX THIS!

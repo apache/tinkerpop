@@ -29,9 +29,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-import static org.apache.tinkerpop.language.__.constant;
 import static org.apache.tinkerpop.language.__.incr;
-import static org.apache.tinkerpop.language.__.is;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -45,7 +43,17 @@ public class PipesTest {
                 .withProcessor(PipesProcessor.class)
                 .withStrategy(IdentityStrategy.class);
 
-        Traversal<Long, ?, ?> traversal = g.inject(Arrays.asList(1L, 1L)).<Long>unfold().map(incr()).repeat(incr()).until(__.is(__.<Long,Long>constant(8L).incr().incr())).sum();
+        Traversal<Long, ?, ?> traversal = g.inject(Arrays.asList(1L, 1L)).<Long>unfold().map(incr()).repeat(incr()).until(__.is(__.<Long, Long, Long>constant(8L).incr().incr())).sum();
+        System.out.println(TraversalUtil.getBytecode(traversal));
+        System.out.println(traversal);
+        System.out.println(traversal.toList());
+        System.out.println("\n----------\n");
+        traversal = g.inject(1L).repeat(incr()).emit(__.constant(true)).until(__.is(5L));
+        System.out.println(TraversalUtil.getBytecode(traversal));
+        System.out.println(traversal);
+        System.out.println(traversal.toList());
+        System.out.println("\n----------\n");
+        traversal = g.inject(1L).emit(__.constant(true)).until(__.is(5L)).repeat(incr());
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

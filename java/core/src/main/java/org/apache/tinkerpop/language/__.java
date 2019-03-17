@@ -37,7 +37,7 @@ public class __ {
         return __.<C, S>start().c(coefficient);
     }
 
-    public static <C, S> Traversal<C, S, S> constant(final S constant) {
+    public static <C, S, R> Traversal<C, S, R> constant(final R constant) {
         return __.<C, S>start().constant(constant);
     }
 
