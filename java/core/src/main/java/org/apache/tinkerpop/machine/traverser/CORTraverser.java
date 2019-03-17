@@ -49,10 +49,9 @@ public class CORTraverser<C, S> extends COTraverser<C, S> {
 
     @Override
     public <E> Traverser<C, E> split(final CFunction<C> function, final E object) {
-        final CORTraverser<C,E> clone = (CORTraverser<C,E>) this.clone();
+        final CORTraverser<C, E> clone = (CORTraverser<C, E>) this.clone();
         clone.object = object;
+        clone.coefficient.multiply(function.coefficient());
         return clone;
     }
-
-
 }

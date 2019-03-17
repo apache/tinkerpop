@@ -54,18 +54,18 @@ public class RepeatEndFn<C, S> extends AbstractFn<C, S, S> {
     @ProcessElement
     public void processElement(final @DoFn.Element Traverser<C, S> traverser, final MultiOutputReceiver out) {
         if (3 == this.untilLocation) {
-            if (this.untilCompilation.filterTraverser(traverser.clone())) {
+            if (this.untilCompilation.filterTraverser(traverser)) {
                 out.get(this.repeatDone).output(traverser.repeatDone(this.repeatBranch));
-            } else if (4 == this.emitLocation && this.emitCompilation.filterTraverser(traverser.clone())) {
+            } else if (4 == this.emitLocation && this.emitCompilation.filterTraverser(traverser)) {
                 out.get(this.repeatDone).output(traverser.repeatDone(this.repeatBranch));
                 out.get(this.repeatLoop).output(traverser.repeatLoop(this.repeatBranch));
             } else {
                 out.get(this.repeatLoop).output(traverser.repeatLoop(this.repeatBranch));
             }
         } else if (3 == this.emitLocation) {
-            if (this.emitCompilation.filterTraverser(traverser.clone()))
+            if (this.emitCompilation.filterTraverser(traverser))
                 out.get(this.repeatDone).output(traverser.repeatDone(this.repeatBranch));
-            if (4 == this.untilLocation && this.untilCompilation.filterTraverser(traverser.clone()))
+            if (4 == this.untilLocation && this.untilCompilation.filterTraverser(traverser))
                 out.get(this.repeatDone).output(traverser.repeatDone(this.repeatBranch));
             else
                 out.get(this.repeatLoop).output(traverser.repeatLoop(this.repeatBranch));

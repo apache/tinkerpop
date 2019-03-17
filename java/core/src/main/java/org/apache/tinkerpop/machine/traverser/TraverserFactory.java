@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.traverser;
 
-import org.apache.tinkerpop.machine.coefficient.Coefficient;
+import org.apache.tinkerpop.machine.function.CFunction;
 
 import java.io.Serializable;
 
@@ -27,6 +27,6 @@ import java.io.Serializable;
  */
 public interface TraverserFactory<C> extends Serializable {
 
-    public <S> Traverser<C, S> create(final Coefficient<C> coefficient, final S object);
+    public <S> Traverser<C, S> create(final CFunction<C> function, final S object);
 
 }

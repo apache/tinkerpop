@@ -67,17 +67,17 @@ final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
         if (this.hasStartPredicates) {
             final Traverser<C, S> traverser = this.inputTraversers.isEmpty() ? this.previousStep.next() : this.inputTraversers.remove();
             if (1 == this.untilLocation) {
-                if (this.untilCompilation.filterTraverser(traverser.clone())) {
+                if (this.untilCompilation.filterTraverser(traverser)) {
                     this.outputTraversers.add(traverser);
-                } else if (2 == this.emitLocation && this.emitCompilation.filterTraverser(traverser.clone())) {
+                } else if (2 == this.emitLocation && this.emitCompilation.filterTraverser(traverser)) {
                     this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
                     this.repeat.addTraverser(traverser);
                 } else
                     this.repeat.addTraverser(traverser);
             } else if (1 == this.emitLocation) {
-                if (this.emitCompilation.filterTraverser(traverser.clone()))
+                if (this.emitCompilation.filterTraverser(traverser))
                     this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
-                if (2 == this.untilLocation && this.untilCompilation.filterTraverser(traverser.clone()))
+                if (2 == this.untilLocation && this.untilCompilation.filterTraverser(traverser))
                     this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
                 else
                     this.repeat.addTraverser(traverser);
@@ -94,17 +94,17 @@ final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
                 final Traverser<C, S> traverser = this.repeat.getProcessor().next();
                 if (this.hasEndPredicates) {
                     if (3 == this.untilLocation) {
-                        if (this.untilCompilation.filterTraverser(traverser.clone())) {
+                        if (this.untilCompilation.filterTraverser(traverser)) {
                             this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
-                        } else if (4 == this.emitLocation && this.emitCompilation.filterTraverser(traverser.clone())) {
+                        } else if (4 == this.emitLocation && this.emitCompilation.filterTraverser(traverser)) {
                             this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
                             this.inputTraversers.add(traverser.repeatLoop(this.repeatBranch));
                         } else
                             this.inputTraversers.add(traverser.repeatLoop(this.repeatBranch));
                     } else if (3 == this.emitLocation) {
-                        if (this.emitCompilation.filterTraverser(traverser.clone()))
+                        if (this.emitCompilation.filterTraverser(traverser))
                             this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
-                        if (4 == this.untilLocation && this.untilCompilation.filterTraverser(traverser.clone()))
+                        if (4 == this.untilLocation && this.untilCompilation.filterTraverser(traverser))
                             this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
                         else
                             this.inputTraversers.add(traverser.repeatLoop(this.repeatBranch));

@@ -22,6 +22,7 @@ import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.function.FilterFunction;
 import org.apache.tinkerpop.machine.function.FlatMapFunction;
+import org.apache.tinkerpop.machine.function.InitialFunction;
 import org.apache.tinkerpop.machine.function.MapFunction;
 import org.apache.tinkerpop.machine.function.ReduceFunction;
 import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
@@ -29,6 +30,7 @@ import org.apache.tinkerpop.util.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -47,14 +49,8 @@ public interface Traverser<C, S> extends Serializable, Cloneable {
 
     public void resetLoops();
 
-    public default boolean filter(final FilterFunction<C, S> function) {
-        if (function.test(this)) {
-            this.path().addLabels(function.labels());
-            this.coefficient().multiply(function.coefficient());
-            return true;
-        } else {
-            return false;
-        }
+    public default Optional<Traverser<C, S>> filter(final FilterFunction<C, S> function) {
+        return function.test(this) ? Optional.of(this.split(function, this.object())) : Optional.empty();
     }
 
     public default <E> Traverser<C, E> map(final MapFunction<C, S, E> function) {
@@ -72,13 +68,15 @@ public interface Traverser<C, S> extends Serializable, Cloneable {
     }
 
     public default Traverser<C, S> repeatLoop(final RepeatBranch<C, S> repeatBranch) {
-        Traverser<C, S> traverser = this.clone();
+        final Traverser<C, S> traverser = this.clone();
         traverser.incrLoops();
         return traverser;
     }
 
-    public default <E> Traverser<C, E> reduce(final ReduceFunction<C, S, E> function, final E reducedValue) {
-        return this.split(function, reducedValue);
+    public default Traverser<C, S> reduce(final ReduceFunction<C, ?, S> function) {
+        final Traverser<C, S> traverser = this.split(function, this.object());
+        traverser.coefficient().unity();
+        return traverser;
     }
 
     public <E> Traverser<C, E> split(final CFunction<C> function, final E object);

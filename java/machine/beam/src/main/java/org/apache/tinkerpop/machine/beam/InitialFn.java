@@ -42,7 +42,7 @@ public class InitialFn<C, S> extends AbstractFn<C, S, S> {
     public void processElement(final @Element Traverser<C, S> traverser, final OutputReceiver<Traverser<C, S>> output) {
         final Iterator<S> iterator = this.initialFunction.get();
         while (iterator.hasNext()) {
-            output.output(this.traverserFactory.create(this.initialFunction.coefficient(), iterator.next()));
+            output.output(this.traverserFactory.create(this.initialFunction, iterator.next()));
         }
     }
 }

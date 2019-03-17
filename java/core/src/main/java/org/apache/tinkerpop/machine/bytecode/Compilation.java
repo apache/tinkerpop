@@ -65,31 +65,37 @@ public final class Compilation<C, S, E> implements Serializable {
             this.processor = this.processorFactory.mint(this);
     }
 
+    private Traverser<C, S> prepareTraverser(final Traverser<C, S> traverser) {
+        final Traverser<C, S> clone = traverser.clone();
+        clone.coefficient().unity();
+        return clone;
+    }
+
     public Traverser<C, E> mapTraverser(final Traverser<C, S> traverser) {
         this.reset();
         this.prepareProcessor();
-        this.processor.addStart(traverser);
+        this.processor.addStart(this.prepareTraverser(traverser));
         return this.processor.next();
     }
 
     public Traverser<C, E> mapObject(final S object) {
         this.reset();
         this.prepareProcessor();
-        this.processor.addStart(this.traverserFactory.create(this.unity, object));
+        this.processor.addStart(this.traverserFactory.create(this.functions.get(0), object));
         return this.processor.next();
     }
 
     public Iterator<Traverser<C, E>> flatMapTraverser(final Traverser<C, S> traverser) {
         this.reset();
         this.prepareProcessor();
-        this.processor.addStart(traverser);
+        this.processor.addStart(this.prepareTraverser(traverser));
         return this.processor;
     }
 
     public boolean filterTraverser(final Traverser<C, S> traverser) {
         this.reset();
         this.prepareProcessor();
-        this.processor.addStart(traverser);
+        this.processor.addStart(this.prepareTraverser(traverser));
         return this.processor.hasNext();
     }
 

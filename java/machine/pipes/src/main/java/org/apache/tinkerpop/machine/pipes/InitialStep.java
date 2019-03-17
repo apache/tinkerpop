@@ -46,7 +46,7 @@ final class InitialStep<C, S> extends AbstractStep<C, S, S> {
 
     @Override
     public Traverser<C, S> next() {
-        return this.traverserFactory.create(this.function.coefficient(), this.objects.next());
+        return this.traverserFactory.create(this.function, this.objects.next());
     }
 
     @Override

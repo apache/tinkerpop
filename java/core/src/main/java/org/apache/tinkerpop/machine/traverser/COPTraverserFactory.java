@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.traverser;
 
-import org.apache.tinkerpop.machine.coefficient.Coefficient;
+import org.apache.tinkerpop.machine.function.CFunction;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -32,8 +32,10 @@ public class COPTraverserFactory<C> implements TraverserFactory<C> {
     }
 
     @Override
-    public <S> Traverser<C, S> create(final Coefficient<C> coefficient, final S object) {
-        return new COPTraverser<>(coefficient.clone(), object);
+    public <S> Traverser<C, S> create(final CFunction<C> function, final S object) {
+        final COPTraverser<C, S> traverser = new COPTraverser<>(function.coefficient(), object);
+        traverser.path().add(function.labels(), object);
+        return traverser;
     }
 
     public static <C> COPTraverserFactory<C> instance() {

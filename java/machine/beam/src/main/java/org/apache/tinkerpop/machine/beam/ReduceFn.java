@@ -68,7 +68,7 @@ public class ReduceFn<C, S, E> extends Combine.CombineFn<Traverser<C, S>, BasicR
 
     @Override
     public Traverser<C, E> extractOutput(final BasicReducer<C, S, E> accumulator) {
-        return accumulator.extractOutput();
+        return accumulator.extractOutput().reduce(this.reduceFunction);
     }
 
     @Override

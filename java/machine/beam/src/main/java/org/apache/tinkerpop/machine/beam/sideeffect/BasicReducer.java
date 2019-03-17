@@ -55,11 +55,11 @@ public class BasicReducer<C, S, E> implements Combine.AccumulatingCombineFn.Accu
 
     @Override
     public void mergeAccumulator(final BasicReducer<C, S, E> other) {
-        this.value = this.reduceFunction.apply(this.traverserFactory.create(this.reduceFunction.coefficient(), (S) this.value), other.value);
+        this.value = this.reduceFunction.apply(this.traverserFactory.create(this.reduceFunction, (S) this.value), other.value);
     }
 
     @Override
     public Traverser<C, E> extractOutput() {
-        return this.traverserFactory.create(this.reduceFunction.coefficient(), this.value);
+        return this.traverserFactory.create(this.reduceFunction, this.value);
     }
 }

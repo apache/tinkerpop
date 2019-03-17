@@ -20,7 +20,6 @@ package org.apache.tinkerpop.machine.traverser;
 
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
-import org.apache.tinkerpop.machine.function.ReduceFunction;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -46,13 +45,10 @@ public class COPTraverser<C, S> extends COTraverser<C, S> {
     }
 
     @Override
-    public <E> Traverser<C, E> split(final CFunction<C> function, final E newObject) {
-        final COPTraverser<C, E> clone = new COPTraverser<>(
-                function instanceof ReduceFunction ?
-                        function.coefficient().clone().unity() :
-                        function.coefficient().clone().multiply(this.coefficient()), newObject);
-        clone.path = function instanceof ReduceFunction ? new BasicPath() : new BasicPath(this.path);
-        clone.path.add(function.labels(), newObject);
+    public <E> Traverser<C, E> split(final CFunction<C> function, final E object) {
+        final COPTraverser<C, E> clone = (COPTraverser<C, E>) this.clone();
+        clone.object = object;
+        clone.path.add(function.labels(), object);
         return clone;
     }
 
@@ -67,7 +63,7 @@ public class COPTraverser<C, S> extends COTraverser<C, S> {
     }
 
     @Override
-    public COPTraverser<C, S> clone() {
+    public Traverser<C, S> clone() {
         final COPTraverser<C, S> clone = (COPTraverser<C, S>) super.clone();
         clone.object = this.object;
         clone.coefficient = this.coefficient.clone();

@@ -49,7 +49,7 @@ final class ReduceStep<C, S, E> extends AbstractStep<C, S, E> {
             this.reducer.add(super.previousStep.next());
         }
         this.done = true;
-        return this.traverserFactory.create(this.reduceFunction.coefficient(), this.reducer.get());
+        return this.traverserFactory.create(this.reduceFunction, this.reducer.get()).reduce(this.reduceFunction);
     }
 
     @Override

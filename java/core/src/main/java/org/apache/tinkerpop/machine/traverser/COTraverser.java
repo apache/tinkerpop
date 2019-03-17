@@ -31,7 +31,7 @@ public class COTraverser<C, S> implements Traverser<C, S> {
     protected S object;
 
     COTraverser(final Coefficient<C> coefficient, final S object) {
-        this.coefficient = coefficient;
+        this.coefficient = coefficient.clone();
         this.object = object;
     }
 
@@ -66,7 +66,10 @@ public class COTraverser<C, S> implements Traverser<C, S> {
 
     @Override
     public <E> Traverser<C, E> split(final CFunction<C> function, final E object) {
-        return new COTraverser<>(this.coefficient.clone().multiply(function.coefficient()), object);
+        final COTraverser<C, E> clone = (COTraverser<C, E>) this.clone();
+        clone.object = object;
+        clone.coefficient.multiply(function.coefficient());
+        return clone;
     }
 
     @Override
