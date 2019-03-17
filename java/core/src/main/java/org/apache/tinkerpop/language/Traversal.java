@@ -99,7 +99,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return this.emit(__.constant(true));
     }
 
-    public Traversal<C, S, E> emit(final Traversal<C, E, ?> emitTraversal) {
+    public Traversal<C, S, E> emit(final Traversal<C, ?, ?> emitTraversal) {
         final Instruction<C> lastInstruction = this.bytecode.lastInstruction();
         if (lastInstruction.op().equals(Symbols.REPEAT))
             lastInstruction.addArgs('e', emitTraversal.bytecode);
@@ -173,7 +173,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return (Traversal) this;
     }
 
-    public <K, V> Traversal<C, S, Map<K, V>> join(Symbols.Tokens joinType, final Traversal<?, ?, Map<K, V>> joinTraversal) {
+    public <K, V> Traversal<C, S, Map<K, V>> join(final Symbols.Tokens joinType, final Traversal<?, ?, Map<K, V>> joinTraversal) {
         this.bytecode.addInstruction(this.currentCoefficient, Symbols.JOIN, joinType, joinTraversal.bytecode);
         return (Traversal) this;
     }
@@ -228,7 +228,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return (Traversal) this;
     }
 
-    public Traversal<C, S, E> until(final Traversal<C, E, ?> untilTraversal) {
+    public Traversal<C, S, E> until(final Traversal<C, ?, ?> untilTraversal) {
         final Instruction<C> lastInstruction = this.bytecode.lastInstruction();
         if (lastInstruction.op().equals(Symbols.REPEAT))
             lastInstruction.addArgs('u', untilTraversal.bytecode);
