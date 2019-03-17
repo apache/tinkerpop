@@ -181,7 +181,7 @@ public final class BytecodeUtil {
             case Symbols.INCR:
                 return new IncrMap<>(coefficient, labels);
             case Symbols.JOIN:
-                return new JoinBarrier<>(coefficient, labels, Compilation.compileOne(instruction.args()[0]), Argument.create(instruction.args()[1]));
+                return new JoinBarrier<>(coefficient, labels, (Symbols.Tokens) instruction.args()[0], Compilation.compileOne(instruction.args()[1]), Argument.create(instruction.args()[2]));
             case Symbols.LOOPS:
                 return new LoopsMap<>(coefficient, labels);
             case Symbols.MAP:

@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.tinkerpop.language.__.incr;
+import static org.apache.tinkerpop.machine.bytecode.Symbols.Tokens.inner;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -109,7 +110,7 @@ public class PipesTest {
                 Map.of("name", "vadas", "city", "durham"));
 
 
-        Traversal<Long, ?, ?> traversal = g.inject(listA).unfold().join(__.<Long,Map<String,Object>,List<Map<String,Object>>>constant(listB).unfold()).by("name");
+        Traversal<Long, ?, ?> traversal = g.inject(listA).unfold().join(inner, __.constant(listB).unfold()).by("name");
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

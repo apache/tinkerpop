@@ -173,8 +173,8 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return (Traversal) this;
     }
 
-    public <K, V> Traversal<C, S, Map<K, V>> join(final Traversal<C, Map<K, V>, Map<K, V>> joinTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.JOIN, joinTraversal.bytecode);
+    public <K, V> Traversal<C, S, Map<K, V>> join(Symbols.Tokens joinType, final Traversal<?, ?, Map<K, V>> joinTraversal) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.JOIN, joinType, joinTraversal.bytecode);
         return (Traversal) this;
     }
 
@@ -208,7 +208,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, E> times(final int times) {
-        return this.until(__.<C, E>loops().is(times));
+        return this.until(__.<C, E>loops().is(times)); // TODO: make an int argument
     }
 
     public <R> Traversal<C, S, R> unfold() {

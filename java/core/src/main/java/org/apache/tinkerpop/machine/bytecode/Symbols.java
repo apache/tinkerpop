@@ -31,6 +31,10 @@ public final class Symbols {
         BARRIER, INITIAL, MAP, FLATMAP, FILTER, REDUCE, BRANCH
     }
 
+    public static enum Tokens {
+        inner, left, right, full
+    }
+
     // SOURCE OPS
     public static final String WITH_COEFFICIENT = "withCoefficient";
     public static final String WITH_PROCESSOR = "withProcessor";
