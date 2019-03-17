@@ -35,6 +35,8 @@ final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
     private final Compilation<C, S, S> repeat;
     private TraverserSet<C, S> outputTraversers = new TraverserSet<>();
     private TraverserSet<C, S> inputTraversers = new TraverserSet<>();
+    private final boolean hasStartPredicates;
+    private final boolean hasEndPredicates;
 
     RepeatStep(final Step<C, ?, S> previousStep, final RepeatBranch<C, S> repeatFunction) {
         super(previousStep, repeatFunction);
@@ -43,6 +45,8 @@ final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
         this.repeat = repeatFunction.getRepeat();
         this.untilLocation = repeatFunction.getUntilLocation();
         this.emitLocation = repeatFunction.getEmitLocation();
+        this.hasStartPredicates = repeatFunction.hasStartPredicates();
+        this.hasEndPredicates = repeatFunction.hasEndPredicates();
     }
 
     @Override
@@ -58,24 +62,26 @@ final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
     }
 
     private final void stageInput() {
-        final Traverser<C, S> traverser = this.inputTraversers.isEmpty() ? this.previousStep.next() : this.inputTraversers.remove();
-        if (1 == this.untilLocation) {
-            if (this.untilCompilation.filterTraverser(traverser.clone())) {
-                this.outputTraversers.add(traverser);
-            } else if (2 == this.emitLocation && this.emitCompilation.filterTraverser(traverser.clone())) {
-                this.outputTraversers.add(traverser);
-                this.repeat.addTraverser(traverser);
-            } else
-                this.repeat.addTraverser(traverser);
-        } else if (1 == this.emitLocation) {
-            if (this.emitCompilation.filterTraverser(traverser.clone()))
-                this.outputTraversers.add(traverser);
-            if (2 == this.untilLocation && this.untilCompilation.filterTraverser(traverser.clone()))
-                this.outputTraversers.add(traverser);
-            else
-                this.repeat.addTraverser(traverser);
+        if (this.hasStartPredicates) {
+            final Traverser<C, S> traverser = this.inputTraversers.isEmpty() ? this.previousStep.next() : this.inputTraversers.remove();
+            if (1 == this.untilLocation) {
+                if (this.untilCompilation.filterTraverser(traverser.clone())) {
+                    this.outputTraversers.add(traverser);
+                } else if (2 == this.emitLocation && this.emitCompilation.filterTraverser(traverser.clone())) {
+                    this.outputTraversers.add(traverser);
+                    this.repeat.addTraverser(traverser);
+                } else
+                    this.repeat.addTraverser(traverser);
+            } else if (1 == this.emitLocation) {
+                if (this.emitCompilation.filterTraverser(traverser.clone()))
+                    this.outputTraversers.add(traverser);
+                if (2 == this.untilLocation && this.untilCompilation.filterTraverser(traverser.clone()))
+                    this.outputTraversers.add(traverser);
+                else
+                    this.repeat.addTraverser(traverser);
+            }
         } else {
-            this.repeat.addTraverser(traverser);
+            this.repeat.addTraverser(this.inputTraversers.isEmpty() ? this.previousStep.next() : this.inputTraversers.remove());
         }
     }
 
@@ -84,21 +90,23 @@ final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
             this.stageInput();
             if (this.repeat.getProcessor().hasNext()) {
                 final Traverser<C, S> traverser = this.repeat.getProcessor().next();
-                if (3 == this.untilLocation) {
-                    if (this.untilCompilation.filterTraverser(traverser.clone())) {
-                        this.outputTraversers.add(traverser);
-                    } else if (4 == this.emitLocation && this.emitCompilation.filterTraverser(traverser.clone())) {
-                        this.outputTraversers.add(traverser);
-                        this.inputTraversers.add(traverser);
-                    } else
-                        this.inputTraversers.add(traverser);
-                } else if (3 == this.emitLocation) {
-                    if (this.emitCompilation.filterTraverser(traverser.clone()))
-                        this.outputTraversers.add(traverser);
-                    if (4 == this.untilLocation && this.untilCompilation.filterTraverser(traverser.clone()))
-                        this.outputTraversers.add(traverser);
-                    else
-                        this.inputTraversers.add(traverser);
+                if (this.hasEndPredicates) {
+                    if (3 == this.untilLocation) {
+                        if (this.untilCompilation.filterTraverser(traverser.clone())) {
+                            this.outputTraversers.add(traverser);
+                        } else if (4 == this.emitLocation && this.emitCompilation.filterTraverser(traverser.clone())) {
+                            this.outputTraversers.add(traverser);
+                            this.inputTraversers.add(traverser);
+                        } else
+                            this.inputTraversers.add(traverser);
+                    } else if (3 == this.emitLocation) {
+                        if (this.emitCompilation.filterTraverser(traverser.clone()))
+                            this.outputTraversers.add(traverser);
+                        if (4 == this.untilLocation && this.untilCompilation.filterTraverser(traverser.clone()))
+                            this.outputTraversers.add(traverser);
+                        else
+                            this.inputTraversers.add(traverser);
+                    }
                 } else {
                     this.inputTraversers.add(traverser);
                 }

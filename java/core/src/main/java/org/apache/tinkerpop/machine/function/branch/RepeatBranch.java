@@ -41,6 +41,8 @@ public class RepeatBranch<C, S> extends AbstractFunction<C> implements BranchFun
     private Compilation<C, S, ?> emitCompilation;
     private int untilLocation = 0;
     private int emitLocation = 0;
+    private boolean hasStartPredicates = false;
+    private boolean hasEndPredicates = false;
 
     public RepeatBranch(final Coefficient<C> coefficient, final Set<String> labels, final List<Object> arguments) {
         super(coefficient, labels);
@@ -51,9 +53,17 @@ public class RepeatBranch<C, S> extends AbstractFunction<C> implements BranchFun
             if ('e' == type) {
                 this.emitCompilation = (Compilation<C, S, ?>) arguments.get(i + 1);
                 this.emitLocation = location++;
+                if (this.emitLocation < 3)
+                    this.hasStartPredicates = true;
+                else
+                    this.hasEndPredicates = true;
             } else if ('u' == type) {
                 this.untilCompilation = (Compilation<C, S, ?>) arguments.get(i + 1);
                 this.untilLocation = location++;
+                if (this.untilLocation < 3)
+                    this.hasStartPredicates = true;
+                else
+                    this.hasEndPredicates = true;
             } else {
                 this.repeatCompilation = (Compilation<C, S, S>) arguments.get(i + 1);
                 location = 3;
@@ -86,6 +96,14 @@ public class RepeatBranch<C, S> extends AbstractFunction<C> implements BranchFun
 
     public int getUntilLocation() {
         return this.untilLocation;
+    }
+
+    public boolean hasStartPredicates() {
+        return this.hasStartPredicates;
+    }
+
+    public boolean hasEndPredicates() {
+        return this.hasEndPredicates;
     }
 
     public Map<Character, Compilation<C, S, S>> getCompilations() {

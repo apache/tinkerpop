@@ -86,19 +86,23 @@ public class TopologyUtil {
             final TupleTag<Traverser<C, S>> repeatLoop = new TupleTag<>();
             sink = source;
             for (int i = 0; i < Beam.MAX_REPETIONS; i++) {
-                final RepeatStartFn<C, S> startFn = new RepeatStartFn<>(repeatFunction, repeatDone, repeatLoop, i == Beam.MAX_REPETIONS - 1);
-                PCollectionTuple outputs = (PCollectionTuple) sink.apply(ParDo.of(startFn).withOutputTags(repeatLoop, TupleTagList.of(repeatDone)));
-                outputs.getAll().values().forEach(c -> c.setCoder(new TraverserCoder()));
-                repeatSinks.add(outputs.get(repeatDone));
-                sink = outputs.get(repeatLoop);
+                if (repeatFunction.hasStartPredicates()) {
+                    final RepeatStartFn<C, S> startFn = new RepeatStartFn<>(repeatFunction, repeatDone, repeatLoop, i == Beam.MAX_REPETIONS - 1);
+                    final PCollectionTuple outputs = (PCollectionTuple) sink.apply(ParDo.of(startFn).withOutputTags(repeatLoop, TupleTagList.of(repeatDone)));
+                    outputs.getAll().values().forEach(c -> c.setCoder(new TraverserCoder()));
+                    repeatSinks.add(outputs.get(repeatDone));
+                    sink = outputs.get(repeatLoop);
+                }
                 for (final CFunction<C> ff : repeatFunction.getRepeat().getFunctions()) {
                     sink = TopologyUtil.extend(sink, ff, traverserFactory);
                 }
-                final RepeatEndFn<C, S> endFn = new RepeatEndFn<>(repeatFunction, repeatDone, repeatLoop, i == Beam.MAX_REPETIONS - 1);
-                outputs = (PCollectionTuple) sink.apply(ParDo.of(endFn).withOutputTags(repeatLoop, TupleTagList.of(repeatDone)));
-                outputs.getAll().values().forEach(c -> c.setCoder(new TraverserCoder()));
-                repeatSinks.add(outputs.get(repeatDone));
-                sink = outputs.get(repeatLoop);
+                if (repeatFunction.hasEndPredicates()) {
+                    final RepeatEndFn<C, S> endFn = new RepeatEndFn<>(repeatFunction, repeatDone, repeatLoop, i == Beam.MAX_REPETIONS - 1);
+                    final PCollectionTuple outputs = (PCollectionTuple) sink.apply(ParDo.of(endFn).withOutputTags(repeatLoop, TupleTagList.of(repeatDone)));
+                    outputs.getAll().values().forEach(c -> c.setCoder(new TraverserCoder()));
+                    repeatSinks.add(outputs.get(repeatDone));
+                    sink = outputs.get(repeatLoop);
+                }
             }
             sink = PCollectionList.of(repeatSinks).apply(Flatten.pCollections());
         } else if (function instanceof BranchFunction) {
