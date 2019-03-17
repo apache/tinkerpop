@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.machine.bytecode;
 
+import org.apache.tinkerpop.machine.traverser.Traverser;
+
 import java.io.Serializable;
 
 /**
@@ -38,8 +40,8 @@ public final class Argument<E> implements Serializable {
     }
 
 
-    public final <C, S> E getArg(final S object) {
-        return this.isPrimitive ? this.arg : this.getCompilation().mapObject(object).object();
+    public final <C, S> E getArg(final Traverser<C, S> traverser) {
+        return this.isPrimitive ? this.arg : this.<C, S>getCompilation().mapTraverser(traverser).object();
     }
 
     public static <E> Argument<E> create(final Object arg) {

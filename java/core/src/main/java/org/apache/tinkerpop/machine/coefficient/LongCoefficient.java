@@ -34,14 +34,14 @@ public class LongCoefficient implements Coefficient<Long> {
     }
 
     @Override
-    public Coefficient<Long> sum(final Long other) {
-        this.value = this.value + other;
+    public Coefficient<Long> sum(final Coefficient<Long> other) {
+        this.value = this.value + other.value();
         return this;
     }
 
     @Override
-    public Coefficient<Long> multiply(final Long other) {
-        this.value = this.value * other;
+    public Coefficient<Long> multiply(final Coefficient<Long> other) {
+        this.value = this.value * other.value();
         return this;
     }
 

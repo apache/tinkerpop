@@ -29,6 +29,7 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
  */
 public class RepeatStartFn<C, S> extends AbstractFn<C, S, S> {
 
+    private final RepeatBranch<C, S> repeatBranch;
     private final int untilLocation;
     private final int emitLocation;
     private final Compilation<C, S, ?> untilCompilation;
@@ -41,6 +42,7 @@ public class RepeatStartFn<C, S> extends AbstractFn<C, S, S> {
                          final TupleTag<Traverser<C, S>> repeatDone,
                          final TupleTag<Traverser<C, S>> repeatLoop) {
         super(repeatBranch);
+        this.repeatBranch = repeatBranch;
         this.untilLocation = repeatBranch.getUntilLocation();
         this.untilCompilation = repeatBranch.getUntil();
         this.emitLocation = repeatBranch.getEmitLocation();
@@ -53,18 +55,18 @@ public class RepeatStartFn<C, S> extends AbstractFn<C, S, S> {
     public void processElement(final @DoFn.Element Traverser<C, S> traverser, final MultiOutputReceiver out) {
         if (1 == this.untilLocation) {
             if (this.untilCompilation.filterTraverser(traverser.clone())) {
-                out.get(this.repeatDone).output(traverser.clone());
+                out.get(this.repeatDone).output(traverser.repeatDone(this.repeatBranch));
             } else if (2 == this.emitLocation && this.emitCompilation.filterTraverser(traverser.clone())) {
-                out.get(this.repeatDone).output(traverser.clone());
+                out.get(this.repeatDone).output(traverser.repeatDone(this.repeatBranch));
                 out.get(this.repeatLoop).output(traverser.clone());
             } else {
                 out.get(this.repeatLoop).output(traverser.clone());
             }
         } else if (1 == this.emitLocation) {
             if (this.emitCompilation.filterTraverser(traverser.clone()))
-                out.get(this.repeatDone).output(traverser.clone());
+                out.get(this.repeatDone).output(traverser.repeatDone(this.repeatBranch));
             if (2 == this.untilLocation && this.untilCompilation.filterTraverser(traverser.clone()))
-                out.get(this.repeatDone).output(traverser.clone());
+                out.get(this.repeatDone).output(traverser.repeatDone(this.repeatBranch));
             else
                 out.get(this.repeatLoop).output(traverser.clone());
         }

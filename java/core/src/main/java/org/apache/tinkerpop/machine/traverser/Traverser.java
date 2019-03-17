@@ -24,6 +24,7 @@ import org.apache.tinkerpop.machine.function.FilterFunction;
 import org.apache.tinkerpop.machine.function.FlatMapFunction;
 import org.apache.tinkerpop.machine.function.MapFunction;
 import org.apache.tinkerpop.machine.function.ReduceFunction;
+import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
 import org.apache.tinkerpop.util.IteratorUtils;
 
 import java.io.Serializable;
@@ -40,10 +41,16 @@ public interface Traverser<C, S> extends Serializable, Cloneable {
 
     public Path path();
 
+    public void incrLoops();
+
+    public int loops();
+
+    public void resetLoops();
+
     public default boolean filter(final FilterFunction<C, S> function) {
         if (function.test(this)) {
             this.path().addLabels(function.labels());
-            this.coefficient().multiply(function.coefficient().value());
+            this.coefficient().multiply(function.coefficient());
             return true;
         } else {
             return false;
@@ -58,9 +65,17 @@ public interface Traverser<C, S> extends Serializable, Cloneable {
         return IteratorUtils.map(function.apply(this), e -> this.split(function, e));
     }
 
-    /*public default <C,S> Traverser<C,S> repeatLoop(final RepeatBranch<C,S> repeatBranch) {
-        // set loops
-    }*/
+    public default Traverser<C, S> repeatDone(final RepeatBranch<C, S> repeatBranch) {
+        final Traverser<C, S> traverser = this.split(repeatBranch, this.object());
+        traverser.resetLoops();
+        return traverser;
+    }
+
+    public default Traverser<C, S> repeatLoop(final RepeatBranch<C, S> repeatBranch) {
+        Traverser<C, S> traverser = this.clone();
+        traverser.incrLoops();
+        return traverser;
+    }
 
     public default <E> Traverser<C, E> reduce(final ReduceFunction<C, S, E> function, final E reducedValue) {
         return this.split(function, reducedValue);

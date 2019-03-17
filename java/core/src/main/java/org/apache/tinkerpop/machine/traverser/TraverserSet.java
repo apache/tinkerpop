@@ -77,7 +77,7 @@ public final class TraverserSet<C, S> extends AbstractSet<Traverser<C, S>> imple
             this.map.put(traverser, traverser);
             return true;
         } else {
-            existing.coefficient().sum(traverser.coefficient().value());
+            existing.coefficient().sum(traverser.coefficient());
             return false;
         }
     }
@@ -132,8 +132,8 @@ public final class TraverserSet<C, S> extends AbstractSet<Traverser<C, S>> imple
         return this.map.values().toString();
     }
 
-    /*public void sort(final Comparator<COPTraverser<S>> comparator) {
-        final List<COPTraverser<C, S>> list = new ArrayList<>(this.map.size());
+    /*public void sort(final Comparator<Traverser<S>> comparator) {
+        final List<Traverser<C, S>> list = new ArrayList<>(this.map.size());
         IteratorUtils.removeOnNext(this.map.values().iterator()).forEachRemaining(list::add);
         Collections.sort(list, comparator);
         this.map.reset();
@@ -141,7 +141,7 @@ public final class TraverserSet<C, S> extends AbstractSet<Traverser<C, S>> imple
     }
 
     public void shuffle() {
-        final List<COPTraverser<C, S>> list = new ArrayList<>(this.map.size());
+        final List<Traverser<C, S>> list = new ArrayList<>(this.map.size());
         IteratorUtils.removeOnNext(this.map.values().iterator()).forEachRemaining(list::add);
         Collections.shuffle(list);
         this.map.reset();

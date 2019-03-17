@@ -48,6 +48,20 @@ public final class EmptyTraverser<C, S> implements Traverser<C, S> {
     }
 
     @Override
+    public void incrLoops() {
+    }
+
+    @Override
+    public int loops() {
+        return 0;
+    }
+
+    @Override
+    public void resetLoops() {
+
+    }
+
+    @Override
     public <E> Traverser<C, E> split(CFunction<C> function, E object) {
         return INSTANCE;
     }

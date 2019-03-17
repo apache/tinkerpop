@@ -20,14 +20,15 @@ package org.apache.tinkerpop.machine.traverser;
 
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
+import org.apache.tinkerpop.util.StringFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class COTraverser<C, S> implements Traverser<C, S> {
 
-    private Coefficient<C> coefficient;
-    private final S object;
+    protected Coefficient<C> coefficient;
+    protected S object;
 
     COTraverser(final Coefficient<C> coefficient, final S object) {
         this.coefficient = coefficient;
@@ -50,8 +51,37 @@ public class COTraverser<C, S> implements Traverser<C, S> {
     }
 
     @Override
+    public void incrLoops() {
+    }
+
+    @Override
+    public int loops() {
+        return 0;
+    }
+
+    @Override
+    public void resetLoops() {
+
+    }
+
+    @Override
     public <E> Traverser<C, E> split(final CFunction<C> function, final E object) {
-        return new COTraverser<>(this.coefficient.clone().multiply(function.coefficient().value()), object);
+        return new COTraverser<>(this.coefficient.clone().multiply(function.coefficient()), object);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.object.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return other instanceof COTraverser && this.object.equals(((COTraverser) other).object);
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.makeTraverserString(this);
     }
 
     @Override

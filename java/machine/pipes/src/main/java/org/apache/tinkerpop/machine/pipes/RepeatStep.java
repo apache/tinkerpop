@@ -28,6 +28,7 @@ import org.apache.tinkerpop.machine.traverser.TraverserSet;
  */
 final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
 
+    private final RepeatBranch<C, S> repeatBranch;
     private final int untilLocation;
     private final int emitLocation;
     private final Compilation<C, S, ?> untilCompilation;
@@ -38,15 +39,16 @@ final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
     private final boolean hasStartPredicates;
     private final boolean hasEndPredicates;
 
-    RepeatStep(final Step<C, ?, S> previousStep, final RepeatBranch<C, S> repeatFunction) {
-        super(previousStep, repeatFunction);
-        this.untilCompilation = repeatFunction.getUntil();
-        this.emitCompilation = repeatFunction.getEmit();
-        this.repeat = repeatFunction.getRepeat();
-        this.untilLocation = repeatFunction.getUntilLocation();
-        this.emitLocation = repeatFunction.getEmitLocation();
-        this.hasStartPredicates = repeatFunction.hasStartPredicates();
-        this.hasEndPredicates = repeatFunction.hasEndPredicates();
+    RepeatStep(final Step<C, ?, S> previousStep, final RepeatBranch<C, S> repeatBranch) {
+        super(previousStep, repeatBranch);
+        this.repeatBranch = repeatBranch;
+        this.untilCompilation = repeatBranch.getUntil();
+        this.emitCompilation = repeatBranch.getEmit();
+        this.repeat = repeatBranch.getRepeat();
+        this.untilLocation = repeatBranch.getUntilLocation();
+        this.emitLocation = repeatBranch.getEmitLocation();
+        this.hasStartPredicates = repeatBranch.hasStartPredicates();
+        this.hasEndPredicates = repeatBranch.hasEndPredicates();
     }
 
     @Override
@@ -68,15 +70,15 @@ final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
                 if (this.untilCompilation.filterTraverser(traverser.clone())) {
                     this.outputTraversers.add(traverser);
                 } else if (2 == this.emitLocation && this.emitCompilation.filterTraverser(traverser.clone())) {
-                    this.outputTraversers.add(traverser);
+                    this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
                     this.repeat.addTraverser(traverser);
                 } else
                     this.repeat.addTraverser(traverser);
             } else if (1 == this.emitLocation) {
                 if (this.emitCompilation.filterTraverser(traverser.clone()))
-                    this.outputTraversers.add(traverser);
+                    this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
                 if (2 == this.untilLocation && this.untilCompilation.filterTraverser(traverser.clone()))
-                    this.outputTraversers.add(traverser);
+                    this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
                 else
                     this.repeat.addTraverser(traverser);
             }
@@ -93,22 +95,22 @@ final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
                 if (this.hasEndPredicates) {
                     if (3 == this.untilLocation) {
                         if (this.untilCompilation.filterTraverser(traverser.clone())) {
-                            this.outputTraversers.add(traverser);
+                            this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
                         } else if (4 == this.emitLocation && this.emitCompilation.filterTraverser(traverser.clone())) {
-                            this.outputTraversers.add(traverser);
-                            this.inputTraversers.add(traverser);
+                            this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
+                            this.inputTraversers.add(traverser.repeatLoop(this.repeatBranch));
                         } else
-                            this.inputTraversers.add(traverser);
+                            this.inputTraversers.add(traverser.repeatLoop(this.repeatBranch));
                     } else if (3 == this.emitLocation) {
                         if (this.emitCompilation.filterTraverser(traverser.clone()))
-                            this.outputTraversers.add(traverser);
+                            this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
                         if (4 == this.untilLocation && this.untilCompilation.filterTraverser(traverser.clone()))
-                            this.outputTraversers.add(traverser);
+                            this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
                         else
-                            this.inputTraversers.add(traverser);
+                            this.inputTraversers.add(traverser.repeatLoop(this.repeatBranch));
                     }
                 } else {
-                    this.inputTraversers.add(traverser);
+                    this.inputTraversers.add(traverser.repeatLoop(this.repeatBranch));
                 }
             }
         }

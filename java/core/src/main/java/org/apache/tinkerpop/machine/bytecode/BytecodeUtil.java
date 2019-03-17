@@ -33,6 +33,7 @@ import org.apache.tinkerpop.machine.function.flatmap.UnfoldFlatMap;
 import org.apache.tinkerpop.machine.function.initial.InjectInitial;
 import org.apache.tinkerpop.machine.function.map.ConstantMap;
 import org.apache.tinkerpop.machine.function.map.IncrMap;
+import org.apache.tinkerpop.machine.function.map.LoopsMap;
 import org.apache.tinkerpop.machine.function.map.MapMap;
 import org.apache.tinkerpop.machine.function.map.PathMap;
 import org.apache.tinkerpop.machine.function.reduce.CountReduce;
@@ -41,6 +42,7 @@ import org.apache.tinkerpop.machine.function.reduce.SumReduce;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 import org.apache.tinkerpop.machine.traverser.COPTraverserFactory;
+import org.apache.tinkerpop.machine.traverser.CORTraverserFactory;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
 import java.lang.reflect.InvocationTargetException;
@@ -122,9 +124,12 @@ public final class BytecodeUtil {
     }
 
     public static <C> Optional<TraverserFactory<C>> getTraverserFactory(final Bytecode<C> bytecode) {
+        // TODO: make this real
         for (final Instruction<C> instruction : bytecode.getInstructions()) {
             if (instruction.op().equals(Symbols.PATH))
                 return Optional.of(COPTraverserFactory.instance());
+            else if (instruction.op().equals(Symbols.REPEAT))
+                return Optional.of(CORTraverserFactory.instance());
         }
         return Optional.of(COPTraverserFactory.instance());
     }
@@ -174,6 +179,8 @@ public final class BytecodeUtil {
                 return new IsFilter<>(coefficient, labels, Argument.create(instruction.args()[0]));
             case Symbols.INCR:
                 return new IncrMap<>(coefficient, labels);
+            case Symbols.LOOPS:
+                return new LoopsMap<>(coefficient, labels);
             case Symbols.MAP:
                 return new MapMap<>(coefficient, labels, Compilation.compileOne(instruction.args()[0]));
             case Symbols.PATH:

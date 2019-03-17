@@ -16,40 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.function.filter;
+package org.apache.tinkerpop.machine.function.map;
 
-import org.apache.tinkerpop.machine.bytecode.Argument;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
-import org.apache.tinkerpop.machine.function.FilterFunction;
+import org.apache.tinkerpop.machine.function.MapFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
-import org.apache.tinkerpop.util.StringFactory;
 
-import java.util.Map;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class HasKeyValueFilter<C, K, V> extends AbstractFunction<C> implements FilterFunction<C, Map<K, V>> {
+public class LoopsMap<C, S> extends AbstractFunction<C> implements MapFunction<C, S, Integer> {
 
-    private final Argument<K> key;
-    private final Argument<V> value;
-
-    public HasKeyValueFilter(final Coefficient<C> coefficient, final Set<String> labels, final Argument<K> key, final Argument<V> value) {
+    public LoopsMap(final Coefficient<C> coefficient, final Set<String> labels) {
         super(coefficient, labels);
-        this.key = key;
-        this.value = value;
     }
 
     @Override
-    public boolean test(final Traverser<C, Map<K, V>> traverser) {
-        final Map<K, V> object = traverser.object();
-        return this.value.getArg(traverser).equals(object.get(this.key.getArg(traverser)));
+    public Integer apply(final Traverser<C, S> traverser) {
+        return traverser.loops();
     }
 
-    @Override
-    public String toString() {
-        return StringFactory.makeFunctionString(this, this.key, this.value);
-    }
 }

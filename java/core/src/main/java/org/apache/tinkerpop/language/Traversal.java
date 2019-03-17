@@ -90,6 +90,10 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return (Traversal) this;
     }
 
+    public Traversal<C, S, E> emit() {
+        return this.emit(__.constant(true));
+    }
+
     public Traversal<C, S, E> emit(final Traversal<C, E, ?> emitTraversal) {
         final Instruction<C> lastInstruction = this.bytecode.lastInstruction();
         if (lastInstruction.op().equals(Symbols.REPEAT))
@@ -164,6 +168,11 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return (Traversal) this;
     }
 
+    public Traversal<C, S, Integer> loops() {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.LOOPS);
+        return (Traversal) this;
+    }
+
     public <R> Traversal<C, S, R> map(final Traversal<C, E, R> mapTraversal) {
         this.bytecode.addInstruction(this.currentCoefficient, Symbols.MAP, mapTraversal.bytecode);
         return (Traversal) this;
@@ -186,6 +195,10 @@ public class Traversal<C, S, E> implements Iterator<E> {
     public <R extends Number> Traversal<C, S, R> sum() {
         this.bytecode.addInstruction(this.currentCoefficient, Symbols.SUM);
         return (Traversal) this;
+    }
+
+    public Traversal<C, S, E> times(final int times) {
+        return this.until(__.<C, E>loops().is(times));
     }
 
     public <R> Traversal<C, S, R> unfold() {

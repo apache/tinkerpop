@@ -16,32 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.coefficient;
+package org.apache.tinkerpop.machine.strategy;
 
-import java.io.Serializable;
+import org.apache.tinkerpop.machine.bytecode.Bytecode;
+import org.apache.tinkerpop.machine.bytecode.Instruction;
+import org.apache.tinkerpop.machine.bytecode.Symbols;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Coefficient<C> extends Cloneable, Serializable {
+public final class CoefficientVerificationStrategy implements Strategy {
 
-    public Coefficient<C> sum(final Coefficient<C> other);
-
-    public Coefficient<C> multiply(final Coefficient<C> other);
-
-    public Coefficient<C> set(final C other);
-
-    public Coefficient<C> unity();
-
-    public Coefficient<C> zero();
-
-    public boolean isUnity();
-
-    public boolean isZero();
-
-    public C value();
-
-    public Long count();
-
-    public Coefficient<C> clone();
+    @Override
+    public <C> void apply(final Bytecode<C> bytecode) {
+        for (final Instruction<C> instruction : bytecode.getInstructions()) {
+            if (Symbols.getOpType(instruction.op()).equals(Symbols.Type.REDUCE)) {
+                if (!instruction.coefficient().isUnity())
+                    throw new IllegalStateException("Reduce functions can not have non-unity coefficients: " + instruction);
+            }
+        }
+    }
 }

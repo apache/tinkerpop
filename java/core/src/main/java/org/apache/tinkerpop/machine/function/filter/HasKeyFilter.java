@@ -43,7 +43,7 @@ public final class HasKeyFilter<C, K, V> extends AbstractFunction<C> implements 
     @Override
     public boolean test(final Traverser<C, Map<K, V>> traverser) {
         final Map<K, V> object = traverser.object();
-        return object.containsKey(this.key.getArg(object));
+        return object.containsKey(this.key.getArg(traverser));
     }
 
     @Override

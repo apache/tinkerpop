@@ -42,7 +42,12 @@ public class BeamTest {
                 .withProcessor(BeamProcessor.class)
                 .withStrategy(IdentityStrategy.class);
 
-        Traversal<Long, ?, ?> traversal = g.inject(Arrays.asList(1L, 1L)).<Long>unfold().map(incr()).repeat(incr()).until(__.is(__.<Long, Long, Long>constant(8L).incr().incr())).sum();
+        Traversal<Long, ?, ?> traversal = g.inject(Arrays.asList(1L, 1L)).<Long>unfold().map(incr()).c(4L).repeat(incr()).until(__.is(__.<Long, Long, Long>constant(8L).incr().incr())).sum();
+        System.out.println(TraversalUtil.getBytecode(traversal));
+        System.out.println(traversal);
+        System.out.println(traversal.toList());
+        System.out.println("\n----------\n");
+        traversal = g.inject(1L).times(10).repeat(__.incr()).emit();
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

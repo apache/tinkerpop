@@ -16,32 +16,43 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.coefficient;
+package org.apache.tinkerpop.machine.traverser;
 
-import java.io.Serializable;
+import org.apache.tinkerpop.machine.coefficient.Coefficient;
+import org.apache.tinkerpop.machine.function.CFunction;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Coefficient<C> extends Cloneable, Serializable {
+public class CORTraverser<C, S> extends COTraverser<C, S> {
 
-    public Coefficient<C> sum(final Coefficient<C> other);
+    private short loops = 0;
 
-    public Coefficient<C> multiply(final Coefficient<C> other);
+    public CORTraverser(final Coefficient<C> coefficient, final S object) {
+        super(coefficient, object);
+    }
 
-    public Coefficient<C> set(final C other);
+    @Override
+    public void incrLoops() {
+        this.loops++;
+    }
 
-    public Coefficient<C> unity();
+    @Override
+    public int loops() {
+        return this.loops;
+    }
 
-    public Coefficient<C> zero();
+    @Override
+    public void resetLoops() {
+        this.loops = 0;
+    }
 
-    public boolean isUnity();
+    @Override
+    public <E> Traverser<C, E> split(final CFunction<C> function, final E object) {
+        final CORTraverser<C,E> clone = (CORTraverser<C,E>) this.clone();
+        clone.object = object;
+        return clone;
+    }
 
-    public boolean isZero();
 
-    public C value();
-
-    public Long count();
-
-    public Coefficient<C> clone();
 }

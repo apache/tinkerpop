@@ -23,6 +23,10 @@ package org.apache.tinkerpop.machine.bytecode;
  */
 public final class Symbols {
 
+    private Symbols() {
+        // static instance
+    }
+
     public static enum Type {
         BARRIER, INITIAL, MAP, FLATMAP, FILTER, REDUCE, BRANCH
     }
@@ -47,6 +51,7 @@ public final class Symbols {
     public static final String INCR = "incr";
     public static final String INJECT = "inject";
     public static final String IS = "is";
+    public static final String LOOPS = "loops";
     public static final String MAP = "map";
     public static final String PATH = "path";
     public static final String REPEAT = "repeat";
@@ -54,7 +59,7 @@ public final class Symbols {
     public static final String UNFOLD = "unfold";
     public static final String UNION = "union";
 
-    public Type getOpType(final String op) {
+    public static Type getOpType(final String op) {
         switch (op) {
             case BARRIER:
                 return Type.BARRIER;
@@ -82,6 +87,8 @@ public final class Symbols {
                 return Type.INITIAL;
             case IS:
                 return Type.FILTER;
+            case LOOPS:
+                return Type.MAP;
             case MAP:
                 return Type.MAP;
             case PATH:

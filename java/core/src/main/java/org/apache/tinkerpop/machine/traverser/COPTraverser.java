@@ -25,15 +25,12 @@ import org.apache.tinkerpop.machine.function.ReduceFunction;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class COPTraverser<C, S> implements Traverser<C, S> {
+public class COPTraverser<C, S> extends COTraverser<C, S> {
 
-    private Coefficient<C> coefficient;
-    private S object;
     private BasicPath path = new BasicPath();
 
     COPTraverser(final Coefficient<C> coefficient, final S object) {
-        this.coefficient = coefficient;
-        this.object = object;
+        super(coefficient, object);
     }
 
     public Coefficient<C> coefficient() {
@@ -53,7 +50,7 @@ public class COPTraverser<C, S> implements Traverser<C, S> {
         final COPTraverser<C, E> clone = new COPTraverser<>(
                 function instanceof ReduceFunction ?
                         function.coefficient().clone().unity() :
-                        function.coefficient().clone().multiply(this.coefficient().value()), newObject);
+                        function.coefficient().clone().multiply(this.coefficient()), newObject);
         clone.path = function instanceof ReduceFunction ? new BasicPath() : new BasicPath(this.path);
         clone.path.add(function.labels(), newObject);
         return clone;
@@ -70,21 +67,12 @@ public class COPTraverser<C, S> implements Traverser<C, S> {
     }
 
     @Override
-    public String toString() {
-        return this.object.toString();
-    }
-
-    @Override
     public COPTraverser<C, S> clone() {
-        try {
-            final COPTraverser<C, S> clone = (COPTraverser<C, S>) super.clone();
-            clone.object = this.object;
-            clone.coefficient = this.coefficient.clone();
-            clone.path = new BasicPath(this.path);
-            return clone;
-        } catch (final CloneNotSupportedException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
+        final COPTraverser<C, S> clone = (COPTraverser<C, S>) super.clone();
+        clone.object = this.object;
+        clone.coefficient = this.coefficient.clone();
+        clone.path = new BasicPath(this.path);
+        return clone;
     }
 
 }

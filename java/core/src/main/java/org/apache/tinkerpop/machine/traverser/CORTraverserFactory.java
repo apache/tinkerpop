@@ -16,32 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.coefficient;
+package org.apache.tinkerpop.machine.traverser;
 
-import java.io.Serializable;
+import org.apache.tinkerpop.machine.coefficient.Coefficient;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Coefficient<C> extends Cloneable, Serializable {
+public class CORTraverserFactory<C> implements TraverserFactory<C> {
 
-    public Coefficient<C> sum(final Coefficient<C> other);
+    private static final CORTraverserFactory INSTANCE = new CORTraverserFactory();
 
-    public Coefficient<C> multiply(final Coefficient<C> other);
+    private CORTraverserFactory() {
+        // static instance
+    }
 
-    public Coefficient<C> set(final C other);
+    @Override
+    public <S> Traverser<C, S> create(final Coefficient<C> coefficient, final S object) {
+        return new CORTraverser<>(coefficient.clone(), object);
+    }
 
-    public Coefficient<C> unity();
-
-    public Coefficient<C> zero();
-
-    public boolean isUnity();
-
-    public boolean isZero();
-
-    public C value();
-
-    public Long count();
-
-    public Coefficient<C> clone();
+    public static <C> CORTraverserFactory<C> instance() {
+        return INSTANCE;
+    }
 }

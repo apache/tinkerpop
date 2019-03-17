@@ -53,6 +53,10 @@ public class __ {
         return __.<C, S>start().is(objectTraversal);
     }
 
+    public static <C, S> Traversal<C, S, Integer> loops() {
+        return __.<C, S>start().loops();
+    }
+
     public static <C, S extends Number> Traversal<C, S, S> sum() {
         return __.<C, S>start().sum();
     }

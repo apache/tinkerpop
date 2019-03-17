@@ -21,6 +21,7 @@ package org.apache.tinkerpop.util;
 import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.bytecode.SourceInstruction;
 import org.apache.tinkerpop.machine.function.CFunction;
+import org.apache.tinkerpop.machine.traverser.Traverser;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -79,5 +80,9 @@ public final class StringFactory {
         if (!function.labels().isEmpty())
             name = name + "@" + function.labels();
         return name;
+    }
+
+    public static String makeTraverserString(final Traverser<?, ?> traverser) {
+        return "|" + traverser.coefficient() + "|" + traverser.object();
     }
 }
