@@ -23,6 +23,7 @@ import org.apache.tinkerpop.machine.bytecode.CompilationCircle;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.MapFunction;
+import org.apache.tinkerpop.machine.traverser.BasicPath;
 import org.apache.tinkerpop.machine.traverser.Path;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
@@ -45,7 +46,7 @@ public class PathMap<C, S> extends AbstractFunction<C> implements MapFunction<C,
     public Path apply(final Traverser<C, S> traverser) {
         if (!this.compilationCircle.isEmpty()) {
             final Path oldPath = traverser.path();
-            final Path newPath = new Path();
+            final Path newPath = new BasicPath();
             for (int i = 0; i < oldPath.size(); i++) {
                 newPath.add(oldPath.labels(i), this.compilationCircle.next().mapObject(oldPath.object(i)).object());
             }

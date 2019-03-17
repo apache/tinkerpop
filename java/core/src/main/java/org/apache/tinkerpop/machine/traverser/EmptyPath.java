@@ -18,15 +18,46 @@
  */
 package org.apache.tinkerpop.machine.traverser;
 
-import org.apache.tinkerpop.machine.coefficient.Coefficient;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class CompleteTraverserFactory<C> implements TraverserFactory<C> {
+public class EmptyPath implements Path {
+
+    private static final EmptyPath INSTANCE = new EmptyPath();
+
+    private EmptyPath() {
+
+    }
 
     @Override
-    public <S> Traverser<C, S> create(final Coefficient<C> coefficient, final S object) {
-        return new CompleteTraverser<>(coefficient.clone(), object);
+    public void add(final Set<String> labels, final Object object) {
+
+    }
+
+    @Override
+    public void addLabels(final Set<String> labels) {
+
+    }
+
+    @Override
+    public Object object(int index) {
+        throw new IllegalStateException("No objects in EmptyPath");
+    }
+
+    @Override
+    public Set<String> labels(int index) {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public int size() {
+        return 0;
+    }
+
+    public static final EmptyPath instance() {
+        return INSTANCE;
     }
 }

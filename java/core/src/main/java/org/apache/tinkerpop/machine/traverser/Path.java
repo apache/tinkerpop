@@ -19,52 +19,20 @@
 package org.apache.tinkerpop.machine.traverser;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Path implements Serializable {
+public interface Path extends Serializable {
 
-    private final List<Object> objects = new ArrayList<>();
-    private final List<Set<String>> labels = new ArrayList<>();
+    public void add(final Set<String> labels, final Object object);
 
-    public Path() {
-    }
+    public void addLabels(final Set<String> labels);
 
-    public Path(final Path path) {
-        this.objects.addAll(path.objects);
-        this.labels.addAll(path.labels);
-    }
+    public Object object(final int index);
 
-    public void add(final Set<String> labels, final Object object) {
-        this.labels.add(labels);
-        this.objects.add(object);
-    }
+    public Set<String> labels(final int index);
 
-    public void addLabels(final Set<String> labels) {
-        if (this.labels.isEmpty())
-            this.labels.add(new HashSet<>());
-        this.labels.get(this.labels.size() - 1).addAll(labels);
-    }
-
-    public Object object(final int index) {
-        return this.objects.get(index);
-    }
-
-    public Set<String> labels(final int index) {
-        return this.labels.get(index);
-    }
-
-    public int size() {
-        return this.objects.size();
-    }
-
-    @Override
-    public String toString() {
-        return this.objects.toString();
-    }
+    public int size();
 }

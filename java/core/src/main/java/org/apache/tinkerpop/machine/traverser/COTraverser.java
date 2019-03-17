@@ -20,71 +20,48 @@ package org.apache.tinkerpop.machine.traverser;
 
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
-import org.apache.tinkerpop.machine.function.ReduceFunction;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class CompleteTraverser<C, S> implements Traverser<C, S> {
+public class COTraverser<C, S> implements Traverser<C, S> {
 
     private Coefficient<C> coefficient;
-    private S object;
-    private Path path = new Path();
+    private final S object;
 
-    public CompleteTraverser(final Coefficient<C> coefficient, final S object) {
+    COTraverser(final Coefficient<C> coefficient, final S object) {
         this.coefficient = coefficient;
         this.object = object;
     }
 
+    @Override
     public Coefficient<C> coefficient() {
         return this.coefficient;
     }
 
+    @Override
     public S object() {
         return this.object;
     }
 
+    @Override
     public Path path() {
-        return this.path;
+        return EmptyPath.instance();
     }
 
     @Override
-    public <E> Traverser<C, E> split(final CFunction<C> function, final E eObject) {
-        final CompleteTraverser<C, E> clone = new CompleteTraverser<>(
-                function instanceof ReduceFunction ?
-                        function.coefficient().clone().unity() :
-                        function.coefficient().clone().multiply(this.coefficient().value()), eObject);
-        clone.path = function instanceof ReduceFunction ? new Path() : new Path(this.path);
-        clone.path.add(function.labels(), eObject);
-        return clone;
+    public <E> Traverser<C, E> split(final CFunction<C> function, final E object) {
+        return new COTraverser<>(this.coefficient.clone().multiply(function.coefficient().value()), object);
     }
 
     @Override
-    public boolean equals(final Object other) {
-        return other instanceof CompleteTraverser && ((CompleteTraverser<C, S>) other).object.equals(this.object);
-    }
-
-    @Override
-    public int hashCode() {
-        return this.object.hashCode(); // TODO: include path
-    }
-
-    @Override
-    public String toString() {
-        return this.object.toString();
-    }
-
-    @Override
-    public CompleteTraverser<C, S> clone() {
+    public Traverser<C, S> clone() {
         try {
-            final CompleteTraverser<C, S> clone = (CompleteTraverser<C, S>) super.clone();
-            clone.object = this.object;
+            final COTraverser<C, S> clone = (COTraverser<C, S>) super.clone();
             clone.coefficient = this.coefficient.clone();
-            clone.path = new Path(this.path);
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
-
 }

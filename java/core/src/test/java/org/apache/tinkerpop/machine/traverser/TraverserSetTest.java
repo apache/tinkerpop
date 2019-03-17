@@ -33,9 +33,9 @@ public class TraverserSetTest {
     @Test
     public void shouldAddContainTraversers() {
         final TraverserSet<Long, String> traverserSet = new TraverserSet<>();
-        Traverser<Long, String> a = new CompleteTraverser<>(LongCoefficient.create(10L), "hello");
-        Traverser<Long, String> b = new CompleteTraverser<>(LongCoefficient.create(5L), "hello");
-        Traverser<Long, String> c = new CompleteTraverser<>(LongCoefficient.create(3L), "world");
+        Traverser<Long, String> a = new COPTraverser<>(LongCoefficient.create(10L), "hello");
+        Traverser<Long, String> b = new COPTraverser<>(LongCoefficient.create(5L), "hello");
+        Traverser<Long, String> c = new COPTraverser<>(LongCoefficient.create(3L), "world");
         ///
         assertTrue(traverserSet.isEmpty());
         assertEquals(0, traverserSet.size());

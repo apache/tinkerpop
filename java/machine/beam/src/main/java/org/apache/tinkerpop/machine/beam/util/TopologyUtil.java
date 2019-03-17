@@ -82,7 +82,7 @@ public class TopologyUtil {
             sink = source.apply(Combine.globally(new ReduceFn<>((ReduceFunction<C, S, E>) function, traverserFactory)));
         } else if (function instanceof RepeatBranch) {
             final RepeatBranch<C, S> repeatFunction = (RepeatBranch<C, S>) function;
-            final List<PCollection<Traverser<C, S>>> repeatSinks = new ArrayList<>();
+            final List<PCollection<Traverser<C, S>>> repeatOutputs = new ArrayList<>();
             final TupleTag<Traverser<C, S>> repeatDone = new TupleTag<>();
             final TupleTag<Traverser<C, S>> repeatLoop = new TupleTag<>();
             sink = source;
@@ -91,7 +91,7 @@ public class TopologyUtil {
                     final RepeatStartFn<C, S> startFn = new RepeatStartFn<>(repeatFunction, repeatDone, repeatLoop);
                     final PCollectionTuple outputs = (PCollectionTuple) sink.apply(ParDo.of(startFn).withOutputTags(repeatLoop, TupleTagList.of(repeatDone)));
                     outputs.getAll().values().forEach(c -> c.setCoder(new TraverserCoder()));
-                    repeatSinks.add(outputs.get(repeatDone));
+                    repeatOutputs.add(outputs.get(repeatDone));
                     sink = outputs.get(repeatLoop);
                 }
                 sink = TopologyUtil.compile(sink, repeatFunction.getRepeat());
@@ -99,13 +99,13 @@ public class TopologyUtil {
                     final RepeatEndFn<C, S> endFn = new RepeatEndFn<>(repeatFunction, repeatDone, repeatLoop);
                     final PCollectionTuple outputs = (PCollectionTuple) sink.apply(ParDo.of(endFn).withOutputTags(repeatLoop, TupleTagList.of(repeatDone)));
                     outputs.getAll().values().forEach(c -> c.setCoder(new TraverserCoder()));
-                    repeatSinks.add(outputs.get(repeatDone));
+                    repeatOutputs.add(outputs.get(repeatDone));
                     sink = outputs.get(repeatLoop);
                 }
             }
             sink = (PCollection<Traverser<C, S>>) sink.apply(ParDo.of(new RepeatDeadEndFn<>()));
             sink.setCoder(new TraverserCoder<>());
-            sink = PCollectionList.of(repeatSinks).apply(Flatten.pCollections());
+            sink = PCollectionList.of(repeatOutputs).apply(Flatten.pCollections());
         } else if (function instanceof BranchFunction) {
             final BranchFunction<C, S, E, M> branchFunction = (BranchFunction<C, S, E, M>) function;
             final Map<M, TupleTag<Traverser<C, S>>> selectors = new LinkedHashMap<>();

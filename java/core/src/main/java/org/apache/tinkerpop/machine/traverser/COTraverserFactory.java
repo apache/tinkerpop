@@ -16,42 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.pipes;
+package org.apache.tinkerpop.machine.traverser;
 
-import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.coefficient.Coefficient;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class SourceStep<C, S> implements Step<C, S, S> {
+public class COTraverserFactory<C> implements TraverserFactory<C> {
 
-    private Traverser<C, S> traverser = null;
+    private static final COTraverserFactory INSTANCE = new COTraverserFactory();
 
-    @Override
-    public boolean hasNext() {
-        return null != this.traverser;
+    private COTraverserFactory() {
+        // static instance
     }
 
     @Override
-    public Traverser<C, S> next() {
-        final Traverser<C, S> temp = this.traverser;
-        this.traverser = null;
-        return temp;
+    public <S> Traverser<C, S> create(final Coefficient<C> coefficient, final S object) {
+        return new COTraverser<>(coefficient.clone(), object);
     }
 
-    @Override
-    public void reset() {
-        this.traverser = null;
-    }
-
-    public void addStart(final Traverser<C, S> traverser) {
-        if (null != this.traverser)
-            throw new IllegalStateException("This shouldn't happen"); // TODO: verify fully and then remove
-        this.traverser = traverser;
-    }
-
-    @Override
-    public String toString() {
-        return "Source";
+    public static <C> COTraverserFactory<C> instance() {
+        return INSTANCE;
     }
 }

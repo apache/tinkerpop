@@ -40,7 +40,7 @@ import org.apache.tinkerpop.machine.function.reduce.GroupCountReduce;
 import org.apache.tinkerpop.machine.function.reduce.SumReduce;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.strategy.Strategy;
-import org.apache.tinkerpop.machine.traverser.CompleteTraverserFactory;
+import org.apache.tinkerpop.machine.traverser.COPTraverserFactory;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
 import java.lang.reflect.InvocationTargetException;
@@ -122,7 +122,11 @@ public final class BytecodeUtil {
     }
 
     public static <C> Optional<TraverserFactory<C>> getTraverserFactory(final Bytecode<C> bytecode) {
-        return Optional.of(new CompleteTraverserFactory<C>());
+        for (final Instruction<C> instruction : bytecode.getInstructions()) {
+            if (instruction.op().equals(Symbols.PATH))
+                return Optional.of(COPTraverserFactory.instance());
+        }
+        return Optional.of(COPTraverserFactory.instance());
     }
 
     public static <C> List<CFunction<C>> compile(final Bytecode<C> bytecode) {
