@@ -19,23 +19,19 @@
 package org.apache.tinkerpop.machine.beam;
 
 import org.apache.beam.sdk.transforms.DoFn;
-import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class AbstractFn<C, S, E> extends DoFn<Traverser<C, S>, Traverser<C, E>> implements Fn {
+public class RepeatDeadEndFn<C, S> extends DoFn<Traverser<C, S>, Traverser<C, S>> implements Fn {
 
-    protected final CFunction<C> function;
+    public RepeatDeadEndFn() {
 
-    protected AbstractFn(final CFunction<C> function) {
-        this.function = function;
     }
 
-    @Override
-    public String toString() {
-        return this.function.toString();
+    @DoFn.ProcessElement
+    public void processElement(final @DoFn.Element Traverser<C, S> traverser, final DoFn.OutputReceiver<Traverser<C, S>> output) {
+        throw new IllegalStateException("There are not enough repetitions to account for this traversal: " + Beam.MAX_REPETIONS + " (max loops)");
     }
-
 }

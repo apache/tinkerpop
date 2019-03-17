@@ -30,7 +30,7 @@ import java.util.Iterator;
 public class InitialFn<C, S> extends AbstractFn<C, S, S> {
 
     private final InitialFunction<C, S> initialFunction;
-    private final TraverserFactory traverserFactory;
+    private final TraverserFactory<C> traverserFactory;
 
     public InitialFn(final InitialFunction<C, S> initialFunction, final TraverserFactory<C> traverserFactory) {
         super(initialFunction);

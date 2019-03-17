@@ -21,8 +21,6 @@ package org.apache.tinkerpop.machine.function.branch;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
-import org.apache.tinkerpop.machine.function.BranchFunction;
-import org.apache.tinkerpop.machine.function.branch.selector.Selector;
 import org.apache.tinkerpop.util.StringFactory;
 
 import java.util.LinkedHashMap;
@@ -33,9 +31,9 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class RepeatBranch<C, S> extends AbstractFunction<C> implements BranchFunction<C, S, S, Boolean> {
+public final class RepeatBranch<C, S> extends AbstractFunction<C> {
 
-    private final Map<Character, Compilation<C, S, S>> compilations;
+    private final Map<Character, Compilation<C, S, S>> compilations; // TODO: remove
     private Compilation<C, S, S> repeatCompilation;
     private Compilation<C, S, ?> untilCompilation;
     private Compilation<C, S, ?> emitCompilation;
@@ -104,19 +102,5 @@ public class RepeatBranch<C, S> extends AbstractFunction<C> implements BranchFun
 
     public boolean hasEndPredicates() {
         return this.hasEndPredicates;
-    }
-
-    public Map<Character, Compilation<C, S, S>> getCompilations() {
-        return this.compilations;
-    }
-
-    @Override
-    public Selector<C, S, Boolean> getBranchSelector() {
-        return null;
-    }
-
-    @Override
-    public Map<Boolean, List<Compilation<C, S, S>>> getBranches() {
-        return null;
     }
 }

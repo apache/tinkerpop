@@ -33,6 +33,7 @@ import org.apache.tinkerpop.machine.beam.FlatMapFn;
 import org.apache.tinkerpop.machine.beam.InitialFn;
 import org.apache.tinkerpop.machine.beam.MapFn;
 import org.apache.tinkerpop.machine.beam.ReduceFn;
+import org.apache.tinkerpop.machine.beam.RepeatDeadEndFn;
 import org.apache.tinkerpop.machine.beam.RepeatEndFn;
 import org.apache.tinkerpop.machine.beam.RepeatStartFn;
 import org.apache.tinkerpop.machine.beam.serialization.TraverserCoder;
@@ -87,23 +88,23 @@ public class TopologyUtil {
             sink = source;
             for (int i = 0; i < Beam.MAX_REPETIONS; i++) {
                 if (repeatFunction.hasStartPredicates()) {
-                    final RepeatStartFn<C, S> startFn = new RepeatStartFn<>(repeatFunction, repeatDone, repeatLoop, i == Beam.MAX_REPETIONS - 1);
+                    final RepeatStartFn<C, S> startFn = new RepeatStartFn<>(repeatFunction, repeatDone, repeatLoop);
                     final PCollectionTuple outputs = (PCollectionTuple) sink.apply(ParDo.of(startFn).withOutputTags(repeatLoop, TupleTagList.of(repeatDone)));
                     outputs.getAll().values().forEach(c -> c.setCoder(new TraverserCoder()));
                     repeatSinks.add(outputs.get(repeatDone));
                     sink = outputs.get(repeatLoop);
                 }
-                for (final CFunction<C> ff : repeatFunction.getRepeat().getFunctions()) {
-                    sink = TopologyUtil.extend(sink, ff, traverserFactory);
-                }
+                sink = TopologyUtil.compile(sink, repeatFunction.getRepeat());
                 if (repeatFunction.hasEndPredicates()) {
-                    final RepeatEndFn<C, S> endFn = new RepeatEndFn<>(repeatFunction, repeatDone, repeatLoop, i == Beam.MAX_REPETIONS - 1);
+                    final RepeatEndFn<C, S> endFn = new RepeatEndFn<>(repeatFunction, repeatDone, repeatLoop);
                     final PCollectionTuple outputs = (PCollectionTuple) sink.apply(ParDo.of(endFn).withOutputTags(repeatLoop, TupleTagList.of(repeatDone)));
                     outputs.getAll().values().forEach(c -> c.setCoder(new TraverserCoder()));
                     repeatSinks.add(outputs.get(repeatDone));
                     sink = outputs.get(repeatLoop);
                 }
             }
+            sink = (PCollection<Traverser<C, S>>) sink.apply(ParDo.of(new RepeatDeadEndFn<>()));
+            sink.setCoder(new TraverserCoder<>());
             sink = PCollectionList.of(repeatSinks).apply(Flatten.pCollections());
         } else if (function instanceof BranchFunction) {
             final BranchFunction<C, S, E, M> branchFunction = (BranchFunction<C, S, E, M>) function;

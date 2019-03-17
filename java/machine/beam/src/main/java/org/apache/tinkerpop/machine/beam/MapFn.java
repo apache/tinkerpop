@@ -27,7 +27,6 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 public class MapFn<C, S, E> extends AbstractFn<C, S, E> {
 
     private final MapFunction<C, S, E> mapFunction;
-    private boolean first = true;
 
     public MapFn(final MapFunction<C, S, E> mapFunction) {
         super(mapFunction);

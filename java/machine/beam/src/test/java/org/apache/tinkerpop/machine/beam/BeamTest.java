@@ -62,12 +62,12 @@ public class BeamTest {
         System.out.println(traversal);
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
-        traversal = g.inject(1L, 2L, 3L).repeat(__.<Long>incr().incr().incr()).until(is(10L));
+        /*traversal = g.inject(1L, 2L, 3L).repeat(__.<Long>incr().incr().incr()).until(is(10L));
         System.out.println(TraversalUtil.getBytecode(traversal).getSourceInstructions());
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());
-        System.out.println("\n----------\n");
+        System.out.println("\n----------\n");*/
         traversal = g.inject(10L).choose(__.is(7L), __.incr(), __.<Long>incr().incr());
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);

@@ -44,7 +44,6 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
 
     private final Pipeline pipeline;
     public static List<Traverser> OUTPUT = new ArrayList<>(); // FIX THIS!
-    private final List<Fn> functions = new ArrayList<>();
     private Iterator<Traverser<C, E>> iterator = null;
 
     public Beam(final Compilation<C, S, E> compilation) {
@@ -59,7 +58,7 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
 
     @Override
     public void addStart(final Traverser<C, S> traverser) {
-        this.functions.get(0).addStart(traverser); // TODO: use side-inputs
+        // TODO: use side-inputs
     }
 
     @Override

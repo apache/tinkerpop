@@ -32,7 +32,7 @@ import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReduceFn<C, S, E> extends Combine.CombineFn<Traverser<C, S>, BasicReducer<C, S, E>, Traverser<C, E>> implements Fn<C, S, E> {
+public class ReduceFn<C, S, E> extends Combine.CombineFn<Traverser<C, S>, BasicReducer<C, S, E>, Traverser<C, E>> implements Fn {
 
     private final ReduceFunction<C, S, E> reduceFunction;
     private final TraverserFactory<C> traverserFactory;
@@ -42,12 +42,6 @@ public class ReduceFn<C, S, E> extends Combine.CombineFn<Traverser<C, S>, BasicR
         this.reduceFunction = reduceFunction;
         this.traverserFactory = traverserFactory;
     }
-
-    @Override
-    public void addStart(Traverser<C, S> traverser) {
-
-    }
-
 
     @Override
     public BasicReducer<C, S, E> createAccumulator() {

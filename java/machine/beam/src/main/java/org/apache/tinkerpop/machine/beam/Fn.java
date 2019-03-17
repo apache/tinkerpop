@@ -18,13 +18,9 @@
  */
 package org.apache.tinkerpop.machine.beam;
 
-import org.apache.tinkerpop.machine.traverser.Traverser;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Fn<C, S, E> {
-
-    public void addStart(final Traverser<C, S> traverser);
+public interface Fn {
 
 }

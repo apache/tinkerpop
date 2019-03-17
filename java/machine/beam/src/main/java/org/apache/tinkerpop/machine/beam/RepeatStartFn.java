@@ -35,13 +35,11 @@ public class RepeatStartFn<C, S> extends AbstractFn<C, S, S> {
     private final Compilation<C, S, ?> emitCompilation;
     private final TupleTag<Traverser<C, S>> repeatDone;
     private final TupleTag<Traverser<C, S>> repeatLoop;
-    private final boolean deadEnd;
 
 
     public RepeatStartFn(final RepeatBranch<C, S> repeatBranch,
                          final TupleTag<Traverser<C, S>> repeatDone,
-                         final TupleTag<Traverser<C, S>> repeatLoop,
-                         final boolean deadEnd) {
+                         final TupleTag<Traverser<C, S>> repeatLoop) {
         super(repeatBranch);
         this.untilLocation = repeatBranch.getUntilLocation();
         this.untilCompilation = repeatBranch.getUntil();
@@ -49,7 +47,6 @@ public class RepeatStartFn<C, S> extends AbstractFn<C, S, S> {
         this.emitCompilation = repeatBranch.getEmit();
         this.repeatDone = repeatDone;
         this.repeatLoop = repeatLoop;
-        this.deadEnd = deadEnd;
     }
 
     @ProcessElement
@@ -70,16 +67,6 @@ public class RepeatStartFn<C, S> extends AbstractFn<C, S, S> {
                 out.get(this.repeatDone).output(traverser.clone());
             else
                 out.get(this.repeatLoop).output(traverser.clone());
-        } else {
-            out.get(this.repeatLoop).output(traverser.clone());
         }
     }
-
-    /*private void outputDone(final Traverser<C, S> traverser) {
-        if (this.deadEnd)
-            throw new IllegalStateException("There are not enough repetitions to account for this traversal");
-        else {
-            //
-        }
-    }*/
 }
