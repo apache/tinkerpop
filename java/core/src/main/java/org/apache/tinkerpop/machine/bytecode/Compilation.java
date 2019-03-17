@@ -46,7 +46,8 @@ public final class Compilation<C, S, E> implements Serializable {
         BytecodeUtil.strategize(bytecode);
         this.processorFactory = BytecodeUtil.getProcessorFactory(bytecode).get();
         this.traverserFactory = BytecodeUtil.getTraverserFactory(bytecode).get();
-        this.unity = BytecodeUtil.getCoefficient(bytecode).get().clone().unity();
+        this.unity = BytecodeUtil.getCoefficient(bytecode).get().clone();
+        this.unity.unity();
         this.functions = BytecodeUtil.compile(bytecode);
     }
 

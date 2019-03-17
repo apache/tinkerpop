@@ -42,7 +42,7 @@ public final class Bytecode<C> implements Cloneable {
     ///
 
     public void addInstruction(final Coefficient<C> coefficient, final String op, final Object... args) {
-        this.instructions.add(new Instruction<>(coefficient.clone(), op, args));
+        this.instructions.add(new Instruction<>(coefficient, op, args));
         coefficient.unity();
     }
 

@@ -25,15 +25,15 @@ import java.io.Serializable;
  */
 public interface Coefficient<C> extends Cloneable, Serializable {
 
-    public Coefficient<C> sum(final Coefficient<C> other);
+    public void sum(final Coefficient<C> other);
 
-    public Coefficient<C> multiply(final Coefficient<C> other);
+    public void multiply(final Coefficient<C> other);
 
-    public Coefficient<C> set(final C other);
+    public void set(final C other);
 
-    public Coefficient<C> unity();
+    public void unity();
 
-    public Coefficient<C> zero();
+    public void zero();
 
     public boolean isUnity();
 

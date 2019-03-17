@@ -36,7 +36,7 @@ public final class Instruction<C> {
     private final Set<String> labels = new HashSet<>();
 
     public Instruction(final Coefficient<C> coefficient, final String op, final Object... args) {
-        this.coefficient = coefficient;
+        this.coefficient = coefficient.clone();
         this.op = op;
         this.args = args;
     }
