@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.machine.pipes;
 
-import org.apache.tinkerpop.language.Gremlin;
-import org.apache.tinkerpop.language.Traversal;
-import org.apache.tinkerpop.language.TraversalSource;
-import org.apache.tinkerpop.language.TraversalUtil;
-import org.apache.tinkerpop.language.__;
+import org.apache.tinkerpop.language.gremlin.Gremlin;
+import org.apache.tinkerpop.language.gremlin.Traversal;
+import org.apache.tinkerpop.language.gremlin.TraversalSource;
+import org.apache.tinkerpop.language.gremlin.TraversalUtil;
+import org.apache.tinkerpop.language.gremlin.__;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
 import org.apache.tinkerpop.machine.strategy.IdentityStrategy;
 import org.junit.jupiter.api.Test;
@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.tinkerpop.language.__.incr;
+import static org.apache.tinkerpop.language.gremlin.__.incr;
 import static org.apache.tinkerpop.machine.bytecode.Symbols.Tokens.inner;
 
 /**

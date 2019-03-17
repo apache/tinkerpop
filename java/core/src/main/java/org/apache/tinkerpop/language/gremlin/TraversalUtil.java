@@ -16,14 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.language;
+package org.apache.tinkerpop.language.gremlin;
+
+import org.apache.tinkerpop.machine.bytecode.Bytecode;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class Gremlin {
+public final class TraversalUtil {
 
-    public static <C> TraversalSource<C> traversal() {
-        return new TraversalSource<>();
+    private TraversalUtil() {
+        // do nothing
     }
+
+    public static <C> Bytecode<C> getBytecode(final Traversal<C, ?, ?> traversal) {
+        return traversal.bytecode;
+    }
+
 }

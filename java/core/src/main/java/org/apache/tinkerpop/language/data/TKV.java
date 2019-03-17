@@ -16,21 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.language;
-
-import org.apache.tinkerpop.machine.bytecode.Bytecode;
+package org.apache.tinkerpop.language.data;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalUtil {
+public interface TKV<K, V> {
 
-    private TraversalUtil() {
-        // do nothing
-    }
+    public K key();
 
-    public static <C> Bytecode<C> getBytecode(final Traversal<C, ?, ?> traversal) {
-        return traversal.bytecode;
-    }
-
+    public V value();
 }

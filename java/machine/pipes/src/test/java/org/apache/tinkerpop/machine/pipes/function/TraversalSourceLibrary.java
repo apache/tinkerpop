@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.machine.pipes.function;
 
-import org.apache.tinkerpop.language.Gremlin;
-import org.apache.tinkerpop.language.TraversalSource;
+import org.apache.tinkerpop.language.gremlin.Gremlin;
+import org.apache.tinkerpop.language.gremlin.TraversalSource;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
 import org.apache.tinkerpop.machine.pipes.PipesProcessor;
 import org.apache.tinkerpop.machine.strategy.IdentityStrategy;

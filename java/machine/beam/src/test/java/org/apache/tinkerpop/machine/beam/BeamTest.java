@@ -18,18 +18,18 @@
  */
 package org.apache.tinkerpop.machine.beam;
 
-import org.apache.tinkerpop.language.Gremlin;
-import org.apache.tinkerpop.language.Traversal;
-import org.apache.tinkerpop.language.TraversalSource;
-import org.apache.tinkerpop.language.TraversalUtil;
-import org.apache.tinkerpop.language.__;
+import org.apache.tinkerpop.language.gremlin.Gremlin;
+import org.apache.tinkerpop.language.gremlin.Traversal;
+import org.apache.tinkerpop.language.gremlin.TraversalSource;
+import org.apache.tinkerpop.language.gremlin.TraversalUtil;
+import org.apache.tinkerpop.language.gremlin.__;
 import org.apache.tinkerpop.machine.strategy.IdentityStrategy;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-import static org.apache.tinkerpop.language.__.incr;
-import static org.apache.tinkerpop.language.__.is;
+import static org.apache.tinkerpop.language.gremlin.__.incr;
+import static org.apache.tinkerpop.language.gremlin.__.is;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
