@@ -55,7 +55,7 @@ final class FilterStep<C, S> extends AbstractStep<C, S, S> {
 
     private void stageNextTraverser() {
         while (null == this.nextTraverser && this.previousStep.hasNext()) {
-            this.previousStep.next().filter(this.filterFunction).ifPresent(t -> this.nextTraverser = t);
+            this.previousStep.next().filter(this.filterFunction).ifPresent(traverser -> this.nextTraverser = traverser);
         }
     }
 

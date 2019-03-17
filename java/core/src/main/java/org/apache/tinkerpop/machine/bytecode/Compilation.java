@@ -27,7 +27,6 @@ import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,18 +51,16 @@ public final class Compilation<C, S, E> implements Serializable {
     }
 
     public Processor<C, S, E> getProcessor() {
-        this.prepareProcessor();
+        if (null == this.processor)
+            this.processor = this.processorFactory.mint(this);
         return this.processor;
-    }
-
-    public void reset() {
-        if (null != this.processor)
-            this.processor.reset();
     }
 
     private void prepareProcessor() {
         if (null == this.processor)
             this.processor = this.processorFactory.mint(this);
+        else
+            this.processor.reset();
     }
 
     private Traverser<C, S> prepareTraverser(final Traverser<C, S> traverser) {
@@ -73,36 +70,31 @@ public final class Compilation<C, S, E> implements Serializable {
     }
 
     public Traverser<C, E> mapTraverser(final Traverser<C, S> traverser) {
-        this.reset();
         this.prepareProcessor();
         this.processor.addStart(this.prepareTraverser(traverser));
         return this.processor.next();
     }
 
     public Traverser<C, E> mapObject(final S object) {
-        this.reset();
         this.prepareProcessor();
         this.processor.addStart(this.traverserFactory.create(this.functions.get(0), object));
         return this.processor.next();
     }
 
-    public Iterator<Traverser<C, E>> flatMapTraverser(final Traverser<C, S> traverser) {
-        this.reset();
+    /*public Iterator<Traverser<C, E>> flatMapTraverser(final Traverser<C, S> traverser) {
         this.prepareProcessor();
         this.processor.addStart(this.prepareTraverser(traverser));
         return this.processor;
-    }
+    }*/
 
     public boolean filterTraverser(final Traverser<C, S> traverser) {
-        this.reset();
         this.prepareProcessor();
         this.processor.addStart(this.prepareTraverser(traverser));
         return this.processor.hasNext();
     }
 
     public Processor<C, S, E> addTraverser(final Traverser<C, S> traverser) {
-        this.prepareProcessor();
-        this.processor.addStart(traverser);
+        this.getProcessor().addStart(traverser);
         return this.processor;
     }
 
