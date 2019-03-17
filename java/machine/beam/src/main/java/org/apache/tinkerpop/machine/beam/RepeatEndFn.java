@@ -27,7 +27,7 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class RepeatFn<C, S> extends AbstractFn<C, S, S> {
+public class RepeatEndFn<C, S> extends AbstractFn<C, S, S> {
 
     private final int untilLocation;
     private final int emitLocation;
@@ -36,13 +36,12 @@ public class RepeatFn<C, S> extends AbstractFn<C, S, S> {
     private final TupleTag<Traverser<C, S>> repeatDone;
     private final TupleTag<Traverser<C, S>> repeatLoop;
     private final boolean deadEnd;
-    private final boolean first;
 
 
-    public RepeatFn(final RepeatBranch<C, S> repeatBranch,
-                    final TupleTag<Traverser<C, S>> repeatDone,
-                    final TupleTag<Traverser<C, S>> repeatLoop,
-                    final boolean deadEnd, final boolean first) {
+    public RepeatEndFn(final RepeatBranch<C, S> repeatBranch,
+                       final TupleTag<Traverser<C, S>> repeatDone,
+                       final TupleTag<Traverser<C, S>> repeatLoop,
+                       final boolean deadEnd) {
         super(repeatBranch);
         this.untilLocation = repeatBranch.getUntilLocation();
         this.untilCompilation = repeatBranch.getUntil();
@@ -51,43 +50,19 @@ public class RepeatFn<C, S> extends AbstractFn<C, S, S> {
         this.repeatDone = repeatDone;
         this.repeatLoop = repeatLoop;
         this.deadEnd = deadEnd;
-        this.first = first;
     }
 
     @ProcessElement
     public void processElement(final @DoFn.Element Traverser<C, S> traverser, final MultiOutputReceiver out) {
-        if (1 == this.untilLocation) {
-            if (this.untilCompilation.filterTraverser(traverser.clone())) {
-                out.get(this.repeatDone).output(traverser.clone());
-            } else if (2 == this.emitLocation && this.emitCompilation.filterTraverser(traverser.clone())) {
-                out.get(this.repeatDone).output(traverser.clone());
-                out.get(this.repeatLoop).output(traverser.clone());
-            } else {
-                out.get(this.repeatLoop).output(traverser.clone());
-            }
-            return;
-        } else if (1 == this.emitLocation) {
-            if (this.emitCompilation.filterTraverser(traverser.clone()))
-                out.get(this.repeatDone).output(traverser.clone());
-            if (2 == this.untilLocation && this.untilCompilation.filterTraverser(traverser.clone()))
-                out.get(this.repeatDone).output(traverser.clone());
-            else
-                out.get(this.repeatLoop).output(traverser.clone());
-            return;
-        } else if (this.first) {
-            out.get(this.repeatLoop).output(traverser.clone());
-            return;
-        }
-
-
         if (3 == this.untilLocation) {
             if (this.untilCompilation.filterTraverser(traverser.clone())) {
                 out.get(this.repeatDone).output(traverser.clone());
             } else if (4 == this.emitLocation && this.emitCompilation.filterTraverser(traverser.clone())) {
                 out.get(this.repeatDone).output(traverser.clone());
                 out.get(this.repeatLoop).output(traverser.clone());
-            } else
+            } else {
                 out.get(this.repeatLoop).output(traverser.clone());
+            }
         } else if (3 == this.emitLocation) {
             if (this.emitCompilation.filterTraverser(traverser.clone()))
                 out.get(this.repeatDone).output(traverser.clone());
@@ -98,7 +73,6 @@ public class RepeatFn<C, S> extends AbstractFn<C, S, S> {
         } else {
             out.get(this.repeatLoop).output(traverser.clone());
         }
-
     }
 
     /*private void outputDone(final Traverser<C, S> traverser) {
