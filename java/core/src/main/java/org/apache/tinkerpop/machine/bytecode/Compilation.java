@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.machine.bytecode;
 
-import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
@@ -39,15 +38,12 @@ public final class Compilation<C, S, E> implements Serializable {
     private final List<CFunction<C>> functions;
     private final ProcessorFactory processorFactory;
     private final TraverserFactory<C> traverserFactory;
-    private final Coefficient<C> unity;
     private transient Processor<C, S, E> processor;
 
     public Compilation(final Bytecode<C> bytecode) {
         BytecodeUtil.strategize(bytecode);
         this.processorFactory = BytecodeUtil.getProcessorFactory(bytecode).get();
         this.traverserFactory = BytecodeUtil.getTraverserFactory(bytecode).get();
-        this.unity = BytecodeUtil.getCoefficient(bytecode).get().clone();
-        this.unity.unity();
         this.functions = BytecodeUtil.compile(bytecode);
     }
 
