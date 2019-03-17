@@ -22,7 +22,6 @@ import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.ReduceFunction;
-import org.apache.tinkerpop.machine.function.NestedFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
 import java.util.HashMap;
@@ -32,7 +31,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroupCountReduce<C, S, E> extends AbstractFunction<C> implements ReduceFunction<C, S, Map<E, Long>>, NestedFunction<C> {
+public class GroupCountReduce<C, S, E> extends AbstractFunction<C> implements ReduceFunction<C, S, Map<E, Long>> {
 
     private final Compilation<C, S, E> byCompilation;
 

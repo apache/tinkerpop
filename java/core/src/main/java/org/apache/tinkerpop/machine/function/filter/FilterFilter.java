@@ -21,8 +21,8 @@ package org.apache.tinkerpop.machine.function.filter;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
+import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.function.FilterFunction;
-import org.apache.tinkerpop.machine.function.NestedFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.util.StringFactory;
 
@@ -31,7 +31,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class FilterFilter<C, S> extends AbstractFunction<C> implements FilterFunction<C, S>, NestedFunction<C> {
+public final class FilterFilter<C, S> extends AbstractFunction<C> implements FilterFunction<C, S> {
 
     private final Compilation<C, S, ?> internalFilter;
 

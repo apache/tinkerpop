@@ -27,7 +27,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface BranchFunction<C, S, E, M> extends InternalFunction<C> {
+public interface BranchFunction<C, S, E, M> extends CFunction<C> {
 
     public Selector<C, S, M> getBranchSelector();
 

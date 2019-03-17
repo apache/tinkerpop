@@ -22,7 +22,6 @@ import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.MapFunction;
-import org.apache.tinkerpop.machine.function.NestedFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.util.StringFactory;
 
@@ -31,7 +30,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MapMap<C, S, E> extends AbstractFunction<C> implements MapFunction<C, S, E>, NestedFunction<C> {
+public class MapMap<C, S, E> extends AbstractFunction<C> implements MapFunction<C, S, E> {
 
     private final Compilation<C, S, E> internalMap;
 
