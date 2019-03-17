@@ -66,6 +66,7 @@ limitations under the License.
     <modules>
         <module>core</module>
         <module>machine</module>
+        <module>language</module>
     </modules>
     <scm>
         <connection>scm:git:git@github.com:apache/tinkerpop.git</connection>
