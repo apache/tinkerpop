@@ -29,7 +29,9 @@ import org.apache.tinkerpop.machine.traverser.CORTraverserFactory;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -73,6 +75,13 @@ public final class BytecodeUtil {
         }
     }
 
+    public static <C> CompositeCompiler getCompilers(final Bytecode<C> bytecode) {
+        final List<BytecodeCompiler> compilers = new ArrayList<>();
+        compilers.add(CoreCompiler.instance());
+        BytecodeUtil.getStructureFactory(bytecode).ifPresent(f -> f.getCompiler().ifPresent(compilers::add));
+        return CompositeCompiler.create(compilers);
+    }
+
     public static <C> Optional<Coefficient<C>> getCoefficient(final Bytecode<C> bytecode) {
         try {
             Coefficient<C> coefficient = null;
@@ -88,7 +97,7 @@ public final class BytecodeUtil {
         }
     }
 
-    public static <C> Optional<ProcessorFactory> getProcessorFactory(final Bytecode<C> bytecode) {
+    static <C> Optional<ProcessorFactory> getProcessorFactory(final Bytecode<C> bytecode) {
         try {
             ProcessorFactory processor = null;
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
@@ -102,7 +111,7 @@ public final class BytecodeUtil {
         }
     }
 
-    public static <C> Optional<StructureFactory> getStructureFactory(final Bytecode<C> bytecode) {
+    static <C> Optional<StructureFactory> getStructureFactory(final Bytecode<C> bytecode) {
         try {
             StructureFactory structure = null;
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
@@ -130,7 +139,7 @@ public final class BytecodeUtil {
         bytecode.getInstructions().add(index, newInstruction);
     }
 
-    public static <C> Optional<TraverserFactory<C>> getTraverserFactory(final Bytecode<C> bytecode) {
+    static <C> Optional<TraverserFactory<C>> getTraverserFactory(final Bytecode<C> bytecode) {
         // TODO: make this real
         for (final Instruction<C> instruction : bytecode.getInstructions()) {
             if (instruction.op().equals(Symbols.PATH))

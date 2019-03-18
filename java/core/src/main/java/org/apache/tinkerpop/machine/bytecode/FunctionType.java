@@ -18,25 +18,11 @@
  */
 package org.apache.tinkerpop.machine.bytecode;
 
-import org.apache.tinkerpop.machine.function.CFunction;
-
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface BytecodeCompiler {
+public enum FunctionType {
 
-    public default <C> List<CFunction<C>> compile(final Bytecode<C> bytecode) {
-        final List<CFunction<C>> functions = new ArrayList<>();
-        for (final Instruction<C> instruction : bytecode.getInstructions()) {
-            functions.add(this.compile(instruction));
-        }
-        return functions;
-    }
+    BARRIER, INITIAL, MAP, FLATMAP, FILTER, REDUCE, BRANCH
 
-    public <C> CFunction<C> compile(final Instruction<C> instruction);
-
-    public FunctionType getFunctionType(final String op);
 }

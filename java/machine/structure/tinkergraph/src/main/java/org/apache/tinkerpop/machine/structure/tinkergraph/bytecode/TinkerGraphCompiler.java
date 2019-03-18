@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.machine.structure.tinkergraph.bytecode;
 
 import org.apache.tinkerpop.machine.bytecode.BytecodeCompiler;
+import org.apache.tinkerpop.machine.bytecode.FunctionType;
 import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
@@ -39,6 +40,11 @@ public class TinkerGraphCompiler implements BytecodeCompiler {
             return new VerticesFlatMap<>(coefficient, labels);
         else
             return null;
+    }
+
+    @Override
+    public FunctionType getFunctionType(final String op) {
+        return op.equals(Symbols.TG_V) ? FunctionType.INITIAL : null;
     }
 
     public static class Symbols {

@@ -25,11 +25,11 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class CompositeCompiler implements BytecodeCompiler {
+public final class CompositeCompiler implements BytecodeCompiler {
 
-    private final BytecodeCompiler[] compilers;
+    private final List<BytecodeCompiler> compilers;
 
-    private CompositeCompiler(final BytecodeCompiler... compilers) {
+    private CompositeCompiler(final List<BytecodeCompiler> compilers) {
         this.compilers = compilers;
     }
 
@@ -43,7 +43,21 @@ final class CompositeCompiler implements BytecodeCompiler {
         throw new IllegalStateException("You need a new compiler: " + instruction);
     }
 
-    public static <C> List<CFunction<C>> compile(final Bytecode<C> bytecode, final BytecodeCompiler... compilers) {
+    @Override
+    public FunctionType getFunctionType(final String op) {
+        for (final BytecodeCompiler compiler : this.compilers) {
+            final FunctionType type = compiler.getFunctionType(op);
+            if (null != type)
+                return type;
+        }
+        throw new IllegalStateException("You need a new compiler: " + op);
+    }
+
+    public static <C> List<CFunction<C>> compile(final Bytecode<C> bytecode, final List<BytecodeCompiler> compilers) {
         return new CompositeCompiler(compilers).compile(bytecode);
+    }
+
+    public static <C> CompositeCompiler create(final List<BytecodeCompiler> compilers) {
+        return new CompositeCompiler(compilers);
     }
 }

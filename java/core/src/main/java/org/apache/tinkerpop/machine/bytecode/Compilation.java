@@ -30,6 +30,7 @@ import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -51,7 +52,7 @@ public final class Compilation<C, S, E> implements Serializable {
         this.structureFactory = BytecodeUtil.getStructureFactory(bytecode).orElse(EmptyStructure.instance());
         this.processorFactory = BytecodeUtil.getProcessorFactory(bytecode).get();
         this.traverserFactory = BytecodeUtil.getTraverserFactory(bytecode).get();
-        this.functions = CompositeCompiler.compile(bytecode, CoreCompiler.instance(), this.structureFactory.getCompiler().orElse(new CoreCompiler()));
+        this.functions = CompositeCompiler.compile(bytecode, Arrays.asList(CoreCompiler.instance(), this.structureFactory.getCompiler().orElse(new CoreCompiler())));
     }
 
     public Compilation(final ProcessorFactory processorFactory) {

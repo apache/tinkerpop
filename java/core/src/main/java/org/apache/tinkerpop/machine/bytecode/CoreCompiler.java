@@ -41,6 +41,8 @@ import org.apache.tinkerpop.machine.function.reduce.CountReduce;
 import org.apache.tinkerpop.machine.function.reduce.GroupCountReduce;
 import org.apache.tinkerpop.machine.function.reduce.SumReduce;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -53,6 +55,31 @@ public final class CoreCompiler implements BytecodeCompiler {
     public static final CoreCompiler instance() {
         return INSTANCE;
     }
+
+    private static final Map<String, FunctionType> OP_TYPES = new HashMap<>() {{
+        put(Symbols.BARRIER, FunctionType.BARRIER);
+        put(Symbols.CHOOSE_IF_THEN, FunctionType.BRANCH);
+        put(Symbols.CHOOSE_IF_THEN_ELSE, FunctionType.BRANCH);
+        put(Symbols.CONSTANT, FunctionType.MAP);
+        put(Symbols.COUNT, FunctionType.REDUCE);
+        put(Symbols.FILTER, FunctionType.FILTER);
+        put(Symbols.GROUP_COUNT, FunctionType.REDUCE);
+        put(Symbols.HAS_KEY, FunctionType.FILTER);
+        put(Symbols.HAS_KEY_VALUE, FunctionType.FILTER);
+        put(Symbols.IDENTITY, FunctionType.FILTER);
+        put(Symbols.INCR, FunctionType.MAP);
+        put(Symbols.INJECT, FunctionType.INITIAL);
+        put(Symbols.IS, FunctionType.FILTER);
+        put(Symbols.JOIN, FunctionType.BARRIER);
+        put(Symbols.LOOPS, FunctionType.MAP);
+        put(Symbols.MAP, FunctionType.MAP);
+        put(Symbols.PATH, FunctionType.MAP);
+        put(Symbols.REPEAT, FunctionType.BRANCH);
+        put(Symbols.SUM, FunctionType.REDUCE);
+        put(Symbols.UNFOLD, FunctionType.FLATMAP);
+        put(Symbols.UNION, FunctionType.BRANCH);
+        put(Symbols.V, FunctionType.FLATMAP);
+    }};
 
     @Override
     public <C> CFunction<C> compile(final Instruction<C> instruction) {
@@ -113,14 +140,15 @@ public final class CoreCompiler implements BytecodeCompiler {
         }
     }
 
+    @Override
+    public FunctionType getFunctionType(final String op) {
+        return OP_TYPES.get(op);
+    }
+
     public static final class Symbols {
 
         private Symbols() {
             // static instance
-        }
-
-        public static enum Type {
-            BARRIER, INITIAL, MAP, FLATMAP, FILTER, REDUCE, BRANCH
         }
 
         public static enum Tokens {
@@ -167,55 +195,5 @@ public final class CoreCompiler implements BytecodeCompiler {
         public static final String UNION = "union";
         public static final String V = "V";
 
-        public static Type getOpType(final String op) {
-            switch (op) {
-                case BARRIER:
-                    return Type.BARRIER;
-                case CHOOSE_IF_THEN:
-                    return Type.BRANCH;
-                case CHOOSE_IF_THEN_ELSE:
-                    return Type.BRANCH;
-                case CONSTANT:
-                    return Type.MAP;
-                case COUNT:
-                    return Type.REDUCE;
-                case FILTER:
-                    return Type.FILTER;
-                case GROUP_COUNT:
-                    return Type.REDUCE;
-                case HAS_KEY:
-                    return Type.FILTER;
-                case HAS_KEY_VALUE:
-                    return Type.FILTER;
-                case IDENTITY:
-                    return Type.FILTER;
-                case INCR:
-                    return Type.MAP;
-                case INJECT:
-                    return Type.INITIAL;
-                case IS:
-                    return Type.FILTER;
-                case JOIN:
-                    return Type.BARRIER;
-                case LOOPS:
-                    return Type.MAP;
-                case MAP:
-                    return Type.MAP;
-                case PATH:
-                    return Type.MAP;
-                case REPEAT:
-                    return Type.BRANCH;
-                case SUM:
-                    return Type.REDUCE;
-                case UNFOLD:
-                    return Type.FLATMAP;
-                case UNION:
-                    return Type.BRANCH;
-                case V:
-                    return Type.FLATMAP;
-                default:
-                    throw new IllegalArgumentException("The following op is unknown: " + op);
-            }
-        }
     }
 }

@@ -19,6 +19,10 @@
 package org.apache.tinkerpop.machine.strategy.verification;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
+import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
+import org.apache.tinkerpop.machine.bytecode.CompositeCompiler;
+import org.apache.tinkerpop.machine.bytecode.FunctionType;
+import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
 /**
@@ -28,12 +32,13 @@ public final class CoefficientVerificationStrategy implements Strategy.Verificat
 
     @Override
     public <C> void apply(final Bytecode<C> bytecode) {
-        // TODO: we need a way to determine symbol op type globally ... doh
-        /*for (final Instruction<C> instruction : bytecode.getInstructions()) {
-            if (Symbols.getOpType(instruction.op()).equals(Symbols.Type.REDUCE)) {
+        final CompositeCompiler compiler = BytecodeUtil.getCompilers(bytecode); // TODO: put the compilers at the root?
+        for (final Instruction<C> instruction : bytecode.getInstructions()) {
+            if (FunctionType.REDUCE == compiler.getFunctionType(instruction.op())) {
                 if (!instruction.coefficient().isUnity())
                     throw new IllegalStateException("Reduce functions can not have non-unity coefficients: " + instruction);
             }
-        }*/
+        }
     }
+
 }
