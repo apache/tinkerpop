@@ -115,8 +115,13 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return (Traversal) this;
     }
 
+    public <K, V> Traversal<C, S, Map<K, V>> has(final P<K> predicate) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY, predicate.type(), TraversalUtil.tryToGetBytecode(predicate.object()));
+        return (Traversal) this;
+    }
+
     public <K, V> Traversal<C, S, Map<K, V>> has(final K key) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY, key);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY, P.Type.eq, key);
         return (Traversal) this;
     }
 

@@ -58,6 +58,10 @@ public final class P<S> {
             public boolean test(final Object first, final Object second) {
                 return null == first ? null == second : (null != second && !lt.test(first, second));
             }
+        }, regex {
+            public boolean test(final Object first, final Object second) {
+                return first.toString().matches(second.toString());
+            }
         };
 
         public abstract boolean test(final Object first, final Object second);
@@ -102,6 +106,10 @@ public final class P<S> {
 
     public static <S> P<S> gte(final Object object) {
         return new P<>(Type.gte, (S) object);
+    }
+
+    public static <S> P<S> regex(final Object object) {
+        return new P<>(Type.regex, (S) object);
     }
 
     @Override

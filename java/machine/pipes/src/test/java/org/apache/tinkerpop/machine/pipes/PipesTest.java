@@ -116,7 +116,7 @@ public class PipesTest {
                 Map.of("name", "vadas", "city", "durham"));
 
 
-        Traversal<Long, ?, ?> traversal = g.inject(listA).unfold().join(inner, __.constant(listB).unfold()).by("name");
+        Traversal<Long, ?, ?> traversal = g.inject(listA).unfold().has(P.regex(__.constant("[a].*[e]"))).join(inner, __.constant(listB).unfold()).by("name");
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

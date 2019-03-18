@@ -169,7 +169,7 @@ public final class BytecodeUtil {
             case Symbols.GROUP_COUNT:
                 return new GroupCountReduce<>(coefficient, labels, Compilation.<C, Object, Object>compileMaybe(instruction.args()).orElse(null));
             case Symbols.HAS_KEY:
-                return new HasKeyFilter<>(coefficient, labels, Argument.create(instruction.args()[0]));
+                return new HasKeyFilter<>(coefficient, labels, (P.Type) instruction.args()[0], Argument.create(instruction.args()[1]));
             case Symbols.HAS_KEY_VALUE:
                 return new HasKeyValueFilter<>(coefficient, labels, Argument.create(instruction.args()[0]), Argument.create(instruction.args()[1]));
             case Symbols.IDENTITY:
