@@ -25,10 +25,10 @@ import org.apache.tinkerpop.machine.structure.StructureFactory;
 import org.apache.tinkerpop.machine.structure.tinkergraph.bytecode.TinkerGraphCompiler;
 import org.apache.tinkerpop.machine.structure.tinkergraph.strategy.provider.VerticesStrategy;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -40,8 +40,8 @@ public class TinkerGraphStructure implements StructureFactory {
     }
 
     @Override
-    public List<Strategy> getStrategies() {
-        return Arrays.asList(new VerticesStrategy());
+    public Set<Strategy<?>> getStrategies() {
+        return Collections.singleton(new VerticesStrategy());
     }
 
     @Override

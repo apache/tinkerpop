@@ -22,22 +22,23 @@ import org.apache.tinkerpop.machine.bytecode.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.strategy.Strategy;
+import org.apache.tinkerpop.machine.strategy.StrategyUtil;
 import org.apache.tinkerpop.machine.structure.StructureFactory;
 import org.apache.tinkerpop.machine.traverser.COPTraverserFactory;
 import org.apache.tinkerpop.machine.traverser.CORTraverserFactory;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class BytecodeUtil {
 
-    public static <C> void strategize(final Bytecode<C> bytecode) {
+    static <C> void strategize(final Bytecode<C> bytecode) {
         for (final Strategy strategy : BytecodeUtil.getStrategies(bytecode)) {
             BytecodeUtil.strategize(bytecode, strategy);
         }
@@ -53,9 +54,9 @@ public final class BytecodeUtil {
         }
     }
 
-    public static <C> List<Strategy> getStrategies(final Bytecode<C> bytecode) {
+    private static <C> Set<Strategy<?>> getStrategies(final Bytecode<C> bytecode) {
         try {
-            final List<Strategy> strategies = new ArrayList<>();
+            final Set<Strategy<?>> strategies = new HashSet<>();
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
                 if (sourceInstruction.op().equals(Symbols.WITH_STRATEGY)) {
                     strategies.add(((Class<? extends Strategy>) sourceInstruction.args()[0]).getConstructor().newInstance());
@@ -65,7 +66,8 @@ public final class BytecodeUtil {
                     strategies.addAll(StructureFactory.structureStrategies(((Class<? extends StructureFactory>) sourceInstruction.args()[0])));
                 }
             }
-            return strategies;
+            return StrategyUtil.sortStrategies(strategies);
+
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new RuntimeException(e.getMessage(), e);
         }

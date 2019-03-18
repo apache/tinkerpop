@@ -24,7 +24,7 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.util.FastNoSuchElementException;
 
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -60,7 +60,7 @@ public abstract class SimpleProcessor<C, S, E> implements Processor<C, S, E>, Pr
     }
 
     @Override
-    public List<Strategy> getStrategies() {
-        return Collections.emptyList();
+    public Set<Strategy<?>> getStrategies() {
+        return Collections.emptySet();
     }
 }

@@ -25,7 +25,7 @@ import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -38,7 +38,7 @@ public class BeamProcessor implements ProcessorFactory {
     }
 
     @Override
-    public List<Strategy> getStrategies() {
-        return Collections.singletonList(new BeamStrategy());
+    public Set<Strategy<?>> getStrategies() {
+        return Collections.singleton(new BeamStrategy());
     }
 }

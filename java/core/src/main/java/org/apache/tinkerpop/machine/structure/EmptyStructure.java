@@ -22,9 +22,9 @@ import org.apache.tinkerpop.machine.bytecode.BytecodeCompiler;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -43,8 +43,8 @@ public final class EmptyStructure implements Structure, StructureFactory {
     }
 
     @Override
-    public List<Strategy> getStrategies() {
-        return Collections.emptyList();
+    public Set<Strategy<?>> getStrategies() {
+        return Collections.emptySet();
     }
 
     @Override
