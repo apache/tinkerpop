@@ -21,11 +21,22 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Gremlin Symphony #40 in G Minor*
 
-== TinkerPop 3.3.5
+== TinkerPop 3.3.6
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: March 18, 2019*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.3.6/CHANGELOG.asciidoc#release-3-3-6[changelog] for a complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+==== Anti-Patterns Documentation
+
+The Gremlin Recipes documentation now has a new section which discusses anti-patterns in Gremlin. Its subsections
+detail commonly seen approaches to the Gremlin language which can lead to poorly written and/or under-performing
+traversals. The new Anti-Patterns Section can be found
+link:http://tinkerpop.apache.org/docs/3.3.6/recipes/#_anti_patterns[here].
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2114[TINKERPOP-2114]
 
 == TinkerPop 3.3.5
 
