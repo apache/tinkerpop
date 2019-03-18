@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>gremlin-archetype</artifactId>
-        <version>3.3.6-SNAPSHOT</version>
+        <version>3.3.6</version>
     </parent>
 
     <artifactId>gremlin-archetype-tinkergraph</artifactId>
