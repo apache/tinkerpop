@@ -25,7 +25,7 @@ import org.apache.tinkerpop.language.gremlin.TraversalSource;
 import org.apache.tinkerpop.language.gremlin.TraversalUtil;
 import org.apache.tinkerpop.language.gremlin.__;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
-import org.apache.tinkerpop.machine.strategy.IdentityStrategy;
+import org.apache.tinkerpop.machine.strategy.optimization.IdentityStrategy;
 import org.apache.tinkerpop.machine.structure.tinkergraph.TinkerGraphStructure;
 import org.junit.jupiter.api.Test;
 

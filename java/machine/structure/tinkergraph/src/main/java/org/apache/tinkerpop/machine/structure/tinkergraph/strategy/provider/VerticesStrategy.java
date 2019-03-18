@@ -16,19 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.tinkergraph.strategy;
+package org.apache.tinkerpop.machine.structure.tinkergraph.strategy.provider;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
-import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.bytecode.CoreCompiler;
+import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 import org.apache.tinkerpop.machine.structure.tinkergraph.bytecode.TinkerGraphCompiler;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VerticesStrategy implements Strategy {
+public class VerticesStrategy implements Strategy.ProviderStrategy {
     @Override
     public <C> void apply(final Bytecode<C> bytecode) {
         Instruction<C> temp = null;

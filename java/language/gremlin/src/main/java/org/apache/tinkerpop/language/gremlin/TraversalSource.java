@@ -22,8 +22,8 @@ import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
-import org.apache.tinkerpop.machine.strategy.CoefficientStrategy;
-import org.apache.tinkerpop.machine.strategy.CoefficientVerificationStrategy;
+import org.apache.tinkerpop.machine.strategy.finalization.CoefficientStrategy;
+import org.apache.tinkerpop.machine.strategy.verification.CoefficientVerificationStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 import org.apache.tinkerpop.machine.structure.StructureFactory;
 import org.apache.tinkerpop.machine.structure.data.TVertex;
@@ -50,18 +50,12 @@ public class TraversalSource<C> {
     public TraversalSource<C> withProcessor(final Class<? extends ProcessorFactory> processor) {
         this.bytecode = this.bytecode.clone();
         this.bytecode.addSourceInstruction(Symbols.WITH_PROCESSOR, processor);
-        for (final Strategy strategy : ProcessorFactory.processorStrategies(processor)) { // TODO: do this at compile time so errant strategies don't exist.
-            this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, strategy.getClass());
-        }
         return this;
     }
 
     public TraversalSource<C> withStructure(final Class<? extends StructureFactory> structure) {
         this.bytecode = this.bytecode.clone();
         this.bytecode.addSourceInstruction(Symbols.WITH_STRUCTURE, structure);
-        for (final Strategy strategy : StructureFactory.structureStrategies(structure)) { // TODO: do this at compile time so errant strategies don't exist.
-            this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, strategy.getClass());
-        }
         return this;
     }
 

@@ -27,7 +27,7 @@ import org.apache.tinkerpop.machine.strategy.Strategy;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BeamStrategy implements Strategy {
+public class BeamStrategy implements Strategy.ProviderStrategy {
 
 
     @Override

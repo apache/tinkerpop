@@ -48,6 +48,12 @@ import java.util.Set;
  */
 public final class CoreCompiler implements BytecodeCompiler {
 
+    private static final CoreCompiler INSTANCE = new CoreCompiler();
+
+    public static final CoreCompiler instance() {
+        return INSTANCE;
+    }
+
     @Override
     public <C> CFunction<C> compile(final Instruction<C> instruction) {
         final String op = instruction.op();

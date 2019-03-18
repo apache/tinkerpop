@@ -16,24 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.strategy;
+package org.apache.tinkerpop.machine.strategy.optimization;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.CoreCompiler;
-import org.apache.tinkerpop.machine.bytecode.Instruction;
+import org.apache.tinkerpop.machine.strategy.Strategy;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class CoefficientVerificationStrategy implements Strategy {
+public final class IdentityStrategy implements Strategy.OptimizationStrategy {
 
     @Override
     public <C> void apply(final Bytecode<C> bytecode) {
-        for (final Instruction<C> instruction : bytecode.getInstructions()) {
-            if (CoreCompiler.Symbols.getOpType(instruction.op()).equals(CoreCompiler.Symbols.Type.REDUCE)) {
-                if (!instruction.coefficient().isUnity())
-                    throw new IllegalStateException("Reduce functions can not have non-unity coefficients: " + instruction);
-            }
-        }
+        bytecode.getInstructions().removeIf(instruction ->
+                instruction.op().equals(CoreCompiler.Symbols.IDENTITY) &&
+                        instruction.labels().isEmpty() &&
+                        instruction.coefficient().isUnity());
     }
 }

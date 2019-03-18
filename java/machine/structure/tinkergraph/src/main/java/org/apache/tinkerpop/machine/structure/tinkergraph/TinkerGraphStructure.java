@@ -23,7 +23,7 @@ import org.apache.tinkerpop.machine.strategy.Strategy;
 import org.apache.tinkerpop.machine.structure.Structure;
 import org.apache.tinkerpop.machine.structure.StructureFactory;
 import org.apache.tinkerpop.machine.structure.tinkergraph.bytecode.TinkerGraphCompiler;
-import org.apache.tinkerpop.machine.structure.tinkergraph.strategy.VerticesStrategy;
+import org.apache.tinkerpop.machine.structure.tinkergraph.strategy.provider.VerticesStrategy;
 
 import java.util.Arrays;
 import java.util.List;

@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.strategy;
+package org.apache.tinkerpop.machine.strategy.finalization;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
+import org.apache.tinkerpop.machine.strategy.Strategy;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraverserFactoryStrategy implements Strategy {
+public class TraverserFactoryStrategy implements Strategy.FinalizationStrategy {
 
     private TraverserFactory traverserFactory;
 

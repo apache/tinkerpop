@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.machine.bytecode;
 
+import org.apache.tinkerpop.machine.bytecode.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.strategy.Strategy;
@@ -56,10 +57,14 @@ public final class BytecodeUtil {
         try {
             final List<Strategy> strategies = new ArrayList<>();
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
-                if (sourceInstruction.op().equals(CoreCompiler.Symbols.WITH_STRATEGY))
+                if (sourceInstruction.op().equals(Symbols.WITH_STRATEGY)) {
                     strategies.add(((Class<? extends Strategy>) sourceInstruction.args()[0]).getConstructor().newInstance());
+                } else if (sourceInstruction.op().equals(Symbols.WITH_PROCESSOR)) {
+                    strategies.addAll(ProcessorFactory.processorStrategies(((Class<? extends ProcessorFactory>) sourceInstruction.args()[0])));
+                } else if (sourceInstruction.op().equals(Symbols.WITH_STRUCTURE)) {
+                    strategies.addAll(StructureFactory.structureStrategies(((Class<? extends StructureFactory>) sourceInstruction.args()[0])));
+                }
             }
-            // TODO: sort strategies
             return strategies;
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new RuntimeException(e.getMessage(), e);
@@ -70,7 +75,7 @@ public final class BytecodeUtil {
         try {
             Coefficient<C> coefficient = null;
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
-                if (sourceInstruction.op().equals(CoreCompiler.Symbols.WITH_COEFFICIENT)) {
+                if (sourceInstruction.op().equals(Symbols.WITH_COEFFICIENT)) {
                     coefficient = ((Class<? extends Coefficient<C>>) sourceInstruction.args()[0]).getConstructor().newInstance();
                 }
             }
@@ -85,7 +90,7 @@ public final class BytecodeUtil {
         try {
             ProcessorFactory processor = null;
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
-                if (sourceInstruction.op().equals(CoreCompiler.Symbols.WITH_PROCESSOR)) {
+                if (sourceInstruction.op().equals(Symbols.WITH_PROCESSOR)) {
                     processor = (ProcessorFactory) ((Class<? extends Coefficient<C>>) sourceInstruction.args()[0]).getConstructor().newInstance();
                 }
             }
@@ -99,7 +104,7 @@ public final class BytecodeUtil {
         try {
             StructureFactory structure = null;
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
-                if (sourceInstruction.op().equals(CoreCompiler.Symbols.WITH_STRUCTURE)) {
+                if (sourceInstruction.op().equals(Symbols.WITH_STRUCTURE)) {
                     structure = (StructureFactory) ((Class<? extends Coefficient<C>>) sourceInstruction.args()[0]).getConstructor().newInstance();
                 }
             }
@@ -126,9 +131,9 @@ public final class BytecodeUtil {
     public static <C> Optional<TraverserFactory<C>> getTraverserFactory(final Bytecode<C> bytecode) {
         // TODO: make this real
         for (final Instruction<C> instruction : bytecode.getInstructions()) {
-            if (instruction.op().equals(CoreCompiler.Symbols.PATH))
+            if (instruction.op().equals(Symbols.PATH))
                 return Optional.of(COPTraverserFactory.instance());
-            else if (instruction.op().equals(CoreCompiler.Symbols.REPEAT))
+            else if (instruction.op().equals(Symbols.REPEAT))
                 return Optional.of(CORTraverserFactory.instance());
         }
         return Optional.of(COPTraverserFactory.instance());

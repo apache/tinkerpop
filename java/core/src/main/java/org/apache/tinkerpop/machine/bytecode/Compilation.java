@@ -51,7 +51,7 @@ public final class Compilation<C, S, E> implements Serializable {
         this.structureFactory = BytecodeUtil.getStructureFactory(bytecode).orElse(EmptyStructure.instance());
         this.processorFactory = BytecodeUtil.getProcessorFactory(bytecode).get();
         this.traverserFactory = BytecodeUtil.getTraverserFactory(bytecode).get();
-        this.functions = CompositeCompiler.compile(bytecode, new CoreCompiler(), this.structureFactory.getCompiler().orElse(new CoreCompiler()));
+        this.functions = CompositeCompiler.compile(bytecode, CoreCompiler.instance(), this.structureFactory.getCompiler().orElse(new CoreCompiler()));
     }
 
     public Compilation(final ProcessorFactory processorFactory) {

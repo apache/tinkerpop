@@ -16,21 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.strategy;
+package org.apache.tinkerpop.machine.strategy.finalization;
 
-import org.apache.tinkerpop.machine.bytecode.CoreCompiler;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
+import org.apache.tinkerpop.machine.bytecode.CoreCompiler;
 import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
+import org.apache.tinkerpop.machine.strategy.Strategy;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class CoefficientStrategy implements Strategy {
+public final class CoefficientStrategy implements Strategy.FinalizationStrategy {
     @Override
-    public <C> void apply(Bytecode<C> bytecode) {
+    public <C> void apply(final Bytecode<C> bytecode) {
         Coefficient<C> coefficient = BytecodeUtil.getCoefficient(bytecode).orElse(null);
         if (null == coefficient) {
             coefficient = (Coefficient<C>) LongCoefficient.create();
