@@ -35,9 +35,18 @@ public class TinkerGraphCompiler implements BytecodeCompiler {
         final String op = instruction.op();
         final Coefficient<C> coefficient = instruction.coefficient();
         final Set<String> labels = instruction.labels();
-        if (op.equals("tg:V"))
+        if (op.equals(Symbols.TG_V))
             return new VerticesFlatMap<>(coefficient, labels);
         else
             return null;
+    }
+
+    public static class Symbols {
+
+        private Symbols() {
+            // static instance
+        }
+
+        public static final String TG_V = "tg:V";
     }
 }

@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.strategy;
 
-import org.apache.tinkerpop.machine.bytecode.Symbols;
+import org.apache.tinkerpop.machine.bytecode.CoreCompiler;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.bytecode.Instruction;
@@ -34,14 +34,14 @@ public final class CoefficientStrategy implements Strategy {
         Coefficient<C> coefficient = BytecodeUtil.getCoefficient(bytecode).orElse(null);
         if (null == coefficient) {
             coefficient = (Coefficient<C>) LongCoefficient.create();
-            bytecode.addSourceInstruction(Symbols.WITH_COEFFICIENT, coefficient.getClass());
+            bytecode.addSourceInstruction(CoreCompiler.Symbols.WITH_COEFFICIENT, coefficient.getClass());
         }
         for (final Instruction<C> instruction : bytecode.getInstructions()) {
             for (final Object arg : instruction.args()) {
                 if (arg instanceof Bytecode) {
                     final Bytecode<C> next = (Bytecode<C>) arg;
-                    if (!BytecodeUtil.hasSourceInstruction(next, Symbols.WITH_COEFFICIENT)) {
-                        next.addSourceInstruction(Symbols.WITH_COEFFICIENT, coefficient.getClass());
+                    if (!BytecodeUtil.hasSourceInstruction(next, CoreCompiler.Symbols.WITH_COEFFICIENT)) {
+                        next.addSourceInstruction(CoreCompiler.Symbols.WITH_COEFFICIENT, coefficient.getClass());
                     }
                 }
             }

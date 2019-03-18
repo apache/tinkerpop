@@ -21,8 +21,9 @@ package org.apache.tinkerpop.machine.structure.tinkergraph.strategy;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.bytecode.Instruction;
-import org.apache.tinkerpop.machine.bytecode.Symbols;
+import org.apache.tinkerpop.machine.bytecode.CoreCompiler;
 import org.apache.tinkerpop.machine.strategy.Strategy;
+import org.apache.tinkerpop.machine.structure.tinkergraph.bytecode.TinkerGraphCompiler;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -32,10 +33,10 @@ public class VerticesStrategy implements Strategy {
     public <C> void apply(final Bytecode<C> bytecode) {
         Instruction<C> temp = null;
         for (final Instruction<C> instruction : bytecode.getInstructions()) {
-            if (instruction.op().equals(Symbols.V))
+            if (instruction.op().equals(CoreCompiler.Symbols.V))
                 temp = instruction;
         }
         if (null != temp)
-            BytecodeUtil.replaceInstruction(bytecode, temp, new Instruction<>(temp.coefficient(), "tg:V"));
+            BytecodeUtil.replaceInstruction(bytecode, temp, new Instruction<>(temp.coefficient(), TinkerGraphCompiler.Symbols.TG_V));
     }
 }

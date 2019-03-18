@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.language.gremlin;
 
+import org.apache.tinkerpop.machine.bytecode.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.structure.data.TVertex;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.bytecode.P;
-import org.apache.tinkerpop.machine.bytecode.Symbols;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
 import org.apache.tinkerpop.machine.traverser.Traverser;

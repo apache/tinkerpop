@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.strategy;
 
-import org.apache.tinkerpop.machine.bytecode.Symbols;
+import org.apache.tinkerpop.machine.bytecode.CoreCompiler;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 
 /**
@@ -29,7 +29,7 @@ public final class IdentityStrategy implements Strategy {
     @Override
     public <C> void apply(final Bytecode<C> bytecode) {
         bytecode.getInstructions().removeIf(instruction ->
-                instruction.op().equals(Symbols.IDENTITY) &&
+                instruction.op().equals(CoreCompiler.Symbols.IDENTITY) &&
                         instruction.labels().isEmpty() &&
                         instruction.coefficient().isUnity());
     }

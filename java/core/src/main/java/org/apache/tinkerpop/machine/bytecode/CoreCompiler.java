@@ -106,4 +106,110 @@ public final class CoreCompiler implements BytecodeCompiler {
                 return null;
         }
     }
+
+    public static final class Symbols {
+
+        private Symbols() {
+            // static instance
+        }
+
+        public static enum Type {
+            BARRIER, INITIAL, MAP, FLATMAP, FILTER, REDUCE, BRANCH
+        }
+
+        public static enum Tokens {
+            inner, left, right, full
+        }
+
+        // SOURCE OPS
+        public static final String WITH_COEFFICIENT = "withCoefficient";
+        public static final String WITH_PROCESSOR = "withProcessor";
+        public static final String WITH_STRUCTURE = "withStructure";
+        public static final String WITH_STRATEGY = "withStrategy";
+
+
+        // ARGUMENT TOKENS
+        public static final String EQ = "eq";
+        public static final String NEQ = "neq";
+        public static final String LT = "lt";
+        public static final String GT = "gt";
+        public static final String LTE = "lte";
+        public static final String GTE = "gte";
+        public static final String REGEX = "regex";
+
+        // INSTRUCTION OPS
+        public static final String BARRIER = "barrier";
+        public static final String CHOOSE_IF_THEN = "chooseIfThen";
+        public static final String CHOOSE_IF_THEN_ELSE = "chooseIfThenElse";
+        public static final String CONSTANT = "constant";
+        public static final String COUNT = "count";
+        public static final String FILTER = "filter";
+        public static final String GROUP_COUNT = "groupCount";
+        public static final String HAS_KEY = "hasKey";
+        public static final String HAS_KEY_VALUE = "hasKeyValue";
+        public static final String IDENTITY = "identity";
+        public static final String INCR = "incr";
+        public static final String INJECT = "inject";
+        public static final String IS = "is";
+        public static final String JOIN = "join";
+        public static final String LOOPS = "loops";
+        public static final String MAP = "map";
+        public static final String PATH = "path";
+        public static final String REPEAT = "repeat";
+        public static final String SUM = "sum";
+        public static final String UNFOLD = "unfold";
+        public static final String UNION = "union";
+        public static final String V = "V";
+
+        public static Type getOpType(final String op) {
+            switch (op) {
+                case BARRIER:
+                    return Type.BARRIER;
+                case CHOOSE_IF_THEN:
+                    return Type.BRANCH;
+                case CHOOSE_IF_THEN_ELSE:
+                    return Type.BRANCH;
+                case CONSTANT:
+                    return Type.MAP;
+                case COUNT:
+                    return Type.REDUCE;
+                case FILTER:
+                    return Type.FILTER;
+                case GROUP_COUNT:
+                    return Type.REDUCE;
+                case HAS_KEY:
+                    return Type.FILTER;
+                case HAS_KEY_VALUE:
+                    return Type.FILTER;
+                case IDENTITY:
+                    return Type.FILTER;
+                case INCR:
+                    return Type.MAP;
+                case INJECT:
+                    return Type.INITIAL;
+                case IS:
+                    return Type.FILTER;
+                case JOIN:
+                    return Type.BARRIER;
+                case LOOPS:
+                    return Type.MAP;
+                case MAP:
+                    return Type.MAP;
+                case PATH:
+                    return Type.MAP;
+                case REPEAT:
+                    return Type.BRANCH;
+                case SUM:
+                    return Type.REDUCE;
+                case UNFOLD:
+                    return Type.FLATMAP;
+                case UNION:
+                    return Type.BRANCH;
+                case V:
+                    return Type.FLATMAP;
+                default:
+                    throw new IllegalArgumentException("The following op is unknown: " + op);
+            }
+        }
+    }
 }

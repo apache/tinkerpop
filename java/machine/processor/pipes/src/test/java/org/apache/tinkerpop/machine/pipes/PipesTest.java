@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.tinkerpop.language.gremlin.__.incr;
-import static org.apache.tinkerpop.machine.bytecode.Symbols.Tokens.inner;
+import static org.apache.tinkerpop.machine.bytecode.CoreCompiler.Symbols.Tokens.inner;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

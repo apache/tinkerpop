@@ -56,7 +56,7 @@ public final class BytecodeUtil {
         try {
             final List<Strategy> strategies = new ArrayList<>();
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
-                if (sourceInstruction.op().equals(Symbols.WITH_STRATEGY))
+                if (sourceInstruction.op().equals(CoreCompiler.Symbols.WITH_STRATEGY))
                     strategies.add(((Class<? extends Strategy>) sourceInstruction.args()[0]).getConstructor().newInstance());
             }
             // TODO: sort strategies
@@ -70,7 +70,7 @@ public final class BytecodeUtil {
         try {
             Coefficient<C> coefficient = null;
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
-                if (sourceInstruction.op().equals(Symbols.WITH_COEFFICIENT)) {
+                if (sourceInstruction.op().equals(CoreCompiler.Symbols.WITH_COEFFICIENT)) {
                     coefficient = ((Class<? extends Coefficient<C>>) sourceInstruction.args()[0]).getConstructor().newInstance();
                 }
             }
@@ -85,7 +85,7 @@ public final class BytecodeUtil {
         try {
             ProcessorFactory processor = null;
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
-                if (sourceInstruction.op().equals(Symbols.WITH_PROCESSOR)) {
+                if (sourceInstruction.op().equals(CoreCompiler.Symbols.WITH_PROCESSOR)) {
                     processor = (ProcessorFactory) ((Class<? extends Coefficient<C>>) sourceInstruction.args()[0]).getConstructor().newInstance();
                 }
             }
@@ -99,7 +99,7 @@ public final class BytecodeUtil {
         try {
             StructureFactory structure = null;
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
-                if (sourceInstruction.op().equals(Symbols.WITH_STRUCTURE)) {
+                if (sourceInstruction.op().equals(CoreCompiler.Symbols.WITH_STRUCTURE)) {
                     structure = (StructureFactory) ((Class<? extends Coefficient<C>>) sourceInstruction.args()[0]).getConstructor().newInstance();
                 }
             }
@@ -126,9 +126,9 @@ public final class BytecodeUtil {
     public static <C> Optional<TraverserFactory<C>> getTraverserFactory(final Bytecode<C> bytecode) {
         // TODO: make this real
         for (final Instruction<C> instruction : bytecode.getInstructions()) {
-            if (instruction.op().equals(Symbols.PATH))
+            if (instruction.op().equals(CoreCompiler.Symbols.PATH))
                 return Optional.of(COPTraverserFactory.instance());
-            else if (instruction.op().equals(Symbols.REPEAT))
+            else if (instruction.op().equals(CoreCompiler.Symbols.REPEAT))
                 return Optional.of(CORTraverserFactory.instance());
         }
         return Optional.of(COPTraverserFactory.instance());

@@ -20,7 +20,7 @@ package org.apache.tinkerpop.machine.function.barrier;
 
 import org.apache.tinkerpop.machine.bytecode.Argument;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.bytecode.Symbols;
+import org.apache.tinkerpop.machine.bytecode.CoreCompiler;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.BarrierFunction;
@@ -39,12 +39,12 @@ import java.util.Set;
  */
 public class JoinBarrier<C, K, V> extends AbstractFunction<C> implements BarrierFunction<C, Map<K, V>, Map<K, V>, List<Map<K, V>>> {
 
-    private final Symbols.Tokens joinType;
+    private final CoreCompiler.Symbols.Tokens joinType;
     private final Compilation<C, Map<K, V>, Map<K, V>> joinCompilation;
     private final Argument<K> joinKey;
 
     public JoinBarrier(final Coefficient<C> coefficient, final Set<String> labels,
-                       Symbols.Tokens joinType,
+                       CoreCompiler.Symbols.Tokens joinType,
                        final Compilation<C, Map<K, V>, Map<K, V>> joinCompilation,
                        final Argument<K> joinKey) {
         super(coefficient, labels);
