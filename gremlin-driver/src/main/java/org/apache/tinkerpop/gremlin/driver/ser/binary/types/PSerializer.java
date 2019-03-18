@@ -74,7 +74,7 @@ public class PSerializer<T extends P> extends SimpleTypeSerializer<T> {
         try {
             return f.apply(args);
         } catch (Exception ex) {
-            throw new SerializationException(ex);
+            throw new SerializationException(String.format("Can't deserialize value into the predicate: '%s'", predicateName), ex);
         }
     }
 
@@ -99,7 +99,7 @@ public class PSerializer<T extends P> extends SimpleTypeSerializer<T> {
                     try {
                         m = classOfP.getMethod(predicateName, Object.class);
                     } catch (NoSuchMethodException ex2) {
-                        throw new SerializationException("not found");
+                        throw new SerializationException(String.format("Can't find predicate method: '%s'", predicateName), ex2);
                     }
                 }
             }
