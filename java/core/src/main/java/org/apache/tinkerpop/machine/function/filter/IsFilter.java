@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.machine.function.filter;
 
 import org.apache.tinkerpop.machine.bytecode.Argument;
-import org.apache.tinkerpop.machine.bytecode.P;
+import org.apache.tinkerpop.machine.bytecode.Pred;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.FilterFunction;
@@ -33,10 +33,10 @@ import java.util.Set;
  */
 public final class IsFilter<C, S> extends AbstractFunction<C> implements FilterFunction<C, S> {
 
-    private final P.Type predicate;
+    private final Pred predicate;
     private final Argument<S> argument;
 
-    public IsFilter(final Coefficient<C> coefficient, final Set<String> labels, final P.Type predicate, final Argument<S> argument) {
+    public IsFilter(final Coefficient<C> coefficient, final Set<String> labels, final Pred predicate, final Argument<S> argument) {
         super(coefficient, labels);
         this.predicate = predicate;
         this.argument = argument;

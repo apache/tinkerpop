@@ -18,14 +18,14 @@
  */
 package org.apache.tinkerpop.language.gremlin;
 
-import org.apache.tinkerpop.machine.bytecode.CoreCompiler.Symbols;
-import org.apache.tinkerpop.machine.structure.data.TVertex;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.bytecode.P;
+import org.apache.tinkerpop.machine.bytecode.CoreCompiler.Symbols;
+import org.apache.tinkerpop.machine.bytecode.Pred;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
+import org.apache.tinkerpop.machine.structure.data.TVertex;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.path.Path;
 
@@ -123,12 +123,12 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public <K, V> Traversal<C, S, Map<K, V>> hasKey(final K key) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY, P.Type.eq.name(), key);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY, Pred.eq.name(), key);
         return (Traversal) this;
     }
 
     public <K, V> Traversal<C, S, Map<K, V>> hasKey(final Traversal<C, Map<K, V>, K> keyTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY, P.Type.eq.name(), keyTraversal.bytecode);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY, Pred.eq.name(), keyTraversal.bytecode);
         return (Traversal) this;
     }
 
@@ -158,12 +158,12 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, E> is(final E object) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IS, P.Type.eq.name(), object);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IS, Pred.eq.name(), object);
         return this;
     }
 
     public Traversal<C, S, E> is(final Traversal<C, E, E> objectTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IS, P.Type.eq.name(), objectTraversal.bytecode);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IS, Pred.eq.name(), objectTraversal.bytecode);
         return this;
     }
 

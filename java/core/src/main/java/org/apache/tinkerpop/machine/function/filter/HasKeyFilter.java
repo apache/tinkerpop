@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.machine.function.filter;
 
 import org.apache.tinkerpop.machine.bytecode.Argument;
-import org.apache.tinkerpop.machine.bytecode.P;
+import org.apache.tinkerpop.machine.bytecode.Pred;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.FilterFunction;
@@ -34,10 +34,10 @@ import java.util.Set;
  */
 public final class HasKeyFilter<C, K, V> extends AbstractFunction<C> implements FilterFunction<C, Map<K, V>> {
 
-    private final P.Type predicate;
+    private final Pred predicate;
     private final Argument<K> key;
 
-    public HasKeyFilter(final Coefficient<C> coefficient, final Set<String> labels, final P.Type predicate, final Argument<K> key) {
+    public HasKeyFilter(final Coefficient<C> coefficient, final Set<String> labels, final Pred predicate, final Argument<K> key) {
         super(coefficient, labels);
         this.predicate = predicate;
         this.key = key;
@@ -46,7 +46,7 @@ public final class HasKeyFilter<C, K, V> extends AbstractFunction<C> implements 
     @Override
     public boolean test(final Traverser<C, Map<K, V>> traverser) {
         final Map<K, V> object = traverser.object();
-        if (P.Type.eq == this.predicate)
+        if (Pred.eq == this.predicate)
             return object.containsKey(this.key.getArg(traverser));
         else {
             final K testKey = this.key.getArg(traverser);

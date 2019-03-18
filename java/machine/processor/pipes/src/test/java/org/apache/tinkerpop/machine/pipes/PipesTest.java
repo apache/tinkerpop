@@ -19,11 +19,11 @@
 package org.apache.tinkerpop.machine.pipes;
 
 import org.apache.tinkerpop.language.gremlin.Gremlin;
+import org.apache.tinkerpop.language.gremlin.P;
 import org.apache.tinkerpop.language.gremlin.Traversal;
 import org.apache.tinkerpop.language.gremlin.TraversalSource;
 import org.apache.tinkerpop.language.gremlin.TraversalUtil;
 import org.apache.tinkerpop.language.gremlin.__;
-import org.apache.tinkerpop.machine.bytecode.P;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
 import org.apache.tinkerpop.machine.strategy.IdentityStrategy;
 import org.apache.tinkerpop.machine.structure.tinkergraph.TinkerGraphStructure;

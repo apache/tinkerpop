@@ -75,7 +75,7 @@ public final class CoreCompiler implements BytecodeCompiler {
             case Symbols.GROUP_COUNT:
                 return new GroupCountReduce<>(coefficient, labels, Compilation.<C, Object, Object>compileMaybe(instruction.args()).orElse(null));
             case Symbols.HAS_KEY:
-                return new HasKeyFilter<>(coefficient, labels, P.Type.get(instruction.args()[0]), Argument.create(instruction.args()[1]));
+                return new HasKeyFilter<>(coefficient, labels, Pred.get(instruction.args()[0]), Argument.create(instruction.args()[1]));
             case Symbols.HAS_KEY_VALUE:
                 return new HasKeyValueFilter<>(coefficient, labels, Argument.create(instruction.args()[0]), Argument.create(instruction.args()[1]));
             case Symbols.IDENTITY:
@@ -83,7 +83,7 @@ public final class CoreCompiler implements BytecodeCompiler {
             case Symbols.INJECT:
                 return new InjectInitial<>(coefficient, labels, instruction.args());
             case Symbols.IS:
-                return new IsFilter<>(coefficient, labels, P.Type.get(instruction.args()[0]), Argument.create(instruction.args()[1]));
+                return new IsFilter<>(coefficient, labels, Pred.get(instruction.args()[0]), Argument.create(instruction.args()[1]));
             case Symbols.INCR:
                 return new IncrMap<>(coefficient, labels);
             case Symbols.JOIN:
