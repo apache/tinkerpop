@@ -17,12 +17,12 @@ limitations under the License.
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>machine</artifactId>
+        <artifactId>structure</artifactId>
         <groupId>org.apache.tinkerpop</groupId>
         <version>4.0.0-SNAPSHOT</version>
     </parent>
-    <name>Apache TinkerPop (Java) :: Machine :: Pipes</name>
-    <artifactId>pipes</artifactId>
+    <name>Apache TinkerPop (Java) :: Machine :: TinkerGraph</name>
+    <artifactId>tinkergraph</artifactId>
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
