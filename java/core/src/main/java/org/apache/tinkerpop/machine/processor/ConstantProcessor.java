@@ -23,7 +23,7 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ConstantProcessor<C, S, E> extends SingletonProcessor<C, S, E> {
+public final class ConstantProcessor<C, S, E> extends SimpleProcessor<C, S, E> {
 
     private final E constant;
 

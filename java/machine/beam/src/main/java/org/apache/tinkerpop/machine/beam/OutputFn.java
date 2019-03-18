@@ -24,15 +24,20 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class OutputStep<C, S> extends DoFn<Traverser<C, S>, String> {
+public class OutputFn<C, S> extends DoFn<Traverser<C, S>, String> {
 
 
-    public OutputStep() {
+    public OutputFn() {
 
     }
 
     @ProcessElement
     public void processElement(final @Element Traverser<C, S> traverser, final OutputReceiver<String> output) {
         Beam.OUTPUT.add(traverser);
+    }
+
+    @Override
+    public String toString() {
+        return "";
     }
 }

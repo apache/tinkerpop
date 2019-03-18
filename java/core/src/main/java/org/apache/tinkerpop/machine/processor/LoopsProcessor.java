@@ -23,7 +23,7 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LoopsProcessor<C, S> extends SingletonProcessor<C, S, S> {
+public final class LoopsProcessor<C, S> extends SimpleProcessor<C, S, S> {
 
     private final int loops;
 

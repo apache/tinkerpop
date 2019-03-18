@@ -22,6 +22,8 @@ import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.runners.TransformHierarchy;
 import org.apache.beam.sdk.transforms.PTransform;
 import org.apache.beam.sdk.values.PValue;
+import org.apache.tinkerpop.machine.beam.OutputFn;
+import org.apache.tinkerpop.machine.beam.RepeatDeadEndFn;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +42,7 @@ public class PrimitiveVisitor implements Pipeline.PipelineVisitor {
 
     @Override
     public CompositeBehavior enterCompositeTransform(final TransformHierarchy.Node node) {
-        return node.isRootNode() ? CompositeBehavior.ENTER_TRANSFORM : CompositeBehavior.DO_NOT_ENTER_TRANSFORM;
+        return CompositeBehavior.ENTER_TRANSFORM;
     }
 
     @Override
@@ -51,9 +53,10 @@ public class PrimitiveVisitor implements Pipeline.PipelineVisitor {
     @Override
     public void visitPrimitiveTransform(final TransformHierarchy.Node node) {
         if (!node.getTransform().toString().startsWith("Read") &&
-                !node.getTransform().toString().contains("OutputStep") &&
+                !node.getTransform().toString().contains(OutputFn.class.getSimpleName()) &&
+                !node.getTransform().toString().contains(RepeatDeadEndFn.class.getSimpleName()) &&
                 !node.getTransform().toString().startsWith("Flatten"))
-        this.primitives.add(node.getTransform());
+            this.primitives.add(node.getTransform());
     }
 
     @Override

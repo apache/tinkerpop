@@ -36,6 +36,10 @@ public final class TraversalUtil {
         return traversal.bytecode;
     }
 
+    public static Object tryToGetBytecode(final Object object) {
+        return object instanceof Traversal ? ((Traversal) object).bytecode : object;
+    }
+
     public static <C, S, E> void insertRepeatInstruction(final Bytecode<C> bytecode, final Coefficient<C> currentCoefficient, final char type, final Object argument) {
         final Instruction<C> lastInstruction = bytecode.lastInstruction();
         if (lastInstruction.op().equals(Symbols.REPEAT))

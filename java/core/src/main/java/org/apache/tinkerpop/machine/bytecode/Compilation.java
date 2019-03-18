@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.machine.bytecode;
 
 import org.apache.tinkerpop.machine.function.CFunction;
-import org.apache.tinkerpop.machine.processor.BooleanProcessor;
+import org.apache.tinkerpop.machine.processor.FilterProcessor;
 import org.apache.tinkerpop.machine.processor.LoopsProcessor;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
@@ -160,7 +160,7 @@ public final class Compilation<C, S, E> implements Serializable {
             else if (arg instanceof Integer)
                 objects.add(new Compilation<>(new LoopsProcessor<>((int) arg)));
             else if (arg instanceof Boolean)
-                objects.add(new Compilation<>(new BooleanProcessor<>((boolean) arg)));
+                objects.add(new Compilation<>(new FilterProcessor<>((boolean) arg)));
         }
         return objects;
     }

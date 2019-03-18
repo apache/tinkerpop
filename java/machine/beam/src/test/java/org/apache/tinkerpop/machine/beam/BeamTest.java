@@ -23,11 +23,13 @@ import org.apache.tinkerpop.language.gremlin.Traversal;
 import org.apache.tinkerpop.language.gremlin.TraversalSource;
 import org.apache.tinkerpop.language.gremlin.TraversalUtil;
 import org.apache.tinkerpop.language.gremlin.__;
+import org.apache.tinkerpop.machine.bytecode.P;
 import org.apache.tinkerpop.machine.strategy.IdentityStrategy;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
+import static org.apache.tinkerpop.language.gremlin.__.constant;
 import static org.apache.tinkerpop.language.gremlin.__.incr;
 import static org.apache.tinkerpop.language.gremlin.__.is;
 
@@ -43,6 +45,11 @@ public class BeamTest {
                 .withStrategy(IdentityStrategy.class);
 
         Traversal<Long, ?, ?> traversal = g.inject(Arrays.asList(1L, 1L)).<Long>unfold().map(incr()).c(4L).repeat(incr()).until(__.is(__.constant(8L).incr().incr())).sum();
+        System.out.println(TraversalUtil.getBytecode(traversal));
+        System.out.println(traversal);
+        System.out.println(traversal.toList());
+        System.out.println("\n----------\n");
+        traversal = g.inject(Arrays.asList(1L, 2L)).<Long>unfold().map(incr()).is(P.lt(constant(3L)));
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

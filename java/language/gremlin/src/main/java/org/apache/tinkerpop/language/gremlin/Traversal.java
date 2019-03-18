@@ -21,6 +21,7 @@ package org.apache.tinkerpop.language.gremlin;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
+import org.apache.tinkerpop.machine.bytecode.P;
 import org.apache.tinkerpop.machine.bytecode.Symbols;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
@@ -150,12 +151,17 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, E> is(final E object) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IS, object);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IS, P.Type.eq, object);
         return this;
     }
 
     public Traversal<C, S, E> is(final Traversal<C, E, E> objectTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IS, objectTraversal.bytecode);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IS, P.Type.eq, objectTraversal.bytecode);
+        return this;
+    }
+
+    public Traversal<C, S, E> is(final P<E> predicate) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IS, predicate.type(), TraversalUtil.tryToGetBytecode(predicate.object()));
         return this;
     }
 

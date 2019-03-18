@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class SingletonProcessor<C, S, E> implements Processor<C, S, E>, ProcessorFactory {
+public abstract class SimpleProcessor<C, S, E> implements Processor<C, S, E>, ProcessorFactory {
 
     protected Traverser<C, E> traverser = null;
 

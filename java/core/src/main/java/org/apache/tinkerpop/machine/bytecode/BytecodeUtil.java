@@ -177,7 +177,7 @@ public final class BytecodeUtil {
             case Symbols.INJECT:
                 return new InjectInitial<>(coefficient, labels, instruction.args());
             case Symbols.IS:
-                return new IsFilter<>(coefficient, labels, Argument.create(instruction.args()[0]));
+                return new IsFilter<>(coefficient, labels, (P.Type) instruction.args()[0], Argument.create(instruction.args()[1]));
             case Symbols.INCR:
                 return new IncrMap<>(coefficient, labels);
             case Symbols.JOIN:

@@ -34,4 +34,5 @@ public class RepeatDeadEndFn<C, S> extends DoFn<Traverser<C, S>, Traverser<C, S>
     public void processElement(final @DoFn.Element Traverser<C, S> traverser, final DoFn.OutputReceiver<Traverser<C, S>> output) {
         throw new IllegalStateException("There are not enough repetitions to account for this traversal: " + Beam.MAX_REPETIONS + " (max loops)");
     }
+
 }

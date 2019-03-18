@@ -52,7 +52,7 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
         final PCollection<Traverser<C, S>> source = this.pipeline.apply(Create.of(EmptyTraverser.instance()));
         source.setCoder(new TraverserCoder<>());
         final PCollection<Traverser<C, E>> sink = TopologyUtil.compile(source, compilation);
-        sink.apply(ParDo.of(new OutputStep<>())); // TODO: we need an in-memory router of outgoing data
+        sink.apply(ParDo.of(new OutputFn<>())); // TODO: we need an in-memory router of outgoing data
 
     }
 

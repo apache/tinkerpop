@@ -24,7 +24,7 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class HasNextProcessor<C, S> extends SingletonProcessor<C, S, Boolean> {
+public final class HasNextProcessor<C, S> extends SimpleProcessor<C, S, Boolean> {
 
     private final Compilation<C, S, ?> predicate;
 
