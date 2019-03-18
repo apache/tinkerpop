@@ -26,6 +26,7 @@ import org.apache.tinkerpop.language.gremlin.__;
 import org.apache.tinkerpop.machine.bytecode.P;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
 import org.apache.tinkerpop.machine.strategy.IdentityStrategy;
+import org.apache.tinkerpop.machine.structure.tinkergraph.TinkerGraphStructure;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -39,6 +40,22 @@ import static org.apache.tinkerpop.machine.bytecode.Symbols.Tokens.inner;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class PipesTest {
+
+    @Test
+    public void doStuff() {
+        final TraversalSource<Long> g = Gremlin.<Long>traversal()
+                .withCoefficient(LongCoefficient.class)
+                .withProcessor(PipesProcessor.class)
+                .withStructure(TinkerGraphStructure.class)
+                .withStrategy(IdentityStrategy.class);
+
+        Traversal<Long, ?, ?> traversal = g.V();
+        System.out.println(TraversalUtil.getBytecode(traversal));
+        System.out.println(traversal);
+        System.out.println(TraversalUtil.getBytecode(traversal));
+        System.out.println(traversal.toList());
+        System.out.println("\n----------\n");
+    }
 
     @Test
     public void shouldWork() {
@@ -116,7 +133,7 @@ public class PipesTest {
                 Map.of("name", "vadas", "city", "durham"));
 
 
-        Traversal<Long, ?, ?> traversal = g.inject(listA).unfold().has(P.regex(__.constant("[a].*[e]"))).join(inner, __.constant(listB).unfold()).by("name");
+        Traversal<Long, ?, ?> traversal = g.inject(listA).unfold().hasKey(P.regex(__.constant("[a].*[e]"))).join(inner, __.constant(listB).unfold()).by("name");
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

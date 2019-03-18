@@ -19,29 +19,9 @@
 package org.apache.tinkerpop.machine.bytecode;
 
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
-import org.apache.tinkerpop.machine.function.CFunction;
-import org.apache.tinkerpop.machine.function.barrier.JoinBarrier;
-import org.apache.tinkerpop.machine.function.barrier.StallBarrier;
-import org.apache.tinkerpop.machine.function.branch.ChooseBranch;
-import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
-import org.apache.tinkerpop.machine.function.branch.UnionBranch;
-import org.apache.tinkerpop.machine.function.filter.FilterFilter;
-import org.apache.tinkerpop.machine.function.filter.HasKeyFilter;
-import org.apache.tinkerpop.machine.function.filter.HasKeyValueFilter;
-import org.apache.tinkerpop.machine.function.filter.IdentityFilter;
-import org.apache.tinkerpop.machine.function.filter.IsFilter;
-import org.apache.tinkerpop.machine.function.flatmap.UnfoldFlatMap;
-import org.apache.tinkerpop.machine.function.initial.InjectInitial;
-import org.apache.tinkerpop.machine.function.map.ConstantMap;
-import org.apache.tinkerpop.machine.function.map.IncrMap;
-import org.apache.tinkerpop.machine.function.map.LoopsMap;
-import org.apache.tinkerpop.machine.function.map.MapMap;
-import org.apache.tinkerpop.machine.function.map.PathMap;
-import org.apache.tinkerpop.machine.function.reduce.CountReduce;
-import org.apache.tinkerpop.machine.function.reduce.GroupCountReduce;
-import org.apache.tinkerpop.machine.function.reduce.SumReduce;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.strategy.Strategy;
+import org.apache.tinkerpop.machine.structure.StructureFactory;
 import org.apache.tinkerpop.machine.traverser.COPTraverserFactory;
 import org.apache.tinkerpop.machine.traverser.CORTraverserFactory;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
@@ -50,7 +30,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -116,12 +95,32 @@ public final class BytecodeUtil {
         }
     }
 
+    public static <C> Optional<StructureFactory> getStructureFactory(final Bytecode<C> bytecode) {
+        try {
+            StructureFactory structure = null;
+            for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
+                if (sourceInstruction.op().equals(Symbols.WITH_STRUCTURE)) {
+                    structure = (StructureFactory) ((Class<? extends Coefficient<C>>) sourceInstruction.args()[0]).getConstructor().newInstance();
+                }
+            }
+            return Optional.ofNullable(structure);
+        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
     public static boolean hasSourceInstruction(final Bytecode<?> bytecode, final String op) {
         for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
             if (sourceInstruction.op().equals(op))
                 return true;
         }
         return false;
+    }
+
+    public static <C> void replaceInstruction(final Bytecode<C> bytecode, final Instruction<C> oldInstruction, final Instruction<C> newInstruction) {
+        int index = bytecode.getInstructions().indexOf(oldInstruction);
+        bytecode.getInstructions().remove(index);
+        bytecode.getInstructions().add(index, newInstruction);
     }
 
     public static <C> Optional<TraverserFactory<C>> getTraverserFactory(final Bytecode<C> bytecode) {
@@ -133,71 +132,5 @@ public final class BytecodeUtil {
                 return Optional.of(CORTraverserFactory.instance());
         }
         return Optional.of(COPTraverserFactory.instance());
-    }
-
-    public static <C> List<CFunction<C>> compile(final Bytecode<C> bytecode) {
-        final List<CFunction<C>> functions = new ArrayList<>();
-        for (final Instruction<C> instruction : bytecode.getInstructions()) {
-            functions.add(BytecodeUtil.generateFunction(instruction));
-        }
-        return functions;
-    }
-
-    private static <C> CFunction<C> generateFunction(final Instruction<C> instruction) {
-        final String op = instruction.op();
-        final Coefficient<C> coefficient = instruction.coefficient();
-        final Set<String> labels = instruction.labels();
-        switch (op) {
-            case Symbols.BARRIER:
-                return new StallBarrier<>(coefficient, labels, 1000);
-            case Symbols.CHOOSE_IF_THEN:
-                return new ChooseBranch<>(coefficient, labels,
-                        Compilation.compileOne(instruction.args()[0]),
-                        Compilation.compileOne(instruction.args()[1]),
-                        null);
-            case Symbols.CHOOSE_IF_THEN_ELSE:
-                return new ChooseBranch<>(coefficient, labels,
-                        Compilation.compileOne(instruction.args()[0]),
-                        Compilation.compileOne(instruction.args()[1]),
-                        Compilation.compileOne(instruction.args()[2]));
-            case Symbols.CONSTANT:
-                return new ConstantMap<>(coefficient, labels, instruction.args()[0]);
-            case Symbols.COUNT:
-                return new CountReduce<>(coefficient, labels);
-            case Symbols.FILTER:
-                return new FilterFilter<>(coefficient, labels, Compilation.compileOne(instruction.args()[0]));
-            case Symbols.GROUP_COUNT:
-                return new GroupCountReduce<>(coefficient, labels, Compilation.<C, Object, Object>compileMaybe(instruction.args()).orElse(null));
-            case Symbols.HAS_KEY:
-                return new HasKeyFilter<>(coefficient, labels, (P.Type) instruction.args()[0], Argument.create(instruction.args()[1]));
-            case Symbols.HAS_KEY_VALUE:
-                return new HasKeyValueFilter<>(coefficient, labels, Argument.create(instruction.args()[0]), Argument.create(instruction.args()[1]));
-            case Symbols.IDENTITY:
-                return new IdentityFilter<>(coefficient, labels);
-            case Symbols.INJECT:
-                return new InjectInitial<>(coefficient, labels, instruction.args());
-            case Symbols.IS:
-                return new IsFilter<>(coefficient, labels, (P.Type) instruction.args()[0], Argument.create(instruction.args()[1]));
-            case Symbols.INCR:
-                return new IncrMap<>(coefficient, labels);
-            case Symbols.JOIN:
-                return new JoinBarrier<>(coefficient, labels, (Symbols.Tokens) instruction.args()[0], Compilation.compileOne(instruction.args()[1]), Argument.create(instruction.args()[2]));
-            case Symbols.LOOPS:
-                return new LoopsMap<>(coefficient, labels);
-            case Symbols.MAP:
-                return new MapMap<>(coefficient, labels, Compilation.compileOne(instruction.args()[0]));
-            case Symbols.PATH:
-                return new PathMap<>(coefficient, labels, Compilation.compile(instruction.args()));
-            case Symbols.REPEAT:
-                return new RepeatBranch<>(coefficient, labels, Compilation.repeatCompile(instruction.args()));
-            case Symbols.SUM:
-                return new SumReduce<>(coefficient, labels);
-            case Symbols.UNFOLD:
-                return new UnfoldFlatMap<>(coefficient, labels);
-            case Symbols.UNION:
-                return new UnionBranch<>(coefficient, labels, Compilation.compile(instruction.args()));
-            default:
-                throw new RuntimeException("This is an unknown instruction:" + instruction.op());
-        }
     }
 }

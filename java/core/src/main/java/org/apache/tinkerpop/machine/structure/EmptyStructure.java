@@ -16,31 +16,43 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor;
+package org.apache.tinkerpop.machine.structure;
 
-import org.apache.tinkerpop.machine.bytecode.Compilation;
+import org.apache.tinkerpop.machine.bytecode.BytecodeCompiler;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
-import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface ProcessorFactory extends Serializable {
+public final class EmptyStructure implements Structure, StructureFactory {
 
-    public <C, S, E> Processor<C, S, E> mint(final Compilation<C, S, E> compilation);
+    private static final EmptyStructure INSTANCE = new EmptyStructure();
 
-    public List<Strategy> getStrategies();
+    private EmptyStructure() {
+        // do nothing
+    }
 
-    // public Optional<Compiler> getCompiler();
+    @Override
+    public Structure mint(final Map<String, Object> configuration) {
+        return this;
+    }
 
-    public static List<Strategy> processorStrategies(final Class<? extends ProcessorFactory> processFactoryClass) {
-        try {
-            return processFactoryClass.getConstructor().newInstance().getStrategies();
-        } catch (final NoSuchMethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
+    @Override
+    public List<Strategy> getStrategies() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public Optional<BytecodeCompiler> getCompiler() {
+        return Optional.empty();
+    }
+
+    public static EmptyStructure instance() {
+        return EmptyStructure.INSTANCE;
     }
 }

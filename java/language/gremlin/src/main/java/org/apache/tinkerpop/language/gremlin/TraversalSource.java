@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.language.gremlin;
 
+import org.apache.tinkerpop.language.data.TVertex;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.Symbols;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
@@ -25,6 +26,7 @@ import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.strategy.CoefficientStrategy;
 import org.apache.tinkerpop.machine.strategy.CoefficientVerificationStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
+import org.apache.tinkerpop.machine.structure.StructureFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -54,6 +56,15 @@ public class TraversalSource<C> {
         return this;
     }
 
+    public TraversalSource<C> withStructure(final Class<? extends StructureFactory> structure) {
+        this.bytecode = this.bytecode.clone();
+        this.bytecode.addSourceInstruction(Symbols.WITH_STRUCTURE, structure);
+        for (final Strategy strategy : StructureFactory.structureStrategies(structure)) {
+            this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, strategy.getClass());
+        }
+        return this;
+    }
+
     public TraversalSource<C> withStrategy(final Class<? extends Strategy> strategy) {
         this.bytecode = this.bytecode.clone();
         this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, strategy);
@@ -62,5 +73,9 @@ public class TraversalSource<C> {
 
     public <S> Traversal<C, S, S> inject(final S... objects) {
         return (Traversal<C, S, S>) new Traversal<>(this.bytecode.clone()).inject(objects);
+    }
+
+    public <S> Traversal<C, S, TVertex> V() {
+        return (Traversal<C, S, TVertex>) new Traversal<>(this.bytecode.clone()).V();
     }
 }

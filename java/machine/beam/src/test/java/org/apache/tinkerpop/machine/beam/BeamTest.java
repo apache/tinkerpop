@@ -24,19 +24,38 @@ import org.apache.tinkerpop.language.gremlin.TraversalSource;
 import org.apache.tinkerpop.language.gremlin.TraversalUtil;
 import org.apache.tinkerpop.language.gremlin.__;
 import org.apache.tinkerpop.machine.bytecode.P;
+import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
+import org.apache.tinkerpop.machine.pipes.PipesProcessor;
 import org.apache.tinkerpop.machine.strategy.IdentityStrategy;
+import org.apache.tinkerpop.machine.structure.tinkergraph.TinkerGraphStructure;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
 import static org.apache.tinkerpop.language.gremlin.__.constant;
 import static org.apache.tinkerpop.language.gremlin.__.incr;
-import static org.apache.tinkerpop.language.gremlin.__.is;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class BeamTest {
+
+    @Test
+    public void doStuff() {
+        final TraversalSource<Long> g = Gremlin.<Long>traversal()
+                .withCoefficient(LongCoefficient.class)
+                .withProcessor(BeamProcessor.class)
+                .withStructure(TinkerGraphStructure.class)
+                .withStrategy(IdentityStrategy.class);
+
+        Traversal<Long, ?, ?> traversal = g.V();
+        System.out.println(TraversalUtil.getBytecode(traversal));
+        System.out.println(traversal);
+        System.out.println(TraversalUtil.getBytecode(traversal));
+        System.out.println(traversal.toList());
+        System.out.println("\n----------\n");
+    }
+
     @Test
     public void shouldWork() {
         final TraversalSource<Long> g = Gremlin.<Long>traversal()
@@ -90,7 +109,7 @@ public class BeamTest {
         System.out.println(traversal);
         System.out.println(traversal.toList());
 
-        traversal = g.inject(8L).choose(__.is(7L),__.incr());
+        traversal = g.inject(8L).choose(__.is(7L), __.incr());
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

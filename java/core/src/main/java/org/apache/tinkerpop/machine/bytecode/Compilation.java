@@ -23,6 +23,8 @@ import org.apache.tinkerpop.machine.processor.FilterProcessor;
 import org.apache.tinkerpop.machine.processor.LoopsProcessor;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
+import org.apache.tinkerpop.machine.structure.EmptyStructure;
+import org.apache.tinkerpop.machine.structure.StructureFactory;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
@@ -39,19 +41,22 @@ import java.util.Optional;
 public final class Compilation<C, S, E> implements Serializable {
 
     private final List<CFunction<C>> functions;
+    private final StructureFactory structureFactory;
     private final ProcessorFactory processorFactory;
     private final TraverserFactory<C> traverserFactory;
     private transient Processor<C, S, E> processor;
 
     public Compilation(final Bytecode<C> bytecode) {
         BytecodeUtil.strategize(bytecode);
+        this.structureFactory = BytecodeUtil.getStructureFactory(bytecode).orElse(EmptyStructure.instance());
         this.processorFactory = BytecodeUtil.getProcessorFactory(bytecode).get();
         this.traverserFactory = BytecodeUtil.getTraverserFactory(bytecode).get();
-        this.functions = BytecodeUtil.compile(bytecode);
+        this.functions = CompositeCompiler.compile(bytecode, new CoreCompiler(), this.structureFactory.getCompiler().orElse(new CoreCompiler()));
     }
 
     public Compilation(final ProcessorFactory processorFactory) {
         this.functions = Collections.emptyList(); // TODO: somehow strings for primitive processors
+        this.structureFactory = null;
         this.processorFactory = processorFactory;
         this.traverserFactory = null;
     }

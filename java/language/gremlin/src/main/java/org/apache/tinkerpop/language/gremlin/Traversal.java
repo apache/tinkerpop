@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.language.gremlin;
 
+import org.apache.tinkerpop.language.data.TVertex;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
@@ -29,6 +30,7 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.path.Path;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -39,15 +41,15 @@ import java.util.Map;
 public class Traversal<C, S, E> implements Iterator<E> {
 
     protected final Bytecode<C> bytecode;
-    private Coefficient<C> currentCoefficient;
     private Compilation<C, S, E> compilation;
+    private Coefficient<C> currentCoefficient;
     //
     private long lastCount = 0L;
     private E lastObject = null;
 
-    protected Traversal(final Bytecode<C> bytecode) {
+    Traversal(final Bytecode<C> bytecode) {
         this.bytecode = bytecode;
-        this.currentCoefficient = BytecodeUtil.getCoefficient(this.bytecode).orElse((Coefficient<C>) LongCoefficient.create());
+        this.currentCoefficient = BytecodeUtil.getCoefficient(this.bytecode).orElse((Coefficient<C>) LongCoefficient.create()); // TODO: this will cause __ problems
     }
 
     public Traversal<C, S, E> as(final String label) {
@@ -115,18 +117,18 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return (Traversal) this;
     }
 
-    public <K, V> Traversal<C, S, Map<K, V>> has(final P<K> predicate) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY, predicate.type(), TraversalUtil.tryToGetBytecode(predicate.object()));
+    public <K, V> Traversal<C, S, Map<K, V>> hasKey(final P<K> predicate) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY, predicate.type().name(), TraversalUtil.tryToGetBytecode(predicate.object()));
         return (Traversal) this;
     }
 
-    public <K, V> Traversal<C, S, Map<K, V>> has(final K key) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY, P.Type.eq, key);
+    public <K, V> Traversal<C, S, Map<K, V>> hasKey(final K key) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY, P.Type.eq.name(), key);
         return (Traversal) this;
     }
 
-    public <K, V> Traversal<C, S, Map<K, V>> has(final Traversal<C, Map<K, V>, K> keyTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY, keyTraversal.bytecode);
+    public <K, V> Traversal<C, S, Map<K, V>> hasKey(final Traversal<C, Map<K, V>, K> keyTraversal) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY, P.Type.eq.name(), keyTraversal.bytecode);
         return (Traversal) this;
     }
 
@@ -156,17 +158,17 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, E> is(final E object) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IS, P.Type.eq, object);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IS, P.Type.eq.name(), object);
         return this;
     }
 
     public Traversal<C, S, E> is(final Traversal<C, E, E> objectTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IS, P.Type.eq, objectTraversal.bytecode);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IS, P.Type.eq.name(), objectTraversal.bytecode);
         return this;
     }
 
     public Traversal<C, S, E> is(final P<E> predicate) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IS, predicate.type(), TraversalUtil.tryToGetBytecode(predicate.object()));
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IS, predicate.type().name(), TraversalUtil.tryToGetBytecode(predicate.object()));
         return this;
     }
 
@@ -196,7 +198,15 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, Path> path() {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.PATH);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.PATH, Collections.emptyList());
+        return (Traversal) this;
+    }
+
+    public Traversal<C, S, Path> path(final String label, final String... labels) {
+        final List<String> asLabels = new ArrayList<>(labels.length + 1);
+        asLabels.add(label);
+        Collections.addAll(asLabels, labels);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.PATH, asLabels);
         return (Traversal) this;
     }
 
@@ -235,6 +245,11 @@ public class Traversal<C, S, E> implements Iterator<E> {
     public Traversal<C, S, E> until(final Traversal<C, ?, ?> untilTraversal) {
         TraversalUtil.insertRepeatInstruction(this.bytecode, this.currentCoefficient, 'u', untilTraversal.bytecode);
         return this;
+    }
+
+    public Traversal<C, S, TVertex> V() {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.V);
+        return (Traversal) this;
     }
 
     ///////

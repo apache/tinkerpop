@@ -60,11 +60,15 @@ public final class P<S> {
             }
         }, regex {
             public boolean test(final Object first, final Object second) {
-                return first.toString().matches(second.toString());
+                return ((String) first).matches((String) second);
             }
         };
 
         public abstract boolean test(final Object first, final Object second);
+
+        public static Type get(final Object object) {
+            return P.Type.valueOf(object.toString());
+        }
 
     }
 

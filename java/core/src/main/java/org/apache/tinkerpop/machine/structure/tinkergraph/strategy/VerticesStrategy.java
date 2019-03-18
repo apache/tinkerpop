@@ -16,31 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor;
+package org.apache.tinkerpop.machine.structure.tinkergraph.strategy;
 
-import org.apache.tinkerpop.machine.bytecode.Compilation;
+import org.apache.tinkerpop.machine.bytecode.Bytecode;
+import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
+import org.apache.tinkerpop.machine.bytecode.Instruction;
+import org.apache.tinkerpop.machine.bytecode.Symbols;
 import org.apache.tinkerpop.machine.strategy.Strategy;
-
-import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface ProcessorFactory extends Serializable {
-
-    public <C, S, E> Processor<C, S, E> mint(final Compilation<C, S, E> compilation);
-
-    public List<Strategy> getStrategies();
-
-    // public Optional<Compiler> getCompiler();
-
-    public static List<Strategy> processorStrategies(final Class<? extends ProcessorFactory> processFactoryClass) {
-        try {
-            return processFactoryClass.getConstructor().newInstance().getStrategies();
-        } catch (final NoSuchMethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException e) {
-            throw new RuntimeException(e.getMessage(), e);
+public class VerticesStrategy implements Strategy {
+    @Override
+    public <C> void apply(final Bytecode<C> bytecode) {
+        Instruction<C> temp = null;
+        for (final Instruction<C> instruction : bytecode.getInstructions()) {
+            if (instruction.op().equals(Symbols.V))
+                temp = instruction;
         }
+        if (null != temp)
+            BytecodeUtil.replaceInstruction(bytecode, temp, new Instruction<>(temp.coefficient(), "tg:V"));
     }
 }

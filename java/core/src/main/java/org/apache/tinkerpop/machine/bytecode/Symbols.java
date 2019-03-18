@@ -38,8 +38,18 @@ public final class Symbols {
     // SOURCE OPS
     public static final String WITH_COEFFICIENT = "withCoefficient";
     public static final String WITH_PROCESSOR = "withProcessor";
+    public static final String WITH_STRUCTURE = "withStructure";
     public static final String WITH_STRATEGY = "withStrategy";
 
+
+    // ARGUMENT TOKENS
+    public static final String EQ = "eq";
+    public static final String NEQ = "neq";
+    public static final String LT = "lt";
+    public static final String GT = "gt";
+    public static final String LTE = "lte";
+    public static final String GTE = "gte";
+    public static final String REGEX = "regex";
 
     // INSTRUCTION OPS
     public static final String BARRIER = "barrier";
@@ -63,6 +73,7 @@ public final class Symbols {
     public static final String SUM = "sum";
     public static final String UNFOLD = "unfold";
     public static final String UNION = "union";
+    public static final String V = "V";
 
     public static Type getOpType(final String op) {
         switch (op) {
@@ -108,6 +119,8 @@ public final class Symbols {
                 return Type.FLATMAP;
             case UNION:
                 return Type.BRANCH;
+            case V:
+                return Type.FLATMAP;
             default:
                 throw new IllegalArgumentException("The following op is unknown: " + op);
         }

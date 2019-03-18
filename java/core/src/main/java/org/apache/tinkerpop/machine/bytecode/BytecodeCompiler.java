@@ -16,31 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor;
+package org.apache.tinkerpop.machine.bytecode;
 
-import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.strategy.Strategy;
+import org.apache.tinkerpop.machine.function.CFunction;
 
-import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface ProcessorFactory extends Serializable {
+public interface BytecodeCompiler {
 
-    public <C, S, E> Processor<C, S, E> mint(final Compilation<C, S, E> compilation);
-
-    public List<Strategy> getStrategies();
-
-    // public Optional<Compiler> getCompiler();
-
-    public static List<Strategy> processorStrategies(final Class<? extends ProcessorFactory> processFactoryClass) {
-        try {
-            return processFactoryClass.getConstructor().newInstance().getStrategies();
-        } catch (final NoSuchMethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException e) {
-            throw new RuntimeException(e.getMessage(), e);
+    public default <C> List<CFunction<C>> compile(final Bytecode<C> bytecode) {
+        final List<CFunction<C>> functions = new ArrayList<>();
+        for (final Instruction<C> instruction : bytecode.getInstructions()) {
+            functions.add(this.compile(instruction));
         }
+        return functions;
     }
+
+    public <C> CFunction<C> compile(final Instruction<C> instruction);
 }
