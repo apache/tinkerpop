@@ -81,5 +81,7 @@ public interface Traverser<C, S> extends Serializable, Cloneable {
 
     public <E> Traverser<C, E> split(final CFunction<C> function, final E object);
 
+    public <E> Traverser<C, E> split(final E object);
+
     public Traverser<C, S> clone();
 }

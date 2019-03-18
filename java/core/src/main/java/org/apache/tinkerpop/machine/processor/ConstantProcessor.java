@@ -16,25 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.function.branch.selector;
+package org.apache.tinkerpop.machine.processor;
 
 import org.apache.tinkerpop.machine.traverser.Traverser;
-
-import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TrueSelector<C, S> implements Selector<C, S, Boolean> {
+public final class ConstantProcessor<C, S, E> extends SingletonProcessor<C, S, E> {
 
-    private static final TrueSelector INSTANCE = new TrueSelector<>();
+    private final E constant;
 
-    @Override
-    public Optional<Boolean> from(final Traverser<C, S> traverser) {
-        return Optional.of(Boolean.TRUE);
+    public ConstantProcessor(final E constant) {
+        this.constant = constant;
     }
 
-    public static <C, S> TrueSelector<C, S> instance() {
-        return INSTANCE;
+    @Override
+    public void addStart(final Traverser<C, S> traverser) {
+        if (null == this.traverser)
+            this.traverser = traverser.split(this.constant);
     }
 }

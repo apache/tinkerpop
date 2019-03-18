@@ -16,26 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.function.branch.selector;
+package org.apache.tinkerpop.machine.processor;
 
 import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
-import java.util.Optional;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class HasNextSelector<C, S> implements Selector<C, S, Boolean> {
+public final class HasNextProcessor<C, S> extends SingletonProcessor<C, S, Boolean> {
 
-    private final Compilation<C, S, ?> compilation;
+    private final Compilation<C, S, ?> predicate;
 
-    public HasNextSelector(final Compilation<C, S, ?> compilation) {
-        this.compilation = compilation;
+    public HasNextProcessor(final Compilation<C, S, ?> predicate) {
+        this.predicate = predicate;
     }
 
     @Override
-    public Optional<Boolean> from(final Traverser<C, S> traverser) {
-        return Optional.of(this.compilation.filterTraverser(traverser));
+    public void addStart(final Traverser<C, S> traverser) {
+        this.traverser = traverser.split(this.predicate.filterTraverser(traverser));
     }
 }

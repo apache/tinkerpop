@@ -19,8 +19,8 @@
 package org.apache.tinkerpop.machine.beam;
 
 import org.apache.beam.sdk.values.TupleTag;
+import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.function.BranchFunction;
-import org.apache.tinkerpop.machine.function.branch.selector.Selector;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
 import java.util.Map;
@@ -32,7 +32,7 @@ import java.util.Optional;
 public class BranchFn<C, S, E, M> extends AbstractFn<C, S, S> {
 
     private final Map<M, TupleTag<Traverser<C, S>>> branches;
-    private final Selector<C, S, M> branchSelector;
+    private final Compilation<C, S, M> branchSelector;
 
     public BranchFn(final BranchFunction<C, S, E, M> branchFunction, final Map<M, TupleTag<Traverser<C, S>>> branches) {
         super(branchFunction);
@@ -42,9 +42,9 @@ public class BranchFn<C, S, E, M> extends AbstractFn<C, S, S> {
 
     @ProcessElement
     public void processElement(final @Element Traverser<C, S> traverser, final MultiOutputReceiver outputs) {
-        final Optional<M> selector = this.branchSelector.from(traverser.clone());
+        final Optional<Traverser<C, M>> selector = this.branchSelector.maybeTraverser(traverser);
         if (selector.isPresent()) {
-            final TupleTag<Traverser<C, S>> outputTag = this.branches.get(selector.get());
+            final TupleTag<Traverser<C, S>> outputTag = this.branches.get(selector.get().object());
             if (null != outputTag)
                 outputs.get(outputTag).output(traverser.clone());
         }

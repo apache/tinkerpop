@@ -29,16 +29,16 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class SingletonProcessor<C, S> implements Processor<C, S, S>, ProcessorFactory {
+public abstract class SingletonProcessor<C, S, E> implements Processor<C, S, E>, ProcessorFactory {
 
-    protected Traverser<C, S> traverser = null;
+    protected Traverser<C, E> traverser = null;
 
     @Override
-    public Traverser<C, S> next() {
+    public Traverser<C, E> next() {
         if (null == this.traverser)
             throw FastNoSuchElementException.instance();
         else {
-            final Traverser<C, S> temp = this.traverser;
+            final Traverser<C, E> temp = this.traverser;
             this.traverser = null;
             return temp;
         }

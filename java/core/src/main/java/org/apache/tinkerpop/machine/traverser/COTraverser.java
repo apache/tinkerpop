@@ -75,6 +75,13 @@ public class COTraverser<C, S> implements Traverser<C, S> {
     }
 
     @Override
+    public <E> Traverser<C, E> split(final E object) {
+        final COTraverser<C, E> clone = (COTraverser<C, E>) this.clone();
+        clone.object = object;
+        return clone;
+    }
+
+    @Override
     public int hashCode() {
         return this.object.hashCode();
     }

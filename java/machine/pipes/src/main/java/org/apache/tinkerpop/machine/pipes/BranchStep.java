@@ -20,7 +20,6 @@ package org.apache.tinkerpop.machine.pipes;
 
 import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.function.BranchFunction;
-import org.apache.tinkerpop.machine.function.branch.selector.Selector;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.util.EmptyIterator;
 import org.apache.tinkerpop.util.MultiIterator;
@@ -35,7 +34,7 @@ import java.util.Optional;
  */
 final class BranchStep<C, S, E, M> extends AbstractStep<C, S, E> {
 
-    private final Selector<C, S, M> branchSelector;
+    private final Compilation<C, S, M> branchSelector;
     private final Map<M, List<Compilation<C, S, E>>> branches;
     private Iterator<Traverser<C, E>> nextTraversers = EmptyIterator.instance();
 
@@ -60,9 +59,9 @@ final class BranchStep<C, S, E, M> extends AbstractStep<C, S, E> {
     private final void stageOutput() {
         while (!this.nextTraversers.hasNext() && this.previousStep.hasNext()) {
             final Traverser<C, S> traverser = this.previousStep.next();
-            final Optional<M> token = this.branchSelector.from(traverser);
+            final Optional<Traverser<C, M>> token = this.branchSelector.maybeTraverser(traverser);
             if (token.isPresent()) {
-                final List<Compilation<C, S, E>> matches = this.branches.get(token.get());
+                final List<Compilation<C, S, E>> matches = this.branches.get(token.get().object());
                 if (1 == matches.size())
                     this.nextTraversers = matches.get(0).addTraverser(traverser);
                 else {

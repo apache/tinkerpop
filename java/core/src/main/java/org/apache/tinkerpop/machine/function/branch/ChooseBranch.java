@@ -21,9 +21,8 @@ package org.apache.tinkerpop.machine.function.branch;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
-import org.apache.tinkerpop.machine.function.branch.selector.HasNextSelector;
-import org.apache.tinkerpop.machine.function.branch.selector.Selector;
 import org.apache.tinkerpop.machine.function.BranchFunction;
+import org.apache.tinkerpop.machine.processor.HasNextProcessor;
 import org.apache.tinkerpop.util.StringFactory;
 
 import java.util.Collections;
@@ -37,7 +36,7 @@ import java.util.Set;
  */
 public class ChooseBranch<C, S, E> extends AbstractFunction<C> implements BranchFunction<C, S, E, Boolean> {
 
-    private final HasNextSelector<C, S> branchSelector;
+    private final Compilation<C, S, Boolean> branchSelector;
     private final Map<Boolean, List<Compilation<C, S, E>>> branches;
     /////
     private final Compilation<C, S, ?> predicate;
@@ -49,7 +48,7 @@ public class ChooseBranch<C, S, E> extends AbstractFunction<C> implements Branch
                         final Compilation<C, S, E> falseBranch) {
         super(coefficient, labels);
         this.predicate = predicate;
-        this.branchSelector = new HasNextSelector<>(predicate);
+        this.branchSelector = new Compilation<>(new HasNextProcessor<>(predicate));
         this.branches = new HashMap<>();
         this.branches.put(Boolean.TRUE, Collections.singletonList(trueBranch));
         if (null != falseBranch)
@@ -62,7 +61,7 @@ public class ChooseBranch<C, S, E> extends AbstractFunction<C> implements Branch
     }
 
     @Override
-    public Selector<C, S, Boolean> getBranchSelector() {
+    public Compilation<C, S, Boolean> getBranchSelector() {
         return this.branchSelector;
     }
 

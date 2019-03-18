@@ -104,6 +104,12 @@ public final class Compilation<C, S, E> implements Serializable {
         return this.processor;
     }
 
+    public Optional<Traverser<C, E>> maybeTraverser(final Traverser<C, S> traverser) {
+        this.prepareProcessor();
+        this.processor.addStart(this.prepareTraverser(traverser));
+        return this.processor.hasNext() ? Optional.of(this.processor.next()) : Optional.empty();
+    }
+
     @Override
     public String toString() {
         return this.functions.toString();

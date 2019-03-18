@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.machine.function;
 
 import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.function.branch.selector.Selector;
 
 import java.util.List;
 import java.util.Map;
@@ -29,7 +28,7 @@ import java.util.Map;
  */
 public interface BranchFunction<C, S, E, M> extends CFunction<C> {
 
-    public Selector<C, S, M> getBranchSelector();
+    public Compilation<C, S, M> getBranchSelector();
 
     public Map<M, List<Compilation<C, S, E>>> getBranches();
 }

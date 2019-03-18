@@ -63,7 +63,12 @@ public final class EmptyTraverser<C, S> implements Traverser<C, S> {
     }
 
     @Override
-    public <E> Traverser<C, E> split(CFunction<C> function, E object) {
+    public <E> Traverser<C, E> split(final CFunction<C> function, final E object) {
+        return INSTANCE;
+    }
+
+    @Override
+    public <E> Traverser<C, E> split(final E object) {
         return INSTANCE;
     }
 

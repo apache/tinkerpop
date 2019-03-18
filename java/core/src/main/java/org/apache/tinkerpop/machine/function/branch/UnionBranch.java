@@ -21,9 +21,8 @@ package org.apache.tinkerpop.machine.function.branch;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
-import org.apache.tinkerpop.machine.function.branch.selector.Selector;
-import org.apache.tinkerpop.machine.function.branch.selector.TrueSelector;
 import org.apache.tinkerpop.machine.function.BranchFunction;
+import org.apache.tinkerpop.machine.processor.ConstantProcessor;
 import org.apache.tinkerpop.util.StringFactory;
 
 import java.util.HashMap;
@@ -37,6 +36,7 @@ import java.util.Set;
 public final class UnionBranch<C, S, E> extends AbstractFunction<C> implements BranchFunction<C, S, E, Boolean> {
 
     private final Map<Boolean, List<Compilation<C, S, E>>> branches;
+    private final Compilation<C, S, Boolean> branchSelector = new Compilation<>(new ConstantProcessor<>(Boolean.TRUE));
 
     public UnionBranch(final Coefficient<C> coefficient, final Set<String> labels, final List<Compilation<C, S, E>> branches) {
         super(coefficient, labels);
@@ -50,8 +50,8 @@ public final class UnionBranch<C, S, E> extends AbstractFunction<C> implements B
     }
 
     @Override
-    public Selector<C, S, Boolean> getBranchSelector() {
-        return TrueSelector.instance();
+    public Compilation<C, S, Boolean> getBranchSelector() {
+        return this.branchSelector;
     }
 
     @Override

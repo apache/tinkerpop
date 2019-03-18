@@ -23,7 +23,7 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class BooleanProcessor<C, S> extends SingletonProcessor<C, S> {
+public final class BooleanProcessor<C, S> extends SingletonProcessor<C, S, S> {
 
     private final boolean allow;
 
