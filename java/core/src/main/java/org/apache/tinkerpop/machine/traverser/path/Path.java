@@ -16,48 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.traverser;
+package org.apache.tinkerpop.machine.traverser.path;
 
-import java.util.Collections;
+import java.io.Serializable;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EmptyPath implements Path {
+public interface Path extends Serializable {
 
-    private static final EmptyPath INSTANCE = new EmptyPath();
+    public void add(final Set<String> labels, final Object object);
 
-    private EmptyPath() {
+    public void addLabels(final Set<String> labels);
 
-    }
+    public Object object(final int index);
 
-    @Override
-    public void add(final Set<String> labels, final Object object) {
+    public Set<String> labels(final int index);
 
-    }
-
-    @Override
-    public void addLabels(final Set<String> labels) {
-
-    }
-
-    @Override
-    public Object object(int index) {
-        throw new IllegalStateException("No objects in EmptyPath");
-    }
-
-    @Override
-    public Set<String> labels(int index) {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public int size() {
-        return 0;
-    }
-
-    public static final EmptyPath instance() {
-        return INSTANCE;
-    }
+    public int size();
 }

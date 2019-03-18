@@ -20,6 +20,8 @@ package org.apache.tinkerpop.machine.traverser;
 
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
+import org.apache.tinkerpop.machine.traverser.path.EmptyPath;
+import org.apache.tinkerpop.machine.traverser.path.Path;
 import org.apache.tinkerpop.util.StringFactory;
 
 /**

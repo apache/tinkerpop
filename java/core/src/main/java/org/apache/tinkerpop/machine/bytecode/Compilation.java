@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.machine.bytecode;
 
 import org.apache.tinkerpop.machine.function.CFunction;
+import org.apache.tinkerpop.machine.processor.BooleanProcessor;
+import org.apache.tinkerpop.machine.processor.LoopsProcessor;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.traverser.Traverser;
@@ -26,6 +28,7 @@ import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -45,6 +48,12 @@ public final class Compilation<C, S, E> implements Serializable {
         this.processorFactory = BytecodeUtil.getProcessorFactory(bytecode).get();
         this.traverserFactory = BytecodeUtil.getTraverserFactory(bytecode).get();
         this.functions = BytecodeUtil.compile(bytecode);
+    }
+
+    public Compilation(final ProcessorFactory processorFactory) {
+        this.functions = Collections.emptyList(); // TODO: somehow strings for primitive processors
+        this.processorFactory = processorFactory;
+        this.traverserFactory = null;
     }
 
     public Processor<C, S, E> getProcessor() {
@@ -140,8 +149,12 @@ public final class Compilation<C, S, E> implements Serializable {
         for (final Object arg : args) {
             if (arg instanceof Bytecode)
                 objects.add(new Compilation<>((Bytecode) arg));
-            else
+            else if (arg instanceof Character)
                 objects.add(arg);
+            else if (arg instanceof Integer)
+                objects.add(new Compilation<>(new LoopsProcessor<>((int) arg)));
+            else if (arg instanceof Boolean)
+                objects.add(new Compilation<>(new BooleanProcessor<>((boolean) arg)));
         }
         return objects;
     }

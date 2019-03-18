@@ -16,36 +16,48 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor;
-
-import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.strategy.Strategy;
+package org.apache.tinkerpop.machine.traverser.path;
 
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class EmptyProcessorFactory implements ProcessorFactory {
+public final class EmptyPath implements Path {
 
-    private static final EmptyProcessorFactory INSTANCE = new EmptyProcessorFactory();
+    private static final EmptyPath INSTANCE = new EmptyPath();
 
-    private EmptyProcessorFactory() {
+    private EmptyPath() {
 
     }
 
     @Override
-    public <C, S, E> Processor<C, S, E> mint(final Compilation<C, S, E> compilation) {
-        return EmptyProcessor.instance();
+    public void add(final Set<String> labels, final Object object) {
+
     }
 
     @Override
-    public List<Strategy> getStrategies() {
-        return Collections.emptyList();
+    public void addLabels(final Set<String> labels) {
+
     }
 
-    public static EmptyProcessorFactory instance() {
+    @Override
+    public Object object(int index) {
+        throw new IllegalStateException("No objects in EmptyPath");
+    }
+
+    @Override
+    public Set<String> labels(int index) {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public int size() {
+        return 0;
+    }
+
+    public static final EmptyPath instance() {
         return INSTANCE;
     }
 }

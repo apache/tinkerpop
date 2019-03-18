@@ -21,12 +21,11 @@ package org.apache.tinkerpop.language.gremlin;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.bytecode.Symbols;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
-import org.apache.tinkerpop.machine.traverser.Path;
 import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.traverser.path.Path;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -96,15 +95,12 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, E> emit() {
-        return this.emit(__.constant(true));
+        TraversalUtil.insertRepeatInstruction(this.bytecode, this.currentCoefficient, 'e', true);
+        return this;
     }
 
     public Traversal<C, S, E> emit(final Traversal<C, ?, ?> emitTraversal) {
-        final Instruction<C> lastInstruction = this.bytecode.lastInstruction();
-        if (lastInstruction.op().equals(Symbols.REPEAT))
-            lastInstruction.addArgs('e', emitTraversal.bytecode);
-        else
-            this.bytecode.addInstruction(this.currentCoefficient, Symbols.REPEAT, 'e', emitTraversal.bytecode);
+        TraversalUtil.insertRepeatInstruction(this.bytecode, this.currentCoefficient, 'e', emitTraversal.bytecode);
         return this;
     }
 
@@ -194,11 +190,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, E> repeat(final Traversal<C, E, E> repeatTraversal) {
-        final Instruction<C> lastInstruction = this.bytecode.lastInstruction();
-        if (lastInstruction.op().equals(Symbols.REPEAT))
-            lastInstruction.addArgs('r', repeatTraversal.bytecode);
-        else
-            this.bytecode.addInstruction(this.currentCoefficient, Symbols.REPEAT, 'r', repeatTraversal.bytecode);
+        TraversalUtil.insertRepeatInstruction(this.bytecode, this.currentCoefficient, 'r', repeatTraversal.bytecode);
         return this;
     }
 
@@ -208,7 +200,8 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, E> times(final int times) {
-        return this.until(__.<C, E>loops().is(times)); // TODO: make an int argument
+        TraversalUtil.insertRepeatInstruction(this.bytecode, this.currentCoefficient, 'u', times);
+        return this;
     }
 
     public <R> Traversal<C, S, R> unfold() {
@@ -229,11 +222,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, E> until(final Traversal<C, ?, ?> untilTraversal) {
-        final Instruction<C> lastInstruction = this.bytecode.lastInstruction();
-        if (lastInstruction.op().equals(Symbols.REPEAT))
-            lastInstruction.addArgs('u', untilTraversal.bytecode);
-        else
-            this.bytecode.addInstruction(this.currentCoefficient, Symbols.REPEAT, 'u', untilTraversal.bytecode);
+        TraversalUtil.insertRepeatInstruction(this.bytecode, this.currentCoefficient, 'u', untilTraversal.bytecode);
         return this;
     }
 

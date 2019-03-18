@@ -22,10 +22,10 @@ import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.function.FilterFunction;
 import org.apache.tinkerpop.machine.function.FlatMapFunction;
-import org.apache.tinkerpop.machine.function.InitialFunction;
 import org.apache.tinkerpop.machine.function.MapFunction;
 import org.apache.tinkerpop.machine.function.ReduceFunction;
 import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
+import org.apache.tinkerpop.machine.traverser.path.Path;
 import org.apache.tinkerpop.util.IteratorUtils;
 
 import java.io.Serializable;

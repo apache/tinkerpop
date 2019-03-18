@@ -23,8 +23,8 @@ import org.apache.tinkerpop.machine.bytecode.CompilationCircle;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.MapFunction;
-import org.apache.tinkerpop.machine.traverser.BasicPath;
-import org.apache.tinkerpop.machine.traverser.Path;
+import org.apache.tinkerpop.machine.traverser.path.BasicPath;
+import org.apache.tinkerpop.machine.traverser.path.Path;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
 import java.util.List;

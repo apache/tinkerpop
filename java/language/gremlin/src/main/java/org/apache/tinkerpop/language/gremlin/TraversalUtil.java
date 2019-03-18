@@ -19,6 +19,9 @@
 package org.apache.tinkerpop.language.gremlin;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
+import org.apache.tinkerpop.machine.bytecode.Instruction;
+import org.apache.tinkerpop.machine.bytecode.Symbols;
+import org.apache.tinkerpop.machine.coefficient.Coefficient;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -33,4 +36,11 @@ public final class TraversalUtil {
         return traversal.bytecode;
     }
 
+    public static <C, S, E> void insertRepeatInstruction(final Bytecode<C> bytecode, final Coefficient<C> currentCoefficient, final char type, final Object argument) {
+        final Instruction<C> lastInstruction = bytecode.lastInstruction();
+        if (lastInstruction.op().equals(Symbols.REPEAT))
+            lastInstruction.addArgs(type, argument);
+        else
+            bytecode.addInstruction(currentCoefficient, Symbols.REPEAT, type, argument);
+    }
 }

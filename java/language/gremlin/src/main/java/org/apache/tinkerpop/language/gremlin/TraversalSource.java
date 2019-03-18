@@ -33,7 +33,7 @@ public class TraversalSource<C> {
 
     private Bytecode<C> bytecode;
 
-    protected TraversalSource() {
+    TraversalSource() {
         this.bytecode = new Bytecode<>();
         this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, CoefficientStrategy.class);
         this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, CoefficientVerificationStrategy.class); // TODO: remove when strategies full integrated

@@ -16,23 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.traverser;
+package org.apache.tinkerpop.machine.processor;
 
-import java.io.Serializable;
-import java.util.Set;
+import org.apache.tinkerpop.machine.traverser.Traverser;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Path extends Serializable {
+public final class LoopsProcessor<C, S> extends SingletonProcessor<C, S> {
 
-    public void add(final Set<String> labels, final Object object);
+    private final int loops;
 
-    public void addLabels(final Set<String> labels);
+    public LoopsProcessor(final int loops) {
+        this.loops = loops;
+    }
 
-    public Object object(final int index);
-
-    public Set<String> labels(final int index);
-
-    public int size();
+    @Override
+    public void addStart(final Traverser<C, S> traverser) {
+        this.traverser = traverser.loops() == this.loops ? traverser : null;
+    }
 }
