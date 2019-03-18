@@ -159,7 +159,7 @@ public final class Compilation<C, S, E> implements Serializable {
         final List<Object> objects = new ArrayList<>();
         for (final Object arg : args) {
             if (arg instanceof Bytecode)
-                objects.add(new Compilation<>((Bytecode) arg));
+                objects.add(new Compilation<>((Bytecode<?>) arg));
             else if (arg instanceof Character)
                 objects.add(arg);
             else if (arg instanceof Integer)

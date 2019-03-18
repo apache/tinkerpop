@@ -16,14 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.language.data;
+package org.apache.tinkerpop.machine.structure.data;
+
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TKV<K, V> {
+public interface TMap<K, V> {
 
-    public K key();
+    public void set(final K key, final V value);
 
-    public V value();
+    public V get(final K key);
+
+    public Iterator<K> keys();
+
+    public Iterator<V> values();
+
+    public Iterator<TKV<K, V>> entries();
+
 }

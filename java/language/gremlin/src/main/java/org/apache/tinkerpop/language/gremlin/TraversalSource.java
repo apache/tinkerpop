@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.language.gremlin;
 
-import org.apache.tinkerpop.language.data.TVertex;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.Symbols;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
@@ -27,6 +26,7 @@ import org.apache.tinkerpop.machine.strategy.CoefficientStrategy;
 import org.apache.tinkerpop.machine.strategy.CoefficientVerificationStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 import org.apache.tinkerpop.machine.structure.StructureFactory;
+import org.apache.tinkerpop.machine.structure.data.TVertex;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -50,7 +50,7 @@ public class TraversalSource<C> {
     public TraversalSource<C> withProcessor(final Class<? extends ProcessorFactory> processor) {
         this.bytecode = this.bytecode.clone();
         this.bytecode.addSourceInstruction(Symbols.WITH_PROCESSOR, processor);
-        for (final Strategy strategy : ProcessorFactory.processorStrategies(processor)) {
+        for (final Strategy strategy : ProcessorFactory.processorStrategies(processor)) { // TODO: do this at compile time so errant strategies don't exist.
             this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, strategy.getClass());
         }
         return this;
@@ -59,7 +59,7 @@ public class TraversalSource<C> {
     public TraversalSource<C> withStructure(final Class<? extends StructureFactory> structure) {
         this.bytecode = this.bytecode.clone();
         this.bytecode.addSourceInstruction(Symbols.WITH_STRUCTURE, structure);
-        for (final Strategy strategy : StructureFactory.structureStrategies(structure)) {
+        for (final Strategy strategy : StructureFactory.structureStrategies(structure)) { // TODO: do this at compile time so errant strategies don't exist.
             this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, strategy.getClass());
         }
         return this;
@@ -72,10 +72,10 @@ public class TraversalSource<C> {
     }
 
     public <S> Traversal<C, S, S> inject(final S... objects) {
-        return (Traversal<C, S, S>) new Traversal<>(this.bytecode.clone()).inject(objects);
+        return new Traversal(this.bytecode.clone()).inject(objects); // TODO: make initial vs. flatmap versions
     }
 
-    public <S> Traversal<C, S, TVertex> V() {
-        return (Traversal<C, S, TVertex>) new Traversal<>(this.bytecode.clone()).V();
+    public Traversal<C, TVertex, TVertex> V() {
+        return new Traversal(this.bytecode.clone()).V(); // TODO: make initial vs. flatmap versions
     }
 }

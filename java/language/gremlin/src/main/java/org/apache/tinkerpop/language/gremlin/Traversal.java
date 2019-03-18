@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.language.gremlin;
 
-import org.apache.tinkerpop.language.data.TVertex;
+import org.apache.tinkerpop.machine.structure.data.TVertex;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.bytecode.Compilation;

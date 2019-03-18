@@ -16,22 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.language.data;
-
-import org.apache.tinkerpop.util.IteratorUtils;
-
-import java.util.Iterator;
+package org.apache.tinkerpop.machine.structure.data;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TEdge<V> extends TElement<V> {
+public interface TKV<K, V> {
 
-    public TVertex<V> inVertex();
+    public K key();
 
-    public TVertex<V> outVertex();
-
-    public default Iterator<TVertex<V>> bothVertices() {
-        return IteratorUtils.of(this.inVertex(), this.outVertex());
-    }
+    public V value();
 }

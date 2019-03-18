@@ -16,14 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.language.data;
+package org.apache.tinkerpop.machine.structure.data;
+
+import org.apache.tinkerpop.util.IteratorUtils;
+
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TElement<V> extends TMap<String, V> {
+public interface TEdge<V> extends TElement<V> {
 
-    public String label();
+    public TVertex<V> inVertex();
 
-    public Object id();
+    public TVertex<V> outVertex();
+
+    public default Iterator<TVertex<V>> bothVertices() {
+        return IteratorUtils.of(this.inVertex(), this.outVertex());
+    }
 }

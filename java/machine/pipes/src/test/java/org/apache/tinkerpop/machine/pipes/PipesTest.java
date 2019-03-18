@@ -49,7 +49,7 @@ public class PipesTest {
                 .withStructure(TinkerGraphStructure.class)
                 .withStrategy(IdentityStrategy.class);
 
-        Traversal<Long, ?, ?> traversal = g.V();
+        Traversal<Long, ?, ?> traversal = g.V().identity().map(__.count());
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(TraversalUtil.getBytecode(traversal));

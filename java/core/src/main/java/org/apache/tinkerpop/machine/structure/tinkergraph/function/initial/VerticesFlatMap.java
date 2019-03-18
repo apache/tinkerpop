@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.structure.tinkergraph.function.initial;
 
-import org.apache.tinkerpop.language.data.TVertex;
+import org.apache.tinkerpop.machine.structure.data.TVertex;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.InitialFunction;
