@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.tinkergraph.data;
+package org.apache.tinkerpop.machine.structure.blueprints.data;
 
 import org.apache.tinkerpop.machine.structure.data.TEdge;
 import org.apache.tinkerpop.machine.structure.data.TKV;
@@ -31,7 +31,7 @@ import java.util.UUID;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerVertex implements TVertex, Serializable {
+public class BlueprintsVertex implements TVertex, Serializable {
 
     @Override
     public Iterator<TEdge> inEdges() {

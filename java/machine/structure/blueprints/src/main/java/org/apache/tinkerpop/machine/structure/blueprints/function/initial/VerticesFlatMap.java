@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.tinkergraph.function.initial;
+package org.apache.tinkerpop.machine.structure.blueprints.function.initial;
 
 import org.apache.tinkerpop.machine.structure.data.TVertex;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.InitialFunction;
-import org.apache.tinkerpop.machine.structure.tinkergraph.data.TinkerVertex;
+import org.apache.tinkerpop.machine.structure.blueprints.data.BlueprintsVertex;
 import org.apache.tinkerpop.machine.util.IteratorUtils;
 
 import java.util.Iterator;
@@ -39,7 +39,7 @@ public class VerticesFlatMap<C> extends AbstractFunction<C> implements InitialFu
 
     @Override
     public Iterator<TVertex> get() {
-        return IteratorUtils.of(new TinkerVertex(), new TinkerVertex());
+        return IteratorUtils.of(new BlueprintsVertex(), new BlueprintsVertex());
     }
 
 }

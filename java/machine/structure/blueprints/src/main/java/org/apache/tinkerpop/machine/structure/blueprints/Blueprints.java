@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.tinkergraph;
+package org.apache.tinkerpop.machine.structure.blueprints;
 
 import org.apache.tinkerpop.machine.structure.Structure;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraph implements Structure {
+public class Blueprints implements Structure {
 
 
 }

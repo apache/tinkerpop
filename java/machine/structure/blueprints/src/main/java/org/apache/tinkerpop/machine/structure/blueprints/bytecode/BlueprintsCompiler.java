@@ -16,21 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.tinkergraph.bytecode;
+package org.apache.tinkerpop.machine.structure.blueprints.bytecode;
 
 import org.apache.tinkerpop.machine.bytecode.BytecodeCompiler;
 import org.apache.tinkerpop.machine.bytecode.FunctionType;
 import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
-import org.apache.tinkerpop.machine.structure.tinkergraph.function.initial.VerticesFlatMap;
+import org.apache.tinkerpop.machine.structure.blueprints.function.initial.VerticesFlatMap;
 
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphCompiler implements BytecodeCompiler {
+public class BlueprintsCompiler implements BytecodeCompiler {
     @Override
     public <C> CFunction<C> compile(final Instruction<C> instruction) {
         final String op = instruction.op();

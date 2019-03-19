@@ -4,3 +4,4 @@
 .idea/
 target/
 fileTemplates/
+.DS_Store

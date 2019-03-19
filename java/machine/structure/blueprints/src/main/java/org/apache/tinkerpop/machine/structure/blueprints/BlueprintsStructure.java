@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.tinkergraph;
+package org.apache.tinkerpop.machine.structure.blueprints;
 
 import org.apache.tinkerpop.machine.bytecode.BytecodeCompiler;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 import org.apache.tinkerpop.machine.structure.Structure;
 import org.apache.tinkerpop.machine.structure.StructureFactory;
-import org.apache.tinkerpop.machine.structure.tinkergraph.bytecode.TinkerGraphCompiler;
-import org.apache.tinkerpop.machine.structure.tinkergraph.strategy.provider.TinkerVerticesStrategy;
+import org.apache.tinkerpop.machine.structure.blueprints.bytecode.BlueprintsCompiler;
+import org.apache.tinkerpop.machine.structure.blueprints.strategy.provider.BlueprintsVerticesStrategy;
 
 import java.util.Collections;
 import java.util.Map;
@@ -33,19 +33,19 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphStructure implements StructureFactory {
+public class BlueprintsStructure implements StructureFactory {
     @Override
     public Structure mint(final Map<String, Object> configuration) {
-        return new TinkerGraph();
+        return new Blueprints();
     }
 
     @Override
     public Set<Strategy<?>> getStrategies() {
-        return Collections.singleton(new TinkerVerticesStrategy());
+        return Collections.singleton(new BlueprintsVerticesStrategy());
     }
 
     @Override
     public Optional<BytecodeCompiler> getCompiler() {
-        return Optional.of(new TinkerGraphCompiler());
+        return Optional.of(new BlueprintsCompiler());
     }
 }

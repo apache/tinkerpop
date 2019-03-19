@@ -21,8 +21,8 @@ limitations under the License.
         <groupId>org.apache.tinkerpop</groupId>
         <version>4.0.0-SNAPSHOT</version>
     </parent>
-    <name>Apache TinkerPop :: Machine :: TinkerGraph</name>
-    <artifactId>tinkergraph</artifactId>
+    <name>Apache TinkerPop :: Machine :: Blueprints</name>
+    <artifactId>blueprints</artifactId>
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>

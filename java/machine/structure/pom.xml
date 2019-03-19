@@ -25,6 +25,6 @@ limitations under the License.
     <name>Apache TinkerPop :: Machine :: Structure</name>
     <artifactId>structure</artifactId>
     <modules>
-        <module>tinkergraph</module>
+        <module>blueprints</module>
     </modules>
 </project>
