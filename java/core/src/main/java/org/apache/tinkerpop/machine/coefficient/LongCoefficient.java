@@ -23,7 +23,7 @@ package org.apache.tinkerpop.machine.coefficient;
  */
 public class LongCoefficient implements Coefficient<Long> {
 
-    private Long value;
+    private long value;
 
     private LongCoefficient(final Long value) {
         this.value = value;
@@ -80,7 +80,7 @@ public class LongCoefficient implements Coefficient<Long> {
 
     @Override
     public String toString() {
-        return this.value.toString();
+        return Long.toString(this.value);
     }
 
     @Override
@@ -90,6 +90,16 @@ public class LongCoefficient implements Coefficient<Long> {
         } catch (final CloneNotSupportedException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return Long.hashCode(this.value);
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return other instanceof LongCoefficient && this.value == ((LongCoefficient) other).value;
     }
 
     public static LongCoefficient create(final Long coefficient) {

@@ -25,7 +25,6 @@ import org.apache.tinkerpop.machine.bytecode.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.bytecode.Pred;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
-import org.apache.tinkerpop.machine.structure.data.TVertex;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.path.Path;
 
@@ -46,6 +45,11 @@ public class Traversal<C, S, E> implements Iterator<E> {
     //
     private long lastCount = 0L;
     private E lastObject = null;
+
+    Traversal(final Coefficient<C> unity, final Bytecode<C> bytecode) {
+        this.bytecode = bytecode;
+        this.currentCoefficient = unity;
+    }
 
     Traversal(final Bytecode<C> bytecode) {
         this.bytecode = bytecode;
@@ -177,11 +181,6 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return (Traversal) this;
     }
 
-    public <R> Traversal<C, S, R> inject(final R... objects) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.INJECT, objects);
-        return (Traversal) this;
-    }
-
     public <K, V> Traversal<C, S, Map<K, V>> join(final Symbols.Tokens joinType, final Traversal<?, ?, Map<K, V>> joinTraversal) {
         this.bytecode.addInstruction(this.currentCoefficient, Symbols.JOIN, joinType, joinTraversal.bytecode);
         return (Traversal) this;
@@ -245,11 +244,6 @@ public class Traversal<C, S, E> implements Iterator<E> {
     public Traversal<C, S, E> until(final Traversal<C, ?, ?> untilTraversal) {
         TraversalUtil.insertRepeatInstruction(this.bytecode, this.currentCoefficient, 'u', untilTraversal.bytecode);
         return this;
-    }
-
-    public Traversal<C, S, TVertex> V() {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.V);
-        return (Traversal) this;
     }
 
     ///////

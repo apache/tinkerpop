@@ -167,25 +167,42 @@ public final class CoreCompiler implements BytecodeCompiler {
 
         // INSTRUCTION OPS
         public static final String BARRIER = "barrier";
+        // [if,[bc],[bc],?[bc]]
         public static final String IF = "if";
+        // [constant, o]
         public static final String CONSTANT = "constant";
+        // [count]
         public static final String COUNT = "count";
+        // [filter, [bc]]
         public static final String FILTER = "filter";
+        // [groupCount, ?[bc]]
         public static final String GROUP_COUNT = "groupCount";
+        // [hasKey, pred, o | [bc]]
         public static final String HAS_KEY = "hasKey";
         public static final String HAS_KEY_VALUE = "hasKeyValue";
+        // [identity]
         public static final String IDENTITY = "identity";
+        // [incr]
         public static final String INCR = "incr";
+        // [inject, o*]
         public static final String INJECT = "inject";
+        // [is, pred, o | [bc]]
         public static final String IS = "is";
         public static final String JOIN = "join";
+        // [loops]
         public static final String LOOPS = "loops";
+        // [map, [bc]]
         public static final String MAP = "map";
         public static final String PATH = "path";
+        // [repeat, (char, [bc]), ?(char, [bc]), ?(char, [bc])]
         public static final String REPEAT = "repeat";
+        // [sum]
         public static final String SUM = "sum";
+        // [unfold]
         public static final String UNFOLD = "unfold";
+        // [union, [bc]*]
         public static final String UNION = "union";
+        // [V]
         public static final String V = "V";
 
     }

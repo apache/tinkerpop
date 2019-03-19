@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.compiler;
+package org.apache.tinkerpop.machine.bytecode;
 
 import org.junit.jupiter.api.Test;
 

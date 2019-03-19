@@ -21,11 +21,11 @@ package org.apache.tinkerpop.machine.function.initial;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.InitialFunction;
+import org.apache.tinkerpop.util.ArrayIterator;
 import org.apache.tinkerpop.util.StringFactory;
 
 import java.util.Iterator;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -41,7 +41,7 @@ public class InjectInitial<C, S> extends AbstractFunction<C> implements InitialF
 
     @Override
     public Iterator<S> get() {
-        return Stream.of(this.objects).iterator();
+        return new ArrayIterator<>(this.objects);
     }
 
     @Override

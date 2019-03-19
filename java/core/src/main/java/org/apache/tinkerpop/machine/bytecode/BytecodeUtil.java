@@ -139,6 +139,10 @@ public final class BytecodeUtil {
         bytecode.getInstructions().add(index, newInstruction);
     }
 
+    public static <C> void removeSourceInstruction(final Bytecode<C> bytecode, final String op) {
+        bytecode.getSourceInstructions().removeIf(instruction -> instruction.op().equals(op));
+    }
+
     static <C> Optional<TraverserFactory<C>> getTraverserFactory(final Bytecode<C> bytecode) {
         // TODO: make this real
         for (final Instruction<C> instruction : bytecode.getInstructions()) {

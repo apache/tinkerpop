@@ -35,6 +35,11 @@ public final class Bytecode<C> implements Cloneable {
         this.sourceInstructions.add(new SourceInstruction(op, args));
     }
 
+    public void addUniqueSourceInstruction(final String op, final Object... args) {
+        this.sourceInstructions.removeIf(instruction -> instruction.op().equals(op));
+        this.sourceInstructions.add(new SourceInstruction(op, args));
+    }
+
     public List<SourceInstruction> getSourceInstructions() {
         return this.sourceInstructions;
     }
