@@ -1246,7 +1246,7 @@ which describes the list of classes to import when the plugin is activated and a
 The `ImportCustomizer` is just one of several provided `Customizer` implementations that can be used in conjunction
 with plugin development:
 
-* link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/BindingCustomizer.html[BindingCustomizer] - Inject a key/value pair into the global bindings of the `GremlinScriptEngine` instances
+* link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/BindingsCustomizer.html[BindingsCustomizer] - Inject a key/value pair into the global bindings of the `GremlinScriptEngine` instances
 * link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/ImportCustomizer.html[ImportCustomizer] - Add imports to a `GremlinScriptEngine`
 * link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/ScriptCustomizer.html[ScriptCustomizer] - Execute a script on a `GremlinScriptEngine` at startup
 
