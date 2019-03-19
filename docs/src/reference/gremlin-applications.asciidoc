@@ -1489,7 +1489,7 @@ complete. Alternatively, use a persistent graph to hold the credentials and conf
 
 The `Krb5Authenticator` implements the "GSSAPI" SASL mechanism (i.e. Kerberos) to authenticate a request from a Gremlin
 client.  It can be applied in an existing Kerberos environment and validates whether a
-link:https://http://www.roguelynn.com/words/explain-like-im-5-kerberos/[valid authentication proof and service ticket are
+link:https://www.roguelynn.com/words/explain-like-im-5-kerberos/[valid authentication proof and service ticket are
 offered].
 
 [source,yaml]
