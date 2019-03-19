@@ -117,7 +117,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, String> explain() {
-        this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, ExplainStrategy.class);
+        this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, ExplainStrategy.class); // TODO: maybe its best to have this in the global cache
         this.bytecode.addInstruction(this.currentCoefficient, Symbols.EXPLAIN);
         return (Traversal) this;
     }

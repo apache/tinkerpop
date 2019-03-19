@@ -20,10 +20,7 @@ package org.apache.tinkerpop.machine.processor.beam.util;
 
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.runners.TransformHierarchy;
-import org.apache.beam.sdk.transforms.PTransform;
 import org.apache.beam.sdk.values.PValue;
-import org.apache.tinkerpop.machine.processor.beam.OutputFn;
-import org.apache.tinkerpop.machine.processor.beam.RepeatDeadEndFn;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,9 +28,9 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PrimitiveVisitor implements Pipeline.PipelineVisitor {
+public class ExecutionPlanner implements Pipeline.PipelineVisitor {
 
-    private final List<PTransform> primitives = new ArrayList<>();
+    private final List<String> streamFunctionStrings = new ArrayList<>();
 
     @Override
     public void enterPipeline(final Pipeline p) {
@@ -52,11 +49,7 @@ public class PrimitiveVisitor implements Pipeline.PipelineVisitor {
 
     @Override
     public void visitPrimitiveTransform(final TransformHierarchy.Node node) {
-        if (!node.getTransform().toString().startsWith("Read") &&
-                !node.getTransform().toString().contains(OutputFn.class.getSimpleName()) &&
-                !node.getTransform().toString().contains(RepeatDeadEndFn.class.getSimpleName()) &&
-                !node.getTransform().toString().startsWith("Flatten"))
-            this.primitives.add(node.getTransform());
+        this.streamFunctionStrings.add(node.getFullName() + "[" + node.getTransform().toString() + "]");
     }
 
     @Override
@@ -70,6 +63,6 @@ public class PrimitiveVisitor implements Pipeline.PipelineVisitor {
 
     @Override
     public String toString() {
-        return this.primitives.toString();
+        return this.streamFunctionStrings.toString();
     }
 }

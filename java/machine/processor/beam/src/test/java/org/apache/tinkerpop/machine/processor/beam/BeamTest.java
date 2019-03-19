@@ -54,6 +54,12 @@ public class BeamTest {
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
+        traversal = g.V().identity().union(__.count(),__.count()).map(__.<Long,Long>count().identity()).explain();
+        System.out.println(TraversalUtil.getBytecode(traversal));
+        System.out.println(traversal);
+        System.out.println(TraversalUtil.getBytecode(traversal));
+        System.out.println(traversal.next());
+        System.out.println("\n----------\n");
     }
 
     @Test

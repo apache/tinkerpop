@@ -41,16 +41,19 @@ public final class ExplainStrategy extends AbstractStrategy<Strategy.DecorationS
     public <C> void apply(final Bytecode<C> bytecode) {
         if (bytecode.lastInstruction().op().equals(Symbols.EXPLAIN)) {
             bytecode.getInstructions().remove(bytecode.lastInstruction());
+            bytecode.getSourceInstructions().removeIf(instruction ->
+                    instruction.op().equals(Symbols.WITH_STRATEGY) &&
+                            instruction.args()[0].equals(ExplainStrategy.class));
             final Bytecode<C> clone = bytecode.clone();
             bytecode.getInstructions().clear();
             bytecode.addInstruction(
                     BytecodeUtil.getCoefficient(clone).get(),
                     Symbols.INJECT,
-                    ExplainStrategy.processBytecode(clone));
+                    ExplainStrategy.explainBytecode(clone));
         }
     }
 
-    private static <C> String processBytecode(final Bytecode<C> bytecode) {
+    private static <C> String explainBytecode(final Bytecode<C> bytecode) {
         final Map<String, String> explain = new LinkedHashMap<>();
         explain.put(ORIGINAL, bytecode.toString());
         for (final Strategy strategy : BytecodeUtil.getStrategies(bytecode)) {
@@ -78,7 +81,7 @@ public final class ExplainStrategy extends AbstractStrategy<Strategy.DecorationS
             ExplainStrategy.addSpaces(builder, entry.getKey(), maxLength);
             builder.append("\t\t").append(entry.getValue()).append("\n");
         }
-        builder.replace(builder.length() - 1, builder.length(), "");
+        builder.replace(builder.length() - 1, builder.length(), ""); // removes trailing newline character
         return builder.toString();
 
     }

@@ -24,7 +24,7 @@ import org.apache.beam.sdk.transforms.Create;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.tinkerpop.machine.processor.beam.serialization.TraverserCoder;
-import org.apache.tinkerpop.machine.processor.beam.util.PrimitiveVisitor;
+import org.apache.tinkerpop.machine.processor.beam.util.ExecutionPlanner;
 import org.apache.tinkerpop.machine.processor.beam.util.TopologyUtil;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.processor.Processor;
@@ -81,7 +81,7 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
 
     @Override
     public String toString() {
-        final PrimitiveVisitor visitor = new PrimitiveVisitor();
+        final ExecutionPlanner visitor = new ExecutionPlanner();
         this.pipeline.traverseTopologically(visitor);
         return visitor.toString();
     }
