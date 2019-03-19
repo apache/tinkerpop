@@ -23,7 +23,7 @@ import org.apache.tinkerpop.machine.strategy.Strategy;
 import org.apache.tinkerpop.machine.structure.Structure;
 import org.apache.tinkerpop.machine.structure.StructureFactory;
 import org.apache.tinkerpop.machine.structure.tinkergraph.bytecode.TinkerGraphCompiler;
-import org.apache.tinkerpop.machine.structure.tinkergraph.strategy.provider.VerticesStrategy;
+import org.apache.tinkerpop.machine.structure.tinkergraph.strategy.provider.TinkerVerticesStrategy;
 
 import java.util.Collections;
 import java.util.Map;
@@ -41,7 +41,7 @@ public class TinkerGraphStructure implements StructureFactory {
 
     @Override
     public Set<Strategy<?>> getStrategies() {
-        return Collections.singleton(new VerticesStrategy());
+        return Collections.singleton(new TinkerVerticesStrategy());
     }
 
     @Override

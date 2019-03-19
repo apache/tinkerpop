@@ -19,13 +19,14 @@
 package org.apache.tinkerpop.machine.strategy.finalization;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
+import org.apache.tinkerpop.machine.strategy.AbstractStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraverserFactoryStrategy implements Strategy.FinalizationStrategy {
+public class TraverserFactoryStrategy extends AbstractStrategy<Strategy.FinalizationStrategy> implements Strategy.FinalizationStrategy {
 
     private TraverserFactory traverserFactory;
 

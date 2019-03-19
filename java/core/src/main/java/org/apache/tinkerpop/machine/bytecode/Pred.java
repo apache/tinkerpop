@@ -65,7 +65,7 @@ public enum Pred {
 
     public abstract boolean test(final Object first, final Object second);
 
-    public static Pred get(final Object object) {
+    public static Pred valueOf(final Object object) {
         return Pred.valueOf(object.toString());
     }
 }

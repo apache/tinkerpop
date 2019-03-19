@@ -20,12 +20,13 @@ package org.apache.tinkerpop.machine.strategy.optimization;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.CoreCompiler;
+import org.apache.tinkerpop.machine.strategy.AbstractStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class IdentityStrategy implements Strategy.OptimizationStrategy {
+public final class IdentityStrategy extends AbstractStrategy<Strategy.OptimizationStrategy> implements Strategy.OptimizationStrategy {
 
     @Override
     public <C> void apply(final Bytecode<C> bytecode) {

@@ -24,12 +24,13 @@ import org.apache.tinkerpop.machine.bytecode.CoreCompiler;
 import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
+import org.apache.tinkerpop.machine.strategy.AbstractStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class CoefficientStrategy implements Strategy.FinalizationStrategy {
+public final class CoefficientStrategy extends AbstractStrategy<Strategy.FinalizationStrategy> implements Strategy.FinalizationStrategy {
     @Override
     public <C> void apply(final Bytecode<C> bytecode) {
         Coefficient<C> coefficient = BytecodeUtil.getCoefficient(bytecode).orElse(null);

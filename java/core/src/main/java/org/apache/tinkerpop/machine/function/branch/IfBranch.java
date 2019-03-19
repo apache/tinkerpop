@@ -34,7 +34,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ChooseBranch<C, S, E> extends AbstractFunction<C> implements BranchFunction<C, S, E, Boolean> {
+public final class IfBranch<C, S, E> extends AbstractFunction<C> implements BranchFunction<C, S, E, Boolean> {
 
     private final Compilation<C, S, Boolean> branchSelector;
     private final Map<Boolean, List<Compilation<C, S, E>>> branches;
@@ -42,10 +42,10 @@ public class ChooseBranch<C, S, E> extends AbstractFunction<C> implements Branch
     private final Compilation<C, S, ?> predicate;
 
 
-    public ChooseBranch(final Coefficient<C> coefficient, final Set<String> labels,
-                        final Compilation<C, S, ?> predicate,
-                        final Compilation<C, S, E> trueBranch,
-                        final Compilation<C, S, E> falseBranch) {
+    public IfBranch(final Coefficient<C> coefficient, final Set<String> labels,
+                    final Compilation<C, S, ?> predicate,
+                    final Compilation<C, S, E> trueBranch,
+                    final Compilation<C, S, E> falseBranch) {
         super(coefficient, labels);
         this.predicate = predicate;
         this.branchSelector = new Compilation<>(new HasNextProcessor<>(predicate));

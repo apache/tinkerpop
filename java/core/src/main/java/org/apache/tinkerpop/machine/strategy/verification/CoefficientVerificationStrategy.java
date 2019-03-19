@@ -23,12 +23,13 @@ import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.bytecode.CompositeCompiler;
 import org.apache.tinkerpop.machine.bytecode.FunctionType;
 import org.apache.tinkerpop.machine.bytecode.Instruction;
+import org.apache.tinkerpop.machine.strategy.AbstractStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class CoefficientVerificationStrategy implements Strategy.VerificationStrategy {
+public final class CoefficientVerificationStrategy extends AbstractStrategy<Strategy.VerificationStrategy> implements Strategy.VerificationStrategy {
 
     @Override
     public <C> void apply(final Bytecode<C> bytecode) {

@@ -69,7 +69,7 @@ public class PipesTest {
         System.out.println(traversal);
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
-        traversal = g.inject(Arrays.asList(1L, 2L)).unfold().is(P.lt(__.constant(2L)));
+        traversal = g.inject(Arrays.asList(1L, 2L)).unfold().is(P.lt(__.constant(2L))).groupCount().by(__.incr());
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

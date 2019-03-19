@@ -46,7 +46,7 @@ public class __ {
     }
 
     public static <C, S> Traversal<C, S, S> is(final S object) {
-        return object instanceof Traversal ? __.is((Traversal<C, S, S>) object) : __.<C, S>start().is(object);
+        return object instanceof Traversal ? __.is((Traversal<C, S, S>) object) : __.<C, S>start().is(object); // TODO: this is sucky. we don't want this
     }
 
     public static <C, S> Traversal<C, S, S> is(final Traversal<C, S, S> objectTraversal) {

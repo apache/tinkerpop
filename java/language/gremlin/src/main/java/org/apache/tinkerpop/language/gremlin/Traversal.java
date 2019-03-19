@@ -78,12 +78,12 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public <R> Traversal<C, S, R> choose(final Traversal<C, E, ?> predicate, final Traversal<C, S, R> trueTraversal, final Traversal<C, S, R> falseTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.CHOOSE_IF_THEN_ELSE, predicate.bytecode, trueTraversal.bytecode, falseTraversal.bytecode);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IF, predicate.bytecode, trueTraversal.bytecode, falseTraversal.bytecode);
         return (Traversal) this;
     }
 
     public <R> Traversal<C, S, R> choose(final Traversal<C, E, ?> predicate, final Traversal<C, S, R> trueTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.CHOOSE_IF_THEN, predicate.bytecode, trueTraversal.bytecode);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IF, predicate.bytecode, trueTraversal.bytecode);
         return (Traversal) this;
     }
 

@@ -26,7 +26,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BasicPath implements Path {
+public final class BasicPath implements Path {
 
     private final List<Object> objects = new ArrayList<>();
     private final List<Set<String>> labels = new ArrayList<>();

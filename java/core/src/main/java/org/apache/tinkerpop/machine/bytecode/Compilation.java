@@ -147,6 +147,12 @@ public final class Compilation<C, S, E> implements Serializable {
         return Optional.empty();
     }
 
+    public static <C, S, E> Compilation<C, S, E> compileOrNull(final int index, final Object... args) {
+        return args.length > index && args[index] instanceof Bytecode ?
+                new Compilation<>((Bytecode<C>) args[index]) :
+                null;
+    }
+
     public static <C, S, E> List<Compilation<C, S, E>> compile(final Object... args) {
         final List<Compilation<C, S, E>> compilations = new ArrayList<>();
         for (final Object arg : args) {

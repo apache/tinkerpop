@@ -27,6 +27,12 @@ final class SourceStep<C, S> implements Step<C, S, S> {
 
     private Traverser<C, S> traverser = null;
 
+    void addStart(final Traverser<C, S> traverser) {
+        if (null != this.traverser)
+            throw new IllegalStateException("This shouldn't happen"); // TODO: verify fully and then remove
+        this.traverser = traverser;
+    }
+
     @Override
     public boolean hasNext() {
         return null != this.traverser;
@@ -42,12 +48,6 @@ final class SourceStep<C, S> implements Step<C, S, S> {
     @Override
     public void reset() {
         this.traverser = null;
-    }
-
-    public void addStart(final Traverser<C, S> traverser) {
-        if (null != this.traverser)
-            throw new IllegalStateException("This shouldn't happen"); // TODO: verify fully and then remove
-        this.traverser = traverser;
     }
 
     @Override

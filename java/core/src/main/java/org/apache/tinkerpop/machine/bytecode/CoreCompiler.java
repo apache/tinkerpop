@@ -22,7 +22,7 @@ import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.function.barrier.JoinBarrier;
 import org.apache.tinkerpop.machine.function.barrier.StallBarrier;
-import org.apache.tinkerpop.machine.function.branch.ChooseBranch;
+import org.apache.tinkerpop.machine.function.branch.IfBranch;
 import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
 import org.apache.tinkerpop.machine.function.branch.UnionBranch;
 import org.apache.tinkerpop.machine.function.filter.FilterFilter;
@@ -58,8 +58,7 @@ public final class CoreCompiler implements BytecodeCompiler {
 
     private static final Map<String, FunctionType> OP_TYPES = new HashMap<>() {{
         put(Symbols.BARRIER, FunctionType.BARRIER);
-        put(Symbols.CHOOSE_IF_THEN, FunctionType.BRANCH);
-        put(Symbols.CHOOSE_IF_THEN_ELSE, FunctionType.BRANCH);
+        put(Symbols.IF, FunctionType.BRANCH);
         put(Symbols.CONSTANT, FunctionType.MAP);
         put(Symbols.COUNT, FunctionType.REDUCE);
         put(Symbols.FILTER, FunctionType.FILTER);
@@ -89,16 +88,11 @@ public final class CoreCompiler implements BytecodeCompiler {
         switch (op) {
             case Symbols.BARRIER:
                 return new StallBarrier<>(coefficient, labels, 1000);
-            case Symbols.CHOOSE_IF_THEN:
-                return new ChooseBranch<>(coefficient, labels,
+            case Symbols.IF:
+                return new IfBranch<>(coefficient, labels,
                         Compilation.compileOne(instruction.args()[0]),
                         Compilation.compileOne(instruction.args()[1]),
-                        null);
-            case Symbols.CHOOSE_IF_THEN_ELSE:
-                return new ChooseBranch<>(coefficient, labels,
-                        Compilation.compileOne(instruction.args()[0]),
-                        Compilation.compileOne(instruction.args()[1]),
-                        Compilation.compileOne(instruction.args()[2]));
+                        Compilation.compileOrNull(2, instruction.args()));
             case Symbols.CONSTANT:
                 return new ConstantMap<>(coefficient, labels, instruction.args()[0]);
             case Symbols.COUNT:
@@ -106,9 +100,9 @@ public final class CoreCompiler implements BytecodeCompiler {
             case Symbols.FILTER:
                 return new FilterFilter<>(coefficient, labels, Compilation.compileOne(instruction.args()[0]));
             case Symbols.GROUP_COUNT:
-                return new GroupCountReduce<>(coefficient, labels, Compilation.<C, Object, Object>compileMaybe(instruction.args()).orElse(null));
+                return new GroupCountReduce<>(coefficient, labels, Compilation.compileOrNull(0, instruction.args()));
             case Symbols.HAS_KEY:
-                return new HasKeyFilter<>(coefficient, labels, Pred.get(instruction.args()[0]), Argument.create(instruction.args()[1]));
+                return new HasKeyFilter<>(coefficient, labels, Pred.valueOf(instruction.args()[0]), Argument.create(instruction.args()[1]));
             case Symbols.HAS_KEY_VALUE:
                 return new HasKeyValueFilter<>(coefficient, labels, Argument.create(instruction.args()[0]), Argument.create(instruction.args()[1]));
             case Symbols.IDENTITY:
@@ -116,7 +110,7 @@ public final class CoreCompiler implements BytecodeCompiler {
             case Symbols.INJECT:
                 return new InjectInitial<>(coefficient, labels, instruction.args());
             case Symbols.IS:
-                return new IsFilter<>(coefficient, labels, Pred.get(instruction.args()[0]), Argument.create(instruction.args()[1]));
+                return new IsFilter<>(coefficient, labels, Pred.valueOf(instruction.args()[0]), Argument.create(instruction.args()[1]));
             case Symbols.INCR:
                 return new IncrMap<>(coefficient, labels);
             case Symbols.JOIN:
@@ -173,8 +167,7 @@ public final class CoreCompiler implements BytecodeCompiler {
 
         // INSTRUCTION OPS
         public static final String BARRIER = "barrier";
-        public static final String CHOOSE_IF_THEN = "chooseIfThen";
-        public static final String CHOOSE_IF_THEN_ELSE = "chooseIfThenElse";
+        public static final String IF = "if";
         public static final String CONSTANT = "constant";
         public static final String COUNT = "count";
         public static final String FILTER = "filter";

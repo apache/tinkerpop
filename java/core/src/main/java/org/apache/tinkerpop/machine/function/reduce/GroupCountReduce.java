@@ -23,6 +23,7 @@ import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.ReduceFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.util.StringFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -58,6 +59,11 @@ public class GroupCountReduce<C, S, E> extends AbstractFunction<C> implements Re
     @Override
     public Map<E, Long> getInitialValue() {
         return new HashMap<>();
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.makeFunctionString(this, this.byCompilation);
     }
 
 }

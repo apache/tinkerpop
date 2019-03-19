@@ -22,6 +22,7 @@ import org.apache.tinkerpop.machine.function.ReduceFunction;
 import org.apache.tinkerpop.machine.pipes.util.Reducer;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
+import org.apache.tinkerpop.util.FastNoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -45,8 +46,10 @@ final class ReduceStep<C, S, E> extends AbstractStep<C, S, E> {
 
     @Override
     public Traverser<C, E> next() {
+        if (this.done)
+            throw FastNoSuchElementException.instance();
         while (this.previousStep.hasNext()) {
-            this.reducer.add(super.previousStep.next());
+            this.reducer.add(this.previousStep.next());
         }
         this.done = true;
         return this.traverserFactory.create(this.reduceFunction, this.reducer.get()).reduce(this.reduceFunction);

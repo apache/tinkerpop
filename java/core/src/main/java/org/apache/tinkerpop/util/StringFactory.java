@@ -23,6 +23,10 @@ import org.apache.tinkerpop.machine.bytecode.SourceInstruction;
 import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -65,15 +69,19 @@ public final class StringFactory {
     }
 
     public static String makeFunctionString(final CFunction<?> function, final Object... args) {
+        final List<Object> arguments = new ArrayList<>(args.length);
+        Collections.addAll(arguments, args);
+        arguments.remove(null);
+
         String name = function.getClass().getSimpleName();
         if (!function.coefficient().isUnity())
             name = "|" + function.coefficient().value() + "|" + name;
-        if (args.length > 0)
+        if (arguments.size() > 0)
             name = name + "(";
-        for (final Object object : args) {
+        for (final Object object : arguments) {
             name = name + object + ",";
         }
-        if (args.length > 0) {
+        if (arguments.size() > 0) {
             name = name.substring(0, name.length() - 1);
             name = name + ")";
         }
