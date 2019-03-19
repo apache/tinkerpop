@@ -85,7 +85,7 @@ on the cluster's profile.
 
 ===== Loading with BulkLoaderVertexProgram
 
-The <<bulkloadervertexprogram, BulkLoaderVertexProgram>> is a generalized bulk loader that can be used to load
+The <<clonevertexprogram, CloneVertexProgram>> is a generalized bulk loader that can be used to load
 large amounts of data to and from different `Graph` implementations. The following code demonstrates how to load
 the Grateful Dead graph from HadoopGraph into TinkerGraph over Giraph:
 

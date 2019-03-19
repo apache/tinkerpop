@@ -235,7 +235,7 @@ creating an edge that goes _out_ of `v1` and into `v2` with a label of "created"
 === Graph Traversal - Staying Simple
 
 Now that Gremlin knows where the graph data is, you can ask him to get you some data from it by doing a traversal,
-which you can think of as executing some link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_the_graph_process[process]
+which you can think of as executing some link:http://tinkerpop.apache.org/docs/x.y.z/reference/#the-graph-process[process]
 over the structure of the graph. We can form our question in English and then translate it to Gremlin. For this
 initial example, let's ask Gremlin: "What software has Marko created?"
 
@@ -529,7 +529,7 @@ the line and stores those vertices in the `fromVertex` and `toVertex` variables 
 
 NOTE: While this is a tab-delimited structure, this same pattern can be applied
 to any data source you require and Groovy tends to have nice libraries that can help making working with data
-link:http://thinkaurelius.com/2013/02/04/polyglot-persistence-and-query-with-gremlin/[quite enjoyable].
+link:https://thinkaurelius.wordpress.com/2013/02/04/polyglot-persistence-and-query-with-gremlin/[quite enjoyable].
 
 WARNING: Take care if using a `Graph` implementation that supports
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#transactions[transactions]. As TinkerGraph does not, there is
@@ -537,7 +537,7 @@ no need to `commit()`.  If your `Graph` does support transactions, intermediate 
 applied.
 
 To load larger data sets you should read about the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#bulkloadervertexprogram[BulkLoaderVertexProgram] (BLVP), which
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#clonevertexprogram[BulkLoaderVertexProgram] (BLVP), which
 provides a generalized method for loading graphs of virtually any size.
 
 === Gremlin Server
@@ -545,7 +545,7 @@ provides a generalized method for loading graphs of virtually any size.
 image:gremlin-server-protocol.png[width=325,float=right] link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-server[Gremlin Server]
 provides a way to remotely execute Gremlin scripts against one or more `Graph` instances hosted within it. It does
 this by exposing different endpoints, such as link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_connecting_via_http[HTTP]
-and link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_connecting_via_java[WebSocket], which allow a request
+and link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-java[WebSocket], which allow a request
 containing a Gremlin script to be processed with results returned.
 
 [source,text]
@@ -598,10 +598,10 @@ critical to link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_best_practic
 possible, parameterize your queries.
 
 As mentioned earlier, Gremlin Server can also be configured with a WebSocket endpoint. This endpoint has an
-embedded link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_developing_a_driver[subprotocol] that allow a
+embedded link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[subprotocol] that allow a
 compliant driver to communicate with it.  TinkerPop supplies a
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_connecting_via_java[reference driver] written in Java, but
-there are drivers developed by both TinkerPop and third-parties for other link:http://tinkerpop.apache.org/#graph-libraries[languages]
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-java[reference driver] written in Java, but
+there are drivers developed by both TinkerPop and third-parties for other link:http://tinkerpop.apache.org/#language-drivers[languages]
 such as Python, Javascript, etc. Gremlin Server therefore represents the method by which non-JVM languages can
 interact with TinkerPop.
 

@@ -101,7 +101,7 @@ being either the number of existing partitions in the input (i.e. input splits) 
 
 The `SparkGraphComputer` uses `MEMORY_ONLY` to cache the input graph and the output graph by default. Users should be aware of the impact of
 different storage levels, since the default settings can quickly lead to memory issues on larger graphs. An overview of Spark's persistence
-settings is provided in link:http://spark.apache.org/docs/latest/programming-guide.html#rdd-persistence[Spark's programming guide].
+settings is provided in link:http://spark.apache.org/docs/latest/rdd-programming-guide.html#rdd-persistence[Spark's programming guide].
 
 
 ===== Using a Persisted Context
