@@ -16,21 +16,36 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.beam.functions;
+package org.apache.tinkerpop.machine.processor.pipes.util;
 
-import org.apache.tinkerpop.language.gremlin.Gremlin;
-import org.apache.tinkerpop.language.gremlin.TraversalSource;
-import org.apache.tinkerpop.machine.processor.beam.BeamProcessor;
-import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
-import org.apache.tinkerpop.machine.strategy.optimization.IdentityStrategy;
+import org.apache.tinkerpop.machine.function.ReduceFunction;
+import org.apache.tinkerpop.machine.traverser.Traverser;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalSourceLibrary {
+public class InMemoryReducer<C, S, E> implements Reducer<C, S, E> {
 
-    public static final TraversalSource<Long>[] LONG_SOURCES = new TraversalSource[]{
-            Gremlin.<Long>traversal().withProcessor(BeamProcessor.class),
-            Gremlin.<Long>traversal().withCoefficient(LongCoefficient.class).withProcessor(BeamProcessor.class),
-            Gremlin.<Long>traversal().withProcessor(BeamProcessor.class).withStrategy(IdentityStrategy.class)};
+    private final ReduceFunction<C, S, E> reduceFunction;
+    private E value;
+
+    public InMemoryReducer(final ReduceFunction<C, S, E> reduceFunction) {
+        this.reduceFunction = reduceFunction;
+        this.value = this.reduceFunction.getInitialValue();
+    }
+
+    @Override
+    public E get() {
+        return this.value;
+    }
+
+    @Override
+    public void add(final Traverser<C, S> traverser) {
+        this.value = this.reduceFunction.apply(traverser, this.value);
+    }
+
+    @Override
+    public void reset() {
+        this.value = this.reduceFunction.getInitialValue();
+    }
 }

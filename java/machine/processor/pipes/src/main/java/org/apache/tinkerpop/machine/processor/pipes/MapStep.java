@@ -16,21 +16,35 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.beam.functions;
+package org.apache.tinkerpop.machine.processor.pipes;
 
-import org.apache.tinkerpop.language.gremlin.Gremlin;
-import org.apache.tinkerpop.language.gremlin.TraversalSource;
-import org.apache.tinkerpop.machine.processor.beam.BeamProcessor;
-import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
-import org.apache.tinkerpop.machine.strategy.optimization.IdentityStrategy;
+import org.apache.tinkerpop.machine.function.MapFunction;
+import org.apache.tinkerpop.machine.traverser.Traverser;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalSourceLibrary {
+final class MapStep<C, S, E> extends AbstractStep<C, S, E> {
 
-    public static final TraversalSource<Long>[] LONG_SOURCES = new TraversalSource[]{
-            Gremlin.<Long>traversal().withProcessor(BeamProcessor.class),
-            Gremlin.<Long>traversal().withCoefficient(LongCoefficient.class).withProcessor(BeamProcessor.class),
-            Gremlin.<Long>traversal().withProcessor(BeamProcessor.class).withStrategy(IdentityStrategy.class)};
+    private final MapFunction<C, S, E> mapFunction;
+
+    MapStep(final Step<C, ?, S> previousStep, final MapFunction<C, S, E> mapFunction) {
+        super(previousStep, mapFunction);
+        this.mapFunction = mapFunction;
+    }
+
+    @Override
+    public boolean hasNext() {
+        return this.previousStep.hasNext();
+    }
+
+    @Override
+    public Traverser<C, E> next() {
+        return this.previousStep.next().map(this.mapFunction);
+    }
+
+    @Override
+    public void reset() {
+
+    }
 }

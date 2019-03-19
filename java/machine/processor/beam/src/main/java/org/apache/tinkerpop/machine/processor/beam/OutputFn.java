@@ -16,21 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.beam.functions;
+package org.apache.tinkerpop.machine.processor.beam;
 
-import org.apache.tinkerpop.language.gremlin.Gremlin;
-import org.apache.tinkerpop.language.gremlin.TraversalSource;
-import org.apache.tinkerpop.machine.processor.beam.BeamProcessor;
-import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
-import org.apache.tinkerpop.machine.strategy.optimization.IdentityStrategy;
+import org.apache.beam.sdk.transforms.DoFn;
+import org.apache.tinkerpop.machine.traverser.Traverser;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalSourceLibrary {
+public class OutputFn<C, S> extends DoFn<Traverser<C, S>, String> {
 
-    public static final TraversalSource<Long>[] LONG_SOURCES = new TraversalSource[]{
-            Gremlin.<Long>traversal().withProcessor(BeamProcessor.class),
-            Gremlin.<Long>traversal().withCoefficient(LongCoefficient.class).withProcessor(BeamProcessor.class),
-            Gremlin.<Long>traversal().withProcessor(BeamProcessor.class).withStrategy(IdentityStrategy.class)};
+
+    public OutputFn() {
+
+    }
+
+    @ProcessElement
+    public void processElement(final @Element Traverser<C, S> traverser, final OutputReceiver<String> output) {
+        Beam.OUTPUT.add(traverser);
+    }
+
+    @Override
+    public String toString() {
+        return "";
+    }
 }

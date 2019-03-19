@@ -21,7 +21,7 @@ limitations under the License.
         <groupId>org.apache.tinkerpop</groupId>
         <version>4.0.0-SNAPSHOT</version>
     </parent>
-    <name>Apache TinkerPop (Java) :: Machine :: Pipes</name>
+    <name>Apache TinkerPop :: Machine :: Pipes</name>
     <artifactId>pipes</artifactId>
     <dependencies>
         <dependency>

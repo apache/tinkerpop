@@ -16,21 +16,42 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.beam.functions;
+package org.apache.tinkerpop.machine.processor.pipes;
 
-import org.apache.tinkerpop.language.gremlin.Gremlin;
-import org.apache.tinkerpop.language.gremlin.TraversalSource;
-import org.apache.tinkerpop.machine.processor.beam.BeamProcessor;
-import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
-import org.apache.tinkerpop.machine.strategy.optimization.IdentityStrategy;
+import org.apache.tinkerpop.machine.traverser.Traverser;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalSourceLibrary {
+final class SourceStep<C, S> implements Step<C, S, S> {
 
-    public static final TraversalSource<Long>[] LONG_SOURCES = new TraversalSource[]{
-            Gremlin.<Long>traversal().withProcessor(BeamProcessor.class),
-            Gremlin.<Long>traversal().withCoefficient(LongCoefficient.class).withProcessor(BeamProcessor.class),
-            Gremlin.<Long>traversal().withProcessor(BeamProcessor.class).withStrategy(IdentityStrategy.class)};
+    private Traverser<C, S> traverser = null;
+
+    void addStart(final Traverser<C, S> traverser) {
+        if (null != this.traverser)
+            throw new IllegalStateException("This shouldn't happen"); // TODO: verify fully and then remove
+        this.traverser = traverser;
+    }
+
+    @Override
+    public boolean hasNext() {
+        return null != this.traverser;
+    }
+
+    @Override
+    public Traverser<C, S> next() {
+        final Traverser<C, S> temp = this.traverser;
+        this.traverser = null;
+        return temp;
+    }
+
+    @Override
+    public void reset() {
+        this.traverser = null;
+    }
+
+    @Override
+    public String toString() {
+        return "Source";
+    }
 }

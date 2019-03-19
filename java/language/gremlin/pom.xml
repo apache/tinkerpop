@@ -21,7 +21,7 @@ limitations under the License.
         <groupId>org.apache.tinkerpop</groupId>
         <version>4.0.0-SNAPSHOT</version>
     </parent>
-    <name>Apache TinkerPop (Java) :: Language :: Gremlin</name>
+    <name>Apache TinkerPop :: Language :: Gremlin</name>
     <artifactId>gremlin</artifactId>
     <dependencies>
         <dependency>

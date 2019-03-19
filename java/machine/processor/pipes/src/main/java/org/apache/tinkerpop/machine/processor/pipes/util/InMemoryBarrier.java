@@ -16,21 +16,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.beam.functions;
-
-import org.apache.tinkerpop.language.gremlin.Gremlin;
-import org.apache.tinkerpop.language.gremlin.TraversalSource;
-import org.apache.tinkerpop.machine.processor.beam.BeamProcessor;
-import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
-import org.apache.tinkerpop.machine.strategy.optimization.IdentityStrategy;
+package org.apache.tinkerpop.machine.processor.pipes.util;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalSourceLibrary {
+public final class InMemoryBarrier<S> implements Barrier<S> {
 
-    public static final TraversalSource<Long>[] LONG_SOURCES = new TraversalSource[]{
-            Gremlin.<Long>traversal().withProcessor(BeamProcessor.class),
-            Gremlin.<Long>traversal().withCoefficient(LongCoefficient.class).withProcessor(BeamProcessor.class),
-            Gremlin.<Long>traversal().withProcessor(BeamProcessor.class).withStrategy(IdentityStrategy.class)};
+    private S value;
+    private final S initialValue;
+
+    public InMemoryBarrier(final S initialValue) {
+        this.initialValue = initialValue;
+        this.value = initialValue;
+    }
+
+    @Override
+    public void reset() {
+        this.value = this.initialValue;
+    }
+
+    public S get() {
+        return this.value;
+    }
+
+    public void update(final S newValue) {
+        this.value = newValue;
+    }
+
+
 }

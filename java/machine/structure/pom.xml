@@ -22,7 +22,7 @@ limitations under the License.
         <artifactId>machine</artifactId>
         <version>4.0.0-SNAPSHOT</version>
     </parent>
-    <name>Apache TinkerPop (Java) :: Machine :: Structure</name>
+    <name>Apache TinkerPop :: Machine :: Structure</name>
     <artifactId>structure</artifactId>
     <modules>
         <module>tinkergraph</module>

@@ -16,21 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.beam.functions;
+package org.apache.tinkerpop.machine.processor.beam.strategy;
 
-import org.apache.tinkerpop.language.gremlin.Gremlin;
-import org.apache.tinkerpop.language.gremlin.TraversalSource;
-import org.apache.tinkerpop.machine.processor.beam.BeamProcessor;
-import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
-import org.apache.tinkerpop.machine.strategy.optimization.IdentityStrategy;
+import org.apache.tinkerpop.machine.bytecode.Bytecode;
+import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
+import org.apache.tinkerpop.machine.bytecode.CoreCompiler.Symbols;
+import org.apache.tinkerpop.machine.processor.pipes.PipesProcessor;
+import org.apache.tinkerpop.machine.strategy.AbstractStrategy;
+import org.apache.tinkerpop.machine.strategy.Strategy;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalSourceLibrary {
+public class BeamStrategy extends AbstractStrategy<Strategy.ProviderStrategy> implements Strategy.ProviderStrategy {
 
-    public static final TraversalSource<Long>[] LONG_SOURCES = new TraversalSource[]{
-            Gremlin.<Long>traversal().withProcessor(BeamProcessor.class),
-            Gremlin.<Long>traversal().withCoefficient(LongCoefficient.class).withProcessor(BeamProcessor.class),
-            Gremlin.<Long>traversal().withProcessor(BeamProcessor.class).withStrategy(IdentityStrategy.class)};
+
+    @Override
+    public <C> void apply(final Bytecode<C> bytecode) {
+        if (!BytecodeUtil.hasSourceInstruction(bytecode, Symbols.WITH_PROCESSOR))
+            bytecode.addSourceInstruction(Symbols.WITH_PROCESSOR, PipesProcessor.class);
+    }
 }

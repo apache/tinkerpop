@@ -16,21 +16,32 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.beam.functions;
+package org.apache.tinkerpop.machine.processor.pipes;
 
-import org.apache.tinkerpop.language.gremlin.Gremlin;
-import org.apache.tinkerpop.language.gremlin.TraversalSource;
-import org.apache.tinkerpop.machine.processor.beam.BeamProcessor;
-import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
-import org.apache.tinkerpop.machine.strategy.optimization.IdentityStrategy;
+import org.apache.tinkerpop.machine.bytecode.Compilation;
+import org.apache.tinkerpop.machine.processor.pipes.strategy.PipesStrategy;
+import org.apache.tinkerpop.machine.processor.Processor;
+import org.apache.tinkerpop.machine.processor.ProcessorFactory;
+import org.apache.tinkerpop.machine.strategy.Strategy;
+
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalSourceLibrary {
+public final class PipesProcessor implements ProcessorFactory {
 
-    public static final TraversalSource<Long>[] LONG_SOURCES = new TraversalSource[]{
-            Gremlin.<Long>traversal().withProcessor(BeamProcessor.class),
-            Gremlin.<Long>traversal().withCoefficient(LongCoefficient.class).withProcessor(BeamProcessor.class),
-            Gremlin.<Long>traversal().withProcessor(BeamProcessor.class).withStrategy(IdentityStrategy.class)};
+    public PipesProcessor() {
+    }
+
+    @Override
+    public <C, S, E> Processor<C, S, E> mint(final Compilation<C, S, E> compilation) {
+        return new Pipes<>(compilation);
+    }
+
+    @Override
+    public Set<Strategy<?>> getStrategies() {
+        return Collections.singleton(new PipesStrategy());
+    }
 }

@@ -26,7 +26,7 @@ limitations under the License.
     <version>4.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Apache TinkerPop</name>
-    <description>A Virtual Machine and Language</description>
+    <description>A Graph Virtual Machine and Language</description>
     <url>http://tinkerpop.apache.org/</url>
     <mailingLists>
         <mailingList>

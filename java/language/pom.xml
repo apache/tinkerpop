@@ -22,7 +22,7 @@ limitations under the License.
         <artifactId>tinkerpop</artifactId>
         <version>4.0.0-SNAPSHOT</version>
     </parent>
-    <name>Apache TinkerPop (Java) :: Language</name>
+    <name>Apache TinkerPop :: Language</name>
     <artifactId>language</artifactId>
     <modules>
         <module>gremlin</module>
