@@ -21,7 +21,7 @@ limitations under the License.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
 [[release-3-4-1]]
-=== TinkerPop 3.4.1 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.4.1 (Release Date: March 18, 2019)
 
 This release also includes changes from <<release-3-3-6, 3.3.6>>.
 
@@ -41,6 +41,54 @@ This release also includes changes from <<release-3-3-6, 3.3.6>>.
 * Remove unused parameter in GraphBinary's `ResponseMessageSerializer`.
 * Changed `SparqlTraversalSource` so as to enable Gremlin steps to be used to process results from the `sparql()` step.
 * GraphBinary: Cache expression to obtain the method in `PSerializer`.
+
+==== Bugs
+
+* TINKERPOP-1992 count has negative time in profile
+* TINKERPOP-2126 toString() methods not thread-safe
+* TINKERPOP-2135 Gremlin.Net ConnectionPool doesn't handle closed idle connections properly
+* TINKERPOP-2139 Errors during request serialization in WebSocketGremlinRequestEncoder/NioGremlinRequestEncoder are not reported to the client
+* TINKERPOP-2141 ByteBufferSerializer modifies buffer's position
+* TINKERPOP-2148 "no connection available!" is being thrown despite lots of free connections
+* TINKERPOP-2152 Path toString fails in Gremlin JavaScript
+* TINKERPOP-2153 Remove unused parameter from ResponseMessageSerializer *(breaking)*
+* TINKERPOP-2154 GraphBinary: Serializers should release resources in case of failures
+* TINKERPOP-2155 Situation can occur that causes infinite amount of connection to be opened, causing System.Net.WebSockets.WebSocketException
+* TINKERPOP-2161 GraphBinary: Write serialization performance issue
+* TINKERPOP-2169 Responses exceeding maxContentLength cause subsequent queries to hang
+* TINKERPOP-2172 PartitionStrategy doesn't apply to AddEdgeStartStep
+* TINKERPOP-2173 Incorrect reset of log level in integration test
+* TINKERPOP-2177 Streaming response immediately after authentication stops after first partial response
+
+==== Improvements
+
+* TINKERPOP-1435 Support for extended GraphSON in gremlin-python
+* TINKERPOP-1882 Apply range and limit steps as early as possible
+* TINKERPOP-1998 IoGraphTest use different schemas for standard and readGraph configurations
+* TINKERPOP-2088 Enable SourceLink for Gremlin.Net
+* TINKERPOP-2098 Improve gremlin-server.sh help output
+* TINKERPOP-2122 Expose status codes from server errors
+* TINKERPOP-2124 InlineFilterStrategy produces wrong result
+* TINKERPOP-2125 Extend release validation script
+* TINKERPOP-2127 Add g:TraversalMetrics and g:Metrics deserializers for gremlinpython
+* TINKERPOP-2129 Mask security secret or password in logs
+* TINKERPOP-2130 Cannot instantiate DriverRemoteConnection without passing an options object
+* TINKERPOP-2131 NoConnectionAvailableException doesn't reveal the reason
+* TINKERPOP-2134 Bump to Groovy 2.5.6
+* TINKERPOP-2136 Inside lower bound inclusion (documentation)
+* TINKERPOP-2138 Provide a configuration to disable the global closure cache
+* TINKERPOP-2140 Test build with Docker automatically
+* TINKERPOP-2144 Better handle Authenticator instance failures
+* TINKERPOP-2147 Add GraphBinary serializer for TraversalMetrics
+* TINKERPOP-2149 GraphBinary: Make type serializer resolution pluggable
+* TINKERPOP-2150 GraphBinary: Support configuring the TypeSerializerRegistry builder class in config
+* TINKERPOP-2163 JavaTranslator performance enhancements
+* TINKERPOP-2164 Bytecode's hashCode impl (and its inner classes) can produce hash collisions
+* TINKERPOP-2165 Prefer commons-lang3 to commons-lang
+* TINKERPOP-2166 GraphBinary: P deserialization should be optimized
+* TINKERPOP-2167 Gremlin Javascript Traversal as async iterable
+* TINKERPOP-2171 Allow SPARQL to be extended with Gremlin steps
+* TINKERPOP-2174 Improve Docker Image Security
 
 [[release-3-4-0]]
 === TinkerPop 3.4.0 (Release Date: January 2, 2019)
