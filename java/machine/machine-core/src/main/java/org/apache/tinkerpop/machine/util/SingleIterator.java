@@ -16,42 +16,40 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor.pipes;
+package org.apache.tinkerpop.machine.util;
 
-import org.apache.tinkerpop.machine.function.InitialFunction;
-import org.apache.tinkerpop.machine.traverser.Traverser;
-import org.apache.tinkerpop.machine.traverser.TraverserFactory;
-import org.apache.tinkerpop.machine.util.EmptyIterator;
-
+import java.io.Serializable;
 import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class InitialStep<C, S> extends AbstractStep<C, S, S> {
+final class SingleIterator<T> implements Iterator<T>, Serializable {
 
-    private Iterator<S> objects;
-    private final TraverserFactory<C> traverserFactory;
+    private T t;
+    private boolean alive = true;
 
-    InitialStep(final InitialFunction<C, S> initialFunction, final TraverserFactory<C> traverserFactory) {
-        super(EmptyStep.instance(), initialFunction);
-        this.objects = initialFunction.get();
-        this.traverserFactory = traverserFactory;
+    protected SingleIterator(final T t) {
+        this.t = t;
     }
 
     @Override
     public boolean hasNext() {
-        return this.objects.hasNext();
+        return this.alive;
     }
 
     @Override
-    public Traverser<C, S> next() {
-        return this.traverserFactory.create(this.function, this.objects.next());
+    public void remove() {
+        this.t = null;
     }
 
     @Override
-    public void reset() {
-        this.objects = EmptyIterator.instance();
+    public T next() {
+        if (!this.alive)
+            throw FastNoSuchElementException.instance();
+        else {
+            this.alive = false;
+            return t;
+        }
     }
-
 }

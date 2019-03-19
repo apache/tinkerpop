@@ -16,30 +16,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.tinkergraph.function.initial;
+package org.apache.tinkerpop.machine.util;
 
-import org.apache.tinkerpop.machine.structure.data.TVertex;
-import org.apache.tinkerpop.machine.coefficient.Coefficient;
-import org.apache.tinkerpop.machine.function.AbstractFunction;
-import org.apache.tinkerpop.machine.function.InitialFunction;
-import org.apache.tinkerpop.machine.structure.tinkergraph.data.TinkerVertex;
-import org.apache.tinkerpop.machine.util.IteratorUtils;
-
-import java.util.Iterator;
-import java.util.Set;
+import java.util.NoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VerticesFlatMap<C> extends AbstractFunction<C> implements InitialFunction<C, TVertex> {
+public final class FastNoSuchElementException extends NoSuchElementException {
 
-    public VerticesFlatMap(final Coefficient<C> coefficient, final Set<String> labels) {
-        super(coefficient, labels);
+    private static final long serialVersionUID = 2303108654138257697L;
+    private static final FastNoSuchElementException INSTANCE = new FastNoSuchElementException();
+
+    private FastNoSuchElementException() {
+    }
+
+    /**
+     * Retrieve a singleton, fast {@link NoSuchElementException} without a stack trace.
+     */
+    public static NoSuchElementException instance() {
+        return INSTANCE;
     }
 
     @Override
-    public Iterator<TVertex> get() {
-        return IteratorUtils.of(new TinkerVertex(), new TinkerVertex());
+    public synchronized Throwable fillInStackTrace() {
+        return this;
     }
-
 }

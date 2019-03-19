@@ -16,30 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.tinkergraph.function.initial;
+package org.apache.tinkerpop.machine.structure.data;
 
-import org.apache.tinkerpop.machine.structure.data.TVertex;
-import org.apache.tinkerpop.machine.coefficient.Coefficient;
-import org.apache.tinkerpop.machine.function.AbstractFunction;
-import org.apache.tinkerpop.machine.function.InitialFunction;
-import org.apache.tinkerpop.machine.structure.tinkergraph.data.TinkerVertex;
-import org.apache.tinkerpop.machine.util.IteratorUtils;
+import org.apache.tinkerpop.machine.util.MultiIterator;
 
 import java.util.Iterator;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VerticesFlatMap<C> extends AbstractFunction<C> implements InitialFunction<C, TVertex> {
+public interface TVertex<V> extends TElement<V> {
 
-    public VerticesFlatMap(final Coefficient<C> coefficient, final Set<String> labels) {
-        super(coefficient, labels);
-    }
+    public Iterator<TEdge<V>> inEdges();
 
-    @Override
-    public Iterator<TVertex> get() {
-        return IteratorUtils.of(new TinkerVertex(), new TinkerVertex());
+    public Iterator<TEdge<V>> outEdges();
+
+    public default Iterator<TEdge<V>> bothEdges() {
+        final MultiIterator<TEdge<V>> iterator = new MultiIterator<>();
+        iterator.addIterator(this.inEdges());
+        iterator.addIterator(this.outEdges());
+        return iterator;
     }
 
 }

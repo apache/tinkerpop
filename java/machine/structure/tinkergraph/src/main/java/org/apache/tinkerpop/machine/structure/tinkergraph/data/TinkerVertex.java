@@ -21,7 +21,7 @@ package org.apache.tinkerpop.machine.structure.tinkergraph.data;
 import org.apache.tinkerpop.machine.structure.data.TEdge;
 import org.apache.tinkerpop.machine.structure.data.TKV;
 import org.apache.tinkerpop.machine.structure.data.TVertex;
-import org.apache.tinkerpop.util.IteratorUtils;
+import org.apache.tinkerpop.machine.util.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.Collections;

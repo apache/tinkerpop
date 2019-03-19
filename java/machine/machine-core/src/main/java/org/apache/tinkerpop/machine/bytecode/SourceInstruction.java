@@ -16,30 +16,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.tinkergraph.function.initial;
+package org.apache.tinkerpop.machine.bytecode;
 
-import org.apache.tinkerpop.machine.structure.data.TVertex;
-import org.apache.tinkerpop.machine.coefficient.Coefficient;
-import org.apache.tinkerpop.machine.function.AbstractFunction;
-import org.apache.tinkerpop.machine.function.InitialFunction;
-import org.apache.tinkerpop.machine.structure.tinkergraph.data.TinkerVertex;
-import org.apache.tinkerpop.machine.util.IteratorUtils;
-
-import java.util.Iterator;
-import java.util.Set;
+import org.apache.tinkerpop.machine.util.StringFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VerticesFlatMap<C> extends AbstractFunction<C> implements InitialFunction<C, TVertex> {
+public final class SourceInstruction {
 
-    public VerticesFlatMap(final Coefficient<C> coefficient, final Set<String> labels) {
-        super(coefficient, labels);
+    private final String op;
+    private final Object[] args;
+
+    public SourceInstruction(final String op, final Object[] args) {
+        this.op = op;
+        this.args = args;
+    }
+
+    public String op() {
+        return this.op;
+    }
+
+    public Object[] args() {
+        return this.args;
     }
 
     @Override
-    public Iterator<TVertex> get() {
-        return IteratorUtils.of(new TinkerVertex(), new TinkerVertex());
+    public String toString() {
+        return StringFactory.makeSourceInstructionString(this);
     }
-
 }

@@ -16,42 +16,50 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor.pipes;
+package org.apache.tinkerpop.machine.util;
 
-import org.apache.tinkerpop.machine.function.InitialFunction;
-import org.apache.tinkerpop.machine.traverser.Traverser;
-import org.apache.tinkerpop.machine.traverser.TraverserFactory;
-import org.apache.tinkerpop.machine.util.EmptyIterator;
-
+import java.io.Serializable;
 import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class InitialStep<C, S> extends AbstractStep<C, S, S> {
+final class DoubleIterator<T> implements Iterator<T>, Serializable {
 
-    private Iterator<S> objects;
-    private final TraverserFactory<C> traverserFactory;
+    private T a;
+    private T b;
+    private char current = 'a';
 
-    InitialStep(final InitialFunction<C, S> initialFunction, final TraverserFactory<C> traverserFactory) {
-        super(EmptyStep.instance(), initialFunction);
-        this.objects = initialFunction.get();
-        this.traverserFactory = traverserFactory;
+    protected DoubleIterator(final T a, final T b) {
+        this.a = a;
+        this.b = b;
     }
 
     @Override
     public boolean hasNext() {
-        return this.objects.hasNext();
+        return this.current != 'x';
     }
 
     @Override
-    public Traverser<C, S> next() {
-        return this.traverserFactory.create(this.function, this.objects.next());
+    public void remove() {
+        if (this.current == 'b')
+            this.a = null;
+        else if (this.current == 'x')
+            this.b = null;
     }
 
     @Override
-    public void reset() {
-        this.objects = EmptyIterator.instance();
+    public T next() {
+        if (this.current == 'x')
+            throw FastNoSuchElementException.instance();
+        else {
+            if (this.current == 'a') {
+                this.current = 'b';
+                return this.a;
+            } else {
+                this.current = 'x';
+                return this.b;
+            }
+        }
     }
-
 }

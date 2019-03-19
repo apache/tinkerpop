@@ -16,42 +16,37 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor.pipes;
+package org.apache.tinkerpop.machine.function.reduce;
 
-import org.apache.tinkerpop.machine.function.InitialFunction;
+import org.apache.tinkerpop.machine.coefficient.Coefficient;
+import org.apache.tinkerpop.machine.function.AbstractFunction;
+import org.apache.tinkerpop.machine.function.ReduceFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
-import org.apache.tinkerpop.machine.traverser.TraverserFactory;
-import org.apache.tinkerpop.machine.util.EmptyIterator;
+import org.apache.tinkerpop.machine.util.NumberHelper;
 
-import java.util.Iterator;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class InitialStep<C, S> extends AbstractStep<C, S, S> {
+public class SumReduce<C, S extends Number> extends AbstractFunction<C> implements ReduceFunction<C, S, S> {
 
-    private Iterator<S> objects;
-    private final TraverserFactory<C> traverserFactory;
-
-    InitialStep(final InitialFunction<C, S> initialFunction, final TraverserFactory<C> traverserFactory) {
-        super(EmptyStep.instance(), initialFunction);
-        this.objects = initialFunction.get();
-        this.traverserFactory = traverserFactory;
+    public SumReduce(final Coefficient<C> coefficient, final Set<String> labels) {
+        super(coefficient, labels);
     }
 
     @Override
-    public boolean hasNext() {
-        return this.objects.hasNext();
+    public S apply(final Traverser<C, S> traverser, final S currentValue) {
+        return (S) NumberHelper.add(currentValue, NumberHelper.mul(traverser.object(), traverser.coefficient().count()));
     }
 
     @Override
-    public Traverser<C, S> next() {
-        return this.traverserFactory.create(this.function, this.objects.next());
+    public S merge(final S valueA, final S valueB) {
+        return (S) NumberHelper.add(valueA, valueB);
     }
 
     @Override
-    public void reset() {
-        this.objects = EmptyIterator.instance();
+    public S getInitialValue() {
+        return (S) NumberHelper.add(0, 0);
     }
-
 }

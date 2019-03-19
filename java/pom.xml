@@ -64,7 +64,6 @@ limitations under the License.
         <maven>3.3.9</maven>
     </prerequisites>
     <modules>
-        <module>core</module>
         <module>machine</module>
         <module>language</module>
     </modules>

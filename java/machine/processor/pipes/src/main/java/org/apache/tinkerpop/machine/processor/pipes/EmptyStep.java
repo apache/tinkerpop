@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.machine.processor.pipes;
 
 import org.apache.tinkerpop.machine.traverser.COPTraverser;
-import org.apache.tinkerpop.util.FastNoSuchElementException;
+import org.apache.tinkerpop.machine.util.FastNoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

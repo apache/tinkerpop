@@ -17,30 +17,17 @@ limitations under the License.
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>processor</artifactId>
+        <artifactId>machine</artifactId>
         <groupId>org.apache.tinkerpop</groupId>
         <version>4.0.0-SNAPSHOT</version>
     </parent>
-    <name>Apache TinkerPop :: Machine :: Pipes</name>
-    <artifactId>pipes</artifactId>
+    <name>Apache TinkerPop :: Machine :: Machine-Core</name>
+    <artifactId>machine-core</artifactId>
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>machine-core</artifactId>
+            <artifactId>core</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <!-- TEST -->
-        <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>gremlin</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>tinkergraph</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
     <build>

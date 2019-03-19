@@ -16,30 +16,39 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.tinkergraph.function.initial;
+package org.apache.tinkerpop.machine.function.filter;
 
-import org.apache.tinkerpop.machine.structure.data.TVertex;
+import org.apache.tinkerpop.machine.bytecode.Argument;
+import org.apache.tinkerpop.machine.bytecode.Pred;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
-import org.apache.tinkerpop.machine.function.InitialFunction;
-import org.apache.tinkerpop.machine.structure.tinkergraph.data.TinkerVertex;
-import org.apache.tinkerpop.machine.util.IteratorUtils;
+import org.apache.tinkerpop.machine.function.FilterFunction;
+import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.util.StringFactory;
 
-import java.util.Iterator;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VerticesFlatMap<C> extends AbstractFunction<C> implements InitialFunction<C, TVertex> {
+public final class IsFilter<C, S> extends AbstractFunction<C> implements FilterFunction<C, S> {
 
-    public VerticesFlatMap(final Coefficient<C> coefficient, final Set<String> labels) {
+    private final Pred predicate;
+    private final Argument<S> argument;
+
+    public IsFilter(final Coefficient<C> coefficient, final Set<String> labels, final Pred predicate, final Argument<S> argument) {
         super(coefficient, labels);
+        this.predicate = predicate;
+        this.argument = argument;
     }
 
     @Override
-    public Iterator<TVertex> get() {
-        return IteratorUtils.of(new TinkerVertex(), new TinkerVertex());
+    public boolean test(final Traverser<C, S> traverser) {
+        return this.predicate.test(traverser.object(), this.argument.getArg(traverser));
     }
 
+    @Override
+    public String toString() {
+        return StringFactory.makeFunctionString(this, this.predicate, this.argument);
+    }
 }

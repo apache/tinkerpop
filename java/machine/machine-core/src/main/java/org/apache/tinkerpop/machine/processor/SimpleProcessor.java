@@ -16,51 +16,51 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor.pipes;
+package org.apache.tinkerpop.machine.processor;
 
-import org.apache.tinkerpop.machine.function.FilterFunction;
+import org.apache.tinkerpop.machine.bytecode.Compilation;
+import org.apache.tinkerpop.machine.strategy.Strategy;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.util.FastNoSuchElementException;
+
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class FilterStep<C, S> extends AbstractStep<C, S, S> {
+public abstract class SimpleProcessor<C, S, E> implements Processor<C, S, E>, ProcessorFactory {
 
-    private final FilterFunction<C, S> filterFunction;
-    private Traverser<C, S> nextTraverser = null;
-
-    FilterStep(final Step<C, ?, S> previousStep, final FilterFunction<C, S> filterFunction) {
-        super(previousStep, filterFunction);
-        this.filterFunction = filterFunction;
-    }
+    protected Traverser<C, E> traverser = null;
 
     @Override
-    public Traverser<C, S> next() {
-        this.stageNextTraverser();
-        if (null == this.nextTraverser)
+    public Traverser<C, E> next() {
+        if (null == this.traverser)
             throw FastNoSuchElementException.instance();
         else {
-            final Traverser<C, S> traverser = this.nextTraverser;
-            this.nextTraverser = null;
-            return traverser;
+            final Traverser<C, E> temp = this.traverser;
+            this.traverser = null;
+            return temp;
         }
     }
 
     @Override
     public boolean hasNext() {
-        this.stageNextTraverser();
-        return null != this.nextTraverser;
-    }
-
-    private void stageNextTraverser() {
-        while (null == this.nextTraverser && this.previousStep.hasNext()) {
-            this.previousStep.next().filter(this.filterFunction).ifPresent(traverser -> this.nextTraverser = traverser);
-        }
+        return null != this.traverser;
     }
 
     @Override
     public void reset() {
-        this.nextTraverser = null;
+        this.traverser = null;
+    }
+
+    @Override
+    public <D, T, F> Processor<D, T, F> mint(final Compilation<D, T, F> compilation) {
+        return (Processor<D, T, F>) this;
+    }
+
+    @Override
+    public Set<Strategy<?>> getStrategies() {
+        return Collections.emptySet();
     }
 }

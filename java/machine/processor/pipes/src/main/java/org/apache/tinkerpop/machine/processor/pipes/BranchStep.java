@@ -21,8 +21,8 @@ package org.apache.tinkerpop.machine.processor.pipes;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.function.BranchFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
-import org.apache.tinkerpop.util.EmptyIterator;
-import org.apache.tinkerpop.util.MultiIterator;
+import org.apache.tinkerpop.machine.util.EmptyIterator;
+import org.apache.tinkerpop.machine.util.MultiIterator;
 
 import java.util.Iterator;
 import java.util.List;

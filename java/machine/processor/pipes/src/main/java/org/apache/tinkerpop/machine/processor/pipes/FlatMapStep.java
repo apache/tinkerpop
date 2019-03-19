@@ -20,7 +20,7 @@ package org.apache.tinkerpop.machine.processor.pipes;
 
 import org.apache.tinkerpop.machine.function.FlatMapFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
-import org.apache.tinkerpop.util.EmptyIterator;
+import org.apache.tinkerpop.machine.util.EmptyIterator;
 
 import java.util.Iterator;
 

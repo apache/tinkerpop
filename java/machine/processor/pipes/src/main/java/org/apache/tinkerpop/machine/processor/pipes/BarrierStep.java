@@ -23,8 +23,8 @@ import org.apache.tinkerpop.machine.processor.pipes.util.Barrier;
 import org.apache.tinkerpop.machine.processor.pipes.util.InMemoryBarrier;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
-import org.apache.tinkerpop.util.EmptyIterator;
-import org.apache.tinkerpop.util.IteratorUtils;
+import org.apache.tinkerpop.machine.util.EmptyIterator;
+import org.apache.tinkerpop.machine.util.IteratorUtils;
 
 import java.util.Iterator;
 

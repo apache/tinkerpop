@@ -16,42 +16,37 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor.pipes;
+package org.apache.tinkerpop.machine.function.filter;
 
-import org.apache.tinkerpop.machine.function.InitialFunction;
+import org.apache.tinkerpop.machine.bytecode.Compilation;
+import org.apache.tinkerpop.machine.coefficient.Coefficient;
+import org.apache.tinkerpop.machine.function.AbstractFunction;
+import org.apache.tinkerpop.machine.function.FilterFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
-import org.apache.tinkerpop.machine.traverser.TraverserFactory;
-import org.apache.tinkerpop.machine.util.EmptyIterator;
+import org.apache.tinkerpop.machine.util.StringFactory;
 
-import java.util.Iterator;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class InitialStep<C, S> extends AbstractStep<C, S, S> {
+public final class FilterFilter<C, S> extends AbstractFunction<C> implements FilterFunction<C, S> {
 
-    private Iterator<S> objects;
-    private final TraverserFactory<C> traverserFactory;
+    private final Compilation<C, S, ?> internalFilter;
 
-    InitialStep(final InitialFunction<C, S> initialFunction, final TraverserFactory<C> traverserFactory) {
-        super(EmptyStep.instance(), initialFunction);
-        this.objects = initialFunction.get();
-        this.traverserFactory = traverserFactory;
+    public FilterFilter(final Coefficient<C> coefficient, final Set<String> labels, final Compilation<C, S, ?> internalFilter) {
+        super(coefficient, labels);
+        this.internalFilter = internalFilter;
     }
 
     @Override
-    public boolean hasNext() {
-        return this.objects.hasNext();
+    public boolean test(final Traverser<C, S> traverser) {
+        return this.internalFilter.filterTraverser(traverser);
     }
 
     @Override
-    public Traverser<C, S> next() {
-        return this.traverserFactory.create(this.function, this.objects.next());
-    }
-
-    @Override
-    public void reset() {
-        this.objects = EmptyIterator.instance();
+    public String toString() {
+        return StringFactory.makeFunctionString(this, this.internalFilter);
     }
 
 }

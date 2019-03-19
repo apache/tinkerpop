@@ -16,42 +16,35 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor.pipes;
+package org.apache.tinkerpop.machine.function.map;
 
-import org.apache.tinkerpop.machine.function.InitialFunction;
+import org.apache.tinkerpop.machine.coefficient.Coefficient;
+import org.apache.tinkerpop.machine.function.AbstractFunction;
+import org.apache.tinkerpop.machine.function.MapFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
-import org.apache.tinkerpop.machine.traverser.TraverserFactory;
-import org.apache.tinkerpop.machine.util.EmptyIterator;
+import org.apache.tinkerpop.machine.util.StringFactory;
 
-import java.util.Iterator;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class InitialStep<C, S> extends AbstractStep<C, S, S> {
+public class ConstantMap<C, S, E> extends AbstractFunction<C> implements MapFunction<C, S, E> {
 
-    private Iterator<S> objects;
-    private final TraverserFactory<C> traverserFactory;
+    private final E constant;
 
-    InitialStep(final InitialFunction<C, S> initialFunction, final TraverserFactory<C> traverserFactory) {
-        super(EmptyStep.instance(), initialFunction);
-        this.objects = initialFunction.get();
-        this.traverserFactory = traverserFactory;
+    public ConstantMap(final Coefficient<C> coefficient, final Set<String> labels, final E constant) {
+        super(coefficient, labels);
+        this.constant = constant;
     }
 
     @Override
-    public boolean hasNext() {
-        return this.objects.hasNext();
+    public E apply(final Traverser<C, S> traverser) {
+        return this.constant;
     }
 
     @Override
-    public Traverser<C, S> next() {
-        return this.traverserFactory.create(this.function, this.objects.next());
+    public String toString() {
+        return StringFactory.makeFunctionString(this, this.constant);
     }
-
-    @Override
-    public void reset() {
-        this.objects = EmptyIterator.instance();
-    }
-
 }

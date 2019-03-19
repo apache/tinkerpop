@@ -22,7 +22,7 @@ import org.apache.tinkerpop.machine.function.ReduceFunction;
 import org.apache.tinkerpop.machine.processor.pipes.util.Reducer;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
-import org.apache.tinkerpop.util.FastNoSuchElementException;
+import org.apache.tinkerpop.machine.util.FastNoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

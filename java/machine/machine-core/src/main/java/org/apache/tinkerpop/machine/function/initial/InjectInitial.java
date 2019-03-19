@@ -16,42 +16,36 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor.pipes;
+package org.apache.tinkerpop.machine.function.initial;
 
+import org.apache.tinkerpop.machine.coefficient.Coefficient;
+import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.InitialFunction;
-import org.apache.tinkerpop.machine.traverser.Traverser;
-import org.apache.tinkerpop.machine.traverser.TraverserFactory;
-import org.apache.tinkerpop.machine.util.EmptyIterator;
+import org.apache.tinkerpop.machine.util.ArrayIterator;
+import org.apache.tinkerpop.machine.util.StringFactory;
 
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class InitialStep<C, S> extends AbstractStep<C, S, S> {
+public class InjectInitial<C, S> extends AbstractFunction<C> implements InitialFunction<C, S> {
 
-    private Iterator<S> objects;
-    private final TraverserFactory<C> traverserFactory;
+    private final S[] objects;
 
-    InitialStep(final InitialFunction<C, S> initialFunction, final TraverserFactory<C> traverserFactory) {
-        super(EmptyStep.instance(), initialFunction);
-        this.objects = initialFunction.get();
-        this.traverserFactory = traverserFactory;
+    public InjectInitial(final Coefficient<C> coefficient, final Set<String> labels, final S... objects) {
+        super(coefficient, labels);
+        this.objects = objects;
     }
 
     @Override
-    public boolean hasNext() {
-        return this.objects.hasNext();
+    public Iterator<S> get() {
+        return new ArrayIterator<>(this.objects);
     }
 
     @Override
-    public Traverser<C, S> next() {
-        return this.traverserFactory.create(this.function, this.objects.next());
+    public String toString() {
+        return StringFactory.makeFunctionString(this, this.objects);
     }
-
-    @Override
-    public void reset() {
-        this.objects = EmptyIterator.instance();
-    }
-
 }

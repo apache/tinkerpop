@@ -16,30 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.tinkergraph.function.initial;
+package org.apache.tinkerpop.machine.structure.data;
 
-import org.apache.tinkerpop.machine.structure.data.TVertex;
-import org.apache.tinkerpop.machine.coefficient.Coefficient;
-import org.apache.tinkerpop.machine.function.AbstractFunction;
-import org.apache.tinkerpop.machine.function.InitialFunction;
-import org.apache.tinkerpop.machine.structure.tinkergraph.data.TinkerVertex;
 import org.apache.tinkerpop.machine.util.IteratorUtils;
 
 import java.util.Iterator;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VerticesFlatMap<C> extends AbstractFunction<C> implements InitialFunction<C, TVertex> {
+public interface TEdge<V> extends TElement<V> {
 
-    public VerticesFlatMap(final Coefficient<C> coefficient, final Set<String> labels) {
-        super(coefficient, labels);
+    public TVertex<V> inVertex();
+
+    public TVertex<V> outVertex();
+
+    public default Iterator<TVertex<V>> bothVertices() {
+        return IteratorUtils.of(this.inVertex(), this.outVertex());
     }
-
-    @Override
-    public Iterator<TVertex> get() {
-        return IteratorUtils.of(new TinkerVertex(), new TinkerVertex());
-    }
-
 }

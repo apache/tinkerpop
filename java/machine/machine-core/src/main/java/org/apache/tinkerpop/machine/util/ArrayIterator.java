@@ -16,42 +16,41 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor.pipes;
+package org.apache.tinkerpop.machine.util;
 
-import org.apache.tinkerpop.machine.function.InitialFunction;
-import org.apache.tinkerpop.machine.traverser.Traverser;
-import org.apache.tinkerpop.machine.traverser.TraverserFactory;
-import org.apache.tinkerpop.machine.util.EmptyIterator;
-
+import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class InitialStep<C, S> extends AbstractStep<C, S, S> {
+public final class ArrayIterator<T> implements Iterator<T>, Serializable {
 
-    private Iterator<S> objects;
-    private final TraverserFactory<C> traverserFactory;
+    private final T[] array;
+    private int current = 0;
 
-    InitialStep(final InitialFunction<C, S> initialFunction, final TraverserFactory<C> traverserFactory) {
-        super(EmptyStep.instance(), initialFunction);
-        this.objects = initialFunction.get();
-        this.traverserFactory = traverserFactory;
+    public ArrayIterator(final T[] array) {
+        this.array = array;
     }
 
     @Override
     public boolean hasNext() {
-        return this.objects.hasNext();
+        return this.current < this.array.length;
     }
 
     @Override
-    public Traverser<C, S> next() {
-        return this.traverserFactory.create(this.function, this.objects.next());
+    public T next() {
+        if (this.hasNext()) {
+            this.current++;
+            return this.array[this.current - 1];
+        } else {
+            throw FastNoSuchElementException.instance();
+        }
     }
 
     @Override
-    public void reset() {
-        this.objects = EmptyIterator.instance();
+    public String toString() {
+        return Arrays.asList(array).toString();
     }
-
 }
