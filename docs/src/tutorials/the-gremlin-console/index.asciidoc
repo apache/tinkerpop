@@ -79,7 +79,7 @@ g = graph.traversal()        <2>
 ----
 
 <1> Creates the `Graph` instance that is the API to the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_the_graph_structure[structure] of the graph.
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graph-structure[structure] of the graph.
 <2> Creates the `TraversalSource` which is the API for
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#the-graph-process[processing] or
 link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/#_graph_traversal_staying_simple[traversing]

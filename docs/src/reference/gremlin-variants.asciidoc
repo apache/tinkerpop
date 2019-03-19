@@ -15,7 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[gremlin-drivers-variants]]
-[[gremlin-variants]]
 = Gremlin Drivers and Variants
 
 image::gremlin-house-of-mirrors.png[width=1024]
@@ -71,8 +70,6 @@ link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlin-language-variants/
 The following sections describe each language variant and driver that is officially TinkerPop a part of the project,
 provided more detailed information about usage, configuration and known limitations.
 
-[[connecting-via-remotegraph]]
-[[connecting-via-java]]
 [[gremlin-java]]
 == Gremlin-Java
 
@@ -562,7 +559,6 @@ NOTE: Using Maven, as shown in the `gremlin-archetype-dsl` module, makes develop
 straightforward in that it sets up appropriate paths to the generated code automatically.
 
 [[gremlin-archetypes]]
-[[java-application-examples]]
 === Application Examples
 
 The available link:https://maven.apache.org/guides/introduction/introduction-to-archetypes.html[Maven archetypes] are
@@ -956,7 +952,6 @@ to `Set` manually.
 does not support that at a language level. Gremlin that returns such results will need to be re-written to avoid that.
 
 [[gremlin-dotnet]]
-[[gremlin-DotNet]]
 == Gremlin.Net
 
 image:gremlin-dotnet-logo.png[width=371,float=right] Apache TinkerPop's Gremlin.Net implements Gremlin within the C#
@@ -1117,12 +1112,11 @@ and then it can be called from the application as follows:
 include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsDslTests.cs[tags=dslExamples]
 ----
 
-[[gremlin-dotnet-template]]
 [[dotnet-application-examples]]
 === Application Examples
 
 This link:https://docs.microsoft.com/dotnet/core/tools/custom-templates[dotnet template] helps getting started with
-<<gremlin-DotNet,Gremlin.Net>>. It creates a new C# console project that shows how to connect to a
+<<gremlin-dotnet,Gremlin.Net>>. It creates a new C# console project that shows how to connect to a
 <<gremlin-server,Gremlin Server>> with Gremlin.Net.
 
 You can install the template with the dotnet CLI tool:

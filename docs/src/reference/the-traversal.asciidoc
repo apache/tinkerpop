@@ -1152,7 +1152,6 @@ inject(1,2).map {it.get() + 1}.map {g.V(it.get()).next()}.values('name')
 
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#inject-E...-++[`inject(Object)`]
 
-[[_gremlin_i_o]]
 [[io-step]]
 === IO Step
 
@@ -1246,7 +1245,6 @@ disabling class registrations for Gryo, etc.) then construct the appropriate `Gr
 the `build()` method on their implementations and use it directly. It can be passed directly to the `IO.reader` or
 `IO.writer` options. Obviously, these are JVM based operations and thus not available to GLVs as portable features.
 
-[[_graphml_reader_writer]]
 [[graphml]]
 ==== GraphML
 
@@ -1278,7 +1276,6 @@ g.io("graph.xml").write().iterate()
 NOTE: If using GraphML generated from TinkerPop 2.x, read more about its incompatibilities in the
 link:http://tinkerpop.apache.org/docs/x.y.z/upgrade/#graphml-format[Upgrade Documentation].
 
-[[graphson-reader-writer]]
 [[graphson]]
 ==== GraphSON
 
@@ -1298,7 +1295,6 @@ g.io("graph.json").write().iterate()
 
 NOTE: Additional documentation for GraphSON can be found in the link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[IO Reference].
 
-[[gryo-reader-writer]]
 [[gryo]]
 ==== Gryo
 
@@ -1323,7 +1319,7 @@ g.io("graph.kryo").write().iterate()
 
 *Additional References*
 
-link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversalSource.html#io-String...-++[`io(String)`]
+link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversalSource.html#io-java.lang.String-++[`io(String)`]
 
 [[is-step]]
 === Is Step
@@ -2305,7 +2301,7 @@ g.V().hasLabel('person').
   valueMap('name', 'rank')
 ----
 
-[properties-step]]
+[[properties-step]]
 === Properties Step
 
 The `properties()`-step (*map*) extracts properties from an `Element` in the traversal stream.
@@ -3287,7 +3283,7 @@ g.V().hasLabel('person').properties('location').valueMap().with(WithOptions.toke
 
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#valueMap-java.lang.String...-++[`valueMap(String...)`]
 
-[values-step]]
+[[values-step]]
 === Values Step
 
 The `values()`-step (*map*) extracts the values of properties from an `Element` in the traversal stream.

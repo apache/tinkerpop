@@ -561,7 +561,7 @@ include::../../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Dev/Pr
 ==== RemoteConnection Implementations
 
 A `RemoteConnection` is an interface that is important for usage on traversal sources configured using the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-remotegraph[withRemote()] option. A `Traversal`
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-drivers[withRemote()] option. A `Traversal`
 that is generated from that source will apply a `RemoteStrategy` which will inject a `RemoteStep` to its end. That
 step will then send the `Bytecode` of the `Traversal` over the `RemoteConnection` to get the results that it will
 iterate.

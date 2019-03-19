@@ -1049,7 +1049,7 @@ method for processing script evaluation requests.
 [[traversalopprocessor]]
 ===== TraversalOpProcessor
 
-The `TraversalOpProcessor` provides a way to use <<connecting-via-remotegraph,RemoteGraph>>.
+The `TraversalOpProcessor` provides a way to use <<connecting-via-drivers,RemoteGraph>>.
 
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
@@ -1727,7 +1727,7 @@ Gremlin Server which might influence its interpretation.
 
 To begin to discuss these nuances, first consider the method of making requests to Gremlin Server: script or bytecode.
 For scripts, that will mean that users are sending string representation of Gremlin to the server directly through a
-driver over websockets or through the HTTP. For bytecode, users will be utilize a <<gremlin-variants, Gremlin GLV>>
+driver over websockets or through the HTTP. For bytecode, users will be utilize a <<gremlin-drivers-variants, Gremlin GLV>>
 which will construct bytecode for them and submit the request to the server upon iteration of their traversal.
 
 In either case, it is important to also consider the method of "detachment". Detachment refers to the manner in which
@@ -1877,7 +1877,7 @@ Cluster cluster = Cluster.open();  <1>
 Client client = cluster.connect("sessionName"); <2>
 ----
 
-<1> Opens a reference to `localhost` as <<connecting-via-java,previously shown>>.
+<1> Opens a reference to `localhost` as <<gremlin-java,previously shown>>.
 <2> Creates a `SessionedClient` given the configuration options of the Cluster. The `connect()` method is given a
 `String` value that becomes the unique name of the session. It is often best to simply use a `UUID` to represent
 the session.

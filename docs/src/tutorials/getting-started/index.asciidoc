@@ -235,7 +235,7 @@ static import that is often seen in Gremlin comes from `org.apache.tinkerpop.gre
 which allows for the creation of link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graph-traversal-steps[anonymous traversals].
 You can find the analogous variations of `T` and `__` for other Gremlin languages by viewing the "Common Imports"
 sections for the programming language you are interested in in the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-variants[Reference Documentation].
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Reference Documentation].
 
 Second, don't forget that you are working with TinkerGraph which allows for identifier assignment. That is _not_ the
 case with most graph databases.
@@ -369,7 +369,7 @@ earlier).
 
 NOTE: On the JVM, the fully qualified name for `P` is `org.apache.tinkerpop.gremlin.process.traversal.P`. You can find
 the analogous variation of `P` for other Gremlin languages by viewing the "Common Imports" sections for the programming
-language you are interested in in the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-variants[Reference Documentation].
+language you are interested in in the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Reference Documentation].
 
 If we wanted to ask Gremlin the average age of "vadas" and "marko" we could use the
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#mean-step[mean()] step as follows:
@@ -570,7 +570,7 @@ link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[Greml
 examples were Groovy-based and oriented toward the JVM. Gremlin, however, is far from being a Java-only library.
 TinkerPop natively supports a number of different programming languages, making it possible to execute all of the
 examples presented in this tutorial with little modification. These different language implementations of Gremlin are
-referred to as link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-variants[Gremlin Language Variants] and
+referred to as link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Gremlin Language Variants] and
 they help make Gremlin more accessible and easier to use for those who do not use Java as their primary programming
 language.
 
