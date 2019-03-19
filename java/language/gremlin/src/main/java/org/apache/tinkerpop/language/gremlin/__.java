@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.language.gremlin;
 
-import org.apache.tinkerpop.machine.bytecode.Bytecode;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -30,7 +28,7 @@ public class __ {
     }
 
     private static <C, S> Traversal<C, S, S> start() {
-        return new Traversal<>(new Bytecode<>());
+        return new Traversal<>();
     }
 
     public static <C, S> Traversal<C, S, S> c(final C coefficient) {

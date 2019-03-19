@@ -42,18 +42,21 @@ public class Traversal<C, S, E> implements Iterator<E> {
     protected final Bytecode<C> bytecode;
     private Compilation<C, S, E> compilation;
     private Coefficient<C> currentCoefficient;
-    //
+
+    // iteration helpers
     private long lastCount = 0L;
     private E lastObject = null;
 
+    // used by __
+    Traversal() {
+        this.bytecode = new Bytecode<>();
+        this.currentCoefficient = BytecodeUtil.getCoefficient(this.bytecode).orElse((Coefficient<C>) LongCoefficient.create()); // TODO: this will cause __ problems
+    }
+
+    // used by TraversalSource
     Traversal(final Coefficient<C> unity, final Bytecode<C> bytecode) {
         this.bytecode = bytecode;
         this.currentCoefficient = unity;
-    }
-
-    Traversal(final Bytecode<C> bytecode) {
-        this.bytecode = bytecode;
-        this.currentCoefficient = BytecodeUtil.getCoefficient(this.bytecode).orElse((Coefficient<C>) LongCoefficient.create()); // TODO: this will cause __ problems
     }
 
     public Traversal<C, S, E> as(final String label) {
@@ -71,8 +74,8 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return this;
     }
 
-    public <R> Traversal<C, S, E> by(final R byObject) {
-        this.bytecode.lastInstruction().addArg(byObject);
+    public Traversal<C, S, E> by(final String byString) {
+        this.bytecode.lastInstruction().addArg(byString);
         return this;
     }
 

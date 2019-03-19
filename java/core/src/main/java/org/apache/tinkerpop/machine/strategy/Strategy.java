@@ -52,9 +52,9 @@ public interface Strategy<S extends Strategy> extends Serializable, Comparable<C
     }
 
     /**
-     * The type of traversal strategy -- i.e. {@link DecorationStrategy}, {@link OptimizationStrategy}, {@link FinalizationStrategy}, or {@link VerificationStrategy}.
+     * The type of strategy.
      *
-     * @return the traversal strategy category class
+     * @return the strategy category class
      */
     public default Class<S> getStrategyCategory() {
         return (Class) Strategy.class;

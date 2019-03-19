@@ -27,4 +27,14 @@ public abstract class AbstractStrategy<S extends Strategy> implements Strategy<S
     public String toString() {
         return this.getClass().getSimpleName();
     }
+
+    @Override
+    public boolean equals(final Object other) {
+        return other.getClass().equals(this.getClass());
+    }
+
+    @Override
+    public int hashCode() {
+        return this.getClass().hashCode();
+    }
 }

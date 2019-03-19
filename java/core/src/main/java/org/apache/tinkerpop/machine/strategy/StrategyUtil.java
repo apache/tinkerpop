@@ -32,7 +32,11 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StrategyUtil {
+public final class StrategyUtil {
+
+    private StrategyUtil() {
+        // static instance
+    }
 
     private final static List<Class<? extends Strategy>> STRATEGY_CATEGORIES = List.of(
             Strategy.DecorationStrategy.class,
@@ -50,7 +54,6 @@ public class StrategyUtil {
             strategyClasses.add(s.getClass());
             MultiMap.put(strategiesByCategory, s.getStrategyCategory(), s.getClass());
         });
-
 
         //Initialize all the dependencies
         strategies.forEach(strategy -> {
