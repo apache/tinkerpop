@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.beam;
+package org.apache.tinkerpop.machine.processor.beam;
 
 import org.apache.tinkerpop.language.gremlin.Gremlin;
 import org.apache.tinkerpop.language.gremlin.P;
