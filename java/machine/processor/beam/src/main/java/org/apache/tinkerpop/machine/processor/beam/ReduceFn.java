@@ -24,7 +24,7 @@ import org.apache.beam.sdk.coders.CoderRegistry;
 import org.apache.beam.sdk.transforms.Combine;
 import org.apache.tinkerpop.machine.processor.beam.serialization.ReducerCoder;
 import org.apache.tinkerpop.machine.processor.beam.serialization.TraverserCoder;
-import org.apache.tinkerpop.machine.processor.beam.sideeffect.BasicReducer;
+import org.apache.tinkerpop.machine.processor.beam.sideeffect.InMemoryReducer;
 import org.apache.tinkerpop.machine.function.ReduceFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
@@ -32,7 +32,7 @@ import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReduceFn<C, S, E> extends Combine.CombineFn<Traverser<C, S>, BasicReducer<C, S, E>, Traverser<C, E>> implements Fn {
+public class ReduceFn<C, S, E> extends Combine.CombineFn<Traverser<C, S>, InMemoryReducer<C, S, E>, Traverser<C, E>> implements Fn {
 
     private final ReduceFunction<C, S, E> reduceFunction;
     private final TraverserFactory<C> traverserFactory;
@@ -44,35 +44,35 @@ public class ReduceFn<C, S, E> extends Combine.CombineFn<Traverser<C, S>, BasicR
     }
 
     @Override
-    public BasicReducer<C, S, E> createAccumulator() {
-        return new BasicReducer<>(this.reduceFunction, this.traverserFactory);
+    public InMemoryReducer<C, S, E> createAccumulator() {
+        return new InMemoryReducer<>(this.reduceFunction, this.traverserFactory);
     }
 
     @Override
-    public BasicReducer<C, S, E> addInput(final BasicReducer<C, S, E> accumulator, final Traverser<C, S> input) {
+    public InMemoryReducer<C, S, E> addInput(final InMemoryReducer<C, S, E> accumulator, final Traverser<C, S> input) {
         accumulator.addInput(input);
         return accumulator;
     }
 
     @Override
-    public BasicReducer<C, S, E> mergeAccumulators(Iterable<BasicReducer<C, S, E>> accumulators) {
+    public InMemoryReducer<C, S, E> mergeAccumulators(Iterable<InMemoryReducer<C, S, E>> accumulators) {
         E value = this.reduceFunction.getInitialValue();
-        for (final BasicReducer accumulator : accumulators) {
+        for (final InMemoryReducer accumulator : accumulators) {
             value = this.reduceFunction.merge(value, (E) accumulator.extractOutput().object());
         }
 
-        final BasicReducer<C, S, E> accumulator = new BasicReducer<>(this.reduceFunction, this.traverserFactory);
+        final InMemoryReducer<C, S, E> accumulator = new InMemoryReducer<>(this.reduceFunction, this.traverserFactory);
         accumulator.setValue(value);
         return accumulator;
     }
 
     @Override
-    public Traverser<C, E> extractOutput(final BasicReducer<C, S, E> accumulator) {
+    public Traverser<C, E> extractOutput(final InMemoryReducer<C, S, E> accumulator) {
         return accumulator.extractOutput().reduce(this.reduceFunction);
     }
 
     @Override
-    public Coder<BasicReducer<C, S, E>> getAccumulatorCoder(final CoderRegistry registry, final Coder<Traverser<C, S>> inputCoder) throws CannotProvideCoderException {
+    public Coder<InMemoryReducer<C, S, E>> getAccumulatorCoder(final CoderRegistry registry, final Coder<Traverser<C, S>> inputCoder) throws CannotProvideCoderException {
         return new ReducerCoder<>();
     }
 

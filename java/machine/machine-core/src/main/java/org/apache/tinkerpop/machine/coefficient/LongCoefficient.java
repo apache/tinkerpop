@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.machine.coefficient;
 
+import org.apache.tinkerpop.machine.util.StringFactory;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -80,7 +82,7 @@ public class LongCoefficient implements Coefficient<Long> {
 
     @Override
     public String toString() {
-        return Long.toString(this.value);
+        return StringFactory.makeCoefficientString(this);
     }
 
     @Override

@@ -20,7 +20,7 @@ package org.apache.tinkerpop.machine.processor.beam.serialization;
 
 import org.apache.beam.sdk.coders.Coder;
 import org.apache.beam.sdk.coders.CoderException;
-import org.apache.tinkerpop.machine.processor.beam.sideeffect.BasicReducer;
+import org.apache.tinkerpop.machine.processor.beam.sideeffect.InMemoryReducer;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,19 +33,19 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReducerCoder<C, S, E> extends Coder<BasicReducer<C, S, E>> {
+public class ReducerCoder<C, S, E> extends Coder<InMemoryReducer<C, S, E>> {
 
     @Override
-    public void encode(final BasicReducer<C, S, E> value, final OutputStream outStream) throws CoderException, IOException {
+    public void encode(final InMemoryReducer<C, S, E> value, final OutputStream outStream) throws CoderException, IOException {
         ObjectOutputStream outputStream = new ObjectOutputStream(outStream);
         outputStream.writeObject(value);
     }
 
     @Override
-    public BasicReducer<C, S, E> decode(InputStream inStream) throws CoderException, IOException {
+    public InMemoryReducer<C, S, E> decode(InputStream inStream) throws CoderException, IOException {
         try {
             ObjectInputStream inputStream = new ObjectInputStream(inStream);
-            return (BasicReducer<C, S, E>) inputStream.readObject();
+            return (InMemoryReducer<C, S, E>) inputStream.readObject();
         } catch (final ClassNotFoundException e) {
             throw new IOException(e.getMessage(), e);
         }

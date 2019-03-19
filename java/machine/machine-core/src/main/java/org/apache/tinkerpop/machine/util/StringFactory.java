@@ -20,6 +20,7 @@ package org.apache.tinkerpop.machine.util;
 
 import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.bytecode.SourceInstruction;
+import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
@@ -36,10 +37,14 @@ public final class StringFactory {
         // do nothing
     }
 
+    public static String makeCoefficientString(final Coefficient<?> coefficient) {
+        return "|" + coefficient.value() + "|";
+    }
+
     public static String makeInstructionString(final Instruction<?> instruction) {
         String name = instruction.op();
         if (!instruction.coefficient().isUnity())
-            name = "|" + instruction.coefficient().value() + "|" + name;
+            name = instruction.coefficient() + name;
         if (instruction.args().length > 0)
             name = name + "(";
         for (final Object object : instruction.args()) {
@@ -75,7 +80,7 @@ public final class StringFactory {
 
         String name = function.getClass().getSimpleName();
         if (!function.coefficient().isUnity())
-            name = "|" + function.coefficient().value() + "|" + name;
+            name = function.coefficient().value() + name;
         if (arguments.size() > 0)
             name = name + "(";
         for (final Object object : arguments) {
@@ -91,6 +96,6 @@ public final class StringFactory {
     }
 
     public static String makeTraverserString(final Traverser<?, ?> traverser) {
-        return "|" + traverser.coefficient() + "|" + traverser.object();
+        return traverser.coefficient().toString() + traverser.object();
     }
 }

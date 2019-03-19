@@ -52,6 +52,10 @@ public final class CoreCompiler implements BytecodeCompiler {
 
     private static final CoreCompiler INSTANCE = new CoreCompiler();
 
+    private CoreCompiler() {
+        // static instance
+    }
+
     public static final CoreCompiler instance() {
         return INSTANCE;
     }

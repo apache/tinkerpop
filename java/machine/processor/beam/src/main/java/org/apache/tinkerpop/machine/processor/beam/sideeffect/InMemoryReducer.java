@@ -20,8 +20,8 @@ package org.apache.tinkerpop.machine.processor.beam.sideeffect;
 
 import org.apache.beam.sdk.coders.DefaultCoder;
 import org.apache.beam.sdk.transforms.Combine;
-import org.apache.tinkerpop.machine.processor.beam.serialization.ReducerCoder;
 import org.apache.tinkerpop.machine.function.ReduceFunction;
+import org.apache.tinkerpop.machine.processor.beam.serialization.ReducerCoder;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
@@ -31,13 +31,13 @@ import java.io.Serializable;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @DefaultCoder(ReducerCoder.class)
-public class BasicReducer<C, S, E> implements Combine.AccumulatingCombineFn.Accumulator<Traverser<C, S>, BasicReducer<C, S, E>, Traverser<C, E>>, Serializable {
+public class InMemoryReducer<C, S, E> implements Combine.AccumulatingCombineFn.Accumulator<Traverser<C, S>, InMemoryReducer<C, S, E>, Traverser<C, E>>, Serializable {
 
     private E value;
     private final ReduceFunction<C, S, E> reduceFunction;
     private final TraverserFactory<C> traverserFactory;
 
-    public BasicReducer(final ReduceFunction<C, S, E> reduceFunction, final TraverserFactory<C> traverserFactory) {
+    public InMemoryReducer(final ReduceFunction<C, S, E> reduceFunction, final TraverserFactory<C> traverserFactory) {
         super();
         this.value = reduceFunction.getInitialValue();
         this.reduceFunction = reduceFunction;
@@ -54,7 +54,7 @@ public class BasicReducer<C, S, E> implements Combine.AccumulatingCombineFn.Accu
     }
 
     @Override
-    public void mergeAccumulator(final BasicReducer<C, S, E> other) {
+    public void mergeAccumulator(final InMemoryReducer<C, S, E> other) {
         this.value = this.reduceFunction.apply(this.traverserFactory.create(this.reduceFunction, (S) this.value), other.value);
     }
 

@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ExecutionPlanner implements Pipeline.PipelineVisitor {
+public final class ExecutionPlanner implements Pipeline.PipelineVisitor {
 
     private final List<String> streamFunctionStrings = new ArrayList<>();
 

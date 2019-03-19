@@ -57,7 +57,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TopologyUtil {
+public final class TopologyUtil {
 
     public static <C, S, E> PCollection<Traverser<C, E>> compile(final PCollection<Traverser<C, S>> source, final Compilation<C, S, E> compilation) {
         final TraverserFactory<C> traverserFactory = compilation.getTraverserFactory();
