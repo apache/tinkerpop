@@ -200,7 +200,8 @@ then only do this step for 3.3.x (tp33 branch), and update the site for all rele
 .. Update `index.html`.
 .. Update link:http://tinkerpop.apache.org/downloads.html[Downloads] page, when moving "Current Releases" to "Archived
 Releases" recall that the hyperlink must change to point to version in the link:https://archive.apache.org/dist/tinkerpop/[Apache Archives]
-("contributions" content will be added later).
+("contributions" content will be added after VOTE and prior to promotion of the release so that the commit counts are
+as accurate as possible and the release tags are present).
 .. Preview changes locally with `bin/generate-home.sh` then commit changes to git.
 . `mvn versions:set -DnewVersion=xx.yy.zz -DgenerateBackupPoms=false` to update project files to reference the non-SNAPSHOT version
 . `pushd gremlin-console/bin; ln -fs ../target/apache-tinkerpop-gremlin-console-xx.yy.zz-standalone/bin/gremlin.sh gremlin.sh; popd`
