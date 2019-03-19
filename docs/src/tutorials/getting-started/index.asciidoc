@@ -552,7 +552,7 @@ the line and stores those vertices in the `fromVertex` and `toVertex` variables 
 
 NOTE: While this is a tab-delimited structure, this same pattern can be applied
 to any data source you require and Groovy tends to have nice libraries that can help making working with data
-link:http://thinkaurelius.com/2013/02/04/polyglot-persistence-and-query-with-gremlin/[quite enjoyable].
+link:https://thinkaurelius.wordpress.com/2013/02/04/polyglot-persistence-and-query-with-gremlin/[quite enjoyable].
 
 WARNING: Take care if using a `Graph` implementation that supports
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#transactions[transactions]. As TinkerGraph does not, there is
@@ -560,7 +560,7 @@ no need to `commit()`.  If your `Graph` does support transactions, intermediate 
 applied.
 
 To load larger data sets you should read about the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#bulkloadervertexprogram[BulkLoaderVertexProgram] (BLVP), which
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#clonevertexprogram[BulkLoaderVertexProgram] (BLVP), which
 provides a generalized method for loading graphs of virtually any size.
 
 === Gremlin in Other Programming Languages
