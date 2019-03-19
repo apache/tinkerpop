@@ -31,12 +31,13 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class BlueprintsCompiler implements BytecodeCompiler {
+
     @Override
     public <C> CFunction<C> compile(final Instruction<C> instruction) {
         final String op = instruction.op();
         final Coefficient<C> coefficient = instruction.coefficient();
         final Set<String> labels = instruction.labels();
-        if (op.equals(Symbols.TG_V))
+        if (op.equals(Symbols.BP_V))
             return new VerticesFlatMap<>(coefficient, labels);
         else
             return null;
@@ -44,7 +45,7 @@ public class BlueprintsCompiler implements BytecodeCompiler {
 
     @Override
     public FunctionType getFunctionType(final String op) {
-        return op.equals(Symbols.TG_V) ? FunctionType.INITIAL : null;
+        return op.equals(Symbols.BP_V) ? FunctionType.INITIAL : null;
     }
 
     public static class Symbols {
@@ -53,6 +54,6 @@ public class BlueprintsCompiler implements BytecodeCompiler {
             // static instance
         }
 
-        public static final String TG_V = "tg:V";
+        public static final String BP_V = "bp:V";
     }
 }

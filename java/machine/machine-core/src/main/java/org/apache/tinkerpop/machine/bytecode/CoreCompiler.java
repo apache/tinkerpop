@@ -173,6 +173,7 @@ public final class CoreCompiler implements BytecodeCompiler {
         public static final String CONSTANT = "constant";
         // [count]
         public static final String COUNT = "count";
+        public static final String EXPLAIN = "explain";
         // [filter, [bc]]
         public static final String FILTER = "filter";
         // [groupCount, ?[bc]]

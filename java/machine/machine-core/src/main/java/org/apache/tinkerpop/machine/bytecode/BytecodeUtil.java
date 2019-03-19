@@ -46,7 +46,7 @@ public final class BytecodeUtil {
         }
     }
 
-    private static <C> void strategize(final Bytecode<C> bytecode, Strategy strategy) {
+    public static <C> void strategize(final Bytecode<C> bytecode, Strategy strategy) {
         strategy.apply(bytecode);
         for (final Instruction<C> instruction : bytecode.getInstructions()) {
             for (Object arg : instruction.args()) {
@@ -56,7 +56,7 @@ public final class BytecodeUtil {
         }
     }
 
-    private static <C> Set<Strategy<?>> getStrategies(final Bytecode<C> bytecode) {
+    public static <C> Set<Strategy<?>> getStrategies(final Bytecode<C> bytecode) {
         try {
             final Set<Strategy<?>> strategies = new HashSet<>();
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
@@ -97,7 +97,7 @@ public final class BytecodeUtil {
         }
     }
 
-    static <C> Optional<ProcessorFactory> getProcessorFactory(final Bytecode<C> bytecode) {
+    public static <C> Optional<ProcessorFactory> getProcessorFactory(final Bytecode<C> bytecode) {
         try {
             ProcessorFactory processor = null;
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
@@ -111,7 +111,7 @@ public final class BytecodeUtil {
         }
     }
 
-    static <C> Optional<StructureFactory> getStructureFactory(final Bytecode<C> bytecode) {
+    public static <C> Optional<StructureFactory> getStructureFactory(final Bytecode<C> bytecode) {
         try {
             StructureFactory structure = null;
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {

@@ -42,6 +42,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     protected final Bytecode<C> bytecode;
     private Compilation<C, S, E> compilation;
     private Coefficient<C> currentCoefficient;
+    private boolean locked = false; // TODO: when a traversal has been submitted, we need to make sure new modulations can't happen.
 
     // iteration helpers
     private long lastCount = 0L;
@@ -112,6 +113,11 @@ public class Traversal<C, S, E> implements Iterator<E> {
     public Traversal<C, S, E> emit(final Traversal<C, ?, ?> emitTraversal) {
         TraversalUtil.insertRepeatInstruction(this.bytecode, this.currentCoefficient, 'e', emitTraversal.bytecode);
         return this;
+    }
+
+    public Traversal<C, S, String> explain() {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.EXPLAIN);
+        return (Traversal) this;
     }
 
     public Traversal<C, S, E> filter(final Traversal<C, E, ?> filterTraversal) {
@@ -293,7 +299,6 @@ public class Traversal<C, S, E> implements Iterator<E> {
 
     @Override
     public String toString() {
-        this.prepareTraversal();
-        return this.compilation.getProcessor().toString();
+        return this.bytecode.toString();
     }
 }

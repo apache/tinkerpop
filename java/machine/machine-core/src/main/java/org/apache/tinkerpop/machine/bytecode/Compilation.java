@@ -19,12 +19,14 @@
 package org.apache.tinkerpop.machine.bytecode;
 
 import org.apache.tinkerpop.machine.function.CFunction;
+import org.apache.tinkerpop.machine.processor.ExplainProcessor;
 import org.apache.tinkerpop.machine.processor.FilterProcessor;
 import org.apache.tinkerpop.machine.processor.LoopsProcessor;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.structure.EmptyStructure;
 import org.apache.tinkerpop.machine.structure.StructureFactory;
+import org.apache.tinkerpop.machine.traverser.COTraverserFactory;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
@@ -48,11 +50,19 @@ public final class Compilation<C, S, E> implements Serializable {
     private transient Processor<C, S, E> processor;
 
     public Compilation(final Bytecode<C> bytecode) {
-        BytecodeUtil.strategize(bytecode);
-        this.structureFactory = BytecodeUtil.getStructureFactory(bytecode).orElse(EmptyStructure.instance());
-        this.processorFactory = BytecodeUtil.getProcessorFactory(bytecode).get();
-        this.traverserFactory = BytecodeUtil.getTraverserFactory(bytecode).get();
-        this.functions = CompositeCompiler.compile(bytecode, Arrays.asList(CoreCompiler.instance(), this.structureFactory.getCompiler().orElse(new CoreCompiler())));
+        if (bytecode.lastInstruction().op().equals(CoreCompiler.Symbols.EXPLAIN)) {
+            this.processorFactory = new ExplainProcessor(bytecode);
+            this.traverserFactory = null;
+            this.functions = Collections.emptyList();
+            this.structureFactory = null;
+
+        } else {
+            BytecodeUtil.strategize(bytecode);
+            this.structureFactory = BytecodeUtil.getStructureFactory(bytecode).orElse(EmptyStructure.instance());
+            this.processorFactory = BytecodeUtil.getProcessorFactory(bytecode).get();
+            this.traverserFactory = BytecodeUtil.getTraverserFactory(bytecode).get();
+            this.functions = CompositeCompiler.compile(bytecode, Arrays.asList(CoreCompiler.instance(), this.structureFactory.getCompiler().orElse(new CoreCompiler())));
+        }
     }
 
     public Compilation(final ProcessorFactory processorFactory) {
@@ -116,17 +126,17 @@ public final class Compilation<C, S, E> implements Serializable {
         return this.processor.hasNext() ? Optional.of(this.processor.next()) : Optional.empty();
     }
 
-    @Override
-    public String toString() {
-        return this.functions.toString();
-    }
-
     public List<CFunction<C>> getFunctions() {
         return this.functions;
     }
 
     public TraverserFactory<C> getTraverserFactory() {
         return this.traverserFactory;
+    }
+
+    @Override
+    public String toString() {
+        return this.functions.toString();
     }
 
     ////////
