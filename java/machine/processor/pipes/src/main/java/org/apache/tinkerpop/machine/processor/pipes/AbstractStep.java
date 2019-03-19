@@ -35,6 +35,6 @@ abstract class AbstractStep<C, S, E> implements Step<C, S, E> {
 
     @Override
     public String toString() {
-        return this.function.toString();
+        return this.getClass().getSimpleName() + "[" + this.function.toString() + "]";
     }
 }

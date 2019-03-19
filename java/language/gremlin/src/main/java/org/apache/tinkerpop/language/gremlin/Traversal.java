@@ -25,6 +25,7 @@ import org.apache.tinkerpop.machine.bytecode.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.bytecode.Pred;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
+import org.apache.tinkerpop.machine.strategy.decoration.ExplainStrategy;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.path.Path;
 
@@ -116,6 +117,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, String> explain() {
+        this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, ExplainStrategy.class);
         this.bytecode.addInstruction(this.currentCoefficient, Symbols.EXPLAIN);
         return (Traversal) this;
     }
