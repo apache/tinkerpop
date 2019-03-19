@@ -291,7 +291,7 @@ This release also includes changes from <<release-3-3-4, 3.3.4>> and <<release-3
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-mozart.png[width=185]
 
 [[release-3-3-6]]
-=== TinkerPop 3.3.6 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.3.6 (Release Date: March 18, 2019)
 
 * Docker images use user `gremlin` instead of `root`
 * Added a new `ResponseStatusCode` for client-side serialization errors.
@@ -320,6 +320,46 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Implemented `EarlyLimitStrategy` which is supposed to significantly reduce backend operations for queries that use `range()`.
 * Reduced chance of hash collisions in `Bytecode` and its inner classes.
 * Added `Symbol.asyncIterator` member to the `Traversal` class to provide support for `await ... of` loops (async iterables).
+
+==== Bugs
+
+* TINKERPOP-2081 PersistedOutputRDD materialises rdd lazily with Spark 2.x
+* TINKERPOP-2091 Wrong/Missing feature requirements in StructureStandardTestSuite
+* TINKERPOP-2094 Gremlin Driver Cluster Builder serializer method does not use mimeType as suggested
+* TINKERPOP-2095 GroupStep looks for irrelevant barrier steps
+* TINKERPOP-2096 gremlinpython: AttributeError when connection is closed before result is received
+* TINKERPOP-2100 coalesce() creating unexpected results when used with order()
+* TINKERPOP-2105 Gremlin-Python connection not returned back to the pool on exception from gremlin server
+* TINKERPOP-2113 P.Within() doesn't work when given a List argument
+
+==== Improvements
+
+* TINKERPOP-1889 JavaScript GLV: Use heartbeat to prevent connection timeout
+* TINKERPOP-2010 Generate jsdoc for gremlin-javascript
+* TINKERPOP-2013 Process tests that are auto-ignored stink
+* TINKERPOP-2018 Generate API docs for Gremlin.Net
+* TINKERPOP-2038 Make groovy script cache size configurable
+* TINKERPOP-2050 Add a :bytecode command to Gremlin Console
+* TINKERPOP-2062 Add Traversal class to CoreImports
+* TINKERPOP-2065 Optimize iterate() for remote traversals
+* TINKERPOP-2067 Allow getting raw data from Gremlin.Net.Driver.IGremlinClient
+* TINKERPOP-2068 Bump Jackson Databind 2.9.7
+* TINKERPOP-2069 Document configuration of Gremlin.Net
+* TINKERPOP-2070 gremlin-javascript: Introduce Connection representation
+* TINKERPOP-2071 gremlin-python: the graphson deserializer for g:Set should return a python set
+* TINKERPOP-2073 Generate tabs for static code blocks
+* TINKERPOP-2074 Ensure that only NuGet packages for the current version are pushed
+* TINKERPOP-2077 VertexProgram.Builder should have a default create() method with no Graph
+* TINKERPOP-2078 Hide use of EmptyGraph or RemoteGraph behind a more unified method for TraversalSource construction
+* TINKERPOP-2084 For remote requests in console display the remote stack trace
+* TINKERPOP-2092 Deprecate default GraphSON serializer fields
+* TINKERPOP-2097 Create a DriverRemoteConnection with an initialized Client
+* TINKERPOP-2102 Deprecate static fields on TraversalSource related to remoting
+* TINKERPOP-2106 When gremlin executes timeout, throw TimeoutException instead of TraversalInterruptedException/InterruptedIOException
+* TINKERPOP-2110 Allow Connection on Different Path (from /gremlin)
+* TINKERPOP-2114 Document common Gremlin anti-patterns
+* TINKERPOP-2118 Bump to Groovy 2.4.16
+* TINKERPOP-2121 Bump Jackson Databind 2.9.8
 
 [[release-3-3-5]]
 === TinkerPop 3.3.5 (Release Date: January 2, 2019)
