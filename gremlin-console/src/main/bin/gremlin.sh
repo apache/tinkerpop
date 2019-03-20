@@ -22,20 +22,20 @@
 set -e
 set -u
 
-USER_DIR=`pwd`
+USER_DIR=$(pwd)
 
-cd $(dirname $0)
-DIR=`pwd`
+cd "$(dirname "$0")"
+DIR=$(pwd)
 
-SCRIPT_NAME=`basename $0`
+SCRIPT_NAME="$(basename "$0")"
 while [ -h "${SCRIPT_NAME}" ]; do
   SOURCE="$(readlink "${SCRIPT_NAME}")"
   DIR="$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
-  cd ${DIR}
+  cd "${DIR}"
 done
 
 cd ..
-SYSTEM_EXT_DIR="`pwd`/ext"
+SYSTEM_EXT_DIR="$(pwd)/ext"
 
 JAVA_OPTIONS=${JAVA_OPTIONS:-}
 
@@ -43,11 +43,11 @@ if [ ! -z "${JAVA_OPTIONS}" ]; then
   USER_EXT_DIR=$(grep -o '\-Dtinkerpop.ext=\(\([^"][^ ]*\)\|\("[^"]*"\)\)' <<< "${JAVA_OPTIONS}" | cut -f2 -d '=' | xargs -0 echo)
   if [ ! -z "${USER_EXT_DIR}" -a ! -d "${USER_EXT_DIR}" ]; then
     mkdir -p "${USER_EXT_DIR}"
-    cp -R ${SYSTEM_EXT_DIR}/* ${USER_EXT_DIR}/
+    cp -R "${SYSTEM_EXT_DIR}/*" "${USER_EXT_DIR}/"
   fi
 fi
 
-case `uname` in
+case $(uname) in
   CYGWIN*)
     CP="${CP:-}";$( echo lib/*.jar . | sed 's/ /;/g')
     ;;
@@ -103,4 +103,4 @@ if [ -n "$SCRIPT_DEBUG" ]; then
 fi
 
 # Start the JVM, execute the application, and return its exit code
-exec $JAVA $JAVA_OPTIONS org.apache.tinkerpop.gremlin.console.Console "$@"
+exec $JAVA "$JAVA_OPTIONS" org.apache.tinkerpop.gremlin.console.Console "$@"
