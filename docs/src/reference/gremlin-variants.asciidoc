@@ -14,6 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
+
+anchor:gremlin-variants[]
 [[gremlin-drivers-variants]]
 = Gremlin Drivers and Variants
 
@@ -70,6 +72,8 @@ link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlin-language-variants/
 The following sections describe each language variant and driver that is officially TinkerPop a part of the project,
 provided more detailed information about usage, configuration and known limitations.
 
+anchor:connecting-via-remotegraph[]
+anchor:connecting-via-java[]
 [[gremlin-java]]
 == Gremlin-Java
 
@@ -558,6 +562,7 @@ social.persons("marko").knows("josh");
 NOTE: Using Maven, as shown in the `gremlin-archetype-dsl` module, makes developing DSLs with the annotation processor
 straightforward in that it sets up appropriate paths to the generated code automatically.
 
+anchor:java-application-examples[]
 [[gremlin-archetypes]]
 === Application Examples
 
@@ -951,6 +956,7 @@ to `Set` manually.
 * Gremlin is capable of returning `Dictionary` results that use non-hashable keys (e.g. Dictionary as a key) and Python
 does not support that at a language level. Gremlin that returns such results will need to be re-written to avoid that.
 
+anchor:gremlin-DotNet[]
 [[gremlin-dotnet]]
 == Gremlin.Net
 
@@ -1112,6 +1118,7 @@ and then it can be called from the application as follows:
 include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsDslTests.cs[tags=dslExamples]
 ----
 
+anchor:gremlin-dotnet-template[]
 [[dotnet-application-examples]]
 === Application Examples
 
