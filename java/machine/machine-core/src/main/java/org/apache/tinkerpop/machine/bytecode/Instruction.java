@@ -73,6 +73,22 @@ public final class Instruction<C> {
     }
 
     @Override
+    public int hashCode() {
+        return this.coefficient.hashCode() ^ this.op.hashCode() ^ Arrays.hashCode(this.args) ^ this.labels.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (!(object instanceof Instruction))
+            return false;
+        final Instruction other = (Instruction) object;
+        return this.op.equals(other.op) &&
+                Arrays.equals(this.args, other.args) &&
+                this.coefficient.equals(other.coefficient) &&
+                this.labels.equals(other.labels);
+    }
+
+    @Override
     public String toString() {
         return StringFactory.makeInstructionString(this);
     }

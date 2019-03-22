@@ -20,6 +20,8 @@ package org.apache.tinkerpop.machine.bytecode;
 
 import org.apache.tinkerpop.machine.util.StringFactory;
 
+import java.util.Arrays;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -28,7 +30,7 @@ public final class SourceInstruction {
     private final String op;
     private final Object[] args;
 
-    public SourceInstruction(final String op, final Object[] args) {
+    public SourceInstruction(final String op, final Object... args) {
         this.op = op;
         this.args = args;
     }
@@ -39,6 +41,19 @@ public final class SourceInstruction {
 
     public Object[] args() {
         return this.args;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.op.hashCode() ^ Arrays.hashCode(this.args);
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (!(object instanceof SourceInstruction))
+            return false;
+        final SourceInstruction other = (SourceInstruction) object;
+        return this.op.equals(other.op) && Arrays.equals(this.args, other.args);
     }
 
     @Override

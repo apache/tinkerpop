@@ -26,10 +26,10 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class Bytecode<C> implements Cloneable {
+public final class Bytecode<C> implements Cloneable { // todo: serializable?
 
-    private List<Instruction<C>> instructions = new ArrayList<>();
     private List<SourceInstruction> sourceInstructions = new ArrayList<>();
+    private List<Instruction<C>> instructions = new ArrayList<>();
 
     public void addSourceInstruction(final String op, final Object... args) {
         this.sourceInstructions.add(new SourceInstruction(op, args));
@@ -57,6 +57,18 @@ public final class Bytecode<C> implements Cloneable {
 
     public Instruction<C> lastInstruction() {
         return this.instructions.get(this.instructions.size() - 1);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.sourceInstructions.hashCode() ^ this.instructions.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof Bytecode &&
+                this.instructions.equals(((Bytecode) object).instructions) &&
+                this.sourceInstructions.equals(((Bytecode) object).sourceInstructions);
     }
 
     @Override
