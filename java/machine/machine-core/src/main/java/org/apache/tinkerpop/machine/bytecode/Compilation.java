@@ -127,7 +127,7 @@ public final class Compilation<C, S, E> implements Serializable {
     @Override
     public String toString() {
         return this.functions.toString();
-    }
+    } // TODO: functions need access to compilations for nesting
 
     ////////
 

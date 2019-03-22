@@ -52,6 +52,6 @@ final class SourceStep<C, S> implements Step<C, S, S> {
 
     @Override
     public String toString() {
-        return "Source";
+        return SourceStep.class.getSimpleName();
     }
 }
