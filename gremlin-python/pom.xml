@@ -601,7 +601,7 @@ limitations under the License.
                                     <target>
                                         <exec dir="${project.build.directory}/python-packaged" executable="env/bin/pip"
                                               failonerror="true">
-                                            <arg line="install twine"/>
+                                            <arg line="install twine==1.12.1"/>
                                         </exec>
                                         <!-- to use the pypi test environment add: -r pypitest -->
                                         <exec dir="${project.build.directory}/python-packaged" executable="env/bin/twine"
