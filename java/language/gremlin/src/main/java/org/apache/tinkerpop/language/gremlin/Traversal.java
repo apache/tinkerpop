@@ -22,6 +22,7 @@ import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.bytecode.CoreCompiler.Symbols;
+import org.apache.tinkerpop.machine.bytecode.Oper;
 import org.apache.tinkerpop.machine.bytecode.Pred;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
@@ -86,12 +87,12 @@ public class Traversal<C, S, E> implements Iterator<E> {
         return this;
     }
 
-    public <R> Traversal<C, S, R> choose(final Traversal<C, E, ?> predicate, final Traversal<C, S, R> trueTraversal, final Traversal<C, S, R> falseTraversal) {
+    public <R> Traversal<C, S, R> choose(final Traversal<C, E, ?> predicate, final Traversal<C, E, R> trueTraversal, final Traversal<C, E, R> falseTraversal) {
         this.bytecode.addInstruction(this.currentCoefficient, Symbols.BRANCH, predicate.bytecode, trueTraversal.bytecode, Symbols.DEFAULT, falseTraversal.bytecode);
         return (Traversal) this;
     }
 
-    public <R> Traversal<C, S, R> choose(final Traversal<C, E, ?> predicate, final Traversal<C, S, R> trueTraversal) {
+    public <R> Traversal<C, S, R> choose(final Traversal<C, E, ?> predicate, final Traversal<C, E, R> trueTraversal) {
         this.bytecode.addInstruction(this.currentCoefficient, Symbols.BRANCH, predicate.bytecode, trueTraversal.bytecode);
         return (Traversal) this;
     }
@@ -102,7 +103,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, Long> count() {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.COUNT);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.REDUCE, "traverser::count", Oper.sum.name(), 0L);
         return (Traversal) this;
     }
 
@@ -173,17 +174,17 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, E> is(final E object) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IS, Pred.eq.name(), object);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, "traverser::object", Pred.eq.name(), object);
         return this;
     }
 
     public Traversal<C, S, E> is(final Traversal<C, E, E> objectTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IS, Pred.eq.name(), objectTraversal.bytecode);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, "traverser::object", Pred.eq.name(), objectTraversal.bytecode);
         return this;
     }
 
     public Traversal<C, S, E> is(final P<E> predicate) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IS, predicate.type().name(), TraversalUtil.tryToGetBytecode(predicate.object()));
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, "traverser::object", predicate.type().name(), TraversalUtil.tryToGetBytecode(predicate.object()));
         return this;
     }
 
@@ -198,7 +199,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, Integer> loops() {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.LOOPS);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.MAP, "traverser:loops");
         return (Traversal) this;
     }
 
@@ -226,7 +227,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public <R extends Number> Traversal<C, S, R> sum() {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.SUM);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.REDUCE, "traverser::object", Oper.sum.name(), 0);
         return (Traversal) this;
     }
 
@@ -236,7 +237,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public <R> Traversal<C, S, R> unfold() {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.UNFOLD);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FLATMAP, "traverser::object");
         return (Traversal) this;
     }
 

@@ -16,27 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.function.map;
+package org.apache.tinkerpop.machine.bytecode;
 
-import org.apache.tinkerpop.machine.coefficient.Coefficient;
-import org.apache.tinkerpop.machine.function.AbstractFunction;
-import org.apache.tinkerpop.machine.function.MapFunction;
-import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.util.NumberHelper;
 
-import java.util.Set;
+import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class LoopsMap<C, S> extends AbstractFunction<C> implements MapFunction<C, S, Integer> {
+public enum Oper implements BinaryOperator<Object> {
 
-    public LoopsMap(final Coefficient<C> coefficient, final Set<String> labels) {
-        super(coefficient, labels);
+    sum {
+        @Override
+        public Object apply(Object o, Object o2) {
+            return NumberHelper.add((Number) o, (Number) o2);
+        }
+    };
+
+    public static Oper valueOf(final Object object) {
+        return Oper.valueOf(object.toString());
     }
-
-    @Override
-    public Integer apply(final Traverser<C, S> traverser) {
-        return traverser.loops();
-    }
-
 }
+
+
+

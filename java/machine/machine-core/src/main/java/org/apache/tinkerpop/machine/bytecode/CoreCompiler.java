@@ -27,16 +27,13 @@ import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
 import org.apache.tinkerpop.machine.function.filter.FilterFilter;
 import org.apache.tinkerpop.machine.function.filter.HasKeyFilter;
 import org.apache.tinkerpop.machine.function.filter.HasKeyValueFilter;
-import org.apache.tinkerpop.machine.function.filter.IsFilter;
-import org.apache.tinkerpop.machine.function.flatmap.UnfoldFlatMap;
+import org.apache.tinkerpop.machine.function.flatmap.FlatmapFlatmap;
 import org.apache.tinkerpop.machine.function.initial.InjectInitial;
 import org.apache.tinkerpop.machine.function.map.IncrMap;
-import org.apache.tinkerpop.machine.function.map.LoopsMap;
 import org.apache.tinkerpop.machine.function.map.MapMap;
 import org.apache.tinkerpop.machine.function.map.PathMap;
-import org.apache.tinkerpop.machine.function.reduce.CountReduce;
 import org.apache.tinkerpop.machine.function.reduce.GroupCountReduce;
-import org.apache.tinkerpop.machine.function.reduce.SumReduce;
+import org.apache.tinkerpop.machine.function.reduce.ReduceReduce;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,22 +57,18 @@ public final class CoreCompiler implements BytecodeCompiler {
     private static final Map<String, FunctionType> OP_TYPES = new HashMap<>() {{
         put(Symbols.BARRIER, FunctionType.BARRIER);
         put(Symbols.BRANCH, FunctionType.BRANCH);
-        put(Symbols.COUNT, FunctionType.REDUCE);
         put(Symbols.FILTER, FunctionType.FILTER);
+        put(Symbols.FLATMAP, FunctionType.FLATMAP);
         put(Symbols.GROUP_COUNT, FunctionType.REDUCE);
         put(Symbols.HAS_KEY, FunctionType.FILTER);
         put(Symbols.HAS_KEY_VALUE, FunctionType.FILTER);
         put(Symbols.INCR, FunctionType.MAP);
         put(Symbols.INITIAL, FunctionType.INITIAL);
-        put(Symbols.IS, FunctionType.FILTER);
         put(Symbols.JOIN, FunctionType.BARRIER);
-        put(Symbols.LOOPS, FunctionType.MAP);
         put(Symbols.MAP, FunctionType.MAP);
         put(Symbols.PATH, FunctionType.MAP);
+        put(Symbols.REDUCE, FunctionType.REDUCE);
         put(Symbols.REPEAT, FunctionType.BRANCH);
-        put(Symbols.SUM, FunctionType.REDUCE);
-        put(Symbols.UNFOLD, FunctionType.FLATMAP);
-        put(Symbols.UNION, FunctionType.BRANCH);
         put(Symbols.V, FunctionType.FLATMAP);
     }};
 
@@ -89,10 +82,12 @@ public final class CoreCompiler implements BytecodeCompiler {
                 return new StallBarrier<>(coefficient, labels, 1000);
             case Symbols.BRANCH:
                 return new BranchBranch<>(coefficient, labels, BranchBranch.makeBranches(instruction.args()));
-            case Symbols.COUNT:
-                return new CountReduce<>(coefficient, labels);
             case Symbols.FILTER:
-                return new FilterFilter<>(coefficient, labels, Argument.create(instruction.args()[0]));
+                return instruction.args().length == 1 ?
+                        new FilterFilter<>(coefficient, labels, Argument.create(instruction.args()[0]), null, null) :
+                        new FilterFilter<>(coefficient, labels, Argument.create(instruction.args()[0]), Pred.valueOf(instruction.args()[1]), Argument.create(instruction.args()[2]));
+            case Symbols.FLATMAP:
+                return new FlatmapFlatmap<>(coefficient, labels, Argument.create(instruction.args()[0]));
             case Symbols.GROUP_COUNT:
                 return new GroupCountReduce<>(coefficient, labels, Compilation.compileOrNull(0, instruction.args()));
             case Symbols.HAS_KEY:
@@ -101,24 +96,18 @@ public final class CoreCompiler implements BytecodeCompiler {
                 return new HasKeyValueFilter<>(coefficient, labels, Argument.create(instruction.args()[0]), Argument.create(instruction.args()[1]));
             case Symbols.INITIAL:
                 return new InjectInitial<>(coefficient, labels, instruction.args());
-            case Symbols.IS:
-                return new IsFilter<>(coefficient, labels, Pred.valueOf(instruction.args()[0]), Argument.create(instruction.args()[1]));
             case Symbols.INCR:
                 return new IncrMap<>(coefficient, labels);
             case Symbols.JOIN:
                 return new JoinBarrier<>(coefficient, labels, (Symbols.Tokens) instruction.args()[0], Compilation.compileOne(instruction.args()[1]), Argument.create(instruction.args()[2]));
-            case Symbols.LOOPS:
-                return new LoopsMap<>(coefficient, labels);
             case Symbols.MAP:
                 return new MapMap<>(coefficient, labels, Argument.create(instruction.args()[0]));
             case Symbols.PATH:
                 return new PathMap<>(coefficient, labels, Compilation.compile(instruction.args()));
+            case Symbols.REDUCE:
+                return new ReduceReduce<>(coefficient, labels, Argument.create(instruction.args()[0]), Oper.valueOf(instruction.args()[1]), instruction.args()[2]);
             case Symbols.REPEAT:
                 return new RepeatBranch<>(coefficient, labels, Compilation.repeatCompile(instruction.args()));
-            case Symbols.SUM:
-                return new SumReduce<>(coefficient, labels);
-            case Symbols.UNFOLD:
-                return new UnfoldFlatMap<>(coefficient, labels);
             default:
                 return null;
         }
@@ -161,11 +150,10 @@ public final class CoreCompiler implements BytecodeCompiler {
         // INSTRUCTION OPS
         public static final String BARRIER = "barrier";
         public static final String BRANCH = "branch";
-        // [count]
-        public static final String COUNT = "count";
         public static final String EXPLAIN = "explain";
         // [filter, [bc]]
         public static final String FILTER = "filter";
+        public static final String FLATMAP = "flatmap";
         // [groupCount, ?[bc]]
         public static final String GROUP_COUNT = "groupCount";
         // [hasKey, pred, o | [bc]]
@@ -174,22 +162,13 @@ public final class CoreCompiler implements BytecodeCompiler {
         // [incr]
         public static final String INCR = "incr";
         public static final String INITIAL = "initial";
-        // [is, pred, o | [bc]]
-        public static final String IS = "is";
         public static final String JOIN = "join";
-        // [loops]
-        public static final String LOOPS = "loops";
         // [map, [bc]]
         public static final String MAP = "map";
         public static final String PATH = "path";
+        public static final String REDUCE = "reduce";
         // [repeat, (char, [bc]), ?(char, [bc]), ?(char, [bc])]
         public static final String REPEAT = "repeat";
-        // [sum]
-        public static final String SUM = "sum";
-        // [unfold]
-        public static final String UNFOLD = "unfold";
-        // [union, [bc]*]
-        public static final String UNION = "union";
         // [V]
         public static final String V = "V";
 

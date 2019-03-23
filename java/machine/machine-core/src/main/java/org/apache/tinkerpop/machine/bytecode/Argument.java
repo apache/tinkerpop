@@ -25,35 +25,19 @@ import java.io.Serializable;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class Argument<E> implements Serializable {
+public interface Argument<E> extends Serializable {
 
-    private final E arg;
-    private final boolean isPrimitive;
+    public <C, S> E mapArg(final Traverser<C, S> traverser);
 
-    private Argument(final Object arg) {
-        this.isPrimitive = !(arg instanceof Bytecode);
-        this.arg = this.isPrimitive ? (E) arg : (E) Compilation.compileOne(arg);
+    public <C, S> boolean filterArg(final Traverser<C, S> traverser);
+
+    public static <C, S, E> Argument<E> create(final Object arg) {
+        if (arg instanceof Bytecode)
+            return new BytecodeArgument<>((Bytecode<C>) arg);
+        else if (arg instanceof String && ((String) arg).contains("::"))
+            return new MethodArgument<>((String) arg);
+        else
+            return new ConstantArgument<>((E) arg);
     }
 
-    private <C, S> Compilation<C, S, E> getCompilation() {
-        return (Compilation<C, S, E>) this.arg;
-    }
-
-
-    public final <C, S> E mapArg(final Traverser<C, S> traverser) {
-        return this.isPrimitive ? this.arg : this.<C, S>getCompilation().mapTraverser(traverser).object();
-    }
-
-    public final <C, S> boolean filterArg(final Traverser<C, S> traverser) {
-        return this.isPrimitive ? (Boolean) this.arg : this.<C, S>getCompilation().filterTraverser(traverser);
-    }
-
-    public static <E> Argument<E> create(final Object arg) {
-        return new Argument<>(arg);
-    }
-
-    @Override
-    public String toString() {
-        return this.arg.toString();
-    }
 }

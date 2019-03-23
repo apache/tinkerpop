@@ -79,11 +79,11 @@ public class PipesTest {
         System.out.println(traversal);
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
-        traversal = g.inject(1L).repeat(incr()).emit(__.constant(true)).until(__.is(5L));
+        /*traversal = g.inject(1L).repeat(incr()).emit(__.constant(true)).until(__.<Long, Long>loops().is(P.gt(5)));
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());
-        System.out.println("\n----------\n");
+        System.out.println("\n----------\n");*/
         traversal = g.inject(1L).emit(__.constant(true)).until(__.is(5L)).repeat(incr());
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
@@ -104,7 +104,7 @@ public class PipesTest {
         System.out.println(traversal);
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
-        traversal = g.inject(8L).choose(__.is(7L), __.incr(), __.<Long>incr().incr());
+        traversal = g.inject(Arrays.asList(7L, 8L, 9L)).<Long>unfold().choose(__.is(7L), __.incr(), __.<Long>incr().incr());
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

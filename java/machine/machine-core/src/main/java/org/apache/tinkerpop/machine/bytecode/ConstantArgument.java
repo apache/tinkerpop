@@ -16,35 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.function.map;
+package org.apache.tinkerpop.machine.bytecode;
 
-import org.apache.tinkerpop.machine.coefficient.Coefficient;
-import org.apache.tinkerpop.machine.function.AbstractFunction;
-import org.apache.tinkerpop.machine.function.MapFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
-import org.apache.tinkerpop.machine.util.StringFactory;
-
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ConstantMap<C, S, E> extends AbstractFunction<C> implements MapFunction<C, S, E> {
+public class ConstantArgument<E> implements Argument<E> {
 
     private final E constant;
 
-    public ConstantMap(final Coefficient<C> coefficient, final Set<String> labels, final E constant) {
-        super(coefficient, labels);
+    public ConstantArgument(final E constant) {
         this.constant = constant;
     }
 
     @Override
-    public E apply(final Traverser<C, S> traverser) {
+    public <C, S> E mapArg(final Traverser<C, S> traverser) {
         return this.constant;
     }
 
     @Override
-    public String toString() {
-        return StringFactory.makeFunctionString(this, this.constant);
+    public <C, S> boolean filterArg(final Traverser<C, S> traverser) {
+        return (Boolean) this.constant;
     }
 }

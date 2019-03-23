@@ -16,39 +16,45 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.function.filter;
+package org.apache.tinkerpop.machine.function.reduce;
 
 import org.apache.tinkerpop.machine.bytecode.Argument;
-import org.apache.tinkerpop.machine.bytecode.Pred;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
-import org.apache.tinkerpop.machine.function.FilterFunction;
+import org.apache.tinkerpop.machine.function.ReduceFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
-import org.apache.tinkerpop.machine.util.StringFactory;
 
 import java.util.Set;
+import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class IsFilter<C, S> extends AbstractFunction<C> implements FilterFunction<C, S> {
+public class ReduceReduce<C, S> extends AbstractFunction<C> implements ReduceFunction<C, S, S> {
 
-    private final Pred predicate;
     private final Argument<S> argument;
+    private final BinaryOperator<S> operator;
+    private final S initialValue;
 
-    public IsFilter(final Coefficient<C> coefficient, final Set<String> labels, final Pred predicate, final Argument<S> argument) {
+    public ReduceReduce(final Coefficient<C> coefficient, final Set<String> labels, final Argument<S> argument, final BinaryOperator<S> operator, final S initialValue) {
         super(coefficient, labels);
-        this.predicate = predicate;
         this.argument = argument;
+        this.operator = operator;
+        this.initialValue = initialValue;
     }
 
     @Override
-    public boolean test(final Traverser<C, S> traverser) {
-        return this.predicate.test(traverser.object(), this.argument.mapArg(traverser));
+    public S apply(final Traverser<C, S> traverser, final S currentValue) {
+        return this.operator.apply(this.argument.mapArg(traverser), currentValue);
     }
 
     @Override
-    public String toString() {
-        return StringFactory.makeFunctionString(this, this.predicate, this.argument);
+    public S merge(final S valueA, final S valueB) {
+        return this.operator.apply(valueA, valueB);
+    }
+
+    @Override
+    public S getInitialValue() {
+        return this.initialValue;
     }
 }

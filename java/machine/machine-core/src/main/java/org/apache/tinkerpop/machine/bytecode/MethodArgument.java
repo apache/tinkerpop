@@ -16,37 +16,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.function.reduce;
+package org.apache.tinkerpop.machine.bytecode;
 
-import org.apache.tinkerpop.machine.coefficient.Coefficient;
-import org.apache.tinkerpop.machine.function.AbstractFunction;
-import org.apache.tinkerpop.machine.function.ReduceFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
-import org.apache.tinkerpop.machine.util.NumberHelper;
-
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SumReduce<C, S extends Number> extends AbstractFunction<C> implements ReduceFunction<C, S, S> {
+public class MethodArgument<E> implements Argument<E> {
 
-    public SumReduce(final Coefficient<C> coefficient, final Set<String> labels) {
-        super(coefficient, labels);
+    private final String method;
+
+    public MethodArgument(final String method) {
+        this.method = method.split("::")[1];
     }
 
     @Override
-    public S apply(final Traverser<C, S> traverser, final S currentValue) {
-        return (S) NumberHelper.add(currentValue, NumberHelper.mul(traverser.object(), traverser.coefficient().count()));
+    public <C, S> E mapArg(final Traverser<C, S> traverser) {
+        if (this.method.equals("object"))
+            return (E) traverser.object();
+        else if (this.method.equals("count"))
+            return (E) traverser.coefficient().count();
+        else
+            throw new RuntimeException("Unknown method");
     }
 
     @Override
-    public S merge(final S valueA, final S valueB) {
-        return (S) NumberHelper.add(valueA, valueB);
-    }
-
-    @Override
-    public S getInitialValue() {
-        return (S) NumberHelper.add(0, 0);
+    public <C, S> boolean filterArg(final Traverser<C, S> traverser) {
+        return false;
     }
 }

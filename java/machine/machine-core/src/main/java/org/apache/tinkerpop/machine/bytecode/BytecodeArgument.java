@@ -16,36 +16,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.function.reduce;
+package org.apache.tinkerpop.machine.bytecode;
 
-import org.apache.tinkerpop.machine.coefficient.Coefficient;
-import org.apache.tinkerpop.machine.function.AbstractFunction;
-import org.apache.tinkerpop.machine.function.ReduceFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
-
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class CountReduce<C, S> extends AbstractFunction<C> implements ReduceFunction<C, S, Long> {
+public class BytecodeArgument<E> implements Argument<E> {
 
-    public CountReduce(final Coefficient<C> coefficient, final Set<String> labels) {
-        super(coefficient, labels);
+    private final Compilation compilation;
+
+    public BytecodeArgument(final Bytecode arg) {
+        this.compilation = Compilation.compileOne(arg);
     }
 
     @Override
-    public Long apply(final Traverser<C, S> traverser, final Long currentValue) {
-        return currentValue + traverser.coefficient().count();
+    public <C, S> E mapArg(final Traverser<C, S> traverser) {
+        return (E) this.compilation.mapTraverser(traverser).object();
     }
 
     @Override
-    public Long merge(final Long valueA, final Long valueB) {
-        return valueA + valueB;
+    public <C, S> boolean filterArg(final Traverser<C, S> traverser) {
+        return this.compilation.filterTraverser(traverser);
     }
 
     @Override
-    public Long getInitialValue() {
-        return 0L;
+    public String toString() {
+        return this.compilation.toString();
     }
 }
