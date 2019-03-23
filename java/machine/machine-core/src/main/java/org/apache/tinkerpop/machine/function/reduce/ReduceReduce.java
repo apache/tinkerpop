@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.machine.function.reduce;
 
-import org.apache.tinkerpop.machine.bytecode.Argument;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.ReduceFunction;
@@ -32,20 +31,18 @@ import java.util.function.BinaryOperator;
  */
 public class ReduceReduce<C, S> extends AbstractFunction<C> implements ReduceFunction<C, S, S> {
 
-    private final Argument<S> argument;
     private final BinaryOperator<S> operator;
     private final S initialValue;
 
-    public ReduceReduce(final Coefficient<C> coefficient, final Set<String> labels, final Argument<S> argument, final BinaryOperator<S> operator, final S initialValue) {
+    public ReduceReduce(final Coefficient<C> coefficient, final Set<String> labels, final BinaryOperator<S> operator, final S initialValue) {
         super(coefficient, labels);
-        this.argument = argument;
         this.operator = operator;
         this.initialValue = initialValue;
     }
 
     @Override
     public S apply(final Traverser<C, S> traverser, final S currentValue) {
-        return this.operator.apply(this.argument.mapArg(traverser), currentValue);
+        return this.operator.apply(traverser.object(), currentValue);
     }
 
     @Override

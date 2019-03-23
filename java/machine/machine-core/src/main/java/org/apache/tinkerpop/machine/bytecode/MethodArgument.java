@@ -20,15 +20,23 @@ package org.apache.tinkerpop.machine.bytecode;
 
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
+import java.util.Arrays;
+import java.util.Map;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class MethodArgument<E> implements Argument<E> {
 
     private final String method;
+    private final Argument[] arguments;
 
-    public MethodArgument(final String method) {
+    public MethodArgument(final String method, final Object... arguments) {
         this.method = method.split("::")[1];
+        this.arguments = new Argument[arguments.length];
+        for (int i = 0; i < arguments.length; i++) {
+            this.arguments[i] = Argument.create(arguments[i]);
+        }
     }
 
     @Override
@@ -37,6 +45,10 @@ public class MethodArgument<E> implements Argument<E> {
             return (E) traverser.object();
         else if (this.method.equals("count"))
             return (E) traverser.coefficient().count();
+        else if (this.method.equals("keys"))
+            return (E) ((Map) traverser.object()).keySet();
+        else if (this.method.equals("get"))
+            return (E) ((Map) traverser.object()).get(this.arguments[0].mapArg(traverser));
         else
             throw new RuntimeException("Unknown method");
     }
@@ -44,5 +56,10 @@ public class MethodArgument<E> implements Argument<E> {
     @Override
     public <C, S> boolean filterArg(final Traverser<C, S> traverser) {
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return this.method + "(" + Arrays.toString(this.arguments) + ")";
     }
 }

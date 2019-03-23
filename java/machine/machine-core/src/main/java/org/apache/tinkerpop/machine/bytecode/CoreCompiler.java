@@ -25,8 +25,6 @@ import org.apache.tinkerpop.machine.function.barrier.StallBarrier;
 import org.apache.tinkerpop.machine.function.branch.BranchBranch;
 import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
 import org.apache.tinkerpop.machine.function.filter.FilterFilter;
-import org.apache.tinkerpop.machine.function.filter.HasKeyFilter;
-import org.apache.tinkerpop.machine.function.filter.HasKeyValueFilter;
 import org.apache.tinkerpop.machine.function.flatmap.FlatmapFlatmap;
 import org.apache.tinkerpop.machine.function.initial.InjectInitial;
 import org.apache.tinkerpop.machine.function.map.IncrMap;
@@ -35,6 +33,7 @@ import org.apache.tinkerpop.machine.function.map.PathMap;
 import org.apache.tinkerpop.machine.function.reduce.GroupCountReduce;
 import org.apache.tinkerpop.machine.function.reduce.ReduceReduce;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -60,8 +59,6 @@ public final class CoreCompiler implements BytecodeCompiler {
         put(Symbols.FILTER, FunctionType.FILTER);
         put(Symbols.FLATMAP, FunctionType.FLATMAP);
         put(Symbols.GROUP_COUNT, FunctionType.REDUCE);
-        put(Symbols.HAS_KEY, FunctionType.FILTER);
-        put(Symbols.HAS_KEY_VALUE, FunctionType.FILTER);
         put(Symbols.INCR, FunctionType.MAP);
         put(Symbols.INITIAL, FunctionType.INITIAL);
         put(Symbols.JOIN, FunctionType.BARRIER);
@@ -84,16 +81,12 @@ public final class CoreCompiler implements BytecodeCompiler {
                 return new BranchBranch<>(coefficient, labels, BranchBranch.makeBranches(instruction.args()));
             case Symbols.FILTER:
                 return instruction.args().length == 1 ?
-                        new FilterFilter<>(coefficient, labels, Argument.create(instruction.args()[0]), null, null) :
-                        new FilterFilter<>(coefficient, labels, Argument.create(instruction.args()[0]), Pred.valueOf(instruction.args()[1]), Argument.create(instruction.args()[2]));
+                        new FilterFilter<>(coefficient, labels, null, Argument.create(instruction.args())) :
+                        new FilterFilter<>(coefficient, labels, Pred.valueOf(instruction.args()[0]), Argument.create(Arrays.copyOfRange(instruction.args(), 1, instruction.args().length)));
             case Symbols.FLATMAP:
-                return new FlatmapFlatmap<>(coefficient, labels, Argument.create(instruction.args()[0]));
+                return new FlatmapFlatmap<>(coefficient, labels, Argument.create(instruction.args()));
             case Symbols.GROUP_COUNT:
                 return new GroupCountReduce<>(coefficient, labels, Compilation.compileOrNull(0, instruction.args()));
-            case Symbols.HAS_KEY:
-                return new HasKeyFilter<>(coefficient, labels, Pred.valueOf(instruction.args()[0]), Argument.create(instruction.args()[1]));
-            case Symbols.HAS_KEY_VALUE:
-                return new HasKeyValueFilter<>(coefficient, labels, Argument.create(instruction.args()[0]), Argument.create(instruction.args()[1]));
             case Symbols.INITIAL:
                 return new InjectInitial<>(coefficient, labels, instruction.args());
             case Symbols.INCR:
@@ -101,11 +94,11 @@ public final class CoreCompiler implements BytecodeCompiler {
             case Symbols.JOIN:
                 return new JoinBarrier<>(coefficient, labels, (Symbols.Tokens) instruction.args()[0], Compilation.compileOne(instruction.args()[1]), Argument.create(instruction.args()[2]));
             case Symbols.MAP:
-                return new MapMap<>(coefficient, labels, Argument.create(instruction.args()[0]));
+                return new MapMap<>(coefficient, labels, Argument.create(instruction.args()));
             case Symbols.PATH:
                 return new PathMap<>(coefficient, labels, Compilation.compile(instruction.args()));
             case Symbols.REDUCE:
-                return new ReduceReduce<>(coefficient, labels, Argument.create(instruction.args()[0]), Oper.valueOf(instruction.args()[1]), instruction.args()[2]);
+                return new ReduceReduce<>(coefficient, labels, Oper.valueOf(instruction.args()[0]), instruction.args()[1]);
             case Symbols.REPEAT:
                 return new RepeatBranch<>(coefficient, labels, Compilation.repeatCompile(instruction.args()));
             default:
@@ -156,9 +149,6 @@ public final class CoreCompiler implements BytecodeCompiler {
         public static final String FLATMAP = "flatmap";
         // [groupCount, ?[bc]]
         public static final String GROUP_COUNT = "groupCount";
-        // [hasKey, pred, o | [bc]]
-        public static final String HAS_KEY = "hasKey";
-        public static final String HAS_KEY_VALUE = "hasKeyValue";
         // [incr]
         public static final String INCR = "incr";
         public static final String INITIAL = "initial";

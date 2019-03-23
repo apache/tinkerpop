@@ -21,6 +21,7 @@ package org.apache.tinkerpop.machine.bytecode;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -31,13 +32,13 @@ public interface Argument<E> extends Serializable {
 
     public <C, S> boolean filterArg(final Traverser<C, S> traverser);
 
-    public static <C, S, E> Argument<E> create(final Object arg) {
-        if (arg instanceof Bytecode)
-            return new BytecodeArgument<>((Bytecode<C>) arg);
-        else if (arg instanceof String && ((String) arg).contains("::"))
-            return new MethodArgument<>((String) arg);
+    public static <C, S, E> Argument<E> create(final Object... args) {
+        if (args[0] instanceof Bytecode)
+            return new BytecodeArgument<>((Bytecode<C>) args[0]);
+        else if (args[0] instanceof String && ((String) args[0]).contains("::"))
+            return new MethodArgument<>((String) args[0], Arrays.copyOfRange(args, 1, args.length));
         else
-            return new ConstantArgument<>((E) arg);
+            return new ConstantArgument<>((E) args[0]);
     }
 
 }

@@ -33,14 +33,12 @@ import java.util.Set;
  */
 public final class FilterFilter<C, S> extends AbstractFunction<C> implements FilterFunction<C, S> {
 
-    private final Argument<S> firstArgument;
     private final Pred pred;
     private final Argument<S> argument;
 
 
-    public FilterFilter(final Coefficient<C> coefficient, final Set<String> labels, final Argument<S> firstArgument, final Pred pred, final Argument<S> argument) {
+    public FilterFilter(final Coefficient<C> coefficient, final Set<String> labels, final Pred pred, final Argument<S> argument) {
         super(coefficient, labels);
-        this.firstArgument = firstArgument;
         this.pred = pred;
         this.argument = argument;
     }
@@ -48,8 +46,8 @@ public final class FilterFilter<C, S> extends AbstractFunction<C> implements Fil
     @Override
     public boolean test(final Traverser<C, S> traverser) {
         return null == this.pred ?
-                this.firstArgument.filterArg(traverser) :
-                this.pred.test(this.firstArgument.mapArg(traverser), argument.mapArg(traverser));
+                this.argument.filterArg(traverser) :
+                this.pred.test(traverser.object(), this.argument.mapArg(traverser));
     }
 
     @Override

@@ -103,7 +103,8 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, Long> count() {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.REDUCE, "traverser::count", Oper.sum.name(), 0L);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.MAP, "traverser::count");
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.REDUCE, Oper.sum.name(), 0L);
         return (Traversal) this;
     }
 
@@ -134,37 +135,58 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public <K, V> Traversal<C, S, Map<K, V>> hasKey(final P<K> predicate) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY, predicate.type().name(), TraversalUtil.tryToGetBytecode(predicate.object()));
+        final Bytecode<C> internal = new Bytecode<>();
+        internal.addInstruction(this.currentCoefficient, Symbols.FLATMAP, "dictionary::keys");
+        internal.addInstruction(this.currentCoefficient, Symbols.FILTER, predicate.type().name(), TraversalUtil.tryToGetBytecode(predicate.object()));
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, internal);
         return (Traversal) this;
     }
 
     public <K, V> Traversal<C, S, Map<K, V>> hasKey(final K key) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY, Pred.eq.name(), key);
+        final Bytecode<C> internal = new Bytecode<>();
+        internal.addInstruction(this.currentCoefficient, Symbols.FLATMAP, "dictionary::keys");
+        internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), key);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, internal);
         return (Traversal) this;
     }
 
     public <K, V> Traversal<C, S, Map<K, V>> hasKey(final Traversal<C, Map<K, V>, K> keyTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY, Pred.eq.name(), keyTraversal.bytecode);
+        final Bytecode<C> internal = new Bytecode<>();
+        internal.addInstruction(this.currentCoefficient, Symbols.FLATMAP, "dictionary::keys");
+        internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), keyTraversal.bytecode);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, internal);
         return (Traversal) this;
     }
 
     public <K, V> Traversal<C, S, Map<K, V>> has(final K key, final V value) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY_VALUE, key, value);
+        final Bytecode<C> internal = new Bytecode<>();
+        internal.addInstruction(this.currentCoefficient, Symbols.MAP, "dictionary::get", TraversalUtil.tryToGetBytecode(key));
+        internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), value);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, internal);
         return (Traversal) this;
     }
 
     public <K, V> Traversal<C, S, Map<K, V>> has(final Traversal<C, Map<K, V>, K> keyTraversal, final V value) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY_VALUE, keyTraversal.bytecode, value);
+        final Bytecode<C> internal = new Bytecode<>();
+        internal.addInstruction(this.currentCoefficient, Symbols.MAP, "dictionary::get", keyTraversal.bytecode);
+        internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), value);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, internal);
         return (Traversal) this;
     }
 
     public <K, V> Traversal<C, S, Map<K, V>> has(final K key, final Traversal<C, Map<K, V>, V> valueTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY_VALUE, key, valueTraversal.bytecode);
+        final Bytecode<C> internal = new Bytecode<>();
+        internal.addInstruction(this.currentCoefficient, Symbols.MAP, "dictionary::get", key);
+        internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), valueTraversal.bytecode);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, internal);
         return (Traversal) this;
     }
 
     public <K, V> Traversal<C, S, Map<K, V>> has(final Traversal<C, Map<K, V>, K> keyTraversal, final Traversal<C, Map<K, V>, V> valueTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.HAS_KEY_VALUE, keyTraversal.bytecode, valueTraversal.bytecode);
+        final Bytecode<C> internal = new Bytecode<>();
+        internal.addInstruction(this.currentCoefficient, Symbols.MAP, "dictionary::get", keyTraversal.bytecode);
+        internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), valueTraversal.bytecode);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, internal);
         return (Traversal) this;
     }
 
@@ -174,17 +196,17 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, E> is(final E object) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, "traverser::object", Pred.eq.name(), object);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), object);
         return this;
     }
 
     public Traversal<C, S, E> is(final Traversal<C, E, E> objectTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, "traverser::object", Pred.eq.name(), objectTraversal.bytecode);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), objectTraversal.bytecode);
         return this;
     }
 
     public Traversal<C, S, E> is(final P<E> predicate) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, "traverser::object", predicate.type().name(), TraversalUtil.tryToGetBytecode(predicate.object()));
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, predicate.type().name(), TraversalUtil.tryToGetBytecode(predicate.object()));
         return this;
     }
 
@@ -227,7 +249,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public <R extends Number> Traversal<C, S, R> sum() {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.REDUCE, "traverser::object", Oper.sum.name(), 0);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.REDUCE, Oper.sum.name(), 0);
         return (Traversal) this;
     }
 
