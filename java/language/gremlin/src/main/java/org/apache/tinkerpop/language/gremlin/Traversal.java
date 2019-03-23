@@ -191,7 +191,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, E> identity() {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, Boolean.TRUE);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.MAP, "traverser::object");
         return this;
     }
 

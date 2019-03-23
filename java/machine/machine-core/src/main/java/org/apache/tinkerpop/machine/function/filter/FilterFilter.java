@@ -45,9 +45,7 @@ public final class FilterFilter<C, S> extends AbstractFunction<C> implements Fil
 
     @Override
     public boolean test(final Traverser<C, S> traverser) {
-        return null == this.pred ?
-                this.argument.filterArg(traverser) :
-                this.pred.test(traverser.object(), this.argument.mapArg(traverser));
+        return this.pred.test(traverser.object(), this.argument.mapArg(traverser));
     }
 
     @Override

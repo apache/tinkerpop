@@ -80,9 +80,7 @@ public final class CoreCompiler implements BytecodeCompiler {
             case Symbols.BRANCH:
                 return new BranchBranch<>(coefficient, labels, BranchBranch.makeBranches(instruction.args()));
             case Symbols.FILTER:
-                return instruction.args().length == 1 ?
-                        new FilterFilter<>(coefficient, labels, null, Argument.create(instruction.args())) :
-                        new FilterFilter<>(coefficient, labels, Pred.valueOf(instruction.args()[0]), Argument.create(Arrays.copyOfRange(instruction.args(), 1, instruction.args().length)));
+                return new FilterFilter<>(coefficient, labels, Pred.valueOf(instruction.args()[0]), Argument.create(Arrays.copyOfRange(instruction.args(), 1, instruction.args().length)));
             case Symbols.FLATMAP:
                 return new FlatmapFlatmap<>(coefficient, labels, Argument.create(instruction.args()));
             case Symbols.GROUP_COUNT:
