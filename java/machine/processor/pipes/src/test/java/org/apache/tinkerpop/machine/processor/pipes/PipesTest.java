@@ -99,7 +99,7 @@ public class PipesTest {
         System.out.println(traversal);
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
-        traversal = g.inject(7L).choose(__.is(7L), __.incr());
+        traversal = g.inject(7L).choose(__.is(7L), __.incr()).sum();
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());
@@ -143,7 +143,12 @@ public class PipesTest {
         System.out.println(traversal);
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
-        traversal = g.inject(listA).unfold().has(__.<Map,String>constant("name"), "marko");
+        traversal = g.inject(listA).unfold().has(__.<Map,String>constant("name"), "marko").value("age");
+        System.out.println(TraversalUtil.getBytecode(traversal));
+        System.out.println(traversal);
+        System.out.println(traversal.toList());
+        System.out.println("\n----------\n");
+        traversal = g.inject(Map.of("name", "marko", "age", 29), Map.of("name", "josh", "age", 32)).hasKey(P.regex(__.constant("[a].*[e]"))).has("name", "marko").value("age");
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

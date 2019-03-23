@@ -18,7 +18,9 @@
  */
 package org.apache.tinkerpop.machine.bytecode;
 
+import org.apache.tinkerpop.machine.structure.data.TElement;
 import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.util.NumberHelper;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -48,7 +50,11 @@ public class MethodArgument<E> implements Argument<E> {
         else if (this.method.equals("keys"))
             return (E) ((Map) traverser.object()).keySet();
         else if (this.method.equals("get"))
-            return (E) ((Map) traverser.object()).get(this.arguments[0].mapArg(traverser));
+            return (E) (traverser.object() instanceof Map ?
+                    ((Map) traverser.object()).get(this.arguments[0].mapArg(traverser)) :
+                    ((TElement) traverser.object()).get(this.arguments[0].mapArg(traverser)));
+        else if (this.method.equals("add"))
+            return (E) NumberHelper.add((Number) traverser.object(), (Number) this.arguments[0].mapArg(traverser));
         else
             throw new RuntimeException("Unknown method");
     }

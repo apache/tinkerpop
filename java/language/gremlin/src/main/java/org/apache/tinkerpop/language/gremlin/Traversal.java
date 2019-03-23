@@ -211,7 +211,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, Long> incr() {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.INCR);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.MAP, "number::add", 1L);
         return (Traversal) this;
     }
 
@@ -278,6 +278,11 @@ public class Traversal<C, S, E> implements Iterator<E> {
     public Traversal<C, S, E> until(final Traversal<C, ?, ?> untilTraversal) {
         TraversalUtil.insertRepeatInstruction(this.bytecode, this.currentCoefficient, 'u', untilTraversal.bytecode);
         return this;
+    }
+
+    public <K, V> Traversal<C, S, V> value(final K key) {
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.MAP, "dictionary::get", key);
+        return (Traversal) this;
     }
 
     ///////

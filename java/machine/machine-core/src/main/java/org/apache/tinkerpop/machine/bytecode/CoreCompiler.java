@@ -27,7 +27,6 @@ import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
 import org.apache.tinkerpop.machine.function.filter.FilterFilter;
 import org.apache.tinkerpop.machine.function.flatmap.FlatmapFlatmap;
 import org.apache.tinkerpop.machine.function.initial.InjectInitial;
-import org.apache.tinkerpop.machine.function.map.IncrMap;
 import org.apache.tinkerpop.machine.function.map.MapMap;
 import org.apache.tinkerpop.machine.function.map.PathMap;
 import org.apache.tinkerpop.machine.function.reduce.GroupCountReduce;
@@ -59,7 +58,6 @@ public final class CoreCompiler implements BytecodeCompiler {
         put(Symbols.FILTER, FunctionType.FILTER);
         put(Symbols.FLATMAP, FunctionType.FLATMAP);
         put(Symbols.GROUP_COUNT, FunctionType.REDUCE);
-        put(Symbols.INCR, FunctionType.MAP);
         put(Symbols.INITIAL, FunctionType.INITIAL);
         put(Symbols.JOIN, FunctionType.BARRIER);
         put(Symbols.MAP, FunctionType.MAP);
@@ -80,15 +78,15 @@ public final class CoreCompiler implements BytecodeCompiler {
             case Symbols.BRANCH:
                 return new BranchBranch<>(coefficient, labels, BranchBranch.makeBranches(instruction.args()));
             case Symbols.FILTER:
-                return new FilterFilter<>(coefficient, labels, Pred.valueOf(instruction.args()[0]), Argument.create(Arrays.copyOfRange(instruction.args(), 1, instruction.args().length)));
+                return instruction.args().length == 1 ?
+                        new FilterFilter<>(coefficient, labels, null, Argument.create(instruction.args())) :
+                        new FilterFilter<>(coefficient, labels, Pred.valueOf(instruction.args()[0]), Argument.create(Arrays.copyOfRange(instruction.args(), 1, instruction.args().length)));
             case Symbols.FLATMAP:
                 return new FlatmapFlatmap<>(coefficient, labels, Argument.create(instruction.args()));
             case Symbols.GROUP_COUNT:
                 return new GroupCountReduce<>(coefficient, labels, Compilation.compileOrNull(0, instruction.args()));
             case Symbols.INITIAL:
                 return new InjectInitial<>(coefficient, labels, instruction.args());
-            case Symbols.INCR:
-                return new IncrMap<>(coefficient, labels);
             case Symbols.JOIN:
                 return new JoinBarrier<>(coefficient, labels, (Symbols.Tokens) instruction.args()[0], Compilation.compileOne(instruction.args()[1]), Argument.create(instruction.args()[2]));
             case Symbols.MAP:
@@ -148,7 +146,6 @@ public final class CoreCompiler implements BytecodeCompiler {
         // [groupCount, ?[bc]]
         public static final String GROUP_COUNT = "groupCount";
         // [incr]
-        public static final String INCR = "incr";
         public static final String INITIAL = "initial";
         public static final String JOIN = "join";
         // [map, [bc]]
