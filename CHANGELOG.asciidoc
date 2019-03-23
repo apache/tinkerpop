@@ -20,6 +20,12 @@ limitations under the License.
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
+[[release-3-4-2]]
+=== TinkerPop 3.4.2 (Release Date: NOT OFFICIALLY RELEASED YET)
+
+This release also includes changes from <<release-3-3-7, 3.3.7>>.
+
+
 [[release-3-4-1]]
 === TinkerPop 3.4.1 (Release Date: March 18, 2019)
 
