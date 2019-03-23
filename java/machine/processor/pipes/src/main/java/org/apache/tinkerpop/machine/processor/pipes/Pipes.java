@@ -57,7 +57,7 @@ public final class Pipes<C, S, E> implements Processor<C, S, E> {
             if (function instanceof RepeatBranch)
                 nextStep = new RepeatStep(previousStep, (RepeatBranch<C, ?>) function);
             else if (function instanceof BranchFunction)
-                nextStep = new BranchStep(previousStep, (BranchFunction<C, ?, ?, ?>) function);
+                nextStep = new BranchStep(previousStep, (BranchFunction<C, ?, ?>) function);
             else if (function instanceof FilterFunction)
                 nextStep = new FilterStep(previousStep, (FilterFunction<C, ?>) function);
             else if (function instanceof FlatMapFunction)

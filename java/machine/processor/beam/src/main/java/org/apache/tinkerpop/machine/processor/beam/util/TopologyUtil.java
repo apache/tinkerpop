@@ -26,6 +26,15 @@ import org.apache.beam.sdk.values.PCollectionList;
 import org.apache.beam.sdk.values.PCollectionTuple;
 import org.apache.beam.sdk.values.TupleTag;
 import org.apache.beam.sdk.values.TupleTagList;
+import org.apache.tinkerpop.machine.bytecode.Compilation;
+import org.apache.tinkerpop.machine.function.BranchFunction;
+import org.apache.tinkerpop.machine.function.CFunction;
+import org.apache.tinkerpop.machine.function.FilterFunction;
+import org.apache.tinkerpop.machine.function.FlatMapFunction;
+import org.apache.tinkerpop.machine.function.InitialFunction;
+import org.apache.tinkerpop.machine.function.MapFunction;
+import org.apache.tinkerpop.machine.function.ReduceFunction;
+import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
 import org.apache.tinkerpop.machine.processor.beam.Beam;
 import org.apache.tinkerpop.machine.processor.beam.BranchFn;
 import org.apache.tinkerpop.machine.processor.beam.FilterFn;
@@ -37,15 +46,6 @@ import org.apache.tinkerpop.machine.processor.beam.RepeatDeadEndFn;
 import org.apache.tinkerpop.machine.processor.beam.RepeatEndFn;
 import org.apache.tinkerpop.machine.processor.beam.RepeatStartFn;
 import org.apache.tinkerpop.machine.processor.beam.serialization.TraverserCoder;
-import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.function.BranchFunction;
-import org.apache.tinkerpop.machine.function.CFunction;
-import org.apache.tinkerpop.machine.function.FilterFunction;
-import org.apache.tinkerpop.machine.function.FlatMapFunction;
-import org.apache.tinkerpop.machine.function.InitialFunction;
-import org.apache.tinkerpop.machine.function.MapFunction;
-import org.apache.tinkerpop.machine.function.ReduceFunction;
-import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -107,20 +108,26 @@ public final class TopologyUtil {
             sink.setCoder(new TraverserCoder<>());
             sink = PCollectionList.of(repeatOutputs).apply(Flatten.pCollections());
         } else if (function instanceof BranchFunction) {
-            final BranchFunction<C, S, E, M> branchFunction = (BranchFunction<C, S, E, M>) function;
-            final Map<M, TupleTag<Traverser<C, S>>> selectors = new LinkedHashMap<>();
-            for (final Map.Entry<M, List<Compilation<C, S, E>>> branch : branchFunction.getBranches().entrySet()) {
-                selectors.put(branch.getKey(), new TupleTag<>());
+            final BranchFunction<C, S, E> branchFunction = (BranchFunction<C, S, E>) function;
+            final Map<Compilation<C, S, ?>, List<TupleTag<Traverser<C, S>>>> selectors = new LinkedHashMap<>();
+            for (final Map.Entry<Compilation<C, S, ?>, List<Compilation<C, S, E>>> branch : branchFunction.getBranches().entrySet()) {
+                final List<TupleTag<Traverser<C, S>>> tags = new ArrayList<>();
+                for (final Compilation<C, S, E> temp : branch.getValue()) {
+                    tags.add(new TupleTag<>());
+                }
+                selectors.put(branch.getKey(), tags);
             }
-            final BranchFn<C, S, E, M> fn = new BranchFn<>(branchFunction, selectors);
-            final List<TupleTag<Traverser<C, S>>> tags = new ArrayList<>(selectors.values());
+            final BranchFn<C, S, E> fn = new BranchFn<>(branchFunction, selectors);
+            final List<TupleTag<Traverser<C, S>>> tags = selectors.values().stream().flatMap(List::stream).collect(Collectors.toList());
             final PCollectionTuple outputs = source.apply(ParDo.of(fn).withOutputTags(tags.get(0), TupleTagList.of((List) tags.subList(1, tags.size()))));
             outputs.getAll().values().forEach(c -> c.setCoder(new TraverserCoder()));
             final List<PCollection<Traverser<C, E>>> branchSinks = new ArrayList<>();
-            for (final Map.Entry<M, List<Compilation<C, S, E>>> branch : branchFunction.getBranches().entrySet()) {
-                final PCollection<Traverser<C, S>> output = outputs.get(selectors.get(branch.getKey()));
-                for (final Compilation<C, S, E> compilation : branch.getValue()) {
-                    branchSinks.add(TopologyUtil.compile(output, compilation));
+            for (final Map.Entry<Compilation<C, S, ?>, List<Compilation<C, S, E>>> branches : branchFunction.getBranches().entrySet()) {
+                for (final TupleTag<Traverser<C, S>> tag : selectors.get(branches.getKey())) {
+                    final PCollection<Traverser<C, S>> output = outputs.get(tag);
+                    for (final Compilation<C, S, E> branch : branches.getValue()) {
+                        branchSinks.add(TopologyUtil.compile(output, branch));
+                    }
                 }
             }
             sink = PCollectionList.of(branchSinks).apply(Flatten.pCollections());

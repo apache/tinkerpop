@@ -23,31 +23,41 @@ import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.function.BranchFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BranchFn<C, S, E, M> extends AbstractFn<C, S, S> {
+public class BranchFn<C, S, E> extends AbstractFn<C, S, S> {
 
-    private final Map<M, TupleTag<Traverser<C, S>>> branches;
-    private final Compilation<C, S, M> branchSelector;
+    private final Map<Compilation<C, S, ?>, List<TupleTag<Traverser<C, S>>>> branches;
+    private final List<TupleTag<Traverser<C, S>>> defaultBranches;
 
-    public BranchFn(final BranchFunction<C, S, E, M> branchFunction, final Map<M, TupleTag<Traverser<C, S>>> branches) {
+    public BranchFn(final BranchFunction<C, S, E> branchFunction, final Map<Compilation<C, S, ?>, List<TupleTag<Traverser<C, S>>>> branches) {
         super(branchFunction);
-        this.branches = branches;
-        this.branchSelector = branchFunction.getBranchSelector();
+        this.branches = new HashMap<>(branches);
+        this.defaultBranches = branches.getOrDefault(null, Collections.emptyList());
+        this.branches.remove(null);
     }
 
     @ProcessElement
     public void processElement(final @Element Traverser<C, S> traverser, final MultiOutputReceiver outputs) {
-        final Optional<Traverser<C, M>> selector = this.branchSelector.maybeTraverser(traverser);
-        if (selector.isPresent()) {
-            final TupleTag<Traverser<C, S>> outputTag = this.branches.get(selector.get().object());
-            if (null != outputTag)
-                outputs.get(outputTag).output(traverser.clone());
+        boolean found = false;
+        for (final Map.Entry<Compilation<C, S, ?>, List<TupleTag<Traverser<C, S>>>> entry : this.branches.entrySet()) {
+            if (entry.getKey().filterTraverser(traverser)) {
+                found = true;
+                for (final TupleTag<Traverser<C, S>> output : entry.getValue()) {
+                    outputs.get(output).output(traverser.clone());
+                }
+            }
         }
-
+        if (!found) {
+            for (final TupleTag<Traverser<C, S>> output : this.defaultBranches) {
+                outputs.get(output).output(traverser.clone());
+            }
+        }
     }
 }

@@ -24,24 +24,25 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.util.EmptyIterator;
 import org.apache.tinkerpop.machine.util.MultiIterator;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 final class BranchStep<C, S, E, M> extends AbstractStep<C, S, E> {
 
-    private final Compilation<C, S, M> branchSelector;
-    private final Map<M, List<Compilation<C, S, E>>> branches;
+    private final Map<Compilation<C, S, ?>, List<Compilation<C, S, E>>> branches;
+    private final List<Compilation<C, S, E>> defaultBranches;
     private Iterator<Traverser<C, E>> nextTraversers = EmptyIterator.instance();
 
-    BranchStep(final Step<C, ?, S> previousStep, final BranchFunction<C, S, E, M> branchFunction) {
+    BranchStep(final Step<C, ?, S> previousStep, final BranchFunction<C, S, E> branchFunction) {
         super(previousStep, branchFunction);
-        this.branchSelector = branchFunction.getBranchSelector();
         this.branches = branchFunction.getBranches();
+        this.defaultBranches = this.branches.getOrDefault(null, Collections.emptyList());
+        this.branches.remove(null);
     }
 
     @Override
@@ -58,17 +59,20 @@ final class BranchStep<C, S, E, M> extends AbstractStep<C, S, E> {
 
     private final void stageOutput() {
         while (!this.nextTraversers.hasNext() && this.previousStep.hasNext()) {
+            boolean found = false;
+            this.nextTraversers = new MultiIterator<>();
             final Traverser<C, S> traverser = this.previousStep.next();
-            final Optional<Traverser<C, M>> token = this.branchSelector.maybeTraverser(traverser);
-            if (token.isPresent()) {
-                final List<Compilation<C, S, E>> matches = this.branches.get(token.get().object());
-                if (1 == matches.size())
-                    this.nextTraversers = matches.get(0).addTraverser(traverser);
-                else {
-                    this.nextTraversers = new MultiIterator<>();
-                    for (final Compilation<C, S, E> branch : matches) {
+            for (final Map.Entry<Compilation<C, S, ?>, List<Compilation<C, S, E>>> entry : this.branches.entrySet()) {
+                if (entry.getKey().filterTraverser(traverser)) {
+                    found = true;
+                    for (final Compilation<C, S, E> branch : entry.getValue()) {
                         ((MultiIterator<Traverser<C, E>>) this.nextTraversers).addIterator(branch.addTraverser(traverser));
                     }
+                }
+            }
+            if (!found) {
+                for (final Compilation<C, S, E> defaultBranches : this.defaultBranches) {
+                    ((MultiIterator<Traverser<C, E>>) this.nextTraversers).addIterator(defaultBranches.addTraverser(traverser));
                 }
             }
         }

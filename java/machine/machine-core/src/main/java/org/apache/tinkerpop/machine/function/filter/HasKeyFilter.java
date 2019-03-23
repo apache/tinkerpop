@@ -47,9 +47,9 @@ public final class HasKeyFilter<C, K, V> extends AbstractFunction<C> implements 
     public boolean test(final Traverser<C, Map<K, V>> traverser) {
         final Map<K, V> object = traverser.object();
         if (Pred.eq == this.predicate)
-            return object.containsKey(this.key.getArg(traverser));
+            return object.containsKey(this.key.mapArg(traverser));
         else {
-            final K testKey = this.key.getArg(traverser);
+            final K testKey = this.key.mapArg(traverser);
             for (final K key : traverser.object().keySet()) {
                 if (this.predicate.test(key, testKey))
                     return true;

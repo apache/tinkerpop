@@ -31,7 +31,8 @@ public final class IdentityStrategy extends AbstractStrategy<Strategy.Optimizati
     @Override
     public <C> void apply(final Bytecode<C> bytecode) {
         bytecode.getInstructions().removeIf(instruction ->
-                instruction.op().equals(CoreCompiler.Symbols.IDENTITY) &&
+                instruction.op().equals(CoreCompiler.Symbols.FILTER) &&
+                        Boolean.TRUE.equals(instruction.args()[0]) &&
                         instruction.labels().isEmpty() &&
                         instruction.coefficient().isUnity());
     }

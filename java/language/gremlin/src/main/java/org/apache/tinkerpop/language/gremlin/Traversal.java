@@ -87,17 +87,17 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public <R> Traversal<C, S, R> choose(final Traversal<C, E, ?> predicate, final Traversal<C, S, R> trueTraversal, final Traversal<C, S, R> falseTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IF, predicate.bytecode, trueTraversal.bytecode, falseTraversal.bytecode);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.BRANCH, predicate.bytecode, trueTraversal.bytecode, Symbols.DEFAULT, falseTraversal.bytecode);
         return (Traversal) this;
     }
 
     public <R> Traversal<C, S, R> choose(final Traversal<C, E, ?> predicate, final Traversal<C, S, R> trueTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IF, predicate.bytecode, trueTraversal.bytecode);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.BRANCH, predicate.bytecode, trueTraversal.bytecode);
         return (Traversal) this;
     }
 
     public <R> Traversal<C, S, R> constant(final R constant) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.CONSTANT, constant);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.MAP, constant);
         return (Traversal) this;
     }
 
@@ -168,7 +168,7 @@ public class Traversal<C, S, E> implements Iterator<E> {
     }
 
     public Traversal<C, S, E> identity() {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.IDENTITY);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, Boolean.TRUE);
         return this;
     }
 
@@ -243,12 +243,12 @@ public class Traversal<C, S, E> implements Iterator<E> {
     // TODO: for some reason var args are not working...Java11
 
     public <R> Traversal<C, S, R> union(final Traversal<C, E, R> traversalA, final Traversal<C, E, R> traversalB) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.UNION, traversalA.bytecode, traversalB.bytecode);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.BRANCH, Symbols.DEFAULT, traversalA.bytecode, Symbols.DEFAULT, traversalB.bytecode);
         return (Traversal) this;
     }
 
     public <R> Traversal<C, S, R> union(final Traversal<C, E, R> traversalA, final Traversal<C, E, R> traversalB, final Traversal<C, E, R> traversalC) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.UNION, traversalA.bytecode, traversalB.bytecode, traversalC.bytecode);
+        this.bytecode.addInstruction(this.currentCoefficient, Symbols.BRANCH, Symbols.DEFAULT, traversalA.bytecode, Symbols.DEFAULT, traversalB.bytecode, Symbols.DEFAULT, traversalC.bytecode);
         return (Traversal) this;
     }
 

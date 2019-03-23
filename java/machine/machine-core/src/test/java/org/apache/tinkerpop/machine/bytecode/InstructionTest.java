@@ -29,11 +29,11 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
  */
 class InstructionTest {
 
-    private final Instruction<Long> a = new Instruction<>(LongCoefficient.create(10L), "atest", new Object[]{1, 2, 3});
-    private final Instruction<Long> b = new Instruction<>(LongCoefficient.create(10L), "atest", new Object[]{1, 2, 3});
-    private final Instruction<Long> c = new Instruction<>(LongCoefficient.create(10L), "atest", new Object[]{1, 2});
-    private final Instruction<Long> d = new Instruction<>(LongCoefficient.create(10L), "btest", new Object[]{1, 2, 3});
-    private final Instruction<Long> e = new Instruction<>(LongCoefficient.create(1L), "btest", new Object[]{1, 2, 3});
+    private final Instruction<Long> a = new Instruction<>(LongCoefficient.create(10L), "atest", 1, 2, 3);
+    private final Instruction<Long> b = new Instruction<>(LongCoefficient.create(10L), "atest", 1, 2, 3);
+    private final Instruction<Long> c = new Instruction<>(LongCoefficient.create(10L), "atest", 1, 2);
+    private final Instruction<Long> d = new Instruction<>(LongCoefficient.create(10L), "btest", 1, 2, 3);
+    private final Instruction<Long> e = new Instruction<>(LongCoefficient.create(1L), "btest", 1, 2, 3);
 
     @Test
     void testMethods() {

@@ -40,8 +40,12 @@ public final class Argument<E> implements Serializable {
     }
 
 
-    public final <C, S> E getArg(final Traverser<C, S> traverser) {
+    public final <C, S> E mapArg(final Traverser<C, S> traverser) {
         return this.isPrimitive ? this.arg : this.<C, S>getCompilation().mapTraverser(traverser).object();
+    }
+
+    public final <C, S> boolean filterArg(final Traverser<C, S> traverser) {
+        return this.isPrimitive ? (Boolean) this.arg : this.<C, S>getCompilation().filterTraverser(traverser);
     }
 
     public static <E> Argument<E> create(final Object arg) {

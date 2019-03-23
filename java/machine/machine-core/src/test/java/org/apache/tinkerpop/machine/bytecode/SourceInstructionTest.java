@@ -28,10 +28,10 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
  */
 class SourceInstructionTest {
 
-    private final SourceInstruction a = new SourceInstruction("atest", new Object[]{1, 2, 3});
-    private final SourceInstruction b = new SourceInstruction("atest", new Object[]{1, 2, 3});
-    private final SourceInstruction c = new SourceInstruction("atest", new Object[]{1, 2});
-    private final SourceInstruction d = new SourceInstruction("btest", new Object[]{1, 2, 3});
+    private final SourceInstruction a = new SourceInstruction("atest", 1, 2, 3);
+    private final SourceInstruction b = new SourceInstruction("atest", 1, 2, 3);
+    private final SourceInstruction c = new SourceInstruction("atest", 1, 2);
+    private final SourceInstruction d = new SourceInstruction("btest", 1, 2, 3);
 
     @Test
     void testMethods() {

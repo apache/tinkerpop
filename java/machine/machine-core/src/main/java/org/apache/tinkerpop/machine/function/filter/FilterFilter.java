@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.function.filter;
 
-import org.apache.tinkerpop.machine.bytecode.Compilation;
+import org.apache.tinkerpop.machine.bytecode.Argument;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.FilterFunction;
@@ -32,21 +32,21 @@ import java.util.Set;
  */
 public final class FilterFilter<C, S> extends AbstractFunction<C> implements FilterFunction<C, S> {
 
-    private final Compilation<C, S, ?> internalFilter;
+    private final Argument<S> argument;
 
-    public FilterFilter(final Coefficient<C> coefficient, final Set<String> labels, final Compilation<C, S, ?> internalFilter) {
+    public FilterFilter(final Coefficient<C> coefficient, final Set<String> labels, final Argument<S> argument) {
         super(coefficient, labels);
-        this.internalFilter = internalFilter;
+        this.argument = argument;
     }
 
     @Override
     public boolean test(final Traverser<C, S> traverser) {
-        return this.internalFilter.filterTraverser(traverser);
+        return this.argument.filterArg(traverser);
     }
 
     @Override
     public String toString() {
-        return StringFactory.makeFunctionString(this, this.internalFilter);
+        return StringFactory.makeFunctionString(this, this.argument);
     }
 
 }

@@ -71,7 +71,7 @@ public class JoinBarrier<C, K, V> extends AbstractFunction<C> implements Barrier
     @Override
     public List<Map<K, V>> apply(final Traverser<C, Map<K, V>> traverser, final List<Map<K, V>> barrier) {
         this.joinCompilation.flatMapTraverser(traverser).forEachRemaining(other -> {
-            final K key = this.joinKey.getArg(traverser);
+            final K key = this.joinKey.mapArg(traverser);
             if (traverser.object().get(key).equals(other.object().get(key))) {
                 final Map<K, V> join = new HashMap<>();
                 for (final Map.Entry<K, V> entry : traverser.object().entrySet()) {

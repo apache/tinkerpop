@@ -75,7 +75,7 @@ public class TraversalSource<C> implements Cloneable {
     public <S> Traversal<C, S, S> inject(final S... objects) {
         final Bytecode<C> bytecode = this.bytecode.clone();
         final Coefficient<C> coefficient = this.coefficient.clone();
-        bytecode.addInstruction(coefficient, Symbols.INJECT, objects);
+        bytecode.addInstruction(coefficient, Symbols.INITIAL, objects);
         return new Traversal<>(coefficient, bytecode);
     }
 

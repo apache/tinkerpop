@@ -49,7 +49,7 @@ public class PipesTest {
                 .withStructure(TinkerGraphStructure.class)
                 .withStrategy(IdentityStrategy.class);
 
-        Traversal<Long, ?, ?> traversal = g.V().identity().union(__.count(),__.count()).map(__.<Long,Long>count().identity()).explain();
+        Traversal<Long, ?, ?> traversal = g.V().identity().union(__.count(), __.count()).map(__.<Long, Long>count().identity()).explain();
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(TraversalUtil.getBytecode(traversal));
@@ -100,6 +100,11 @@ public class PipesTest {
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
         traversal = g.inject(7L).choose(__.is(7L), __.incr());
+        System.out.println(TraversalUtil.getBytecode(traversal));
+        System.out.println(traversal);
+        System.out.println(traversal.toList());
+        System.out.println("\n----------\n");
+        traversal = g.inject(8L).choose(__.is(7L), __.incr(), __.<Long>incr().incr());
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

@@ -26,9 +26,8 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface BranchFunction<C, S, E, M> extends CFunction<C> {
+public interface BranchFunction<C, S, E> extends CFunction<C> {
 
-    public Compilation<C, S, M> getBranchSelector();
+    public Map<Compilation<C, S, ?>, List<Compilation<C, S, E>>> getBranches();
 
-    public Map<M, List<Compilation<C, S, E>>> getBranches();
 }

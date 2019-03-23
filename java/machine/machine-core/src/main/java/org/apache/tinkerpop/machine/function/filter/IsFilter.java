@@ -44,7 +44,7 @@ public final class IsFilter<C, S> extends AbstractFunction<C> implements FilterF
 
     @Override
     public boolean test(final Traverser<C, S> traverser) {
-        return this.predicate.test(traverser.object(), this.argument.getArg(traverser));
+        return this.predicate.test(traverser.object(), this.argument.mapArg(traverser));
     }
 
     @Override
