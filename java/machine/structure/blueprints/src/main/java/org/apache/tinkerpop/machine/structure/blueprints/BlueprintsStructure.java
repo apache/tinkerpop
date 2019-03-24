@@ -25,7 +25,6 @@ import org.apache.tinkerpop.machine.structure.StructureFactory;
 import org.apache.tinkerpop.machine.structure.blueprints.bytecode.compiler.BlueprintsCompiler;
 import org.apache.tinkerpop.machine.structure.blueprints.strategy.provider.BlueprintsVerticesStrategy;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,7 +34,7 @@ import java.util.Set;
  */
 public class BlueprintsStructure implements StructureFactory {
 
-    private static final List<BytecodeCompiler> COMPILERS = Collections.singletonList(BlueprintsCompiler.instance());
+    private static final List<BytecodeCompiler> COMPILERS = List.of(BlueprintsCompiler.instance());
 
     @Override
     public Structure mint(final Map<String, Object> configuration) {
@@ -44,7 +43,7 @@ public class BlueprintsStructure implements StructureFactory {
 
     @Override
     public Set<Strategy<?>> getStrategies() {
-        return Collections.singleton(new BlueprintsVerticesStrategy());
+        return Set.of(new BlueprintsVerticesStrategy());
     }
 
     @Override

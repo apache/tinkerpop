@@ -63,12 +63,12 @@ public class PipesTest {
                 .withProcessor(PipesProcessor.class)
                 .withStrategy(IdentityStrategy.class);
 
-        Traversal<Long, ?, ?> traversal = g.inject(Arrays.asList(1L, 1L)).<Long>unfold().map(incr()).c(4L).repeat(incr()).until(__.is(__.constant(8L).incr().incr())).sum();
+        Traversal<Long, ?, ?> traversal = g.inject(List.of(1L, 1L)).<Long>unfold().map(incr()).c(4L).repeat(incr()).until(__.is(__.constant(8L).incr().incr())).sum();
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
-        traversal = g.inject(Arrays.asList(1L, 2L)).unfold().is(P.lt(__.constant(2L))).groupCount().by(__.incr());
+        traversal = g.inject(List.of(1L, 2L)).unfold().is(P.lt(__.constant(2L))).groupCount().by(__.incr());
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());
@@ -103,7 +103,7 @@ public class PipesTest {
         System.out.println(traversal);
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
-        traversal = g.inject(Arrays.asList(7L, 8L, 9L)).<Long>unfold().choose(__.is(7L), __.incr(), __.<Long>incr().incr());
+        traversal = g.inject(List.of(7L, 8L, 9L)).<Long>unfold().choose(__.is(7L), __.incr(), __.<Long>incr().incr());
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());
@@ -129,13 +129,13 @@ public class PipesTest {
                 .withProcessor(PipesProcessor.class)
                 .withStrategy(IdentityStrategy.class);
 
-        List<Map<String, Object>> listA = Arrays.asList(
+        List<Map<String, Object>> listA = List.of(
                 Map.of("name", "marko", "age", 29),
                 Map.of("name", "josh", "age", 32),
                 Map.of("name", "peter", "age", 35),
                 Map.of("name", "vadas", "age", 27));
 
-        List<Map<String, Object>> listB = Arrays.asList(
+        List<Map<String, Object>> listB = List.of(
                 Map.of("name", "marko", "city", "santa fe"),
                 Map.of("name", "marko", "city", "santa cruz"),
                 Map.of("name", "josh", "city", "san jose"),

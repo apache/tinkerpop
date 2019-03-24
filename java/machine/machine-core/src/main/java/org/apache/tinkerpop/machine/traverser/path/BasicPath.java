@@ -34,11 +34,6 @@ public final class BasicPath implements Path {
     public BasicPath() {
     }
 
-    public BasicPath(final BasicPath path) {
-        this.objects.addAll(path.objects);
-        this.labels.addAll(path.labels);
-    }
-
     @Override
     public void add(final Set<String> labels, final Object object) {
         this.labels.add(labels);
@@ -81,6 +76,18 @@ public final class BasicPath implements Path {
     @Override
     public int size() {
         return this.objects.size();
+    }
+
+    @Override
+    public int hashCode() {
+        return this.labels.hashCode() ^ this.objects.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof BasicPath &&
+                this.labels.equals(((BasicPath) object).labels) &&
+                this.objects.equals(((BasicPath) object).objects);
     }
 
     @Override

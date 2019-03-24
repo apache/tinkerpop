@@ -37,7 +37,7 @@ import java.util.Set;
  */
 public final class PipesProcessor implements ProcessorFactory {
 
-    private static final List<BytecodeCompiler> COMPILERS = Arrays.asList(CoreCompiler.instance(), CommonCompiler.instance());
+    private static final List<BytecodeCompiler> COMPILERS = List.of(CoreCompiler.instance(), CommonCompiler.instance());
 
     public PipesProcessor() {
     }
@@ -49,7 +49,7 @@ public final class PipesProcessor implements ProcessorFactory {
 
     @Override
     public Set<Strategy<?>> getStrategies() {
-        return Collections.singleton(new PipesStrategy());
+        return Set.of(new PipesStrategy());
     }
 
     @Override

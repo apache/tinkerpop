@@ -61,7 +61,7 @@ public final class PathMap<C, S> extends AbstractFunction<C> implements MapFunct
             final Path newPath = new BasicPath();
             if (this.hasPathLabels) {
                 for (final String label : this.pathLabels) {
-                    newPath.add(Collections.singleton(label), this.byCompilations.process(oldPath.get(Path.Pop.last, label)));
+                    newPath.add(Set.of(label), this.byCompilations.process(oldPath.get(Path.Pop.last, label)));
                 }
             } else {
                 for (int i = 0; i < oldPath.size(); i++) {

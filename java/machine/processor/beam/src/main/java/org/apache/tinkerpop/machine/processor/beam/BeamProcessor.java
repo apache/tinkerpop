@@ -37,7 +37,7 @@ import java.util.Set;
  */
 public class BeamProcessor implements ProcessorFactory {
 
-    private static final List<BytecodeCompiler> COMPILERS = Arrays.asList(CoreCompiler.instance(), CommonCompiler.instance());
+    private static final List<BytecodeCompiler> COMPILERS = List.of(CoreCompiler.instance(), CommonCompiler.instance());
 
     @Override
     public <C, S, E> Processor<C, S, E> mint(final Compilation<C, S, E> compilation) {
@@ -46,7 +46,7 @@ public class BeamProcessor implements ProcessorFactory {
 
     @Override
     public Set<Strategy<?>> getStrategies() {
-        return Collections.singleton(new BeamStrategy());
+        return Set.of(new BeamStrategy());
     }
 
     @Override
