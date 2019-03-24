@@ -18,11 +18,14 @@
  */
 package org.apache.tinkerpop.machine.processor;
 
+import org.apache.tinkerpop.machine.bytecode.BytecodeCompiler;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -32,9 +35,13 @@ public interface ProcessorFactory extends Serializable {
 
     public <C, S, E> Processor<C, S, E> mint(final Compilation<C, S, E> compilation);
 
-    public Set<Strategy<?>> getStrategies();
+    public default Set<Strategy<?>> getStrategies() {
+        return Collections.emptySet();
+    }
 
-    // public Optional<Compiler> getCompiler();
+    public default List<BytecodeCompiler> getCompilers() {
+        return Collections.emptyList();
+    }
 
     public static Set<Strategy<?>> processorStrategies(final Class<? extends ProcessorFactory> processFactoryClass) {
         try {

@@ -58,9 +58,4 @@ public abstract class SimpleProcessor<C, S, E> implements Processor<C, S, E>, Pr
     public <D, T, F> Processor<D, T, F> mint(final Compilation<D, T, F> compilation) {
         return (Processor<D, T, F>) this;
     }
-
-    @Override
-    public Set<Strategy<?>> getStrategies() {
-        return Collections.emptySet();
-    }
 }

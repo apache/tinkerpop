@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.blueprints.bytecode;
+package org.apache.tinkerpop.machine.structure.blueprints.compiler;
 
 import org.apache.tinkerpop.machine.bytecode.BytecodeCompiler;
 import org.apache.tinkerpop.machine.bytecode.FunctionType;
@@ -30,7 +30,17 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BlueprintsCompiler implements BytecodeCompiler {
+public final class BlueprintsCompiler implements BytecodeCompiler {
+
+    private static final BlueprintsCompiler INSTANCE = new BlueprintsCompiler();
+
+    private BlueprintsCompiler() {
+        // static instance
+    }
+
+    public static BlueprintsCompiler instance() {
+        return INSTANCE;
+    }
 
     @Override
     public <C> CFunction<C> compile(final Instruction<C> instruction) {

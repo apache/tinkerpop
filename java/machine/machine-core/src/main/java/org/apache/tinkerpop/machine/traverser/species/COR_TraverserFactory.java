@@ -25,20 +25,20 @@ import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class CORTraverserFactory<C> implements TraverserFactory<C> {
+public class COR_TraverserFactory<C> implements TraverserFactory<C> {
 
-    private static final CORTraverserFactory INSTANCE = new CORTraverserFactory();
+    private static final COR_TraverserFactory INSTANCE = new COR_TraverserFactory();
 
-    private CORTraverserFactory() {
+    private COR_TraverserFactory() {
         // static instance
     }
 
     @Override
     public <S> Traverser<C, S> create(final CFunction<C> function, final S object) {
-        return new CORTraverser<>(function.coefficient(), object);
+        return new COR_Traverser<>(function.coefficient(), object);
     }
 
-    public static <C> CORTraverserFactory<C> instance() {
+    public static <C> COR_TraverserFactory<C> instance() {
         return INSTANCE;
     }
 }

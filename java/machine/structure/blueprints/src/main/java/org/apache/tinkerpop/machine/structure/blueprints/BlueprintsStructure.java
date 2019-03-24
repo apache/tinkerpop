@@ -22,18 +22,21 @@ import org.apache.tinkerpop.machine.bytecode.BytecodeCompiler;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 import org.apache.tinkerpop.machine.structure.Structure;
 import org.apache.tinkerpop.machine.structure.StructureFactory;
-import org.apache.tinkerpop.machine.structure.blueprints.bytecode.BlueprintsCompiler;
+import org.apache.tinkerpop.machine.structure.blueprints.compiler.BlueprintsCompiler;
 import org.apache.tinkerpop.machine.structure.blueprints.strategy.provider.BlueprintsVerticesStrategy;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class BlueprintsStructure implements StructureFactory {
+
+    private static final List<BytecodeCompiler> COMPILERS = Collections.singletonList(BlueprintsCompiler.instance());
+
     @Override
     public Structure mint(final Map<String, Object> configuration) {
         return new Blueprints();
@@ -45,7 +48,8 @@ public class BlueprintsStructure implements StructureFactory {
     }
 
     @Override
-    public Optional<BytecodeCompiler> getCompiler() {
-        return Optional.of(new BlueprintsCompiler());
+    public List<BytecodeCompiler> getCompilers() {
+        return COMPILERS;
     }
+
 }

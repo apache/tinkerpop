@@ -23,8 +23,9 @@ import org.apache.tinkerpop.machine.strategy.Strategy;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -34,9 +35,13 @@ public interface StructureFactory extends Serializable {
 
     public Structure mint(final Map<String, Object> configuration);
 
-    public Set<Strategy<?>> getStrategies();
+    public default Set<Strategy<?>> getStrategies() {
+        return Collections.emptySet();
+    }
 
-    public Optional<BytecodeCompiler> getCompiler();
+    public default List<BytecodeCompiler> getCompilers() {
+        return Collections.emptyList();
+    }
 
     public static Set<Strategy<?>> structureStrategies(final Class<? extends StructureFactory> structureFactoryClass) {
         try {

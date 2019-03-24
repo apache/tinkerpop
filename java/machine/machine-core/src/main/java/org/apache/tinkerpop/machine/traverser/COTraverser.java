@@ -16,38 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor.pipes;
-
-import org.apache.tinkerpop.machine.traverser.species.COP_Traverser;
-import org.apache.tinkerpop.machine.util.FastNoSuchElementException;
+package org.apache.tinkerpop.machine.traverser;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class EmptyStep<C, S, E> extends AbstractStep<C, S, E> {
-
-    private static final EmptyStep INSTANCE = new EmptyStep<>();
-
-    private EmptyStep() {
-        super(null, null);
-    }
-
-    @Override
-    public boolean hasNext() {
-        return false;
-    }
-
-    @Override
-    public COP_Traverser<C, E> next() {
-        throw FastNoSuchElementException.instance();
-    }
-
-    static <C, S, E> EmptyStep<C, S, E> instance() {
-        return INSTANCE;
-    }
-
-    @Override
-    public void reset() {
-
-    }
+public interface COTraverser<C, S> extends CTraverser<C>, OTraverser<S> {
 }

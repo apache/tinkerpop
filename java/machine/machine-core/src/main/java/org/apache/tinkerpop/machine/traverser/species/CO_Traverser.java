@@ -28,12 +28,12 @@ import org.apache.tinkerpop.machine.util.StringFactory;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class COTraverser<C, S> implements Traverser<C, S> {
+public class CO_Traverser<C, S> implements Traverser<C, S> {
 
     protected Coefficient<C> coefficient;
     protected S object;
 
-    COTraverser(final Coefficient<C> coefficient, final S object) {
+    CO_Traverser(final Coefficient<C> coefficient, final S object) {
         this.coefficient = coefficient.clone();
         this.object = object;
     }
@@ -69,7 +69,7 @@ public class COTraverser<C, S> implements Traverser<C, S> {
 
     @Override
     public <E> Traverser<C, E> split(final CFunction<C> function, final E object) {
-        final COTraverser<C, E> clone = (COTraverser<C, E>) this.clone();
+        final CO_Traverser<C, E> clone = (CO_Traverser<C, E>) this.clone();
         clone.object = object;
         clone.coefficient.multiply(function.coefficient());
         return clone;
@@ -77,7 +77,7 @@ public class COTraverser<C, S> implements Traverser<C, S> {
 
     @Override
     public <E> Traverser<C, E> split(final E object) {
-        final COTraverser<C, E> clone = (COTraverser<C, E>) this.clone();
+        final CO_Traverser<C, E> clone = (CO_Traverser<C, E>) this.clone();
         clone.object = object;
         return clone;
     }
@@ -89,7 +89,7 @@ public class COTraverser<C, S> implements Traverser<C, S> {
 
     @Override
     public boolean equals(final Object other) {
-        return other instanceof COTraverser && this.object.equals(((COTraverser) other).object);
+        return other instanceof CO_Traverser && this.object.equals(((CO_Traverser) other).object);
     }
 
     @Override
@@ -100,7 +100,7 @@ public class COTraverser<C, S> implements Traverser<C, S> {
     @Override
     public Traverser<C, S> clone() {
         try {
-            final COTraverser<C, S> clone = (COTraverser<C, S>) super.clone();
+            final CO_Traverser<C, S> clone = (CO_Traverser<C, S>) super.clone();
             clone.coefficient = this.coefficient.clone();
             return clone;
         } catch (final CloneNotSupportedException e) {

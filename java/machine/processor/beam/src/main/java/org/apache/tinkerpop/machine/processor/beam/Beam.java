@@ -23,13 +23,13 @@ import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.transforms.Create;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.PCollection;
+import org.apache.tinkerpop.machine.bytecode.Compilation;
+import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.beam.serialization.TraverserCoder;
 import org.apache.tinkerpop.machine.processor.beam.util.ExecutionPlanner;
 import org.apache.tinkerpop.machine.processor.beam.util.TopologyUtil;
-import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.processor.Processor;
-import org.apache.tinkerpop.machine.traverser.species.EmptyTraverser;
 import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.traverser.species.EmptyTraverser;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -43,7 +43,7 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
     public static final int MAX_REPETIONS = 15; // TODO: this needs to be a dynamic configuration
 
     private final Pipeline pipeline;
-    public static List<Traverser> OUTPUT = new ArrayList<>(); // FIX THIS!
+    static List<Traverser> OUTPUT = new ArrayList<>(); // FIX THIS!
     private Iterator<Traverser<C, E>> iterator = null;
 
     public Beam(final Compilation<C, S, E> compilation) {

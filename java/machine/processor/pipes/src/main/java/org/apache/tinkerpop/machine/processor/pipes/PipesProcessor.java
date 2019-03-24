@@ -18,19 +18,26 @@
  */
 package org.apache.tinkerpop.machine.processor.pipes;
 
+import org.apache.tinkerpop.machine.bytecode.BytecodeCompiler;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.processor.pipes.strategy.PipesStrategy;
+import org.apache.tinkerpop.machine.compiler.CommonCompiler;
+import org.apache.tinkerpop.machine.compiler.CoreCompiler;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
+import org.apache.tinkerpop.machine.processor.pipes.strategy.PipesStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class PipesProcessor implements ProcessorFactory {
+
+    private static final List<BytecodeCompiler> COMPILERS = Arrays.asList(CoreCompiler.instance(), CommonCompiler.instance());
 
     public PipesProcessor() {
     }
@@ -43,5 +50,10 @@ public final class PipesProcessor implements ProcessorFactory {
     @Override
     public Set<Strategy<?>> getStrategies() {
         return Collections.singleton(new PipesStrategy());
+    }
+
+    @Override
+    public List<BytecodeCompiler> getCompilers() {
+        return COMPILERS;
     }
 }

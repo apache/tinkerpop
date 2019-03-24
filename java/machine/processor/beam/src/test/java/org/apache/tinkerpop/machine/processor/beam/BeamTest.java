@@ -26,7 +26,7 @@ import org.apache.tinkerpop.language.gremlin.TraversalUtil;
 import org.apache.tinkerpop.language.gremlin.common.__;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
 import org.apache.tinkerpop.machine.strategy.optimization.IdentityStrategy;
-import org.apache.tinkerpop.machine.structure.tinkergraph.TinkerGraphStructure;
+import org.apache.tinkerpop.machine.structure.blueprints.BlueprintsStructure;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -44,7 +44,7 @@ public class BeamTest {
         final TraversalSource<Long> g = Gremlin.<Long>traversal()
                 .withCoefficient(LongCoefficient.class)
                 .withProcessor(BeamProcessor.class)
-                .withStructure(TinkerGraphStructure.class)
+                .withStructure(BlueprintsStructure.class)
                 .withStrategy(IdentityStrategy.class);
 
         Traversal<Long, ?, ?> traversal = g.V();

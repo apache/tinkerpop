@@ -18,41 +18,29 @@
  */
 package org.apache.tinkerpop.machine.traverser.species;
 
-import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class CORTraverser<C, S> extends COTraverser<C, S> {
+public class COP_TraverserFactory<C> implements TraverserFactory<C> {
 
-    private short loops = 0;
+    private static final COP_TraverserFactory INSTANCE = new COP_TraverserFactory();
 
-    public CORTraverser(final Coefficient<C> coefficient, final S object) {
-        super(coefficient, object);
+    private COP_TraverserFactory() {
+        // static instance
     }
 
     @Override
-    public void incrLoops() {
-        this.loops++;
+    public <S> Traverser<C, S> create(final CFunction<C> function, final S object) {
+        final COP_Traverser<C, S> traverser = new COP_Traverser<>(function.coefficient(), object);
+        traverser.path().add(function.labels(), object);
+        return traverser;
     }
 
-    @Override
-    public int loops() {
-        return this.loops;
-    }
-
-    @Override
-    public void resetLoops() {
-        this.loops = 0;
-    }
-
-    @Override
-    public <E> Traverser<C, E> split(final CFunction<C> function, final E object) {
-        final CORTraverser<C, E> clone = (CORTraverser<C, E>) this.clone();
-        clone.object = object;
-        clone.coefficient.multiply(function.coefficient());
-        return clone;
+    public static <C> COP_TraverserFactory<C> instance() {
+        return INSTANCE;
     }
 }

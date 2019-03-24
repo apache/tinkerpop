@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.machine.bytecode;
 
-import org.apache.tinkerpop.machine.compiler.CommonCompiler;
-import org.apache.tinkerpop.machine.compiler.CoreCompiler;
 import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.processor.FilterProcessor;
 import org.apache.tinkerpop.machine.processor.LoopsProcessor;
@@ -32,7 +30,6 @@ import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -54,7 +51,7 @@ public final class Compilation<C, S, E> implements Serializable {
         this.structureFactory = BytecodeUtil.getStructureFactory(bytecode).orElse(EmptyStructure.instance());
         this.processorFactory = BytecodeUtil.getProcessorFactory(bytecode).get();
         this.traverserFactory = BytecodeUtil.getTraverserFactory(bytecode).get();
-        this.functions = CompositeCompiler.compile(bytecode, Arrays.asList(CommonCompiler.instance(), this.structureFactory.getCompiler().orElse(CommonCompiler.instance())));
+        this.functions = BytecodeUtil.getCompilers(bytecode).compile(bytecode);
     }
 
     public Compilation(final ProcessorFactory processorFactory) {
@@ -110,12 +107,6 @@ public final class Compilation<C, S, E> implements Serializable {
     public Processor<C, S, E> addTraverser(final Traverser<C, S> traverser) {
         this.getProcessor().addStart(traverser);
         return this.processor;
-    }
-
-    public Optional<Traverser<C, E>> maybeTraverser(final Traverser<C, S> traverser) {
-        this.prepareProcessor();
-        this.processor.addStart(this.prepareTraverser(traverser));
-        return this.processor.hasNext() ? Optional.of(this.processor.next()) : Optional.empty();
     }
 
     public List<CFunction<C>> getFunctions() {

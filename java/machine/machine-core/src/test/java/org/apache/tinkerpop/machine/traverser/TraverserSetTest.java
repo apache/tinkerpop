@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.machine.traverser;
 
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
-import org.apache.tinkerpop.machine.traverser.species.COPTraverser;
+import org.apache.tinkerpop.machine.traverser.species.COP_Traverser;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,9 +34,9 @@ public class TraverserSetTest {
     @Test
     public void shouldAddContainTraversers() {
         final TraverserSet<Long, String> traverserSet = new TraverserSet<>();
-        Traverser<Long, String> a = new COPTraverser<>(LongCoefficient.create(10L), "hello");
-        Traverser<Long, String> b = new COPTraverser<>(LongCoefficient.create(5L), "hello");
-        Traverser<Long, String> c = new COPTraverser<>(LongCoefficient.create(3L), "world");
+        Traverser<Long, String> a = new COP_Traverser<>(LongCoefficient.create(10L), "hello");
+        Traverser<Long, String> b = new COP_Traverser<>(LongCoefficient.create(5L), "hello");
+        Traverser<Long, String> c = new COP_Traverser<>(LongCoefficient.create(3L), "world");
         ///
         assertTrue(traverserSet.isEmpty());
         assertEquals(0, traverserSet.size());

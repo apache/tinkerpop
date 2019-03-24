@@ -19,16 +19,14 @@
 package org.apache.tinkerpop.machine.bytecode;
 
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
-import org.apache.tinkerpop.machine.compiler.CommonCompiler;
-import org.apache.tinkerpop.machine.compiler.CoreCompiler;
 import org.apache.tinkerpop.machine.compiler.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 import org.apache.tinkerpop.machine.strategy.StrategyUtil;
 import org.apache.tinkerpop.machine.structure.StructureFactory;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
-import org.apache.tinkerpop.machine.traverser.species.COPTraverserFactory;
-import org.apache.tinkerpop.machine.traverser.species.CORTraverserFactory;
+import org.apache.tinkerpop.machine.traverser.species.COP_TraverserFactory;
+import org.apache.tinkerpop.machine.traverser.species.COR_TraverserFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -79,9 +77,8 @@ public final class BytecodeUtil {
 
     public static <C> CompositeCompiler getCompilers(final Bytecode<C> bytecode) {
         final List<BytecodeCompiler> compilers = new ArrayList<>();
-        compilers.add(CoreCompiler.instance());
-        compilers.add(CommonCompiler.instance()); // TODO: this needs to be part of source instruction
-        BytecodeUtil.getStructureFactory(bytecode).ifPresent(f -> f.getCompiler().ifPresent(compilers::add));
+        BytecodeUtil.getProcessorFactory(bytecode).ifPresent(f -> compilers.addAll(f.getCompilers()));
+        BytecodeUtil.getStructureFactory(bytecode).ifPresent(f -> compilers.addAll(f.getCompilers()));
         return CompositeCompiler.create(compilers);
     }
 
@@ -150,10 +147,10 @@ public final class BytecodeUtil {
         // TODO: make this real
         for (final Instruction<C> instruction : bytecode.getInstructions()) {
             if (instruction.op().equals(Symbols.PATH))
-                return Optional.of(COPTraverserFactory.instance());
+                return Optional.of(COP_TraverserFactory.instance());
             else if (instruction.op().equals(Symbols.REPEAT))
-                return Optional.of(CORTraverserFactory.instance());
+                return Optional.of(COR_TraverserFactory.instance());
         }
-        return Optional.of(COPTraverserFactory.instance());
+        return Optional.of(COP_TraverserFactory.instance());
     }
 }

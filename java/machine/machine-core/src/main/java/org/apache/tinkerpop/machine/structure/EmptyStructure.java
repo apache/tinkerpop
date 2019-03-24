@@ -18,13 +18,7 @@
  */
 package org.apache.tinkerpop.machine.structure;
 
-import org.apache.tinkerpop.machine.bytecode.BytecodeCompiler;
-import org.apache.tinkerpop.machine.strategy.Strategy;
-
-import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -40,16 +34,6 @@ public final class EmptyStructure implements Structure, StructureFactory {
     @Override
     public Structure mint(final Map<String, Object> configuration) {
         return this;
-    }
-
-    @Override
-    public Set<Strategy<?>> getStrategies() {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public Optional<BytecodeCompiler> getCompiler() {
-        return Optional.empty();
     }
 
     public static EmptyStructure instance() {

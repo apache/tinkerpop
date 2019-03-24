@@ -24,7 +24,7 @@ import org.apache.tinkerpop.machine.compiler.CoreCompiler;
 import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.strategy.AbstractStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
-import org.apache.tinkerpop.machine.structure.blueprints.bytecode.BlueprintsCompiler;
+import org.apache.tinkerpop.machine.structure.blueprints.compiler.BlueprintsCompiler;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

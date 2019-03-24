@@ -26,11 +26,11 @@ import org.apache.tinkerpop.machine.traverser.path.BasicPath;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class COPTraverser<C, S> extends COTraverser<C, S> {
+public class COP_Traverser<C, S> extends CO_Traverser<C, S> {
 
     private BasicPath path = new BasicPath();
 
-    public COPTraverser(final Coefficient<C> coefficient, final S object) {
+    public COP_Traverser(final Coefficient<C> coefficient, final S object) {
         super(coefficient, object);
     }
 
@@ -48,7 +48,7 @@ public class COPTraverser<C, S> extends COTraverser<C, S> {
 
     @Override
     public <E> Traverser<C, E> split(final CFunction<C> function, final E object) {
-        final COPTraverser<C, E> clone = (COPTraverser<C, E>) this.clone();
+        final COP_Traverser<C, E> clone = (COP_Traverser<C, E>) this.clone();
         clone.object = object;
         clone.path.add(function.labels(), object);
         return clone;
@@ -56,7 +56,7 @@ public class COPTraverser<C, S> extends COTraverser<C, S> {
 
     @Override
     public boolean equals(final Object other) {
-        return other instanceof COPTraverser && ((COPTraverser<C, S>) other).object.equals(this.object);
+        return other instanceof COP_Traverser && ((COP_Traverser<C, S>) other).object.equals(this.object);
     }
 
     @Override
@@ -66,7 +66,7 @@ public class COPTraverser<C, S> extends COTraverser<C, S> {
 
     @Override
     public Traverser<C, S> clone() {
-        final COPTraverser<C, S> clone = (COPTraverser<C, S>) super.clone();
+        final COP_Traverser<C, S> clone = (COP_Traverser<C, S>) super.clone();
         clone.object = this.object;
         clone.coefficient = this.coefficient.clone();
         clone.path = new BasicPath(this.path);
