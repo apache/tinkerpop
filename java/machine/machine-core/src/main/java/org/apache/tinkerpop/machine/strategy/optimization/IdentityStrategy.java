@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.machine.strategy.optimization;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.bytecode.CoreCompiler;
+import org.apache.tinkerpop.machine.compiler.CoreCompiler;
 import org.apache.tinkerpop.machine.strategy.AbstractStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 

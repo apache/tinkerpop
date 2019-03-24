@@ -16,68 +16,43 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.traverser;
+package org.apache.tinkerpop.machine.traverser.species;
 
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
-import org.apache.tinkerpop.machine.traverser.path.Path;
+import org.apache.tinkerpop.machine.traverser.Traverser;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class EmptyTraverser<C, S> implements Traverser<C, S> {
+public class CORTraverser<C, S> extends COTraverser<C, S> {
 
-    private static final EmptyTraverser INSTANCE = new EmptyTraverser();
+    private short loops = 0;
 
-    private EmptyTraverser() {
-        // for static instances
-    }
-
-    @Override
-    public Coefficient<C> coefficient() {
-        throw new IllegalStateException(EmptyTraverser.class.getSimpleName() + " does not contain a coefficient");
-    }
-
-    @Override
-    public S object() {
-        throw new IllegalStateException(EmptyTraverser.class.getSimpleName() + " does not contain an object");
-    }
-
-    @Override
-    public Path path() {
-        throw new IllegalStateException(EmptyTraverser.class.getSimpleName() + " does not contain a path");
+    public CORTraverser(final Coefficient<C> coefficient, final S object) {
+        super(coefficient, object);
     }
 
     @Override
     public void incrLoops() {
+        this.loops++;
     }
 
     @Override
     public int loops() {
-        return 0;
+        return this.loops;
     }
 
     @Override
     public void resetLoops() {
-
+        this.loops = 0;
     }
 
     @Override
     public <E> Traverser<C, E> split(final CFunction<C> function, final E object) {
-        return INSTANCE;
-    }
-
-    @Override
-    public <E> Traverser<C, E> split(final E object) {
-        return INSTANCE;
-    }
-
-    @Override
-    public Traverser<C, S> clone() {
-        return INSTANCE;
-    }
-
-    public static final <C, S> EmptyTraverser<C, S> instance() {
-        return INSTANCE;
+        final CORTraverser<C, E> clone = (CORTraverser<C, E>) this.clone();
+        clone.object = object;
+        clone.coefficient.multiply(function.coefficient());
+        return clone;
     }
 }

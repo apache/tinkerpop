@@ -18,11 +18,12 @@
  */
 package org.apache.tinkerpop.language.gremlin;
 
+import org.apache.tinkerpop.language.gremlin.common.CommonTraversal;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
-import org.apache.tinkerpop.machine.bytecode.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
+import org.apache.tinkerpop.machine.compiler.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 import org.apache.tinkerpop.machine.strategy.finalization.CoefficientStrategy;
@@ -52,6 +53,10 @@ public class TraversalSource<C> implements Cloneable {
         return clone;
     }
 
+    /*public TraversalSource<C> withMachine(final Class<? extends MachineFactory> machine) {
+       // this is where high-level instructions can be inferred?
+    }*/
+
     public TraversalSource<C> withProcessor(final Class<? extends ProcessorFactory> processor) {
         final TraversalSource<C> clone = this.clone();
         clone.bytecode.addSourceInstruction(Symbols.WITH_PROCESSOR, processor);
@@ -76,14 +81,14 @@ public class TraversalSource<C> implements Cloneable {
         final Bytecode<C> bytecode = this.bytecode.clone();
         final Coefficient<C> coefficient = this.coefficient.clone();
         bytecode.addInstruction(coefficient, Symbols.INITIAL, objects);
-        return new Traversal<>(coefficient, bytecode);
+        return new CommonTraversal<>(coefficient, bytecode); // TODO
     }
 
     public Traversal<C, TVertex, TVertex> V() {
         final Bytecode<C> bytecode = this.bytecode.clone();
         final Coefficient<C> coefficient = this.coefficient.clone();
         bytecode.addInstruction(coefficient, Symbols.V);
-        return new Traversal<>(coefficient, bytecode);
+        return new CommonTraversal<>(coefficient, bytecode); // TODO
     }
 
     //

@@ -16,24 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor.beam.strategy;
+package org.apache.tinkerpop.machine.traverser.species;
 
-import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
-import org.apache.tinkerpop.machine.compiler.CoreCompiler.Symbols;
-import org.apache.tinkerpop.machine.processor.pipes.PipesProcessor;
-import org.apache.tinkerpop.machine.strategy.AbstractStrategy;
-import org.apache.tinkerpop.machine.strategy.Strategy;
+import org.apache.tinkerpop.machine.function.CFunction;
+import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BeamStrategy extends AbstractStrategy<Strategy.ProviderStrategy> implements Strategy.ProviderStrategy {
+public class COPTraverserFactory<C> implements TraverserFactory<C> {
 
+    private static final COPTraverserFactory INSTANCE = new COPTraverserFactory();
+
+    private COPTraverserFactory() {
+        // static instance
+    }
 
     @Override
-    public <C> void apply(final Bytecode<C> bytecode) {
-        if (!BytecodeUtil.hasSourceInstruction(bytecode, Symbols.WITH_PROCESSOR))
-            bytecode.addSourceInstruction(Symbols.WITH_PROCESSOR, PipesProcessor.class);
+    public <S> Traverser<C, S> create(final CFunction<C> function, final S object) {
+        final COPTraverser<C, S> traverser = new COPTraverser<>(function.coefficient(), object);
+        traverser.path().add(function.labels(), object);
+        return traverser;
+    }
+
+    public static <C> COPTraverserFactory<C> instance() {
+        return INSTANCE;
     }
 }

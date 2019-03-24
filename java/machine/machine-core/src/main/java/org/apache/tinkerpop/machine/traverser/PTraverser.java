@@ -18,27 +18,14 @@
  */
 package org.apache.tinkerpop.machine.traverser;
 
-import org.apache.tinkerpop.machine.function.CFunction;
+import org.apache.tinkerpop.machine.traverser.path.Path;
+
+import java.io.Serializable;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class COPTraverserFactory<C> implements TraverserFactory<C> {
+public interface PTraverser extends Serializable {
 
-    private static final COPTraverserFactory INSTANCE = new COPTraverserFactory();
-
-    private COPTraverserFactory() {
-        // static instance
-    }
-
-    @Override
-    public <S> Traverser<C, S> create(final CFunction<C> function, final S object) {
-        final COPTraverser<C, S> traverser = new COPTraverser<>(function.coefficient(), object);
-        traverser.path().add(function.labels(), object);
-        return traverser;
-    }
-
-    public static <C> COPTraverserFactory<C> instance() {
-        return INSTANCE;
-    }
+    public Path path();
 }

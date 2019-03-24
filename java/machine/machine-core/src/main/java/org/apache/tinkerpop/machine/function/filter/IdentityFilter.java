@@ -16,42 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.traverser;
+package org.apache.tinkerpop.machine.function.filter;
 
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
-import org.apache.tinkerpop.machine.function.CFunction;
+import org.apache.tinkerpop.machine.function.AbstractFunction;
+import org.apache.tinkerpop.machine.function.FilterFunction;
+import org.apache.tinkerpop.machine.traverser.Traverser;
+
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class CORTraverser<C, S> extends COTraverser<C, S> {
+public final class IdentityFilter<C, S> extends AbstractFunction<C> implements FilterFunction<C, S> {
 
-    private short loops = 0;
-
-    public CORTraverser(final Coefficient<C> coefficient, final S object) {
-        super(coefficient, object);
+    public IdentityFilter(final Coefficient<C> coefficient, final Set<String> labels) {
+        super(coefficient, labels);
     }
 
     @Override
-    public void incrLoops() {
-        this.loops++;
-    }
-
-    @Override
-    public int loops() {
-        return this.loops;
-    }
-
-    @Override
-    public void resetLoops() {
-        this.loops = 0;
-    }
-
-    @Override
-    public <E> Traverser<C, E> split(final CFunction<C> function, final E object) {
-        final CORTraverser<C, E> clone = (CORTraverser<C, E>) this.clone();
-        clone.object = object;
-        clone.coefficient.multiply(function.coefficient());
-        return clone;
+    public boolean test(final Traverser<C, S> traverser) {
+        return true;
     }
 }

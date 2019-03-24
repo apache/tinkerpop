@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.machine.bytecode;
 
+import org.apache.tinkerpop.machine.compiler.CommonCompiler;
+import org.apache.tinkerpop.machine.compiler.CoreCompiler;
 import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.processor.FilterProcessor;
 import org.apache.tinkerpop.machine.processor.LoopsProcessor;
@@ -52,7 +54,7 @@ public final class Compilation<C, S, E> implements Serializable {
         this.structureFactory = BytecodeUtil.getStructureFactory(bytecode).orElse(EmptyStructure.instance());
         this.processorFactory = BytecodeUtil.getProcessorFactory(bytecode).get();
         this.traverserFactory = BytecodeUtil.getTraverserFactory(bytecode).get();
-        this.functions = CompositeCompiler.compile(bytecode, Arrays.asList(CoreCompiler.instance(), this.structureFactory.getCompiler().orElse(CoreCompiler.instance())));
+        this.functions = CompositeCompiler.compile(bytecode, Arrays.asList(CommonCompiler.instance(), this.structureFactory.getCompiler().orElse(CommonCompiler.instance())));
     }
 
     public Compilation(final ProcessorFactory processorFactory) {

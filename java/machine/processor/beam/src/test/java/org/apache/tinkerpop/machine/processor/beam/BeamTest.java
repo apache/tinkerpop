@@ -23,17 +23,16 @@ import org.apache.tinkerpop.language.gremlin.P;
 import org.apache.tinkerpop.language.gremlin.Traversal;
 import org.apache.tinkerpop.language.gremlin.TraversalSource;
 import org.apache.tinkerpop.language.gremlin.TraversalUtil;
-import org.apache.tinkerpop.language.gremlin.__;
+import org.apache.tinkerpop.language.gremlin.common.__;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
-import org.apache.tinkerpop.machine.processor.beam.BeamProcessor;
 import org.apache.tinkerpop.machine.strategy.optimization.IdentityStrategy;
 import org.apache.tinkerpop.machine.structure.tinkergraph.TinkerGraphStructure;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-import static org.apache.tinkerpop.language.gremlin.__.constant;
-import static org.apache.tinkerpop.language.gremlin.__.incr;
+import static org.apache.tinkerpop.language.gremlin.core.__.constant;
+import static org.apache.tinkerpop.language.gremlin.core.__.incr;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -54,7 +53,7 @@ public class BeamTest {
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
-        traversal = g.V().identity().union(__.count(),__.count()).map(__.<Long,Long>count().identity()).explain();
+        traversal = g.V().identity().union(__.count(), __.count()).map(__.<Long, Long>count().identity()).explain();
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(TraversalUtil.getBytecode(traversal));

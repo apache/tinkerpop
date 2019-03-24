@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.machine.function.branch;
 
 import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.bytecode.CoreCompiler.Symbols;
+import org.apache.tinkerpop.machine.compiler.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.BranchFunction;

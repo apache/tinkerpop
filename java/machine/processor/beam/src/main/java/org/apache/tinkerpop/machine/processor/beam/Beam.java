@@ -28,7 +28,7 @@ import org.apache.tinkerpop.machine.processor.beam.util.ExecutionPlanner;
 import org.apache.tinkerpop.machine.processor.beam.util.TopologyUtil;
 import org.apache.tinkerpop.machine.bytecode.Compilation;
 import org.apache.tinkerpop.machine.processor.Processor;
-import org.apache.tinkerpop.machine.traverser.EmptyTraverser;
+import org.apache.tinkerpop.machine.traverser.species.EmptyTraverser;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
 import java.util.ArrayList;

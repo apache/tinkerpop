@@ -16,24 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor.beam.strategy;
+package org.apache.tinkerpop.machine.function.map;
 
-import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
-import org.apache.tinkerpop.machine.compiler.CoreCompiler.Symbols;
-import org.apache.tinkerpop.machine.processor.pipes.PipesProcessor;
-import org.apache.tinkerpop.machine.strategy.AbstractStrategy;
-import org.apache.tinkerpop.machine.strategy.Strategy;
+import org.apache.tinkerpop.machine.coefficient.Coefficient;
+import org.apache.tinkerpop.machine.function.AbstractFunction;
+import org.apache.tinkerpop.machine.function.MapFunction;
+import org.apache.tinkerpop.machine.traverser.Traverser;
+
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BeamStrategy extends AbstractStrategy<Strategy.ProviderStrategy> implements Strategy.ProviderStrategy {
+public class IncrMap<C> extends AbstractFunction<C> implements MapFunction<C, Long, Long> {
 
+    public IncrMap(final Coefficient<C> coefficient, final Set<String> labels) {
+        super(coefficient, labels);
+    }
 
     @Override
-    public <C> void apply(final Bytecode<C> bytecode) {
-        if (!BytecodeUtil.hasSourceInstruction(bytecode, Symbols.WITH_PROCESSOR))
-            bytecode.addSourceInstruction(Symbols.WITH_PROCESSOR, PipesProcessor.class);
+    public Long apply(final Traverser<C, Long> traverser) {
+        return traverser.object() + 1L;
     }
+
 }

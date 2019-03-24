@@ -16,27 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.traverser;
+package org.apache.tinkerpop.machine.traverser.species;
 
 import org.apache.tinkerpop.machine.function.CFunction;
+import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class COTraverserFactory<C> implements TraverserFactory<C> {
+public class CORTraverserFactory<C> implements TraverserFactory<C> {
 
-    private static final COTraverserFactory INSTANCE = new COTraverserFactory();
+    private static final CORTraverserFactory INSTANCE = new CORTraverserFactory();
 
-    private COTraverserFactory() {
+    private CORTraverserFactory() {
         // static instance
     }
 
     @Override
     public <S> Traverser<C, S> create(final CFunction<C> function, final S object) {
-        return new COTraverser<>(function.coefficient(), object);
+        return new CORTraverser<>(function.coefficient(), object);
     }
 
-    public static <C> COTraverserFactory<C> instance() {
+    public static <C> CORTraverserFactory<C> instance() {
         return INSTANCE;
     }
 }

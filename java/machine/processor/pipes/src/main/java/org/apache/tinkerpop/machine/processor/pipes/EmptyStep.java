@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.processor.pipes;
 
-import org.apache.tinkerpop.machine.traverser.COPTraverser;
+import org.apache.tinkerpop.machine.traverser.species.COPTraverser;
 import org.apache.tinkerpop.machine.util.FastNoSuchElementException;
 
 /**

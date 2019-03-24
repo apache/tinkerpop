@@ -16,7 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.language.gremlin;
+package org.apache.tinkerpop.language.gremlin.common;
+
+import org.apache.tinkerpop.language.gremlin.Traversal;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -28,7 +30,7 @@ public class __ {
     }
 
     private static <C, S> Traversal<C, S, S> start() {
-        return new Traversal<>();
+        return new CommonTraversal<>();
     }
 
     public static <C, S> Traversal<C, S, S> c(final C coefficient) {
@@ -44,7 +46,7 @@ public class __ {
     }
 
     public static <C, S> Traversal<C, S, S> is(final S object) {
-        return object instanceof Traversal ? __.is((Traversal<C, S, S>) object) : __.<C, S>start().is(object); // TODO: this is sucky. we don't want this
+        return __.<C, S>start().is(object);
     }
 
     public static <C, S> Traversal<C, S, S> is(final Traversal<C, S, S> objectTraversal) {

@@ -34,11 +34,11 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class FlatmapFlatmap<C, S, E> extends AbstractFunction<C> implements FlatMapFunction<C, S, E> {
+public class FlatMapFlatMap<C, S, E> extends AbstractFunction<C> implements FlatMapFunction<C, S, E> {
 
     private final Argument<E> argument;
 
-    public FlatmapFlatmap(final Coefficient<C> coefficient, final Set<String> labels, final Argument<E> argument) {
+    public FlatMapFlatMap(final Coefficient<C> coefficient, final Set<String> labels, final Argument<E> argument) {
         super(coefficient, labels);
         this.argument = argument;
     }

@@ -16,24 +16,35 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor.beam.strategy;
+package org.apache.tinkerpop.machine.function.map;
 
-import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
-import org.apache.tinkerpop.machine.compiler.CoreCompiler.Symbols;
-import org.apache.tinkerpop.machine.processor.pipes.PipesProcessor;
-import org.apache.tinkerpop.machine.strategy.AbstractStrategy;
-import org.apache.tinkerpop.machine.strategy.Strategy;
+import org.apache.tinkerpop.machine.coefficient.Coefficient;
+import org.apache.tinkerpop.machine.function.AbstractFunction;
+import org.apache.tinkerpop.machine.function.MapFunction;
+import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.util.StringFactory;
+
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BeamStrategy extends AbstractStrategy<Strategy.ProviderStrategy> implements Strategy.ProviderStrategy {
+public class ConstantMap<C, S, E> extends AbstractFunction<C> implements MapFunction<C, S, E> {
 
+    private final E constant;
+
+    public ConstantMap(final Coefficient<C> coefficient, final Set<String> labels, final E constant) {
+        super(coefficient, labels);
+        this.constant = constant;
+    }
 
     @Override
-    public <C> void apply(final Bytecode<C> bytecode) {
-        if (!BytecodeUtil.hasSourceInstruction(bytecode, Symbols.WITH_PROCESSOR))
-            bytecode.addSourceInstruction(Symbols.WITH_PROCESSOR, PipesProcessor.class);
+    public E apply(final Traverser<C, S> traverser) {
+        return this.constant;
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.makeFunctionString(this, this.constant);
     }
 }

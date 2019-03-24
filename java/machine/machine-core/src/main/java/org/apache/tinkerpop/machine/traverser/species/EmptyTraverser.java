@@ -16,44 +16,41 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.traverser;
+package org.apache.tinkerpop.machine.traverser.species;
 
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
-import org.apache.tinkerpop.machine.traverser.path.EmptyPath;
+import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.path.Path;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ShellTraverser<C, S> implements Traverser<C, S> {
+public final class EmptyTraverser<C, S> implements Traverser<C, S> {
 
-    private final Coefficient<C> coefficient;
-    private final S object;
+    private static final EmptyTraverser INSTANCE = new EmptyTraverser();
 
-    public ShellTraverser(final Coefficient<C> coefficient, final S object) {
-        this.coefficient = coefficient;
-        this.object = object;
+    private EmptyTraverser() {
+        // for static instances
     }
 
     @Override
     public Coefficient<C> coefficient() {
-        return this.coefficient;
+        throw new IllegalStateException(EmptyTraverser.class.getSimpleName() + " does not contain a coefficient");
     }
 
     @Override
     public S object() {
-        return this.object;
+        throw new IllegalStateException(EmptyTraverser.class.getSimpleName() + " does not contain an object");
     }
 
     @Override
     public Path path() {
-        return EmptyPath.instance();
+        throw new IllegalStateException(EmptyTraverser.class.getSimpleName() + " does not contain a path");
     }
 
     @Override
     public void incrLoops() {
-
     }
 
     @Override
@@ -67,18 +64,21 @@ public class ShellTraverser<C, S> implements Traverser<C, S> {
     }
 
     @Override
-    public <E> Traverser<C, E> split(CFunction<C> function, E object) {
-        return null;
+    public <E> Traverser<C, E> split(final CFunction<C> function, final E object) {
+        return INSTANCE;
     }
 
     @Override
-    public <E> Traverser<C, E> split(E object) {
-        return null;
+    public <E> Traverser<C, E> split(final E object) {
+        return INSTANCE;
     }
 
     @Override
     public Traverser<C, S> clone() {
-        return this;
+        return INSTANCE;
     }
 
+    public static final <C, S> EmptyTraverser<C, S> instance() {
+        return INSTANCE;
+    }
 }

@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.machine.traverser;
 
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
+import org.apache.tinkerpop.machine.traverser.species.COPTraverser;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

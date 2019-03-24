@@ -16,10 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.traverser;
+package org.apache.tinkerpop.machine.traverser.species;
 
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
+import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.path.EmptyPath;
 import org.apache.tinkerpop.machine.traverser.path.Path;
 import org.apache.tinkerpop.machine.util.StringFactory;

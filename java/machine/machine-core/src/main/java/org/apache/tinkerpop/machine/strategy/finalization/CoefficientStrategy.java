@@ -20,7 +20,7 @@ package org.apache.tinkerpop.machine.strategy.finalization;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
-import org.apache.tinkerpop.machine.bytecode.CoreCompiler;
+import org.apache.tinkerpop.machine.compiler.CoreCompiler;
 import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;

@@ -18,15 +18,17 @@
  */
 package org.apache.tinkerpop.machine.bytecode;
 
-import org.apache.tinkerpop.machine.bytecode.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
+import org.apache.tinkerpop.machine.compiler.CommonCompiler;
+import org.apache.tinkerpop.machine.compiler.CoreCompiler;
+import org.apache.tinkerpop.machine.compiler.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 import org.apache.tinkerpop.machine.strategy.StrategyUtil;
 import org.apache.tinkerpop.machine.structure.StructureFactory;
-import org.apache.tinkerpop.machine.traverser.COPTraverserFactory;
-import org.apache.tinkerpop.machine.traverser.CORTraverserFactory;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
+import org.apache.tinkerpop.machine.traverser.species.COPTraverserFactory;
+import org.apache.tinkerpop.machine.traverser.species.CORTraverserFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -78,6 +80,7 @@ public final class BytecodeUtil {
     public static <C> CompositeCompiler getCompilers(final Bytecode<C> bytecode) {
         final List<BytecodeCompiler> compilers = new ArrayList<>();
         compilers.add(CoreCompiler.instance());
+        compilers.add(CommonCompiler.instance()); // TODO: this needs to be part of source instruction
         BytecodeUtil.getStructureFactory(bytecode).ifPresent(f -> f.getCompiler().ifPresent(compilers::add));
         return CompositeCompiler.create(compilers);
     }

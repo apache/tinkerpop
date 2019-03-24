@@ -16,10 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.traverser;
+package org.apache.tinkerpop.machine.traverser.species;
 
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
+import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.path.BasicPath;
 
 /**
@@ -29,7 +30,7 @@ public class COPTraverser<C, S> extends COTraverser<C, S> {
 
     private BasicPath path = new BasicPath();
 
-    COPTraverser(final Coefficient<C> coefficient, final S object) {
+    public COPTraverser(final Coefficient<C> coefficient, final S object) {
         super(coefficient, object);
     }
 

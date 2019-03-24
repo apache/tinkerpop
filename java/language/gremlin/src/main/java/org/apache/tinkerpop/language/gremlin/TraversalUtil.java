@@ -19,9 +19,10 @@
 package org.apache.tinkerpop.language.gremlin;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.bytecode.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
+import org.apache.tinkerpop.machine.compiler.CommonCompiler;
+import org.apache.tinkerpop.machine.compiler.CoreCompiler.Symbols;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -33,11 +34,11 @@ public final class TraversalUtil {
     }
 
     public static <C> Bytecode<C> getBytecode(final Traversal<C, ?, ?> traversal) {
-        return traversal.bytecode;
+        return ((AbstractTraversal<C, ?, ?>) traversal).bytecode;
     }
 
     public static Object tryToGetBytecode(final Object object) {
-        return object instanceof Traversal ? ((Traversal) object).bytecode : object;
+        return object instanceof AbstractTraversal ? ((AbstractTraversal) object).bytecode : object;
     }
 
     public static <C, S, E> void insertRepeatInstruction(final Bytecode<C> bytecode, final Coefficient<C> currentCoefficient, final char type, final Object argument) {
@@ -46,5 +47,16 @@ public final class TraversalUtil {
             lastInstruction.addArgs(type, argument);
         else
             bytecode.addInstruction(currentCoefficient, Symbols.REPEAT, type, argument);
+    }
+
+    public static <C, S, E> Object[] createUnionArguments(final Traversal<C, S, E>... traversals) {
+        final Object[] args = new Object[traversals.length * 2];
+        for (int i = 0; i < args.length; i = i + 2) {
+            args[i] = CommonCompiler.Symbols.DEFAULT;
+        }
+        for (int i = 0; i < traversals.length; i++) {
+            args[(i * 2) + 1] = TraversalUtil.getBytecode(traversals[i]);
+        }
+        return args;
     }
 }
