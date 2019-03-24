@@ -56,10 +56,7 @@ public final class Instruction<C> {
     }
 
     public void setLabel(final String label) {
-        if (null == this.label)
-            this.label = label;
-        else
-            throw new RuntimeException("Can't set a label twice");
+        this.label = label;
     }
 
     public void addArg(final Object arg) {
