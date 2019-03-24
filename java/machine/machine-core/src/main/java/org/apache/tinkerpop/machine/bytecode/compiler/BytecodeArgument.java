@@ -29,7 +29,7 @@ public class BytecodeArgument<E> implements Argument<E> {
     private final Compilation compilation;
 
     public BytecodeArgument(final Bytecode arg) {
-        this.compilation = Compilation.compileOne(arg);
+        this.compilation = Compilation.compile(arg);
     }
 
     @Override

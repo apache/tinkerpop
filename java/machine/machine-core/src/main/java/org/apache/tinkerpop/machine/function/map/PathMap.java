@@ -84,7 +84,7 @@ public final class PathMap<C, S> extends AbstractFunction<C> implements MapFunct
             if (processingLabels)
                 labels.add((String) arg);
             else
-                compilations.add(Compilation.compileOne(arg));
+                compilations.add(Compilation.compile(arg));
         }
         return new PathMap<>(instruction.coefficient(), instruction.labels(), labels, compilations);
     }

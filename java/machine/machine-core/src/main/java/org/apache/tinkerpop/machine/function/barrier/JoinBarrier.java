@@ -95,7 +95,7 @@ public final class JoinBarrier<C, K, V> extends AbstractFunction<C> implements B
     public static <C, K, V> JoinBarrier<C, K, V> compile(final Instruction<C> instruction) {
         return new JoinBarrier<>(instruction.coefficient(), instruction.labels(),
                 CoreCompiler.Symbols.Tokens.valueOf((String) instruction.args()[0]),
-                Compilation.compileOne(instruction.args()[1]),
+                Compilation.compile(instruction.args()[1]),
                 Argument.create(instruction.args()[2]));
     }
 

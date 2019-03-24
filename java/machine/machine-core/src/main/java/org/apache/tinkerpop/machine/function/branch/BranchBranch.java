@@ -52,8 +52,8 @@ public final class BranchBranch<C, S, E> extends AbstractFunction<C> implements 
         final Object[] args = instruction.args();
         final Map<Compilation<C, S, ?>, List<Compilation<C, S, E>>> branches = new HashMap<>();
         for (int i = 0; i < args.length; i = i + 2) {
-            final Compilation<C, S, ?> predicate = Symbols.DEFAULT.equals(args[i]) ? null : Compilation.compileOne(args[i]);
-            final Compilation<C, S, E> branch = Compilation.compileOne(args[i + 1]);
+            final Compilation<C, S, ?> predicate = Symbols.DEFAULT.equals(args[i]) ? null : Compilation.compile(args[i]);
+            final Compilation<C, S, E> branch = Compilation.compile(args[i + 1]);
             List<Compilation<C, S, E>> list = branches.get(predicate);
             if (null == list) {
                 list = new ArrayList<>();

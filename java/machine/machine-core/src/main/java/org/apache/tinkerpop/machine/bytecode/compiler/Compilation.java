@@ -127,7 +127,7 @@ public final class Compilation<C, S, E> implements Serializable {
         return new Compilation<>(bytecode);
     }
 
-    public static <C, S, E> Compilation<C, S, E> compileOne(final Object arg) {
+    public static <C, S, E> Compilation<C, S, E> compile(final Object arg) {
         return new Compilation<>((Bytecode<C>) arg);
     }
 
@@ -135,14 +135,5 @@ public final class Compilation<C, S, E> implements Serializable {
         return args.length > index && args[index] instanceof Bytecode ?
                 new Compilation<>((Bytecode<C>) args[index]) :
                 null;
-    }
-
-    public static <C, S, E> List<Compilation<C, S, E>> compile(final Object... args) {
-        final List<Compilation<C, S, E>> compilations = new ArrayList<>();
-        for (final Object arg : args) {
-            if (arg instanceof Bytecode)
-                compilations.add(new Compilation<>((Bytecode<C>) arg));
-        }
-        return compilations;
     }
 }
