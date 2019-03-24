@@ -37,8 +37,8 @@ public final class IsFilter<C, S> extends AbstractFunction<C> implements FilterF
     private final Pred predicate;
     private final Argument<S> argument;
 
-    private IsFilter(final Coefficient<C> coefficient, final Set<String> labels, final Pred predicate, final Argument<S> argument) {
-        super(coefficient, labels);
+    private IsFilter(final Coefficient<C> coefficient, final String label, final Pred predicate, final Argument<S> argument) {
+        super(coefficient, label);
         this.predicate = predicate;
         this.argument = argument;
     }
@@ -54,6 +54,6 @@ public final class IsFilter<C, S> extends AbstractFunction<C> implements FilterF
     }
 
     public static <C, S> IsFilter<C, S> compile(final Instruction<C> instruction) {
-        return new IsFilter<>(instruction.coefficient(), instruction.labels(), Pred.valueOf(instruction.args()[0]), Argument.create(instruction.args()[1]));
+        return new IsFilter<>(instruction.coefficient(), instruction.label(), Pred.valueOf(instruction.args()[0]), Argument.create(instruction.args()[1]));
     }
 }

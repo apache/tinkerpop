@@ -51,7 +51,7 @@ public class COP_Traverser<C, S> extends CO_Traverser<C, S> {
     public <E> Traverser<C, E> split(final CFunction<C> function, final E object) {
         final COP_Traverser<C, E> clone = (COP_Traverser<C, E>) this.clone();
         clone.object = object;
-        clone.path.add(function.labels(), object);
+        clone.path.add(function.label(), object);
         return clone;
     }
 

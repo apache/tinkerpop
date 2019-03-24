@@ -18,14 +18,12 @@
  */
 package org.apache.tinkerpop.machine.structure.blueprints.bytecode.compiler;
 
+import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.bytecode.compiler.BytecodeCompiler;
 import org.apache.tinkerpop.machine.bytecode.compiler.FunctionType;
-import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.structure.blueprints.function.initial.VerticesFlatMap;
-
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -46,9 +44,9 @@ public final class BlueprintsCompiler implements BytecodeCompiler {
     public <C> CFunction<C> compile(final Instruction<C> instruction) {
         final String op = instruction.op();
         final Coefficient<C> coefficient = instruction.coefficient();
-        final Set<String> labels = instruction.labels();
+        final String label = instruction.label();
         if (op.equals(Symbols.BP_V))
-            return new VerticesFlatMap<>(coefficient, labels);
+            return new VerticesFlatMap<>(coefficient, label);
         else
             return null;
     }

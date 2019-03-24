@@ -31,8 +31,8 @@ import java.util.Set;
  */
 public final class CountReduce<C, S> extends AbstractFunction<C> implements ReduceFunction<C, S, Long> {
 
-    private CountReduce(final Coefficient<C> coefficient, final Set<String> labels) {
-        super(coefficient, labels);
+    private CountReduce(final Coefficient<C> coefficient, final String label) {
+        super(coefficient, label);
     }
 
     @Override
@@ -51,6 +51,6 @@ public final class CountReduce<C, S> extends AbstractFunction<C> implements Redu
     }
 
     public static <C, S> CountReduce<C, S> compile(final Instruction<C> instruction) {
-        return new CountReduce<>(instruction.coefficient(), instruction.labels());
+        return new CountReduce<>(instruction.coefficient(), instruction.label());
     }
 }

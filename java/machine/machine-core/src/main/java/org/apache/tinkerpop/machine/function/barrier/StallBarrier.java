@@ -35,8 +35,8 @@ public final class StallBarrier<C, S> extends AbstractFunction<C> implements Bar
 
     private final int drainThreshold;
 
-    private StallBarrier(final Coefficient<C> coefficient, final Set<String> labels, final int drainThreshold) {
-        super(coefficient, labels);
+    private StallBarrier(final Coefficient<C> coefficient, final String label, final int drainThreshold) {
+        super(coefficient, label);
         this.drainThreshold = drainThreshold;
     }
 
@@ -63,6 +63,6 @@ public final class StallBarrier<C, S> extends AbstractFunction<C> implements Bar
     }
 
     public static <C, S> StallBarrier<C, S> compile(final Instruction<C> instruction) {
-        return new StallBarrier<>(instruction.coefficient(), instruction.labels(), 1000); // TODO
+        return new StallBarrier<>(instruction.coefficient(), instruction.label(), 1000); // TODO
     }
 }

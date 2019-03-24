@@ -35,8 +35,8 @@ public final class MapMap<C, S, E> extends AbstractFunction<C> implements MapFun
 
     private final Argument<E> argument;
 
-    private MapMap(final Coefficient<C> coefficient, final Set<String> labels, final Argument<E> argument) {
-        super(coefficient, labels);
+    private MapMap(final Coefficient<C> coefficient, final String label, final Argument<E> argument) {
+        super(coefficient, label);
         this.argument = argument;
     }
 
@@ -51,6 +51,6 @@ public final class MapMap<C, S, E> extends AbstractFunction<C> implements MapFun
     }
 
     public static <C, S, E> MapMap<C, S, E> compile(final Instruction<C> instruction) {
-        return new MapMap<>(instruction.coefficient(), instruction.labels(), Argument.create(instruction.args()));
+        return new MapMap<>(instruction.coefficient(), instruction.label(), Argument.create(instruction.args()));
     }
 }

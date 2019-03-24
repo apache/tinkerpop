@@ -19,24 +19,22 @@
 package org.apache.tinkerpop.machine.traverser.path;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class BasicPath implements Path {
 
-    private List<Set<String>> labels = new ArrayList<>();
+    private List<String> labels = new ArrayList<>();
     private List<Object> objects = new ArrayList<>();
 
     public BasicPath() {
     }
 
     @Override
-    public void add(final Set<String> labels, final Object object) {
-        this.labels.add(labels);
+    public void add(final String label, final Object object) {
+        this.labels.add(label);
         this.objects.add(object);
     }
 
@@ -46,7 +44,7 @@ public final class BasicPath implements Path {
     }
 
     @Override
-    public Set<String> labels(final int index) {
+    public String label(final int index) {
         return this.labels.get(index);
     }
 
@@ -54,19 +52,19 @@ public final class BasicPath implements Path {
     public Object get(final Pop pop, final String label) {
         if (Pop.last == pop) {
             for (int i = this.labels.size() - 1; i >= 0; i--) {
-                if (this.labels.get(i).contains(label))
+                if (label.equals(this.labels.get(i)))
                     return this.objects.get(i);
             }
         } else if (Pop.all == pop) {
             final List<Object> objects = new ArrayList<>();
             for (int i = 0; i < this.labels.size(); i++) {
-                if (this.labels.get(i).contains(label))
+                if (label.equals(this.labels.get(i)))
                     objects.add(this.objects.get(i));
             }
             return objects;
         } else { // must be Pop.first
             for (int i = 0; i < this.labels.size(); i++) {
-                if (this.labels.get(i).contains(label))
+                if (label.equals(this.labels.get(i)))
                     return this.objects.get(i);
             }
         }
@@ -100,10 +98,7 @@ public final class BasicPath implements Path {
         try {
             final BasicPath clone = (BasicPath) super.clone();
             clone.objects = new ArrayList<>(this.objects);
-            clone.labels = new ArrayList<>(this.labels.size());
-            for (final Set<String> labelSet : this.labels) {
-                clone.labels.add(new LinkedHashSet<>(labelSet));
-            }
+            clone.labels = new ArrayList<>(this.labels);
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new RuntimeException(e.getMessage(), e);

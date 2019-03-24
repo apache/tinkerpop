@@ -21,19 +21,14 @@ package org.apache.tinkerpop.machine.structure.data;
 import org.apache.tinkerpop.machine.util.IteratorUtils;
 
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class JMap<K, V> implements TMap<K, V> {
+public final class JMap<K, V> implements TMap<K, V> {
 
     private final Map<K, V> map;
-
-    public JMap() {
-        this.map = new LinkedHashMap<>();
-    }
 
     public JMap(final Map<K, V> map) {
         this.map = map;

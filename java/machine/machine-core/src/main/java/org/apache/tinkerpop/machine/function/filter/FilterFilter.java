@@ -38,8 +38,8 @@ public final class FilterFilter<C, S> extends AbstractFunction<C> implements Fil
     private final Argument<S> argument;
 
 
-    private FilterFilter(final Coefficient<C> coefficient, final Set<String> labels, final Pred pred, final Argument<S> argument) {
-        super(coefficient, labels);
+    private FilterFilter(final Coefficient<C> coefficient, final String label, final Pred pred, final Argument<S> argument) {
+        super(coefficient, label);
         this.pred = pred;
         this.argument = argument;
     }
@@ -58,7 +58,7 @@ public final class FilterFilter<C, S> extends AbstractFunction<C> implements Fil
 
     public static <C, S> FilterFilter<C, S> compile(final Instruction<C> instruction) {
         final boolean oneArg = instruction.args().length == 1;
-        return new FilterFilter<>(instruction.coefficient(), instruction.labels(),
+        return new FilterFilter<>(instruction.coefficient(), instruction.label(),
                 oneArg ? null : Pred.valueOf(instruction.args()[0]),
                 Argument.create(oneArg ? instruction.args()[0] : instruction.args()[1]));
     }

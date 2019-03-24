@@ -35,8 +35,8 @@ public final class InitialInitial<C, S> extends AbstractFunction<C> implements I
 
     private final S[] objects;
 
-    private InitialInitial(final Coefficient<C> coefficient, final Set<String> labels, final S... objects) {
-        super(coefficient, labels);
+    private InitialInitial(final Coefficient<C> coefficient, final String label, final S... objects) {
+        super(coefficient, label);
         this.objects = objects;
     }
 
@@ -51,6 +51,6 @@ public final class InitialInitial<C, S> extends AbstractFunction<C> implements I
     }
 
     public static <C, S> InitialInitial<C, S> compile(final Instruction<C> instruction) {
-        return new InitialInitial<>(instruction.coefficient(), instruction.labels(), (S[]) instruction.args());
+        return new InitialInitial<>(instruction.coefficient(), instruction.label(), (S[]) instruction.args());
     }
 }

@@ -36,8 +36,8 @@ public final class ReduceReduce<C, S> extends AbstractFunction<C> implements Red
     private final BinaryOperator<S> operator;
     private final S initialValue;
 
-    private ReduceReduce(final Coefficient<C> coefficient, final Set<String> labels, final BinaryOperator<S> operator, final S initialValue) {
-        super(coefficient, labels);
+    private ReduceReduce(final Coefficient<C> coefficient, final String label, final BinaryOperator<S> operator, final S initialValue) {
+        super(coefficient, label);
         this.operator = operator;
         this.initialValue = initialValue;
     }
@@ -58,6 +58,6 @@ public final class ReduceReduce<C, S> extends AbstractFunction<C> implements Red
     }
 
     public static <C, S> ReduceReduce<C, S> compile(final Instruction<C> instruction) {
-        return new ReduceReduce<>(instruction.coefficient(), instruction.labels(), (BinaryOperator<S>) Oper.valueOf(instruction.args()[0]), (S) instruction.args()[1]);
+        return new ReduceReduce<>(instruction.coefficient(), instruction.label(), (BinaryOperator<S>) Oper.valueOf(instruction.args()[0]), (S) instruction.args()[1]);
     }
 }

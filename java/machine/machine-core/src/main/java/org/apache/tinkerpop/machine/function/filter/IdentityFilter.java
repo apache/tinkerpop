@@ -31,8 +31,8 @@ import java.util.Set;
  */
 public final class IdentityFilter<C, S> extends AbstractFunction<C> implements FilterFunction<C, S> {
 
-    private IdentityFilter(final Coefficient<C> coefficient, final Set<String> labels) {
-        super(coefficient, labels);
+    private IdentityFilter(final Coefficient<C> coefficient, final String label) {
+        super(coefficient, label);
     }
 
     @Override
@@ -41,6 +41,6 @@ public final class IdentityFilter<C, S> extends AbstractFunction<C> implements F
     }
 
     public static <C, S> IdentityFilter<C, S> compile(final Instruction<C> instruction) {
-        return new IdentityFilter<>(instruction.coefficient(), instruction.labels());
+        return new IdentityFilter<>(instruction.coefficient(), instruction.label());
     }
 }

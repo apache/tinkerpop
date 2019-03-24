@@ -36,8 +36,8 @@ import java.util.Set;
  */
 public final class UnfoldFlatMap<C, S, E> extends AbstractFunction<C> implements FlatMapFunction<C, S, E> {
 
-    private UnfoldFlatMap(final Coefficient<C> coefficient, final Set<String> labels) {
-        super(coefficient, labels);
+    private UnfoldFlatMap(final Coefficient<C> coefficient, final String label) {
+        super(coefficient, label);
     }
 
     @Override
@@ -68,6 +68,6 @@ public final class UnfoldFlatMap<C, S, E> extends AbstractFunction<C> implements
     }
 
     public static <C, S, E> UnfoldFlatMap<C, S, E> compile(final Instruction<C> instruction) {
-        return new UnfoldFlatMap<>(instruction.coefficient(), instruction.labels());
+        return new UnfoldFlatMap<>(instruction.coefficient(), instruction.label());
     }
 }

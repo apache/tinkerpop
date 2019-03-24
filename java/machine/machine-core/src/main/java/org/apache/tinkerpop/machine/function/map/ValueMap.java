@@ -36,8 +36,8 @@ public final class ValueMap<C, K, V> extends AbstractFunction<C> implements MapF
 
     private final Argument<K> key;
 
-    private ValueMap(final Coefficient<C> coefficient, final Set<String> labels, final Argument<K> key) {
-        super(coefficient, labels);
+    private ValueMap(final Coefficient<C> coefficient, final String label, final Argument<K> key) {
+        super(coefficient, label);
         this.key = key;
     }
 
@@ -52,6 +52,6 @@ public final class ValueMap<C, K, V> extends AbstractFunction<C> implements MapF
     }
 
     public static <C, K, V> ValueMap<C, K, V> compile(final Instruction<C> instruction) {
-        return new ValueMap<>(instruction.coefficient(), instruction.labels(), Argument.create(instruction.args()[0]));
+        return new ValueMap<>(instruction.coefficient(), instruction.label(), Argument.create(instruction.args()[0]));
     }
 }

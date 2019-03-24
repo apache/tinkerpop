@@ -31,8 +31,8 @@ import java.util.Set;
  */
 public final class LoopsMap<C, S> extends AbstractFunction<C> implements MapFunction<C, S, Integer> {
 
-    private LoopsMap(final Coefficient<C> coefficient, final Set<String> labels) {
-        super(coefficient, labels);
+    private LoopsMap(final Coefficient<C> coefficient, final String label) {
+        super(coefficient, label);
     }
 
     @Override
@@ -41,7 +41,7 @@ public final class LoopsMap<C, S> extends AbstractFunction<C> implements MapFunc
     }
 
     public static <C, S> LoopsMap<C, S> compile(final Instruction<C> instruction) {
-        return new LoopsMap<>(instruction.coefficient(), instruction.labels());
+        return new LoopsMap<>(instruction.coefficient(), instruction.label());
     }
 
 }

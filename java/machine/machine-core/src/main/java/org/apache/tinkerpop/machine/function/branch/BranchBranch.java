@@ -38,8 +38,8 @@ public final class BranchBranch<C, S, E> extends AbstractFunction<C> implements 
 
     private final Map<Compilation<C, S, ?>, List<Compilation<C, S, E>>> branches;
 
-    private BranchBranch(final Coefficient<C> coefficient, final Set<String> labels, final Map<Compilation<C, S, ?>, List<Compilation<C, S, E>>> branches) {
-        super(coefficient, labels);
+    private BranchBranch(final Coefficient<C> coefficient, final String label, final Map<Compilation<C, S, ?>, List<Compilation<C, S, E>>> branches) {
+        super(coefficient, label);
         this.branches = branches;
     }
 
@@ -61,6 +61,6 @@ public final class BranchBranch<C, S, E> extends AbstractFunction<C> implements 
             }
             list.add(branch);
         }
-        return new BranchBranch<>(instruction.coefficient(), instruction.labels(), branches);
+        return new BranchBranch<>(instruction.coefficient(), instruction.label(), branches);
     }
 }

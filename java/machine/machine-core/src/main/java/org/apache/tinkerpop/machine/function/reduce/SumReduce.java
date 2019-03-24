@@ -32,8 +32,8 @@ import java.util.Set;
  */
 public final class SumReduce<C, S extends Number> extends AbstractFunction<C> implements ReduceFunction<C, S, S> {
 
-    private SumReduce(final Coefficient<C> coefficient, final Set<String> labels) {
-        super(coefficient, labels);
+    private SumReduce(final Coefficient<C> coefficient, final String label) {
+        super(coefficient, label);
     }
 
     @Override
@@ -52,6 +52,6 @@ public final class SumReduce<C, S extends Number> extends AbstractFunction<C> im
     }
 
     public static <C, S extends Number> SumReduce<C, S> compile(final Instruction<C> instruction) {
-        return new SumReduce<>(instruction.coefficient(), instruction.labels());
+        return new SumReduce<>(instruction.coefficient(), instruction.label());
     }
 }

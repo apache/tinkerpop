@@ -39,8 +39,8 @@ public final class FlatMapFlatMap<C, S, E> extends AbstractFunction<C> implement
 
     private final Argument<E> argument;
 
-    private FlatMapFlatMap(final Coefficient<C> coefficient, final Set<String> labels, final Argument<E> argument) {
-        super(coefficient, labels);
+    private FlatMapFlatMap(final Coefficient<C> coefficient, final String label, final Argument<E> argument) {
+        super(coefficient, label);
         this.argument = argument;
     }
 
@@ -56,7 +56,7 @@ public final class FlatMapFlatMap<C, S, E> extends AbstractFunction<C> implement
         else if (object.getClass().isArray())
             return handleArrays(object);
         else
-            return IteratorUtils.of((E) object);
+            return IteratorUtils.of(object);
     }
 
     private final Iterator<E> handleArrays(final Object array) {
@@ -72,6 +72,6 @@ public final class FlatMapFlatMap<C, S, E> extends AbstractFunction<C> implement
     }
 
     public static <C, S, E> FlatMapFlatMap<C, S, E> compile(final Instruction<C> instruction) {
-        return new FlatMapFlatMap<>(instruction.coefficient(), instruction.labels(), Argument.create(instruction.args()));
+        return new FlatMapFlatMap<>(instruction.coefficient(), instruction.label(), Argument.create(instruction.args()));
     }
 }

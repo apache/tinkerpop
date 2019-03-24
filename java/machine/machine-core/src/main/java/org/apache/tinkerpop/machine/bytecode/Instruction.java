@@ -22,8 +22,6 @@ import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.util.StringFactory;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -33,7 +31,7 @@ public final class Instruction<C> {
     private final Coefficient<C> coefficient;
     private final String op;
     private Object[] args;
-    private final Set<String> labels = new HashSet<>();
+    private String label = null;
 
     public Instruction(final Coefficient<C> coefficient, final String op, final Object... args) {
         this.coefficient = coefficient.clone();
@@ -53,12 +51,15 @@ public final class Instruction<C> {
         return this.args;
     }
 
-    public Set<String> labels() {
-        return this.labels;
+    public String label() {
+        return this.label;
     }
 
-    public void addLabel(final String label) {
-        this.labels.add(label);
+    public void setLabel(final String label) {
+        if (null == this.label)
+            this.label = label;
+        else
+            throw new RuntimeException("Can't set a label twice");
     }
 
     public void addArg(final Object arg) {
@@ -76,7 +77,7 @@ public final class Instruction<C> {
 
     @Override
     public int hashCode() {
-        return this.coefficient.hashCode() ^ this.op.hashCode() ^ Arrays.hashCode(this.args) ^ this.labels.hashCode();
+        return this.coefficient.hashCode() ^ this.op.hashCode() ^ Arrays.hashCode(this.args) ^ (null == this.label ? 1 : this.label.hashCode());
     }
 
     @Override
@@ -87,7 +88,7 @@ public final class Instruction<C> {
         return this.op.equals(other.op) &&
                 Arrays.equals(this.args, other.args) &&
                 this.coefficient.equals(other.coefficient) &&
-                this.labels.equals(other.labels);
+                ((null == this.label && null == other.label) || (null != this.label && this.label.equals(other.label)));
     }
 
     @Override

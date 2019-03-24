@@ -29,7 +29,6 @@ import org.apache.tinkerpop.machine.traverser.path.BasicPath;
 import org.apache.tinkerpop.machine.traverser.path.Path;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -44,8 +43,8 @@ public final class PathMap<C, S> extends AbstractFunction<C> implements MapFunct
     private final boolean hasByCompilations;
 
 
-    private PathMap(final Coefficient<C> coefficient, final Set<String> labels, final List<String> pathLabels, final List<Compilation<C, Object, Object>> byCompilations) {
-        super(coefficient, labels);
+    private PathMap(final Coefficient<C> coefficient, final String label, final List<String> pathLabels, final List<Compilation<C, Object, Object>> byCompilations) {
+        super(coefficient, label);
         this.pathLabels = pathLabels;
         this.byCompilations = new CompilationCircle<>(byCompilations);
         this.hasPathLabels = !pathLabels.isEmpty();
@@ -61,11 +60,11 @@ public final class PathMap<C, S> extends AbstractFunction<C> implements MapFunct
             final Path newPath = new BasicPath();
             if (this.hasPathLabels) {
                 for (final String label : this.pathLabels) {
-                    newPath.add(Set.of(label), this.byCompilations.process(oldPath.get(Path.Pop.last, label)));
+                    newPath.add(label, this.byCompilations.process(oldPath.get(Path.Pop.last, label)));
                 }
             } else {
                 for (int i = 0; i < oldPath.size(); i++) {
-                    newPath.add(oldPath.labels(i), this.byCompilations.process(oldPath.object(i)));
+                    newPath.add(oldPath.label(i), this.byCompilations.process(oldPath.object(i)));
                 }
             }
             return newPath;
@@ -86,6 +85,6 @@ public final class PathMap<C, S> extends AbstractFunction<C> implements MapFunct
             else
                 compilations.add(Compilation.compile(arg));
         }
-        return new PathMap<>(instruction.coefficient(), instruction.labels(), labels, compilations);
+        return new PathMap<>(instruction.coefficient(), instruction.label(), labels, compilations);
     }
 }

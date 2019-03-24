@@ -21,12 +21,12 @@ package org.apache.tinkerpop.machine.structure.data;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class JTuple2<A, B> implements TTuple2<A, B> {
+public final class JTuple2<A, B> implements TTuple2<A, B> {
 
     private final A a;
     private final B b;
 
-    public JTuple2(final A a, final B b) {
+    JTuple2(final A a, final B b) {
         this.a = a;
         this.b = b;
     }

@@ -33,8 +33,8 @@ import java.util.Set;
  */
 public class VerticesFlatMap<C> extends AbstractFunction<C> implements InitialFunction<C, TVertex> {
 
-    public VerticesFlatMap(final Coefficient<C> coefficient, final Set<String> labels) {
-        super(coefficient, labels);
+    public VerticesFlatMap(final Coefficient<C> coefficient, final String label) {
+        super(coefficient, label);
     }
 
     @Override

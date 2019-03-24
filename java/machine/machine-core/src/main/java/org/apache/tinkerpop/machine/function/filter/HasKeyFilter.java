@@ -39,8 +39,8 @@ public final class HasKeyFilter<C, K, V> extends AbstractFunction<C> implements 
     private final Pred predicate;
     private final Argument<K> key;
 
-    private HasKeyFilter(final Coefficient<C> coefficient, final Set<String> labels, final Pred predicate, final Argument<K> key) {
-        super(coefficient, labels);
+    private HasKeyFilter(final Coefficient<C> coefficient, final String label, final Pred predicate, final Argument<K> key) {
+        super(coefficient, label);
         this.predicate = predicate;
         this.key = key;
     }
@@ -67,6 +67,6 @@ public final class HasKeyFilter<C, K, V> extends AbstractFunction<C> implements 
     }
 
     public static <C, K, V> HasKeyFilter<C, K, V> compile(final Instruction<C> instruction) {
-        return new HasKeyFilter<>(instruction.coefficient(), instruction.labels(), Pred.valueOf(instruction.args()[0]), Argument.create(instruction.args()[1]));
+        return new HasKeyFilter<>(instruction.coefficient(), instruction.label(), Pred.valueOf(instruction.args()[0]), Argument.create(instruction.args()[1]));
     }
 }

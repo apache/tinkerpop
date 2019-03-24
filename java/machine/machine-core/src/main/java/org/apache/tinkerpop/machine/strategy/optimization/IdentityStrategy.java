@@ -34,7 +34,7 @@ public final class IdentityStrategy extends AbstractStrategy<Strategy.Optimizati
                 instruction.op().equals(CoreCompiler.Symbols.MAP) &&
                         instruction.args().length == 1 &&
                         "traverser::object".equals(instruction.args()[0]) &&
-                        instruction.labels().isEmpty() &&
+                        null != instruction.label() &&
                         instruction.coefficient().isUnity());
     }
 }

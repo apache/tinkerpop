@@ -21,7 +21,6 @@ package org.apache.tinkerpop.machine.traverser.path;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Set;
 import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,27 +43,28 @@ class PathTest {
             assertEquals(0, a.size());
             assertEquals(0, b.size());
             ///
-            a.add(Set.of("step1"), 1);
+            a.add("step1", 1);
             assertNotEquals(a, b);
             assertEquals(1, a.size());
             assertEquals(0, b.size());
             ///
-            b.add(Set.of("step1"), 1);
+            b.add("step1", 1);
             assertEquals(a, b);
             assertEquals(1, a.size());
             assertEquals(1, b.size());
             ///
-            a.add(Set.of("step2", "step3"), 2);
-            b.add(Set.of("step2"), 22);
+            a.add("step2", 2);
+            b.add("step2", 22);
             assertNotEquals(a, b);
             assertEquals(2, a.size());
             assertEquals(2, b.size());
             ///
-            a.add(Set.of("step3"), 3);
-            b.add(Set.of("step3"), 33);
+            a.add("step3", 3);
+            b.add("step3", 33);
             assertNotEquals(a, b);
             assertEquals(3, a.size());
             assertEquals(3, b.size());
+            a.add("step3", 2);
             ///
             assertEquals(1, a.get(Path.Pop.first, "step1"));
             assertEquals(1, b.get(Path.Pop.first, "step1"));
@@ -80,19 +80,12 @@ class PathTest {
             assertEquals(List.of(2), a.get(Path.Pop.all, "step2"));
             assertEquals(List.of(22), b.get(Path.Pop.all, "step2"));
             ///
-            assertEquals(2, a.get(Path.Pop.first, "step3"));
+            assertEquals(3, a.get(Path.Pop.first, "step3"));
             assertEquals(33, b.get(Path.Pop.first, "step3"));
-            assertEquals(3, a.get(Path.Pop.last, "step3"));
+            assertEquals(2, a.get(Path.Pop.last, "step3"));
             assertEquals(33, b.get(Path.Pop.last, "step3"));
-            assertEquals(List.of(2, 3), a.get(Path.Pop.all, "step3"));
+            assertEquals(List.of(3,2), a.get(Path.Pop.all, "step3"));
             assertEquals(List.of(33), b.get(Path.Pop.all, "step3"));
-            ///
-            final Set<String> labels = Set.of("step4");
-            a.add(labels, 4);
-            b.add(labels, 4);
-            assertNotEquals(a, b);
-            assertEquals(4, a.size());
-            assertEquals(4, b.size());
         });
     }
 
@@ -103,13 +96,13 @@ class PathTest {
             final Path b = a.clone();
             assertEquals(a, b);
             assertEquals(a.hashCode(), b.hashCode());
-            a.add(Set.of("step1"), 1);
-            b.add(Set.of("step1"), 1);
+            a.add("step1", 1);
+            b.add("step1", 1);
             assertEquals(a, b);
             assertEquals(a.hashCode(), b.hashCode());
             assertEquals(1, a.size());
             assertEquals(1, b.size());
-            b.add(Set.of("step2"), 2);
+            b.add("step2", 2);
             assertNotEquals(a, b);
             assertNotEquals(a.hashCode(), b.hashCode());
             assertEquals(1, a.size());
@@ -117,7 +110,7 @@ class PathTest {
             final Path c = b.clone();
             assertEquals(b, c);
             assertNotEquals(a, c);
-            c.add(Set.of("step3"), 3);
+            c.add("step3", 3);
             assertNotEquals(b, c);
             assertNotEquals(a, c);
             assertEquals(1, a.size());

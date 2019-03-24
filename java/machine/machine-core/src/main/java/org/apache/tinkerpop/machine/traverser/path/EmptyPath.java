@@ -18,9 +18,6 @@
  */
 package org.apache.tinkerpop.machine.traverser.path;
 
-import java.util.Collections;
-import java.util.Set;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -33,7 +30,7 @@ public final class EmptyPath implements Path {
     }
 
     @Override
-    public void add(final Set<String> labels, final Object object) {
+    public void add(final String label, final Object object) {
 
     }
 
@@ -43,8 +40,8 @@ public final class EmptyPath implements Path {
     }
 
     @Override
-    public Set<String> labels(int index) {
-        return Collections.emptySet();
+    public String label(int index) {
+        return null;
     }
 
     @Override

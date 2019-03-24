@@ -31,8 +31,8 @@ import java.util.Set;
  */
 public final class IncrMap<C> extends AbstractFunction<C> implements MapFunction<C, Long, Long> {
 
-    private IncrMap(final Coefficient<C> coefficient, final Set<String> labels) {
-        super(coefficient, labels);
+    private IncrMap(final Coefficient<C> coefficient, final String label) {
+        super(coefficient, label);
     }
 
     @Override
@@ -41,7 +41,7 @@ public final class IncrMap<C> extends AbstractFunction<C> implements MapFunction
     }
 
     public static <C> IncrMap<C> compile(final Instruction<C> instruction) {
-        return new IncrMap<>(instruction.coefficient(), instruction.labels());
+        return new IncrMap<>(instruction.coefficient(), instruction.label());
     }
 
 }

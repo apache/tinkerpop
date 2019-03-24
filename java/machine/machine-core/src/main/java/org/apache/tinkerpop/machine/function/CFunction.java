@@ -30,7 +30,7 @@ public interface CFunction<C> extends Serializable {
 
     public Coefficient<C> coefficient();
 
-    public Set<String> labels();
+    public String label();
 
     // TODO: reset() -- some functions do have state that needs resetting. E.g. nested compilation functions.
 

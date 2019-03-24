@@ -21,19 +21,17 @@ package org.apache.tinkerpop.machine.function;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.util.StringFactory;
 
-import java.util.Set;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class AbstractFunction<C> implements CFunction<C> {
 
     private Coefficient<C> coefficient;
-    private Set<String> labels;
+    private String label;
 
-    public AbstractFunction(final Coefficient<C> coefficient, final Set<String> labels) {
+    public AbstractFunction(final Coefficient<C> coefficient, final String label) {
         this.coefficient = coefficient;
-        this.labels = labels;
+        this.label = label;
     }
 
     @Override
@@ -42,8 +40,8 @@ public abstract class AbstractFunction<C> implements CFunction<C> {
     }
 
     @Override
-    public Set<String> labels() {
-        return this.labels;
+    public String label() {
+        return this.label;
     }
 
     @Override

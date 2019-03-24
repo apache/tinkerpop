@@ -51,7 +51,7 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
 
     @Override
     public Traversal<C, S, E> as(final String label) {
-        this.bytecode.lastInstruction().addLabel(label);
+        this.bytecode.lastInstruction().setLabel(label);
         return this;
     }
 

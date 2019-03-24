@@ -54,8 +54,8 @@ public final class StringFactory {
             name = name.substring(0, name.length() - 1);
             name = name + ")";
         }
-        if (!instruction.labels().isEmpty())
-            name = name + "@" + instruction.labels();
+        if (null != instruction.label())
+            name = name + "@" + instruction.label();
         return name;
     }
 
@@ -90,8 +90,8 @@ public final class StringFactory {
             name = name.substring(0, name.length() - 1);
             name = name + ")";
         }
-        if (!function.labels().isEmpty())
-            name = name + "@" + function.labels();
+        if (null != function.label())
+            name = name + "@" + function.label();
         return name;
     }
 

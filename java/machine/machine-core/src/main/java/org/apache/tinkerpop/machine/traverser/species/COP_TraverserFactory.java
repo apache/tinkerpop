@@ -36,7 +36,7 @@ public class COP_TraverserFactory<C> implements TraverserFactory<C> {
     @Override
     public <S> Traverser<C, S> create(final CFunction<C> function, final S object) {
         final COP_Traverser<C, S> traverser = new COP_Traverser<>(function.coefficient(), object);
-        traverser.path().add(function.labels(), object);
+        traverser.path().add(function.label(), object);
         return traverser;
     }
 

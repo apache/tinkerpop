@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.machine.traverser.path;
 
 import java.io.Serializable;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -30,11 +29,11 @@ public interface Path extends Serializable, Cloneable {
         first, last, all;
     }
 
-    public void add(final Set<String> labels, final Object object);
+    public void add(final String label, final Object object);
 
     public Object object(final int index);
 
-    public Set<String> labels(final int index);
+    public String label(final int index);
 
     public Object get(final Pop pop, final String label);
 

@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -44,11 +43,11 @@ public final class JoinBarrier<C, K, V> extends AbstractFunction<C> implements B
     private final Compilation<C, Map<K, V>, Map<K, V>> joinCompilation;
     private final Argument<K> joinKey;
 
-    private JoinBarrier(final Coefficient<C> coefficient, final Set<String> labels,
+    private JoinBarrier(final Coefficient<C> coefficient, final String label,
                         CoreCompiler.Symbols.Tokens joinType,
                         final Compilation<C, Map<K, V>, Map<K, V>> joinCompilation,
                         final Argument<K> joinKey) {
-        super(coefficient, labels);
+        super(coefficient, label);
         this.joinType = joinType;
         this.joinCompilation = joinCompilation;
         this.joinKey = joinKey;
@@ -93,7 +92,7 @@ public final class JoinBarrier<C, K, V> extends AbstractFunction<C> implements B
     }
 
     public static <C, K, V> JoinBarrier<C, K, V> compile(final Instruction<C> instruction) {
-        return new JoinBarrier<>(instruction.coefficient(), instruction.labels(),
+        return new JoinBarrier<>(instruction.coefficient(), instruction.label(),
                 CoreCompiler.Symbols.Tokens.valueOf((String) instruction.args()[0]),
                 Compilation.compile(instruction.args()[1]),
                 Argument.create(instruction.args()[2]));

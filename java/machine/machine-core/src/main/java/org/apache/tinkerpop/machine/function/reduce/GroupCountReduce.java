@@ -39,8 +39,8 @@ public final class GroupCountReduce<C, S, E> extends AbstractFunction<C> impleme
 
     private final Compilation<C, S, E> byCompilation;
 
-    private GroupCountReduce(final Coefficient<C> coefficient, final Set<String> labels, final Compilation<C, S, E> byCompilation) {
-        super(coefficient, labels);
+    private GroupCountReduce(final Coefficient<C> coefficient, final String label, final Compilation<C, S, E> byCompilation) {
+        super(coefficient, label);
         this.byCompilation = byCompilation;
     }
 
@@ -70,7 +70,7 @@ public final class GroupCountReduce<C, S, E> extends AbstractFunction<C> impleme
     }
 
     public static <C, S, E> GroupCountReduce<C, S, E> compile(final Instruction<C> instruction) {
-        return new GroupCountReduce<>(instruction.coefficient(), instruction.labels(), Compilation.compileOrNull(0, instruction.args()));
+        return new GroupCountReduce<>(instruction.coefficient(), instruction.label(), Compilation.compileOrNull(0, instruction.args()));
     }
 
 }

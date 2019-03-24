@@ -47,8 +47,8 @@ public final class RepeatBranch<C, S> extends AbstractFunction<C> {
     private boolean hasStartPredicates = false;
     private boolean hasEndPredicates = false;
 
-    public RepeatBranch(final Coefficient<C> coefficient, final Set<String> labels, final List<Object> arguments) {
-        super(coefficient, labels);
+    public RepeatBranch(final Coefficient<C> coefficient, final String label, final List<Object> arguments) {
+        super(coefficient, label);
         int location = 1;
         this.compilations = new LinkedHashMap<>();
         for (int i = 0; i < arguments.size(); i = i + 2) {
@@ -121,6 +121,6 @@ public final class RepeatBranch<C, S> extends AbstractFunction<C> {
             else if (arg instanceof Boolean)
                 objects.add(new Compilation<>(new FilterProcessor<>((boolean) arg)));
         }
-        return new RepeatBranch<>(instruction.coefficient(), instruction.labels(), objects);
+        return new RepeatBranch<>(instruction.coefficient(), instruction.label(), objects);
     }
 }
