@@ -20,7 +20,7 @@ package org.apache.tinkerpop.machine.processor.beam;
 
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.values.TupleTag;
-import org.apache.tinkerpop.machine.bytecode.Compilation;
+import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 

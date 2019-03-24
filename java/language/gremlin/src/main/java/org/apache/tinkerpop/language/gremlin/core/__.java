@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.language.gremlin.core;
 
+import org.apache.tinkerpop.language.gremlin.Traversal;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -27,39 +29,39 @@ public class __ {
         // static class
     }
 
-    private static <C, S> CoreTraversal<C, S, S> start() {
+    private static <C, S> Traversal<C, S, S> start() {
         return new CoreTraversal<>();
     }
 
-    public static <C, S> CoreTraversal<C, S, S> c(final C coefficient) {
+    public static <C, S> Traversal<C, S, S> c(final C coefficient) {
         return __.<C, S>start().c(coefficient);
     }
 
-    public static <C, S> CoreTraversal<C, ?, S> constant(final S constant) {
+    public static <C, S> Traversal<C, ?, S> constant(final S constant) {
         return __.<C, S>start().constant(constant);
     }
 
-    public static <C> CoreTraversal<C, Long, Long> incr() {
+    public static <C> Traversal<C, Long, Long> incr() {
         return __.<C, Long>start().incr();
     }
 
-    public static <C, S> CoreTraversal<C, S, S> is(final S object) {
-        return object instanceof CoreTraversal ? __.is((CoreTraversal<C, S, S>) object) : __.<C, S>start().is(object); // TODO: this is sucky. we don't want this
+    public static <C, S> Traversal<C, S, S> is(final S object) {
+        return __.<C, S>start().is(object);
     }
 
-    public static <C, S> CoreTraversal<C, S, S> is(final CoreTraversal<C, S, S> objectTraversal) {
+    public static <C, S> Traversal<C, S, S> is(final Traversal<C, S, S> objectTraversal) {
         return __.<C, S>start().is(objectTraversal);
     }
 
-    public static <C, S> CoreTraversal<C, S, Integer> loops() {
+    public static <C, S> Traversal<C, S, Integer> loops() {
         return __.<C, S>start().loops();
     }
 
-    public static <C, S extends Number> CoreTraversal<C, S, S> sum() {
+    public static <C, S extends Number> Traversal<C, S, S> sum() {
         return __.<C, S>start().sum();
     }
 
-    public static <C, S> CoreTraversal<C, S, Long> count() {
+    public static <C, S> Traversal<C, S, Long> count() {
         return __.<C, S>start().count();
     }
 }

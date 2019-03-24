@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.blueprints.compiler;
+package org.apache.tinkerpop.machine.structure.blueprints.bytecode.compiler;
 
-import org.apache.tinkerpop.machine.bytecode.BytecodeCompiler;
-import org.apache.tinkerpop.machine.bytecode.FunctionType;
+import org.apache.tinkerpop.machine.bytecode.compiler.BytecodeCompiler;
+import org.apache.tinkerpop.machine.bytecode.compiler.FunctionType;
 import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;

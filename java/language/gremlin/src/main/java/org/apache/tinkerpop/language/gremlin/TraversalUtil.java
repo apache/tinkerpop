@@ -20,9 +20,8 @@ package org.apache.tinkerpop.language.gremlin;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.Instruction;
-import org.apache.tinkerpop.machine.coefficient.Coefficient;
-import org.apache.tinkerpop.machine.compiler.CommonCompiler;
-import org.apache.tinkerpop.machine.compiler.CoreCompiler.Symbols;
+import org.apache.tinkerpop.machine.bytecode.compiler.CommonCompiler;
+import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler.Symbols;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -41,12 +40,13 @@ public final class TraversalUtil {
         return object instanceof AbstractTraversal ? ((AbstractTraversal) object).bytecode : object;
     }
 
-    public static <C, S, E> void insertRepeatInstruction(final Bytecode<C> bytecode, final Coefficient<C> currentCoefficient, final char type, final Object argument) {
-        final Instruction<C> lastInstruction = bytecode.lastInstruction();
+    public static <C, S, E> Traversal<C, S, E> insertRepeatInstruction(final AbstractTraversal<C, S, E> traversal, final char type, final Object argument) {
+        final Instruction<C> lastInstruction = traversal.bytecode.lastInstruction();
         if (lastInstruction.op().equals(Symbols.REPEAT))
             lastInstruction.addArgs(type, argument);
         else
-            bytecode.addInstruction(currentCoefficient, Symbols.REPEAT, type, argument);
+            traversal.addInstruction(Symbols.REPEAT, type, argument);
+        return traversal;
     }
 
     public static <C, S, E> Object[] createUnionArguments(final Traversal<C, S, E>... traversals) {

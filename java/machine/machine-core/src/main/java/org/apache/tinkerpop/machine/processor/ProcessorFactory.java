@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.machine.processor;
 
-import org.apache.tinkerpop.machine.bytecode.BytecodeCompiler;
-import org.apache.tinkerpop.machine.bytecode.Compilation;
+import org.apache.tinkerpop.machine.bytecode.compiler.BytecodeCompiler;
+import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
 import java.io.Serializable;

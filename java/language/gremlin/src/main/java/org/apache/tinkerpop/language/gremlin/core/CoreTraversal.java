@@ -23,12 +23,11 @@ import org.apache.tinkerpop.language.gremlin.P;
 import org.apache.tinkerpop.language.gremlin.Traversal;
 import org.apache.tinkerpop.language.gremlin.TraversalUtil;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.bytecode.Oper;
-import org.apache.tinkerpop.machine.bytecode.Pred;
+import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler.Symbols;
+import org.apache.tinkerpop.machine.bytecode.compiler.Oper;
+import org.apache.tinkerpop.machine.bytecode.compiler.Pred;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
-import org.apache.tinkerpop.machine.compiler.CoreCompiler.Symbols;
-import org.apache.tinkerpop.machine.strategy.decoration.ExplainStrategy;
 import org.apache.tinkerpop.machine.traverser.path.Path;
 
 import java.util.Arrays;
@@ -51,246 +50,212 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
     }
 
     @Override
-    public CoreTraversal<C, S, E> as(final String label) {
+    public Traversal<C, S, E> as(final String label) {
         this.bytecode.lastInstruction().addLabel(label);
         return this;
     }
 
     @Override
-    public CoreTraversal<C, S, E> barrier() {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.BARRIER);
-        return this;
+    public Traversal<C, S, E> barrier() {
+        return this.addInstruction(Symbols.BARRIER);
     }
 
     @Override
-    public CoreTraversal<C, S, E> by(final Traversal<C, ?, ?> byTraversal) {
+    public Traversal<C, S, E> by(final Traversal<C, ?, ?> byTraversal) {
         this.bytecode.lastInstruction().addArg(TraversalUtil.getBytecode(byTraversal));
         return this;
     }
 
     @Override
-    public CoreTraversal<C, S, E> by(final String byString) {
+    public Traversal<C, S, E> by(final String byString) {
         this.bytecode.lastInstruction().addArg(byString);
         return this;
     }
 
     @Override
-    public CoreTraversal<C, S, E> c(final C coefficient) {
+    public Traversal<C, S, E> c(final C coefficient) {
         this.currentCoefficient.set(coefficient);
         return this;
     }
 
     @Override
-    public <R> CoreTraversal<C, S, R> choose(final Traversal<C, E, ?> predicate, final Traversal<C, E, R> trueTraversal, final Traversal<C, E, R> falseTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.BRANCH, TraversalUtil.getBytecode(predicate), TraversalUtil.getBytecode(trueTraversal), Symbols.DEFAULT, TraversalUtil.getBytecode(falseTraversal));
-        return (CoreTraversal) this;
+    public <R> Traversal<C, S, R> choose(final Traversal<C, E, ?> predicate, final Traversal<C, E, R> trueTraversal, final Traversal<C, E, R> falseTraversal) {
+        return this.addInstruction(Symbols.BRANCH, TraversalUtil.getBytecode(predicate), TraversalUtil.getBytecode(trueTraversal), Symbols.DEFAULT, TraversalUtil.getBytecode(falseTraversal));
     }
 
     @Override
-    public <R> CoreTraversal<C, S, R> choose(final Traversal<C, E, ?> predicate, final Traversal<C, E, R> trueTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.BRANCH, TraversalUtil.getBytecode(predicate), TraversalUtil.getBytecode(trueTraversal));
-        return (CoreTraversal) this;
+    public <R> Traversal<C, S, R> choose(final Traversal<C, E, ?> predicate, final Traversal<C, E, R> trueTraversal) {
+        return this.addInstruction(Symbols.BRANCH, TraversalUtil.getBytecode(predicate), TraversalUtil.getBytecode(trueTraversal));
     }
 
     @Override
-    public <R> CoreTraversal<C, S, R> constant(final R constant) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.MAP, constant);
-        return (CoreTraversal) this;
+    public <R> Traversal<C, S, R> constant(final R constant) {
+        return this.addInstruction(Symbols.MAP, constant);
     }
 
     @Override
-    public CoreTraversal<C, S, Long> count() {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.MAP, "traverser::count");
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.REDUCE, Oper.sum.name(), 0L);
-        return (CoreTraversal) this;
+    public Traversal<C, S, Long> count() {
+        this.addInstruction(Symbols.MAP, "traverser::count");
+        return this.addInstruction(Symbols.REDUCE, Oper.sum.name(), 0L);
     }
 
     @Override
-    public CoreTraversal<C, S, E> emit() {
-        TraversalUtil.insertRepeatInstruction(this.bytecode, this.currentCoefficient, 'e', true);
-        return this;
+    public Traversal<C, S, E> emit() {
+        return TraversalUtil.insertRepeatInstruction(this, 'e', true);
     }
 
     @Override
-    public CoreTraversal<C, S, E> emit(final Traversal<C, ?, ?> emitTraversal) {
-        TraversalUtil.insertRepeatInstruction(this.bytecode, this.currentCoefficient, 'e', TraversalUtil.getBytecode(emitTraversal));
-        return this;
+    public Traversal<C, S, E> emit(final Traversal<C, ?, ?> emitTraversal) {
+        return TraversalUtil.insertRepeatInstruction(this, 'e', TraversalUtil.getBytecode(emitTraversal));
     }
 
     @Override
-    public CoreTraversal<C, S, String> explain() {
-        this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, ExplainStrategy.class); // TODO: maybe its best to have this in the global cache
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.EXPLAIN);
-        return (CoreTraversal) this;
+    public Traversal<C, S, String> explain() {
+        return this.addInstruction(Symbols.EXPLAIN);
     }
 
     @Override
-    public CoreTraversal<C, S, E> filter(final Traversal<C, E, ?> filterTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, TraversalUtil.getBytecode(filterTraversal));
-        return this;
+    public Traversal<C, S, E> filter(final Traversal<C, E, ?> filterTraversal) {
+        return this.addInstruction(Symbols.FILTER, TraversalUtil.getBytecode(filterTraversal));
     }
 
     @Override
-    public CoreTraversal<C, S, Map<E, Long>> groupCount() {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.GROUP_COUNT);
-        return (CoreTraversal) this;
+    public Traversal<C, S, Map<E, Long>> groupCount() {
+        return this.addInstruction(Symbols.GROUP_COUNT);
     }
 
     @Override
-    public <K, V> CoreTraversal<C, S, Map<K, V>> hasKey(final P<K> predicate) {
+    public <K, V> Traversal<C, S, Map<K, V>> hasKey(final P<K> predicate) {
         final Bytecode<C> internal = new Bytecode<>();
         internal.addInstruction(this.currentCoefficient, Symbols.FLATMAP, "dictionary::keys");
         internal.addInstruction(this.currentCoefficient, Symbols.FILTER, predicate.type().name(), TraversalUtil.tryToGetBytecode(predicate.object()));
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, internal);
-        return (CoreTraversal) this;
+        return this.addInstruction(Symbols.FILTER, internal);
     }
 
     @Override
-    public <K, V> CoreTraversal<C, S, Map<K, V>> hasKey(final K key) {
+    public <K, V> Traversal<C, S, Map<K, V>> hasKey(final K key) {
         final Bytecode<C> internal = new Bytecode<>();
         internal.addInstruction(this.currentCoefficient, Symbols.FLATMAP, "dictionary::keys");
         internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), key);
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, internal);
-        return (CoreTraversal) this;
+        return this.addInstruction(Symbols.FILTER, internal);
     }
 
     @Override
-    public <K, V> CoreTraversal<C, S, Map<K, V>> hasKey(final Traversal<C, Map<K, V>, K> keyTraversal) {
+    public <K, V> Traversal<C, S, Map<K, V>> hasKey(final Traversal<C, Map<K, V>, K> keyTraversal) {
         final Bytecode<C> internal = new Bytecode<>();
         internal.addInstruction(this.currentCoefficient, Symbols.FLATMAP, "dictionary::keys");
         internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), TraversalUtil.getBytecode(keyTraversal));
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, internal);
-        return (CoreTraversal) this;
+        return this.addInstruction(Symbols.FILTER, internal);
     }
 
     @Override
-    public <K, V> CoreTraversal<C, S, Map<K, V>> has(final K key, final V value) {
+    public <K, V> Traversal<C, S, Map<K, V>> has(final K key, final V value) {
         final Bytecode<C> internal = new Bytecode<>();
         internal.addInstruction(this.currentCoefficient, Symbols.MAP, "dictionary::get", TraversalUtil.tryToGetBytecode(key));
         internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), value);
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, internal);
-        return (CoreTraversal) this;
+        return this.addInstruction(Symbols.FILTER, internal);
     }
 
     @Override
-    public <K, V> CoreTraversal<C, S, Map<K, V>> has(final Traversal<C, Map<K, V>, K> keyTraversal, final V value) {
+    public <K, V> Traversal<C, S, Map<K, V>> has(final Traversal<C, Map<K, V>, K> keyTraversal, final V value) {
         final Bytecode<C> internal = new Bytecode<>();
         internal.addInstruction(this.currentCoefficient, Symbols.MAP, "dictionary::get", TraversalUtil.getBytecode(keyTraversal));
         internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), value);
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, internal);
-        return (CoreTraversal) this;
+        return this.addInstruction(Symbols.FILTER, internal);
     }
 
     @Override
-    public <K, V> CoreTraversal<C, S, Map<K, V>> has(final K key, final Traversal<C, Map<K, V>, V> valueTraversal) {
+    public <K, V> Traversal<C, S, Map<K, V>> has(final K key, final Traversal<C, Map<K, V>, V> valueTraversal) {
         final Bytecode<C> internal = new Bytecode<>();
         internal.addInstruction(this.currentCoefficient, Symbols.MAP, "dictionary::get", key);
         internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), TraversalUtil.getBytecode(valueTraversal));
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, internal);
-        return (CoreTraversal) this;
+        return this.addInstruction(Symbols.FILTER, internal);
     }
 
     @Override
-    public <K, V> CoreTraversal<C, S, Map<K, V>> has(final Traversal<C, Map<K, V>, K> keyTraversal, final Traversal<C, Map<K, V>, V> valueTraversal) {
+    public <K, V> Traversal<C, S, Map<K, V>> has(final Traversal<C, Map<K, V>, K> keyTraversal, final Traversal<C, Map<K, V>, V> valueTraversal) {
         final Bytecode<C> internal = new Bytecode<>();
         internal.addInstruction(this.currentCoefficient, Symbols.MAP, "dictionary::get", TraversalUtil.getBytecode(keyTraversal));
         internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), TraversalUtil.getBytecode(valueTraversal));
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, internal);
-        return (CoreTraversal) this;
+        return this.addInstruction(Symbols.FILTER, internal);
     }
 
     @Override
-    public CoreTraversal<C, S, E> identity() {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.MAP, "traverser::object");
-        return this;
+    public Traversal<C, S, E> identity() {
+        return this.addInstruction(Symbols.MAP, "traverser::object");
     }
 
     @Override
-    public CoreTraversal<C, S, E> is(final E object) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), TraversalUtil.tryToGetBytecode(object));
-        return this;
+    public Traversal<C, S, E> is(final E object) {
+        return this.addInstruction(Symbols.FILTER, Pred.eq.name(), TraversalUtil.tryToGetBytecode(object));
     }
 
     @Override
-    public CoreTraversal<C, S, E> is(final Traversal<C, E, ?> objectTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), TraversalUtil.getBytecode(objectTraversal));
-        return this;
+    public Traversal<C, S, E> is(final Traversal<C, E, ?> objectTraversal) {
+        return this.addInstruction(Symbols.FILTER, Pred.eq.name(), TraversalUtil.getBytecode(objectTraversal));
     }
 
     @Override
-    public CoreTraversal<C, S, E> is(final P<E> predicate) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FILTER, predicate.type().name(), TraversalUtil.tryToGetBytecode(predicate.object()));
-        return this;
+    public Traversal<C, S, E> is(final P<E> predicate) {
+        return this.addInstruction(Symbols.FILTER, predicate.type().name(), TraversalUtil.tryToGetBytecode(predicate.object()));
     }
 
     @Override
-    public CoreTraversal<C, S, Long> incr() {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.MAP, "number::add", 1L);
-        return (CoreTraversal) this;
+    public Traversal<C, S, Long> incr() {
+        return this.addInstruction(Symbols.MAP, "number::add", 1L);
     }
 
-    public <K, V> CoreTraversal<C, S, Map<K, V>> join(final Symbols.Tokens joinType, final CoreTraversal<?, ?, Map<K, V>> joinTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.JOIN, joinType, joinTraversal.bytecode);
-        return (CoreTraversal) this;
-    }
-
-    @Override
-    public CoreTraversal<C, S, Integer> loops() {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.MAP, "traverser:loops");
-        return (CoreTraversal) this;
+    public <K, V> Traversal<C, S, Map<K, V>> join(final Symbols.Tokens joinType, final CoreTraversal<?, ?, Map<K, V>> joinTraversal) {
+        return this.addInstruction(Symbols.JOIN, joinType, joinTraversal.bytecode);
     }
 
     @Override
-    public <R> CoreTraversal<C, S, R> map(final Traversal<C, E, R> mapTraversal) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.MAP, TraversalUtil.getBytecode(mapTraversal));
-        return (CoreTraversal) this;
+    public Traversal<C, S, Integer> loops() {
+        return this.addInstruction(Symbols.MAP, "traverser:loops");
     }
 
     @Override
-    public CoreTraversal<C, S, Path> path(final String... labels) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.PATH, Arrays.asList(labels));
-        return (CoreTraversal) this;
+    public <R> Traversal<C, S, R> map(final Traversal<C, E, R> mapTraversal) {
+        return this.addInstruction(Symbols.MAP, TraversalUtil.getBytecode(mapTraversal));
     }
 
     @Override
-    public CoreTraversal<C, S, E> repeat(final Traversal<C, E, E> repeatTraversal) {
-        TraversalUtil.insertRepeatInstruction(this.bytecode, this.currentCoefficient, 'r', TraversalUtil.getBytecode(repeatTraversal));
-        return this;
+    public Traversal<C, S, Path> path(final String... labels) {
+        return this.addInstruction(Symbols.PATH, Arrays.asList(labels));
     }
 
     @Override
-    public <R extends Number> CoreTraversal<C, S, R> sum() {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.REDUCE, Oper.sum.name(), 0);
-        return (CoreTraversal) this;
+    public Traversal<C, S, E> repeat(final Traversal<C, E, E> repeatTraversal) {
+        return TraversalUtil.insertRepeatInstruction(this, 'r', TraversalUtil.getBytecode(repeatTraversal));
     }
 
     @Override
-    public CoreTraversal<C, S, E> times(final int times) {
-        TraversalUtil.insertRepeatInstruction(this.bytecode, this.currentCoefficient, 'u', times);
-        return this;
+    public <R extends Number> Traversal<C, S, R> sum() {
+        return this.addInstruction(Symbols.REDUCE, Oper.sum.name(), 0);
     }
 
     @Override
-    public <R> CoreTraversal<C, S, R> unfold() {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.FLATMAP, "traverser::object");
-        return (CoreTraversal) this;
+    public Traversal<C, S, E> times(final int times) {
+        return TraversalUtil.insertRepeatInstruction(this, 'u', times);
     }
 
     @Override
-    public <R> CoreTraversal<C, S, R> union(final Traversal<C, E, R>... traversals) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.BRANCH, TraversalUtil.createUnionArguments(traversals));
-        return (CoreTraversal) this;
+    public <R> Traversal<C, S, R> unfold() {
+        return this.addInstruction(Symbols.FLATMAP, "traverser::object");
     }
 
     @Override
-    public CoreTraversal<C, S, E> until(final Traversal<C, ?, ?> untilTraversal) {
-        TraversalUtil.insertRepeatInstruction(this.bytecode, this.currentCoefficient, 'u', TraversalUtil.getBytecode(untilTraversal));
-        return this;
+    public <R> Traversal<C, S, R> union(final Traversal<C, E, R>... traversals) {
+        return this.addInstruction(Symbols.BRANCH, TraversalUtil.createUnionArguments(traversals));
     }
 
     @Override
-    public <K, V> CoreTraversal<C, S, V> value(final K key) {
-        this.bytecode.addInstruction(this.currentCoefficient, Symbols.MAP, "dictionary::get", key);
-        return (CoreTraversal) this;
+    public Traversal<C, S, E> until(final Traversal<C, ?, ?> untilTraversal) {
+        return TraversalUtil.insertRepeatInstruction(this, 'u', TraversalUtil.getBytecode(untilTraversal));
+    }
+
+    @Override
+    public <K, V> Traversal<C, S, V> value(final K key) {
+        return this.addInstruction(Symbols.MAP, "dictionary::get", key);
     }
 }

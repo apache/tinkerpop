@@ -16,24 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor.beam.strategy;
-
-import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
-import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler.Symbols;
-import org.apache.tinkerpop.machine.processor.pipes.PipesProcessor;
-import org.apache.tinkerpop.machine.strategy.AbstractStrategy;
-import org.apache.tinkerpop.machine.strategy.Strategy;
+package org.apache.tinkerpop.machine.bytecode.compiler;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BeamStrategy extends AbstractStrategy<Strategy.ProviderStrategy> implements Strategy.ProviderStrategy {
+public enum FunctionType {
 
+    BARRIER, INITIAL, MAP, FLATMAP, FILTER, REDUCE, BRANCH
 
-    @Override
-    public <C> void apply(final Bytecode<C> bytecode) {
-        if (!BytecodeUtil.hasSourceInstruction(bytecode, Symbols.WITH_PROCESSOR))
-            bytecode.addSourceInstruction(Symbols.WITH_PROCESSOR, PipesProcessor.class);
-    }
 }

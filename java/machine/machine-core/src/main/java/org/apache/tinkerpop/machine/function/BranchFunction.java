@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.function;
 
-import org.apache.tinkerpop.machine.bytecode.Compilation;
+import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 
 import java.util.List;
 import java.util.Map;

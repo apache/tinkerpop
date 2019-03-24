@@ -20,8 +20,8 @@ package org.apache.tinkerpop.machine.strategy.decoration;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
-import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.compiler.CoreCompiler.Symbols;
+import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
+import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.strategy.AbstractStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 

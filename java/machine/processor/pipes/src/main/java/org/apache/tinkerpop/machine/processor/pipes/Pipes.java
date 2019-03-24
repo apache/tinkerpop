@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.processor.pipes;
 
-import org.apache.tinkerpop.machine.bytecode.Compilation;
+import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.function.BarrierFunction;
 import org.apache.tinkerpop.machine.function.BranchFunction;
 import org.apache.tinkerpop.machine.function.CFunction;

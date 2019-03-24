@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.structure;
 
-import org.apache.tinkerpop.machine.bytecode.BytecodeCompiler;
+import org.apache.tinkerpop.machine.bytecode.compiler.BytecodeCompiler;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
 import java.io.Serializable;

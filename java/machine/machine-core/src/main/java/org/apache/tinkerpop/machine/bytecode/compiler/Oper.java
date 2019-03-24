@@ -16,13 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.bytecode;
+package org.apache.tinkerpop.machine.bytecode.compiler;
+
+import org.apache.tinkerpop.machine.util.NumberHelper;
+
+import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public enum FunctionType {
+public enum Oper implements BinaryOperator<Object> {
 
-    BARRIER, INITIAL, MAP, FLATMAP, FILTER, REDUCE, BRANCH
+    sum {
+        @Override
+        public Object apply(Object o, Object o2) {
+            return NumberHelper.add((Number) o, (Number) o2);
+        }
+    };
 
+    public static Oper valueOf(final Object object) {
+        return Oper.valueOf(object.toString());
+    }
 }
+
+
+

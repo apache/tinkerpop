@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.machine.function.barrier;
 
-import org.apache.tinkerpop.machine.bytecode.Argument;
-import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.compiler.CoreCompiler;
+import org.apache.tinkerpop.machine.bytecode.compiler.Argument;
+import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
+import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.BarrierFunction;

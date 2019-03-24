@@ -16,42 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor;
+package org.apache.tinkerpop.machine;
 
+import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.traverser.Traverser;
-import org.apache.tinkerpop.machine.util.FastNoSuchElementException;
+
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class SimpleProcessor<C, S, E> implements Processor<C, S, E>, ProcessorFactory {
-
-    protected Traverser<C, E> traverser = null;
+public class LocalMachine implements Machine {
 
     @Override
-    public Traverser<C, E> next() {
-        if (null == this.traverser)
-            throw FastNoSuchElementException.instance();
-        else {
-            final Traverser<C, E> temp = this.traverser;
-            this.traverser = null;
-            return temp;
-        }
-    }
-
-    @Override
-    public boolean hasNext() {
-        return null != this.traverser;
-    }
-
-    @Override
-    public void reset() {
-        this.traverser = null;
-    }
-
-    @Override
-    public <D, T, F> Processor<D, T, F> mint(final Compilation<D, T, F> compilation) {
-        return (Processor<D, T, F>) this;
+    public <C, E> Iterator<Traverser<C, E>> submit(final Bytecode<C> bytecode) {
+        return Compilation.<C, Object, E>compile(bytecode).getProcessor();
     }
 }

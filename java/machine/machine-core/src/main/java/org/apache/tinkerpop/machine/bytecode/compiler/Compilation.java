@@ -16,8 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.bytecode;
+package org.apache.tinkerpop.machine.bytecode.compiler;
 
+import org.apache.tinkerpop.machine.bytecode.Bytecode;
+import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.processor.FilterProcessor;
 import org.apache.tinkerpop.machine.processor.LoopsProcessor;
@@ -33,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -130,14 +131,6 @@ public final class Compilation<C, S, E> implements Serializable {
 
     public static <C, S, E> Compilation<C, S, E> compileOne(final Object arg) {
         return new Compilation<>((Bytecode<C>) arg);
-    }
-
-    public static <C, S, E> Optional<Compilation<C, S, E>> compileMaybe(final Object... args) {
-        for (final Object arg : args) {
-            if (arg instanceof Bytecode)
-                return Optional.of(new Compilation<>((Bytecode<C>) arg));
-        }
-        return Optional.empty();
     }
 
     public static <C, S, E> Compilation<C, S, E> compileOrNull(final int index, final Object... args) {

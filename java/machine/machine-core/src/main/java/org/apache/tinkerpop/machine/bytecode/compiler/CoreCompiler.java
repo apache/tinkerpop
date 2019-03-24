@@ -16,15 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.compiler;
+package org.apache.tinkerpop.machine.bytecode.compiler;
 
-import org.apache.tinkerpop.machine.bytecode.Argument;
-import org.apache.tinkerpop.machine.bytecode.BytecodeCompiler;
-import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.bytecode.FunctionType;
 import org.apache.tinkerpop.machine.bytecode.Instruction;
-import org.apache.tinkerpop.machine.bytecode.Oper;
-import org.apache.tinkerpop.machine.bytecode.Pred;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.function.barrier.JoinBarrier;
@@ -126,6 +120,7 @@ public final class CoreCompiler implements BytecodeCompiler {
 
         // SOURCE OPS
         public static final String WITH_COEFFICIENT = "withCoefficient";
+        public static final String WITH_MACHINE = "withMachine";
         public static final String WITH_PROCESSOR = "withProcessor";
         public static final String WITH_STRUCTURE = "withStructure";
         public static final String WITH_STRATEGY = "withStrategy";

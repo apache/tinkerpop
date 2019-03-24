@@ -16,8 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.bytecode;
+package org.apache.tinkerpop.machine.bytecode.compiler;
 
+import org.apache.tinkerpop.machine.bytecode.Bytecode;
+import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.function.CFunction;
 
 import java.util.List;

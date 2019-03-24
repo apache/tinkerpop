@@ -18,8 +18,11 @@
  */
 package org.apache.tinkerpop.machine.bytecode;
 
+import org.apache.tinkerpop.machine.Machine;
+import org.apache.tinkerpop.machine.bytecode.compiler.BytecodeCompiler;
+import org.apache.tinkerpop.machine.bytecode.compiler.CompositeCompiler;
+import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
-import org.apache.tinkerpop.machine.compiler.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 import org.apache.tinkerpop.machine.strategy.StrategyUtil;
@@ -40,7 +43,7 @@ import java.util.Set;
  */
 public final class BytecodeUtil {
 
-    static <C> void strategize(final Bytecode<C> bytecode) {
+    public static <C> void strategize(final Bytecode<C> bytecode) {
         for (final Strategy strategy : BytecodeUtil.getStrategies(bytecode)) {
             BytecodeUtil.strategize(bytecode, strategy);
         }
@@ -102,7 +105,7 @@ public final class BytecodeUtil {
             ProcessorFactory processor = null;
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
                 if (sourceInstruction.op().equals(Symbols.WITH_PROCESSOR)) {
-                    processor = (ProcessorFactory) ((Class<? extends Coefficient<C>>) sourceInstruction.args()[0]).getConstructor().newInstance();
+                    processor = ((Class<? extends ProcessorFactory>) sourceInstruction.args()[0]).getConstructor().newInstance();
                 }
             }
             return Optional.ofNullable(processor);
@@ -116,10 +119,24 @@ public final class BytecodeUtil {
             StructureFactory structure = null;
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
                 if (sourceInstruction.op().equals(Symbols.WITH_STRUCTURE)) {
-                    structure = (StructureFactory) ((Class<? extends Coefficient<C>>) sourceInstruction.args()[0]).getConstructor().newInstance();
+                    structure = ((Class<? extends StructureFactory>) sourceInstruction.args()[0]).getConstructor().newInstance();
                 }
             }
             return Optional.ofNullable(structure);
+        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    public static <C> Optional<Machine> getMachine(final Bytecode<C> bytecode) {
+        try {
+            Machine machine = null;
+            for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
+                if (sourceInstruction.op().equals(Symbols.WITH_MACHINE)) {
+                    machine = ((Class<? extends Machine>) sourceInstruction.args()[0]).getConstructor().newInstance();
+                }
+            }
+            return Optional.ofNullable(machine);
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
@@ -139,11 +156,7 @@ public final class BytecodeUtil {
         bytecode.getInstructions().add(index, newInstruction);
     }
 
-    public static <C> void removeSourceInstruction(final Bytecode<C> bytecode, final String op) {
-        bytecode.getSourceInstructions().removeIf(instruction -> instruction.op().equals(op));
-    }
-
-    static <C> Optional<TraverserFactory<C>> getTraverserFactory(final Bytecode<C> bytecode) {
+    public static <C> Optional<TraverserFactory<C>> getTraverserFactory(final Bytecode<C> bytecode) {
         // TODO: make this real
         for (final Instruction<C> instruction : bytecode.getInstructions()) {
             if (instruction.op().equals(Symbols.PATH))

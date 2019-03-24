@@ -20,7 +20,7 @@ package org.apache.tinkerpop.machine.processor.pipes.strategy;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
-import org.apache.tinkerpop.machine.compiler.CoreCompiler.Symbols;
+import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.processor.pipes.PipesProcessor;
 import org.apache.tinkerpop.machine.strategy.AbstractStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;

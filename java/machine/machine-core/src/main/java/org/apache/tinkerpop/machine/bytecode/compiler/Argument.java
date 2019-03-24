@@ -16,28 +16,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.bytecode;
+package org.apache.tinkerpop.machine.bytecode.compiler;
 
-import org.apache.tinkerpop.machine.util.NumberHelper;
+import org.apache.tinkerpop.machine.bytecode.Bytecode;
+import org.apache.tinkerpop.machine.traverser.Traverser;
 
-import java.util.function.BinaryOperator;
+import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public enum Oper implements BinaryOperator<Object> {
+public interface Argument<E> extends Serializable {
 
-    sum {
-        @Override
-        public Object apply(Object o, Object o2) {
-            return NumberHelper.add((Number) o, (Number) o2);
-        }
-    };
+    public <C, S> E mapArg(final Traverser<C, S> traverser);
 
-    public static Oper valueOf(final Object object) {
-        return Oper.valueOf(object.toString());
+    public <C, S> boolean filterArg(final Traverser<C, S> traverser);
+
+    public static <C, S, E> Argument<E> create(final Object... args) {
+        if (args[0] instanceof Bytecode)
+            return new BytecodeArgument<>((Bytecode<C>) args[0]);
+        else if (args[0] instanceof String && ((String) args[0]).contains("::"))
+            return new MethodArgument<>((String) args[0], Arrays.copyOfRange(args, 1, args.length));
+        else
+            return new ConstantArgument<>((E) args[0]);
     }
+
 }
-
-
-

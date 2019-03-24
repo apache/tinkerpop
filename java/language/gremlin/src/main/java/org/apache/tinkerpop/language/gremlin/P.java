@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.language.gremlin;
 
-import org.apache.tinkerpop.machine.bytecode.Pred;
+import org.apache.tinkerpop.machine.bytecode.compiler.Pred;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

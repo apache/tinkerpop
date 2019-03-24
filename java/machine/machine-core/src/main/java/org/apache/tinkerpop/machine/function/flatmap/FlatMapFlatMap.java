@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.function.flatmap;
 
-import org.apache.tinkerpop.machine.bytecode.Argument;
+import org.apache.tinkerpop.machine.bytecode.compiler.Argument;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.FlatMapFunction;

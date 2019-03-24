@@ -19,13 +19,16 @@
 package org.apache.tinkerpop.language.gremlin;
 
 import org.apache.tinkerpop.language.gremlin.common.CommonTraversal;
+import org.apache.tinkerpop.machine.LocalMachine;
+import org.apache.tinkerpop.machine.Machine;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
+import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
-import org.apache.tinkerpop.machine.compiler.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.strategy.Strategy;
+import org.apache.tinkerpop.machine.strategy.decoration.ExplainStrategy;
 import org.apache.tinkerpop.machine.strategy.finalization.CoefficientStrategy;
 import org.apache.tinkerpop.machine.strategy.verification.CoefficientVerificationStrategy;
 import org.apache.tinkerpop.machine.structure.StructureFactory;
@@ -39,11 +42,14 @@ public class TraversalSource<C> implements Cloneable {
     private Bytecode<C> bytecode;
     private Coefficient<C> coefficient = (Coefficient<C>) LongCoefficient.create();
     // private Set<Strategy> sortedStrategies (will be more efficient to precompute sort order)
+    // private Machine machine (will be more efficient for remote connections)
 
     TraversalSource() {
         this.bytecode = new Bytecode<>();
-        this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, CoefficientStrategy.class);
-        this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, CoefficientVerificationStrategy.class); // TODO: remove when strategies full integrated
+        this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, CoefficientStrategy.class); // TODO: remove when strategies full integrated
+        this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, CoefficientVerificationStrategy.class);
+        this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, ExplainStrategy.class);
+        this.bytecode.addSourceInstruction(Symbols.WITH_MACHINE, LocalMachine.class);
     }
 
     public TraversalSource<C> withCoefficient(final Class<? extends Coefficient<C>> coefficient) {
@@ -53,9 +59,11 @@ public class TraversalSource<C> implements Cloneable {
         return clone;
     }
 
-    /*public TraversalSource<C> withMachine(final Class<? extends MachineFactory> machine) {
-       // this is where high-level instructions can be inferred?
-    }*/
+    public TraversalSource<C> withMachine(final Class<? extends Machine> machine) {
+        final TraversalSource<C> clone = this.clone();
+        clone.bytecode.addUniqueSourceInstruction(Symbols.WITH_MACHINE, machine);
+        return clone;
+    }
 
     public TraversalSource<C> withProcessor(final Class<? extends ProcessorFactory> processor) {
         final TraversalSource<C> clone = this.clone();
@@ -81,14 +89,14 @@ public class TraversalSource<C> implements Cloneable {
         final Bytecode<C> bytecode = this.bytecode.clone();
         final Coefficient<C> coefficient = this.coefficient.clone();
         bytecode.addInstruction(coefficient, Symbols.INITIAL, objects);
-        return new CommonTraversal<>(coefficient, bytecode); // TODO
+        return new CommonTraversal<>(bytecode, coefficient); // TODO
     }
 
     public Traversal<C, TVertex, TVertex> V() {
         final Bytecode<C> bytecode = this.bytecode.clone();
         final Coefficient<C> coefficient = this.coefficient.clone();
         bytecode.addInstruction(coefficient, Symbols.V);
-        return new CommonTraversal<>(coefficient, bytecode); // TODO
+        return new CommonTraversal<>(bytecode, coefficient); // TODO
     }
 
     //

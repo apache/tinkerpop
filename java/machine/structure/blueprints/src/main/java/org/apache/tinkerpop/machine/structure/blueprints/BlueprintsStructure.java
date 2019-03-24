@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.machine.structure.blueprints;
 
-import org.apache.tinkerpop.machine.bytecode.BytecodeCompiler;
+import org.apache.tinkerpop.machine.bytecode.compiler.BytecodeCompiler;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 import org.apache.tinkerpop.machine.structure.Structure;
 import org.apache.tinkerpop.machine.structure.StructureFactory;
-import org.apache.tinkerpop.machine.structure.blueprints.compiler.BlueprintsCompiler;
+import org.apache.tinkerpop.machine.structure.blueprints.bytecode.compiler.BlueprintsCompiler;
 import org.apache.tinkerpop.machine.structure.blueprints.strategy.provider.BlueprintsVerticesStrategy;
 
 import java.util.Collections;

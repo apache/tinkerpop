@@ -16,27 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.bytecode;
+package org.apache.tinkerpop.machine;
 
-import org.apache.tinkerpop.machine.function.CFunction;
+import org.apache.tinkerpop.machine.bytecode.Bytecode;
+import org.apache.tinkerpop.machine.traverser.Traverser;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface BytecodeCompiler {
+public interface Machine {
 
-    public default <C> List<CFunction<C>> compile(final Bytecode<C> bytecode) {
-        final List<CFunction<C>> functions = new ArrayList<>();
-        for (final Instruction<C> instruction : bytecode.getInstructions()) {
-            functions.add(this.compile(instruction));
-        }
-        return functions;
-    }
-
-    public <C> CFunction<C> compile(final Instruction<C> instruction);
-
-    public FunctionType getFunctionType(final String op);
+    public <C, S> Iterator<Traverser<C, S>> submit(final Bytecode<C> bytecode);
 }

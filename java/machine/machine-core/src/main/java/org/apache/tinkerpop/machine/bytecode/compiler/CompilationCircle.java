@@ -16,33 +16,42 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.bytecode;
+package org.apache.tinkerpop.machine.bytecode.compiler;
 
-import org.apache.tinkerpop.machine.traverser.Traverser;
+import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BytecodeArgument<E> implements Argument<E> {
+public final class CompilationCircle<C, S, E> implements Serializable {
 
-    private final Compilation compilation;
+    private List<Compilation<C, S, E>> compilations;
+    private int currentCompilation = -1;
 
-    public BytecodeArgument(final Bytecode arg) {
-        this.compilation = Compilation.compileOne(arg);
+    public CompilationCircle(final List<Compilation<C, S, E>> compilations) {
+        this.compilations = compilations;
     }
 
-    @Override
-    public <C, S> E mapArg(final Traverser<C, S> traverser) {
-        return (E) this.compilation.mapTraverser(traverser).object();
+    public Compilation<C, S, E> next() {
+        if (this.compilations.isEmpty()) {
+            return null;
+        } else {
+            this.currentCompilation = (this.currentCompilation + 1) % this.compilations.size();
+            return this.compilations.get(this.currentCompilation);
+        }
     }
 
-    @Override
-    public <C, S> boolean filterArg(final Traverser<C, S> traverser) {
-        return this.compilation.filterTraverser(traverser);
+    public boolean isEmpty() {
+        return this.compilations.isEmpty();
+    }
+
+    public void reset() {
+        this.currentCompilation = -1;
     }
 
     @Override
     public String toString() {
-        return this.compilation.toString();
+        return this.compilations.toString();
     }
 }

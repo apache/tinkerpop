@@ -16,28 +16,34 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.bytecode;
+package org.apache.tinkerpop.machine.bytecode.compiler;
 
+import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ConstantArgument<E> implements Argument<E> {
+public class BytecodeArgument<E> implements Argument<E> {
 
-    private final E constant;
+    private final Compilation compilation;
 
-    public ConstantArgument(final E constant) {
-        this.constant = constant;
+    public BytecodeArgument(final Bytecode arg) {
+        this.compilation = Compilation.compileOne(arg);
     }
 
     @Override
     public <C, S> E mapArg(final Traverser<C, S> traverser) {
-        return this.constant;
+        return (E) this.compilation.mapTraverser(traverser).object();
     }
 
     @Override
     public <C, S> boolean filterArg(final Traverser<C, S> traverser) {
-        return (Boolean) this.constant;
+        return this.compilation.filterTraverser(traverser);
+    }
+
+    @Override
+    public String toString() {
+        return this.compilation.toString();
     }
 }

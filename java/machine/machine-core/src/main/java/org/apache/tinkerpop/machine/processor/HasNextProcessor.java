@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.processor;
 
-import org.apache.tinkerpop.machine.bytecode.Compilation;
+import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
 /**

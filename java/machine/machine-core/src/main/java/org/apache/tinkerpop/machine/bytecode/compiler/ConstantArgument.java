@@ -16,42 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor;
+package org.apache.tinkerpop.machine.bytecode.compiler;
 
-import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.traverser.Traverser;
-import org.apache.tinkerpop.machine.util.FastNoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class SimpleProcessor<C, S, E> implements Processor<C, S, E>, ProcessorFactory {
+public class ConstantArgument<E> implements Argument<E> {
 
-    protected Traverser<C, E> traverser = null;
+    private final E constant;
 
-    @Override
-    public Traverser<C, E> next() {
-        if (null == this.traverser)
-            throw FastNoSuchElementException.instance();
-        else {
-            final Traverser<C, E> temp = this.traverser;
-            this.traverser = null;
-            return temp;
-        }
+    public ConstantArgument(final E constant) {
+        this.constant = constant;
     }
 
     @Override
-    public boolean hasNext() {
-        return null != this.traverser;
+    public <C, S> E mapArg(final Traverser<C, S> traverser) {
+        return this.constant;
     }
 
     @Override
-    public void reset() {
-        this.traverser = null;
-    }
-
-    @Override
-    public <D, T, F> Processor<D, T, F> mint(final Compilation<D, T, F> compilation) {
-        return (Processor<D, T, F>) this;
+    public <C, S> boolean filterArg(final Traverser<C, S> traverser) {
+        return (Boolean) this.constant;
     }
 }

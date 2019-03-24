@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.machine.processor.beam;
 
-import org.apache.tinkerpop.machine.bytecode.BytecodeCompiler;
-import org.apache.tinkerpop.machine.bytecode.Compilation;
-import org.apache.tinkerpop.machine.compiler.CommonCompiler;
-import org.apache.tinkerpop.machine.compiler.CoreCompiler;
+import org.apache.tinkerpop.machine.bytecode.compiler.BytecodeCompiler;
+import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
+import org.apache.tinkerpop.machine.bytecode.compiler.CommonCompiler;
+import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.processor.beam.strategy.BeamStrategy;

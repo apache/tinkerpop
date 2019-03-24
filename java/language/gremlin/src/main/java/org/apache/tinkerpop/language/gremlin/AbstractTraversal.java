@@ -19,11 +19,12 @@
 package org.apache.tinkerpop.language.gremlin;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.bytecode.Compilation;
+import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -33,7 +34,7 @@ public abstract class AbstractTraversal<C, S, E> implements Traversal<C, S, E> {
 
     protected Coefficient<C> currentCoefficient;
     protected final Bytecode<C> bytecode;
-    private Compilation<C, S, E> compilation;
+    private Iterator<Traverser<C, E>> traversers = null;
     private boolean locked = false; // TODO: when a traversal has been submitted, we need to make sure new modulations can't happen.
 
     // iteration helpers
@@ -47,20 +48,30 @@ public abstract class AbstractTraversal<C, S, E> implements Traversal<C, S, E> {
 
     ///////
 
+    protected final <A, B> Traversal<C, A, B> addInstruction(final String op, final Object... args) {
+        if (this.locked)
+            throw new IllegalStateException("The traversal has already been compiled and can no longer be mutated");
+        this.bytecode.addInstruction(this.currentCoefficient, op, args);
+        this.currentCoefficient.unity();
+        return (Traversal<C, A, B>) this;
+    }
+
     private final void prepareTraversal() {
-        if (null == this.compilation)
-            this.compilation = Compilation.compile(this.bytecode);
+        if (null == this.traversers) {
+            this.locked = true;
+            this.traversers = BytecodeUtil.getMachine(this.bytecode).get().submit(this.bytecode);
+        }
     }
 
     public Traverser<C, E> nextTraverser() {
         this.prepareTraversal();
-        return this.compilation.getProcessor().next(); // TODO: interaction with hasNext/next and counts
+        return this.traversers.next(); // TODO: interaction with hasNext/next and counts
     }
 
     @Override
     public boolean hasNext() {
         this.prepareTraversal();
-        return this.lastCount > 0 || this.compilation.getProcessor().hasNext();
+        return this.lastCount > 0 || this.traversers.hasNext();
     }
 
     @Override
@@ -70,7 +81,7 @@ public abstract class AbstractTraversal<C, S, E> implements Traversal<C, S, E> {
             this.lastCount--;
             return this.lastObject;
         } else {
-            final Traverser<C, E> traverser = this.compilation.getProcessor().next();
+            final Traverser<C, E> traverser = this.traversers.next();
             if (traverser.coefficient().count() > 1) {
                 this.lastObject = traverser.object();
                 this.lastCount = traverser.coefficient().count() - 1L;
