@@ -59,4 +59,11 @@ public final class TraversalUtil {
         }
         return args;
     }
+
+    public static Object[] addObjects(final Object[] original, final Object... updates) {
+        final Object[] objects = new Object[original.length + updates.length];
+        System.arraycopy(original, 0, objects, 0, original.length);
+        System.arraycopy(updates, 0, objects, original.length, updates.length);
+        return objects;
+    }
 }

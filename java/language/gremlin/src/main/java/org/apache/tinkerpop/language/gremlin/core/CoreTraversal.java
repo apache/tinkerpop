@@ -220,9 +220,7 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
 
     @Override
     public Traversal<C, S, Path> path(final String... labels) {
-        this.addInstruction(Symbols.PATH, (Object[]) labels);
-        this.bytecode.lastInstruction().addArg("|");
-        return (Traversal) this;
+        return this.addInstruction(Symbols.PATH, TraversalUtil.addObjects(labels, "|"));
     }
 
     @Override
