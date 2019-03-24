@@ -18,25 +18,13 @@
  */
 package org.apache.tinkerpop.machine.structure.data;
 
-import java.util.Iterator;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TMap<K, V> {
+public interface TTuple2<A, B> {
 
-    public void set(final K key, final V value);
+    public A getA();
 
-    public V get(final K key);
-
-    public V get(final K key, final V defaultValue);
-
-    public boolean has(final K key);
-
-    public Iterator<K> keys();
-
-    public Iterator<V> values();
-
-    public Iterator<TTuple2<K, V>> entries();
+    public B getB();
 
 }

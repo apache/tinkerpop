@@ -27,9 +27,8 @@ import org.apache.tinkerpop.machine.bytecode.compiler.CommonCompiler.Symbols;
 import org.apache.tinkerpop.machine.bytecode.compiler.Pred;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
+import org.apache.tinkerpop.machine.structure.data.TMap;
 import org.apache.tinkerpop.machine.traverser.path.Path;
-
-import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -117,42 +116,42 @@ public class CommonTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
     }
 
     @Override
-    public Traversal<C, S, Map<E, Long>> groupCount() {
+    public Traversal<C, S, TMap<E, Long>> groupCount() {
         return this.addInstruction(Symbols.GROUP_COUNT);
     }
 
     @Override
-    public <K, V> Traversal<C, S, Map<K, V>> has(final K key, final V value) {
+    public <K, V> Traversal<C, S, TMap<K, V>> has(final K key, final V value) {
         return this.addInstruction(Symbols.HAS_KEY_VALUE, TraversalUtil.tryToGetBytecode(key), TraversalUtil.tryToGetBytecode(value));
     }
 
     @Override
-    public <K, V> Traversal<C, S, Map<K, V>> has(final Traversal<C, Map<K, V>, K> keyTraversal, final V value) {
+    public <K, V> Traversal<C, S, TMap<K, V>> has(final Traversal<C, TMap<K, V>, K> keyTraversal, final V value) {
         return this.addInstruction(Symbols.HAS_KEY_VALUE, TraversalUtil.getBytecode(keyTraversal), TraversalUtil.tryToGetBytecode(value));
     }
 
     @Override
-    public <K, V> Traversal<C, S, Map<K, V>> has(final K key, final Traversal<C, Map<K, V>, V> valueTraversal) {
+    public <K, V> Traversal<C, S, TMap<K, V>> has(final K key, final Traversal<C, TMap<K, V>, V> valueTraversal) {
         return this.addInstruction(Symbols.HAS_KEY_VALUE, TraversalUtil.tryToGetBytecode(key), TraversalUtil.getBytecode(valueTraversal));
     }
 
     @Override
-    public <K, V> Traversal<C, S, Map<K, V>> has(final Traversal<C, Map<K, V>, K> keyTraversal, final Traversal<C, Map<K, V>, V> valueTraversal) {
+    public <K, V> Traversal<C, S, TMap<K, V>> has(final Traversal<C, TMap<K, V>, K> keyTraversal, final Traversal<C, TMap<K, V>, V> valueTraversal) {
         return this.addInstruction(Symbols.HAS_KEY_VALUE, TraversalUtil.getBytecode(keyTraversal), TraversalUtil.getBytecode(valueTraversal));
     }
 
     @Override
-    public <K, V> Traversal<C, S, Map<K, V>> hasKey(final P<K> predicate) {
+    public <K, V> Traversal<C, S, TMap<K, V>> hasKey(final P<K> predicate) {
         return this.addInstruction(Symbols.HAS_KEY, predicate.type().name(), TraversalUtil.tryToGetBytecode(predicate.object()));
     }
 
     @Override
-    public <K, V> Traversal<C, S, Map<K, V>> hasKey(final K key) {
+    public <K, V> Traversal<C, S, TMap<K, V>> hasKey(final K key) {
         return this.addInstruction(Symbols.HAS_KEY, TraversalUtil.tryToGetBytecode(key));
     }
 
     @Override
-    public <K, V> Traversal<C, S, Map<K, V>> hasKey(final Traversal<C, Map<K, V>, K> keyTraversal) {
+    public <K, V> Traversal<C, S, TMap<K, V>> hasKey(final Traversal<C, TMap<K, V>, K> keyTraversal) {
         return this.addInstruction(Symbols.HAS_KEY, TraversalUtil.getBytecode(keyTraversal));
     }
 

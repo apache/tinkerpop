@@ -27,9 +27,9 @@ import org.apache.tinkerpop.language.gremlin.common.__;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
 import org.apache.tinkerpop.machine.strategy.optimization.IdentityStrategy;
 import org.apache.tinkerpop.machine.structure.blueprints.BlueprintsStructure;
+import org.apache.tinkerpop.machine.structure.data.JMap;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -108,7 +108,7 @@ public class PipesTest {
         System.out.println(traversal);
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
-        traversal = g.inject(7L).as("a").union(__.<Long>incr().as("b"), __.<Long>incr().incr().as("b"), __.<Long>incr().incr().incr().as("b")).path("a","b").by(__.incr());
+        traversal = g.inject(7L).as("a").union(__.<Long>incr().as("b"), __.<Long>incr().incr().as("b"), __.<Long>incr().incr().incr().as("b")).path("a", "b").by(__.incr());
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());
@@ -129,18 +129,18 @@ public class PipesTest {
                 .withProcessor(PipesProcessor.class)
                 .withStrategy(IdentityStrategy.class);
 
-        List<Map<String, Object>> listA = List.of(
-                Map.of("name", "marko", "age", 29),
-                Map.of("name", "josh", "age", 32),
-                Map.of("name", "peter", "age", 35),
-                Map.of("name", "vadas", "age", 27));
+        List<JMap<String, Object>> listA = List.of(
+                JMap.create(Map.of("name", "marko", "age", 29)),
+                JMap.create(Map.of("name", "josh", "age", 32)),
+                JMap.create(Map.of("name", "peter", "age", 35)),
+                JMap.create(Map.of("name", "vadas", "age", 27)));
 
-        List<Map<String, Object>> listB = List.of(
-                Map.of("name", "marko", "city", "santa fe"),
-                Map.of("name", "marko", "city", "santa cruz"),
-                Map.of("name", "josh", "city", "san jose"),
-                Map.of("name", "peter", "city", "malmo"),
-                Map.of("name", "vadas", "city", "durham"));
+        List<JMap<String, Object>> listB = List.of(
+                JMap.create(Map.of("name", "marko", "city", "santa fe")),
+                JMap.create(Map.of("name", "marko", "city", "santa cruz")),
+                JMap.create(Map.of("name", "josh", "city", "san jose")),
+                JMap.create(Map.of("name", "peter", "city", "malmo")),
+                JMap.create(Map.of("name", "vadas", "city", "durham")));
 
 
         Traversal<Long, ?, ?> traversal = g.inject(listA).unfold().hasKey(P.regex(__.constant("[a].*[e]"))); //.join(inner, __.constant(listB).unfold()).by("name");
@@ -153,7 +153,7 @@ public class PipesTest {
         System.out.println(traversal);
         System.out.println(traversal.toList());
         System.out.println("\n----------\n");
-        traversal = g.inject(Map.of("name", "marko", "age", 29), Map.of("name", "josh", "age", 32)).hasKey(P.regex(__.constant("[a].*[e]"))).has("name", "marko").value("age");
+        traversal = g.inject(JMap.create(Map.of("name", "marko", "age", 29)), JMap.create(Map.of("name", "josh", "age", 32))).hasKey(P.regex(__.constant("[a].*[e]"))).has("name", "marko").value("age");
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());

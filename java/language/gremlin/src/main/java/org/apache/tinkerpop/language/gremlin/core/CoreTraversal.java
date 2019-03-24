@@ -28,6 +28,7 @@ import org.apache.tinkerpop.machine.bytecode.compiler.Oper;
 import org.apache.tinkerpop.machine.bytecode.compiler.Pred;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
+import org.apache.tinkerpop.machine.structure.data.TMap;
 import org.apache.tinkerpop.machine.traverser.path.Path;
 
 import java.util.Map;
@@ -119,12 +120,12 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
     }
 
     @Override
-    public Traversal<C, S, Map<E, Long>> groupCount() {
+    public Traversal<C, S, TMap<E, Long>> groupCount() {
         return this.addInstruction(Symbols.GROUP_COUNT);
     }
 
     @Override
-    public <K, V> Traversal<C, S, Map<K, V>> hasKey(final P<K> predicate) {
+    public <K, V> Traversal<C, S, TMap<K, V>> hasKey(final P<K> predicate) {
         final Bytecode<C> internal = new Bytecode<>();
         internal.addInstruction(this.currentCoefficient, Symbols.FLATMAP, "dictionary::keys");
         internal.addInstruction(this.currentCoefficient, Symbols.FILTER, predicate.type().name(), TraversalUtil.tryToGetBytecode(predicate.object()));
@@ -132,7 +133,7 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
     }
 
     @Override
-    public <K, V> Traversal<C, S, Map<K, V>> hasKey(final K key) {
+    public <K, V> Traversal<C, S, TMap<K, V>> hasKey(final K key) {
         final Bytecode<C> internal = new Bytecode<>();
         internal.addInstruction(this.currentCoefficient, Symbols.FLATMAP, "dictionary::keys");
         internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), key);
@@ -140,7 +141,7 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
     }
 
     @Override
-    public <K, V> Traversal<C, S, Map<K, V>> hasKey(final Traversal<C, Map<K, V>, K> keyTraversal) {
+    public <K, V> Traversal<C, S, TMap<K, V>> hasKey(final Traversal<C, TMap<K, V>, K> keyTraversal) {
         final Bytecode<C> internal = new Bytecode<>();
         internal.addInstruction(this.currentCoefficient, Symbols.FLATMAP, "dictionary::keys");
         internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), TraversalUtil.getBytecode(keyTraversal));
@@ -148,7 +149,7 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
     }
 
     @Override
-    public <K, V> Traversal<C, S, Map<K, V>> has(final K key, final V value) {
+    public <K, V> Traversal<C, S, TMap<K, V>> has(final K key, final V value) {
         final Bytecode<C> internal = new Bytecode<>();
         internal.addInstruction(this.currentCoefficient, Symbols.MAP, "dictionary::get", TraversalUtil.tryToGetBytecode(key));
         internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), value);
@@ -156,7 +157,7 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
     }
 
     @Override
-    public <K, V> Traversal<C, S, Map<K, V>> has(final Traversal<C, Map<K, V>, K> keyTraversal, final V value) {
+    public <K, V> Traversal<C, S, TMap<K, V>> has(final Traversal<C, TMap<K, V>, K> keyTraversal, final V value) {
         final Bytecode<C> internal = new Bytecode<>();
         internal.addInstruction(this.currentCoefficient, Symbols.MAP, "dictionary::get", TraversalUtil.getBytecode(keyTraversal));
         internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), value);
@@ -164,7 +165,7 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
     }
 
     @Override
-    public <K, V> Traversal<C, S, Map<K, V>> has(final K key, final Traversal<C, Map<K, V>, V> valueTraversal) {
+    public <K, V> Traversal<C, S, TMap<K, V>> has(final K key, final Traversal<C, TMap<K, V>, V> valueTraversal) {
         final Bytecode<C> internal = new Bytecode<>();
         internal.addInstruction(this.currentCoefficient, Symbols.MAP, "dictionary::get", key);
         internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), TraversalUtil.getBytecode(valueTraversal));
@@ -172,7 +173,7 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
     }
 
     @Override
-    public <K, V> Traversal<C, S, Map<K, V>> has(final Traversal<C, Map<K, V>, K> keyTraversal, final Traversal<C, Map<K, V>, V> valueTraversal) {
+    public <K, V> Traversal<C, S, TMap<K, V>> has(final Traversal<C, TMap<K, V>, K> keyTraversal, final Traversal<C, TMap<K, V>, V> valueTraversal) {
         final Bytecode<C> internal = new Bytecode<>();
         internal.addInstruction(this.currentCoefficient, Symbols.MAP, "dictionary::get", TraversalUtil.getBytecode(keyTraversal));
         internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), TraversalUtil.getBytecode(valueTraversal));

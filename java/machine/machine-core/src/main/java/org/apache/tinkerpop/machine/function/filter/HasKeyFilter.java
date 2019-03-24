@@ -24,16 +24,17 @@ import org.apache.tinkerpop.machine.bytecode.compiler.Pred;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.FilterFunction;
+import org.apache.tinkerpop.machine.structure.data.TMap;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.util.StringFactory;
 
-import java.util.Map;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class HasKeyFilter<C, K, V> extends AbstractFunction<C> implements FilterFunction<C, Map<K, V>> {
+public final class HasKeyFilter<C, K, V> extends AbstractFunction<C> implements FilterFunction<C, TMap<K, V>> {
 
     private final Pred predicate;
     private final Argument<K> key;
@@ -45,14 +46,15 @@ public final class HasKeyFilter<C, K, V> extends AbstractFunction<C> implements 
     }
 
     @Override
-    public boolean test(final Traverser<C, Map<K, V>> traverser) {
-        final Map<K, V> object = traverser.object();
+    public boolean test(final Traverser<C, TMap<K, V>> traverser) {
+        final TMap<K, V> object = traverser.object();
         if (Pred.eq == this.predicate)
-            return object.containsKey(this.key.mapArg(traverser));
+            return object.has(this.key.mapArg(traverser));
         else {
             final K testKey = this.key.mapArg(traverser);
-            for (final K key : traverser.object().keySet()) {
-                if (this.predicate.test(key, testKey))
+            final Iterator<K> keys = traverser.object().keys();
+            while (keys.hasNext()) {
+                if (this.predicate.test(keys.next(), testKey))
                     return true;
             }
             return false;

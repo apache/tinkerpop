@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.language.gremlin;
 
+import org.apache.tinkerpop.machine.structure.data.TMap;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.path.Path;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -56,21 +56,21 @@ public interface Traversal<C, S, E> extends Iterator<E> {
 
     public Traversal<C, S, E> filter(final Traversal<C, E, ?> filterTraversal);
 
-    public Traversal<C, S, Map<E, Long>> groupCount();
+    public Traversal<C, S, TMap<E, Long>> groupCount();
 
-    public <K, V> Traversal<C, S, Map<K, V>> hasKey(final P<K> predicate);
+    public <K, V> Traversal<C, S, TMap<K, V>> hasKey(final P<K> predicate);
 
-    public <K, V> Traversal<C, S, Map<K, V>> hasKey(final K key);
+    public <K, V> Traversal<C, S, TMap<K, V>> hasKey(final K key);
 
-    public <K, V> Traversal<C, S, Map<K, V>> hasKey(final Traversal<C, Map<K, V>, K> keyTraversal);
+    public <K, V> Traversal<C, S, TMap<K, V>> hasKey(final Traversal<C, TMap<K, V>, K> keyTraversal);
 
-    public <K, V> Traversal<C, S, Map<K, V>> has(final K key, final V value);
+    public <K, V> Traversal<C, S, TMap<K, V>> has(final K key, final V value);
 
-    public <K, V> Traversal<C, S, Map<K, V>> has(final Traversal<C, Map<K, V>, K> keyTraversal, final V value);
+    public <K, V> Traversal<C, S, TMap<K, V>> has(final Traversal<C, TMap<K, V>, K> keyTraversal, final V value);
 
-    public <K, V> Traversal<C, S, Map<K, V>> has(final K key, final Traversal<C, Map<K, V>, V> valueTraversal);
+    public <K, V> Traversal<C, S, TMap<K, V>> has(final K key, final Traversal<C, TMap<K, V>, V> valueTraversal);
 
-    public <K, V> Traversal<C, S, Map<K, V>> has(final Traversal<C, Map<K, V>, K> keyTraversal, final Traversal<C, Map<K, V>, V> valueTraversal);
+    public <K, V> Traversal<C, S, TMap<K, V>> has(final Traversal<C, TMap<K, V>, K> keyTraversal, final Traversal<C, TMap<K, V>, V> valueTraversal);
 
     public Traversal<C, S, E> identity();
 

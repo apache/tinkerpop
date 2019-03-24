@@ -21,9 +21,23 @@ package org.apache.tinkerpop.machine.structure.data;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TKV<K, V> {
+public class JTuple2<A, B> implements TTuple2<A, B> {
 
-    public K key();
+    private final A a;
+    private final B b;
 
-    public V value();
+    public JTuple2(final A a, final B b) {
+        this.a = a;
+        this.b = b;
+    }
+
+    @Override
+    public A getA() {
+        return this.a;
+    }
+
+    @Override
+    public B getB() {
+        return this.b;
+    }
 }

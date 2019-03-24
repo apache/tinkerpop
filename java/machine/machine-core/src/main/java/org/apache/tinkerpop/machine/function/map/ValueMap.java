@@ -23,16 +23,16 @@ import org.apache.tinkerpop.machine.bytecode.compiler.Argument;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.MapFunction;
+import org.apache.tinkerpop.machine.structure.data.TMap;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.util.StringFactory;
 
-import java.util.Map;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ValueMap<C, K, V> extends AbstractFunction<C> implements MapFunction<C, Map<K, V>, V> {
+public final class ValueMap<C, K, V> extends AbstractFunction<C> implements MapFunction<C, TMap<K, V>, V> {
 
     private final Argument<K> key;
 
@@ -42,7 +42,7 @@ public final class ValueMap<C, K, V> extends AbstractFunction<C> implements MapF
     }
 
     @Override
-    public V apply(final Traverser<C, Map<K, V>> traverser) {
+    public V apply(final Traverser<C, TMap<K, V>> traverser) {
         return traverser.object().get(this.key.mapArg(traverser));
     }
 
