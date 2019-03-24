@@ -26,19 +26,21 @@ import java.util.List;
  */
 public final class CompilationCircle<C, S, E> implements Serializable {
 
-    private List<Compilation<C, S, E>> compilations;
+    private final List<Compilation<C, S, E>> compilations;
+    private final boolean hasCompilations;
     private int currentCompilation = -1;
 
     public CompilationCircle(final List<Compilation<C, S, E>> compilations) {
         this.compilations = compilations;
+        this.hasCompilations = !this.compilations.isEmpty();
     }
 
-    public Compilation<C, S, E> next() {
-        if (this.compilations.isEmpty()) {
-            return null;
-        } else {
+    public E process(final S object) {
+        if (this.hasCompilations) {
             this.currentCompilation = (this.currentCompilation + 1) % this.compilations.size();
-            return this.compilations.get(this.currentCompilation);
+            return this.compilations.get(this.currentCompilation).mapObject(object).object();
+        } else {
+            return (E) object;
         }
     }
 

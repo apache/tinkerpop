@@ -27,7 +27,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class LocalMachine implements Machine {
+public final class LocalMachine implements Machine {
 
     @Override
     public <C, E> Iterator<Traverser<C, E>> submit(final Bytecode<C> bytecode) {

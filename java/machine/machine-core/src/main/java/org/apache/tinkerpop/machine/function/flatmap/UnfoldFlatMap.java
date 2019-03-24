@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.machine.function.flatmap;
 
+import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.FlatMapFunction;
@@ -33,9 +34,9 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class UnfoldFlatMap<C, S, E> extends AbstractFunction<C> implements FlatMapFunction<C, S, E> {
+public final class UnfoldFlatMap<C, S, E> extends AbstractFunction<C> implements FlatMapFunction<C, S, E> {
 
-    public UnfoldFlatMap(final Coefficient<C> coefficient, final Set<String> labels) {
+    private UnfoldFlatMap(final Coefficient<C> coefficient, final Set<String> labels) {
         super(coefficient, labels);
     }
 
@@ -64,5 +65,9 @@ public class UnfoldFlatMap<C, S, E> extends AbstractFunction<C> implements FlatM
                 objectArray[i] = Array.get(array, i);
             return new ArrayIterator<>((E[]) objectArray);
         }
+    }
+
+    public static <C, S, E> UnfoldFlatMap<C, S, E> compile(final Instruction<C> instruction) {
+        return new UnfoldFlatMap<>(instruction.coefficient(), instruction.labels());
     }
 }

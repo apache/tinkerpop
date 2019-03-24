@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.machine.function.barrier;
 
+import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.BarrierFunction;
@@ -30,11 +31,11 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StallBarrier<C, S, E> extends AbstractFunction<C> implements BarrierFunction<C, S, Traverser<C, S>, TraverserSet<C, S>> {
+public final class StallBarrier<C, S> extends AbstractFunction<C> implements BarrierFunction<C, S, Traverser<C, S>, TraverserSet<C, S>> {
 
     private final int drainThreshold;
 
-    public StallBarrier(final Coefficient<C> coefficient, final Set<String> labels, final int drainThreshold) {
+    private StallBarrier(final Coefficient<C> coefficient, final Set<String> labels, final int drainThreshold) {
         super(coefficient, labels);
         this.drainThreshold = drainThreshold;
     }
@@ -59,5 +60,9 @@ public class StallBarrier<C, S, E> extends AbstractFunction<C> implements Barrie
     @Override
     public boolean returnsTraversers() {
         return true;
+    }
+
+    public static <C, S> StallBarrier<C, S> compile(final Instruction<C> instruction) {
+        return new StallBarrier<>(instruction.coefficient(), instruction.labels(), 1000); // TODO
     }
 }

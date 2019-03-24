@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.machine.function.barrier;
 
+import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.bytecode.compiler.Argument;
 import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler;
@@ -37,16 +38,16 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class JoinBarrier<C, K, V> extends AbstractFunction<C> implements BarrierFunction<C, Map<K, V>, Map<K, V>, List<Map<K, V>>> {
+public final class JoinBarrier<C, K, V> extends AbstractFunction<C> implements BarrierFunction<C, Map<K, V>, Map<K, V>, List<Map<K, V>>> {
 
     private final CoreCompiler.Symbols.Tokens joinType;
     private final Compilation<C, Map<K, V>, Map<K, V>> joinCompilation;
     private final Argument<K> joinKey;
 
-    public JoinBarrier(final Coefficient<C> coefficient, final Set<String> labels,
-                       CoreCompiler.Symbols.Tokens joinType,
-                       final Compilation<C, Map<K, V>, Map<K, V>> joinCompilation,
-                       final Argument<K> joinKey) {
+    private JoinBarrier(final Coefficient<C> coefficient, final Set<String> labels,
+                        CoreCompiler.Symbols.Tokens joinType,
+                        final Compilation<C, Map<K, V>, Map<K, V>> joinCompilation,
+                        final Argument<K> joinKey) {
         super(coefficient, labels);
         this.joinType = joinType;
         this.joinCompilation = joinCompilation;
@@ -89,6 +90,13 @@ public class JoinBarrier<C, K, V> extends AbstractFunction<C> implements Barrier
     @Override
     public String toString() {
         return StringFactory.makeFunctionString(this, this.joinType, this.joinCompilation, this.joinKey);
+    }
+
+    public static <C, K, V> JoinBarrier<C, K, V> compile(final Instruction<C> instruction) {
+        return new JoinBarrier<>(instruction.coefficient(), instruction.labels(),
+                CoreCompiler.Symbols.Tokens.valueOf((String) instruction.args()[0]),
+                Compilation.compileOne(instruction.args()[1]),
+                Argument.create(instruction.args()[2]));
     }
 
 }

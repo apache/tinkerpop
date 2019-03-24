@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.machine.function.reduce;
 
+import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.ReduceFunction;
@@ -29,9 +30,9 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SumReduce<C, S extends Number> extends AbstractFunction<C> implements ReduceFunction<C, S, S> {
+public final class SumReduce<C, S extends Number> extends AbstractFunction<C> implements ReduceFunction<C, S, S> {
 
-    public SumReduce(final Coefficient<C> coefficient, final Set<String> labels) {
+    private SumReduce(final Coefficient<C> coefficient, final Set<String> labels) {
         super(coefficient, labels);
     }
 
@@ -48,5 +49,9 @@ public class SumReduce<C, S extends Number> extends AbstractFunction<C> implemen
     @Override
     public S getInitialValue() {
         return (S) NumberHelper.add(0, 0);
+    }
+
+    public static <C, S extends Number> SumReduce<C, S> compile(final Instruction<C> instruction) {
+        return new SumReduce<>(instruction.coefficient(), instruction.labels());
     }
 }

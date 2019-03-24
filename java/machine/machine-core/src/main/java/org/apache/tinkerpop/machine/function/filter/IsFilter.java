@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.machine.function.filter;
 
+import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.bytecode.compiler.Argument;
 import org.apache.tinkerpop.machine.bytecode.compiler.Pred;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
@@ -36,7 +37,7 @@ public final class IsFilter<C, S> extends AbstractFunction<C> implements FilterF
     private final Pred predicate;
     private final Argument<S> argument;
 
-    public IsFilter(final Coefficient<C> coefficient, final Set<String> labels, final Pred predicate, final Argument<S> argument) {
+    private IsFilter(final Coefficient<C> coefficient, final Set<String> labels, final Pred predicate, final Argument<S> argument) {
         super(coefficient, labels);
         this.predicate = predicate;
         this.argument = argument;
@@ -50,5 +51,9 @@ public final class IsFilter<C, S> extends AbstractFunction<C> implements FilterF
     @Override
     public String toString() {
         return StringFactory.makeFunctionString(this, this.predicate, this.argument);
+    }
+
+    public static <C, S> IsFilter<C, S> compile(final Instruction<C> instruction) {
+        return new IsFilter<>(instruction.coefficient(), instruction.labels(), Pred.valueOf(instruction.args()[0]), Argument.create(instruction.args()[1]));
     }
 }

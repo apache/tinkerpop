@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.machine.bytecode.compiler;
 
 import org.apache.tinkerpop.machine.bytecode.Instruction;
-import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.function.barrier.JoinBarrier;
 import org.apache.tinkerpop.machine.function.barrier.StallBarrier;
@@ -27,16 +26,14 @@ import org.apache.tinkerpop.machine.function.branch.BranchBranch;
 import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
 import org.apache.tinkerpop.machine.function.filter.FilterFilter;
 import org.apache.tinkerpop.machine.function.flatmap.FlatMapFlatMap;
-import org.apache.tinkerpop.machine.function.initial.InjectInitial;
+import org.apache.tinkerpop.machine.function.initial.InitialInitial;
 import org.apache.tinkerpop.machine.function.map.MapMap;
 import org.apache.tinkerpop.machine.function.map.PathMap;
 import org.apache.tinkerpop.machine.function.reduce.GroupCountReduce;
 import org.apache.tinkerpop.machine.function.reduce.ReduceReduce;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -49,7 +46,7 @@ public final class CoreCompiler implements BytecodeCompiler {
         // static instance
     }
 
-    public static final CoreCompiler instance() {
+    public static CoreCompiler instance() {
         return INSTANCE;
     }
 
@@ -70,34 +67,29 @@ public final class CoreCompiler implements BytecodeCompiler {
 
     @Override
     public <C> CFunction<C> compile(final Instruction<C> instruction) {
-        final String op = instruction.op();
-        final Coefficient<C> coefficient = instruction.coefficient();
-        final Set<String> labels = instruction.labels();
-        switch (op) {
+        switch (instruction.op()) {
             case Symbols.BARRIER:
-                return new StallBarrier<>(coefficient, labels, 1000);
+                return StallBarrier.compile(instruction);
             case Symbols.BRANCH:
-                return new BranchBranch<>(coefficient, labels, BranchBranch.makeBranches(instruction.args()));
+                return BranchBranch.compile(instruction);
             case Symbols.FILTER:
-                return instruction.args().length == 1 ?
-                        new FilterFilter<>(coefficient, labels, null, Argument.create(instruction.args())) :
-                        new FilterFilter<>(coefficient, labels, Pred.valueOf(instruction.args()[0]), Argument.create(Arrays.copyOfRange(instruction.args(), 1, instruction.args().length)));
+                return FilterFilter.compile(instruction);
             case Symbols.FLATMAP:
-                return new FlatMapFlatMap<>(coefficient, labels, Argument.create(instruction.args()));
+                return FlatMapFlatMap.compile(instruction);
             case Symbols.GROUP_COUNT:
-                return new GroupCountReduce<>(coefficient, labels, Compilation.compileOrNull(0, instruction.args()));
+                return GroupCountReduce.compile(instruction);
             case Symbols.INITIAL:
-                return new InjectInitial<>(coefficient, labels, instruction.args());
+                return InitialInitial.compile(instruction);
             case Symbols.JOIN:
-                return new JoinBarrier<>(coefficient, labels, (Symbols.Tokens) instruction.args()[0], Compilation.compileOne(instruction.args()[1]), Argument.create(instruction.args()[2]));
+                return JoinBarrier.compile(instruction);
             case Symbols.MAP:
-                return new MapMap<>(coefficient, labels, Argument.create(instruction.args()));
+                return MapMap.compile(instruction);
             case Symbols.PATH:
-                return new PathMap<>(coefficient, labels, Compilation.compile(instruction.args()));
+                return PathMap.compile(instruction);
             case Symbols.REDUCE:
-                return new ReduceReduce<>(coefficient, labels, Oper.valueOf(instruction.args()[0]), instruction.args()[1]);
+                return ReduceReduce.compile(instruction);
             case Symbols.REPEAT:
-                return new RepeatBranch<>(coefficient, labels, Compilation.repeatCompile(instruction.args()));
+                return RepeatBranch.compile(instruction);
             default:
                 return null;
         }

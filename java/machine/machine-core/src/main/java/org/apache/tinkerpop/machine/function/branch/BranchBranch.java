@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.machine.function.branch;
 
+import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
@@ -37,7 +38,7 @@ public final class BranchBranch<C, S, E> extends AbstractFunction<C> implements 
 
     private final Map<Compilation<C, S, ?>, List<Compilation<C, S, E>>> branches;
 
-    public BranchBranch(final Coefficient<C> coefficient, final Set<String> labels, final Map<Compilation<C, S, ?>, List<Compilation<C, S, E>>> branches) {
+    private BranchBranch(final Coefficient<C> coefficient, final Set<String> labels, final Map<Compilation<C, S, ?>, List<Compilation<C, S, E>>> branches) {
         super(coefficient, labels);
         this.branches = branches;
     }
@@ -47,7 +48,8 @@ public final class BranchBranch<C, S, E> extends AbstractFunction<C> implements 
         return this.branches;
     }
 
-    public static <C, S, E> Map<Compilation<C, S, ?>, List<Compilation<C, S, E>>> makeBranches(final Object... args) {
+    public static <C, S, E> BranchBranch<C, S, E> compile(final Instruction<C> instruction) {
+        final Object[] args = instruction.args();
         final Map<Compilation<C, S, ?>, List<Compilation<C, S, E>>> branches = new HashMap<>();
         for (int i = 0; i < args.length; i = i + 2) {
             final Compilation<C, S, ?> predicate = Symbols.DEFAULT.equals(args[i]) ? null : Compilation.compileOne(args[i]);
@@ -59,6 +61,6 @@ public final class BranchBranch<C, S, E> extends AbstractFunction<C> implements 
             }
             list.add(branch);
         }
-        return branches;
+        return new BranchBranch<>(instruction.coefficient(), instruction.labels(), branches);
     }
 }

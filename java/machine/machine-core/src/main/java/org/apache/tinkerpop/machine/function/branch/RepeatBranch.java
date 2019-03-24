@@ -18,11 +18,16 @@
  */
 package org.apache.tinkerpop.machine.function.branch;
 
+import org.apache.tinkerpop.machine.bytecode.Bytecode;
+import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
+import org.apache.tinkerpop.machine.processor.FilterProcessor;
+import org.apache.tinkerpop.machine.processor.LoopsProcessor;
 import org.apache.tinkerpop.machine.util.StringFactory;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -102,5 +107,20 @@ public final class RepeatBranch<C, S> extends AbstractFunction<C> {
 
     public boolean hasEndPredicates() {
         return this.hasEndPredicates;
+    }
+
+    public static <C, S> RepeatBranch<C, S> compile(final Instruction<C> instruction) {
+        final List<Object> objects = new ArrayList<>();
+        for (final Object arg : instruction.args()) {
+            if (arg instanceof Bytecode)
+                objects.add(new Compilation<>((Bytecode<?>) arg));
+            else if (arg instanceof Character)
+                objects.add(arg);
+            else if (arg instanceof Integer)
+                objects.add(new Compilation<>(new LoopsProcessor<>((int) arg)));
+            else if (arg instanceof Boolean)
+                objects.add(new Compilation<>(new FilterProcessor<>((boolean) arg)));
+        }
+        return new RepeatBranch<>(instruction.coefficient(), instruction.labels(), objects);
     }
 }

@@ -38,11 +38,6 @@ public final class EmptyPath implements Path {
     }
 
     @Override
-    public void addLabels(final Set<String> labels) {
-
-    }
-
-    @Override
     public Object object(int index) {
         throw new IllegalStateException("No objects in EmptyPath");
     }
@@ -53,8 +48,18 @@ public final class EmptyPath implements Path {
     }
 
     @Override
+    public Object get(final Pop pop, final String label) {
+        return null;
+    }
+
+    @Override
     public int size() {
         return 0;
+    }
+
+    @Override
+    public Path clone() {
+        return INSTANCE;
     }
 
     public static final EmptyPath instance() {

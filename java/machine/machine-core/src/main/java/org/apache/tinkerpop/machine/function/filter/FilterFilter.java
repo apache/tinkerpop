@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.machine.function.filter;
 
+import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.bytecode.compiler.Argument;
 import org.apache.tinkerpop.machine.bytecode.compiler.Pred;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
@@ -37,7 +38,7 @@ public final class FilterFilter<C, S> extends AbstractFunction<C> implements Fil
     private final Argument<S> argument;
 
 
-    public FilterFilter(final Coefficient<C> coefficient, final Set<String> labels, final Pred pred, final Argument<S> argument) {
+    private FilterFilter(final Coefficient<C> coefficient, final Set<String> labels, final Pred pred, final Argument<S> argument) {
         super(coefficient, labels);
         this.pred = pred;
         this.argument = argument;
@@ -53,6 +54,13 @@ public final class FilterFilter<C, S> extends AbstractFunction<C> implements Fil
     @Override
     public String toString() {
         return StringFactory.makeFunctionString(this, this.argument);
+    }
+
+    public static <C, S> FilterFilter<C, S> compile(final Instruction<C> instruction) {
+        final boolean oneArg = instruction.args().length == 1;
+        return new FilterFilter<>(instruction.coefficient(), instruction.labels(),
+                oneArg ? null : Pred.valueOf(instruction.args()[0]),
+                Argument.create(oneArg ? instruction.args()[0] : instruction.args()[1]));
     }
 
 }

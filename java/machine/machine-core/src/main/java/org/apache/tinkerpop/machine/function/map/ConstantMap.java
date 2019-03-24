@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.machine.function.map;
 
+import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.MapFunction;
@@ -29,11 +30,11 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ConstantMap<C, S, E> extends AbstractFunction<C> implements MapFunction<C, S, E> {
+public final class ConstantMap<C, S, E> extends AbstractFunction<C> implements MapFunction<C, S, E> {
 
     private final E constant;
 
-    public ConstantMap(final Coefficient<C> coefficient, final Set<String> labels, final E constant) {
+    private ConstantMap(final Coefficient<C> coefficient, final Set<String> labels, final E constant) {
         super(coefficient, labels);
         this.constant = constant;
     }
@@ -46,5 +47,9 @@ public class ConstantMap<C, S, E> extends AbstractFunction<C> implements MapFunc
     @Override
     public String toString() {
         return StringFactory.makeFunctionString(this, this.constant);
+    }
+
+    public static <C, S, E> ConstantMap<C, S, E> compile(final Instruction<C> instruction) {
+        return new ConstantMap<>(instruction.coefficient(), instruction.labels(), (E) instruction.args()[0]);
     }
 }

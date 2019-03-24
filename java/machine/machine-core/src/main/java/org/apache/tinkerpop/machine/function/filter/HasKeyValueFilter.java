@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.machine.function.filter;
 
+import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.bytecode.compiler.Argument;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
@@ -36,7 +37,7 @@ public final class HasKeyValueFilter<C, K, V> extends AbstractFunction<C> implem
     private final Argument<K> key;
     private final Argument<V> value;
 
-    public HasKeyValueFilter(final Coefficient<C> coefficient, final Set<String> labels, final Argument<K> key, final Argument<V> value) {
+    private HasKeyValueFilter(final Coefficient<C> coefficient, final Set<String> labels, final Argument<K> key, final Argument<V> value) {
         super(coefficient, labels);
         this.key = key;
         this.value = value;
@@ -51,5 +52,9 @@ public final class HasKeyValueFilter<C, K, V> extends AbstractFunction<C> implem
     @Override
     public String toString() {
         return StringFactory.makeFunctionString(this, this.key, this.value);
+    }
+
+    public static <C, K, V> HasKeyValueFilter<C, K, V> compile(final Instruction<C> instruction) {
+        return new HasKeyValueFilter<>(instruction.coefficient(), instruction.labels(), Argument.create(instruction.args()[0]), Argument.create(instruction.args()[1]));
     }
 }

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.machine.function.reduce;
 
+import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.ReduceFunction;
@@ -28,9 +29,9 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class CountReduce<C, S> extends AbstractFunction<C> implements ReduceFunction<C, S, Long> {
+public final class CountReduce<C, S> extends AbstractFunction<C> implements ReduceFunction<C, S, Long> {
 
-    public CountReduce(final Coefficient<C> coefficient, final Set<String> labels) {
+    private CountReduce(final Coefficient<C> coefficient, final Set<String> labels) {
         super(coefficient, labels);
     }
 
@@ -47,5 +48,9 @@ public class CountReduce<C, S> extends AbstractFunction<C> implements ReduceFunc
     @Override
     public Long getInitialValue() {
         return 0L;
+    }
+
+    public static <C, S> CountReduce<C, S> compile(final Instruction<C> instruction) {
+        return new CountReduce<>(instruction.coefficient(), instruction.labels());
     }
 }

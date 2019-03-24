@@ -21,8 +21,6 @@ package org.apache.tinkerpop.machine.bytecode.compiler;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.function.CFunction;
-import org.apache.tinkerpop.machine.processor.FilterProcessor;
-import org.apache.tinkerpop.machine.processor.LoopsProcessor;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.structure.EmptyStructure;
@@ -146,20 +144,5 @@ public final class Compilation<C, S, E> implements Serializable {
                 compilations.add(new Compilation<>((Bytecode<C>) arg));
         }
         return compilations;
-    }
-
-    public static List<Object> repeatCompile(final Object... args) {
-        final List<Object> objects = new ArrayList<>();
-        for (final Object arg : args) {
-            if (arg instanceof Bytecode)
-                objects.add(new Compilation<>((Bytecode<?>) arg));
-            else if (arg instanceof Character)
-                objects.add(arg);
-            else if (arg instanceof Integer)
-                objects.add(new Compilation<>(new LoopsProcessor<>((int) arg)));
-            else if (arg instanceof Boolean)
-                objects.add(new Compilation<>(new FilterProcessor<>((boolean) arg)));
-        }
-        return objects;
     }
 }

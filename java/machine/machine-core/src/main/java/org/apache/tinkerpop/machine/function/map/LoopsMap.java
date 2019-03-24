@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.machine.function.map;
 
+import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.MapFunction;
@@ -28,15 +29,19 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class LoopsMap<C, S> extends AbstractFunction<C> implements MapFunction<C, S, Integer> {
+public final class LoopsMap<C, S> extends AbstractFunction<C> implements MapFunction<C, S, Integer> {
 
-    public LoopsMap(final Coefficient<C> coefficient, final Set<String> labels) {
+    private LoopsMap(final Coefficient<C> coefficient, final Set<String> labels) {
         super(coefficient, labels);
     }
 
     @Override
     public Integer apply(final Traverser<C, S> traverser) {
         return traverser.loops();
+    }
+
+    public static <C, S> LoopsMap<C, S> compile(final Instruction<C> instruction) {
+        return new LoopsMap<>(instruction.coefficient(), instruction.labels());
     }
 
 }

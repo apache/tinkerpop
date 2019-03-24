@@ -24,15 +24,31 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Path extends Serializable {
+public interface Path extends Serializable, Cloneable {
+
+    public enum Pop {
+        first, last, all;
+    }
 
     public void add(final Set<String> labels, final Object object);
-
-    public void addLabels(final Set<String> labels);
 
     public Object object(final int index);
 
     public Set<String> labels(final int index);
 
+    public Object get(final Pop pop, final String label);
+
     public int size();
+
+    public Path clone();
+
+    public static class Exceptions {
+
+        private Exceptions() {
+        }
+
+        public static IllegalArgumentException noObjectsForLabel(final String label) {
+            return new IllegalArgumentException("The path does not have an object for the provided label: " + label);
+        }
+    }
 }

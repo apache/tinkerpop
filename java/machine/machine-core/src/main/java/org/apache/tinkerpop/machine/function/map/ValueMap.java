@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.machine.function.map;
 
+import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.bytecode.compiler.Argument;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
@@ -31,11 +32,11 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ValueMap<C, K, V> extends AbstractFunction<C> implements MapFunction<C, Map<K, V>, V> {
+public final class ValueMap<C, K, V> extends AbstractFunction<C> implements MapFunction<C, Map<K, V>, V> {
 
     private final Argument<K> key;
 
-    public ValueMap(final Coefficient<C> coefficient, final Set<String> labels, final Argument<K> key) {
+    private ValueMap(final Coefficient<C> coefficient, final Set<String> labels, final Argument<K> key) {
         super(coefficient, labels);
         this.key = key;
     }
@@ -48,5 +49,9 @@ public class ValueMap<C, K, V> extends AbstractFunction<C> implements MapFunctio
     @Override
     public String toString() {
         return StringFactory.makeFunctionString(this, this.key);
+    }
+
+    public static <C, K, V> ValueMap<C, K, V> compile(final Instruction<C> instruction) {
+        return new ValueMap<>(instruction.coefficient(), instruction.labels(), Argument.create(instruction.args()[0]));
     }
 }

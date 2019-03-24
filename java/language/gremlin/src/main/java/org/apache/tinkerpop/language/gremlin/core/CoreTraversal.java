@@ -30,7 +30,6 @@ import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
 import org.apache.tinkerpop.machine.traverser.path.Path;
 
-import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -41,11 +40,11 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
     // used by __
     CoreTraversal() {
         // TODO: this will cause __ problems
-        super(new Bytecode<>(), (Coefficient<C>) LongCoefficient.create());
+        this(new Bytecode<>(), (Coefficient<C>) LongCoefficient.create());
     }
 
     // used by TraversalSource
-    protected CoreTraversal(final Coefficient<C> unity, final Bytecode<C> bytecode) {
+    public CoreTraversal(final Bytecode<C> bytecode, final Coefficient<C> unity) {
         super(bytecode, unity);
     }
 
@@ -221,7 +220,9 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
 
     @Override
     public Traversal<C, S, Path> path(final String... labels) {
-        return this.addInstruction(Symbols.PATH, Arrays.asList(labels));
+        this.addInstruction(Symbols.PATH, (Object[]) labels);
+        this.bytecode.lastInstruction().addArg("|");
+        return (Traversal) this;
     }
 
     @Override

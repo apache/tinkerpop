@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.machine.traverser.path;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -28,8 +28,8 @@ import java.util.Set;
  */
 public final class BasicPath implements Path {
 
-    private final List<Object> objects = new ArrayList<>();
-    private final List<Set<String>> labels = new ArrayList<>();
+    private List<Set<String>> labels = new ArrayList<>();
+    private List<Object> objects = new ArrayList<>();
 
     public BasicPath() {
     }
@@ -39,25 +39,46 @@ public final class BasicPath implements Path {
         this.labels.addAll(path.labels);
     }
 
+    @Override
     public void add(final Set<String> labels, final Object object) {
         this.labels.add(labels);
         this.objects.add(object);
     }
 
-    public void addLabels(final Set<String> labels) {
-        if (this.labels.isEmpty())
-            this.labels.add(new HashSet<>());
-        this.labels.get(this.labels.size() - 1).addAll(labels);
-    }
-
+    @Override
     public Object object(final int index) {
         return this.objects.get(index);
     }
 
+    @Override
     public Set<String> labels(final int index) {
         return this.labels.get(index);
     }
 
+    @Override
+    public Object get(final Pop pop, final String label) {
+        if (Pop.last == pop) {
+            for (int i = this.labels.size() - 1; i >= 0; i--) {
+                if (this.labels.get(i).contains(label))
+                    return this.objects.get(i);
+            }
+        } else if (Pop.all == pop) {
+            final List<Object> objects = new ArrayList<>();
+            for (int i = 0; i < this.labels.size(); i++) {
+                if (this.labels.get(i).contains(label))
+                    objects.add(this.objects.get(i));
+            }
+            return objects;
+        } else { // must be Pop.first
+            for (int i = 0; i < this.labels.size(); i++) {
+                if (this.labels.get(i).contains(label))
+                    return this.objects.get(i);
+            }
+        }
+        throw Path.Exceptions.noObjectsForLabel(label);
+    }
+
+    @Override
     public int size() {
         return this.objects.size();
     }
@@ -65,5 +86,20 @@ public final class BasicPath implements Path {
     @Override
     public String toString() {
         return this.objects.toString();
+    }
+
+    @Override
+    public Path clone() {
+        try {
+            final BasicPath clone = (BasicPath) super.clone();
+            clone.objects = new ArrayList<>(this.objects);
+            clone.labels = new ArrayList<>(this.labels.size());
+            for (final Set<String> labelSet : this.labels) {
+                clone.labels.add(new LinkedHashSet<>(labelSet));
+            }
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 }

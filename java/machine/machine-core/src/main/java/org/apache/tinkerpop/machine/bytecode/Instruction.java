@@ -62,8 +62,10 @@ public final class Instruction<C> {
     }
 
     public void addArg(final Object arg) {
-        this.args = Arrays.copyOf(this.args, this.args.length + 1);
-        this.args[this.args.length - 1] = arg;
+        final Object[] newArgs = new Object[this.args.length + 1];
+        System.arraycopy(this.args, 0, newArgs, 0, this.args.length);
+        newArgs[newArgs.length - 1] = arg;
+        this.args = newArgs;
     }
 
     public void addArgs(final Object... args) {

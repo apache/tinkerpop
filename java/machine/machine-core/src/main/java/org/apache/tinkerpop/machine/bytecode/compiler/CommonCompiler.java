@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.machine.bytecode.compiler;
 
 import org.apache.tinkerpop.machine.bytecode.Instruction;
-import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.function.barrier.JoinBarrier;
 import org.apache.tinkerpop.machine.function.barrier.StallBarrier;
@@ -32,7 +31,7 @@ import org.apache.tinkerpop.machine.function.filter.IdentityFilter;
 import org.apache.tinkerpop.machine.function.filter.IsFilter;
 import org.apache.tinkerpop.machine.function.flatmap.FlatMapFlatMap;
 import org.apache.tinkerpop.machine.function.flatmap.UnfoldFlatMap;
-import org.apache.tinkerpop.machine.function.initial.InjectInitial;
+import org.apache.tinkerpop.machine.function.initial.InitialInitial;
 import org.apache.tinkerpop.machine.function.map.ConstantMap;
 import org.apache.tinkerpop.machine.function.map.IncrMap;
 import org.apache.tinkerpop.machine.function.map.LoopsMap;
@@ -46,7 +45,6 @@ import org.apache.tinkerpop.machine.function.reduce.SumReduce;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -59,7 +57,7 @@ public final class CommonCompiler implements BytecodeCompiler {
         // static instance
     }
 
-    public static final CommonCompiler instance() {
+    public static CommonCompiler instance() {
         return INSTANCE;
     }
 
@@ -91,54 +89,51 @@ public final class CommonCompiler implements BytecodeCompiler {
 
     @Override
     public <C> CFunction<C> compile(final Instruction<C> instruction) {
-        final String op = instruction.op();
-        final Coefficient<C> coefficient = instruction.coefficient();
-        final Set<String> labels = instruction.labels();
-        switch (op) {
+        switch (instruction.op()) {
             case Symbols.BARRIER:
-                return new StallBarrier<>(coefficient, labels, 1000);
+                return StallBarrier.compile(instruction);
             case Symbols.BRANCH:
-                return new BranchBranch<>(coefficient, labels, BranchBranch.makeBranches(instruction.args()));
+                return BranchBranch.compile(instruction);
             case Symbols.CONSTANT:
-                return new ConstantMap<>(coefficient, labels, instruction.args()[0]);
+                return ConstantMap.compile(instruction);
             case Symbols.COUNT:
-                return new CountReduce<>(coefficient, labels);
+                return CountReduce.compile(instruction);
             case Symbols.FILTER:
-                return new FilterFilter<>(coefficient, labels, null, Argument.create(instruction.args()));
+                return FilterFilter.compile(instruction);
             case Symbols.FLATMAP:
-                return new FlatMapFlatMap<>(coefficient, labels, Argument.create(instruction.args()));
+                return FlatMapFlatMap.compile(instruction);
             case Symbols.GROUP_COUNT:
-                return new GroupCountReduce<>(coefficient, labels, Compilation.compileOrNull(0, instruction.args()));
+                return GroupCountReduce.compile(instruction);
             case Symbols.HAS_KEY:
-                return new HasKeyFilter<>(coefficient, labels, Pred.valueOf(instruction.args()[0]), Argument.create(instruction.args()[1]));
+                return HasKeyFilter.compile(instruction);
             case Symbols.HAS_KEY_VALUE:
-                return new HasKeyValueFilter<>(coefficient, labels, Argument.create(instruction.args()[0]), Argument.create(instruction.args()[1]));
+                return HasKeyValueFilter.compile(instruction);
             case Symbols.IDENTITY:
-                return new IdentityFilter<>(coefficient, labels);
+                return IdentityFilter.compile(instruction);
             case Symbols.INCR:
-                return new IncrMap<>(coefficient, labels);
+                return IncrMap.compile(instruction);
             case Symbols.INITIAL:
-                return new InjectInitial<>(coefficient, labels, instruction.args());
+                return InitialInitial.compile(instruction);
             case Symbols.IS:
-                return new IsFilter<>(coefficient, labels, Pred.valueOf(instruction.args()[0]), Argument.create(instruction.args()[1]));
+                return IsFilter.compile(instruction);
             case Symbols.JOIN:
-                return new JoinBarrier<>(coefficient, labels, (CoreCompiler.Symbols.Tokens) instruction.args()[0], Compilation.compileOne(instruction.args()[1]), Argument.create(instruction.args()[2]));
+                return JoinBarrier.compile(instruction);
             case Symbols.LOOPS:
-                return new LoopsMap<>(coefficient, labels);
+                return LoopsMap.compile(instruction);
             case Symbols.MAP:
-                return new MapMap<>(coefficient, labels, Argument.create(instruction.args()));
+                return MapMap.compile(instruction);
             case Symbols.PATH:
-                return new PathMap<>(coefficient, labels, Compilation.compile(instruction.args()));
+                return PathMap.compile(instruction);
             case Symbols.REDUCE:
-                return new ReduceReduce<>(coefficient, labels, Oper.valueOf(instruction.args()[0]), instruction.args()[1]);
+                return ReduceReduce.compile(instruction);
             case Symbols.REPEAT:
-                return new RepeatBranch<>(coefficient, labels, Compilation.repeatCompile(instruction.args()));
+                return RepeatBranch.compile(instruction);
             case Symbols.SUM:
-                return new SumReduce<>(coefficient, labels);
+                return SumReduce.compile(instruction);
             case Symbols.UNFOLD:
-                return new UnfoldFlatMap<>(coefficient, labels);
+                return UnfoldFlatMap.compile(instruction);
             case Symbols.VALUE:
-                return new ValueMap<>(coefficient, labels, Argument.create(instruction.args()[0]));
+                return ValueMap.compile(instruction);
             default:
                 return null;
         }

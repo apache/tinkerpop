@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.machine.function.reduce;
 
+import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
@@ -32,11 +33,11 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroupCountReduce<C, S, E> extends AbstractFunction<C> implements ReduceFunction<C, S, Map<E, Long>> {
+public final class GroupCountReduce<C, S, E> extends AbstractFunction<C> implements ReduceFunction<C, S, Map<E, Long>> {
 
     private final Compilation<C, S, E> byCompilation;
 
-    public GroupCountReduce(final Coefficient<C> coefficient, final Set<String> labels, final Compilation<C, S, E> byCompilation) {
+    private GroupCountReduce(final Coefficient<C> coefficient, final Set<String> labels, final Compilation<C, S, E> byCompilation) {
         super(coefficient, labels);
         this.byCompilation = byCompilation;
     }
@@ -64,6 +65,10 @@ public class GroupCountReduce<C, S, E> extends AbstractFunction<C> implements Re
     @Override
     public String toString() {
         return StringFactory.makeFunctionString(this, this.byCompilation);
+    }
+
+    public static <C, S, E> GroupCountReduce<C, S, E> compile(final Instruction<C> instruction) {
+        return new GroupCountReduce<>(instruction.coefficient(), instruction.labels(), Compilation.compileOrNull(0, instruction.args()));
     }
 
 }

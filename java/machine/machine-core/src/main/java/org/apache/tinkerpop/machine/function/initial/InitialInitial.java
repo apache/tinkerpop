@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.machine.function.initial;
 
+import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.InitialFunction;
@@ -30,11 +31,11 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class InjectInitial<C, S> extends AbstractFunction<C> implements InitialFunction<C, S> {
+public final class InitialInitial<C, S> extends AbstractFunction<C> implements InitialFunction<C, S> {
 
     private final S[] objects;
 
-    public InjectInitial(final Coefficient<C> coefficient, final Set<String> labels, final S... objects) {
+    private InitialInitial(final Coefficient<C> coefficient, final Set<String> labels, final S... objects) {
         super(coefficient, labels);
         this.objects = objects;
     }
@@ -47,5 +48,9 @@ public class InjectInitial<C, S> extends AbstractFunction<C> implements InitialF
     @Override
     public String toString() {
         return StringFactory.makeFunctionString(this, this.objects);
+    }
+
+    public static <C, S> InitialInitial<C, S> compile(final Instruction<C> instruction) {
+        return new InitialInitial<>(instruction.coefficient(), instruction.labels(), (S[]) instruction.args());
     }
 }

@@ -22,13 +22,14 @@ import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.path.BasicPath;
+import org.apache.tinkerpop.machine.traverser.path.Path;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class COP_Traverser<C, S> extends CO_Traverser<C, S> {
 
-    private BasicPath path = new BasicPath();
+    private Path path = new BasicPath();
 
     public COP_Traverser(final Coefficient<C> coefficient, final S object) {
         super(coefficient, object);
@@ -42,7 +43,7 @@ public class COP_Traverser<C, S> extends CO_Traverser<C, S> {
         return this.object;
     }
 
-    public BasicPath path() {
+    public Path path() {
         return this.path;
     }
 
@@ -69,7 +70,7 @@ public class COP_Traverser<C, S> extends CO_Traverser<C, S> {
         final COP_Traverser<C, S> clone = (COP_Traverser<C, S>) super.clone();
         clone.object = this.object;
         clone.coefficient = this.coefficient.clone();
-        clone.path = new BasicPath(this.path);
+        clone.path = this.path.clone();
         return clone;
     }
 

@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.machine.function.reduce;
 
+import org.apache.tinkerpop.machine.bytecode.Instruction;
+import org.apache.tinkerpop.machine.bytecode.compiler.Oper;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.ReduceFunction;
@@ -29,12 +31,12 @@ import java.util.function.BinaryOperator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReduceReduce<C, S> extends AbstractFunction<C> implements ReduceFunction<C, S, S> {
+public final class ReduceReduce<C, S> extends AbstractFunction<C> implements ReduceFunction<C, S, S> {
 
     private final BinaryOperator<S> operator;
     private final S initialValue;
 
-    public ReduceReduce(final Coefficient<C> coefficient, final Set<String> labels, final BinaryOperator<S> operator, final S initialValue) {
+    private ReduceReduce(final Coefficient<C> coefficient, final Set<String> labels, final BinaryOperator<S> operator, final S initialValue) {
         super(coefficient, labels);
         this.operator = operator;
         this.initialValue = initialValue;
@@ -53,5 +55,9 @@ public class ReduceReduce<C, S> extends AbstractFunction<C> implements ReduceFun
     @Override
     public S getInitialValue() {
         return this.initialValue;
+    }
+
+    public static <C, S> ReduceReduce<C, S> compile(final Instruction<C> instruction) {
+        return new ReduceReduce<>(instruction.coefficient(), instruction.labels(), (BinaryOperator<S>) Oper.valueOf(instruction.args()[0]), (S) instruction.args()[1]);
     }
 }

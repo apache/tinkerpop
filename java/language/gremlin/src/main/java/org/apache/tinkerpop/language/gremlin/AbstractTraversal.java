@@ -35,7 +35,7 @@ public abstract class AbstractTraversal<C, S, E> implements Traversal<C, S, E> {
     protected Coefficient<C> currentCoefficient;
     protected final Bytecode<C> bytecode;
     private Iterator<Traverser<C, E>> traversers = null;
-    private boolean locked = false; // TODO: when a traversal has been submitted, we need to make sure new modulations can't happen.
+    private boolean locked = false;
 
     // iteration helpers
     private long lastCount = 0L;
@@ -57,7 +57,7 @@ public abstract class AbstractTraversal<C, S, E> implements Traversal<C, S, E> {
     }
 
     private final void prepareTraversal() {
-        if (null == this.traversers) {
+        if (!this.locked) {
             this.locked = true;
             this.traversers = BytecodeUtil.getMachine(this.bytecode).get().submit(this.bytecode);
         }
@@ -90,6 +90,7 @@ public abstract class AbstractTraversal<C, S, E> implements Traversal<C, S, E> {
         }
     }
 
+    @Override
     public List<E> toList() {
         final List<E> list = new ArrayList<>();
         while (this.hasNext()) {

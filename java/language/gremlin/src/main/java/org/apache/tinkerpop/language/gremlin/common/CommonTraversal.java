@@ -29,7 +29,6 @@ import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
 import org.apache.tinkerpop.machine.traverser.path.Path;
 
-import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -194,7 +193,9 @@ public class CommonTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
 
     @Override
     public Traversal<C, S, Path> path(final String... labels) {
-        return this.addInstruction(Symbols.PATH, Arrays.asList(labels));
+        this.addInstruction(Symbols.PATH, labels);
+        this.bytecode.lastInstruction().addArg("|");
+        return (Traversal) this;
     }
 
     @Override
