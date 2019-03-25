@@ -24,6 +24,8 @@ import org.apache.tinkerpop.language.gremlin.Traversal;
 import org.apache.tinkerpop.language.gremlin.TraversalSource;
 import org.apache.tinkerpop.language.gremlin.TraversalUtil;
 import org.apache.tinkerpop.language.gremlin.common.__;
+import org.apache.tinkerpop.machine.LocalMachine;
+import org.apache.tinkerpop.machine.Machine;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
 import org.apache.tinkerpop.machine.strategy.optimization.IdentityStrategy;
 import org.apache.tinkerpop.machine.structure.blueprints.BlueprintsStructure;
@@ -42,7 +44,8 @@ public class PipesTest {
 
     @Test
     public void doStuff() {
-        final TraversalSource<Long> g = Gremlin.<Long>traversal()
+        final Machine machine = LocalMachine.open();
+        final TraversalSource<Long> g = Gremlin.<Long>traversal(machine)
                 .withCoefficient(LongCoefficient.class)
                 .withProcessor(PipesProcessor.class)
                 .withStructure(BlueprintsStructure.class)
@@ -58,7 +61,8 @@ public class PipesTest {
 
     @Test
     public void shouldWork() {
-        final TraversalSource<Long> g = Gremlin.<Long>traversal()
+        final Machine machine = LocalMachine.open();
+        final TraversalSource<Long> g = Gremlin.<Long>traversal(machine)
                 .withCoefficient(LongCoefficient.class)
                 .withProcessor(PipesProcessor.class)
                 .withStrategy(IdentityStrategy.class);
@@ -124,7 +128,8 @@ public class PipesTest {
 
     @Test
     public void shouldWork2() {
-        final TraversalSource<Long> g = Gremlin.<Long>traversal()
+        final Machine machine = LocalMachine.open();
+        final TraversalSource<Long> g = Gremlin.<Long>traversal(machine)
                 .withCoefficient(LongCoefficient.class)
                 .withProcessor(PipesProcessor.class)
                 .withStrategy(IdentityStrategy.class);

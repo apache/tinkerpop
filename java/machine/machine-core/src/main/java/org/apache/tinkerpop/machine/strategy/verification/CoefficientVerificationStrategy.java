@@ -20,9 +20,9 @@ package org.apache.tinkerpop.machine.strategy.verification;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
+import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.bytecode.compiler.CompositeCompiler;
 import org.apache.tinkerpop.machine.bytecode.compiler.FunctionType;
-import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.strategy.AbstractStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
@@ -41,5 +41,4 @@ public final class CoefficientVerificationStrategy extends AbstractStrategy<Stra
             }
         }
     }
-
 }

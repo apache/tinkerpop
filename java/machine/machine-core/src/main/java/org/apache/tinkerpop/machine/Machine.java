@@ -28,5 +28,9 @@ import java.util.Iterator;
  */
 public interface Machine {
 
+    public <C> Bytecode<C> register(final Bytecode<C> sourceCode);
+
+    public <C> void close(final Bytecode<C> sourceCode);
+
     public <C, S> Iterator<Traverser<C, S>> submit(final Bytecode<C> bytecode); // TODO: should return a "ShellTraverser"
 }

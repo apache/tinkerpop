@@ -39,12 +39,15 @@ import org.apache.tinkerpop.machine.structure.data.TVertex;
  */
 public class TraversalSource<C> implements Cloneable {
 
+    private final Machine machine;
     private Bytecode<C> bytecode;
     private Coefficient<C> coefficient = (Coefficient<C>) LongCoefficient.create();
+    private boolean registered = false;
     // private Set<Strategy> sortedStrategies (will be more efficient to precompute sort order)
     // private Machine machine (will be more efficient for remote connections)
 
-    TraversalSource() {
+    TraversalSource(final Machine machine) {
+        this.machine = machine;
         this.bytecode = new Bytecode<>();
         this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, CoefficientStrategy.class); // TODO: remove when strategies full integrated
         this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, CoefficientVerificationStrategy.class);
@@ -86,25 +89,39 @@ public class TraversalSource<C> implements Cloneable {
     // spawn methods
 
     public <S> Traversal<C, S, S> inject(final S... objects) {
+        this.prepareSourceCode();
         final Bytecode<C> bytecode = this.bytecode.clone();
         final Coefficient<C> coefficient = this.coefficient.clone();
         bytecode.addInstruction(coefficient, Symbols.INITIAL, objects);
-        return new CommonTraversal<>(bytecode, coefficient); // TODO
+        return new CommonTraversal<>(this.machine, bytecode, coefficient); // TODO
     }
 
     public Traversal<C, TVertex, TVertex> V() {
+        this.prepareSourceCode();
         final Bytecode<C> bytecode = this.bytecode.clone();
         final Coefficient<C> coefficient = this.coefficient.clone();
         bytecode.addInstruction(coefficient, Symbols.V);
-        return new CommonTraversal<>(bytecode, coefficient); // TODO
+        return new CommonTraversal<>(this.machine, bytecode, coefficient); // TODO
     }
 
     //
+
+    private final void prepareSourceCode() {
+        if (!this.registered) {
+            this.registered = true;
+            this.bytecode = this.machine.register(this.bytecode);
+        }
+    }
+
+    public void close() {
+        this.machine.close(this.bytecode);
+    }
 
     @Override
     public TraversalSource<C> clone() {
         try {
             final TraversalSource<C> clone = (TraversalSource<C>) super.clone();
+            clone.registered = false;
             clone.bytecode = this.bytecode.clone();
             clone.coefficient = this.coefficient.clone();
             return clone;

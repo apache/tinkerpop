@@ -29,7 +29,6 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -51,6 +50,15 @@ public final class Compilation<C, S, E> implements Serializable {
         this.processorFactory = BytecodeUtil.getProcessorFactory(bytecode).get();
         this.traverserFactory = BytecodeUtil.getTraverserFactory(bytecode).get();
         this.functions = BytecodeUtil.getCompilers(bytecode).compile(bytecode);
+    }
+
+    public Compilation(final SourceCompilation<C> source, final Bytecode<C> bytecode) {
+        BytecodeUtil.mergeSourceInstructions(source.getSourceCode(), bytecode); // TODO: clone?
+        BytecodeUtil.strategize(bytecode, source.getStrategies());
+        this.structureFactory = source.getStructureFactory();
+        this.processorFactory = source.getProcessorFactory();
+        this.traverserFactory = BytecodeUtil.getTraverserFactory(bytecode).get();
+        this.functions = source.getCompilers().compile(bytecode);
     }
 
     public Compilation(final ProcessorFactory processorFactory) {
@@ -122,6 +130,10 @@ public final class Compilation<C, S, E> implements Serializable {
     } // TODO: functions need access to compilations for nesting
 
     ////////
+
+    public static <C, S, E> Compilation<C, S, E> compile(final SourceCompilation<C> source, final Bytecode<C> bytecode) {
+        return new Compilation<>(source, bytecode);
+    }
 
     public static <C, S, E> Compilation<C, S, E> compile(final Bytecode<C> bytecode) {
         return new Compilation<>(bytecode);

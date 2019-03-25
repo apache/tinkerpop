@@ -22,6 +22,7 @@ import org.apache.tinkerpop.language.gremlin.AbstractTraversal;
 import org.apache.tinkerpop.language.gremlin.P;
 import org.apache.tinkerpop.language.gremlin.Traversal;
 import org.apache.tinkerpop.language.gremlin.TraversalUtil;
+import org.apache.tinkerpop.machine.Machine;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.compiler.CommonCompiler.Symbols;
 import org.apache.tinkerpop.machine.bytecode.compiler.Pred;
@@ -38,12 +39,12 @@ public class CommonTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
     // used by __
     CommonTraversal() {
         // TODO: this will cause __ problems
-        this(new Bytecode<>(), (Coefficient<C>) LongCoefficient.create());
+        this(null, new Bytecode<>(), (Coefficient<C>) LongCoefficient.create());
     }
 
     // used by TraversalSource
-    public CommonTraversal(final Bytecode<C> bytecode, final Coefficient<C> unity) {
-        super(bytecode, unity);
+    public CommonTraversal(final Machine machine, final Bytecode<C> bytecode, final Coefficient<C> unity) {
+        super(machine, bytecode, unity);
     }
 
     @Override

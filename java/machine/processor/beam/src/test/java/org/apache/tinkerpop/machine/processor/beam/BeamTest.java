@@ -24,6 +24,8 @@ import org.apache.tinkerpop.language.gremlin.Traversal;
 import org.apache.tinkerpop.language.gremlin.TraversalSource;
 import org.apache.tinkerpop.language.gremlin.TraversalUtil;
 import org.apache.tinkerpop.language.gremlin.core.__;
+import org.apache.tinkerpop.machine.LocalMachine;
+import org.apache.tinkerpop.machine.Machine;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
 import org.apache.tinkerpop.machine.strategy.optimization.IdentityStrategy;
 import org.apache.tinkerpop.machine.structure.blueprints.BlueprintsStructure;
@@ -41,7 +43,8 @@ public class BeamTest {
 
     @Test
     public void doStuff() {
-        final TraversalSource<Long> g = Gremlin.<Long>traversal()
+        final Machine machine = LocalMachine.open();
+        final TraversalSource<Long> g = Gremlin.<Long>traversal(machine)
                 .withCoefficient(LongCoefficient.class)
                 .withProcessor(BeamProcessor.class)
                 .withStructure(BlueprintsStructure.class)
@@ -59,11 +62,13 @@ public class BeamTest {
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal.next());
         System.out.println("\n----------\n");
+        g.close();
     }
 
     @Test
     public void shouldWork() {
-        final TraversalSource<Long> g = Gremlin.<Long>traversal()
+        final Machine machine = LocalMachine.open();
+        final TraversalSource<Long> g = Gremlin.<Long>traversal(machine)
                 //.withCoefficient(LongCoefficient.class)
                 .withProcessor(BeamProcessor.class)
                 .withStrategy(IdentityStrategy.class);
@@ -117,5 +122,7 @@ public class BeamTest {
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(traversal.toList());
+
+        g.close();
     }
 }

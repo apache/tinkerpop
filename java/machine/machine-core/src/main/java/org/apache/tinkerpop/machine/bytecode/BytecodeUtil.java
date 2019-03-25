@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.machine.bytecode;
 
-import org.apache.tinkerpop.machine.Machine;
 import org.apache.tinkerpop.machine.bytecode.compiler.BytecodeCompiler;
 import org.apache.tinkerpop.machine.bytecode.compiler.CompositeCompiler;
 import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler.Symbols;
@@ -43,10 +42,14 @@ import java.util.Set;
  */
 public final class BytecodeUtil {
 
-    public static <C> void strategize(final Bytecode<C> bytecode) {
-        for (final Strategy strategy : BytecodeUtil.getStrategies(bytecode)) {
+    public static <C> void strategize(final Bytecode<C> bytecode, final Set<Strategy<?>> strategies) {
+        for (final Strategy strategy : strategies) {
             BytecodeUtil.strategize(bytecode, strategy);
         }
+    }
+
+    public static <C> void strategize(final Bytecode<C> bytecode) {
+        BytecodeUtil.strategize(bytecode, BytecodeUtil.getStrategies(bytecode));
     }
 
     public static <C> void strategize(final Bytecode<C> bytecode, Strategy strategy) {
@@ -128,20 +131,6 @@ public final class BytecodeUtil {
         }
     }
 
-    public static <C> Optional<Machine> getMachine(final Bytecode<C> bytecode) {
-        try {
-            Machine machine = null;
-            for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
-                if (sourceInstruction.op().equals(Symbols.WITH_MACHINE)) {
-                    machine = ((Class<? extends Machine>) sourceInstruction.args()[0]).getConstructor().newInstance();
-                }
-            }
-            return Optional.ofNullable(machine);
-        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-    }
-
     public static boolean hasSourceInstruction(final Bytecode<?> bytecode, final String op) {
         for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
             if (sourceInstruction.op().equals(op))
@@ -154,6 +143,10 @@ public final class BytecodeUtil {
         int index = bytecode.getInstructions().indexOf(oldInstruction);
         bytecode.getInstructions().remove(index);
         bytecode.getInstructions().add(index, newInstruction);
+    }
+
+    public static <C> void mergeSourceInstructions(final Bytecode<C> from, final Bytecode<C> to) {
+        to.getSourceInstructions().addAll(0, from.getSourceInstructions());
     }
 
     public static <C> Optional<TraverserFactory<C>> getTraverserFactory(final Bytecode<C> bytecode) {

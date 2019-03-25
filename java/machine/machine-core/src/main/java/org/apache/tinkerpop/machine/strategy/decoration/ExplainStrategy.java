@@ -22,6 +22,8 @@ import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler.Symbols;
+import org.apache.tinkerpop.machine.coefficient.Coefficient;
+import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
 import org.apache.tinkerpop.machine.strategy.AbstractStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
@@ -47,7 +49,7 @@ public final class ExplainStrategy extends AbstractStrategy<Strategy.DecorationS
             final Bytecode<C> clone = bytecode.clone();
             bytecode.getInstructions().clear();
             bytecode.addInstruction(
-                    BytecodeUtil.getCoefficient(clone).get(),
+                    (Coefficient<C>) LongCoefficient.create(),
                     Symbols.INITIAL,
                     ExplainStrategy.explainBytecode(clone));
         }

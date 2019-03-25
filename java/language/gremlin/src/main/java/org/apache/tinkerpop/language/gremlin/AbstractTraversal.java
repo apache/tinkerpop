@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.language.gremlin;
 
+import org.apache.tinkerpop.machine.Machine;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
@@ -32,8 +32,9 @@ import java.util.List;
  */
 public abstract class AbstractTraversal<C, S, E> implements Traversal<C, S, E> {
 
-    protected Coefficient<C> currentCoefficient;
+    private final Machine machine;
     protected final Bytecode<C> bytecode;
+    protected Coefficient<C> currentCoefficient;
     private Iterator<Traverser<C, E>> traversers = null;
     private boolean locked = false;
 
@@ -41,7 +42,8 @@ public abstract class AbstractTraversal<C, S, E> implements Traversal<C, S, E> {
     private long lastCount = 0L;
     private E lastObject = null;
 
-    public AbstractTraversal(final Bytecode<C> bytecode, final Coefficient<C> unity) {
+    public AbstractTraversal(final Machine machine, final Bytecode<C> bytecode, final Coefficient<C> unity) {
+        this.machine = machine;
         this.bytecode = bytecode;
         this.currentCoefficient = unity.clone();
     }
@@ -59,7 +61,7 @@ public abstract class AbstractTraversal<C, S, E> implements Traversal<C, S, E> {
     private final void prepareTraversal() {
         if (!this.locked) {
             this.locked = true;
-            this.traversers = BytecodeUtil.getMachine(this.bytecode).get().submit(this.bytecode);
+            this.traversers = this.machine.submit(this.bytecode);
         }
     }
 

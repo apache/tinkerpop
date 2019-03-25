@@ -18,12 +18,14 @@
  */
 package org.apache.tinkerpop.language.gremlin;
 
+import org.apache.tinkerpop.machine.Machine;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class Gremlin {
 
-    public static <C> TraversalSource<C> traversal() {
-        return new TraversalSource<>();
+    public static <C> TraversalSource<C> traversal(final Machine machine) {
+        return new TraversalSource<>(machine);
     }
 }

@@ -62,4 +62,9 @@ public final class CompositeCompiler implements BytecodeCompiler {
     public static <C> CompositeCompiler create(final List<BytecodeCompiler> compilers) {
         return new CompositeCompiler(compilers);
     }
+
+    @Override
+    public String toString() {
+        return this.compilers.toString();
+    }
 }
