@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.language.gremlin;
 
 import org.apache.tinkerpop.language.gremlin.common.CommonTraversal;
-import org.apache.tinkerpop.machine.LocalMachine;
 import org.apache.tinkerpop.machine.Machine;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
@@ -43,8 +42,6 @@ public class TraversalSource<C> implements Cloneable {
     private Bytecode<C> bytecode;
     private Coefficient<C> coefficient = (Coefficient<C>) LongCoefficient.create();
     private boolean registered = false;
-    // private Set<Strategy> sortedStrategies (will be more efficient to precompute sort order)
-    // private Machine machine (will be more efficient for remote connections)
 
     TraversalSource(final Machine machine) {
         this.machine = machine;
@@ -52,19 +49,12 @@ public class TraversalSource<C> implements Cloneable {
         this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, CoefficientStrategy.class); // TODO: remove when strategies full integrated
         this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, CoefficientVerificationStrategy.class);
         this.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, ExplainStrategy.class);
-        this.bytecode.addSourceInstruction(Symbols.WITH_MACHINE, LocalMachine.class);
     }
 
     public TraversalSource<C> withCoefficient(final Class<? extends Coefficient<C>> coefficient) {
         final TraversalSource<C> clone = this.clone();
         clone.bytecode.addUniqueSourceInstruction(Symbols.WITH_COEFFICIENT, coefficient);
         clone.coefficient = BytecodeUtil.getCoefficient(clone.bytecode).get();
-        return clone;
-    }
-
-    public TraversalSource<C> withMachine(final Class<? extends Machine> machine) {
-        final TraversalSource<C> clone = this.clone();
-        clone.bytecode.addUniqueSourceInstruction(Symbols.WITH_MACHINE, machine);
         return clone;
     }
 

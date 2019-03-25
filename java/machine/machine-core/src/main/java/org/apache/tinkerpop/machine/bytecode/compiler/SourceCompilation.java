@@ -20,6 +20,7 @@ package org.apache.tinkerpop.machine.bytecode.compiler;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
+import org.apache.tinkerpop.machine.processor.EmptyProcessor;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 import org.apache.tinkerpop.machine.structure.EmptyStructure;
@@ -39,8 +40,8 @@ public final class SourceCompilation<C> {
     private final CompositeCompiler compilers;
 
     public SourceCompilation(final Bytecode<C> sourcecode) {
-        this.originalSource = sourcecode;
-        this.processorFactory = BytecodeUtil.getProcessorFactory(sourcecode).get();
+        this.originalSource = sourcecode.clone();
+        this.processorFactory = BytecodeUtil.getProcessorFactory(sourcecode).orElse(EmptyProcessor.instance());
         this.structureFactory = BytecodeUtil.getStructureFactory(sourcecode).orElse(EmptyStructure.instance());
         this.strategies = BytecodeUtil.getStrategies(sourcecode);
         this.compilers = BytecodeUtil.getCompilers(sourcecode);

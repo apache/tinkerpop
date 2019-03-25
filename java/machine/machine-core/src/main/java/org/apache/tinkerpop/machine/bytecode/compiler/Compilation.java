@@ -53,7 +53,7 @@ public final class Compilation<C, S, E> implements Serializable {
     }
 
     public Compilation(final SourceCompilation<C> source, final Bytecode<C> bytecode) {
-        BytecodeUtil.mergeSourceInstructions(source.getSourceCode(), bytecode); // TODO: clone?
+        BytecodeUtil.mergeSourceInstructions(source.getSourceCode(), bytecode);
         BytecodeUtil.strategize(bytecode, source.getStrategies());
         this.structureFactory = source.getStructureFactory();
         this.processorFactory = source.getProcessorFactory();

@@ -36,18 +36,25 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class LocalMachine implements Machine {
 
-    private static final String WITH_SOURCE_CODE = "tp:withSourceCode";
-    private final Map<UUID, SourceCompilation<?>> sources = new ConcurrentHashMap<>();
+    static final String WITH_SOURCE_CODE = "tp:withSourceCode";
+    final Map<UUID, SourceCompilation<?>> sources = new ConcurrentHashMap<>();
+
+    private LocalMachine() {
+        // use open();
+    }
 
     @Override
-    public <C> Bytecode<C> register(final Bytecode<C> sourceCode) {
-        final Optional<UUID> id = LocalMachine.getSourceId(sourceCode); // TODO: clone?
+    public <C> Bytecode<C> register(Bytecode<C> sourceCode) {
+        sourceCode = sourceCode.clone(); // if the connection is local, don't mutate original
+        final Optional<UUID> id = LocalMachine.getSourceId(sourceCode);
         if (id.isPresent() && this.sources.containsKey(id.get())) {
+            if (1 == sourceCode.getSourceInstructions().size())
+                return sourceCode;
             final SourceCompilation<C> source = (SourceCompilation<C>) this.sources.get(id.get());
             BytecodeUtil.mergeSourceInstructions(source.getSourceCode(), sourceCode);
             sourceCode.getInstructions().removeIf(i -> i.op().equals(WITH_SOURCE_CODE));
         }
-        final UUID uuid = id.orElse(UUID.randomUUID());
+        final UUID uuid = UUID.randomUUID();
         this.sources.put(uuid, new SourceCompilation<>(sourceCode));
         final Bytecode<C> newSource = new Bytecode<>();
         newSource.addUniqueSourceInstruction(WITH_SOURCE_CODE, uuid.toString());
@@ -60,8 +67,9 @@ public final class LocalMachine implements Machine {
     }
 
     @Override
-    public <C, E> Iterator<Traverser<C, E>> submit(final Bytecode<C> bytecode) {
-        final UUID sourceId = LocalMachine.getSourceId(bytecode).orElse(null); // TODO: if submitted source has more than one instruction, merge?
+    public <C, E> Iterator<Traverser<C, E>> submit(Bytecode<C> bytecode) {
+        bytecode = bytecode.clone();
+        final UUID sourceId = LocalMachine.getSourceId(bytecode).orElse(null);
         final SourceCompilation<C> source = null == sourceId ? null : (SourceCompilation<C>) this.sources.get(sourceId);
         return null == sourceId ?
                 Compilation.<C, Object, E>compile(bytecode).getProcessor() :

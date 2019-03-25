@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.machine;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
+import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
 import java.util.Iterator;
@@ -26,11 +27,28 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Machine {
+public final class BasicMachine implements Machine {
 
-    public <C> Bytecode<C> register(final Bytecode<C> sourceCode);
+    private BasicMachine() {
+        // use open();
+    }
 
-    public <C, E> Iterator<Traverser<C, E>> submit(final Bytecode<C> bytecode); // TODO: should return a "ShellTraverser"
+    @Override
+    public <C> Bytecode<C> register(final Bytecode<C> sourceCode) {
+        return sourceCode;
+    }
 
-    public <C> void close(final Bytecode<C> sourceCode);
+    @Override
+    public <C> void close(final Bytecode<C> sourceCode) {
+
+    }
+
+    @Override
+    public <C, E> Iterator<Traverser<C, E>> submit(final Bytecode<C> bytecode) {
+        return Compilation.<C, Object, E>compile(bytecode).getProcessor();
+    }
+
+    public static Machine open() {
+        return new BasicMachine();
+    }
 }
