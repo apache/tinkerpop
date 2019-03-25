@@ -62,10 +62,10 @@ public final class Compilation<C, S, E> implements Serializable {
     }
 
     public Compilation(final ProcessorFactory processorFactory) {
-        this.functions = Collections.emptyList(); // TODO: somehow strings for primitive processors
-        this.structureFactory = null;
+        this.structureFactory = EmptyStructure.instance();
         this.processorFactory = processorFactory;
         this.traverserFactory = null;
+        this.functions = Collections.emptyList(); // TODO: somehow strings for primitive processors
     }
 
     public Processor<C, S, E> getProcessor() {

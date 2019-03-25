@@ -47,18 +47,21 @@ public final class LocalMachine implements Machine {
     public <C> Bytecode<C> register(Bytecode<C> sourceCode) {
         sourceCode = sourceCode.clone(); // if the connection is local, don't mutate original
         final Optional<UUID> id = LocalMachine.getSourceId(sourceCode);
-        if (id.isPresent() && this.sources.containsKey(id.get())) {
-            if (1 == sourceCode.getSourceInstructions().size())
-                return sourceCode;
-            final SourceCompilation<C> source = (SourceCompilation<C>) this.sources.get(id.get());
-            BytecodeUtil.mergeSourceInstructions(source.getSourceCode(), sourceCode);
+        if (id.isPresent()) {
+            if (this.sources.containsKey(id.get())) {
+                if (1 == sourceCode.getSourceInstructions().size())
+                    return sourceCode;
+                final SourceCompilation<C> source = (SourceCompilation<C>) this.sources.get(id.get());
+                BytecodeUtil.mergeSourceInstructions(source.getSourceCode(), sourceCode);
+            }
             sourceCode.getInstructions().removeIf(i -> i.op().equals(WITH_SOURCE_CODE));
         }
         final UUID uuid = UUID.randomUUID();
         this.sources.put(uuid, new SourceCompilation<>(sourceCode));
-        final Bytecode<C> newSource = new Bytecode<>();
-        newSource.addUniqueSourceInstruction(WITH_SOURCE_CODE, uuid.toString());
-        return newSource;
+        final Bytecode<C> registeredBytecode = new Bytecode<>();
+        registeredBytecode.addSourceInstruction(WITH_SOURCE_CODE, uuid.toString());
+        registeredBytecode.getInstructions().addAll(sourceCode.getInstructions()); // all bytecode is returned
+        return registeredBytecode;
     }
 
     @Override
@@ -69,9 +72,9 @@ public final class LocalMachine implements Machine {
     @Override
     public <C, E> Iterator<Traverser<C, E>> submit(Bytecode<C> bytecode) {
         bytecode = bytecode.clone();
-        final UUID sourceId = LocalMachine.getSourceId(bytecode).orElse(null);
-        final SourceCompilation<C> source = null == sourceId ? null : (SourceCompilation<C>) this.sources.get(sourceId);
-        return null == sourceId ?
+        final UUID sourceId = LocalMachine.getSourceId(bytecode).orElse(UUID.randomUUID());
+        final SourceCompilation<C> source = (SourceCompilation<C>) this.sources.get(sourceId);
+        return null == source ?
                 Compilation.<C, Object, E>compile(bytecode).getProcessor() :
                 Compilation.<C, Object, E>compile(source, bytecode).getProcessor();
     }
