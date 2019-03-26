@@ -25,6 +25,7 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Iterator;
@@ -98,6 +99,40 @@ public final class RemoteMachine implements Machine, AutoCloseable {
             this.machineServer.close();
         } catch (final IOException e) {
             throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * @author Marko A. Rodriguez (http://markorodriguez.com)
+     */
+    static final class Request<C> implements Serializable {
+
+        public enum Type {
+            register, submit, close;
+        }
+
+        public final Type type;
+        public final Bytecode<C> bytecode;
+        final String traverserServerLocation;
+        final int traverserServerPort;
+
+        private Request(final Type type, final Bytecode<C> bytecode, final String traverserServerLocation, final int traverserServerPort) {
+            this.type = type;
+            this.bytecode = bytecode;
+            this.traverserServerLocation = traverserServerLocation;
+            this.traverserServerPort = traverserServerPort;
+        }
+
+        static <C> Request<C> register(final Bytecode<C> bytecode) {
+            return new Request<>(Request.Type.register, bytecode, null, -1);
+        }
+
+        static <C> Request<C> submit(final Bytecode<C> bytecode, final String traverserServerLocation, final int traverserServerPort) {
+            return new Request<>(Request.Type.submit, bytecode, traverserServerLocation, traverserServerPort);
+        }
+
+        static <C> Request<C> close(final Bytecode<C> bytecode) {
+            return new Request<>(Request.Type.close, bytecode, null, -1);
         }
     }
 }

@@ -91,11 +91,11 @@ public final class MachineServer implements AutoCloseable {
                 final ObjectInputStream input = new ObjectInputStream(this.clientSocket.getInputStream());
                 final ObjectOutputStream output = new ObjectOutputStream(this.clientSocket.getOutputStream());
                 while (true) {
-                    final Request<Object> request = (Request<Object>) input.readObject();
-                    if (Request.Type.register == request.type) {
+                    final RemoteMachine.Request<Object> request = (RemoteMachine.Request<Object>) input.readObject();
+                    if (RemoteMachine.Request.Type.register == request.type) {
                         output.writeObject(MachineServer.this.machine.register(request.bytecode));
                         output.flush();
-                    } else if (Request.Type.submit == request.type) {
+                    } else if (RemoteMachine.Request.Type.submit == request.type) {
                         final Socket traverserServerSocket = new Socket(request.traverserServerLocation, request.traverserServerPort);
                         final ObjectOutputStream traverserOutput = new ObjectOutputStream(traverserServerSocket.getOutputStream());
                         final Iterator<Traverser<Object, Object>> iterator = MachineServer.this.machine.submit(request.bytecode);
