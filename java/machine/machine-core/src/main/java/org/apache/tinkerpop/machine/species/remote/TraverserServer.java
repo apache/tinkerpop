@@ -115,6 +115,4 @@ public final class TraverserServer<C, S> implements AutoCloseable, Iterator<Trav
             }
         }
     }
-
-
 }

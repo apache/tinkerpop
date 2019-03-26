@@ -84,7 +84,7 @@ public final class LocalMachine implements Machine {
         return new LocalMachine();
     }
 
-    private static final <C> Optional<UUID> getSourceId(final Bytecode<C> bytecode) {
+    private static <C> Optional<UUID> getSourceId(final Bytecode<C> bytecode) {
         for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
             if (sourceInstruction.op().equals(WITH_SOURCE_CODE))
                 return Optional.of(UUID.fromString((String) sourceInstruction.args()[0]));

@@ -66,13 +66,15 @@ public final class MachineServer implements AutoCloseable {
         return this.serverAlive.get();
     }
 
-    public synchronized void close() {
-        try {
-            this.serverAlive.set(Boolean.FALSE);
-            this.machineServerSocket.close();
-            this.machine.close();
-        } catch (final IOException e) {
-            throw new RuntimeException(e.getMessage(), e);
+    public void close() {
+        if (this.serverAlive.get()) {
+            try {
+                this.serverAlive.set(Boolean.FALSE);
+                this.machineServerSocket.close();
+                this.machine.close();
+            } catch (final IOException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
         }
     }
 
