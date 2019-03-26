@@ -28,22 +28,21 @@ import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.beam.serialization.TraverserCoder;
 import org.apache.tinkerpop.machine.processor.beam.util.ExecutionPlanner;
 import org.apache.tinkerpop.machine.processor.beam.util.TopologyUtil;
+import org.apache.tinkerpop.machine.species.io.TraverserServer;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.species.EmptyTraverser;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class Beam<C, S, E> implements Processor<C, S, E> {
 
+    public static final int RESULT_SERVER_PORT = 6532; // TODO: this needs to be a dynamic configuration
     public static final int MAX_REPETIONS = 15; // TODO: this needs to be a dynamic configuration
 
     private final Pipeline pipeline;
-    static List<Traverser> OUTPUT = new ArrayList<>(); // FIX THIS!
     private Iterator<Traverser<C, E>> iterator = null;
 
     public Beam(final Compilation<C, S, E> compilation) {
@@ -52,7 +51,7 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
         final PCollection<Traverser<C, S>> source = this.pipeline.apply(Create.of(EmptyTraverser.instance()));
         source.setCoder(new TraverserCoder<>());
         final PCollection<Traverser<C, E>> sink = TopologyUtil.compile(source, compilation);
-        sink.apply(ParDo.of(new OutputFn<>())); // TODO: we need an in-memory router of outgoing data
+        sink.apply(ParDo.of(new OutputFn<>("localhost", RESULT_SERVER_PORT)));
 
     }
 
@@ -75,7 +74,6 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
 
     @Override
     public void reset() {
-        OUTPUT.clear();
         this.iterator = null;
     }
 
@@ -88,9 +86,11 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
 
     private final void setupPipeline() {
         if (null == this.iterator) {
+            final TraverserServer<C, E> server = new TraverserServer<>(Beam.RESULT_SERVER_PORT);
+            new Thread(server).start();
             this.pipeline.run().waitUntilFinish();
-            this.iterator = (Iterator) new ArrayList<>(OUTPUT).iterator();
-            OUTPUT.clear();
+            server.stop();
+            this.iterator = server;
         }
     }
 

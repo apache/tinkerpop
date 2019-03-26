@@ -24,7 +24,7 @@ import org.apache.tinkerpop.language.gremlin.Traversal;
 import org.apache.tinkerpop.language.gremlin.TraversalSource;
 import org.apache.tinkerpop.language.gremlin.TraversalUtil;
 import org.apache.tinkerpop.language.gremlin.core.__;
-import org.apache.tinkerpop.machine.LocalMachine;
+import org.apache.tinkerpop.machine.species.LocalMachine;
 import org.apache.tinkerpop.machine.Machine;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
 import org.apache.tinkerpop.machine.strategy.optimization.IdentityStrategy;

@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine;
+package org.apache.tinkerpop.machine.species;
 
+import org.apache.tinkerpop.machine.Machine;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
 import java.util.Iterator;
@@ -27,28 +27,26 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class BasicMachine implements Machine {
+public class RemoteMachine implements Machine {
 
-    private BasicMachine() {
-        // use open();
+    private final int port;
+
+    public RemoteMachine(final int port) {
+        this.port = port;
     }
 
     @Override
     public <C> Bytecode<C> register(final Bytecode<C> sourceCode) {
-        return sourceCode;
+        return null;
+    }
+
+    @Override
+    public <C, E> Iterator<Traverser<C, E>> submit(final Bytecode<C> bytecode) {
+        return null;
     }
 
     @Override
     public <C> void close(final Bytecode<C> sourceCode) {
 
-    }
-
-    @Override
-    public <C, E> Iterator<Traverser<C, E>> submit(final Bytecode<C> bytecode) {
-        return Compilation.<C, Object, E>compile(bytecode).getProcessor();
-    }
-
-    public static Machine open() {
-        return new BasicMachine();
     }
 }
