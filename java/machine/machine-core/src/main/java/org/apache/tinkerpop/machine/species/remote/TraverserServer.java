@@ -88,11 +88,11 @@ public final class TraverserServer<C, S> implements AutoCloseable, Iterator<Trav
         }
     }
 
-    public class Worker implements Runnable {
+    private class Worker implements Runnable {
 
         private final Socket clientSocket;
 
-        Worker(final Socket clientSocket) {
+        private Worker(final Socket clientSocket) {
             this.clientSocket = clientSocket;
         }
 

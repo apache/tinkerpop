@@ -82,7 +82,7 @@ public final class MachineServer implements AutoCloseable {
 
         private final Socket clientSocket;
 
-        Worker(final Socket clientSocket) {
+        private Worker(final Socket clientSocket) {
             this.clientSocket = clientSocket;
         }
 
