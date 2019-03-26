@@ -52,7 +52,7 @@ public final class MachineServer implements AutoCloseable {
     private void run() {
         try {
             this.machineServerSocket = new ServerSocket(this.machineServerPort);
-            while (this.isAlive()) {
+            while (this.serverAlive.get()) {
                 final Socket clientSocket = this.machineServerSocket.accept();
                 new Thread(new Worker(clientSocket)).start();
             }
@@ -60,10 +60,6 @@ public final class MachineServer implements AutoCloseable {
             if (this.serverAlive.get())
                 throw new RuntimeException(e.getMessage(), e);
         }
-    }
-
-    private boolean isAlive() {
-        return this.serverAlive.get();
     }
 
     public void close() {
