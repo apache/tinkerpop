@@ -80,7 +80,7 @@ public final class RemoteMachine implements Machine, AutoCloseable {
     @Override
     public <C> void unregister(final Bytecode<C> sourceCode) {
         try {
-            this.outputStream.writeObject(Request.close(sourceCode));
+            this.outputStream.writeObject(Request.unregister(sourceCode));
             this.outputStream.flush();
         } catch (final IOException e) {
             throw new RuntimeException(e.getMessage(), e);
@@ -108,7 +108,7 @@ public final class RemoteMachine implements Machine, AutoCloseable {
     static final class Request<C> implements Serializable {
 
         public enum Type {
-            register, submit, close;
+            register, submit, unregister;
         }
 
         public final Type type;
@@ -131,8 +131,8 @@ public final class RemoteMachine implements Machine, AutoCloseable {
             return new Request<>(Request.Type.submit, bytecode, traverserServerLocation, traverserServerPort);
         }
 
-        static <C> Request<C> close(final Bytecode<C> bytecode) {
-            return new Request<>(Request.Type.close, bytecode, null, -1);
+        static <C> Request<C> unregister(final Bytecode<C> bytecode) {
+            return new Request<>(Request.Type.unregister, bytecode, null, -1);
         }
     }
 }

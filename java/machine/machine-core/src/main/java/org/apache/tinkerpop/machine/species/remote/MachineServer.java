@@ -103,7 +103,7 @@ public final class MachineServer implements AutoCloseable {
                             traverserOutput.writeObject(EmptyTraverser.instance()); // this tells a TraverserServer that there are no more traversers
                             traverserOutput.flush();
                         }
-                    } else { // Request.Type.close == request.type
+                    } else { // Request.Type.unregister == request.type
                         MachineServer.this.machine.unregister(request.bytecode);
                     }
                 }
