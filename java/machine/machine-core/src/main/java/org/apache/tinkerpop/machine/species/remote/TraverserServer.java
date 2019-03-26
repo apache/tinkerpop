@@ -97,8 +97,7 @@ public final class TraverserServer<C, S> implements AutoCloseable, Iterator<Trav
         }
 
         public void run() {
-            try {
-                final ObjectInputStream input = new ObjectInputStream(this.clientSocket.getInputStream());
+            try (final ObjectInputStream input = new ObjectInputStream(this.clientSocket.getInputStream())) {
                 while (true) {
                     final Traverser<C, S> traverser = (Traverser<C, S>) input.readObject();
                     if (traverser instanceof EmptyTraverser) { // EmptyTraverser kills server
@@ -107,7 +106,6 @@ public final class TraverserServer<C, S> implements AutoCloseable, Iterator<Trav
                     } else
                         TraverserServer.this.traverserSet.add(traverser);
                 }
-                input.close();
             } catch (final EOFException e) {
                 // okay -- this is how the worker closes
             } catch (final IOException | ClassNotFoundException e) {
