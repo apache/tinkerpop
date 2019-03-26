@@ -76,7 +76,7 @@ public final class PathMap<C, S> extends AbstractFunction<C> implements MapFunct
         final List<Compilation<C, Object, Object>> compilations = new ArrayList<>();
         boolean processingLabels = true;
         for (final Object arg : instruction.args()) {
-            if ("|" == arg) {
+            if (arg.equals("|")) {
                 processingLabels = false;
                 continue;
             }

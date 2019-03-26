@@ -20,13 +20,14 @@ package org.apache.tinkerpop.machine.bytecode;
 
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class Bytecode<C> implements Cloneable { // todo: serializable?
+public final class Bytecode<C> implements Cloneable, Serializable {
 
     private List<SourceInstruction> sourceInstructions = new ArrayList<>();
     private List<Instruction<C>> instructions = new ArrayList<>();

@@ -21,12 +21,13 @@ package org.apache.tinkerpop.machine.bytecode;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.util.StringFactory;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class Instruction<C> {
+public final class Instruction<C> implements Serializable {
 
     private final Coefficient<C> coefficient;
     private final String op;

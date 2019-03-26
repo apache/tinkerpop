@@ -24,9 +24,11 @@ import org.apache.tinkerpop.language.gremlin.Traversal;
 import org.apache.tinkerpop.language.gremlin.TraversalSource;
 import org.apache.tinkerpop.language.gremlin.TraversalUtil;
 import org.apache.tinkerpop.language.gremlin.common.__;
-import org.apache.tinkerpop.machine.species.LocalMachine;
 import org.apache.tinkerpop.machine.Machine;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
+import org.apache.tinkerpop.machine.species.LocalMachine;
+import org.apache.tinkerpop.machine.species.remote.MachineServer;
+import org.apache.tinkerpop.machine.species.remote.RemoteMachine;
 import org.apache.tinkerpop.machine.strategy.optimization.IdentityStrategy;
 import org.apache.tinkerpop.machine.structure.blueprints.BlueprintsStructure;
 import org.apache.tinkerpop.machine.structure.data.JMap;
@@ -61,7 +63,8 @@ public class PipesTest {
 
     @Test
     public void shouldWork() {
-        final Machine machine = LocalMachine.open();
+        final MachineServer server = new MachineServer(7777);
+        final Machine machine = RemoteMachine.open(6666, "localhost", 7777);
         final TraversalSource<Long> g = Gremlin.<Long>traversal(machine)
                 .withCoefficient(LongCoefficient.class)
                 .withProcessor(PipesProcessor.class)
@@ -120,9 +123,14 @@ public class PipesTest {
         traversal = g.inject(7L, 7L, 7L, 2L).incr().barrier();
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
-        System.out.println(traversal.nextTraverser());
+        System.out.println(traversal.hasNext());
         System.out.println(traversal.nextTraverser());
         System.out.println(traversal.hasNext());
+        System.out.println(traversal.nextTraverser());
+        System.out.println(traversal.hasNext());
+        ///
+        g.close();
+        server.close();
 
     }
 

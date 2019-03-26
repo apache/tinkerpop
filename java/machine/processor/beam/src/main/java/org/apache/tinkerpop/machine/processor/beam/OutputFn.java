@@ -30,14 +30,14 @@ import java.net.Socket;
  */
 public class OutputFn<C, S> extends DoFn<Traverser<C, S>, Void> {
 
-    private final String resultServerLocation;
-    private final int resultServerPort;
-    private Socket resultServer;
+    private final String traverserServerLocation;
+    private final int traverserServerPort;
+    private Socket traverserServerSocket;
     private ObjectOutputStream outputStream;
 
-    OutputFn(final String resultServerLocation, final int resultServerPort) {
-        this.resultServerLocation = resultServerLocation;
-        this.resultServerPort = resultServerPort;
+    OutputFn(final String traverserServerLocation, final int traverserServerPort) {
+        this.traverserServerLocation = traverserServerLocation;
+        this.traverserServerPort = traverserServerPort;
     }
 
     @ProcessElement
@@ -52,16 +52,13 @@ public class OutputFn<C, S> extends DoFn<Traverser<C, S>, Void> {
     @StartBundle
     public void startBundle() {
         // only create a connection if results are generated
-        if (null == this.resultServer) {
+        if (null == this.traverserServerSocket) {
             try {
-                //System.out.println("setting up client: " + this.toString());
-                this.resultServer = new Socket(this.resultServerLocation, this.resultServerPort);
-                this.outputStream = new ObjectOutputStream(this.resultServer.getOutputStream());
-                //System.out.println("Connected to server: " + this.resultServer.toString());
+                this.traverserServerSocket = new Socket(this.traverserServerLocation, this.traverserServerPort);
+                this.outputStream = new ObjectOutputStream(this.traverserServerSocket.getOutputStream());
             } catch (final Exception e) {
                 throw new RuntimeException(e.getMessage(), e);
             }
-            //System.out.println(this.toString() + " client setup");
         }
     }
 
@@ -76,11 +73,10 @@ public class OutputFn<C, S> extends DoFn<Traverser<C, S>, Void> {
 
     @Teardown
     public void stop() {
-        if (null != this.resultServer) {
+        if (null != this.traverserServerSocket) {
             try {
-                // System.out.println(this.toString() + " client stopping");
                 this.outputStream.flush();
-                this.resultServer.close();
+                this.traverserServerSocket.close();
             } catch (final Exception e) {
                 throw new RuntimeException(e.getMessage(), e);
             }

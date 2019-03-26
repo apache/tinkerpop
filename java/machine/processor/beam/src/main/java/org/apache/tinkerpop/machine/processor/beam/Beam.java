@@ -28,10 +28,11 @@ import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.beam.serialization.TraverserCoder;
 import org.apache.tinkerpop.machine.processor.beam.util.ExecutionPlanner;
 import org.apache.tinkerpop.machine.processor.beam.util.TopologyUtil;
-import org.apache.tinkerpop.machine.species.io.TraverserServer;
+import org.apache.tinkerpop.machine.species.remote.TraverserServer;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.species.EmptyTraverser;
 
+import java.util.Collections;
 import java.util.Iterator;
 
 /**
@@ -39,20 +40,22 @@ import java.util.Iterator;
  */
 public class Beam<C, S, E> implements Processor<C, S, E> {
 
-    public static final int RESULT_SERVER_PORT = 6532; // TODO: this needs to be a dynamic configuration
     public static final int MAX_REPETIONS = 15; // TODO: this needs to be a dynamic configuration
-
+    private boolean createTraverserServer;
+    private final int traverserServerPort;
     private final Pipeline pipeline;
     private Iterator<Traverser<C, E>> iterator = null;
 
-    public Beam(final Compilation<C, S, E> compilation) {
+    public Beam(final Compilation<C, S, E> compilation, final String traverserServerLocation, final int traverserServerPort, final boolean createTraverserServer) {
+        this.traverserServerPort = traverserServerPort;
+        this.createTraverserServer = createTraverserServer;
+        ///
         this.pipeline = Pipeline.create();
         this.pipeline.getOptions().setRunner(new PipelineOptions.DirectRunner().create(this.pipeline.getOptions()));
         final PCollection<Traverser<C, S>> source = this.pipeline.apply(Create.of(EmptyTraverser.instance()));
         source.setCoder(new TraverserCoder<>());
         final PCollection<Traverser<C, E>> sink = TopologyUtil.compile(source, compilation);
-        sink.apply(ParDo.of(new OutputFn<>("localhost", RESULT_SERVER_PORT)));
-
+        sink.apply(ParDo.of(new OutputFn<>(traverserServerLocation, this.traverserServerPort)));
     }
 
     @Override
@@ -84,14 +87,16 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
         return visitor.toString();
     }
 
-    private final void setupPipeline() {
+    private void setupPipeline() {
         if (null == this.iterator) {
-            final TraverserServer<C, E> server = new TraverserServer<>(Beam.RESULT_SERVER_PORT);
-            new Thread(server).start();
+            if (this.createTraverserServer) {
+                this.iterator = new TraverserServer<>(this.traverserServerPort);
+                new Thread((TraverserServer) this.iterator).start();
+            } else
+                this.iterator = Collections.emptyIterator();
             this.pipeline.run().waitUntilFinish();
-            server.stop();
-            this.iterator = server;
+            if (this.iterator instanceof TraverserServer)
+                ((TraverserServer<C, E>) this.iterator).stop();
         }
     }
-
 }

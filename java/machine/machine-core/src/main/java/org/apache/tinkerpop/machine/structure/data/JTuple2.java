@@ -18,10 +18,12 @@
  */
 package org.apache.tinkerpop.machine.structure.data;
 
+import java.io.Serializable;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class JTuple2<A, B> implements TTuple2<A, B> {
+public final class JTuple2<A, B> implements TTuple2<A, B>, Serializable {
 
     private final A a;
     private final B b;

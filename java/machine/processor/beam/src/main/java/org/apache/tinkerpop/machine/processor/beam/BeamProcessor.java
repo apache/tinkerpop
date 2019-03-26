@@ -19,17 +19,19 @@
 package org.apache.tinkerpop.machine.processor.beam;
 
 import org.apache.tinkerpop.machine.bytecode.compiler.BytecodeCompiler;
-import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.bytecode.compiler.CommonCompiler;
+import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.processor.beam.strategy.BeamStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
-import java.util.Arrays;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -38,10 +40,30 @@ import java.util.Set;
 public class BeamProcessor implements ProcessorFactory {
 
     private static final List<BytecodeCompiler> COMPILERS = List.of(CoreCompiler.instance(), CommonCompiler.instance());
+    private static final int DEFAULT_SERVER_PORT = 8888;
+    public static final String TRAVERSER_SERVER_LOCATION = "beam.traverserServer.location";
+    public static final String TRAVERSER_SERVER_PORT = "beam.traverserServer.port";
+
+    private final Map<String, Object> configuration;
+
+    public BeamProcessor() {
+        this.configuration = Collections.emptyMap();
+    }
+
+    public BeamProcessor(final Map<String, Object> configuration) {
+        this.configuration = configuration;
+    }
 
     @Override
     public <C, S, E> Processor<C, S, E> mint(final Compilation<C, S, E> compilation) {
-        return new Beam<>(compilation);
+        try {
+            return new Beam<>(compilation,
+                    (String) this.configuration.getOrDefault(TRAVERSER_SERVER_LOCATION, InetAddress.getLocalHost().getHostAddress()),
+                    (Integer) this.configuration.getOrDefault(TRAVERSER_SERVER_PORT, DEFAULT_SERVER_PORT),
+                    !this.configuration.containsKey(TRAVERSER_SERVER_LOCATION));
+        } catch (final UnknownHostException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 
     @Override

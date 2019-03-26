@@ -20,12 +20,13 @@ package org.apache.tinkerpop.machine.bytecode;
 
 import org.apache.tinkerpop.machine.util.StringFactory;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SourceInstruction {
+public final class SourceInstruction implements Serializable {
 
     private final String op;
     private final Object[] args;

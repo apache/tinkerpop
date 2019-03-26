@@ -26,6 +26,7 @@ import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.bytecode.compiler.SourceCompilation;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
@@ -90,5 +91,10 @@ public final class LocalMachine implements Machine {
                 return Optional.of(UUID.fromString((String) sourceInstruction.args()[0]));
         }
         return Optional.empty();
+    }
+
+    @Override
+    public void close() throws IOException {
+        this.sources.clear();
     }
 }

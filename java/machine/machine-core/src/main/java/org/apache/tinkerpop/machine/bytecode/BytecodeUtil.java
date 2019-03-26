@@ -34,6 +34,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -108,7 +109,9 @@ public final class BytecodeUtil {
             ProcessorFactory processor = null;
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
                 if (sourceInstruction.op().equals(Symbols.WITH_PROCESSOR)) {
-                    processor = ((Class<? extends ProcessorFactory>) sourceInstruction.args()[0]).getConstructor().newInstance();
+                    processor = 1 == sourceInstruction.args().length ?
+                            ((Class<? extends ProcessorFactory>) sourceInstruction.args()[0]).getConstructor().newInstance() :
+                            ((Class<? extends ProcessorFactory>) sourceInstruction.args()[0]).getConstructor(Map.class).newInstance((Map) sourceInstruction.args()[1]);
                 }
             }
             return Optional.ofNullable(processor);

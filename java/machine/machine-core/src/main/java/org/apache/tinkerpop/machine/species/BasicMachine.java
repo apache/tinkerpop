@@ -23,6 +23,7 @@ import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
+import java.io.IOException;
 import java.util.Iterator;
 
 /**
@@ -51,5 +52,10 @@ public final class BasicMachine implements Machine {
 
     public static Machine open() {
         return new BasicMachine();
+    }
+
+    @Override
+    public void close() throws IOException {
+
     }
 }

@@ -16,10 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.species.io;
+package org.apache.tinkerpop.machine.species.remote;
 
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserSet;
+import org.apache.tinkerpop.machine.traverser.species.EmptyTraverser;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -37,7 +38,7 @@ public final class TraverserServer<C, S> implements Runnable, Iterator<Traverser
     private final TraverserSet<C, S> traverserSet = new TraverserSet<>();
     private final int serverPort;
     private ServerSocket serverSocket;
-    private AtomicBoolean serverAlive = new AtomicBoolean(Boolean.FALSE);
+    private AtomicBoolean serverAlive = new AtomicBoolean(Boolean.TRUE);
 
     public TraverserServer(final int serverPort) {
         this.serverPort = serverPort;
@@ -46,19 +47,15 @@ public final class TraverserServer<C, S> implements Runnable, Iterator<Traverser
     public void run() {
         try {
             this.serverSocket = new ServerSocket(this.serverPort);
-            this.serverAlive.set(Boolean.TRUE);
-            // System.out.println("Server started: " + this.serverSocket.toString());
             while (this.isAlive()) {
                 final Socket clientSocket = this.serverSocket.accept();
                 new Thread(new Worker(clientSocket)).start();
             }
-            // System.out.println("Server Stopped.");
         } catch (final Exception e) {
             if (this.serverAlive.get())
                 throw new RuntimeException(e.getMessage(), e);
         }
     }
-
 
     private boolean isAlive() {
         return this.serverAlive.get();
@@ -100,16 +97,16 @@ public final class TraverserServer<C, S> implements Runnable, Iterator<Traverser
         }
 
         public void run() {
-            //int counter = 0;
             try {
-                //System.out.println("Client connected: " + this.clientSocket.toString());
                 final ObjectInputStream input = new ObjectInputStream(this.clientSocket.getInputStream());
                 while (true) {
                     final Traverser<C, S> traverser = (Traverser<C, S>) input.readObject();
-                    //System.out.println("Received traverser [" + this.clientSocket.getPort() + "]: " + traverser);
+                    if (traverser instanceof EmptyTraverser) {
+                        stop();
+                        break;
+                    }
                     traverserSet.add(traverser);
                 }
-                //System.out.println(this.toString() + ": is complete..." + counter);
             } catch (final EOFException e) {
                 // okay -- this is how the worker closes
             } catch (final IOException | ClassNotFoundException e) {

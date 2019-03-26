@@ -21,12 +21,13 @@ package org.apache.tinkerpop.machine;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
+import java.io.Closeable;
 import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Machine {
+public interface Machine extends Closeable {
 
     public <C> Bytecode<C> register(final Bytecode<C> sourceCode);
 

@@ -33,6 +33,8 @@ import org.apache.tinkerpop.machine.strategy.verification.CoefficientVerificatio
 import org.apache.tinkerpop.machine.structure.StructureFactory;
 import org.apache.tinkerpop.machine.structure.data.TVertex;
 
+import java.util.Map;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -61,6 +63,12 @@ public class TraversalSource<C> implements Cloneable {
     public TraversalSource<C> withProcessor(final Class<? extends ProcessorFactory> processor) {
         final TraversalSource<C> clone = this.clone();
         clone.bytecode.addSourceInstruction(Symbols.WITH_PROCESSOR, processor);
+        return clone;
+    }
+
+    public TraversalSource<C> withProcessor(final Class<? extends ProcessorFactory> processor, final Map<String, Object> configuration) {
+        final TraversalSource<C> clone = this.clone();
+        clone.bytecode.addSourceInstruction(Symbols.WITH_PROCESSOR, processor, configuration);
         return clone;
     }
 

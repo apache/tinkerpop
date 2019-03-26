@@ -18,12 +18,13 @@
  */
 package org.apache.tinkerpop.machine.structure.data;
 
+import java.io.Serializable;
 import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TMap<K, V> {
+public interface TMap<K, V> extends Serializable {
 
     public void set(final K key, final V value);
 
