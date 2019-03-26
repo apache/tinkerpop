@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraverserServer<C, S> implements Runnable, Iterator<Traverser<C, S>> {
+public final class TraverserServer<C, S> implements AutoCloseable, Iterator<Traverser<C, S>> {
 
     private final TraverserSet<C, S> traverserSet = new TraverserSet<>();
     private final int serverPort;
@@ -42,12 +42,13 @@ public final class TraverserServer<C, S> implements Runnable, Iterator<Traverser
 
     public TraverserServer(final int serverPort) {
         this.serverPort = serverPort;
+        new Thread(this::run).start();
     }
 
-    public void run() {
+    private void run() {
         try {
             this.serverSocket = new ServerSocket(this.serverPort);
-            while (this.isAlive()) {
+            while (this.serverAlive.get()) {
                 final Socket clientSocket = this.serverSocket.accept();
                 new Thread(new Worker(clientSocket)).start();
             }
@@ -57,25 +58,12 @@ public final class TraverserServer<C, S> implements Runnable, Iterator<Traverser
         }
     }
 
-    private boolean isAlive() {
-        return this.serverAlive.get();
-    }
-
-    public synchronized void stop() {
-        try {
-            this.serverAlive.set(Boolean.FALSE);
-            this.serverSocket.close();
-        } catch (final IOException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-    }
-
     @Override
     public boolean hasNext() {
         if (!this.traverserSet.isEmpty())
             return true;
         else {
-            while (this.isAlive()) {
+            while (this.serverAlive.get()) {
                 if (!this.traverserSet.isEmpty())
                     return true;
             }
@@ -86,6 +74,18 @@ public final class TraverserServer<C, S> implements Runnable, Iterator<Traverser
     @Override
     public Traverser<C, S> next() {
         return this.traverserSet.remove();
+    }
+
+    @Override
+    public synchronized void close() {
+        if (this.serverAlive.get()) {
+            try {
+                this.serverAlive.set(Boolean.FALSE);
+                this.serverSocket.close();
+            } catch (final IOException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        }
     }
 
     public class Worker implements Runnable {
@@ -101,12 +101,13 @@ public final class TraverserServer<C, S> implements Runnable, Iterator<Traverser
                 final ObjectInputStream input = new ObjectInputStream(this.clientSocket.getInputStream());
                 while (true) {
                     final Traverser<C, S> traverser = (Traverser<C, S>) input.readObject();
-                    if (traverser instanceof EmptyTraverser) {
-                        stop();
+                    if (traverser instanceof EmptyTraverser) { // EmptyTraverser kills server
+                        TraverserServer.this.close();
                         break;
-                    }
-                    traverserSet.add(traverser);
+                    } else
+                        TraverserServer.this.traverserSet.add(traverser);
                 }
+                input.close();
             } catch (final EOFException e) {
                 // okay -- this is how the worker closes
             } catch (final IOException | ClassNotFoundException e) {

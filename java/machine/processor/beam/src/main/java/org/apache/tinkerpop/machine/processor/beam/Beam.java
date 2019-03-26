@@ -25,7 +25,7 @@ import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.processor.Processor;
-import org.apache.tinkerpop.machine.processor.beam.serialization.TraverserCoder;
+import org.apache.tinkerpop.machine.processor.beam.io.TraverserCoder;
 import org.apache.tinkerpop.machine.processor.beam.util.ExecutionPlanner;
 import org.apache.tinkerpop.machine.processor.beam.util.TopologyUtil;
 import org.apache.tinkerpop.machine.species.remote.TraverserServer;
@@ -89,14 +89,12 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
 
     private void setupPipeline() {
         if (null == this.iterator) {
-            if (this.createTraverserServer) {
-                this.iterator = new TraverserServer<>(this.traverserServerPort);
-                new Thread((TraverserServer) this.iterator).start();
-            } else
-                this.iterator = Collections.emptyIterator();
+            this.iterator = this.createTraverserServer ?
+                    new TraverserServer<>(this.traverserServerPort) :
+                    Collections.emptyIterator();
             this.pipeline.run().waitUntilFinish();
             if (this.iterator instanceof TraverserServer)
-                ((TraverserServer<C, E>) this.iterator).stop();
+                ((TraverserServer<C, E>) this.iterator).close();
         }
     }
 }

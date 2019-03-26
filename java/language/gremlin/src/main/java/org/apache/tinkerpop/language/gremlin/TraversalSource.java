@@ -112,7 +112,7 @@ public class TraversalSource<C> implements Cloneable {
     }
 
     public void close() {
-        this.machine.close(this.bytecode);
+        this.machine.unregister(this.bytecode);
     }
 
     @Override

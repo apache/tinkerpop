@@ -130,8 +130,8 @@ public class PipesTest {
         System.out.println(traversal.hasNext());
         ///
         g.close();
+        machine.close();
         server.close();
-
     }
 
     @Test

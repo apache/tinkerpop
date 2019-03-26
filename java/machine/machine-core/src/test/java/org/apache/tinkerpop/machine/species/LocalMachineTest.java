@@ -75,7 +75,7 @@ class LocalMachineTest {
         assertEquals(1, machine.sources.size());
         assertNotEquals(bytecode, machine.register(bytecode));
         assertEquals(2, machine.sources.size());
-        machine.close(bytecode);
+        machine.unregister(bytecode);
         assertEquals(1, machine.sources.size());
     }
 }

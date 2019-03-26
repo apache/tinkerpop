@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor.beam.serialization;
+package org.apache.tinkerpop.machine.processor.beam.io;
 
 import org.apache.beam.sdk.coders.Coder;
 import org.apache.beam.sdk.coders.CoderException;
-import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.coefficient.Coefficient;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,19 +33,19 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraverserCoder<C, S> extends Coder<Traverser<C, S>> {
+public class CoefficientCoder<C> extends Coder<Coefficient<C>> {
 
     @Override
-    public void encode(final Traverser<C, S> value, final OutputStream outStream) throws CoderException, IOException {
+    public void encode(final Coefficient<C> value, final OutputStream outStream) throws CoderException, IOException {
         ObjectOutputStream outputStream = new ObjectOutputStream(outStream);
         outputStream.writeObject(value);
     }
 
     @Override
-    public Traverser<C, S> decode(InputStream inStream) throws CoderException, IOException {
+    public Coefficient<C> decode(InputStream inStream) throws CoderException, IOException {
         try {
             ObjectInputStream inputStream = new ObjectInputStream(inStream);
-            return (Traverser<C, S>) inputStream.readObject();
+            return (Coefficient<C>) inputStream.readObject();
         } catch (final ClassNotFoundException e) {
             throw new IOException(e.getMessage(), e);
         }

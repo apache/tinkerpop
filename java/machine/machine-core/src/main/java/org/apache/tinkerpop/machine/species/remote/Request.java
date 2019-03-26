@@ -33,8 +33,8 @@ final class Request<C> implements Serializable {
 
     public final Type type;
     public final Bytecode<C> bytecode;
-    public final String traverserServerLocation;
-    public final int traverserServerPort;
+    final String traverserServerLocation;
+    final int traverserServerPort;
 
     private Request(final Type type, final Bytecode<C> bytecode, final String traverserServerLocation, final int traverserServerPort) {
         this.type = type;

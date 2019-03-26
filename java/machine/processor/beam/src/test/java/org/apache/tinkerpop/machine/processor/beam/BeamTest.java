@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import static org.apache.tinkerpop.language.gremlin.core.__.constant;
 import static org.apache.tinkerpop.language.gremlin.core.__.incr;
@@ -69,12 +70,15 @@ public class BeamTest {
     }
 
     @Test
-    public void shouldWork() throws Exception {
+    public void shouldWork() {
         final MachineServer server = new MachineServer(7777);
         final Machine machine = RemoteMachine.open(6666, "localhost", 7777);
         final TraversalSource<Long> g = Gremlin.<Long>traversal(machine)
                 //.withCoefficient(LongCoefficient.class)
-                .withProcessor(BeamProcessor.class, Map.of("beam.traverserServer.location", "localhost", "beam.traverserServer.port", 6666))
+                //.withProcessor(BeamProcessor.class)
+                .withProcessor(BeamProcessor.class, new Random().nextBoolean() ?
+                        Map.of("beam.traverserServer.location", "localhost", "beam.traverserServer.port", 6666) :
+                        Map.of())
                 .withStrategy(IdentityStrategy.class);
 
         Traversal<Long, ?, ?> traversal = g.inject(List.of(1L, 1L)).<Long>unfold().map(incr()).c(4L).repeat(incr()).until(__.is(__.constant(8L).incr().incr())).sum();

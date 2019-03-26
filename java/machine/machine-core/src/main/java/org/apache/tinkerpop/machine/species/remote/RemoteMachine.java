@@ -32,22 +32,22 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class RemoteMachine implements Machine {
+public final class RemoteMachine implements Machine, AutoCloseable {
 
-    private final String localTraverserServerLocation;
-    private final int localTraverserServerPort;
+    private final String traverserServerLocation;
+    private final int traverserServerPort;
     private final Socket machineServer;
     private final ObjectInputStream inputStream;
     private final ObjectOutputStream outputStream;
 
 
-    private RemoteMachine(final int localTraverserServerPort, final String machineLocation, final int machinePort) {
+    private RemoteMachine(final int traverserServerPort, final String machineServerLocation, final int machineServerPort) {
         try {
-            this.localTraverserServerLocation = InetAddress.getLocalHost().getHostAddress();
-            this.localTraverserServerPort = localTraverserServerPort;
-            this.machineServer = new Socket(machineLocation, machinePort);
-            this.outputStream = new ObjectOutputStream(machineServer.getOutputStream());
-            this.inputStream = new ObjectInputStream(machineServer.getInputStream());
+            this.traverserServerLocation = InetAddress.getLocalHost().getHostAddress();
+            this.traverserServerPort = traverserServerPort;
+            this.machineServer = new Socket(machineServerLocation, machineServerPort);
+            this.outputStream = new ObjectOutputStream(this.machineServer.getOutputStream());
+            this.inputStream = new ObjectInputStream(this.machineServer.getInputStream());
         } catch (final Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
@@ -67,9 +67,8 @@ public class RemoteMachine implements Machine {
     @Override
     public <C, E> Iterator<Traverser<C, E>> submit(final Bytecode<C> bytecode) {
         try {
-            final TraverserServer<C, E> traverserServer = new TraverserServer<>(this.localTraverserServerPort);
-            new Thread(traverserServer).start();
-            this.outputStream.writeObject(Request.submit(bytecode, this.localTraverserServerLocation, this.localTraverserServerPort));
+            final TraverserServer<C, E> traverserServer = new TraverserServer<>(this.traverserServerPort);
+            this.outputStream.writeObject(Request.submit(bytecode, this.traverserServerLocation, this.traverserServerPort));
             this.outputStream.flush();
             return traverserServer;
         } catch (final IOException e) {
@@ -78,7 +77,7 @@ public class RemoteMachine implements Machine {
     }
 
     @Override
-    public <C> void close(final Bytecode<C> sourceCode) {
+    public <C> void unregister(final Bytecode<C> sourceCode) {
         try {
             this.outputStream.writeObject(Request.close(sourceCode));
             this.outputStream.flush();
@@ -87,14 +86,18 @@ public class RemoteMachine implements Machine {
         }
     }
 
-    public static Machine open(final int localTraverserServerPort, final String machineLocation, final int machinePort) {
-        return new RemoteMachine(localTraverserServerPort, machineLocation, machinePort);
+    public static Machine open(final int traverserServerPort, final String machineServerLocation, final int machineServerPort) {
+        return new RemoteMachine(traverserServerPort, machineServerLocation, machineServerPort);
     }
 
     @Override
-    public void close() throws IOException {
-        this.inputStream.close();
-        this.outputStream.close();
-        this.machineServer.close();
+    public void close() {
+        try {
+            this.inputStream.close();
+            this.outputStream.close();
+            this.machineServer.close();
+        } catch (final IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 }

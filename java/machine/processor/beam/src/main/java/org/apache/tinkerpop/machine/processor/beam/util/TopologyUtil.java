@@ -45,7 +45,7 @@ import org.apache.tinkerpop.machine.processor.beam.ReduceFn;
 import org.apache.tinkerpop.machine.processor.beam.RepeatDeadEndFn;
 import org.apache.tinkerpop.machine.processor.beam.RepeatEndFn;
 import org.apache.tinkerpop.machine.processor.beam.RepeatStartFn;
-import org.apache.tinkerpop.machine.processor.beam.serialization.TraverserCoder;
+import org.apache.tinkerpop.machine.processor.beam.io.TraverserCoder;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 

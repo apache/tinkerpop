@@ -33,5 +33,7 @@ public interface Machine extends Closeable {
 
     public <C, E> Iterator<Traverser<C, E>> submit(final Bytecode<C> bytecode); // TODO: should return a "ShellTraverser"
 
-    public <C> void close(final Bytecode<C> sourceCode);
+    public <C> void unregister(final Bytecode<C> sourceCode);
+
+    public void close();
 }

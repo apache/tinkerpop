@@ -23,7 +23,6 @@ import org.apache.tinkerpop.machine.species.LocalMachine;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.species.EmptyTraverser;
 
-import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -36,23 +35,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MachineServer implements Runnable, Closeable {
+public final class MachineServer implements AutoCloseable {
 
-    private final int serverPort;
-    private ServerSocket serverSocket;
+    private static final int FLUSH_AMOUNT = 10;
+
+    private final int machineServerPort;
+    private ServerSocket machineServerSocket;
     private AtomicBoolean serverAlive = new AtomicBoolean(Boolean.TRUE);
     private final Machine machine = LocalMachine.open();
 
-    public MachineServer(final int serverPort) {
-        this.serverPort = serverPort;
-        new Thread(this).start();
+    public MachineServer(final int machineServerPort) {
+        this.machineServerPort = machineServerPort;
+        new Thread(this::run).start();
     }
 
-    public void run() {
+    private void run() {
         try {
-            this.serverSocket = new ServerSocket(this.serverPort);
+            this.machineServerSocket = new ServerSocket(this.machineServerPort);
             while (this.isAlive()) {
-                final Socket clientSocket = this.serverSocket.accept();
+                final Socket clientSocket = this.machineServerSocket.accept();
                 new Thread(new Worker(clientSocket)).start();
             }
         } catch (final Exception e) {
@@ -68,14 +69,14 @@ public class MachineServer implements Runnable, Closeable {
     public synchronized void close() {
         try {
             this.serverAlive.set(Boolean.FALSE);
-            this.serverSocket.close();
+            this.machineServerSocket.close();
             this.machine.close();
         } catch (final IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
 
-    public class Worker implements Runnable {
+    private class Worker implements Runnable {
 
         private final Socket clientSocket;
 
@@ -88,25 +89,25 @@ public class MachineServer implements Runnable, Closeable {
                 final ObjectInputStream input = new ObjectInputStream(this.clientSocket.getInputStream());
                 final ObjectOutputStream output = new ObjectOutputStream(this.clientSocket.getOutputStream());
                 while (true) {
-                    final Request<Object> request = (Request) input.readObject();
+                    final Request<Object> request = (Request<Object>) input.readObject();
                     if (Request.Type.register == request.type) {
-                        output.writeObject(machine.register(request.bytecode));
+                        output.writeObject(MachineServer.this.machine.register(request.bytecode));
                         output.flush();
                     } else if (Request.Type.submit == request.type) {
                         final Socket traverserServerSocket = new Socket(request.traverserServerLocation, request.traverserServerPort);
                         final ObjectOutputStream traverserOutput = new ObjectOutputStream(traverserServerSocket.getOutputStream());
-                        final Iterator<Traverser<Object, Object>> iterator = machine.submit(request.bytecode);
+                        final Iterator<Traverser<Object, Object>> iterator = MachineServer.this.machine.submit(request.bytecode);
+                        int flushCounter = 0;
                         while (iterator.hasNext()) {
+                            flushCounter++;
                             traverserOutput.writeObject(iterator.next());
-                            traverserOutput.flush();
+                            if (0 == flushCounter % FLUSH_AMOUNT) traverserOutput.flush();
                         }
-                        traverserOutput.writeObject(EmptyTraverser.instance());
+                        traverserOutput.writeObject(EmptyTraverser.instance()); // this tells a TraverserServer that there are no more traversers
                         traverserOutput.flush();
                         traverserOutput.close();
-                    } else if (Request.Type.close == request.type) {
-                        machine.close(request.bytecode);
-                    } else {
-                        throw new IllegalStateException("This shouldn't happen: " + request);
+                    } else { // Request.Type.close == request.type
+                        MachineServer.this.machine.unregister(request.bytecode);
                     }
                 }
             } catch (final EOFException e) {

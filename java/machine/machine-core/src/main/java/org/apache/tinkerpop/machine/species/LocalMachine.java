@@ -26,7 +26,6 @@ import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.bytecode.compiler.SourceCompilation;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
@@ -62,12 +61,12 @@ public final class LocalMachine implements Machine {
         this.sources.put(uuid, new SourceCompilation<>(sourceCode));
         final Bytecode<C> registeredBytecode = new Bytecode<>();
         registeredBytecode.addSourceInstruction(WITH_SOURCE_CODE, uuid.toString());
-        registeredBytecode.getInstructions().addAll(sourceCode.getInstructions()); // all bytecode is returned
+        registeredBytecode.getInstructions().addAll(sourceCode.getInstructions()); // all bytecode is returned (though, typically, this will be empty)
         return registeredBytecode;
     }
 
     @Override
-    public <C> void close(final Bytecode<C> sourceCode) {
+    public <C> void unregister(final Bytecode<C> sourceCode) {
         LocalMachine.getSourceId(sourceCode).ifPresent(this.sources::remove);
     }
 
@@ -94,7 +93,7 @@ public final class LocalMachine implements Machine {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         this.sources.clear();
     }
 }

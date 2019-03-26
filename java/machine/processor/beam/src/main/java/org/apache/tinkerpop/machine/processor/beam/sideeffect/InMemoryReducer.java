@@ -21,7 +21,7 @@ package org.apache.tinkerpop.machine.processor.beam.sideeffect;
 import org.apache.beam.sdk.coders.DefaultCoder;
 import org.apache.beam.sdk.transforms.Combine;
 import org.apache.tinkerpop.machine.function.ReduceFunction;
-import org.apache.tinkerpop.machine.processor.beam.serialization.ReducerCoder;
+import org.apache.tinkerpop.machine.processor.beam.io.ReducerCoder;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 

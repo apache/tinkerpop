@@ -51,7 +51,7 @@ public class OutputFn<C, S> extends DoFn<Traverser<C, S>, Void> {
 
     @StartBundle
     public void startBundle() {
-        // only create a connection if results are generated
+        // only create a connection if results are generated at this branch
         if (null == this.traverserServerSocket) {
             try {
                 this.traverserServerSocket = new Socket(this.traverserServerLocation, this.traverserServerPort);
@@ -76,6 +76,7 @@ public class OutputFn<C, S> extends DoFn<Traverser<C, S>, Void> {
         if (null != this.traverserServerSocket) {
             try {
                 this.outputStream.flush();
+                this.outputStream.close();
                 this.traverserServerSocket.close();
             } catch (final Exception e) {
                 throw new RuntimeException(e.getMessage(), e);
@@ -83,8 +84,8 @@ public class OutputFn<C, S> extends DoFn<Traverser<C, S>, Void> {
         }
     }
 
-    @Override
+    /*@Override
     public String toString() {
         return "";
-    }
+    }*/
 }
