@@ -87,10 +87,6 @@ public final class RemoteMachine implements Machine, AutoCloseable {
         }
     }
 
-    public static Machine open(final int traverserServerPort, final String machineServerLocation, final int machineServerPort) {
-        return new RemoteMachine(traverserServerPort, machineServerLocation, machineServerPort);
-    }
-
     @Override
     public void close() {
         try {
@@ -100,6 +96,10 @@ public final class RemoteMachine implements Machine, AutoCloseable {
         } catch (final IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    public static Machine open(final int traverserServerPort, final String machineServerLocation, final int machineServerPort) {
+        return new RemoteMachine(traverserServerPort, machineServerLocation, machineServerPort);
     }
 
     /**

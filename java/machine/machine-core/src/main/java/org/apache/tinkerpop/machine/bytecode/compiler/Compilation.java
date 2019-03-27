@@ -129,6 +129,32 @@ public final class Compilation<C, S, E> implements Serializable {
         return this.functions.toString();
     } // TODO: functions need access to compilations for nesting
 
+
+    @Override
+    public int hashCode() {
+        return this.processorFactory.hashCode() ^ this.structureFactory.hashCode() ^ this.functions.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof Compilation &&
+                this.functions.equals(((Compilation) object).functions) &&
+                this.processorFactory.equals(((Compilation) object).processorFactory) &&
+                this.structureFactory.equals(((Compilation) object).structureFactory);
+    }
+
+    @Override
+    public Compilation<C, S, E> clone() {
+        try {
+            final Compilation<C, S, E> clone = (Compilation<C, S, E>) super.clone();
+            clone.processor = null;
+            // clone.functions =  ... we need to do a deep clone given the nested compilations
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
     ////////
 
     public static <C, S, E> Compilation<C, S, E> compile(final SourceCompilation<C> source, final Bytecode<C> bytecode) {

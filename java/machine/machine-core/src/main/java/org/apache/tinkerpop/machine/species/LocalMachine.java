@@ -73,11 +73,16 @@ public final class LocalMachine implements Machine {
     @Override
     public <C, E> Iterator<Traverser<C, E>> submit(Bytecode<C> bytecode) {
         bytecode = bytecode.clone();
-        final UUID sourceId = LocalMachine.getSourceId(bytecode).orElse(UUID.randomUUID());
+        final UUID sourceId = LocalMachine.getSourceId(bytecode).orElse(null);
         final SourceCompilation<C> source = (SourceCompilation<C>) this.sources.get(sourceId);
         return null == source ?
                 Compilation.<C, Object, E>compile(bytecode).getProcessor() :
                 Compilation.<C, Object, E>compile(source, bytecode).getProcessor();
+    }
+
+    @Override
+    public void close() {
+        this.sources.clear();
     }
 
     public static Machine open() {
@@ -90,10 +95,5 @@ public final class LocalMachine implements Machine {
                 return Optional.of(UUID.fromString((String) sourceInstruction.args()[0]));
         }
         return Optional.empty();
-    }
-
-    @Override
-    public void close() {
-        this.sources.clear();
     }
 }
