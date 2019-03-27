@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.machine.processor.beam;
 
 import org.apache.beam.sdk.Pipeline;
+import org.apache.beam.sdk.PipelineResult;
 import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.transforms.Create;
 import org.apache.beam.sdk.transforms.ParDo;
@@ -44,7 +45,9 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
     private boolean createTraverserServer;
     private final int traverserServerPort;
     private final Pipeline pipeline;
+    private PipelineResult pipelineResult;
     private Iterator<Traverser<C, E>> iterator = null;
+
 
     public Beam(final Compilation<C, S, E> compilation, final String traverserServerLocation, final int traverserServerPort, final boolean createTraverserServer) {
         this.traverserServerPort = traverserServerPort;
@@ -89,12 +92,15 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
 
     private void setupPipeline() {
         if (null == this.iterator) {
-            this.iterator = this.createTraverserServer ?
-                    new TraverserServer<>(this.traverserServerPort) :
-                    Collections.emptyIterator();
-            this.pipeline.run().waitUntilFinish();
-            if (this.iterator instanceof TraverserServer)
-                ((TraverserServer<C, E>) this.iterator).close();
+            if (this.createTraverserServer) {
+                this.iterator = new TraverserServer<>(this.traverserServerPort);
+                this.pipelineResult = this.pipeline.run();
+            } else {
+                this.iterator = Collections.emptyIterator();
+                this.pipeline.run().waitUntilFinish();
+            }
         }
+        if (this.createTraverserServer && this.pipelineResult.getState().isTerminal())
+            ((TraverserServer) this.iterator).close();
     }
 }
