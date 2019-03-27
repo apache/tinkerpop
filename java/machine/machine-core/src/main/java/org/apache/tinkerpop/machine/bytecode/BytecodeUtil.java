@@ -19,7 +19,9 @@
 package org.apache.tinkerpop.machine.bytecode;
 
 import org.apache.tinkerpop.machine.bytecode.compiler.BytecodeCompiler;
+import org.apache.tinkerpop.machine.bytecode.compiler.CommonCompiler;
 import org.apache.tinkerpop.machine.bytecode.compiler.CompositeCompiler;
+import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler;
 import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
@@ -86,7 +88,7 @@ public final class BytecodeUtil {
         final List<BytecodeCompiler> compilers = new ArrayList<>();
         BytecodeUtil.getProcessorFactory(bytecode).ifPresent(f -> compilers.addAll(f.getCompilers()));
         BytecodeUtil.getStructureFactory(bytecode).ifPresent(f -> compilers.addAll(f.getCompilers()));
-        return CompositeCompiler.create(compilers);
+        return CompositeCompiler.create(compilers.isEmpty() ? List.of(CoreCompiler.instance(), CommonCompiler.instance()) : compilers);
     }
 
     public static <C> Optional<Coefficient<C>> getCoefficient(final Bytecode<C> bytecode) {

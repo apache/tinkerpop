@@ -27,14 +27,12 @@ import org.apache.tinkerpop.machine.structure.data.TMap;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.util.StringFactory;
 
-import java.util.Set;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class ValueMap<C, K, V> extends AbstractFunction<C> implements MapFunction<C, TMap<K, V>, V> {
 
-    private final Argument<K> key;
+    private Argument<K> key;
 
     private ValueMap(final Coefficient<C> coefficient, final String label, final Argument<K> key) {
         super(coefficient, label);
@@ -44,6 +42,25 @@ public final class ValueMap<C, K, V> extends AbstractFunction<C> implements MapF
     @Override
     public V apply(final Traverser<C, TMap<K, V>> traverser) {
         return traverser.object().get(this.key.mapArg(traverser));
+    }
+
+    @Override
+    public ValueMap<C, K, V> clone() {
+        final ValueMap<C, K, V> clone = (ValueMap<C, K, V>) super.clone();
+        clone.key = this.key.clone();
+        return clone;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.key.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof ValueMap &&
+                this.key.equals(((ValueMap) object).key) &&
+                super.equals(object);
     }
 
     @Override

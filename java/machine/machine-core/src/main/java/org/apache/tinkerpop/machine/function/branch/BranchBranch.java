@@ -29,14 +29,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class BranchBranch<C, S, E> extends AbstractFunction<C> implements BranchFunction<C, S, E> {
 
-    private final Map<Compilation<C, S, ?>, List<Compilation<C, S, E>>> branches;
+    private Map<Compilation<C, S, ?>, List<Compilation<C, S, E>>> branches;
 
     private BranchBranch(final Coefficient<C> coefficient, final String label, final Map<Compilation<C, S, ?>, List<Compilation<C, S, E>>> branches) {
         super(coefficient, label);
@@ -46,6 +45,30 @@ public final class BranchBranch<C, S, E> extends AbstractFunction<C> implements 
     @Override
     public Map<Compilation<C, S, ?>, List<Compilation<C, S, E>>> getBranches() {
         return this.branches;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.branches.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof BranchBranch && this.branches.equals(((BranchBranch) object).branches) && super.equals(object);
+    }
+
+    @Override
+    public BranchBranch<C, S, E> clone() {
+        final BranchBranch<C, S, E> clone = (BranchBranch<C, S, E>) super.clone();
+        clone.branches = new HashMap<>(this.branches.size());
+        for (final Map.Entry<Compilation<C, S, ?>, List<Compilation<C, S, E>>> entry : this.branches.entrySet()) {
+            final List<Compilation<C, S, E>> compilations = new ArrayList<>(entry.getValue().size());
+            for (final Compilation<C, S, E> compilation : entry.getValue()) {
+                compilations.add(compilation.clone());
+            }
+            clone.branches.put(entry.getKey().clone(), compilations);
+        }
+        return clone;
     }
 
     public static <C, S, E> BranchBranch<C, S, E> compile(final Instruction<C> instruction) {

@@ -67,4 +67,19 @@ public final class SourceCompilation<C> {
         return this.originalSource;
     }
 
+    @Override
+    public int hashCode() {
+        return this.originalSource.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof SourceCompilation && this.originalSource.equals(((SourceCompilation) object).originalSource);
+    }
+
+    @Override
+    public String toString() {
+        return this.originalSource.getSourceInstructions().toString();
+    }
+
 }

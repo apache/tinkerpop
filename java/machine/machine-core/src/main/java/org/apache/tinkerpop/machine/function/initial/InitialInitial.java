@@ -25,8 +25,8 @@ import org.apache.tinkerpop.machine.function.InitialFunction;
 import org.apache.tinkerpop.machine.util.ArrayIterator;
 import org.apache.tinkerpop.machine.util.StringFactory;
 
+import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -43,6 +43,18 @@ public final class InitialInitial<C, S> extends AbstractFunction<C> implements I
     @Override
     public Iterator<S> get() {
         return new ArrayIterator<>(this.objects);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ Arrays.hashCode(this.objects);
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof InitialInitial &&
+                Arrays.equals(this.objects, ((InitialInitial) object).objects) &&
+                super.equals(object);
     }
 
     @Override

@@ -27,33 +27,51 @@ import org.apache.tinkerpop.machine.function.FilterFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.util.StringFactory;
 
-import java.util.Set;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class FilterFilter<C, S> extends AbstractFunction<C> implements FilterFunction<C, S> {
 
-    private final Pred pred;
-    private final Argument<S> argument;
+    private final Pred predicate;
+    private Argument<S> argument;
 
 
-    private FilterFilter(final Coefficient<C> coefficient, final String label, final Pred pred, final Argument<S> argument) {
+    private FilterFilter(final Coefficient<C> coefficient, final String label, final Pred predicate, final Argument<S> argument) {
         super(coefficient, label);
-        this.pred = pred;
+        this.predicate = predicate;
         this.argument = argument;
     }
 
     @Override
     public boolean test(final Traverser<C, S> traverser) {
-        return null == this.pred ?
+        return null == this.predicate ?
                 this.argument.filterArg(traverser) :
-                this.pred.test(traverser.object(), this.argument.mapArg(traverser));
+                this.predicate.test(traverser.object(), this.argument.mapArg(traverser));
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.predicate.hashCode() ^ this.argument.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof FilterFilter &&
+                this.predicate.equals(((FilterFilter) object).predicate) &&
+                this.argument.equals(((FilterFilter) object).argument) &&
+                super.equals(object);
     }
 
     @Override
     public String toString() {
         return StringFactory.makeFunctionString(this, this.argument);
+    }
+
+    @Override
+    public FilterFilter<C, S> clone() {
+        final FilterFilter<C, S> clone = (FilterFilter<C, S>) super.clone();
+        clone.argument = this.argument.clone();
+        return clone;
     }
 
     public static <C, S> FilterFilter<C, S> compile(final Instruction<C> instruction) {

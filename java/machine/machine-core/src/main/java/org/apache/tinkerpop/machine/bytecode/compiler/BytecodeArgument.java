@@ -26,7 +26,7 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
  */
 public class BytecodeArgument<E> implements Argument<E> {
 
-    private final Compilation compilation;
+    private Compilation compilation;
 
     public BytecodeArgument(final Bytecode arg) {
         this.compilation = Compilation.compile(arg);
@@ -40,6 +40,27 @@ public class BytecodeArgument<E> implements Argument<E> {
     @Override
     public <C, S> boolean filterArg(final Traverser<C, S> traverser) {
         return this.compilation.filterTraverser(traverser);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.compilation.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof BytecodeArgument && this.compilation.equals(((BytecodeArgument) object).compilation);
+    }
+
+    @Override
+    public BytecodeArgument<E> clone() {
+        try {
+            final BytecodeArgument<E> clone = (BytecodeArgument<E>) super.clone();
+            clone.compilation = this.compilation.clone();
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 
     @Override

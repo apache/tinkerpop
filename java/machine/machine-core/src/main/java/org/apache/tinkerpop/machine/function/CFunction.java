@@ -21,17 +21,18 @@ package org.apache.tinkerpop.machine.function;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 
 import java.io.Serializable;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface CFunction<C> extends Serializable {
+public interface CFunction<C> extends Serializable, Cloneable {
 
     public Coefficient<C> coefficient();
 
     public String label();
 
-    // TODO: reset() -- some functions do have state that needs resetting. E.g. nested compilation functions.
+    public CFunction<C> clone();
 
+    // TODO: reset() -- some functions do have state that needs resetting. E.g. nested compilation functions.
+    //                  most internal compilations reset() the compilation on every traverser insert. Except branch compilations.
 }

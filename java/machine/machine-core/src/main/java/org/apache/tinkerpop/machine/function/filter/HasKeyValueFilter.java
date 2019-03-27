@@ -27,15 +27,13 @@ import org.apache.tinkerpop.machine.structure.data.TMap;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.util.StringFactory;
 
-import java.util.Set;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class HasKeyValueFilter<C, K, V> extends AbstractFunction<C> implements FilterFunction<C, TMap<K, V>> {
 
-    private final Argument<K> key;
-    private final Argument<V> value;
+    private Argument<K> key;
+    private Argument<V> value;
 
     private HasKeyValueFilter(final Coefficient<C> coefficient, final String label, final Argument<K> key, final Argument<V> value) {
         super(coefficient, label);
@@ -50,8 +48,30 @@ public final class HasKeyValueFilter<C, K, V> extends AbstractFunction<C> implem
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.key.hashCode() ^ this.value.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof HasKeyValueFilter &&
+                this.key.equals(((HasKeyValueFilter) object).key) &&
+                this.value.equals(((HasKeyValueFilter) object).value) &&
+                super.equals(object);
+    }
+
+    @Override
     public String toString() {
         return StringFactory.makeFunctionString(this, this.key, this.value);
+    }
+
+
+    @Override
+    public HasKeyValueFilter<C, K, V> clone() {
+        final HasKeyValueFilter<C, K, V> clone = (HasKeyValueFilter<C, K, V>) super.clone();
+        clone.key = this.key.clone();
+        clone.value = this.value.clone();
+        return clone;
     }
 
     public static <C, K, V> HasKeyValueFilter<C, K, V> compile(final Instruction<C> instruction) {

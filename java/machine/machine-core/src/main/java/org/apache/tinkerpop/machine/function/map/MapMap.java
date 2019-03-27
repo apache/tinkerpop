@@ -26,14 +26,12 @@ import org.apache.tinkerpop.machine.function.MapFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.util.StringFactory;
 
-import java.util.Set;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class MapMap<C, S, E> extends AbstractFunction<C> implements MapFunction<C, S, E> {
 
-    private final Argument<E> argument;
+    private Argument<E> argument;
 
     private MapMap(final Coefficient<C> coefficient, final String label, final Argument<E> argument) {
         super(coefficient, label);
@@ -48,6 +46,25 @@ public final class MapMap<C, S, E> extends AbstractFunction<C> implements MapFun
     @Override
     public String toString() {
         return StringFactory.makeFunctionString(this, this.argument);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.argument.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof MapMap &&
+                this.argument.equals(((MapMap) object).argument) &&
+                super.equals(object);
+    }
+
+    @Override
+    public MapMap<C, S, E> clone() {
+        final MapMap<C, S, E> clone = (MapMap<C, S, E>) super.clone();
+        clone.argument = this.argument.clone();
+        return clone;
     }
 
     public static <C, S, E> MapMap<C, S, E> compile(final Instruction<C> instruction) {

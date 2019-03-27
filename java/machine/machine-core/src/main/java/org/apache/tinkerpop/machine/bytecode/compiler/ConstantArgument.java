@@ -40,4 +40,24 @@ public class ConstantArgument<E> implements Argument<E> {
     public <C, S> boolean filterArg(final Traverser<C, S> traverser) {
         return (Boolean) this.constant;
     }
+
+    @Override
+    public ConstantArgument<E> clone() {
+        return this;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.constant.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof ConstantArgument && this.constant.equals(((ConstantArgument) object).constant);
+    }
+
+    @Override
+    public String toString() {
+        return this.constant.toString();
+    }
 }

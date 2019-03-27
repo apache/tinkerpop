@@ -65,6 +65,23 @@ public class MethodArgument<E> implements Argument<E> {
     }
 
     @Override
+    public int hashCode() {
+        return this.method.hashCode() ^ Arrays.hashCode(this.arguments);
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof MethodArgument &&
+                this.method.equals(((MethodArgument) object).method) &&
+                Arrays.equals(this.arguments, ((MethodArgument) object).arguments);
+    }
+
+    @Override
+    public MethodArgument<E> clone() {
+        return this;
+    }
+
+    @Override
     public String toString() {
         return this.method + "(" + Arrays.toString(this.arguments) + ")";
     }

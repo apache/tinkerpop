@@ -30,7 +30,6 @@ import org.apache.tinkerpop.machine.traverser.path.Path;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -38,7 +37,7 @@ import java.util.Set;
 public final class PathMap<C, S> extends AbstractFunction<C> implements MapFunction<C, S, Path> {
 
     private final List<String> pathLabels;
-    private final CompilationCircle<C, Object, Object> byCompilations;
+    private CompilationCircle<C, Object, Object> byCompilations;
     private final boolean hasPathLabels;
     private final boolean hasByCompilations;
 
@@ -69,6 +68,26 @@ public final class PathMap<C, S> extends AbstractFunction<C> implements MapFunct
             }
             return newPath;
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.pathLabels.hashCode() ^ this.byCompilations.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof PathMap &&
+                this.pathLabels.equals(((PathMap) object).pathLabels) &&
+                this.byCompilations.equals(((PathMap) object).byCompilations) &&
+                super.equals(object);
+    }
+
+    @Override
+    public PathMap<C, S> clone() {
+        final PathMap<C, S> clone = (PathMap<C, S>) super.clone();
+        clone.byCompilations = this.byCompilations.clone();
+        return clone;
     }
 
     public static <C, S> PathMap<C, S> compile(final Instruction<C> instruction) {

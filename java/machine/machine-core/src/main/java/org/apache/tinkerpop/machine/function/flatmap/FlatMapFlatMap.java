@@ -30,14 +30,13 @@ import org.apache.tinkerpop.machine.util.IteratorUtils;
 import java.lang.reflect.Array;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class FlatMapFlatMap<C, S, E> extends AbstractFunction<C> implements FlatMapFunction<C, S, E> {
 
-    private final Argument<E> argument;
+    private Argument<E> argument;
 
     private FlatMapFlatMap(final Coefficient<C> coefficient, final String label, final Argument<E> argument) {
         super(coefficient, label);
@@ -69,6 +68,25 @@ public final class FlatMapFlatMap<C, S, E> extends AbstractFunction<C> implement
                 objectArray[i] = Array.get(array, i);
             return new ArrayIterator<>((E[]) objectArray);
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.argument.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof FlatMapFlatMap &&
+                this.argument.equals(((FlatMapFlatMap) object).argument) &&
+                super.equals(object);
+    }
+
+    @Override
+    public FlatMapFlatMap<C, S, E> clone() {
+        final FlatMapFlatMap<C, S, E> clone = (FlatMapFlatMap<C, S, E>) super.clone();
+        clone.argument = this.argument.clone();
+        return clone;
     }
 
     public static <C, S, E> FlatMapFlatMap<C, S, E> compile(final Instruction<C> instruction) {

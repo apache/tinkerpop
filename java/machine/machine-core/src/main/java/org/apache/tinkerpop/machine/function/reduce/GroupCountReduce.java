@@ -30,14 +30,13 @@ import org.apache.tinkerpop.machine.util.StringFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class GroupCountReduce<C, S, E> extends AbstractFunction<C> implements ReduceFunction<C, S, TMap<E, Long>> {
 
-    private final Compilation<C, S, E> byCompilation;
+    private Compilation<C, S, E> byCompilation;
 
     private GroupCountReduce(final Coefficient<C> coefficient, final String label, final Compilation<C, S, E> byCompilation) {
         super(coefficient, label);
@@ -67,6 +66,25 @@ public final class GroupCountReduce<C, S, E> extends AbstractFunction<C> impleme
     @Override
     public String toString() {
         return StringFactory.makeFunctionString(this, this.byCompilation);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.byCompilation.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof GroupCountReduce &&
+                this.byCompilation.equals(((GroupCountReduce) object).byCompilation) &&
+                super.equals(object);
+    }
+
+    @Override
+    public GroupCountReduce<C, S, E> clone() {
+        final GroupCountReduce<C, S, E> clone = (GroupCountReduce<C, S, E>) super.clone();
+        clone.byCompilation = this.byCompilation.clone();
+        return clone;
     }
 
     public static <C, S, E> GroupCountReduce<C, S, E> compile(final Instruction<C> instruction) {

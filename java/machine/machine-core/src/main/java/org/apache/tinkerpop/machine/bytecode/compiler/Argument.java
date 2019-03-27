@@ -27,7 +27,7 @@ import java.util.Arrays;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Argument<E> extends Serializable {
+public interface Argument<E> extends Serializable, Cloneable {
 
     public <C, S> E mapArg(final Traverser<C, S> traverser);
 
@@ -41,5 +41,7 @@ public interface Argument<E> extends Serializable {
         else
             return new ConstantArgument<>((E) args[0]);
     }
+
+    public Argument<E> clone();
 
 }

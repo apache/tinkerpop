@@ -21,6 +21,7 @@ package org.apache.tinkerpop.machine.bytecode.compiler;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.function.CFunction;
+import org.apache.tinkerpop.machine.processor.EmptyProcessor;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.structure.EmptyStructure;
@@ -29,6 +30,7 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -36,9 +38,9 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class Compilation<C, S, E> implements Serializable {
+public final class Compilation<C, S, E> implements Serializable, Cloneable {
 
-    private final List<CFunction<C>> functions;
+    private List<CFunction<C>> functions;
     private final StructureFactory structureFactory;
     private final ProcessorFactory processorFactory;
     private final TraverserFactory<C> traverserFactory;
@@ -47,7 +49,7 @@ public final class Compilation<C, S, E> implements Serializable {
     public Compilation(final Bytecode<C> bytecode) {
         BytecodeUtil.strategize(bytecode);
         this.structureFactory = BytecodeUtil.getStructureFactory(bytecode).orElse(EmptyStructure.instance());
-        this.processorFactory = BytecodeUtil.getProcessorFactory(bytecode).get();
+        this.processorFactory = BytecodeUtil.getProcessorFactory(bytecode).orElse(EmptyProcessor.instance());
         this.traverserFactory = BytecodeUtil.getTraverserFactory(bytecode).get();
         this.functions = BytecodeUtil.getCompilers(bytecode).compile(bytecode);
     }
@@ -148,7 +150,10 @@ public final class Compilation<C, S, E> implements Serializable {
         try {
             final Compilation<C, S, E> clone = (Compilation<C, S, E>) super.clone();
             clone.processor = null;
-            // clone.functions =  ... we need to do a deep clone given the nested compilations
+            clone.functions = new ArrayList<>(this.functions.size());
+            for (final CFunction<C> function : this.functions) {
+                clone.functions.add(function.clone());
+            }
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new RuntimeException(e.getMessage(), e);

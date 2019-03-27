@@ -19,14 +19,15 @@
 package org.apache.tinkerpop.machine.bytecode.compiler;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class CompilationCircle<C, S, E> implements Serializable {
+public final class CompilationCircle<C, S, E> implements Serializable, Cloneable {
 
-    private final List<Compilation<C, S, E>> compilations;
+    private List<Compilation<C, S, E>> compilations;
     private final boolean hasCompilations;
     private int currentCompilation = -1;
 
@@ -53,7 +54,31 @@ public final class CompilationCircle<C, S, E> implements Serializable {
     }
 
     @Override
+    public int hashCode() {
+        return this.compilations.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof CompilationCircle && this.compilations.equals(((CompilationCircle) object).compilations);
+    }
+
+    @Override
     public String toString() {
         return this.compilations.toString();
+    }
+
+    @Override
+    public CompilationCircle<C, S, E> clone() {
+        try {
+            final CompilationCircle<C, S, E> clone = (CompilationCircle<C, S, E>) super.clone();
+            clone.compilations = new ArrayList<>(this.compilations.size());
+            for (final Compilation<C, S, E> compilation : this.compilations) {
+                clone.compilations.add(compilation.clone());
+            }
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 }

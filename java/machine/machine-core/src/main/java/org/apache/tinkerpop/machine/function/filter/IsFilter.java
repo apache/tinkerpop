@@ -27,15 +27,13 @@ import org.apache.tinkerpop.machine.function.FilterFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.util.StringFactory;
 
-import java.util.Set;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class IsFilter<C, S> extends AbstractFunction<C> implements FilterFunction<C, S> {
 
     private final Pred predicate;
-    private final Argument<S> argument;
+    private Argument<S> argument;
 
     private IsFilter(final Coefficient<C> coefficient, final String label, final Pred predicate, final Argument<S> argument) {
         super(coefficient, label);
@@ -49,8 +47,28 @@ public final class IsFilter<C, S> extends AbstractFunction<C> implements FilterF
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.predicate.hashCode() ^ this.argument.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof IsFilter &&
+                this.predicate.equals(((IsFilter) object).predicate) &&
+                this.argument.equals(((IsFilter) object).argument) &&
+                super.equals(object);
+    }
+
+    @Override
     public String toString() {
         return StringFactory.makeFunctionString(this, this.predicate, this.argument);
+    }
+
+    @Override
+    public IsFilter<C, S> clone() {
+        final IsFilter<C, S> clone = (IsFilter<C, S>) super.clone();
+        clone.argument = this.argument.clone();
+        return clone;
     }
 
     public static <C, S> IsFilter<C, S> compile(final Instruction<C> instruction) {

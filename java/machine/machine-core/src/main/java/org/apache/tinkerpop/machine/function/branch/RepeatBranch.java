@@ -28,17 +28,13 @@ import org.apache.tinkerpop.machine.processor.LoopsProcessor;
 import org.apache.tinkerpop.machine.util.StringFactory;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class RepeatBranch<C, S> extends AbstractFunction<C> {
 
-    private final Map<Character, Compilation<C, S, S>> compilations; // TODO: remove
     private Compilation<C, S, S> repeatCompilation;
     private Compilation<C, S, ?> untilCompilation;
     private Compilation<C, S, ?> emitCompilation;
@@ -50,7 +46,6 @@ public final class RepeatBranch<C, S> extends AbstractFunction<C> {
     public RepeatBranch(final Coefficient<C> coefficient, final String label, final List<Object> arguments) {
         super(coefficient, label);
         int location = 1;
-        this.compilations = new LinkedHashMap<>();
         for (int i = 0; i < arguments.size(); i = i + 2) {
             final Character type = (Character) arguments.get(i);
             if ('e' == type) {
@@ -71,14 +66,12 @@ public final class RepeatBranch<C, S> extends AbstractFunction<C> {
                 this.repeatCompilation = (Compilation<C, S, S>) arguments.get(i + 1);
                 location = 3;
             }
-
-            this.compilations.put((Character) arguments.get(i), (Compilation<C, S, S>) arguments.get(i + 1));
         }
     }
 
     @Override
     public String toString() {
-        return StringFactory.makeFunctionString(this, this.compilations);
+        return StringFactory.makeFunctionString(this, repeatCompilation, untilCompilation, emitCompilation); // todo: this is random
     }
 
     public Compilation<C, S, S> getRepeat() {
@@ -107,6 +100,32 @@ public final class RepeatBranch<C, S> extends AbstractFunction<C> {
 
     public boolean hasEndPredicates() {
         return this.hasEndPredicates;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.repeatCompilation.hashCode() ^ this.emitCompilation.hashCode() ^ this.untilCompilation.hashCode() ^
+                this.emitLocation ^ this.untilLocation;
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof RepeatBranch &&
+                this.repeatCompilation.equals(((RepeatBranch) object).repeatCompilation) &&
+                this.emitCompilation.equals(((RepeatBranch) object).emitCompilation) &&
+                this.untilCompilation.equals(((RepeatBranch) object).untilCompilation) &&
+                this.emitLocation == ((RepeatBranch) object).emitLocation &&
+                this.untilLocation == ((RepeatBranch) object).untilLocation &&
+                super.equals(object);
+    }
+
+    @Override
+    public RepeatBranch<C, S> clone() {
+        final RepeatBranch<C, S> clone = (RepeatBranch<C, S>) super.clone();
+        clone.repeatCompilation = this.repeatCompilation.clone();
+        clone.emitCompilation = this.emitCompilation.clone();
+        clone.untilCompilation = this.untilCompilation.clone();
+        return clone;
     }
 
     public static <C, S> RepeatBranch<C, S> compile(final Instruction<C> instruction) {

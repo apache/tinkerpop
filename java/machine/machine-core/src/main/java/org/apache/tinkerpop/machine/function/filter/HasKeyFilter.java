@@ -29,7 +29,6 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.util.StringFactory;
 
 import java.util.Iterator;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -37,7 +36,7 @@ import java.util.Set;
 public final class HasKeyFilter<C, K, V> extends AbstractFunction<C> implements FilterFunction<C, TMap<K, V>> {
 
     private final Pred predicate;
-    private final Argument<K> key;
+    private Argument<K> key;
 
     private HasKeyFilter(final Coefficient<C> coefficient, final String label, final Pred predicate, final Argument<K> key) {
         super(coefficient, label);
@@ -62,8 +61,28 @@ public final class HasKeyFilter<C, K, V> extends AbstractFunction<C> implements 
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.predicate.hashCode() ^ this.key.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof HasKeyFilter &&
+                this.predicate.equals(((HasKeyFilter) object).predicate) &&
+                this.key.equals(((HasKeyFilter) object).key) &&
+                super.equals(object);
+    }
+
+    @Override
     public String toString() {
         return StringFactory.makeFunctionString(this, this.key);
+    }
+
+    @Override
+    public HasKeyFilter<C, K, V> clone() {
+        final HasKeyFilter<C, K, V> clone = (HasKeyFilter<C, K, V>) super.clone();
+        clone.key = this.key.clone();
+        return clone;
     }
 
     public static <C, K, V> HasKeyFilter<C, K, V> compile(final Instruction<C> instruction) {

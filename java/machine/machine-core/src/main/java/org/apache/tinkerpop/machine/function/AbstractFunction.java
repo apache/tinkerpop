@@ -48,4 +48,28 @@ public abstract class AbstractFunction<C> implements CFunction<C> {
     public String toString() {
         return StringFactory.makeFunctionString(this);
     }
+
+    @Override
+    public int hashCode() {
+        return this.coefficient.hashCode() ^ (null == this.label ? 1 : this.label.hashCode());
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof AbstractFunction &&
+                this.coefficient.equals(((AbstractFunction) object).coefficient) &&
+                ((null == this.label && null == ((AbstractFunction) object).label) ||
+                        (null != this.label && this.label.equals(((AbstractFunction) object).label)));
+    }
+
+    @Override
+    public AbstractFunction<C> clone() {
+        try {
+            final AbstractFunction<C> clone = (AbstractFunction<C>) super.clone();
+            clone.coefficient = this.coefficient.clone(); // TODO: make ImmutableCoefficient?
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
 }
