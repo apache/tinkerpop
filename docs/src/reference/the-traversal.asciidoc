@@ -51,10 +51,10 @@ IMPORTANT: The basics for starting a traversal are described in <<the-graph-proc
 well as in the link:http://tinkerpop.apache.org/docs/current/tutorials/getting-started/[Getting Started] tutorial.
 
 NOTE: To reduce the verbosity of the expression, it is good to
-`import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*`. This way, instead of doing `__.inE()`
+`+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*+`. This way, instead of doing `+__.inE()+`
 for an anonymous traversal, it is possible to simply write `inE()`. Be aware of language-specific reserved keywords
 when using anonymous traversals. For example, `in` and `as` are reserved keywords in Groovy, therefore you must use
-the verbose syntax `__.in()` and `__.as()` to avoid collisions.
+the verbose syntax `+__.in()+` and `+__.as()+` to avoid collisions.
 
 [[general-steps]]
 === General Steps
