@@ -216,7 +216,7 @@ public final class Traversals {
 
 NOTE: TinkerPop code samples typically use link:https://docs.oracle.com/javase/8/docs/technotes/guides/language/static-import.html[static importing],
 which allows for a more fluid code style. If the static import above were removed in favor of a standard import of
-the `__` and `T` classes, the traversal would read as follows: `g.V(id).outE().group().by(T.label).by(__.inV()).next()`.
+the `+__+` and `T` classes, the traversal would read as follows: `+g.V(id).outE().group().by(T.label).by(__.inV()).next()+`.
 The console automatically performs the static imports for these methods, so they do not need to be imported again
 in that environment.
 

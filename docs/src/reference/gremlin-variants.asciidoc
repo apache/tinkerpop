@@ -601,8 +601,8 @@ compile group: 'org.apache.tinkerpop', name: 'gremlin-driver', version: '3.3.4'
 ----
 
 WARNING: In Groovy, `as`, `in`, and `not` are reserved words. Gremlin-Groovy does not allow these steps to be called
-statically from the anonymous traversal `__` and therefore, must always be prefixed with `__.` For instance:
-`g.V().as('a').in().as('b').where(__.not(__.as('a').out().as('b')))`
+statically from the anonymous traversal `+__+` and therefore, must always be prefixed with `+__.+` For instance:
+`+g.V().as('a').in().as('b').where(__.not(__.as('a').out().as('b')))+`
 
 [[gremlin-python]]
 == Gremlin-Python
@@ -675,8 +675,8 @@ With statics loaded its possible to represent the above traversal as below.
 g.V().hasLabel('person').has('age',gt(30)).order().by('age',desc).toList()
 ----
 
-Finally, statics includes all the `__`-methods and thus, anonymous traversals like `__.out()` can be expressed as below.
-That is, without the `__.`-prefix.
+Finally, statics includes all the ``+__+``-methods and thus, anonymous traversals like `+__.out()+` can be expressed as below.
+That is, without the ``__.``-prefix.
 
 [gremlin-python,modern]
 ----

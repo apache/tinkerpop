@@ -51,10 +51,10 @@ IMPORTANT: The basics for starting a traversal are described in <<the-graph-proc
 well as in the link:http://tinkerpop.apache.org/docs/current/tutorials/getting-started/[Getting Started] tutorial.
 
 NOTE: To reduce the verbosity of the expression, it is good to
-`import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*`. This way, instead of doing `__.inE()`
+`+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*+`. This way, instead of doing `+__.inE()+`
 for an anonymous traversal, it is possible to simply write `inE()`. Be aware of language-specific reserved keywords
 when using anonymous traversals. For example, `in` and `as` are reserved keywords in Groovy, therefore you must use
-the verbose syntax `__.in()` and `__.as()` to avoid collisions.
+the verbose syntax `+__.in()+` and `+__.as()+` to avoid collisions.
 
 [[general-steps]]
 === General Steps
@@ -2762,7 +2762,7 @@ using the `with()`-modulator with the options given below.
 [width="100%",cols="3,3,15,5",options="header"]
 |=========================================================
 | Key | Type | Description | Default
-| `target` | `Traversal` | Sets a filter traversal for the end vertices (e.g. `__.has('name','marko')`). | all vertices (`__.identity()`)
+| `target` | `Traversal` | Sets a filter traversal for the end vertices (e.g. `+__.has('name','marko')+`). | all vertices (`+__.identity()+`)
 | `edges` | `Traversal` or `Direction` | Sets a `Traversal` that emits the edges to traverse from the current vertex or the `Direction` to traverse during the shortest path discovery. | `Direction.BOTH`
 | `distance` | `Traversal` or `String` | Sets the `Traversal` that calculates the distance for the current edge or the name of an edge property to use for the distance calculations. | `__.constant(1)`
 | `maxDistance` | `Number` | Sets the distance limit for all shortest paths. | none

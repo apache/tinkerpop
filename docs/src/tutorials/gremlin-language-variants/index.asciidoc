@@ -172,7 +172,7 @@ evaluated.
 traversal/query.
 
 4. `__` (**function nesting**) : The anonymous traversal class is used for passing a traversal as an argument to a
-parent step. For example, in `repeat(__.out())`, `__.out()` is an anonymous traversal passed to the traversal parent
+parent step. For example, in `+repeat(__.out())+`, `+__.out()+` is an anonymous traversal passed to the traversal parent
 `repeat()`. Anonymous traversals enable the "top-to-bottom" representation of a traversal.
 
 5. `Bytecode` (**language agnostic encoding**): The source and traversal steps and their arguments are encoded in a
@@ -257,7 +257,7 @@ link:http://groovy-lang.org/metaprogramming.html[meta-programming] instead of ob
 scenes," Groovy meta-programming is doing object wrapping.
 
 The Jython example below uses Python meta-programming to add functionality to `GraphTraversal`. In particular, the
-`__getitem__` and `__getattr__` "magic methods" are leveraged.
+`+__getitem__+` and `+__getattr__+` "magic methods" are leveraged.
 
 [source,python]
 ----
@@ -272,7 +272,7 @@ GraphTraversal.__getitem__ = getitem_bypass
 GraphTraversal.__getattr__ = lambda self, key: self.values(key)
 ----
 
-The two methods `__getitem__` and `__getattr__` support Python _slicing_ and _object attribute interception_,
+The two methods `+__getitem__+` and `+__getattr__+` support Python _slicing_ and _object attribute interception_,
 respectively. In this way, the host language is able to use its native constructs in a meaningful way within a
 Gremlin traversal.
 
