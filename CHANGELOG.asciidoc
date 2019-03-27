@@ -1933,7 +1933,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Improved the logging of the Gremlin Server REST endpoint as it pertained to script execution failures.
 * `TraversalExplanation` is now `Serializable` and compatible with GraphSON and Gryo serialization.
 * Fixed a problem with global bindings in Gremlin Server which weren't properly designed to handle concurrent modification.
-* Deprecated `ScriptElementFactory` and made the local `StarGraph` globally available for `ScriptInputFormat` 's `parse()` method.
+* Deprecated `ScriptElementFactory` and made the local `StarGraph` globally available for ``ScriptInputFormat``'s `parse()` method.
 * Improved reusability of unique test directory creation in `/target` for `AbstractGraphProvider`, which was formerly only available to Neo4j, by adding `makeTestDirectory()`.
 * Optimized memory-usage in `TraversalVertexProgram`.
 * `Graph` instances are not merely "closed" at the end of tests, they are "cleared" via `GraphProvider.clear()`, which should in turn cleans up old data for an implementation.
@@ -2213,7 +2213,7 @@ This release also includes changes from <<release-3-0-1-incubating, 3.0.1-incuba
 * Added `B_LP_O_S_SE_SL_Traverser` in support of `TraverserRequirement.LABELED_PATH`.
 * Added `TraverserRequirement.LABELED_PATH` which only generates path data for steps that are labeled (greatly increases the likelihood of bulking).
 * Fixed a bug in `Path` usage that required an API update: `Path.addLabel()` is now `Path.extend(Set<String>)` and `Traverser.addLabels(Set<String>)`.
-* Made `Path` iterable, so that it can be `unfold()` 'ed and used by local steps like `min(local)`, `max(local)`, etc.
+* Made `Path` iterable, so that it can be ``unfold()``'ed and used by local steps like `min(local)`, `max(local)`, etc.
 * `WhereTraversalStep` and `WherePredicateStep` are now the only "special" `Scoping` steps after `MatchStartStep` in `match()`.
 
 ==== Bugs
