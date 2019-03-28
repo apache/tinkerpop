@@ -25,6 +25,7 @@ import org.apache.tinkerpop.language.gremlin.TraversalSource;
 import org.apache.tinkerpop.language.gremlin.TraversalUtil;
 import org.apache.tinkerpop.language.gremlin.core.__;
 import org.apache.tinkerpop.machine.Machine;
+import org.apache.tinkerpop.machine.bytecode.compiler.Order;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
 import org.apache.tinkerpop.machine.species.LocalMachine;
 import org.apache.tinkerpop.machine.species.remote.MachineServer;
@@ -77,7 +78,7 @@ public class BeamTest {
                 .withProcessor(BeamProcessor.class)
                 .withStrategy(IdentityStrategy.class);
 
-        Traversal<Long, ?, ?> traversal = g.inject(7L, 3L, 5L, 20L, 1L, 2L).incr().order().incr().barrier().incr();
+        Traversal<Long, ?, ?> traversal = g.inject(7L, 3L, 5L, 20L, 1L, 2L).incr().order().by(Order.desc);
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(TraversalUtil.getBytecode(traversal));

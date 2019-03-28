@@ -22,10 +22,12 @@ import org.apache.tinkerpop.language.gremlin.AbstractTraversal;
 import org.apache.tinkerpop.language.gremlin.P;
 import org.apache.tinkerpop.language.gremlin.Traversal;
 import org.apache.tinkerpop.language.gremlin.TraversalUtil;
+import org.apache.tinkerpop.language.gremlin.common.__;
 import org.apache.tinkerpop.machine.Machine;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.bytecode.compiler.Oper;
+import org.apache.tinkerpop.machine.bytecode.compiler.Order;
 import org.apache.tinkerpop.machine.bytecode.compiler.Pred;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
@@ -62,14 +64,25 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
     }
 
     @Override
+    public Traversal<C, S, E> by(final String byString) {
+        this.bytecode.lastInstruction().addArg(byString);
+        return this;
+    }
+
+    @Override
     public Traversal<C, S, E> by(final Traversal<C, ?, ?> byTraversal) {
         this.bytecode.lastInstruction().addArg(TraversalUtil.getBytecode(byTraversal));
         return this;
     }
 
     @Override
-    public Traversal<C, S, E> by(final String byString) {
-        this.bytecode.lastInstruction().addArg(byString);
+    public Traversal<C, S, E> by(final Order order) {
+        return this.by(__.identity(), order);
+    }
+
+    @Override
+    public Traversal<C, S, E> by(final Traversal<C, ?, ?> byTraversal, final Order order) {
+        this.bytecode.lastInstruction().addArgs(TraversalUtil.getBytecode(byTraversal), order);
         return this;
     }
 

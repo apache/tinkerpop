@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.language.gremlin;
 
+import org.apache.tinkerpop.machine.bytecode.compiler.Order;
 import org.apache.tinkerpop.machine.structure.data.TMap;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.path.Path;
@@ -34,9 +35,13 @@ public interface Traversal<C, S, E> extends Iterator<E> {
 
     public Traversal<C, S, E> barrier();
 
+    public Traversal<C, S, E> by(final String byString);
+
     public Traversal<C, S, E> by(final Traversal<C, ?, ?> byTraversal);
 
-    public Traversal<C, S, E> by(final String byString);
+    public Traversal<C, S, E> by(final Order order);
+
+    public Traversal<C, S, E> by(final Traversal<C, ?, ?> byTraversal, final Order order);
 
     public Traversal<C, S, E> c(final C coefficient);
 

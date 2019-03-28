@@ -41,6 +41,10 @@ public class __ {
         return __.<C, S>start().constant(constant);
     }
 
+    public static <C, S> Traversal<C, S, S> identity() {
+        return __.<C, S>start().identity();
+    }
+
     public static <C> Traversal<C, Long, Long> incr() {
         return __.<C, Long>start().incr();
     }

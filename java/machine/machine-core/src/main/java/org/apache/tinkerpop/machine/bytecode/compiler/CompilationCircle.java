@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.machine.bytecode.compiler;
 
+import org.apache.tinkerpop.machine.traverser.Traverser;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,12 +38,21 @@ public final class CompilationCircle<C, S, E> implements Serializable, Cloneable
         this.hasCompilations = !this.compilations.isEmpty();
     }
 
-    public E process(final S object) {
+    public E processObject(final S object) {
         if (this.hasCompilations) {
             this.currentCompilation = (this.currentCompilation + 1) % this.compilations.size();
             return this.compilations.get(this.currentCompilation).mapObject(object).object();
         } else {
             return (E) object;
+        }
+    }
+
+    public E processTraverser(final Traverser<C, S> traverser) {
+        if (this.hasCompilations) {
+            this.currentCompilation = (this.currentCompilation + 1) % this.compilations.size();
+            return this.compilations.get(this.currentCompilation).mapTraverser(traverser).object();
+        } else {
+            return (E) traverser.object();
         }
     }
 
@@ -51,6 +62,10 @@ public final class CompilationCircle<C, S, E> implements Serializable, Cloneable
 
     public void reset() {
         this.currentCompilation = -1;
+    }
+
+    public int size() {
+        return this.compilations.size();
     }
 
     @Override
