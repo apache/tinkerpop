@@ -54,13 +54,6 @@ public final class MapMap<C, S, E> extends AbstractFunction<C> implements MapFun
     }
 
     @Override
-    public boolean equals(final Object object) {
-        return object instanceof MapMap &&
-                this.argument.equals(((MapMap) object).argument) &&
-                super.equals(object);
-    }
-
-    @Override
     public MapMap<C, S, E> clone() {
         final MapMap<C, S, E> clone = (MapMap<C, S, E>) super.clone();
         clone.argument = this.argument.clone();

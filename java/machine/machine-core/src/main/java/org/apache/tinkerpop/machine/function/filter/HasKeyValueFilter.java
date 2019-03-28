@@ -53,14 +53,6 @@ public final class HasKeyValueFilter<C, K, V> extends AbstractFunction<C> implem
     }
 
     @Override
-    public boolean equals(final Object object) {
-        return object instanceof HasKeyValueFilter &&
-                this.key.equals(((HasKeyValueFilter) object).key) &&
-                this.value.equals(((HasKeyValueFilter) object).value) &&
-                super.equals(object);
-    }
-
-    @Override
     public String toString() {
         return StringFactory.makeFunctionString(this, this.key, this.value);
     }

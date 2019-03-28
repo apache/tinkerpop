@@ -57,13 +57,6 @@ public final class ValueMap<C, K, V> extends AbstractFunction<C> implements MapF
     }
 
     @Override
-    public boolean equals(final Object object) {
-        return object instanceof ValueMap &&
-                this.key.equals(((ValueMap) object).key) &&
-                super.equals(object);
-    }
-
-    @Override
     public String toString() {
         return StringFactory.makeFunctionString(this, this.key);
     }

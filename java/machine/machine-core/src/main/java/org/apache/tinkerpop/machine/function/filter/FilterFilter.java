@@ -55,14 +55,6 @@ public final class FilterFilter<C, S> extends AbstractFunction<C> implements Fil
     }
 
     @Override
-    public boolean equals(final Object object) {
-        return object instanceof FilterFilter &&
-                this.predicate.equals(((FilterFilter) object).predicate) &&
-                this.argument.equals(((FilterFilter) object).argument) &&
-                super.equals(object);
-    }
-
-    @Override
     public String toString() {
         return StringFactory.makeFunctionString(this, this.argument);
     }

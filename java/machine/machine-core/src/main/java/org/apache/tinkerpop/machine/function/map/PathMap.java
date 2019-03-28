@@ -76,14 +76,6 @@ public final class PathMap<C, S> extends AbstractFunction<C> implements MapFunct
     }
 
     @Override
-    public boolean equals(final Object object) {
-        return object instanceof PathMap &&
-                this.pathLabels.equals(((PathMap) object).pathLabels) &&
-                this.byCompilations.equals(((PathMap) object).byCompilations) &&
-                super.equals(object);
-    }
-
-    @Override
     public PathMap<C, S> clone() {
         final PathMap<C, S> clone = (PathMap<C, S>) super.clone();
         clone.byCompilations = this.byCompilations.clone();

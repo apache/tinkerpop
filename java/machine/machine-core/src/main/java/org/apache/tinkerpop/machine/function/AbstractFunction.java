@@ -51,15 +51,12 @@ public abstract class AbstractFunction<C> implements CFunction<C> {
 
     @Override
     public int hashCode() {
-        return this.coefficient.hashCode() ^ (null == this.label ? 1 : this.label.hashCode());
+        return this.getClass().hashCode() ^ this.coefficient.hashCode() ^ (null == this.label ? 1 : this.label.hashCode());
     }
 
     @Override
-    public boolean equals(final Object object) {
-        return object instanceof AbstractFunction &&
-                this.coefficient.equals(((AbstractFunction) object).coefficient) &&
-                ((null == this.label && null == ((AbstractFunction) object).label) ||
-                        (null != this.label && this.label.equals(((AbstractFunction) object).label)));
+    public boolean equals(final Object other) {
+        return other != null && other.getClass().equals(this.getClass()) && this.hashCode() == other.hashCode();
     }
 
     @Override

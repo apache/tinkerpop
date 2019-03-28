@@ -109,17 +109,6 @@ public final class RepeatBranch<C, S> extends AbstractFunction<C> {
     }
 
     @Override
-    public boolean equals(final Object object) {
-        return object instanceof RepeatBranch &&
-                this.repeatCompilation.equals(((RepeatBranch) object).repeatCompilation) &&
-                this.emitCompilation.equals(((RepeatBranch) object).emitCompilation) &&
-                this.untilCompilation.equals(((RepeatBranch) object).untilCompilation) &&
-                this.emitLocation == ((RepeatBranch) object).emitLocation &&
-                this.untilLocation == ((RepeatBranch) object).untilLocation &&
-                super.equals(object);
-    }
-
-    @Override
     public RepeatBranch<C, S> clone() {
         final RepeatBranch<C, S> clone = (RepeatBranch<C, S>) super.clone();
         clone.repeatCompilation = this.repeatCompilation.clone();

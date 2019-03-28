@@ -51,13 +51,6 @@ public final class InitialInitial<C, S> extends AbstractFunction<C> implements I
     }
 
     @Override
-    public boolean equals(final Object object) {
-        return object instanceof InitialInitial &&
-                Arrays.equals(this.objects, ((InitialInitial) object).objects) &&
-                super.equals(object);
-    }
-
-    @Override
     public String toString() {
         return StringFactory.makeFunctionString(this, this.objects);
     }

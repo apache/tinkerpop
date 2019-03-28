@@ -48,13 +48,6 @@ public final class ConstantMap<C, S, E> extends AbstractFunction<C> implements M
     }
 
     @Override
-    public boolean equals(final Object object) {
-        return object instanceof ConstantMap &&
-                this.constant.equals(((ConstantMap) object).constant) &&
-                super.equals(object);
-    }
-
-    @Override
     public String toString() {
         return StringFactory.makeFunctionString(this, this.constant);
     }

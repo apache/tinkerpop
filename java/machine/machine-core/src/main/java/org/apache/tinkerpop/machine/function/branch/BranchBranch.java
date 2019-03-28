@@ -53,11 +53,6 @@ public final class BranchBranch<C, S, E> extends AbstractFunction<C> implements 
     }
 
     @Override
-    public boolean equals(final Object object) {
-        return object instanceof BranchBranch && this.branches.equals(((BranchBranch) object).branches) && super.equals(object);
-    }
-
-    @Override
     public BranchBranch<C, S, E> clone() {
         final BranchBranch<C, S, E> clone = (BranchBranch<C, S, E>) super.clone();
         clone.branches = new HashMap<>(this.branches.size());

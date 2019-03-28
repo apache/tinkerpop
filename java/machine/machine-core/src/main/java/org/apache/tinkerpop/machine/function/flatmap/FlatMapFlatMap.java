@@ -76,13 +76,6 @@ public final class FlatMapFlatMap<C, S, E> extends AbstractFunction<C> implement
     }
 
     @Override
-    public boolean equals(final Object object) {
-        return object instanceof FlatMapFlatMap &&
-                this.argument.equals(((FlatMapFlatMap) object).argument) &&
-                super.equals(object);
-    }
-
-    @Override
     public FlatMapFlatMap<C, S, E> clone() {
         final FlatMapFlatMap<C, S, E> clone = (FlatMapFlatMap<C, S, E>) super.clone();
         clone.argument = this.argument.clone();

@@ -20,12 +20,16 @@ package org.apache.tinkerpop.machine.traverser;
 
 
 import org.apache.tinkerpop.machine.util.FastNoSuchElementException;
+import org.apache.tinkerpop.machine.util.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.AbstractSet;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -132,15 +136,15 @@ public final class TraverserSet<C, S> extends AbstractSet<Traverser<C, S>> imple
         return this.map.values().toString();
     }
 
-    /*public void sort(final Comparator<Traverser<S>> comparator) {
+    public void sort(final Comparator<Traverser<C,S>> comparator) {
         final List<Traverser<C, S>> list = new ArrayList<>(this.map.size());
         IteratorUtils.removeOnNext(this.map.values().iterator()).forEachRemaining(list::add);
         Collections.sort(list, comparator);
-        this.map.reset();
+        this.map.clear();
         list.forEach(traverser -> this.map.put(traverser, traverser));
     }
 
-    public void shuffle() {
+    /*public void shuffle() {
         final List<Traverser<C, S>> list = new ArrayList<>(this.map.size());
         IteratorUtils.removeOnNext(this.map.values().iterator()).forEachRemaining(list::add);
         Collections.shuffle(list);

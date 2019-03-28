@@ -74,13 +74,6 @@ public final class GroupCountReduce<C, S, E> extends AbstractFunction<C> impleme
     }
 
     @Override
-    public boolean equals(final Object object) {
-        return object instanceof GroupCountReduce &&
-                this.byCompilation.equals(((GroupCountReduce) object).byCompilation) &&
-                super.equals(object);
-    }
-
-    @Override
     public GroupCountReduce<C, S, E> clone() {
         final GroupCountReduce<C, S, E> clone = (GroupCountReduce<C, S, E>) super.clone();
         clone.byCompilation = this.byCompilation.clone();
