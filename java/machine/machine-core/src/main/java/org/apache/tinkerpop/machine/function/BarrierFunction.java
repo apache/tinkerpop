@@ -30,6 +30,8 @@ public interface BarrierFunction<C, S, E, B> extends BiFunction<Traverser<C, S>,
 
     public B getInitialValue();
 
+    public B merge(final B barrierA, final B barrierB);
+
     public Iterator<E> createIterator(final B barrier);
 
     public boolean returnsTraversers();

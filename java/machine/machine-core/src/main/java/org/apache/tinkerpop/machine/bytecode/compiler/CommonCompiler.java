@@ -21,6 +21,7 @@ package org.apache.tinkerpop.machine.bytecode.compiler;
 import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.function.barrier.JoinBarrier;
+import org.apache.tinkerpop.machine.function.barrier.OrderBarrier;
 import org.apache.tinkerpop.machine.function.barrier.StallBarrier;
 import org.apache.tinkerpop.machine.function.branch.BranchBranch;
 import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
@@ -78,6 +79,7 @@ public final class CommonCompiler implements BytecodeCompiler {
         put(Symbols.JOIN, FunctionType.BARRIER);
         put(Symbols.LOOPS, FunctionType.MAP);
         put(Symbols.MAP, FunctionType.MAP);
+        put(Symbols.ORDER, FunctionType.BARRIER);
         put(Symbols.PATH, FunctionType.MAP);
         put(Symbols.REDUCE, FunctionType.REDUCE);
         put(Symbols.REPEAT, FunctionType.BRANCH);
@@ -122,6 +124,8 @@ public final class CommonCompiler implements BytecodeCompiler {
                 return LoopsMap.compile(instruction);
             case Symbols.MAP:
                 return MapMap.compile(instruction);
+            case Symbols.ORDER:
+                return OrderBarrier.compile(instruction);
             case Symbols.PATH:
                 return PathMap.compile(instruction);
             case Symbols.REDUCE:
@@ -191,6 +195,7 @@ public final class CommonCompiler implements BytecodeCompiler {
         public static final String JOIN = "join";
         public static final String LOOPS = "loops";
         public static final String MAP = "map";
+        public static final String ORDER = "order";
         public static final String PATH = "path";
         public static final String REDUCE = "reduce";
         public static final String REPEAT = "repeat";

@@ -38,7 +38,6 @@ public class InMemoryReducer<C, S, E> implements Combine.AccumulatingCombineFn.A
     private final TraverserFactory<C> traverserFactory;
 
     public InMemoryReducer(final ReduceFunction<C, S, E> reduceFunction, final TraverserFactory<C> traverserFactory) {
-        super();
         this.value = reduceFunction.getInitialValue();
         this.reduceFunction = reduceFunction;
         this.traverserFactory = traverserFactory;

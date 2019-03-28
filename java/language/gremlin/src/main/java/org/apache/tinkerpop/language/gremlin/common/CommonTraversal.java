@@ -192,6 +192,11 @@ public class CommonTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
     }
 
     @Override
+    public Traversal<C, S, E> order() {
+        return this.addInstruction(Symbols.ORDER);
+    }
+
+    @Override
     public Traversal<C, S, Path> path(final String... labels) {
         return this.addInstruction(Symbols.PATH, TraversalUtil.addObjects(labels, "|"));
     }

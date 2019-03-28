@@ -62,6 +62,22 @@ public class PipesTest {
     }
 
     @Test
+    public void testOrder() {
+        final Machine machine = LocalMachine.open();
+        final TraversalSource<Long> g = Gremlin.<Long>traversal(machine)
+                .withCoefficient(LongCoefficient.class)
+                .withProcessor(PipesProcessor.class)
+                .withStrategy(IdentityStrategy.class);
+
+        Traversal<Long, ?, ?> traversal = g.inject(7L,3L,5L,20L,1L,2L).incr().order();
+        System.out.println(TraversalUtil.getBytecode(traversal));
+        System.out.println(traversal);
+        System.out.println(TraversalUtil.getBytecode(traversal));
+        System.out.println(traversal.toList());
+        System.out.println("\n----------\n");
+    }
+
+    @Test
     public void shouldWork() {
         final MachineServer server = new MachineServer(7777);
         final Machine machine = RemoteMachine.open(6666, "localhost", 7777);

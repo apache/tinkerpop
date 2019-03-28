@@ -56,7 +56,7 @@ public class TraversalSource<C> implements Cloneable {
     public TraversalSource<C> withCoefficient(final Class<? extends Coefficient<C>> coefficient) {
         final TraversalSource<C> clone = this.clone();
         clone.bytecode.addUniqueSourceInstruction(Symbols.WITH_COEFFICIENT, coefficient);
-        clone.coefficient = BytecodeUtil.getCoefficient(clone.bytecode).get();
+        clone.coefficient = BytecodeUtil.getCoefficient(clone.bytecode).get(); // previously line guarantees existence
         return clone;
     }
 
@@ -104,7 +104,7 @@ public class TraversalSource<C> implements Cloneable {
 
     //
 
-    private final void prepareSourceCode() {
+    private void prepareSourceCode() {
         if (!this.registered) {
             this.registered = true;
             this.bytecode = this.machine.register(this.bytecode);

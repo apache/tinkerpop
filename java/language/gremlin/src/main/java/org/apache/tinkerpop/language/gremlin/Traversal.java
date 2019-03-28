@@ -86,6 +86,8 @@ public interface Traversal<C, S, E> extends Iterator<E> {
 
     public <R> Traversal<C, S, R> map(final Traversal<C, E, R> mapTraversal);
 
+    public Traversal<C, S, E> order();
+
     public Traversal<C, S, Path> path(final String... labels);
 
     public Traversal<C, S, E> repeat(final Traversal<C, E, E> repeatTraversal);

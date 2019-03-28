@@ -59,6 +59,12 @@ public final class JoinBarrier<C, K, V> extends AbstractFunction<C> implements B
     }
 
     @Override
+    public List<Map<K, V>> merge(final List<Map<K, V>> barrierA, final List<Map<K, V>> barrierB) {
+        barrierA.addAll(barrierB);
+        return barrierA; // TODO: unchecked in distributed Beam .. may be completely off
+    }
+
+    @Override
     public Iterator<Map<K, V>> createIterator(final List<Map<K, V>> barrier) {
         return barrier.iterator();
     }

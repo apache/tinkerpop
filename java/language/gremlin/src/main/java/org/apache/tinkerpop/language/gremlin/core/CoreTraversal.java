@@ -221,6 +221,11 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
     }
 
     @Override
+    public Traversal<C, S, E> order() {
+        throw new IllegalStateException("Unimplemented");
+    }
+
+    @Override
     public Traversal<C, S, Path> path(final String... labels) {
         return this.addInstruction(Symbols.PATH, TraversalUtil.addObjects(labels, "|"));
     }

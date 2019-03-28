@@ -25,25 +25,21 @@ import org.apache.tinkerpop.machine.function.BarrierFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserSet;
 
+import java.util.Comparator;
 import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class StallBarrier<C, S> extends AbstractFunction<C> implements BarrierFunction<C, S, Traverser<C, S>, TraverserSet<C, S>> {
+public final class OrderBarrier<C, S> extends AbstractFunction<C> implements BarrierFunction<C, S, Traverser<C, S>, TraverserSet<C, S>> {
 
-    private final int drainThreshold;
-
-    private StallBarrier(final Coefficient<C> coefficient, final String label, final int drainThreshold) {
+    private OrderBarrier(final Coefficient<C> coefficient, final String label) {
         super(coefficient, label);
-        this.drainThreshold = drainThreshold;
     }
 
-
     @Override
-    public TraverserSet<C, S> apply(final Traverser<C, S> traverser, final TraverserSet<C, S> traverserSet) {
-        traverserSet.add(traverser);
-        return traverserSet;
+    public TraverserSet<C, S> getInitialValue() {
+        return new TraverserSet<>();
     }
 
     @Override
@@ -53,12 +49,8 @@ public final class StallBarrier<C, S> extends AbstractFunction<C> implements Bar
     }
 
     @Override
-    public TraverserSet<C, S> getInitialValue() {
-        return new TraverserSet<>();
-    }
-
-    @Override
     public Iterator<Traverser<C, S>> createIterator(final TraverserSet<C, S> barrier) {
+        barrier.sort(Comparator.comparingLong(t -> (Long) t.object()));
         return barrier.iterator();
     }
 
@@ -67,7 +59,14 @@ public final class StallBarrier<C, S> extends AbstractFunction<C> implements Bar
         return true;
     }
 
-    public static <C, S> StallBarrier<C, S> compile(final Instruction<C> instruction) {
-        return new StallBarrier<>(instruction.coefficient(), instruction.label(), 1000); // TODO
+
+    @Override
+    public TraverserSet<C, S> apply(final Traverser<C, S> traverser, final TraverserSet<C, S> traverserSet) {
+        traverserSet.add(traverser);
+        return traverserSet;
+    }
+
+    public static <C, S> OrderBarrier<C, S> compile(final Instruction<C> instruction) {
+        return new OrderBarrier<>(instruction.coefficient(), instruction.label());
     }
 }

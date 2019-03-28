@@ -27,6 +27,7 @@ import org.apache.beam.sdk.values.PCollectionTuple;
 import org.apache.beam.sdk.values.TupleTag;
 import org.apache.beam.sdk.values.TupleTagList;
 import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
+import org.apache.tinkerpop.machine.function.BarrierFunction;
 import org.apache.tinkerpop.machine.function.BranchFunction;
 import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.function.FilterFunction;
@@ -35,6 +36,7 @@ import org.apache.tinkerpop.machine.function.InitialFunction;
 import org.apache.tinkerpop.machine.function.MapFunction;
 import org.apache.tinkerpop.machine.function.ReduceFunction;
 import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
+import org.apache.tinkerpop.machine.processor.beam.BarrierFn;
 import org.apache.tinkerpop.machine.processor.beam.Beam;
 import org.apache.tinkerpop.machine.processor.beam.BranchFn;
 import org.apache.tinkerpop.machine.processor.beam.FilterFn;
@@ -46,6 +48,7 @@ import org.apache.tinkerpop.machine.processor.beam.RepeatDeadEndFn;
 import org.apache.tinkerpop.machine.processor.beam.RepeatEndFn;
 import org.apache.tinkerpop.machine.processor.beam.RepeatStartFn;
 import org.apache.tinkerpop.machine.processor.beam.io.TraverserCoder;
+import org.apache.tinkerpop.machine.processor.beam.io.TraverserSetCoder;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
@@ -81,6 +84,10 @@ public final class TopologyUtil {
             sink = source.apply(ParDo.of(new InitialFn<>((InitialFunction<C, S>) function, traverserFactory)));
         } else if (function instanceof ReduceFunction) {
             sink = source.apply(Combine.globally(new ReduceFn<>((ReduceFunction<C, S, E>) function, traverserFactory)));
+        } else if (function instanceof BarrierFunction) {
+            sink = source.apply(Combine.globally(new BarrierFn<>((BarrierFunction<C, S, E, M>) function)));
+            sink.setCoder(new TraverserSetCoder<>()); // TODO: generalize to any Barrier (this will be hard)
+            sink = (PCollection) sink.apply(ParDo.of(new BarrierFn.BarrierIterateFn<>((BarrierFunction<C, S, E, M>) function, traverserFactory)));
         } else if (function instanceof RepeatBranch) {
             final RepeatBranch<C, S> repeatFunction = (RepeatBranch<C, S>) function;
             final List<PCollection<Traverser<C, S>>> repeatOutputs = new ArrayList<>();
