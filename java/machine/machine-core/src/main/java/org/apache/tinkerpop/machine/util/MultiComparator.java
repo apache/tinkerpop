@@ -61,6 +61,18 @@ public final class MultiComparator<C> implements Comparator<C>, Serializable {
         }
     }
 
+    @Override
+    public int hashCode() {
+        return this.comparators.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof MultiComparator &&
+                this.comparators.equals(((MultiComparator) object).comparators) &&
+                this.isShuffle == ((MultiComparator) object).isShuffle;
+    }
+
     public boolean isShuffle() {
         return this.isShuffle;
     }

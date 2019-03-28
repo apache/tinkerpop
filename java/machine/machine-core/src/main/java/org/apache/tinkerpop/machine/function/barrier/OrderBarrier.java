@@ -84,6 +84,11 @@ public final class OrderBarrier<C, S, P> extends AbstractFunction<C> implements 
         return traverserSet;
     }
 
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.comparator.hashCode() ^ this.compilationCircle.hashCode();
+    }
+
     public static <C, S, P> OrderBarrier<C, S, P> compile(final Instruction<C> instruction) {
         final List<Compilation<C, S, P>> compilations = new ArrayList<>();
         final List<Comparator<P>> comparators = new ArrayList<>();

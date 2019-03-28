@@ -80,7 +80,7 @@ public class BarrierFn<C, S, E, B> extends Combine.CombineFn<Traverser<C, S>, In
         return (Coder<B>) new TraverserSetCoder<C, S>();
     }
 
-    public static class BarrierIterateFn<C, S, E, B> extends DoFn<B, Traverser<C, S>> {
+    public static class BarrierIterateFn<C, S, E, B> extends DoFn<B, Traverser<C, E>> {
 
         private final BarrierFunction<C, S, E, B> barrierFunction;
         private final TraverserFactory traverserFactory;
@@ -92,10 +92,10 @@ public class BarrierFn<C, S, E, B> extends Combine.CombineFn<Traverser<C, S>, In
         }
 
         @ProcessElement
-        public void processElement(final @Element B barrier, final OutputReceiver<Traverser<C, S>> output) {
+        public void processElement(final @Element B barrier, final OutputReceiver<Traverser<C, E>> output) {
             final B local = this.barrierFunction.merge(this.barrierFunction.getInitialValue(), barrier);
-            final Iterator<Traverser<C, S>> iterator = this.barrierFunction.returnsTraversers() ?
-                    (Iterator<Traverser<C, S>>) this.barrierFunction.createIterator(local) :
+            final Iterator<Traverser<C, E>> iterator = this.barrierFunction.returnsTraversers() ?
+                    (Iterator<Traverser<C, E>>) this.barrierFunction.createIterator(local) :
                     IteratorUtils.map(this.barrierFunction.createIterator(local),
                             e -> this.traverserFactory.create(this.barrierFunction, e));
             while (iterator.hasNext())

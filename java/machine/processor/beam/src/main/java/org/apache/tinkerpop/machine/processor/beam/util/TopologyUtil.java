@@ -72,7 +72,7 @@ public final class TopologyUtil {
         return sink;
     }
 
-    private static <C, S, E, M> PCollection<Traverser<C, E>> extend(final PCollection<Traverser<C, S>> source, final CFunction<C> function, final TraverserFactory<C> traverserFactory) {
+    private static <C, S, E, B> PCollection<Traverser<C, E>> extend(final PCollection<Traverser<C, S>> source, final CFunction<C> function, final TraverserFactory<C> traverserFactory) {
         PCollection sink;
         if (function instanceof MapFunction) {
             sink = source.apply(ParDo.of(new MapFn<>((MapFunction<C, S, E>) function)));
@@ -85,9 +85,9 @@ public final class TopologyUtil {
         } else if (function instanceof ReduceFunction) {
             sink = source.apply(Combine.globally(new ReduceFn<>((ReduceFunction<C, S, E>) function, traverserFactory)));
         } else if (function instanceof BarrierFunction) {
-            sink = source.apply(Combine.globally(new BarrierFn<>((BarrierFunction<C, S, E, M>) function)));
-            sink.setCoder(new TraverserSetCoder<>()); // TODO: generalize to any Barrier (this will be hard)
-            sink = (PCollection) sink.apply(ParDo.of(new BarrierFn.BarrierIterateFn<>((BarrierFunction<C, S, E, M>) function, traverserFactory)));
+            sink = source.apply(Combine.globally(new BarrierFn<>((BarrierFunction<C, S, E, B>) function)));
+            sink.setCoder(new TraverserSetCoder<>()); // TODO: generalize to any Barrier (just wrap in some container)
+            sink = (PCollection) sink.apply(ParDo.of(new BarrierFn.BarrierIterateFn<>((BarrierFunction<C, S, E, B>) function, traverserFactory)));
         } else if (function instanceof RepeatBranch) {
             final RepeatBranch<C, S> repeatFunction = (RepeatBranch<C, S>) function;
             final List<PCollection<Traverser<C, S>>> repeatOutputs = new ArrayList<>();
