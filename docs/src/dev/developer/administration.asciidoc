@@ -188,7 +188,7 @@ https://svn.apache.org/repos/private/foundation/board
 [[contributor-listing]]
 == Contributor Listing
 
-Contributions can come in <<many forms,Contributing Section>> and extend well beyond code contributions. TinkerPop
+Contributions can come in <<ways-to-contribute,many forms>> and extend well beyond code contributions. TinkerPop
 strives to ensure that contributions are honestly and accurately recognized for the benefit of the individuals who
 help make TinkerPop possible.
 

@@ -20,6 +20,7 @@ Contributions via GitHub pull requests are gladly accepted from their original a
 material via pull request, email, or other means you agree to license the material under the project's open source
 license and warrant that you have the legal authority to do so.
 
+[[ways-to-contribute]]
 == Ways to Contribute
 
 image:gremlin-apache.png[width=250,float=left] While the concept of an open source contribution can refer to doing
