@@ -126,3 +126,10 @@ BEGIN {
     else code = code "\n" $0
   }
 }
+
+END {
+  # EOF
+  if (status == 3) {
+    print_tabs(next_id, tabs, blocks)
+  }
+}
