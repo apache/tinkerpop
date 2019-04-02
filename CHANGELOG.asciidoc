@@ -347,6 +347,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-3-7]]
 === TinkerPop 3.3.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Ensure `gremlin.sh` works when directories contain spaces
+
 
 [[release-3-3-6]]
 === TinkerPop 3.3.6 (Release Date: March 18, 2019)
