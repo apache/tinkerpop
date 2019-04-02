@@ -44,6 +44,37 @@ In earlier versions, the only option was to kill the Gremlin Console (typically 
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP-2181[TINKERPOP-2181]
 
+==== Removed gperfutils Dependency
+
+Gremlin Console included references to:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.gperfutils</groupId>
+    <artifactId>gbench</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.gperfutils</groupId>
+    <artifactId>gprof</artifactId>
+</dependency
+----
+
+to provide some benchmarking and profiling tools for the Utilities Plugin. Neither project is well maintained at this
+point and given that TinkerPop has moved past the versions of Groovy that are supported by these tools it doesn't
+make sense to retain the dependencies. Users who wish to continue to use these tools can obviously do so still by
+manually adding the dependencies to the Gremlin Console or with the following command:
+
+[source,text]
+----
+gremlin> :install org.gperfutils gbench <version>
+gremlin> :install org.gperfutils gprof <version>
+----
+
+and then import the appropriate classes and methods to use.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2182[TINKERPOP-2182]
+
 === Upgrading for Providers
 
 ==== Detection of Anti-Patterns
