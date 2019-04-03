@@ -27,6 +27,7 @@ import org.apache.tinkerpop.machine.function.BranchFunction;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -68,7 +69,7 @@ public final class BranchBranch<C, S, E> extends AbstractFunction<C> implements 
 
     public static <C, S, E> BranchBranch<C, S, E> compile(final Instruction<C> instruction) {
         final Object[] args = instruction.args();
-        final Map<Compilation<C, S, ?>, List<Compilation<C, S, E>>> branches = new HashMap<>();
+        final Map<Compilation<C, S, ?>, List<Compilation<C, S, E>>> branches = new LinkedHashMap<>();
         for (int i = 0; i < args.length; i = i + 2) {
             final Compilation<C, S, ?> predicate = Symbols.DEFAULT.equals(args[i]) ? null : Compilation.compile(args[i]);
             final Compilation<C, S, E> branch = Compilation.compile(args[i + 1]);
