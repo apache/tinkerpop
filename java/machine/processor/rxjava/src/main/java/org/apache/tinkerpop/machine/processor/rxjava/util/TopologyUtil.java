@@ -27,6 +27,7 @@ import org.apache.tinkerpop.machine.function.FlatMapFunction;
 import org.apache.tinkerpop.machine.function.InitialFunction;
 import org.apache.tinkerpop.machine.function.MapFunction;
 import org.apache.tinkerpop.machine.function.ReduceFunction;
+import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
 import org.apache.tinkerpop.machine.processor.rxjava.BranchFlow;
 import org.apache.tinkerpop.machine.processor.rxjava.FilterFlow;
 import org.apache.tinkerpop.machine.processor.rxjava.FlatMapFlow;
@@ -46,6 +47,8 @@ import java.util.Map;
  */
 public final class TopologyUtil {
 
+    private static final int MAX_ITERATIONS = 20;
+
     public static <C, S, E> Flowable<Traverser<C, E>> compile(final Flowable<Traverser<C, S>> source, final Compilation<C, S, E> compilation) {
         final TraverserFactory<C> traverserFactory = compilation.getTraverserFactory();
         Flowable<Traverser<C, E>> sink = (Flowable) source;
@@ -54,34 +57,6 @@ public final class TopologyUtil {
         }
         return sink;
     }
-
-    /*
-     private final void stageInput() {
-        if (this.hasStartPredicates) {
-            final Traverser<C, S> traverser = this.inputTraversers.isEmpty() ? this.previousStep.next() : this.inputTraversers.remove();
-            if (1 == this.untilLocation) {
-                if (this.untilCompilation.filterTraverser(traverser)) {
-                    this.outputTraversers.add(traverser);
-                } else if (2 == this.emitLocation && this.emitCompilation.filterTraverser(traverser)) {
-                    this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
-                    this.repeat.addTraverser(traverser);
-                } else
-                    this.repeat.addTraverser(traverser);
-            } else if (1 == this.emitLocation) {
-                if (this.emitCompilation.filterTraverser(traverser))
-                    this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
-                if (2 == this.untilLocation && this.untilCompilation.filterTraverser(traverser))
-                    this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
-                else
-                    this.repeat.addTraverser(traverser);
-            }
-        } else {
-            this.repeat.addTraverser(this.inputTraversers.isEmpty() ? this.previousStep.next() : this.inputTraversers.remove());
-        }
-    }
-
-
-     */
 
     private static <C, S, E, B> Flowable<Traverser<C, E>> extend(Flowable<Traverser<C, S>> flow, final CFunction<C> function, final TraverserFactory<C> traverserFactory) {
         if (function instanceof MapFunction)
@@ -114,6 +89,66 @@ public final class TopologyUtil {
                 sink = sink.mergeWith(branchFlow);
             }
             return sink;
+        } else if (function instanceof RepeatBranch) {
+            final RepeatBranch<C, S> repeatBranch = (RepeatBranch<C, S>) function;
+            final List<Publisher<Traverser<C, S>>> outputs = new ArrayList<>();
+            for (int i = 0; i < MAX_ITERATIONS; i++) {
+                Flowable<List> selectorFlow = flow.flatMapIterable(t -> {
+                    final List<List> list = new ArrayList<>();
+                    if (repeatBranch.hasStartPredicates()) {
+                        if (1 == repeatBranch.getUntilLocation()) {
+                            if (repeatBranch.getUntil().filterTraverser(t)) {
+                                list.add(List.of(0, t.repeatDone(repeatBranch)));
+                            } else if (2 == repeatBranch.getEmitLocation() && repeatBranch.getEmit().filterTraverser(t)) {
+                                list.add(List.of(1, t));
+                                list.add(List.of(0, t.repeatDone(repeatBranch)));
+                            } else
+                                list.add(List.of(1, t));
+                        } else if (1 == repeatBranch.getEmitLocation()) {
+                            if (repeatBranch.getEmit().filterTraverser(t))
+                                list.add(List.of(0, t.repeatDone(repeatBranch)));
+                            if (2 == repeatBranch.getUntilLocation() && repeatBranch.getUntil().filterTraverser(t)) {
+                                list.add(List.of(0, t.repeatDone(repeatBranch)));
+                            } else
+                                list.add(List.of(1, t));
+                        }
+                    } else
+                        list.add(List.of(1, t));
+                    return list;
+                });
+                outputs.add(selectorFlow.filter(list -> list.get(0).equals(0)).map(list -> (Traverser<C, S>) list.get(1)));
+                flow = selectorFlow.filter(list -> list.get(0).equals(1)).map(list -> (Traverser<C, S>) list.get(1)).publish(f -> compile(f, repeatBranch.getRepeat()));
+                selectorFlow = flow.flatMapIterable(t -> {
+                    final List<List> list = new ArrayList<>();
+                    if (repeatBranch.hasEndPredicates()) {
+                        if (3 == repeatBranch.getUntilLocation()) {
+                            if (repeatBranch.getUntil().filterTraverser(t)) {
+                                list.add(List.of(0, t.repeatDone(repeatBranch)));
+                            } else if (4 == repeatBranch.getEmitLocation() && repeatBranch.getEmit().filterTraverser(t)) {
+                                list.add(List.of(0, t.repeatDone(repeatBranch)));
+                                list.add(List.of(1, t));
+                            } else
+                                list.add(List.of(1, t));
+                        } else if (3 == repeatBranch.getEmitLocation()) {
+                            if (repeatBranch.getEmit().filterTraverser(t))
+                                list.add(List.of(0, t.repeatDone(repeatBranch)));
+                            if (4 == repeatBranch.getUntilLocation() && repeatBranch.getUntil().filterTraverser(t))
+                                list.add(List.of(0, t.repeatDone(repeatBranch)));
+                            else
+                                list.add(List.of(1, t));
+                        }
+                    } else
+                        list.add(List.of(1, t.repeatLoop(repeatBranch)));
+                    return list;
+                });
+                outputs.add(selectorFlow.filter(list -> list.get(0).equals(0)).map(list -> (Traverser<C, S>) list.get(1)));
+                flow = selectorFlow.filter(list -> list.get(0).equals(1)).map(list -> (Traverser<C, S>) list.get(1));
+            }
+            Flowable<Traverser<C, S>> sink = flow.filter(t -> false); // branches are the only outputs
+            for (final Publisher<Traverser<C, S>> output : outputs) {
+                sink = sink.mergeWith(output);
+            }
+            return (Flowable) sink;
         }
         throw new RuntimeException("Need a new execution plan step: " + function);
     }
