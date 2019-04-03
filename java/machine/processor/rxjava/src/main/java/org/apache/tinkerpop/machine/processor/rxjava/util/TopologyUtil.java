@@ -77,11 +77,10 @@ public final class TopologyUtil {
                 for (int i = 0; i < branches.getValue().size(); i++) {
                     final Compilation<C, S, E> branch = branches.getValue().get(i);
                     final int id = i;
-                    branchFlows.add(
-                            selectorFlow.
+                    branchFlows.add(compile(selectorFlow.
                                     filter(list -> list.get(0).equals(null == branches.getKey() ? -1 : id)).
-                                    map(list -> (Traverser<C, S>) list.get(1)).
-                                    publish(f -> compile(f, branch)));
+                                    map(list -> (Traverser<C, S>) list.get(1)),
+                            branch));
                 }
             }
             Flowable<Traverser<C, E>> sink = (Flowable) flow.filter(t -> false); // branches are the only outputs
@@ -117,7 +116,7 @@ public final class TopologyUtil {
                     return list;
                 });
                 outputs.add(selectorFlow.filter(list -> list.get(0).equals(0)).map(list -> (Traverser<C, S>) list.get(1)));
-                flow = selectorFlow.filter(list -> list.get(0).equals(1)).map(list -> (Traverser<C, S>) list.get(1)).publish(f -> compile(f, repeatBranch.getRepeat()));
+                flow = compile(selectorFlow.filter(list -> list.get(0).equals(1)).map(list -> (Traverser<C, S>) list.get(1)), repeatBranch.getRepeat());
                 selectorFlow = flow.flatMapIterable(t -> {
                     final List<List> list = new ArrayList<>();
                     if (repeatBranch.hasEndPredicates()) {
