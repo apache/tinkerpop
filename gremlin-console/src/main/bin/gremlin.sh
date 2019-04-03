@@ -92,15 +92,20 @@ while getopts ":l" opt; do
     esac
 done
 
-JAVA_OPTIONS="${JAVA_OPTIONS} -Duser.working_dir=${USER_DIR} -Dtinkerpop.ext=${USER_EXT_DIR:-${SYSTEM_EXT_DIR}} -Dlog4j.configuration=conf/log4j-console.properties -Dgremlin.log4j.level=$GREMLIN_LOG_LEVEL"
-JAVA_OPTIONS=$(awk -v RS=' ' '!/^$/ {if (!x[$0]++) print}' <<< "${JAVA_OPTIONS}" | grep -v '^$' | paste -sd ' ' -)
+JVM_OPTS=()
+if [ ! -z "${JAVA_OPTIONS}" ]; then
+    JVM_OPTS+=( "${JAVA_OPTIONS}" )
+fi
+
+JVM_OPTS+=( "-Duser.working_dir=${USER_DIR}" "-Dtinkerpop.ext=${USER_EXT_DIR:-${SYSTEM_EXT_DIR}}" "-Dlog4j.configuration=conf/log4j-console.properties" "-Dgremlin.log4j.level=$GREMLIN_LOG_LEVEL" )
+JVM_OPTS=$(awk -v RS=' ' '!/^$/ {if (!x[$0]++) print}' <<< "${JVM_OPTS}" | grep -v '^$' | paste -sd ' ' -)
 
 if [ -n "$SCRIPT_DEBUG" ]; then
     # in debug mode enable debugging of :install command
-    JAVA_OPTIONS="${JAVA_OPTIONS} -Divy.message.logger.level=4 -Dgroovy.grape.report.downloads=true"
+    JVM_OPTS="${JAVA_OPTIONS} -Divy.message.logger.level=4 -Dgroovy.grape.report.downloads=true"
     echo "CLASSPATH: $CLASSPATH"
     set -x
 fi
 
 # Start the JVM, execute the application, and return its exit code
-exec $JAVA "$JAVA_OPTIONS" org.apache.tinkerpop.gremlin.console.Console "$@"
+exec $JAVA "${JVM_OPTS[@]}" org.apache.tinkerpop.gremlin.console.Console "$@"
