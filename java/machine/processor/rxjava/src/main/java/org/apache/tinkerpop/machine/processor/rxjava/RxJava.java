@@ -69,7 +69,7 @@ public final class RxJava<C, S, E> implements Processor<C, S, E> {
     private void prepareFlow() {
         if (!this.executed) {
             this.executed = true;
-            TopologyUtil.compile(Flowable.fromIterable(this.starts), compilation).
+            TopologyUtil.compile(Flowable.fromIterable(this.starts), this.compilation).
                     doOnNext(this.ends::add).
                     doOnComplete(() -> this.alive.set(Boolean.FALSE)).
                     subscribe();
