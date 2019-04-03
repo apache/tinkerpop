@@ -126,16 +126,16 @@ public final class TopologyUtil {
                                 list.add(List.of(0, t.repeatDone(repeatBranch)));
                             } else if (4 == repeatBranch.getEmitLocation() && repeatBranch.getEmit().filterTraverser(t)) {
                                 list.add(List.of(0, t.repeatDone(repeatBranch)));
-                                list.add(List.of(1, t));
+                                list.add(List.of(1, t.repeatLoop(repeatBranch)));
                             } else
-                                list.add(List.of(1, t));
+                                list.add(List.of(1, t.repeatLoop(repeatBranch)));
                         } else if (3 == repeatBranch.getEmitLocation()) {
                             if (repeatBranch.getEmit().filterTraverser(t))
                                 list.add(List.of(0, t.repeatDone(repeatBranch)));
                             if (4 == repeatBranch.getUntilLocation() && repeatBranch.getUntil().filterTraverser(t))
                                 list.add(List.of(0, t.repeatDone(repeatBranch)));
                             else
-                                list.add(List.of(1, t));
+                                list.add(List.of(1, t.repeatLoop(repeatBranch)));
                         }
                     } else
                         list.add(List.of(1, t.repeatLoop(repeatBranch)));
