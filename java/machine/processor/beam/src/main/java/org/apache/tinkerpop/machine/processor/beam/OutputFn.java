@@ -28,7 +28,7 @@ import java.net.Socket;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class OutputFn<C, S> extends DoFn<Traverser<C, S>, Void> {
+final class OutputFn<C, S> extends DoFn<Traverser<C, S>, Void> {
 
     private final String traverserServerLocation;
     private final int traverserServerPort;

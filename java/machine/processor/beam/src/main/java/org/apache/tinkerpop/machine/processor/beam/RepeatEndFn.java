@@ -27,7 +27,7 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class RepeatEndFn<C, S> extends AbstractFn<C, S, S> {
+final class RepeatEndFn<C, S> extends AbstractFn<C, S, S> {
 
     private final RepeatBranch<C, S> repeatBranch;
     private final int untilLocation;
@@ -38,9 +38,9 @@ public class RepeatEndFn<C, S> extends AbstractFn<C, S, S> {
     private final TupleTag<Traverser<C, S>> repeatLoop;
 
 
-    public RepeatEndFn(final RepeatBranch<C, S> repeatBranch,
-                       final TupleTag<Traverser<C, S>> repeatDone,
-                       final TupleTag<Traverser<C, S>> repeatLoop) {
+    RepeatEndFn(final RepeatBranch<C, S> repeatBranch,
+                final TupleTag<Traverser<C, S>> repeatDone,
+                final TupleTag<Traverser<C, S>> repeatLoop) {
         super(repeatBranch);
         this.repeatBranch = repeatBranch;
         this.untilLocation = repeatBranch.getUntilLocation();

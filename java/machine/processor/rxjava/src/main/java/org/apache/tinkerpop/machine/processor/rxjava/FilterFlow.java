@@ -25,11 +25,11 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class FilterFlow<C, S> implements Predicate<Traverser<C, S>> {
+final class FilterFlow<C, S> implements Predicate<Traverser<C, S>> {
 
     private final FilterFunction<C, S> function;
 
-    public FilterFlow(final FilterFunction<C, S> function) {
+    FilterFlow(final FilterFunction<C, S> function) {
         this.function = function;
     }
 

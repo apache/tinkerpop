@@ -24,11 +24,11 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class FilterFn<C, S> extends AbstractFn<C, S, S> {
+final class FilterFn<C, S> extends AbstractFn<C, S, S> {
 
     private FilterFunction<C, S> filterFunction;
 
-    public FilterFn(final FilterFunction<C, S> filterFunction) {
+    FilterFn(final FilterFunction<C, S> filterFunction) {
         super(filterFunction);
         this.filterFunction = filterFunction;
     }

@@ -43,7 +43,7 @@ public class InMemoryBarrier<C, S, E, B> implements Combine.AccumulatingCombineF
 
     @Override
     public void addInput(final Traverser<C, S> input) {
-        this.barrierFunction.apply(input, this.barrier);
+        this.barrierFunction.apply(input.clone(), this.barrier); // clone is necessary given Beam's mutability constraint
     }
 
     @Override

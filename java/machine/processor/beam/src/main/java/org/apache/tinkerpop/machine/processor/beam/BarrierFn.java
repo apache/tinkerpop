@@ -37,11 +37,11 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BarrierFn<C, S, E, B> extends Combine.CombineFn<Traverser<C, S>, InMemoryBarrier<C, S, E, B>, B> implements Fn {
+final class BarrierFn<C, S, E, B> extends Combine.CombineFn<Traverser<C, S>, InMemoryBarrier<C, S, E, B>, B> implements Fn {
 
     private final BarrierFunction<C, S, E, B> barrierFunction;
 
-    public BarrierFn(final BarrierFunction<C, S, E, B> barrierFunction) {
+    BarrierFn(final BarrierFunction<C, S, E, B> barrierFunction) {
         this.barrierFunction = barrierFunction;
     }
 

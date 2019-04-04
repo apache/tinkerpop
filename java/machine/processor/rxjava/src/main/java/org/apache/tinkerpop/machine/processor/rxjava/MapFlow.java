@@ -25,11 +25,11 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MapFlow<C, S, E> implements Function<Traverser<C, S>, Traverser<C, E>> {
+final class MapFlow<C, S, E> implements Function<Traverser<C, S>, Traverser<C, E>> {
 
     private final MapFunction<C, S, E> function;
 
-    public MapFlow(final MapFunction<C, S, E> function) {
+    MapFlow(final MapFunction<C, S, E> function) {
         this.function = function;
     }
 

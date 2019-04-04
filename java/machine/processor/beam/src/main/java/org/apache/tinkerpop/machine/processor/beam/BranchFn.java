@@ -30,12 +30,12 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BranchFn<C, S, E> extends AbstractFn<C, S, S> {
+final class BranchFn<C, S, E> extends AbstractFn<C, S, S> {
 
     private final Map<Compilation<C, S, ?>, List<TupleTag<Traverser<C, S>>>> branches;
     private final boolean hasDefault;
 
-    public BranchFn(final BranchFunction<C, S, E> branchFunction, final Map<Compilation<C, S, ?>, List<TupleTag<Traverser<C, S>>>> branches) {
+    BranchFn(final BranchFunction<C, S, E> branchFunction, final Map<Compilation<C, S, ?>, List<TupleTag<Traverser<C, S>>>> branches) {
         super(branchFunction);
         this.branches = new HashMap<>(branches);
         this.hasDefault = this.branches.containsKey(null);

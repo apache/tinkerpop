@@ -62,4 +62,11 @@ public abstract class AbstractTestSuite<C> {
         assertFalse(traversal.hasNext());
     }
 
+    static <C, S, E> void verifyOrder(final List<E> expected, final Traversal<C, S, E> traversal) {
+        final List<E> actual = traversal.toList();
+        assertEquals(expected.size(), actual.size(), "Result set size differ: " + expected + " -- " + actual);
+        assertEquals(expected, actual, "Result sets are not order equal: " + expected + " -- " + actual);
+        assertFalse(traversal.hasNext());
+    }
+
 }

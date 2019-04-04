@@ -22,23 +22,23 @@ import org.apache.beam.sdk.coders.CannotProvideCoderException;
 import org.apache.beam.sdk.coders.Coder;
 import org.apache.beam.sdk.coders.CoderRegistry;
 import org.apache.beam.sdk.transforms.Combine;
+import org.apache.tinkerpop.machine.function.ReduceFunction;
 import org.apache.tinkerpop.machine.processor.beam.io.ReducerCoder;
 import org.apache.tinkerpop.machine.processor.beam.io.TraverserCoder;
 import org.apache.tinkerpop.machine.processor.beam.sideeffect.InMemoryReducer;
-import org.apache.tinkerpop.machine.function.ReduceFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReduceFn<C, S, E> extends Combine.CombineFn<Traverser<C, S>, InMemoryReducer<C, S, E>, Traverser<C, E>> implements Fn {
+final class ReduceFn<C, S, E> extends Combine.CombineFn<Traverser<C, S>, InMemoryReducer<C, S, E>, Traverser<C, E>> implements Fn {
 
     private final ReduceFunction<C, S, E> reduceFunction;
     private final TraverserFactory<C> traverserFactory;
 
 
-    public ReduceFn(final ReduceFunction<C, S, E> reduceFunction, final TraverserFactory<C> traverserFactory) {
+    ReduceFn(final ReduceFunction<C, S, E> reduceFunction, final TraverserFactory<C> traverserFactory) {
         this.reduceFunction = reduceFunction;
         this.traverserFactory = traverserFactory;
     }

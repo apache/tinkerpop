@@ -27,12 +27,12 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class InitialFn<C, S> extends AbstractFn<C, S, S> {
+final class InitialFn<C, S> extends AbstractFn<C, S, S> {
 
     private final InitialFunction<C, S> initialFunction;
     private final TraverserFactory<C> traverserFactory;
 
-    public InitialFn(final InitialFunction<C, S> initialFunction, final TraverserFactory<C> traverserFactory) {
+    InitialFn(final InitialFunction<C, S> initialFunction, final TraverserFactory<C> traverserFactory) {
         super(initialFunction);
         this.initialFunction = initialFunction;
         this.traverserFactory = traverserFactory;

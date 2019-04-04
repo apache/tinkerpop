@@ -19,22 +19,32 @@
 package org.apache.tinkerpop.machine.processor.rxjava;
 
 import io.reactivex.functions.Function;
-import org.apache.tinkerpop.machine.function.FlatMapFunction;
+import org.apache.tinkerpop.machine.function.BarrierFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.traverser.TraverserFactory;
+import org.apache.tinkerpop.machine.util.IteratorUtils;
+
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class FlatMapFlow<C, S, E> implements Function<Traverser<C, S>, Iterable<Traverser<C, E>>> {
+final class BarrierFlow<C, S, E, B> implements Function<B, Iterable<Traverser<C, E>>> {
 
-    private FlatMapFunction<C, S, E> function;
+    private final BarrierFunction<C, S, E, B> function;
+    private final TraverserFactory traverserFactory;
 
-    FlatMapFlow(final FlatMapFunction<C, S, E> function) {
+    BarrierFlow(final BarrierFunction<C, S, E, B> function, final TraverserFactory traverserFactory) {
         this.function = function;
+        this.traverserFactory = traverserFactory;
     }
 
+
     @Override
-    public Iterable<Traverser<C, E>> apply(final Traverser<C, S> traverser) {
-        return () -> traverser.flatMap(this.function);
+    public Iterable<Traverser<C, E>> apply(final B barrier) {
+        final Iterator<Traverser<C, E>> iterator = this.function.returnsTraversers() ?
+                (Iterator<Traverser<C, E>>) this.function.createIterator(barrier) :
+                IteratorUtils.map(this.function.createIterator(barrier), e -> this.traverserFactory.create(this.function, e));
+        return () -> iterator;
     }
 }

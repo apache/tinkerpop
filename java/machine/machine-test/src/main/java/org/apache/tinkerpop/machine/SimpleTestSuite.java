@@ -21,6 +21,7 @@ package org.apache.tinkerpop.machine;
 import org.apache.tinkerpop.language.gremlin.P;
 import org.apache.tinkerpop.language.gremlin.common.__;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
+import org.apache.tinkerpop.machine.bytecode.compiler.Order;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -207,6 +208,12 @@ public class SimpleTestSuite extends AbstractTestSuite<Long> {
         // 1 2
         // 2 3 3 4
         // 3 4 4 5 4 5 5 6
+    }
+
+    @Test
+    void g_injectX7_3_5_20_1_2_5X_incr_order_byXdescX() {
+        verifyOrder(List.of(21L, 8L, 6L, 6L, 4L, 3L, 2L),
+                g.inject(7L, 3L, 5L, 20L, 1L, 2L, 5L).incr().order().by(Order.desc));
     }
 
 }

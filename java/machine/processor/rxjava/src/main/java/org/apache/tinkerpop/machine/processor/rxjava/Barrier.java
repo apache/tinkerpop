@@ -18,23 +18,24 @@
  */
 package org.apache.tinkerpop.machine.processor.rxjava;
 
-import io.reactivex.functions.Function;
-import org.apache.tinkerpop.machine.function.FlatMapFunction;
+import io.reactivex.functions.BiFunction;
+import org.apache.tinkerpop.machine.function.BarrierFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class FlatMapFlow<C, S, E> implements Function<Traverser<C, S>, Iterable<Traverser<C, E>>> {
+final class Barrier<C, S, E, B> implements BiFunction<B, Traverser<C, S>, B> {
 
-    private FlatMapFunction<C, S, E> function;
+    private final BarrierFunction<C, S, E, B> function;
 
-    FlatMapFlow(final FlatMapFunction<C, S, E> function) {
+    Barrier(final BarrierFunction<C, S, E, B> function) {
         this.function = function;
     }
 
     @Override
-    public Iterable<Traverser<C, E>> apply(final Traverser<C, S> traverser) {
-        return () -> traverser.flatMap(this.function);
+    public B apply(final B barrier, final Traverser<C, S> traverser) {
+        return this.function.apply(traverser, barrier);
     }
+
 }

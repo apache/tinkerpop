@@ -21,6 +21,6 @@ package org.apache.tinkerpop.machine.processor.beam;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Fn {
+interface Fn {
 
 }

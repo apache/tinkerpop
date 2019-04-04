@@ -26,11 +26,11 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class FlatMapFn<C, S, E> extends AbstractFn<C, S, E> {
+final class FlatMapFn<C, S, E> extends AbstractFn<C, S, E> {
 
     private FlatMapFunction<C, S, E> flatMapFunction;
 
-    public FlatMapFn(final FlatMapFunction<C, S, E> flatMapFunction) {
+    FlatMapFn(final FlatMapFunction<C, S, E> flatMapFunction) {
         super(flatMapFunction);
         this.flatMapFunction = flatMapFunction;
     }

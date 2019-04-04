@@ -25,14 +25,13 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ReduceFlow<C, S, E> implements BiFunction<Traverser<C, E>, Traverser<C, S>, Traverser<C, E>> {
+final class ReduceFlow<C, S, E> implements BiFunction<Traverser<C, E>, Traverser<C, S>, Traverser<C, E>> {
 
     private final ReduceFunction<C, S, E> function;
 
-    public ReduceFlow(final ReduceFunction<C, S, E> function) {
+    ReduceFlow(final ReduceFunction<C, S, E> function) {
         this.function = function;
     }
-
 
     @Override
     public Traverser<C, E> apply(final Traverser<C, E> seed, final Traverser<C, S> traverser) {

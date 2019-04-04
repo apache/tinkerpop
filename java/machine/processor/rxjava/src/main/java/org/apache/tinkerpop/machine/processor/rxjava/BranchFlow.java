@@ -29,11 +29,11 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class BranchFlow<C, S> implements Function<Traverser<C, S>, List> {
+final class BranchFlow<C, S> implements Function<Traverser<C, S>, List> {
 
     private final List<Compilation<C, S, ?>> selectors;
 
-    public BranchFlow(final BranchFunction<C, S, ?> function) {
+    BranchFlow(final BranchFunction<C, S, ?> function) {
         this.selectors = new ArrayList<>(function.getBranches().keySet());
     }
 

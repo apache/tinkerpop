@@ -24,11 +24,7 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class RepeatDeadEndFn<C, S> extends DoFn<Traverser<C, S>, Traverser<C, S>> implements Fn {
-
-    public RepeatDeadEndFn() {
-
-    }
+final class RepeatDeadEndFn<C, S> extends DoFn<Traverser<C, S>, Traverser<C, S>> implements Fn {
 
     @DoFn.ProcessElement
     public void processElement(final @DoFn.Element Traverser<C, S> traverser, final DoFn.OutputReceiver<Traverser<C, S>> output) {

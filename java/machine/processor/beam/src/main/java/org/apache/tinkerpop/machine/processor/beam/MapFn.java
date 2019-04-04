@@ -24,11 +24,11 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MapFn<C, S, E> extends AbstractFn<C, S, E> {
+final class MapFn<C, S, E> extends AbstractFn<C, S, E> {
 
     private final MapFunction<C, S, E> mapFunction;
 
-    public MapFn(final MapFunction<C, S, E> mapFunction) {
+    MapFn(final MapFunction<C, S, E> mapFunction) {
         super(mapFunction);
         this.mapFunction = mapFunction;
     }
