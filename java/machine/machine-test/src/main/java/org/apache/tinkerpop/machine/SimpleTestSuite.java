@@ -199,16 +199,28 @@ public class SimpleTestSuite extends AbstractTestSuite<Long> {
 
     // NESTED REPEAT TESTING
 
-    // @Test
-    void g_injectX1X_repeatXunionXincr__incr_incrXX_timesX3X() { // r.u.e
-        verify(List.of(3L, 4L, 4L, 5L, 4L, 5L, 5L, 6L),
-                g.inject(1L).repeat(union(incr(), __.<Long>incr().incr())).times(3));
-
-        // 1
-        // 1 2
-        // 2 3 3 4
-        // 3 4 4 5 4 5 5 6
+    //@Test
+    void g_injectX1X_repeatXunionXincr__incr_incrXX_timesX1X() {
+        verify(List.of(2L, 3L),
+                g.inject(1L).repeat(union(incr(), __.<Long>incr().incr())).times(1));
     }
+
+    //@Test
+    void g_injectX1X_repeatXunionXincr__incr_incrXX_timesX2X() {
+        verify(List.of(3L, 4L, 4L, 5L),
+                g.inject(1L).repeat(union(incr(), __.<Long>incr().incr())).times(2));
+    }
+
+    //@Test
+    void g_injectX1X_repeatXunionXincr__incr_incrXX_timesX3X() {
+        verify(List.of(4L, 5L, 5L, 6L, 5L, 6L, 6L, 7L),
+                g.inject(1L).repeat(union(incr(), __.<Long>incr().incr())).times(3));
+    }
+    // 1
+    // 1 2
+    // 2 3 3 4
+    // 3 4 4 5 4 5 5 6
+
 
     @Test
     void g_injectX7_3_5_20_1_2_5X_incr_order_byXdescX() {
