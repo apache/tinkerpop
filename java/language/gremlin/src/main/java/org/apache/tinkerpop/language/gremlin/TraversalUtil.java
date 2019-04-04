@@ -36,6 +36,10 @@ public final class TraversalUtil {
         return ((AbstractTraversal<C, ?, ?>) traversal).bytecode;
     }
 
+    public static <C> Bytecode<C> getBytecode(final TraversalSource<C> traversalSource) {
+        return traversalSource.bytecode;
+    }
+
     public static Object tryToGetBytecode(final Object object) {
         return object instanceof AbstractTraversal ? ((AbstractTraversal) object).bytecode : object;
     }

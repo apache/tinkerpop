@@ -37,7 +37,7 @@ limitations under the License.
         <!-- TEST -->
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>gremlin</artifactId>
+            <artifactId>machine-test</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

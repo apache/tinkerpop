@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.machine.processor.beam.util;
 
 import org.apache.beam.sdk.transforms.Combine;
+import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.Flatten;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.PCollection;
@@ -109,6 +110,13 @@ public final class TopologyUtil {
                     outputs.getAll().values().forEach(c -> c.setCoder(new TraverserCoder()));
                     repeatOutputs.add(outputs.get(repeatDone));
                     sink = outputs.get(repeatLoop);
+                } else { // this is an optimization so we don't always have to have a RepeatEndFn
+                    sink = (PCollection) sink.apply(ParDo.of(new DoFn<Traverser, Traverser>() {
+                        @ProcessElement
+                        public void processElement(final @Element Traverser traverser, final OutputReceiver<Traverser> output) {
+                            output.output(traverser.repeatLoop(repeatFunction));
+                        }
+                    }));
                 }
             }
             sink = (PCollection<Traverser<C, S>>) sink.apply(ParDo.of(new RepeatDeadEndFn<>()));

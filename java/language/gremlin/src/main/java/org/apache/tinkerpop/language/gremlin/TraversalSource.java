@@ -41,7 +41,7 @@ import java.util.Map;
 public class TraversalSource<C> implements Cloneable {
 
     private final Machine machine;
-    private Bytecode<C> bytecode;
+    protected Bytecode<C> bytecode;
     private Coefficient<C> coefficient = (Coefficient<C>) LongCoefficient.create();
     private boolean registered = false;
 

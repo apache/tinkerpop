@@ -52,7 +52,8 @@ public class RepeatStartFn<C, S> extends AbstractFn<C, S, S> {
     }
 
     @ProcessElement
-    public void processElement(final @DoFn.Element Traverser<C, S> traverser, final MultiOutputReceiver out) {
+    public void processElement( @DoFn.Element Traverser<C, S> traverser, final MultiOutputReceiver out) {
+        traverser = traverser.clone();
         if (1 == this.untilLocation) {
             if (this.untilCompilation.filterTraverser(traverser)) {
                 out.get(this.repeatDone).output(traverser.repeatDone(this.repeatBranch));

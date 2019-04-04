@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.language.gremlin.common;
 
+import org.apache.tinkerpop.language.gremlin.P;
 import org.apache.tinkerpop.language.gremlin.Traversal;
 
 /**
@@ -53,6 +54,10 @@ public class __ {
         return __.<C, S>start().is(object);
     }
 
+    public static <C, S> Traversal<C, S, S> is(final P<S> predicate) {
+        return __.<C, S>start().is(predicate);
+    }
+
     public static <C, S> Traversal<C, S, S> is(final Traversal<C, S, S> objectTraversal) {
         return __.<C, S>start().is(objectTraversal);
     }
@@ -67,5 +72,9 @@ public class __ {
 
     public static <C, S> Traversal<C, S, Long> count() {
         return __.<C, S>start().count();
+    }
+
+    public static <C, S, R> Traversal<C, S, R> union(final Traversal<C, S, R>... traversals) {
+        return __.<C, S>start().union(traversals);
     }
 }

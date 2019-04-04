@@ -118,6 +118,7 @@ public final class TopologyUtil {
                 outputs.add(selectorFlow.filter(list -> list.get(0).equals(0)).map(list -> (Traverser<C, S>) list.get(1)));
                 flow = compile(selectorFlow.filter(list -> list.get(0).equals(1)).map(list -> (Traverser<C, S>) list.get(1)), repeatBranch.getRepeat());
                 selectorFlow = flow.flatMapIterable(t -> {
+                    t = t.repeatLoop(repeatBranch);
                     final List<List> list = new ArrayList<>();
                     if (repeatBranch.hasEndPredicates()) {
                         if (3 == repeatBranch.getUntilLocation()) {
@@ -125,19 +126,19 @@ public final class TopologyUtil {
                                 list.add(List.of(0, t.repeatDone(repeatBranch)));
                             } else if (4 == repeatBranch.getEmitLocation() && repeatBranch.getEmit().filterTraverser(t)) {
                                 list.add(List.of(0, t.repeatDone(repeatBranch)));
-                                list.add(List.of(1, t.repeatLoop(repeatBranch)));
+                                list.add(List.of(1, t));
                             } else
-                                list.add(List.of(1, t.repeatLoop(repeatBranch)));
+                                list.add(List.of(1, t));
                         } else if (3 == repeatBranch.getEmitLocation()) {
                             if (repeatBranch.getEmit().filterTraverser(t))
                                 list.add(List.of(0, t.repeatDone(repeatBranch)));
                             if (4 == repeatBranch.getUntilLocation() && repeatBranch.getUntil().filterTraverser(t))
                                 list.add(List.of(0, t.repeatDone(repeatBranch)));
                             else
-                                list.add(List.of(1, t.repeatLoop(repeatBranch)));
+                                list.add(List.of(1, t));
                         }
                     } else
-                        list.add(List.of(1, t.repeatLoop(repeatBranch)));
+                        list.add(List.of(1, t));
                     return list;
                 });
                 outputs.add(selectorFlow.filter(list -> list.get(0).equals(0)).map(list -> (Traverser<C, S>) list.get(1)));

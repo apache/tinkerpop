@@ -26,6 +26,7 @@ limitations under the License.
     <artifactId>machine</artifactId>
     <modules>
         <module>machine-core</module>
+        <module>machine-test</module>
         <module>processor</module>
         <module>structure</module>
     </modules>

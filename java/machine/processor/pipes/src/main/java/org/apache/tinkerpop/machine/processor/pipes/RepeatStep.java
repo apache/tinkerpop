@@ -91,26 +91,26 @@ final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
         while (this.outputTraversers.isEmpty() && (this.previousStep.hasNext() || !this.inputTraversers.isEmpty())) {
             this.stageInput();
             if (this.repeat.getProcessor().hasNext()) {
-                final Traverser<C, S> traverser = this.repeat.getProcessor().next();
+                final Traverser<C, S> traverser = this.repeat.getProcessor().next().repeatLoop(this.repeatBranch);
                 if (this.hasEndPredicates) {
                     if (3 == this.untilLocation) {
                         if (this.untilCompilation.filterTraverser(traverser)) {
                             this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
                         } else if (4 == this.emitLocation && this.emitCompilation.filterTraverser(traverser)) {
                             this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
-                            this.inputTraversers.add(traverser.repeatLoop(this.repeatBranch));
+                            this.inputTraversers.add(traverser);
                         } else
-                            this.inputTraversers.add(traverser.repeatLoop(this.repeatBranch));
+                            this.inputTraversers.add(traverser);
                     } else if (3 == this.emitLocation) {
                         if (this.emitCompilation.filterTraverser(traverser))
                             this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
                         if (4 == this.untilLocation && this.untilCompilation.filterTraverser(traverser))
                             this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
                         else
-                            this.inputTraversers.add(traverser.repeatLoop(this.repeatBranch));
+                            this.inputTraversers.add(traverser);
                     }
                 } else {
-                    this.inputTraversers.add(traverser.repeatLoop(this.repeatBranch));
+                    this.inputTraversers.add(traverser);
                 }
             }
         }

@@ -23,13 +23,6 @@ limitations under the License.
     </parent>
     <name>Apache TinkerPop :: Machine :: Machine-Core</name>
     <artifactId>machine-core</artifactId>
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
     <build>
         <directory>${basedir}/target</directory>
         <finalName>${project.artifactId}-${project.version}</finalName>
