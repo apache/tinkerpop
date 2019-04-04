@@ -120,7 +120,7 @@ public final class RxJava<C, S, E> implements Processor<C, S, E> {
             return Flowable.fromIterable(() -> IteratorUtils.map(((InitialFunction<C, E>) function).get(), s -> traverserFactory.create(function, s)));
         } else if (function instanceof ReduceFunction) {
             final ReduceFunction<C, S, E> reduceFunction = (ReduceFunction<C, S, E>) function;
-            return flow.reduce(traverserFactory.create(reduceFunction, reduceFunction.getInitialValue()), new ReduceFlow<>(reduceFunction)).toFlowable();
+            return flow.reduce(traverserFactory.create(reduceFunction, reduceFunction.getInitialValue()), new Reducer<>(reduceFunction)).toFlowable();
         } else if (function instanceof BarrierFunction) {
             final BarrierFunction<C, S, E, B> barrierFunction = (BarrierFunction<C, S, E, B>) function;
             return flow.reduce(barrierFunction.getInitialValue(), new Barrier<>(barrierFunction)).toFlowable().flatMapIterable(new BarrierFlow<>(barrierFunction, traverserFactory));
