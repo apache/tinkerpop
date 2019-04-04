@@ -38,8 +38,20 @@ public class __ {
         return __.<C, S>start().c(coefficient);
     }
 
+    public static <C, S, E> Traversal<C, S, E> choose(final Traversal<C, S, ?> predicate, final Traversal<C, S, E> trueTraversal, final Traversal<C, S, E> falseTraversal) {
+        return __.<C, S>start().choose(predicate, trueTraversal, falseTraversal);
+    }
+
+    public static <C, S, E> Traversal<C, S, E> choose(final Traversal<C, S, ?> predicate, final Traversal<C, S, E> trueTraversal) {
+        return __.<C, S>start().choose(predicate, trueTraversal);
+    }
+
     public static <C, S> Traversal<C, ?, S> constant(final S constant) {
         return __.<C, S>start().constant(constant);
+    }
+
+    public static <C, S, E> Traversal<C, S, E> flatMap(final Traversal<C, S, E> traversal) {
+        return __.<C, S>start().flatMap(traversal);
     }
 
     public static <C, S> Traversal<C, S, S> identity() {
@@ -66,6 +78,10 @@ public class __ {
         return __.<C, S>start().loops();
     }
 
+    public static <C, S, E> Traversal<C, S, E> map(final Traversal<C, S, E> traversal) {
+        return __.<C, S>start().map(traversal);
+    }
+
     public static <C, S extends Number> Traversal<C, S, S> sum() {
         return __.<C, S>start().sum();
     }
@@ -74,7 +90,7 @@ public class __ {
         return __.<C, S>start().count();
     }
 
-    public static <C, S, R> Traversal<C, S, R> union(final Traversal<C, S, R>... traversals) {
+    public static <C, S, E> Traversal<C, S, E> union(final Traversal<C, S, E>... traversals) {
         return __.<C, S>start().union(traversals);
     }
 }

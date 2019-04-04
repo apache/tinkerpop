@@ -61,6 +61,8 @@ public interface Traversal<C, S, E> extends Iterator<E> {
 
     public Traversal<C, S, E> filter(final Traversal<C, E, ?> filterTraversal);
 
+    public <R> Traversal<C, S, R> flatMap(final Traversal<C, E, R> flatMapTraversal);
+
     public Traversal<C, S, TMap<E, Long>> groupCount();
 
     public <K, V> Traversal<C, S, TMap<K, V>> hasKey(final P<K> predicate);

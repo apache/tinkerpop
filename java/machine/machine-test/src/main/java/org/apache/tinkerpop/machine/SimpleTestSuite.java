@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.machine;
 
-import org.apache.tinkerpop.language.gremlin.P;
 import org.apache.tinkerpop.language.gremlin.common.__;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.compiler.Order;
@@ -26,6 +25,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static org.apache.tinkerpop.language.gremlin.P.gt;
+import static org.apache.tinkerpop.language.gremlin.P.lt;
+import static org.apache.tinkerpop.language.gremlin.common.__.choose;
 import static org.apache.tinkerpop.language.gremlin.common.__.incr;
 import static org.apache.tinkerpop.language.gremlin.common.__.is;
 import static org.apache.tinkerpop.language.gremlin.common.__.union;
@@ -56,7 +58,7 @@ public class SimpleTestSuite extends AbstractTestSuite<Long> {
     @Test
     void g_injectX1_2_3X_isXgtX1XX_incr() {
         verify(List.of(3L, 4L),
-                g.inject(1L, 2L, 3L).is(P.gt(1)).incr());
+                g.inject(1L, 2L, 3L).is(gt(1)).incr());
     }
 
     // NESTED TESTING
@@ -70,13 +72,13 @@ public class SimpleTestSuite extends AbstractTestSuite<Long> {
     @Test
     void g_injectX1_2_3X_chooseXisXgtX1XX__incrX() {
         verify(List.of(3L, 4L),
-                g.inject(1L, 2L, 3L).choose(is(P.gt(1L)), incr()));
+                g.inject(1L, 2L, 3L).choose(is(gt(1L)), incr()));
     }
 
     @Test
     void g_injectX1_2_3X_chooseXisXgtX1XX__incr__incr_incrX() {
         verify(List.of(3L, 3L, 4L),
-                g.inject(1L, 2L, 3L).choose(is(P.gt(1L)), incr(), __.<Long>incr().incr()));
+                g.inject(1L, 2L, 3L).choose(is(gt(1L)), incr(), __.<Long>incr().incr()));
     }
 
     @Test
@@ -149,12 +151,6 @@ public class SimpleTestSuite extends AbstractTestSuite<Long> {
 
     // REPEAT TIMES TESTING
 
-    // @Test TODO: I mean its right..but.
-    void g_injectX1_2_3X_repeatXincrX_timesX0X() { // r.t
-        verify(List.of(2L, 3L, 4L),
-                g.inject(1L, 2L, 3L).repeat(incr()).times(0));
-    }
-
     @Test
     void g_injectX1_2_3X_repeatXincrX_timesX1X() { // r.t
         verify(List.of(2L, 3L, 4L),
@@ -171,6 +167,12 @@ public class SimpleTestSuite extends AbstractTestSuite<Long> {
     void g_injectX1_2_3X_repeatXincrX_timesX3X() { // r.t
         verify(List.of(4L, 5L, 6L),
                 g.inject(1L, 2L, 3L).repeat(incr()).times(3));
+    }
+
+    @Test
+    void g_injectX1_2_3X_repeatXincr_incrX_timesX3X() { // r.t
+        verify(List.of(7L, 8L, 9L),
+                g.inject(1L, 2L, 3L).repeat(__.<Long>incr().incr()).times(3));
     }
 
     @Test
@@ -199,6 +201,18 @@ public class SimpleTestSuite extends AbstractTestSuite<Long> {
 
     // NESTED REPEAT TESTING
 
+    @Test
+    void g_injectX1_2_3X_repeatXincr_mapXchooseXisXgtX5XX__incr__incr_incrXXX_timesX3X() {
+        verify(List.of(9L, 9L, 10L),
+                g.inject(1L, 2L, 3L).repeat(__.<Long>incr().map(choose(is(gt(5L)), incr(), __.<Long>incr().incr()))).times(3));
+    }
+
+    @Test
+    void g_injectX1_2_3X_repeatXincr_flatMapXchooseXisXltX8XX__incrXXX_timesX3X() {
+        verify(List.of(7L, 8L),
+                g.inject(1L, 2L, 3L).repeat(__.<Long>incr().flatMap(choose(is(lt(8L)), incr()))).times(3));
+    }
+
     //@Test
     void g_injectX1X_repeatXunionXincr__incr_incrXX_timesX1X() {
         verify(List.of(2L, 3L),
@@ -216,11 +230,17 @@ public class SimpleTestSuite extends AbstractTestSuite<Long> {
         verify(List.of(4L, 5L, 5L, 6L, 5L, 6L, 6L, 7L),
                 g.inject(1L).repeat(union(incr(), __.<Long>incr().incr())).times(3));
     }
-    // 1
-    // 1 2
-    // 2 3 3 4
-    // 3 4 4 5 4 5 5 6
 
+    // UNFOLD TESTING
+
+    @Test
+    void g_injectXlistX1_2_3XX_unfold_incr() {
+        verifyOrder(List.of(2L, 3L, 4L),
+                g.inject(List.of(1L, 2L, 3L)).unfold().incr());
+    }
+
+
+    // ORDER TESTING
 
     @Test
     void g_injectX7_3_5_20_1_2_5X_incr_order_byXdescX() {

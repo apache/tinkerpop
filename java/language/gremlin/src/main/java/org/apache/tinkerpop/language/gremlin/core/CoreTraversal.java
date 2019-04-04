@@ -25,6 +25,7 @@ import org.apache.tinkerpop.language.gremlin.TraversalUtil;
 import org.apache.tinkerpop.language.gremlin.common.__;
 import org.apache.tinkerpop.machine.Machine;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
+import org.apache.tinkerpop.machine.bytecode.compiler.CommonCompiler;
 import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.bytecode.compiler.Oper;
 import org.apache.tinkerpop.machine.bytecode.compiler.Order;
@@ -131,6 +132,11 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
     @Override
     public Traversal<C, S, E> filter(final Traversal<C, E, ?> filterTraversal) {
         return this.addInstruction(Symbols.FILTER, TraversalUtil.getBytecode(filterTraversal));
+    }
+
+    @Override
+    public <R> Traversal<C, S, R> flatMap(final Traversal<C, E, R> flatMapTraversal) {
+        return this.addInstruction(CommonCompiler.Symbols.FLATMAP, TraversalUtil.getBytecode(flatMapTraversal));
     }
 
     @Override

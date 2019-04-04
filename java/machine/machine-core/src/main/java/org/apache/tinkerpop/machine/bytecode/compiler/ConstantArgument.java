@@ -19,6 +19,9 @@
 package org.apache.tinkerpop.machine.bytecode.compiler;
 
 import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.util.IteratorUtils;
+
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -34,6 +37,11 @@ public class ConstantArgument<E> implements Argument<E> {
     @Override
     public <C, S> E mapArg(final Traverser<C, S> traverser) {
         return this.constant;
+    }
+
+    @Override
+    public <C, S> Iterator<E> flatMapArg(final Traverser<C, S> traverser) {
+        return IteratorUtils.of(this.constant);
     }
 
     @Override

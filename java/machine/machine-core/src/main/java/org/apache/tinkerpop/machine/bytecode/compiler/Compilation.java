@@ -92,6 +92,8 @@ public final class Compilation<C, S, E> implements Serializable, Cloneable {
     public Traverser<C, E> mapTraverser(final Traverser<C, S> traverser) {
         this.prepareProcessor();
         this.processor.addStart(this.prepareTraverser(traverser));
+        if (!this.processor.hasNext())
+            throw new RuntimeException("The nested traversal is not a map function: " + this);
         return this.processor.next();
     }
 

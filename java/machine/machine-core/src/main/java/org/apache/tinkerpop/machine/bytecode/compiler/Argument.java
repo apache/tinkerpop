@@ -23,6 +23,7 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -30,6 +31,8 @@ import java.util.Arrays;
 public interface Argument<E> extends Serializable, Cloneable {
 
     public <C, S> E mapArg(final Traverser<C, S> traverser);
+
+    public <C, S> Iterator<E> flatMapArg(final Traverser<C, S> traverser);
 
     public <C, S> boolean filterArg(final Traverser<C, S> traverser);
 

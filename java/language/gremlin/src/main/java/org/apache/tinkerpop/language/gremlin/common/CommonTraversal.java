@@ -129,6 +129,11 @@ public class CommonTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
     }
 
     @Override
+    public <R> Traversal<C, S, R> flatMap(final Traversal<C, E, R> flatMapTraversal) {
+        return this.addInstruction(Symbols.FLATMAP, TraversalUtil.getBytecode(flatMapTraversal));
+    }
+
+    @Override
     public Traversal<C, S, TMap<E, Long>> groupCount() {
         return this.addInstruction(Symbols.GROUP_COUNT);
     }

@@ -20,6 +20,9 @@ package org.apache.tinkerpop.machine.bytecode.compiler;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.util.IteratorUtils;
+
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -35,6 +38,11 @@ public class BytecodeArgument<E> implements Argument<E> {
     @Override
     public <C, S> E mapArg(final Traverser<C, S> traverser) {
         return (E) this.compilation.mapTraverser(traverser).object();
+    }
+
+    @Override
+    public <C, S> Iterator<E> flatMapArg(final Traverser<C, S> traverser) {
+        return IteratorUtils.map((Iterator<Traverser<C, E>>) this.compilation.flatMapTraverser(traverser), Traverser::object);
     }
 
     @Override

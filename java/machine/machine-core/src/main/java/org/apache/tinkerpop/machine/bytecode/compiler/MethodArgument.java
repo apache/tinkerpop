@@ -20,9 +20,11 @@ package org.apache.tinkerpop.machine.bytecode.compiler;
 
 import org.apache.tinkerpop.machine.structure.data.TElement;
 import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.util.IteratorUtils;
 import org.apache.tinkerpop.machine.util.NumberHelper;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -57,6 +59,11 @@ public class MethodArgument<E> implements Argument<E> {
             return (E) NumberHelper.add((Number) traverser.object(), (Number) this.arguments[0].mapArg(traverser));
         else
             throw new RuntimeException("Unknown method");
+    }
+
+    @Override
+    public <C, S> Iterator<E> flatMapArg(final Traverser<C, S> traverser) {
+        return IteratorUtils.of(this.mapArg(traverser));
     }
 
     @Override

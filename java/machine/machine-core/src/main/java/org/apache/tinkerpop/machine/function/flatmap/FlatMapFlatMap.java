@@ -25,11 +25,9 @@ import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.FlatMapFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.util.ArrayIterator;
-import org.apache.tinkerpop.machine.util.IteratorUtils;
 
 import java.lang.reflect.Array;
 import java.util.Iterator;
-import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -45,8 +43,8 @@ public final class FlatMapFlatMap<C, S, E> extends AbstractFunction<C> implement
 
     @Override
     public Iterator<E> apply(final Traverser<C, S> traverser) {
-        final E object = this.argument.mapArg(traverser);
-        if (object instanceof Iterator)
+        return this.argument.flatMapArg(traverser);
+        /*if (object instanceof Iterator)
             return (Iterator<E>) object;
         else if (object instanceof Iterable)
             return ((Iterable<E>) object).iterator();
@@ -55,10 +53,10 @@ public final class FlatMapFlatMap<C, S, E> extends AbstractFunction<C> implement
         else if (object.getClass().isArray())
             return handleArrays(object);
         else
-            return IteratorUtils.of(object);
+            return IteratorUtils.of(object);*/
     }
 
-    private final Iterator<E> handleArrays(final Object array) {
+    private Iterator<E> handleArrays(final Object array) {
         if (array instanceof Object[]) {
             return new ArrayIterator<>((E[]) array);
         } else {
