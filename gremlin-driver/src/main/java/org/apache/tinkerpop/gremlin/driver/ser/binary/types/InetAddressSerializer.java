@@ -44,7 +44,7 @@ public class InetAddressSerializer<T extends InetAddress> extends SimpleTypeSeri
         try {
             return (T) InetAddress.getByAddress(bytes);
         } catch (UnknownHostException uhe) {
-            throw new SerializationException(uhe);
+            throw new SerializationException("Cannot deserialize InetAddress value", uhe);
         }
     }
 
