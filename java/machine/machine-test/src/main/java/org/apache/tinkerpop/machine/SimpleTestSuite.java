@@ -213,13 +213,13 @@ public class SimpleTestSuite extends AbstractTestSuite<Long> {
                 g.inject(1L, 2L, 3L).repeat(__.<Long>incr().flatMap(choose(is(lt(8L)), incr()))).times(3));
     }
 
-    //@Test
+    @Test
     void g_injectX1X_repeatXunionXincr__incr_incrXX_timesX1X() {
         verify(List.of(2L, 3L),
                 g.inject(1L).repeat(union(incr(), __.<Long>incr().incr())).times(1));
     }
 
-    //@Test
+    @Test
     void g_injectX1X_repeatXunionXincr__incr_incrXX_timesX2X() {
         verify(List.of(3L, 4L, 4L, 5L),
                 g.inject(1L).repeat(union(incr(), __.<Long>incr().incr())).times(2));

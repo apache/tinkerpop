@@ -46,7 +46,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class RxJava<C, S, E> implements Processor<C, S, E> {
 
-    private static final int MAX_REPETITIONS = 15; // TODO: this needs to be a dynamic configuration
+    private static final int MAX_REPETITIONS = 8; // TODO: this needs to be a dynamic configuration
 
     private final AtomicBoolean alive = new AtomicBoolean(Boolean.TRUE);
     private boolean executed = false;
@@ -127,12 +127,13 @@ public final class RxJava<C, S, E> implements Processor<C, S, E> {
         } else if (function instanceof BranchFunction) {
             final Flowable<List> selectorFlow = flow.map(new BranchFlow<>((BranchFunction<C, S, B>) function));
             final List<Publisher<Traverser<C, E>>> branchFlows = new ArrayList<>();
+            int branchCounter = 0;
             for (final Map.Entry<Compilation<C, S, ?>, List<Compilation<C, S, E>>> branches : ((BranchFunction<C, S, E>) function).getBranches().entrySet()) {
-                for (int i = 0; i < branches.getValue().size(); i++) {
-                    final Compilation<C, S, E> branch = branches.getValue().get(i);
-                    final int id = i;
+                final int branchId = null == branches.getKey() ? -1 : branchCounter;
+                branchCounter++;
+                for (final Compilation<C, S, E> branch : branches.getValue()) {
                     branchFlows.add(compile(selectorFlow.
-                                    filter(list -> list.get(0).equals(null == branches.getKey() ? -1 : id)).
+                                    filter(list -> list.get(0).equals(branchId)).
                                     map(list -> (Traverser<C, S>) list.get(1)),
                             branch));
                 }

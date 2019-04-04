@@ -24,7 +24,6 @@ import org.apache.tinkerpop.language.gremlin.TraversalSource;
 import org.apache.tinkerpop.language.gremlin.TraversalUtil;
 import org.apache.tinkerpop.language.gremlin.common.__;
 import org.apache.tinkerpop.machine.Machine;
-import org.apache.tinkerpop.machine.bytecode.compiler.Order;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
 import org.apache.tinkerpop.machine.species.LocalMachine;
 import org.apache.tinkerpop.machine.strategy.optimization.IdentityStrategy;
@@ -50,22 +49,6 @@ class PipesTest {
         System.out.println(traversal);
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal.next());
-        System.out.println("\n----------\n");
-    }
-
-    @Test
-    void testOrder() {
-        final Machine machine = LocalMachine.open();
-        final TraversalSource<Long> g = Gremlin.<Long>traversal(machine)
-                .withCoefficient(LongCoefficient.class)
-                .withProcessor(PipesProcessor.class)
-                .withStrategy(IdentityStrategy.class);
-
-        Traversal<Long, ?, ?> traversal = g.inject(7L, 3L, 5L, 20L, 1L, 2L).incr().order().by(Order.desc);
-        System.out.println(TraversalUtil.getBytecode(traversal));
-        System.out.println(traversal);
-        System.out.println(TraversalUtil.getBytecode(traversal));
-        System.out.println(traversal.toList());
         System.out.println("\n----------\n");
     }
 
