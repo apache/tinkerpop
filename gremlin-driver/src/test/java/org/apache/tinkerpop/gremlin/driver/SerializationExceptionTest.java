@@ -16,23 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.driver.ser;
+package org.apache.tinkerpop.gremlin.driver;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.junit.Test;
 
 import java.io.IOException;
 
-/**
- * @author Stephen Mallette (http://stephen.genoprime.com)
- */
-public class SerializationException extends IOException {
-    public SerializationException(final String msg) {
-        super(msg);
+public class SerializationExceptionTest {
+
+    @Test
+    public void testSerializationException() {
+        try {
+            throwException();
+            fail("Serialization exception should have been thrown and caught");
+        } catch (IOException e) {
+            assertEquals(e.getMessage(), "no bueno");
+        }
     }
 
-    public SerializationException(final Throwable t) {
-        super(t);
-    }
-
-    public SerializationException(String message, Throwable cause) {
-        super(message, cause);
+    private static void throwException() throws SerializationException {
+        throw new SerializationException("no bueno");
     }
 }
