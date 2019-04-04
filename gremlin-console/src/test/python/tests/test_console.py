@@ -166,6 +166,11 @@ class TestConsole(object):
         child.expect("-i and -e options are mutually exclusive - provide one or the other")
         child.expect(pexpect.EOF)
 
+    def test_debug_logging(self):
+        child = pexpect.spawn(TestConsole.gremlinsh + "-l DEBUG --execute y-printed.script 1 2 3")
+        child.expect("6\r\n")
+        TestConsole._close(child)
+
     @staticmethod
     def _expect_gremlin_header(child):
         # skip/read the Gremlin graphics

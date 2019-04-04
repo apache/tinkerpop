@@ -102,7 +102,7 @@ JVM_OPTS=$(awk -v RS=' ' '!/^$/ {if (!x[$0]++) print}' <<< "${JVM_OPTS}" | grep 
 
 if [ -n "$SCRIPT_DEBUG" ]; then
     # in debug mode enable debugging of :install command
-    JVM_OPTS="${JAVA_OPTIONS} -Divy.message.logger.level=4 -Dgroovy.grape.report.downloads=true"
+    JVM_OPTS+=( "-Divy.message.logger.level=4 -Dgroovy.grape.report.downloads=true" )
     echo "CLASSPATH: $CLASSPATH"
     set -x
 fi
