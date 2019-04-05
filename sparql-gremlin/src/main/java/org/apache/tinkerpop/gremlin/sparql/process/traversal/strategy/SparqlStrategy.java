@@ -38,6 +38,10 @@ import java.util.Set;
  * it as a string value. This strategy finds that step and compiles it to a Gremlin traversal which then replaces
  * the {@link InjectStep}.
  *
+ * For remote bytecode execution, note that the {@code sparql-gremlin} dependencies need to be on the server. The
+ * way remoting works - see {@code RemoteStep} - prevents modified bytecode from being submitted to the server, so
+ * technically, this strategy can't be applied first on the client.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class SparqlStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy>
