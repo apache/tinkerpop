@@ -27,14 +27,14 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
  */
 final class MapFlow<C, S, E> implements Function<Traverser<C, S>, Traverser<C, E>> {
 
-    private final ThreadLocal<MapFunction<C, S, E>> function;
+    private final ThreadLocal<MapFunction<C, S, E>> mapFunction;
 
-    MapFlow(final MapFunction<C, S, E> function) {
-        this.function = ThreadLocal.withInitial(() -> (MapFunction)function.clone());
+    MapFlow(final MapFunction<C, S, E> mapFunction) {
+        this.mapFunction = ThreadLocal.withInitial(mapFunction::clone);
     }
 
     @Override
     public Traverser<C, E> apply(final Traverser<C, S> traverser) {
-        return traverser.map(this.function.get());
+        return traverser.map(this.mapFunction.get());
     }
 }

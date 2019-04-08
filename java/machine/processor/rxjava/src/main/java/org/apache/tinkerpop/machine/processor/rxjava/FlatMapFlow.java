@@ -27,14 +27,14 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
  */
 final class FlatMapFlow<C, S, E> implements Function<Traverser<C, S>, Iterable<Traverser<C, E>>> {
 
-    private ThreadLocal<FlatMapFunction<C, S, E>> function;
+    private ThreadLocal<FlatMapFunction<C, S, E>> flatMapFunction;
 
-    FlatMapFlow(final FlatMapFunction<C, S, E> function) {
-        this.function = ThreadLocal.withInitial(() -> (FlatMapFunction) function.clone());
+    FlatMapFlow(final FlatMapFunction<C, S, E> flatMapFunction) {
+        this.flatMapFunction = ThreadLocal.withInitial(flatMapFunction::clone);
     }
 
     @Override
     public Iterable<Traverser<C, E>> apply(final Traverser<C, S> traverser) {
-        return () -> traverser.flatMap(this.function.get());
+        return () -> traverser.flatMap(this.flatMapFunction.get());
     }
 }

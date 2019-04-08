@@ -26,6 +26,7 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -99,6 +100,17 @@ public abstract class AbstractTraversal<C, S, E> implements Traversal<C, S, E> {
             list.add(this.next());
         }
         return list;
+    }
+
+    @Override
+    public void iterate() {
+        try {
+            while (true) {
+                this.nextTraverser();
+            }
+        } catch (final NoSuchElementException e) {
+            // do nothing
+        }
     }
 
     @Override

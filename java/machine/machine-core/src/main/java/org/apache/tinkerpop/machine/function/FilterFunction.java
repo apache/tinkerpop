@@ -26,4 +26,6 @@ import java.util.function.Predicate;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface FilterFunction<C, S> extends Predicate<Traverser<C, S>>, CFunction<C> {
+
+    public FilterFunction<C, S> clone();
 }

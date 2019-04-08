@@ -29,14 +29,13 @@ import org.apache.tinkerpop.machine.util.IteratorUtils;
 import java.lang.reflect.Array;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class UnfoldFlatMap<C, S, E> extends AbstractFunction<C> implements FlatMapFunction<C, S, E> {
 
-    public UnfoldFlatMap(final Coefficient<C> coefficient, final String label) {
+    private UnfoldFlatMap(final Coefficient<C> coefficient, final String label) {
         super(coefficient, label);
     }
 
@@ -53,6 +52,11 @@ public final class UnfoldFlatMap<C, S, E> extends AbstractFunction<C> implements
             return handleArrays(object);
         else
             return IteratorUtils.of((E) object);
+    }
+
+    @Override
+    public UnfoldFlatMap<C, S, E> clone() {
+        return (UnfoldFlatMap<C, S, E>) super.clone();
     }
 
     private final Iterator<E> handleArrays(final Object array) {

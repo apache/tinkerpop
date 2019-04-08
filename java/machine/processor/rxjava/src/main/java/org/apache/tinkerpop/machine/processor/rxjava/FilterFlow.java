@@ -27,14 +27,14 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
  */
 final class FilterFlow<C, S> implements Predicate<Traverser<C, S>> {
 
-    private final ThreadLocal<FilterFunction<C, S>> function;
+    private final ThreadLocal<FilterFunction<C, S>> filterFunction;
 
-    FilterFlow(final FilterFunction<C, S> function) {
-        this.function = ThreadLocal.withInitial(() -> (FilterFunction) function.clone());
+    FilterFlow(final FilterFunction<C, S> filterFunction) {
+        this.filterFunction = ThreadLocal.withInitial(filterFunction::clone);
     }
 
     @Override
     public boolean test(final Traverser<C, S> traverser) {
-        return this.function.get().test(traverser); // todo: make this 0/1-flatmap so traverser splitting is correct
+        return this.filterFunction.get().test(traverser); // todo: make this 0/1-flatmap so traverser splitting is correct
     }
 }

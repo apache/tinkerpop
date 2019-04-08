@@ -27,4 +27,6 @@ import java.util.function.Function;
  */
 public interface MapFunction<C, S, E> extends Function<Traverser<C, S>, E>, CFunction<C> {
 
+    public MapFunction<C, S, E> clone();
+
 }

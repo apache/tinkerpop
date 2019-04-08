@@ -25,6 +25,8 @@ import org.apache.tinkerpop.machine.species.remote.MachineServer;
 import org.apache.tinkerpop.machine.species.remote.RemoteMachine;
 import org.junit.jupiter.api.AfterAll;
 
+import java.util.Map;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -34,7 +36,10 @@ public class SimpleRemoteTest extends SimpleTestSuite {
     private static MachineServer SERVER = new MachineServer(7777);
 
     static {
-        BYTECODE.addSourceInstruction(CoreCompiler.Symbols.WITH_PROCESSOR, BeamProcessor.class);
+        BYTECODE.addSourceInstruction(CoreCompiler.Symbols.WITH_PROCESSOR,
+                BeamProcessor.class,
+                Map.of(BeamProcessor.TRAVERSER_SERVER_LOCATION,
+                        "localhost", BeamProcessor.TRAVERSER_SERVER_PORT, 6666));
     }
 
     SimpleRemoteTest() {

@@ -24,8 +24,6 @@ import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.MapFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
-import java.util.Set;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -38,6 +36,11 @@ public final class LoopsMap<C, S> extends AbstractFunction<C> implements MapFunc
     @Override
     public Integer apply(final Traverser<C, S> traverser) {
         return traverser.loops();
+    }
+
+    @Override
+    public LoopsMap<C, S> clone() {
+        return (LoopsMap<C, S>) super.clone();
     }
 
     public static <C, S> LoopsMap<C, S> compile(final Instruction<C> instruction) {

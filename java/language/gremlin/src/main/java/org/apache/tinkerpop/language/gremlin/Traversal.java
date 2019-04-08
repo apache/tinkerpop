@@ -119,4 +119,6 @@ public interface Traversal<C, S, E> extends Iterator<E> {
 
     public Traverser<C, E> nextTraverser();
 
+    public void iterate();
+
 }

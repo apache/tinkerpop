@@ -24,8 +24,6 @@ import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.FilterFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
-import java.util.Set;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -38,6 +36,11 @@ public final class IdentityFilter<C, S> extends AbstractFunction<C> implements F
     @Override
     public boolean test(final Traverser<C, S> traverser) {
         return true;
+    }
+
+    @Override
+    public IdentityFilter<C, S> clone() {
+        return (IdentityFilter<C, S>) super.clone();
     }
 
     public static <C, S> IdentityFilter<C, S> compile(final Instruction<C> instruction) {

@@ -52,7 +52,13 @@ public final class ConstantMap<C, S, E> extends AbstractFunction<C> implements M
         return StringFactory.makeFunctionString(this, this.constant);
     }
 
+    @Override
+    public ConstantMap<C, S, E> clone() {
+        return (ConstantMap<C, S, E>) super.clone();
+    }
+
     public static <C, S, E> ConstantMap<C, S, E> compile(final Instruction<C> instruction) {
         return new ConstantMap<>(instruction.coefficient(), instruction.label(), (E) instruction.args()[0]);
     }
+
 }

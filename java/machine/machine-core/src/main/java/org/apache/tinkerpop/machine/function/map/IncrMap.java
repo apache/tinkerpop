@@ -24,8 +24,6 @@ import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.MapFunction;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
-import java.util.Set;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -38,6 +36,11 @@ public final class IncrMap<C> extends AbstractFunction<C> implements MapFunction
     @Override
     public Long apply(final Traverser<C, Long> traverser) {
         return traverser.object() + 1L;
+    }
+
+    @Override
+    public IncrMap<C> clone() {
+        return (IncrMap<C>) super.clone();
     }
 
     public static <C> IncrMap<C> compile(final Instruction<C> instruction) {
