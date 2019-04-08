@@ -41,7 +41,7 @@ public final class MachineServer implements AutoCloseable {
 
     private final int machineServerPort;
     private ServerSocket machineServerSocket;
-    private AtomicBoolean serverAlive = new AtomicBoolean(Boolean.FALSE);
+    private AtomicBoolean serverAlive = new AtomicBoolean(Boolean.TRUE);
     private final Machine machine = LocalMachine.open();
 
     public MachineServer(final int machineServerPort) {
@@ -51,7 +51,6 @@ public final class MachineServer implements AutoCloseable {
 
     private void run() {
         try {
-            this.serverAlive.set(Boolean.TRUE);
             this.machineServerSocket = new ServerSocket(this.machineServerPort);
             while (this.serverAlive.get()) {
                 final Socket clientSocket = this.machineServerSocket.accept();
@@ -66,10 +65,9 @@ public final class MachineServer implements AutoCloseable {
     public void close() {
         if (this.serverAlive.get()) {
             try {
-                if (null != this.machineServerSocket)
-                    this.machineServerSocket.close();
-                this.machine.close();
                 this.serverAlive.set(Boolean.FALSE);
+                this.machineServerSocket.close();
+                this.machine.close();
             } catch (final IOException e) {
                 throw new RuntimeException(e.getMessage(), e);
             }
