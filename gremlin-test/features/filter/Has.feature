@@ -613,3 +613,48 @@ Feature: Step - has()
     Then the result should be unordered
       | result |
       | v[marko] |
+
+  Scenario: g_V_hasXname_not_containingXarkXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("name", TextP.notContaining("ark"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[vadas] |
+      | v[lop] |
+      | v[josh] |
+      | v[ripple] |
+      | v[peter] |
+
+  Scenario: g_V_hasXname_not_startingWithXmarXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("name", TextP.notStartingWith("mar"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[vadas] |
+      | v[lop] |
+      | v[josh] |
+      | v[ripple] |
+      | v[peter] |
+
+  Scenario: g_V_hasXname_not_endingWithXasXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("name", TextP.notEndingWith("as"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[lop] |
+      | v[josh] |
+      | v[ripple] |
+      | v[peter] |
