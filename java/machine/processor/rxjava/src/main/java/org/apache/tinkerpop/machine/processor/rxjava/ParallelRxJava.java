@@ -90,7 +90,8 @@ public final class ParallelRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
         else if (function instanceof FilterFunction) {
             return (ParallelFlowable) flow.filter(new FilterFlow<>((FilterFunction<C, S>) function));
         } else if (function instanceof FlatMapFunction) {
-            return flow.sequential().flatMapIterable(new FlatMapFlow<>((FlatMapFunction<C, S, E>) function)).parallel().runOn(Schedulers.from(this.threadPool));
+            final FlatMapFlow<C, S, E> flatMapFlow = new FlatMapFlow<>((FlatMapFunction<C, S, E>) function);
+            return flow.flatMap(t -> Flowable.fromIterable(flatMapFlow.apply(t)));
         } else if (function instanceof InitialFunction) {
             return Flowable.fromIterable(() -> IteratorUtils.map(((InitialFunction<C, E>) function).get(), s -> traverserFactory.create(function, s))).parallel().runOn(Schedulers.from(this.threadPool));
         } else if (function instanceof ReduceFunction) {
@@ -120,13 +121,16 @@ public final class ParallelRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
             ParallelFlowable<List> selectorFlow;
             for (int i = 0; i < MAX_REPETITIONS; i++) {
                 if (repeatBranch.hasStartPredicates()) {
-                    selectorFlow = flow.sequential().flatMapIterable(new RepeatStart<>(repeatBranch)).parallel().runOn(Schedulers.from(this.threadPool));
+                    final RepeatStart<C, S> repeatStart = new RepeatStart<>(repeatBranch);
+                    selectorFlow = flow.flatMap(t -> Flowable.fromIterable(repeatStart.apply(t)));
                     outputs.add(selectorFlow.filter(list -> list.get(0).equals(0)).map(list -> (Traverser<C, S>) list.get(1)).sequential());
                     flow = this.compile(selectorFlow.filter(list -> list.get(0).equals(1)).map(list -> (Traverser<C, S>) list.get(1)), (Compilation) repeatBranch.getRepeat());
                 } else
                     flow = this.compile(flow, (Compilation) repeatBranch.getRepeat());
-                selectorFlow = flow.sequential().flatMapIterable(new RepeatEnd<>(repeatBranch)).parallel().runOn(Schedulers.from(this.threadPool));
-                outputs.add(selectorFlow.sequential().filter(list -> list.get(0).equals(0)).map(list -> (Traverser<C, S>) list.get(1)));
+                ///
+                final RepeatEnd<C, S> repeatEnd = new RepeatEnd<>(repeatBranch);
+                selectorFlow = flow.flatMap(t -> Flowable.fromIterable(repeatEnd.apply(t)));
+                outputs.add(selectorFlow.filter(list -> list.get(0).equals(0)).map(list -> (Traverser<C, S>) list.get(1)).sequential());
                 flow = selectorFlow.filter(list -> list.get(0).equals(1)).map(list -> (Traverser<C, S>) list.get(1));
             }
             return (ParallelFlowable) PublishProcessor.merge(outputs).parallel().runOn(Schedulers.from(this.threadPool));
