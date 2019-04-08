@@ -44,6 +44,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -128,13 +129,19 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_containingXarkXX();
 
-    public abstract Traversal<Vertex,Vertex> get_g_V_hasXname_startingWithXmarXX();
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_startingWithXmarXX();
 
-    public abstract Traversal<Vertex,Vertex> get_g_V_hasXname_endingWithXasXX();
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_endingWithXasXX();
 
-    public abstract Traversal<Vertex,Vertex> get_g_V_hasXperson_name_containingXoX_andXltXmXXX();
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_not_containingXarkXX();
 
-    public abstract Traversal<Vertex,Vertex> get_g_V_hasXname_gtXmX_andXcontainingXoXXX();
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_not_startingWithXmarXX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_not_endingWithXasXX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXperson_name_containingXoX_andXltXmXXX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_gtXmX_andXcontainingXoXXX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -590,6 +597,46 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    public void g_V_hasXname_not_containingXarkXX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXname_not_containingXarkXX();
+        printTraversalForm(traversal);
+
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            assertNotEquals("marko", traversal.next().value("name"));
+        }
+        assertEquals(5, counter);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXname_not_startingWithXmarXX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXname_not_startingWithXmarXX();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            assertNotEquals("marko", traversal.next().value("name"));
+        }
+        assertEquals(5, counter);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXname_not_endingWithXasXX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXname_not_endingWithXasXX();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            assertNotEquals("vadas", traversal.next().value("name"));
+        }
+        assertEquals(5, counter);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
     public void g_V_hasXperson_name_containingXoX_andXltXmXXX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_hasXperson_name_containingXoX_andXltXmXXX();
         printTraversalForm(traversal);
@@ -802,6 +849,21 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXname_endingWithXasXX() {
             return g.V().has("name", TextP.endingWith("as"));
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXname_not_containingXarkXX() {
+            return g.V().has("name", TextP.notContaining("ark"));
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXname_not_startingWithXmarXX() {
+            return g.V().has("name", TextP.notStartingWith("mar"));
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXname_not_endingWithXasXX() {
+            return g.V().has("name", TextP.notEndingWith("as"));
         }
 
         @Override
