@@ -76,13 +76,15 @@ public final class TraverserSet<C, S> extends AbstractSet<Traverser<C, S>> imple
 
     @Override
     public boolean add(final Traverser<C, S> traverser) {
-        final Traverser<C, S> existing = this.map.get(traverser);
-        if (null == existing) {
-            this.map.put(traverser, traverser);
-            return true;
-        } else {
-            existing.coefficient().sum(traverser.coefficient());
-            return false;
+        synchronized (this.map) {
+            final Traverser<C, S> existing = this.map.get(traverser);
+            if (null == existing) {
+                this.map.put(traverser, traverser);
+                return true;
+            } else {
+                existing.coefficient().sum(traverser.coefficient());
+                return false;
+            }
         }
     }
 
@@ -93,12 +95,14 @@ public final class TraverserSet<C, S> extends AbstractSet<Traverser<C, S>> imple
 
     @Override
     public Traverser<C, S> remove() {  // pop, exception if empty
-        final Iterator<Traverser<C, S>> iterator = this.map.values().iterator();
-        if (!iterator.hasNext())
-            throw FastNoSuchElementException.instance();
-        final Traverser<C, S> next = iterator.next();
-        iterator.remove();
-        return next;
+        synchronized (this.map) {
+            final Iterator<Traverser<C, S>> iterator = this.map.values().iterator();
+            if (!iterator.hasNext())
+                throw FastNoSuchElementException.instance();
+            final Traverser<C, S> next = iterator.next();
+            iterator.remove();
+            return next;
+        }
     }
 
     @Override
@@ -136,7 +140,7 @@ public final class TraverserSet<C, S> extends AbstractSet<Traverser<C, S>> imple
         return this.map.values().toString();
     }
 
-    public void sort(final Comparator<Traverser<C,S>> comparator) {
+    public void sort(final Comparator<Traverser<C, S>> comparator) {
         final List<Traverser<C, S>> list = new ArrayList<>(this.map.size());
         IteratorUtils.removeOnNext(this.map.values().iterator()).forEachRemaining(list::add);
         Collections.sort(list, comparator);

@@ -32,8 +32,8 @@ public abstract class AbstractRxJava<C, S, E> implements Processor<C, S, E> {
 
     static final int MAX_REPETITIONS = 8; // TODO: this needs to be a dynamic configuration
 
-    final AtomicBoolean alive = new AtomicBoolean(Boolean.TRUE);
     boolean executed = false;
+    final AtomicBoolean alive = new AtomicBoolean(Boolean.FALSE);
     final TraverserSet<C, S> starts = new TraverserSet<>();
     final TraverserSet<C, E> ends = new TraverserSet<>();
     final Compilation<C, S, E> compilation;
@@ -64,6 +64,7 @@ public abstract class AbstractRxJava<C, S, E> implements Processor<C, S, E> {
         this.starts.clear();
         this.ends.clear();
         this.executed = false;
+        this.alive.set(Boolean.FALSE);
     }
 
     protected abstract void prepareFlow();

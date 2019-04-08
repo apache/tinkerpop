@@ -112,8 +112,8 @@ public final class RepeatBranch<C, S> extends AbstractFunction<C> {
     public RepeatBranch<C, S> clone() {
         final RepeatBranch<C, S> clone = (RepeatBranch<C, S>) super.clone();
         clone.repeatCompilation = this.repeatCompilation.clone();
-        clone.emitCompilation = this.emitCompilation.clone();
-        clone.untilCompilation = this.untilCompilation.clone();
+        clone.emitCompilation = null == this.emitCompilation ? null : this.emitCompilation.clone();
+        clone.untilCompilation = null == this.untilCompilation ? null : this.untilCompilation.clone();
         return clone;
     }
 

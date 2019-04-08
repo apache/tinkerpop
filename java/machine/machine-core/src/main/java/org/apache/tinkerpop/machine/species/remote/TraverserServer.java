@@ -38,7 +38,7 @@ public final class TraverserServer<C, S> implements AutoCloseable, Iterator<Trav
     private final TraverserSet<C, S> traverserSet = new TraverserSet<>();
     private final int serverPort;
     private ServerSocket serverSocket;
-    private AtomicBoolean serverAlive = new AtomicBoolean(Boolean.TRUE);
+    private AtomicBoolean serverAlive = new AtomicBoolean(Boolean.FALSE);
 
     public TraverserServer(final int serverPort) {
         this.serverPort = serverPort;
@@ -47,6 +47,7 @@ public final class TraverserServer<C, S> implements AutoCloseable, Iterator<Trav
 
     private void run() {
         try {
+            this.serverAlive.set(Boolean.TRUE);
             this.serverSocket = new ServerSocket(this.serverPort);
             while (this.serverAlive.get()) {
                 final Socket clientSocket = this.serverSocket.accept();
@@ -73,15 +74,24 @@ public final class TraverserServer<C, S> implements AutoCloseable, Iterator<Trav
 
     @Override
     public Traverser<C, S> next() {
-        return this.traverserSet.remove();
+        if (!this.traverserSet.isEmpty())
+            return this.traverserSet.remove();
+        else {
+            while (this.serverAlive.get()) {
+                if (!this.traverserSet.isEmpty())
+                    return this.traverserSet.remove();
+            }
+            return this.traverserSet.remove();
+        }
     }
 
     @Override
     public synchronized void close() {
         if (this.serverAlive.get()) {
             try {
+                if (null != this.serverSocket)
+                    this.serverSocket.close();
                 this.serverAlive.set(Boolean.FALSE);
-                this.serverSocket.close();
             } catch (final IOException e) {
                 throw new RuntimeException(e.getMessage(), e);
             }

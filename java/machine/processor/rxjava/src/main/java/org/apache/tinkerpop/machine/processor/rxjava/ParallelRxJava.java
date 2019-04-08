@@ -49,6 +49,7 @@ import java.util.concurrent.Executors;
 public final class ParallelRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
 
     private final int threads;
+    private ExecutorService threadPool;
 
     ParallelRxJava(final Compilation<C, S, E> compilation, final int threads) {
         super(compilation);
@@ -58,43 +59,46 @@ public final class ParallelRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
     @Override
     protected void prepareFlow() {
         if (!this.executed) {
-            ExecutorService threadPool = Executors.newFixedThreadPool(this.threads);
             this.executed = true;
-            ParallelRxJava.compile(ParallelFlowable.from(Flowable.fromIterable(this.starts)).runOn(Schedulers.from(threadPool)), this.compilation).
+            this.alive.set(Boolean.TRUE);
+            this.threadPool = Executors.newFixedThreadPool(this.threads);
+            this.compile(
+                    ParallelFlowable.from(Flowable.fromIterable(this.starts)).
+                            runOn(Schedulers.from(this.threadPool)), this.compilation).
                     doOnNext(this.ends::add).
                     sequential().
                     doOnComplete(() -> this.alive.set(Boolean.FALSE)).
-                    doFinally(threadPool::shutdown).
-                    blockingSubscribe();
+                    doFinally(this.threadPool::shutdown).
+                    blockingSubscribe(); // thread this so results can be received before computation completes
         }
     }
 
     // EXECUTION PLAN COMPILER
 
-    private static <C, S, E> ParallelFlowable<Traverser<C, E>> compile(final ParallelFlowable<Traverser<C, S>> source, final Compilation<C, S, E> compilation) {
+    private ParallelFlowable<Traverser<C, E>> compile(final ParallelFlowable<Traverser<C, S>> source, final Compilation<C, S, E> compilation) {
         final TraverserFactory<C> traverserFactory = compilation.getTraverserFactory();
         ParallelFlowable<Traverser<C, E>> sink = (ParallelFlowable) source;
         for (final CFunction<C> function : compilation.getFunctions()) {
-            sink = ParallelRxJava.extend(sink, function, traverserFactory);
+            sink = this.extend((ParallelFlowable) sink, function, traverserFactory);
         }
         return sink;
     }
 
-    private static <C, S, E, B> ParallelFlowable<Traverser<C, E>> extend(ParallelFlowable<Traverser<C, S>> flow, final CFunction<C> function, final TraverserFactory<C> traverserFactory) {
+    private <B> ParallelFlowable<Traverser<C, E>> extend(ParallelFlowable<Traverser<C, S>> flow, final CFunction<C> function, final TraverserFactory<C> traverserFactory) {
         if (function instanceof MapFunction)
             return flow.map(new MapFlow<>((MapFunction<C, S, E>) function));
         else if (function instanceof FilterFunction) {
             return (ParallelFlowable) flow.filter(new FilterFlow<>((FilterFunction<C, S>) function));
         } else if (function instanceof FlatMapFunction) {
-            return flow.sequential().flatMapIterable(new FlatMapFlow<>((FlatMapFunction<C, S, E>) function)).parallel();
+            return flow.sequential().flatMapIterable(new FlatMapFlow<>((FlatMapFunction<C, S, E>) function)).parallel().runOn(Schedulers.from(this.threadPool));
         } else if (function instanceof InitialFunction) {
-            return Flowable.fromIterable(() -> IteratorUtils.map(((InitialFunction<C, E>) function).get(), s -> traverserFactory.create(function, s))).parallel();
+            return Flowable.fromIterable(() -> IteratorUtils.map(((InitialFunction<C, E>) function).get(), s -> traverserFactory.create(function, s))).parallel().runOn(Schedulers.from(this.threadPool));
         } else if (function instanceof ReduceFunction) {
             final ReduceFunction<C, S, E> reduceFunction = (ReduceFunction<C, S, E>) function;
-            return flow.sequential().reduce(traverserFactory.create(reduceFunction, reduceFunction.getInitialValue()), new Reducer<>(reduceFunction)).toFlowable().parallel();
+            return flow.sequential().reduce(traverserFactory.create(reduceFunction, reduceFunction.getInitialValue()), new Reducer<>(reduceFunction)).toFlowable().parallel().runOn(Schedulers.from(this.threadPool));
         } else if (function instanceof BarrierFunction) {
             final BarrierFunction<C, S, E, B> barrierFunction = (BarrierFunction<C, S, E, B>) function;
-            return flow.sequential().reduce(barrierFunction.getInitialValue(), new Barrier<>(barrierFunction)).toFlowable().flatMapIterable(new BarrierFlow<>(barrierFunction, traverserFactory)).parallel();
+            return flow.sequential().reduce(barrierFunction.getInitialValue(), new Barrier<>(barrierFunction)).toFlowable().flatMapIterable(new BarrierFlow<>(barrierFunction, traverserFactory)).parallel(1); // order requires serial
         } else if (function instanceof BranchFunction) {
             final ParallelFlowable<List> selectorFlow = flow.map(new BranchFlow<>((BranchFunction<C, S, B>) function));
             final List<Publisher<Traverser<C, E>>> branchFlows = new ArrayList<>();
@@ -103,31 +107,29 @@ public final class ParallelRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
                 final int branchId = null == branches.getKey() ? -1 : branchCounter;
                 branchCounter++;
                 for (final Compilation<C, S, E> branch : branches.getValue()) {
-                    branchFlows.add(compile(selectorFlow.
+                    branchFlows.add(this.compile(selectorFlow.
                                     filter(list -> list.get(0).equals(branchId)).
                                     map(list -> (Traverser<C, S>) list.get(1)),
                             branch).sequential());
                 }
             }
-            return PublishProcessor.merge(branchFlows).parallel();
+            return PublishProcessor.merge(branchFlows).parallel().runOn(Schedulers.from(this.threadPool));
         } else if (function instanceof RepeatBranch) {
             final RepeatBranch<C, S> repeatBranch = (RepeatBranch<C, S>) function;
             final List<Publisher<Traverser<C, S>>> outputs = new ArrayList<>();
             ParallelFlowable<List> selectorFlow;
             for (int i = 0; i < MAX_REPETITIONS; i++) {
                 if (repeatBranch.hasStartPredicates()) {
-                    selectorFlow = flow.sequential().flatMapIterable(new RepeatStart<>(repeatBranch)).parallel();
+                    selectorFlow = flow.sequential().flatMapIterable(new RepeatStart<>(repeatBranch)).parallel().runOn(Schedulers.from(this.threadPool));
                     outputs.add(selectorFlow.filter(list -> list.get(0).equals(0)).map(list -> (Traverser<C, S>) list.get(1)).sequential());
-                    flow = compile(selectorFlow.filter(list -> list.get(0).equals(1)).map(list -> (Traverser<C, S>) list.get(1)), repeatBranch.getRepeat());
-                } else {
-                    flow = compile(flow, repeatBranch.getRepeat());
-                }
-                selectorFlow = flow.sequential().flatMapIterable(new RepeatEnd<>(repeatBranch)).parallel();
+                    flow = this.compile(selectorFlow.filter(list -> list.get(0).equals(1)).map(list -> (Traverser<C, S>) list.get(1)), (Compilation) repeatBranch.getRepeat());
+                } else
+                    flow = this.compile(flow, (Compilation) repeatBranch.getRepeat());
+                selectorFlow = flow.sequential().flatMapIterable(new RepeatEnd<>(repeatBranch)).parallel().runOn(Schedulers.from(this.threadPool));
                 outputs.add(selectorFlow.sequential().filter(list -> list.get(0).equals(0)).map(list -> (Traverser<C, S>) list.get(1)));
                 flow = selectorFlow.filter(list -> list.get(0).equals(1)).map(list -> (Traverser<C, S>) list.get(1));
             }
-
-            return (ParallelFlowable) PublishProcessor.merge(outputs).parallel();
+            return (ParallelFlowable) PublishProcessor.merge(outputs).parallel().runOn(Schedulers.from(this.threadPool));
         }
         throw new RuntimeException("Need a new execution plan step: " + function);
     }

@@ -235,7 +235,7 @@ public class SimpleTestSuite extends AbstractTestSuite<Long> {
 
     @Test
     void g_injectXlistX1_2_3XX_unfold_incr() {
-        verifyOrder(List.of(2L, 3L, 4L),
+        verify(List.of(2L, 3L, 4L),
                 g.inject(List.of(1L, 2L, 3L)).unfold().incr());
     }
 

@@ -44,7 +44,7 @@ import java.util.Map;
  */
 public final class SerialRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
 
-    public SerialRxJava(final Compilation<C, S, E> compilation) {
+    SerialRxJava(final Compilation<C, S, E> compilation) {
         super(compilation);
     }
 
@@ -52,10 +52,14 @@ public final class SerialRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
     protected void prepareFlow() {
         if (!this.executed) {
             this.executed = true;
+            this.alive.set(Boolean.TRUE);
             SerialRxJava.compile(Flowable.fromIterable(this.starts), this.compilation).
                     doOnNext(this.ends::add).
                     doOnComplete(() -> this.alive.set(Boolean.FALSE)).
-                    blockingSubscribe();
+                    subscribe();
+        }
+        while (this.alive.get() && this.ends.isEmpty()) {
+            // only return if there is a result ready from the flow (or the flow is dead)
         }
     }
 
@@ -109,9 +113,8 @@ public final class SerialRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
                     selectorFlow = flow.flatMapIterable(new RepeatStart<>(repeatBranch));
                     outputs.add(selectorFlow.filter(list -> list.get(0).equals(0)).map(list -> (Traverser<C, S>) list.get(1)));
                     flow = compile(selectorFlow.filter(list -> list.get(0).equals(1)).map(list -> (Traverser<C, S>) list.get(1)), repeatBranch.getRepeat());
-                } else {
+                } else
                     flow = compile(flow, repeatBranch.getRepeat());
-                }
                 selectorFlow = flow.flatMapIterable(new RepeatEnd<>(repeatBranch));
                 outputs.add(selectorFlow.filter(list -> list.get(0).equals(0)).map(list -> (Traverser<C, S>) list.get(1)));
                 flow = selectorFlow.filter(list -> list.get(0).equals(1)).map(list -> (Traverser<C, S>) list.get(1));

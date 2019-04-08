@@ -30,35 +30,39 @@ import java.util.List;
  */
 public final class RepeatEnd<C, S> implements Function<Traverser<C, S>, List<List>> {
 
-    private final RepeatBranch<C, S> repeatBranch;
+    private final ThreadLocal<RepeatBranch<C, S>> repeatBranch;
 
     RepeatEnd(final RepeatBranch<C, S> repeatBranch) {
-        this.repeatBranch = repeatBranch;
+        this.repeatBranch = ThreadLocal.withInitial(repeatBranch::clone);
     }
 
     @Override
     public List<List> apply(final Traverser<C, S> traverser) {
-        final Traverser<C,S> t = traverser.repeatLoop(this.repeatBranch);
+        final Traverser<C, S> t = traverser.repeatLoop(this.getRepeatBranch());
         final List<List> list = new ArrayList<>();
-        if (this.repeatBranch.hasEndPredicates()) {
-            if (3 == this.repeatBranch.getUntilLocation()) {
-                if (this.repeatBranch.getUntil().filterTraverser(t)) {
-                    list.add(List.of(0, t.repeatDone(this.repeatBranch)));
-                } else if (4 == this.repeatBranch.getEmitLocation() && this.repeatBranch.getEmit().filterTraverser(t)) {
-                    list.add(List.of(0, t.repeatDone(this.repeatBranch)));
+        if (this.repeatBranch.get().hasEndPredicates()) {
+            if (3 == this.getRepeatBranch().getUntilLocation()) {
+                if (this.getRepeatBranch().getUntil().filterTraverser(t)) {
+                    list.add(List.of(0, t.repeatDone(this.getRepeatBranch())));
+                } else if (4 == this.getRepeatBranch().getEmitLocation() && this.getRepeatBranch().getEmit().filterTraverser(t)) {
+                    list.add(List.of(0, t.repeatDone(this.getRepeatBranch())));
                     list.add(List.of(1, t));
                 } else
                     list.add(List.of(1, t));
-            } else if (3 == this.repeatBranch.getEmitLocation()) {
-                if (this.repeatBranch.getEmit().filterTraverser(t))
-                    list.add(List.of(0, t.repeatDone(this.repeatBranch)));
-                if (4 == this.repeatBranch.getUntilLocation() && this.repeatBranch.getUntil().filterTraverser(t))
-                    list.add(List.of(0, t.repeatDone(this.repeatBranch)));
+            } else if (3 == this.getRepeatBranch().getEmitLocation()) {
+                if (this.getRepeatBranch().getEmit().filterTraverser(t))
+                    list.add(List.of(0, t.repeatDone(this.getRepeatBranch())));
+                if (4 == this.getRepeatBranch().getUntilLocation() && this.getRepeatBranch().getUntil().filterTraverser(t))
+                    list.add(List.of(0, t.repeatDone(this.getRepeatBranch())));
                 else
                     list.add(List.of(1, t));
             }
         } else
             list.add(List.of(1, t));
         return list;
+    }
+
+    private RepeatBranch<C, S> getRepeatBranch() {
+        return this.repeatBranch.get();
     }
 }
