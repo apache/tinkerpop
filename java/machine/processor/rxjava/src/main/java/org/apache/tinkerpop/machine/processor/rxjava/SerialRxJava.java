@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.machine.processor.rxjava;
 
 import io.reactivex.Flowable;
+import io.reactivex.processors.PublishProcessor;
 import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.function.BarrierFunction;
 import org.apache.tinkerpop.machine.function.BranchFunction;
@@ -29,72 +30,32 @@ import org.apache.tinkerpop.machine.function.InitialFunction;
 import org.apache.tinkerpop.machine.function.MapFunction;
 import org.apache.tinkerpop.machine.function.ReduceFunction;
 import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
-import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
-import org.apache.tinkerpop.machine.traverser.TraverserSet;
 import org.apache.tinkerpop.machine.util.IteratorUtils;
 import org.reactivestreams.Publisher;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RxJava<C, S, E> implements Processor<C, S, E> {
+public final class SerialRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
 
-    private static final int MAX_REPETITIONS = 8; // TODO: this needs to be a dynamic configuration
-
-    private final AtomicBoolean alive = new AtomicBoolean(Boolean.TRUE);
-    private boolean executed = false;
-    private final TraverserSet<C, S> starts = new TraverserSet<>();
-    private final TraverserSet<C, E> ends = new TraverserSet<>();
-    private final Compilation<C, S, E> compilation;
-
-    public RxJava(final Compilation<C, S, E> compilation) {
-        this.compilation = compilation;
+    public SerialRxJava(final Compilation<C, S, E> compilation) {
+        super(compilation);
     }
 
     @Override
-    public void addStart(final Traverser<C, S> traverser) {
-        this.starts.add(traverser);
-    }
-
-    @Override
-    public Traverser<C, E> next() {
-        this.prepareFlow();
-        return this.ends.remove();
-    }
-
-    @Override
-    public boolean hasNext() {
-        this.prepareFlow();
-        return !this.ends.isEmpty();
-    }
-
-    @Override
-    public void reset() {
-        this.starts.clear();
-        this.ends.clear();
-        this.executed = false;
-    }
-
-    private void prepareFlow() {
+    protected void prepareFlow() {
         if (!this.executed) {
             this.executed = true;
-            RxJava.compile(Flowable.fromIterable(this.starts), this.compilation).
+            SerialRxJava.compile(Flowable.fromIterable(this.starts), this.compilation).
                     doOnNext(this.ends::add).
                     doOnComplete(() -> this.alive.set(Boolean.FALSE)).
-                    subscribe();
-        }
-        if (!this.ends.isEmpty())
-            return;
-        while (this.alive.get()) {
-            if (!this.ends.isEmpty())
-                return;
+                    blockingSubscribe();
         }
     }
 
@@ -104,7 +65,7 @@ public final class RxJava<C, S, E> implements Processor<C, S, E> {
         final TraverserFactory<C> traverserFactory = compilation.getTraverserFactory();
         Flowable<Traverser<C, E>> sink = (Flowable) source;
         for (final CFunction<C> function : compilation.getFunctions()) {
-            sink = RxJava.extend(sink, function, traverserFactory);
+            sink = SerialRxJava.extend(sink, function, traverserFactory);
         }
         return sink;
     }
@@ -138,72 +99,24 @@ public final class RxJava<C, S, E> implements Processor<C, S, E> {
                             branch));
                 }
             }
-            Flowable<Traverser<C, E>> sink = (Flowable) flow.filter(t -> false); // branches are the only outputs
-            for (final Publisher<Traverser<C, E>> branchFlow : branchFlows) {
-                sink = sink.mergeWith(branchFlow);
-            }
-            return sink;
+            return PublishProcessor.merge(branchFlows);
         } else if (function instanceof RepeatBranch) {
             final RepeatBranch<C, S> repeatBranch = (RepeatBranch<C, S>) function;
             final List<Publisher<Traverser<C, S>>> outputs = new ArrayList<>();
+            Flowable<List> selectorFlow;
             for (int i = 0; i < MAX_REPETITIONS; i++) {
-                Flowable<List> selectorFlow = flow.flatMapIterable(t -> {
-                    final List<List> list = new ArrayList<>();
-                    if (repeatBranch.hasStartPredicates()) {
-                        if (1 == repeatBranch.getUntilLocation()) {
-                            if (repeatBranch.getUntil().filterTraverser(t)) {
-                                list.add(List.of(0, t.repeatDone(repeatBranch)));
-                            } else if (2 == repeatBranch.getEmitLocation() && repeatBranch.getEmit().filterTraverser(t)) {
-                                list.add(List.of(1, t));
-                                list.add(List.of(0, t.repeatDone(repeatBranch)));
-                            } else
-                                list.add(List.of(1, t));
-                        } else if (1 == repeatBranch.getEmitLocation()) {
-                            if (repeatBranch.getEmit().filterTraverser(t))
-                                list.add(List.of(0, t.repeatDone(repeatBranch)));
-                            if (2 == repeatBranch.getUntilLocation() && repeatBranch.getUntil().filterTraverser(t)) {
-                                list.add(List.of(0, t.repeatDone(repeatBranch)));
-                            } else
-                                list.add(List.of(1, t));
-                        }
-                    } else
-                        list.add(List.of(1, t));
-                    return list;
-                });
-                outputs.add(selectorFlow.filter(list -> list.get(0).equals(0)).map(list -> (Traverser<C, S>) list.get(1)));
-                flow = compile(selectorFlow.filter(list -> list.get(0).equals(1)).map(list -> (Traverser<C, S>) list.get(1)), repeatBranch.getRepeat());
-                selectorFlow = flow.flatMapIterable(t -> {
-                    t = t.repeatLoop(repeatBranch);
-                    final List<List> list = new ArrayList<>();
-                    if (repeatBranch.hasEndPredicates()) {
-                        if (3 == repeatBranch.getUntilLocation()) {
-                            if (repeatBranch.getUntil().filterTraverser(t)) {
-                                list.add(List.of(0, t.repeatDone(repeatBranch)));
-                            } else if (4 == repeatBranch.getEmitLocation() && repeatBranch.getEmit().filterTraverser(t)) {
-                                list.add(List.of(0, t.repeatDone(repeatBranch)));
-                                list.add(List.of(1, t));
-                            } else
-                                list.add(List.of(1, t));
-                        } else if (3 == repeatBranch.getEmitLocation()) {
-                            if (repeatBranch.getEmit().filterTraverser(t))
-                                list.add(List.of(0, t.repeatDone(repeatBranch)));
-                            if (4 == repeatBranch.getUntilLocation() && repeatBranch.getUntil().filterTraverser(t))
-                                list.add(List.of(0, t.repeatDone(repeatBranch)));
-                            else
-                                list.add(List.of(1, t));
-                        }
-                    } else
-                        list.add(List.of(1, t));
-                    return list;
-                });
+                if (repeatBranch.hasStartPredicates()) {
+                    selectorFlow = flow.flatMapIterable(new RepeatStart<>(repeatBranch));
+                    outputs.add(selectorFlow.filter(list -> list.get(0).equals(0)).map(list -> (Traverser<C, S>) list.get(1)));
+                    flow = compile(selectorFlow.filter(list -> list.get(0).equals(1)).map(list -> (Traverser<C, S>) list.get(1)), repeatBranch.getRepeat());
+                } else {
+                    flow = compile(flow, repeatBranch.getRepeat());
+                }
+                selectorFlow = flow.flatMapIterable(new RepeatEnd<>(repeatBranch));
                 outputs.add(selectorFlow.filter(list -> list.get(0).equals(0)).map(list -> (Traverser<C, S>) list.get(1)));
                 flow = selectorFlow.filter(list -> list.get(0).equals(1)).map(list -> (Traverser<C, S>) list.get(1));
             }
-            Flowable<Traverser<C, S>> sink = flow.filter(t -> false); // branches are the only outputs
-            for (final Publisher<Traverser<C, S>> output : outputs) {
-                sink = sink.mergeWith(output);
-            }
-            return (Flowable) sink;
+            return (Flowable) PublishProcessor.merge(outputs);
         }
         throw new RuntimeException("Need a new execution plan step: " + function);
     }

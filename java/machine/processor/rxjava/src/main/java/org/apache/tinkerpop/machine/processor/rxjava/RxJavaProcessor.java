@@ -24,15 +24,32 @@ import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.processor.rxjava.strategy.RxJavaStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class RxJavaProcessor implements ProcessorFactory {
+
+    public static final String RXJAVA_THREADS = "rxjava.threads";
+
+    private final Map<String, Object> configuration;
+
+    public RxJavaProcessor() {
+        this.configuration = Collections.emptyMap();
+    }
+
+    public RxJavaProcessor(final Map<String, Object> configuration) {
+        this.configuration = configuration;
+    }
+
     @Override
     public <C, S, E> Processor<C, S, E> mint(final Compilation<C, S, E> compilation) {
-        return new RxJava<>(compilation);
+        return this.configuration.containsKey(RXJAVA_THREADS) ?
+                new ParallelRxJava<>(compilation, (int) this.configuration.get(RXJAVA_THREADS)) :
+                new SerialRxJava<>(compilation);
     }
 
     @Override

@@ -62,7 +62,7 @@ public final class BranchBranch<C, S, E> extends AbstractFunction<C> implements 
             for (final Compilation<C, S, E> compilation : entry.getValue()) {
                 compilations.add(compilation.clone());
             }
-            clone.branches.put(entry.getKey().clone(), compilations);
+            clone.branches.put(null == entry.getKey() ? null : entry.getKey().clone(), compilations);
         }
         return clone;
     }

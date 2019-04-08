@@ -31,16 +31,22 @@ import java.util.List;
  */
 final class BranchFlow<C, S> implements Function<Traverser<C, S>, List> {
 
-    private final List<Compilation<C, S, ?>> selectors;
+    private final ThreadLocal<List<Compilation<C, S, ?>>> selectors;
 
     BranchFlow(final BranchFunction<C, S, ?> function) {
-        this.selectors = new ArrayList<>(function.getBranches().keySet());
+        this.selectors = ThreadLocal.withInitial(() -> {
+            final List<Compilation<C, S, ?>> branches = new ArrayList<>();
+            for (final Compilation<C, S, ?> branch : function.getBranches().keySet()) {
+                branches.add(null == branch ? null : branch.clone());
+            }
+            return branches;
+        });
     }
 
     @Override
     public List apply(final Traverser<C, S> traverser) {
-        for (int i = 0; i < this.selectors.size(); i++) {
-            final Compilation<C, S, ?> selector = this.selectors.get(i);
+        for (int i = 0; i < this.selectors.get().size(); i++) {
+            final Compilation<C, S, ?> selector = this.selectors.get().get(i);
             if (null != selector) {
                 if (selector.filterTraverser(traverser))
                     return List.of(i, traverser);

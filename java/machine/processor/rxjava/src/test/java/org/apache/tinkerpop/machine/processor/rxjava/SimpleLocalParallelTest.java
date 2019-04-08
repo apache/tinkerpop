@@ -23,18 +23,20 @@ import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler;
 import org.apache.tinkerpop.machine.species.LocalMachine;
 
+import java.util.Map;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class SimpleLocalTest extends SimpleTestSuite {
+public class SimpleLocalParallelTest extends SimpleTestSuite {
 
     private final static Bytecode<Long> BYTECODE = new Bytecode<>();
 
     static {
-        BYTECODE.addSourceInstruction(CoreCompiler.Symbols.WITH_PROCESSOR, RxJavaProcessor.class);
+        BYTECODE.addSourceInstruction(CoreCompiler.Symbols.WITH_PROCESSOR, RxJavaProcessor.class, Map.of(RxJavaProcessor.RXJAVA_THREADS, 10));
     }
 
-    SimpleLocalTest() {
+    SimpleLocalParallelTest() {
         super(LocalMachine.open(), BYTECODE);
     }
 

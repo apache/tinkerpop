@@ -21,29 +21,21 @@ package org.apache.tinkerpop.machine.processor.rxjava;
 import org.apache.tinkerpop.machine.SimpleTestSuite;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler;
-import org.apache.tinkerpop.machine.species.remote.MachineServer;
-import org.apache.tinkerpop.machine.species.remote.RemoteMachine;
-import org.junit.jupiter.api.AfterAll;
+import org.apache.tinkerpop.machine.species.LocalMachine;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SimpleRemoteTest extends SimpleTestSuite {
+class SimpleLocalSerialTest extends SimpleTestSuite {
 
     private final static Bytecode<Long> BYTECODE = new Bytecode<>();
-    private static MachineServer SERVER = new MachineServer(7777);
 
     static {
         BYTECODE.addSourceInstruction(CoreCompiler.Symbols.WITH_PROCESSOR, RxJavaProcessor.class);
     }
 
-    SimpleRemoteTest() {
-        super(RemoteMachine.open(6666, "localhost", 7777), BYTECODE);
-    }
-
-    @AfterAll
-    static void stopServer() {
-        SERVER.close();
+    SimpleLocalSerialTest() {
+        super(LocalMachine.open(), BYTECODE);
     }
 
 }

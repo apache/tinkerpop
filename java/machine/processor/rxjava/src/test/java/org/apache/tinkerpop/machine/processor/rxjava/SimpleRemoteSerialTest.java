@@ -18,23 +18,32 @@
  */
 package org.apache.tinkerpop.machine.processor.rxjava;
 
-import io.reactivex.functions.Function;
-import org.apache.tinkerpop.machine.function.MapFunction;
-import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.SimpleTestSuite;
+import org.apache.tinkerpop.machine.bytecode.Bytecode;
+import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler;
+import org.apache.tinkerpop.machine.species.remote.MachineServer;
+import org.apache.tinkerpop.machine.species.remote.RemoteMachine;
+import org.junit.jupiter.api.AfterAll;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class MapFlow<C, S, E> implements Function<Traverser<C, S>, Traverser<C, E>> {
+public class SimpleRemoteSerialTest extends SimpleTestSuite {
 
-    private final ThreadLocal<MapFunction<C, S, E>> function;
+    private final static Bytecode<Long> BYTECODE = new Bytecode<>();
+    private static MachineServer SERVER = new MachineServer(7777);
 
-    MapFlow(final MapFunction<C, S, E> function) {
-        this.function = ThreadLocal.withInitial(() -> (MapFunction)function.clone());
+    static {
+        BYTECODE.addSourceInstruction(CoreCompiler.Symbols.WITH_PROCESSOR, RxJavaProcessor.class);
     }
 
-    @Override
-    public Traverser<C, E> apply(final Traverser<C, S> traverser) {
-        return traverser.map(this.function.get());
+    SimpleRemoteSerialTest() {
+        super(RemoteMachine.open(6666, "localhost", 7777), BYTECODE);
     }
+
+    @AfterAll
+    static void stopServer() {
+        SERVER.close();
+    }
+
 }

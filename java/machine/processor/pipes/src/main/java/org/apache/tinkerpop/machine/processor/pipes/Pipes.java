@@ -28,8 +28,8 @@ import org.apache.tinkerpop.machine.function.InitialFunction;
 import org.apache.tinkerpop.machine.function.MapFunction;
 import org.apache.tinkerpop.machine.function.ReduceFunction;
 import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
-import org.apache.tinkerpop.machine.processor.pipes.util.InMemoryReducer;
 import org.apache.tinkerpop.machine.processor.Processor;
+import org.apache.tinkerpop.machine.processor.pipes.util.InMemoryReducer;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ public final class Pipes<C, S, E> implements Processor<C, S, E> {
     private SourceStep<C, S> startStep;
 
     public Pipes(final Compilation<C, S, E> compilation) {
-        Step<C, ?, ?> previousStep = EmptyStep.instance();
+        Step<C, ?, S> previousStep = EmptyStep.instance();
         for (final CFunction<?> function : compilation.getFunctions()) {
             final Step nextStep;
             if (this.steps.isEmpty() && !(function instanceof InitialFunction)) {
@@ -55,22 +55,22 @@ public final class Pipes<C, S, E> implements Processor<C, S, E> {
             }
 
             if (function instanceof RepeatBranch)
-                nextStep = new RepeatStep(previousStep, (RepeatBranch<C, ?>) function);
+                nextStep = new RepeatStep<>(previousStep, (RepeatBranch<C, S>) function);
             else if (function instanceof BranchFunction)
-                nextStep = new BranchStep(previousStep, (BranchFunction<C, ?, ?>) function);
+                nextStep = new BranchStep<>(previousStep, (BranchFunction<C, S, E>) function);
             else if (function instanceof FilterFunction)
-                nextStep = new FilterStep(previousStep, (FilterFunction<C, ?>) function);
+                nextStep = new FilterStep<>(previousStep, (FilterFunction<C, S>) function);
             else if (function instanceof FlatMapFunction)
-                nextStep = new FlatMapStep(previousStep, (FlatMapFunction<C, ?, ?>) function);
+                nextStep = new FlatMapStep<>(previousStep, (FlatMapFunction<C, S, E>) function);
             else if (function instanceof MapFunction)
-                nextStep = new MapStep(previousStep, (MapFunction<C, ?, ?>) function);
+                nextStep = new MapStep<>(previousStep, (MapFunction<C, S, E>) function);
             else if (function instanceof InitialFunction)
-                nextStep = new InitialStep((InitialFunction<C, S>) function, compilation.getTraverserFactory());
+                nextStep = new InitialStep<>((InitialFunction<C, S>) function, compilation.getTraverserFactory());
             else if (function instanceof BarrierFunction)
-                nextStep = new BarrierStep(previousStep, (BarrierFunction) function, compilation.getTraverserFactory());
+                nextStep = new BarrierStep<>(previousStep, (BarrierFunction<C, S, E, Object>) function, compilation.getTraverserFactory());
             else if (function instanceof ReduceFunction)
-                nextStep = new ReduceStep(previousStep, (ReduceFunction<C, ?, ?>) function,
-                        new InMemoryReducer((ReduceFunction<C, ?, ?>) function), compilation.getTraverserFactory());
+                nextStep = new ReduceStep<>(previousStep, (ReduceFunction<C, S, E>) function,
+                        new InMemoryReducer<>((ReduceFunction<C, S, E>) function), compilation.getTraverserFactory());
             else
                 throw new RuntimeException("You need a new step type:" + function);
 
