@@ -63,6 +63,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Path
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_O_P_S_SE_SL_Traverser;
@@ -336,9 +337,10 @@ public enum GryoVersion {
             add(GryoTypeReg.of(GraphFilterStrategy.class, 157));
             add(GryoTypeReg.of(LambdaRestrictionStrategy.class, 158));
             add(GryoTypeReg.of(ReadOnlyStrategy.class, 159));
-            add(GryoTypeReg.of(EarlyLimitStrategy.class, 188));   // ***LAST ID***
+            add(GryoTypeReg.of(EarlyLimitStrategy.class, 188));
             add(GryoTypeReg.of(MatchStep.CountMatchAlgorithm.class, 160));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 164));
+            add(GryoTypeReg.of(EdgeLabelVerificationStrategy.class, 189));   // ***LAST ID***
 
             add(GryoTypeReg.of(TraverserSet.class, 58));
             add(GryoTypeReg.of(Tree.class, 61));
@@ -555,9 +557,10 @@ public enum GryoVersion {
             add(GryoTypeReg.of(GraphFilterStrategy.class, 157));
             add(GryoTypeReg.of(LambdaRestrictionStrategy.class, 158));
             add(GryoTypeReg.of(ReadOnlyStrategy.class, 159));
-            add(GryoTypeReg.of(EarlyLimitStrategy.class, 188));   // ***LAST ID***
+            add(GryoTypeReg.of(EarlyLimitStrategy.class, 188));
             add(GryoTypeReg.of(MatchStep.CountMatchAlgorithm.class, 160));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 167));
+            add(GryoTypeReg.of(EdgeLabelVerificationStrategy.class, 189));   // ***LAST ID***
             // skip 171, 172 to sync with tp33
             add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));
         }};
