@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.machine.processor.rxjava;
 
+import io.reactivex.disposables.Disposable;
 import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.traverser.Traverser;
@@ -33,7 +34,7 @@ public abstract class AbstractRxJava<C, S, E> implements Processor<C, S, E> {
     static final int MAX_REPETITIONS = 8; // TODO: this needs to be a dynamic configuration
 
     boolean executed = false;
-    final AtomicBoolean alive = new AtomicBoolean(Boolean.FALSE);
+    Disposable disposable;
     final TraverserSet<C, S> starts = new TraverserSet<>();
     final TraverserSet<C, E> ends = new TraverserSet<>();
     final Compilation<C, S, E> compilation;
@@ -63,8 +64,8 @@ public abstract class AbstractRxJava<C, S, E> implements Processor<C, S, E> {
     public void reset() {
         this.starts.clear();
         this.ends.clear();
+        this.disposable = null;
         this.executed = false;
-        this.alive.set(Boolean.FALSE);
     }
 
     protected abstract void prepareFlow();

@@ -52,13 +52,11 @@ public final class SerialRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
     protected void prepareFlow() {
         if (!this.executed) {
             this.executed = true;
-            this.alive.set(Boolean.TRUE);
-            SerialRxJava.compile(Flowable.fromIterable(this.starts), this.compilation).
+            this.disposable = SerialRxJava.compile(Flowable.fromIterable(this.starts), this.compilation).
                     doOnNext(this.ends::add).
-                    doFinally(() -> this.alive.set(Boolean.FALSE)).
-                    subscribe();
+                    subscribe(); // don't block the execution so results can be streamed back in real-time
         }
-        while (this.alive.get() && this.ends.isEmpty()) {
+        while (!this.disposable.isDisposed() && this.ends.isEmpty()) {
             // only return if there is a result ready from the flow (or the flow is dead)
         }
     }

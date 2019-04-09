@@ -63,21 +63,22 @@ public final class ParallelRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
     protected void prepareFlow() {
         if (!this.executed) {
             this.executed = true;
-            this.alive.set(Boolean.TRUE);
-            this.compile(
+            this.disposable = this.compile(
                     ParallelFlowable.from(Flowable.fromIterable(this.starts)).
                             runOn(Schedulers.from(this.threadPool)), this.compilation).
                     doOnNext(this.ends::add).
                     sequential().
                     doFinally(() -> {
-                        this.alive.set(Boolean.FALSE);
                         if (null != this.bytecodeId) { // only the parent compilation should close the thread pool
                             this.threadPool.shutdown();
                             RxJavaProcessor.THREAD_POOLS.remove(this.bytecodeId);
                         }
                     }).
-                    blockingSubscribe(); // thread this so results can be received before computation completes
+                    subscribe(); // don't block the execution so results can be streamed back in real-time
 
+        }
+        while (!this.disposable.isDisposed() && this.ends.isEmpty()) {
+            // only return if there is a result ready from the flow (or the flow is dead)
         }
     }
 
