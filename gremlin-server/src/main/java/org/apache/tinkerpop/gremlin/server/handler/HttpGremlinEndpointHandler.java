@@ -245,17 +245,19 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                                     .result(IteratorUtils.asList(o)).create();
 
                             // http server is sessionless and must handle commit on transactions. the commit occurs
-                            // before serialization to be consistent with how things work for websocket based
-                            // communication.  this means that failed serialization does not mean that you won't get
-                            // a commit to the database
-                            attemptCommit(requestArguments.getValue3(), graphManager, settings.strictTransactionManagement);
+                            // even if the serialization is failed
+                            ByteBuf buffer;
 
                             try {
-                                return Unpooled.wrappedBuffer(serializer.getValue1().serializeResponseAsString(responseMessage).getBytes(UTF8));
+                            	buffer = Unpooled.wrappedBuffer(serializer.getValue1().serializeResponseAsString(responseMessage).getBytes(UTF8));
                             } catch (Exception ex) {
                                 logger.warn(String.format("Error during serialization for %s", responseMessage), ex);
                                 throw ex;
+                            } finally {
+                            	attemptCommit(requestArguments.getValue3(), graphManager, settings.strictTransactionManagement);
                             }
+                            
+                            return buffer;
                         }));
 
                 evalFuture.exceptionally(t -> {		
