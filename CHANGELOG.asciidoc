@@ -24,6 +24,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.3.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Ensure `gremlin.sh` works when directories contain spaces
+* Enabled `ctrl+c` to interrupt long running processes in Gremlin Console.
 * Implemented `EdgeLabelVerificationStrategy`
 
 [[release-3-3-6]]

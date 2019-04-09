@@ -68,48 +68,54 @@ class GremlinGroovysh extends Groovysh {
 
     @Override
     Object execute(final String line) {
-        if (mediator.localEvaluation)
-            return super.execute(line)
-        else {
-            assert line != null
-            if (line.trim().size() == 0) {
-                return null
-            }
+        mediator.evaluating.set(true)
 
-            maybeRecordInput(line)
+        try {
+            if (mediator.localEvaluation)
+                return super.execute(line)
+            else {
+                assert line != null
+                if (line.trim().size() == 0) {
+                    return null
+                }
 
-            Object result
+                maybeRecordInput(line)
 
-            if (isExecutable(line)) {
-                result = executeCommand(line)
-                if (result != null) setLastResult(result)
+                Object result
+
+                if (isExecutable(line)) {
+                    result = executeCommand(line)
+                    if (result != null) setLastResult(result)
+                    return result
+                }
+
+                List<String> current = new ArrayList<String>(buffers.current())
+                current << line
+
+                // determine if this script is complete or not - if not it's a multiline script
+                def status = parser.parse(current)
+
+                switch (status.code) {
+                    case ParseCode.COMPLETE:
+                        // concat script here because commands don't support multi-line
+                        def script = String.join(Parser.getNEWLINE(), current)
+                        setLastResult(mediator.currentRemote().submit([script]))
+                        buffers.clearSelected()
+                        break
+                    case ParseCode.INCOMPLETE:
+                        buffers.updateSelected(current)
+                        break
+                    case ParseCode.ERROR:
+                        throw status.cause
+                    default:
+                        // Should never happen
+                        throw new Error("Invalid parse status: $status.code")
+                }
+
                 return result
             }
-
-            List<String> current = new ArrayList<String>(buffers.current())
-            current << line
-
-            // determine if this script is complete or not - if not it's a multiline script
-            def status = parser.parse(current)
-
-            switch (status.code) {
-                case ParseCode.COMPLETE:
-                    // concat script here because commands don't support multi-line
-                    def script = String.join(Parser.getNEWLINE(), current)
-                    setLastResult(mediator.currentRemote().submit([script]))
-                    buffers.clearSelected()
-                    break
-                case ParseCode.INCOMPLETE:
-                    buffers.updateSelected(current)
-                    break
-                case ParseCode.ERROR:
-                    throw status.cause
-                default:
-                    // Should never happen
-                    throw new Error("Invalid parse status: $status.code")
-            }
-
-            return result
+        } finally {
+            mediator.evaluating.set(false)
         }
     }
 

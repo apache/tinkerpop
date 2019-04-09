@@ -27,6 +27,23 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.3.7/CHANGELOG.asciidoc#release-3-3-7[changelog] for a complete list of all the modifications that are part of this release.
 
+== Upgrading for Users
+
+==== Gremlin Console Interrupt
+
+There are occasions where a traversal (or other evaluation) takes longer than expected to complete. Common examples
+of these situations typically include:
+
+* Accidentally executing `g.V()` (i.e. full graph scan) on a very large graph as an OLTP style traversal.
+* Not terminating a `repeat()` properly which results in an infinite loop.
+* Bad data might create a cycle in the graph where one wasn't expected.
+* Failing to properly bound a traversal's path through one or more supernodes.
+
+In earlier versions, the only option was to kill the Gremlin Console (typically with `ctrl+c`), but as of this version
+`ctrl+c` will be intercepted and attempt to interrupt whatever process is currently executing.
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP-2181[TINKERPOP-2181]
+
 === Upgrading for Providers
 
 ==== Detection of Anti-Patterns
