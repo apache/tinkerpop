@@ -18,12 +18,14 @@
  */
 package org.apache.tinkerpop.machine.processor.rxjava;
 
+import org.apache.tinkerpop.machine.AbstractTestSuite;
 import org.apache.tinkerpop.machine.SimpleTestSuite;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler;
 import org.apache.tinkerpop.machine.species.remote.MachineServer;
 import org.apache.tinkerpop.machine.species.remote.RemoteMachine;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -41,14 +43,15 @@ public class SimpleRemoteSerialTest extends SimpleTestSuite {
         super(RemoteMachine.open(6666, "localhost", 7777), BYTECODE);
     }
 
-    @AfterAll
-    static void stopServer() {
-        SERVER.close();
-        try {
-            Thread.sleep(10);
-        } catch (final InterruptedException e) {
+    @AfterEach
+    void delayShutdown() {
+        AbstractTestSuite.sleep(100);
+    }
 
-        }
+    @AfterAll
+    void stopServer() {
+        SERVER.close();
+        AbstractTestSuite.sleep(100);
     }
 
 }

@@ -32,15 +32,16 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class RxJavaProcessor implements ProcessorFactory {
 
-    public static final String RXJAVA_THREADS = "rxjava.threads";
-    public static final String RX_BYCODE_ID = "rx:bytecodeId";
-    private static final Map<String, ExecutorService> THREAD_POOLS = new ConcurrentHashMap<>();
+    public static final String RX_THREAD_POOL_SIZE = "rx.threadPool.size";
+    public static final String RX_ROOT_BYTECODE_ID = "rx:rootBytecodeId";
+    static final Map<String, ExecutorService> THREAD_POOLS = new ConcurrentHashMap<>();
 
     private final Map<String, Object> configuration;
 
@@ -54,11 +55,11 @@ public final class RxJavaProcessor implements ProcessorFactory {
 
     @Override
     public <C, S, E> Processor<C, S, E> mint(final Compilation<C, S, E> compilation) {
-        final int threads = (int) this.configuration.getOrDefault(RxJavaProcessor.RXJAVA_THREADS, 0);
-        final String id = (String) BytecodeUtil.getSourceInstructions(BytecodeUtil.getRootBytecode(compilation.getBytecode()), RX_BYCODE_ID).get(0).args()[0];
-        final ExecutorService threadPool = threads > 0 ? RxJavaProcessor.THREAD_POOLS.computeIfAbsent(id, key -> Executors.newFixedThreadPool(threads)) : null;
+        final int threads = (int) this.configuration.getOrDefault(RxJavaProcessor.RX_THREAD_POOL_SIZE, 0);
+        final String bytecodeId = (String) BytecodeUtil.getSourceInstructions(BytecodeUtil.getRootBytecode(compilation.getBytecode()), RX_ROOT_BYTECODE_ID).get(0).args()[0];
+        final ThreadPoolExecutor threadPool = threads > 0 ? (ThreadPoolExecutor) RxJavaProcessor.THREAD_POOLS.computeIfAbsent(bytecodeId, key -> Executors.newFixedThreadPool(threads)) : null;
         // System.out.println(id + "::" + threads + "--" + threadPool);
-        return null == threadPool ?
+        return null == threadPool || threadPool.getActiveCount() == threadPool.getMaximumPoolSize() ? // if the thread pool is saturated, serialize the processor
                 new SerialRxJava<>(compilation) :
                 new ParallelRxJava<>(compilation, threadPool);
     }

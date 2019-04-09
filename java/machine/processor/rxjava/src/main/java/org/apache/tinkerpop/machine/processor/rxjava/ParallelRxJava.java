@@ -22,6 +22,7 @@ import io.reactivex.Flowable;
 import io.reactivex.parallel.ParallelFlowable;
 import io.reactivex.processors.PublishProcessor;
 import io.reactivex.schedulers.Schedulers;
+import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.function.BarrierFunction;
 import org.apache.tinkerpop.machine.function.BranchFunction;
@@ -47,11 +48,15 @@ import java.util.concurrent.ExecutorService;
  */
 public final class ParallelRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
 
-    private ExecutorService threadPool;
+    private final ExecutorService threadPool;
+    private final String bytecodeId;
 
     ParallelRxJava(final Compilation<C, S, E> compilation, final ExecutorService threadPool) {
         super(compilation);
         this.threadPool = threadPool;
+        this.bytecodeId = compilation.getBytecode().getParent().isEmpty() ?
+                (String) BytecodeUtil.getSourceInstructions(compilation.getBytecode(), RxJavaProcessor.RX_ROOT_BYTECODE_ID).get(0).args()[0] :
+                null;
     }
 
     @Override
@@ -66,8 +71,10 @@ public final class ParallelRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
                     sequential().
                     doFinally(() -> {
                         this.alive.set(Boolean.FALSE);
-                        if (this.compilation.getBytecode().getParent().isEmpty()) // only the parent compilation should close the thread pool
+                        if (null != this.bytecodeId) { // only the parent compilation should close the thread pool
                             this.threadPool.shutdown();
+                            RxJavaProcessor.THREAD_POOLS.remove(this.bytecodeId);
+                        }
                     }).
                     blockingSubscribe(); // thread this so results can be received before computation completes
 

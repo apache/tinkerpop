@@ -41,10 +41,10 @@ public final class RxJavaStrategy extends AbstractStrategy<Strategy.ProviderStra
     public <C> void apply(final Bytecode<C> bytecode) {
         if (bytecode.getParent().isEmpty()) { // root bytecode
             final String id = UUID.randomUUID().toString();
-            bytecode.addSourceInstruction(RxJavaProcessor.RX_BYCODE_ID, id);
+            bytecode.addSourceInstruction(RxJavaProcessor.RX_ROOT_BYTECODE_ID, id);
         } else if (!BytecodeUtil.hasSourceInstruction(bytecode, CommonCompiler.Symbols.WITH_PROCESSOR)) {
             if (RxJavaStrategy.isSimple(bytecode)) {
-                bytecode.addSourceInstruction(CommonCompiler.Symbols.WITH_PROCESSOR, RxJavaProcessor.class, Map.of(RxJavaProcessor.RXJAVA_THREADS, 0)); // guaranteed serial execution
+                bytecode.addSourceInstruction(CommonCompiler.Symbols.WITH_PROCESSOR, RxJavaProcessor.class, Map.of(RxJavaProcessor.RX_THREAD_POOL_SIZE, 0)); // guaranteed serial execution
             } else {
                 final Bytecode<C> root = BytecodeUtil.getRootBytecode(bytecode);
                 final List<SourceInstruction> processors = BytecodeUtil.getSourceInstructions(root, CommonCompiler.Symbols.WITH_PROCESSOR); // potential parallel execution
@@ -57,9 +57,9 @@ public final class RxJavaStrategy extends AbstractStrategy<Strategy.ProviderStra
 
     private static boolean isSimple(final Bytecode<?> bytecode) {
         final CompositeCompiler compiler = BytecodeUtil.getCompilers(bytecode);
-        return bytecode.getInstructions().size() < 4 && bytecode.getInstructions().stream().noneMatch(i -> {
+        return bytecode.getInstructions().size() < 5 && bytecode.getInstructions().stream().noneMatch(i -> {
             final FunctionType functionType = compiler.getFunctionType(i.op());
-            return FunctionType.FLATMAP == functionType; //|| FunctionType.BRANCH == functionType;
+            return FunctionType.FLATMAP == functionType || FunctionType.BRANCH == functionType;
         });
     }
 }

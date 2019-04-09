@@ -35,11 +35,11 @@ import java.util.Map;
  */
 class RxJavaBenchmark {
 
-    @Test
+    //@Test
     void benchmark() {
         final Machine machine = LocalMachine.open();
         final TraversalSource ser = Gremlin.traversal(machine).withProcessor(RxJavaProcessor.class);
-        final TraversalSource par = Gremlin.traversal(machine).withProcessor(RxJavaProcessor.class, Map.of(RxJavaProcessor.RXJAVA_THREADS, Runtime.getRuntime().availableProcessors() - 1));
+        final TraversalSource par = Gremlin.traversal(machine).withProcessor(RxJavaProcessor.class, Map.of(RxJavaProcessor.RX_THREAD_POOL_SIZE, Runtime.getRuntime().availableProcessors() - 1));
         final TraversalSource pipes = Gremlin.traversal(machine).withProcessor(PipesProcessor.class);
         final List<Long> input = new ArrayList<>(1000);
         for (long i = 0; i < 5000; i++) {

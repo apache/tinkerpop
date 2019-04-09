@@ -40,16 +40,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public abstract class AbstractTestSuite<C> {
 
     protected Machine machine;
-    protected TraversalSource<C> g;
+    TraversalSource<C> g;
 
-    public AbstractTestSuite(final Machine machine, final Bytecode<C> source) {
+    AbstractTestSuite(final Machine machine, final Bytecode<C> source) {
         this.machine = machine;
         this.g = Gremlin.traversal(machine);
-        BytecodeUtil.mergeSourceInstructions(source, TraversalUtil.getBytecode(g));
+        BytecodeUtil.mergeSourceInstructions(source, TraversalUtil.getBytecode(this.g));
     }
 
     @AfterAll
     public void shutdown() {
+        this.g.close();
         this.machine.close();
     }
 
@@ -67,6 +68,14 @@ public abstract class AbstractTestSuite<C> {
         assertEquals(expected.size(), actual.size(), "Result set size differ: " + expected + " -- " + actual);
         assertEquals(expected, actual, "Result sets are not order equal: " + expected + " -- " + actual);
         assertFalse(traversal.hasNext());
+    }
+
+    public static void sleep(final int time) {
+        try {
+            Thread.sleep(time);
+        } catch (final InterruptedException e) {
+            // do nothing
+        }
     }
 
 }
