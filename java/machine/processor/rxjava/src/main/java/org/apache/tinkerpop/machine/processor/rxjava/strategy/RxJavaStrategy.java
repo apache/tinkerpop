@@ -20,21 +20,33 @@ package org.apache.tinkerpop.machine.processor.rxjava.strategy;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
-import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler;
+import org.apache.tinkerpop.machine.bytecode.SourceInstruction;
+import org.apache.tinkerpop.machine.bytecode.compiler.CommonCompiler;
 import org.apache.tinkerpop.machine.processor.rxjava.RxJavaProcessor;
 import org.apache.tinkerpop.machine.strategy.AbstractStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
-import java.util.Map;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class RxJavaStrategy extends AbstractStrategy<Strategy.ProviderStrategy> implements Strategy.ProviderStrategy {
+
+
     @Override
     public <C> void apply(final Bytecode<C> bytecode) {
-        if (!BytecodeUtil.hasSourceInstruction(bytecode, CoreCompiler.Symbols.WITH_PROCESSOR)) {
-            bytecode.addSourceInstruction(CoreCompiler.Symbols.WITH_PROCESSOR, RxJavaProcessor.class, Map.of(RxJavaProcessor.RXJAVA_THREADS, 10)); // TODO: need root in strategies
+        if (bytecode.getParent().isEmpty()) {
+            final String id = UUID.randomUUID().toString();
+            bytecode.addSourceInstruction(RxJavaProcessor.RX_BYCODE_ID, id);
+        } else if (!BytecodeUtil.hasSourceInstruction(bytecode, CommonCompiler.Symbols.WITH_PROCESSOR)) {
+            final Bytecode<C> root = BytecodeUtil.getRootBytecode(bytecode);
+            final List<SourceInstruction> processors = BytecodeUtil.getSourceInstructions(root, CommonCompiler.Symbols.WITH_PROCESSOR);
+            for (final SourceInstruction sourceInstruction : processors) {
+                bytecode.addSourceInstruction(sourceInstruction.op(), sourceInstruction.args());
+            }
         }
     }
+
 }

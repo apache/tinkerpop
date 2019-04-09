@@ -45,9 +45,8 @@ public final class TraversalUtil {
     }
 
     public static <C, S, E> Traversal<C, S, E> insertRepeatInstruction(final AbstractTraversal<C, S, E> traversal, final char type, final Object argument) {
-        final Instruction<C> lastInstruction = traversal.bytecode.lastInstruction();
-        if (lastInstruction.op().equals(Symbols.REPEAT))
-            lastInstruction.addArgs(type, argument);
+        if (traversal.bytecode.lastInstruction().op().equals(Symbols.REPEAT))
+            traversal.bytecode.addArgs(type, argument);
         else
             traversal.addInstruction(Symbols.REPEAT, type, argument);
         return traversal;

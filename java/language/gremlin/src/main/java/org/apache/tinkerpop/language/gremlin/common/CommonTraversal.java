@@ -61,13 +61,13 @@ public class CommonTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
 
     @Override
     public Traversal<C, S, E> by(final String byString) {
-        this.bytecode.lastInstruction().addArg(byString);
+        this.bytecode.addArgs(byString);
         return this;
     }
 
     @Override
     public Traversal<C, S, E> by(final Traversal<C, ?, ?> byTraversal) {
-        this.bytecode.lastInstruction().addArg(TraversalUtil.getBytecode(byTraversal));
+        this.bytecode.addArgs(TraversalUtil.getBytecode(byTraversal));
         return this;
     }
 
@@ -78,7 +78,7 @@ public class CommonTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
 
     @Override
     public Traversal<C, S, E> by(final Traversal<C, ?, ?> byTraversal, final Order order) {
-        this.bytecode.lastInstruction().addArgs(TraversalUtil.getBytecode(byTraversal), order.name());
+        this.bytecode.addArgs(TraversalUtil.getBytecode(byTraversal), order.name());
         return this;
     }
 

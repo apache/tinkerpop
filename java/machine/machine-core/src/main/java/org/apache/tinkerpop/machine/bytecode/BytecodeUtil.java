@@ -144,6 +144,15 @@ public final class BytecodeUtil {
         return false;
     }
 
+    public static List<SourceInstruction> getSourceInstructions(final Bytecode<?> bytecode, final String op) {
+        final List<SourceInstruction> sourceInstructions = new ArrayList<>();
+        for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
+            if (sourceInstruction.op().equals(op))
+                sourceInstructions.add(sourceInstruction);
+        }
+        return sourceInstructions;
+    }
+
     public static <C> void replaceInstruction(final Bytecode<C> bytecode, final Instruction<C> oldInstruction, final Instruction<C> newInstruction) {
         int index = bytecode.getInstructions().indexOf(oldInstruction);
         bytecode.getInstructions().remove(index);
@@ -152,6 +161,21 @@ public final class BytecodeUtil {
 
     public static <C> void mergeSourceInstructions(final Bytecode<C> from, final Bytecode<C> to) {
         to.getSourceInstructions().addAll(0, from.getSourceInstructions());
+    }
+
+    public static <C> Bytecode<C> getRootBytecode(final Bytecode<C> child) {
+        Bytecode<C> root = child;
+        while (root.getParent().isPresent()) {
+            root = root.getParent().get();
+        }
+        return root;
+    }
+
+    public static <C> void linkBytecodeChildren(final Bytecode<C> parent, final Object... args) {
+        for (final Object arg : args) {
+            if (arg instanceof Bytecode)
+                ((Bytecode<C>) arg).setParent(parent);
+        }
     }
 
     public static <C> Optional<TraverserFactory<C>> getTraverserFactory(final Bytecode<C> bytecode) {

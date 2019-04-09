@@ -22,6 +22,7 @@ import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.bytecode.SourceInstruction;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
+import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
 import java.util.ArrayList;
@@ -97,5 +98,9 @@ public final class StringFactory {
 
     public static String makeTraverserString(final Traverser<?, ?> traverser) {
         return traverser.coefficient().toString() + traverser.object();
+    }
+
+    public static String makeProcessorFactoryString(final ProcessorFactory processorFactory) {
+        return processorFactory.getClass().getSimpleName();
     }
 }

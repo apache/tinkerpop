@@ -42,7 +42,7 @@ class RxJavaBenchmark {
         final TraversalSource par = Gremlin.traversal(machine).withProcessor(RxJavaProcessor.class, Map.of(RxJavaProcessor.RXJAVA_THREADS, Runtime.getRuntime().availableProcessors() - 1));
         final TraversalSource pipes = Gremlin.traversal(machine).withProcessor(PipesProcessor.class);
         final List<Long> input = new ArrayList<>(1000);
-        for (long i = 0; i < 100000; i++) {
+        for (long i = 0; i < 1000; i++) {
             input.add(i+1);
         }
         final int runs = 30;

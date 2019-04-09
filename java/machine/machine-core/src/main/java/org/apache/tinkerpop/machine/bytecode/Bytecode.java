@@ -23,6 +23,7 @@ import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -31,12 +32,15 @@ public final class Bytecode<C> implements Cloneable, Serializable {
 
     private List<SourceInstruction> sourceInstructions = new ArrayList<>();
     private List<Instruction<C>> instructions = new ArrayList<>();
+    private Bytecode<C> parent = null;
 
     public void addSourceInstruction(final String op, final Object... args) {
+        BytecodeUtil.linkBytecodeChildren(this, args);
         this.sourceInstructions.add(new SourceInstruction(op, args));
     }
 
     public void addUniqueSourceInstruction(final String op, final Object... args) {
+        BytecodeUtil.linkBytecodeChildren(this, args);
         this.sourceInstructions.removeIf(instruction -> instruction.op().equals(op));
         this.sourceInstructions.add(new SourceInstruction(op, args));
     }
@@ -45,9 +49,18 @@ public final class Bytecode<C> implements Cloneable, Serializable {
         return this.sourceInstructions;
     }
 
+    public Optional<Bytecode<C>> getParent() {
+        return Optional.ofNullable(this.parent);
+    }
+
+    public void setParent(final Bytecode<C> parent) {
+        this.parent = parent;
+    }
+
     ///
 
     public void addInstruction(final Coefficient<C> coefficient, final String op, final Object... args) {
+        BytecodeUtil.linkBytecodeChildren(this, args);
         this.instructions.add(new Instruction<>(coefficient, op, args));
     }
 
@@ -57,6 +70,16 @@ public final class Bytecode<C> implements Cloneable, Serializable {
 
     public Instruction<C> lastInstruction() {
         return this.instructions.get(this.instructions.size() - 1);
+    }
+
+    public void addArgs(final Object... args) {
+        final Instruction<C> lastInstruction = this.lastInstruction();
+        BytecodeUtil.linkBytecodeChildren(this, args);
+        final Object[] oldArgs = lastInstruction.args();
+        final Object[] newArgs = new Object[oldArgs.length + args.length];
+        System.arraycopy(oldArgs, 0, newArgs, 0, oldArgs.length);
+        System.arraycopy(args, 0, newArgs, oldArgs.length, args.length);
+        lastInstruction.args = newArgs;
     }
 
     @Override
@@ -80,8 +103,14 @@ public final class Bytecode<C> implements Cloneable, Serializable {
     public Bytecode<C> clone() {
         try {
             final Bytecode<C> clone = (Bytecode<C>) super.clone();
-            clone.sourceInstructions = new ArrayList<>(this.sourceInstructions);
-            clone.instructions = new ArrayList<>(this.instructions);
+            clone.sourceInstructions = new ArrayList<>(this.sourceInstructions.size());
+            clone.instructions = new ArrayList<>(this.instructions.size());
+            for (final SourceInstruction sourceInstruction : this.sourceInstructions) {
+                clone.addSourceInstruction(sourceInstruction.op(), sourceInstruction.args());
+            }
+            for (final Instruction<C> instruction : this.instructions) {
+                clone.addInstruction(instruction.coefficient(), instruction.op(), instruction.args());
+            }
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new RuntimeException(e.getMessage(), e);

@@ -41,19 +41,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class ParallelRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
 
-    private final int threads;
     private ExecutorService threadPool;
 
-    ParallelRxJava(final Compilation<C, S, E> compilation, final int threads) {
+    ParallelRxJava(final Compilation<C, S, E> compilation, final ExecutorService threadPool) {
         super(compilation);
-        this.threads = threads;
+        this.threadPool = threadPool;
     }
 
     @Override
@@ -61,15 +59,18 @@ public final class ParallelRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
         if (!this.executed) {
             this.executed = true;
             this.alive.set(Boolean.TRUE);
-            this.threadPool = Executors.newFixedThreadPool(this.threads);
             this.compile(
                     ParallelFlowable.from(Flowable.fromIterable(this.starts)).
                             runOn(Schedulers.from(this.threadPool)), this.compilation).
                     doOnNext(this.ends::add).
                     sequential().
                     doOnComplete(() -> this.alive.set(Boolean.FALSE)).
-                    doFinally(this.threadPool::shutdown).
+                    doFinally(() -> {
+                        if (this.compilation.getBytecode().getParent().isEmpty()) // only the parent compilation should close the thread pool
+                            this.threadPool.shutdown();
+                    }).
                     blockingSubscribe(); // thread this so results can be received before computation completes
+
         }
     }
 

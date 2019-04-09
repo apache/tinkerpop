@@ -31,7 +31,7 @@ public final class Instruction<C> implements Serializable {
 
     private final Coefficient<C> coefficient;
     private final String op;
-    private Object[] args;
+    Object[] args;
     private String label = null;
 
     public Instruction(final Coefficient<C> coefficient, final String op, final Object... args) {
@@ -60,18 +60,6 @@ public final class Instruction<C> implements Serializable {
         this.label = label;
     }
 
-    public void addArg(final Object arg) {
-        final Object[] newArgs = new Object[this.args.length + 1];
-        System.arraycopy(this.args, 0, newArgs, 0, this.args.length);
-        newArgs[newArgs.length - 1] = arg;
-        this.args = newArgs;
-    }
-
-    public void addArgs(final Object... args) {
-        for (final Object arg : args) {
-            this.addArg(arg);
-        }
-    }
 
     @Override
     public int hashCode() {
@@ -93,4 +81,6 @@ public final class Instruction<C> implements Serializable {
     public String toString() {
         return StringFactory.makeInstructionString(this);
     }
+
+
 }

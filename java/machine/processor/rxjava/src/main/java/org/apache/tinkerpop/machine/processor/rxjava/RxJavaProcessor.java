@@ -18,15 +18,20 @@
  */
 package org.apache.tinkerpop.machine.processor.rxjava;
 
+import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.processor.rxjava.strategy.RxJavaStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
+import org.apache.tinkerpop.machine.util.StringFactory;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -34,6 +39,8 @@ import java.util.Set;
 public final class RxJavaProcessor implements ProcessorFactory {
 
     public static final String RXJAVA_THREADS = "rxjava.threads";
+    public static final String RX_BYCODE_ID = "rx:bytecodeId";
+    private static final Map<String, ExecutorService> THREAD_POOLS = new ConcurrentHashMap<>();
 
     private final Map<String, Object> configuration;
 
@@ -47,13 +54,22 @@ public final class RxJavaProcessor implements ProcessorFactory {
 
     @Override
     public <C, S, E> Processor<C, S, E> mint(final Compilation<C, S, E> compilation) {
-        return this.configuration.containsKey(RXJAVA_THREADS) ?
-                new ParallelRxJava<>(compilation, (int) this.configuration.get(RXJAVA_THREADS)) :
-                new SerialRxJava<>(compilation);
+        final int threads = (int) this.configuration.getOrDefault(RxJavaProcessor.RXJAVA_THREADS, 0);
+        final String id = (String) BytecodeUtil.getSourceInstructions(BytecodeUtil.getRootBytecode(compilation.getBytecode()), RX_BYCODE_ID).get(0).args()[0];
+        final ExecutorService threadPool = RxJavaProcessor.THREAD_POOLS.compute(id, (key, value) -> null == value && threads > 0 ? Executors.newCachedThreadPool() : value);
+        // System.out.println(id + "--" + threadPool + "---" + THREAD_POOLS);
+        return null == threadPool ?
+                new SerialRxJava<>(compilation) :
+                new ParallelRxJava<>(compilation, threadPool);
     }
 
     @Override
     public Set<Strategy<?>> getStrategies() {
         return Set.of(new RxJavaStrategy());
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.makeProcessorFactoryString(this);
     }
 }

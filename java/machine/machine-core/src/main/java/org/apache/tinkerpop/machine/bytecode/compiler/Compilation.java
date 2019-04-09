@@ -40,6 +40,7 @@ import java.util.List;
  */
 public final class Compilation<C, S, E> implements Serializable, Cloneable {
 
+    private final Bytecode<C> bytecode;
     private List<CFunction<C>> functions;
     private final StructureFactory structureFactory;
     private final ProcessorFactory processorFactory;
@@ -47,6 +48,7 @@ public final class Compilation<C, S, E> implements Serializable, Cloneable {
     private transient Processor<C, S, E> processor;
 
     public Compilation(final Bytecode<C> bytecode) {
+        this.bytecode = bytecode;
         BytecodeUtil.strategize(bytecode);
         this.structureFactory = BytecodeUtil.getStructureFactory(bytecode).orElse(EmptyStructure.instance());
         this.processorFactory = BytecodeUtil.getProcessorFactory(bytecode).orElse(EmptyProcessor.instance());
@@ -55,6 +57,7 @@ public final class Compilation<C, S, E> implements Serializable, Cloneable {
     }
 
     public Compilation(final SourceCompilation<C> source, final Bytecode<C> bytecode) {
+        this.bytecode = bytecode;
         BytecodeUtil.mergeSourceInstructions(source.getSourceCode(), bytecode);
         BytecodeUtil.strategize(bytecode, source.getStrategies());
         this.structureFactory = source.getStructureFactory();
@@ -64,6 +67,7 @@ public final class Compilation<C, S, E> implements Serializable, Cloneable {
     }
 
     public Compilation(final ProcessorFactory processorFactory) {
+        this.bytecode = new Bytecode<>();
         this.structureFactory = EmptyStructure.instance();
         this.processorFactory = processorFactory;
         this.traverserFactory = null;
@@ -126,6 +130,10 @@ public final class Compilation<C, S, E> implements Serializable, Cloneable {
 
     public TraverserFactory<C> getTraverserFactory() {
         return this.traverserFactory;
+    }
+
+    public Bytecode<C> getBytecode() {
+        return this.bytecode;
     }
 
     @Override
