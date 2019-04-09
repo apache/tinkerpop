@@ -71,8 +71,8 @@ final class BranchStep<C, S, E, M> extends AbstractStep<C, S, E> {
                 }
             }
             if (!found) {
-                for (final Compilation<C, S, E> defaultBranches : this.defaultBranches) {
-                    ((MultiIterator<Traverser<C, E>>) this.nextTraversers).addIterator(defaultBranches.addTraverser(traverser.clone()));
+                for (final Compilation<C, S, E> defaultBranch : this.defaultBranches) {
+                    ((MultiIterator<Traverser<C, E>>) this.nextTraversers).addIterator(defaultBranch.addTraverser(traverser.clone()));
                 }
             }
         }

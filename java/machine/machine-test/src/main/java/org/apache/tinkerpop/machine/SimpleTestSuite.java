@@ -225,7 +225,7 @@ public class SimpleTestSuite extends AbstractTestSuite<Long> {
                 g.inject(1L).repeat(union(incr(), __.<Long>incr().incr())).times(2));
     }
 
-    //@Test
+    @Test
     void g_injectX1X_repeatXunionXincr__incr_incrXX_timesX3X() {
         verify(List.of(4L, 5L, 5L, 6L, 5L, 6L, 6L, 7L),
                 g.inject(1L).repeat(union(incr(), __.<Long>incr().incr())).times(3));

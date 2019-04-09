@@ -55,4 +55,11 @@ public class COR_Traverser<C, S> extends CO_Traverser<C, S> {
         clone.coefficient.multiply(function.coefficient());
         return clone;
     }
+
+    @Override
+    public boolean equals(final Object other) {
+        return other instanceof COR_Traverser &&
+                this.object.equals(((COR_Traverser) other).object) &&
+                this.loops == ((COR_Traverser) other).loops;
+    }
 }
