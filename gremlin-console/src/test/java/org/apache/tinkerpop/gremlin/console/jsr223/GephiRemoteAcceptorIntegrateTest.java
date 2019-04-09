@@ -55,7 +55,7 @@ import static org.junit.Assert.assertThat;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GephiRemoteAcceptorIntegrateTest {
-    private static final Groovysh groovysh = new GremlinGroovysh(new Mediator(null));
+    private static final Groovysh groovysh = new GremlinGroovysh(new Mediator(null), new IO());
     private static int port = pickOpenPort();
 
     private GephiRemoteAcceptor acceptor;

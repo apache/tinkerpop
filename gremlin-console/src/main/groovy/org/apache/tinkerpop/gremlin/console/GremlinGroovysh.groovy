@@ -18,9 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.console
 
+import groovy.transform.ThreadInterrupt
 import org.apache.tinkerpop.gremlin.console.commands.GremlinSetCommand
+import org.codehaus.groovy.control.CompilerConfiguration
+import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer
 import org.codehaus.groovy.tools.shell.Command
 import org.codehaus.groovy.tools.shell.Groovysh
+import org.codehaus.groovy.tools.shell.IO
 import org.codehaus.groovy.tools.shell.ParseCode
 import org.codehaus.groovy.tools.shell.Parser
 import org.codehaus.groovy.tools.shell.util.CommandArgumentParser
@@ -33,8 +37,12 @@ import org.codehaus.groovy.tools.shell.util.CommandArgumentParser
 class GremlinGroovysh extends Groovysh {
 
     private final Mediator mediator
+    private final static CompilerConfiguration compilerConfig = new CompilerConfiguration(CompilerConfiguration.DEFAULT) {{
+        addCompilationCustomizers(new ASTTransformationCustomizer(ThreadInterrupt.class))
+    }}
 
-    public GremlinGroovysh(final Mediator mediator) {
+    public GremlinGroovysh(final Mediator mediator, final IO io) {
+        super(io, compilerConfig)
         this.mediator = mediator
     }
 

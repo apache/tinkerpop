@@ -47,11 +47,8 @@ import org.codehaus.groovy.tools.shell.IO
 import org.codehaus.groovy.tools.shell.InteractiveShellRunner
 import org.codehaus.groovy.tools.shell.commands.SetCommand
 import org.fusesource.jansi.Ansi
-import picocli.CommandLine
 import sun.misc.Signal
 import sun.misc.SignalHandler
-
-import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -99,7 +96,7 @@ class Console {
             }
         })
 
-        groovy = new GremlinGroovysh(mediator)
+        groovy = new GremlinGroovysh(mediator, io)
 
         def commandsToRemove = groovy.getRegistry().commands().findAll { it instanceof SetCommand }
         commandsToRemove.each { groovy.getRegistry().remove(it) }
@@ -121,6 +118,8 @@ class Console {
         imports.getFieldClasses().collect { Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each{ groovy.execute(it) }
 
         final InteractiveShellRunner runner = new InteractiveShellRunner(groovy, handlePrompt)
+        runner.reader.setHandleUserInterrupt(false)
+        runner.reader.setHandleLitteralNext(false)
         runner.setErrorHandler(handleError)
         try {
             final FileHistory history = new FileHistory(new File(ConsoleFs.HISTORY_FILE))
