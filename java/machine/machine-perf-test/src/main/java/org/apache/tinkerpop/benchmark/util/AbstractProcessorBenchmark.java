@@ -55,7 +55,7 @@ public class AbstractProcessorBenchmark extends AbstractBenchmarkBase {
                 break;
             case RX_PARALLEL:
                 g = g.withProcessor(RxJavaProcessor.class,
-                        Map.of(RxJavaProcessor.RXJAVA_THREADS, Runtime.getRuntime().availableProcessors() - 1));
+                        Map.of(RxJavaProcessor.RX_THREAD_POOL_SIZE, Runtime.getRuntime().availableProcessors() - 1));
                 break;
             default:
                 throw new RuntimeException("Unrecognized processor type");
