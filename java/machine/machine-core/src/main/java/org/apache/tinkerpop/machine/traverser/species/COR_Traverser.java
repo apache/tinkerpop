@@ -29,7 +29,7 @@ public class COR_Traverser<C, S> extends CO_Traverser<C, S> {
 
     private short loops = 0;
 
-    public COR_Traverser(final Coefficient<C> coefficient, final S object) {
+    COR_Traverser(final Coefficient<C> coefficient, final S object) {
         super(coefficient, object);
     }
 
@@ -61,5 +61,10 @@ public class COR_Traverser<C, S> extends CO_Traverser<C, S> {
         return other instanceof COR_Traverser &&
                 this.object.equals(((COR_Traverser) other).object) &&
                 this.loops == ((COR_Traverser) other).loops;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.loops;
     }
 }

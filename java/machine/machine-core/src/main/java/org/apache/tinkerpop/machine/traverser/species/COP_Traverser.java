@@ -57,12 +57,14 @@ public class COP_Traverser<C, S> extends CO_Traverser<C, S> {
 
     @Override
     public boolean equals(final Object other) {
-        return other instanceof COP_Traverser && ((COP_Traverser<C, S>) other).object.equals(this.object);
+        return other instanceof COP_Traverser &&
+                ((COP_Traverser<C, S>) other).object.equals(this.object) &&
+                ((COP_Traverser<C, S>) other).path.equals(this.path);
     }
 
     @Override
     public int hashCode() {
-        return this.object.hashCode(); // TODO: include path
+        return this.object.hashCode() ^ this.path.hashCode();
     }
 
     @Override

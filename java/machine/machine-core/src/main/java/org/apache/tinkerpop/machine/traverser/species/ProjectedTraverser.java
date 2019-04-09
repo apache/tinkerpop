@@ -83,7 +83,8 @@ public class ProjectedTraverser<C, S, P> implements Traverser<C, S> {
 
     @Override
     public boolean equals(final Object object) {
-        return object instanceof ProjectedTraverser && this.baseTraverser.equals(((ProjectedTraverser) object).baseTraverser);
+        return object instanceof ProjectedTraverser &&
+                this.baseTraverser.equals(((ProjectedTraverser) object).baseTraverser);
     }
 
     @Override
