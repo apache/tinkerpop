@@ -181,6 +181,31 @@ with local commands, but may record session outputs differently for `:remote` co
 `:record` it may be best to manually create a `Cluster` object and issue commands that way so that they evaluate
 locally in the shell.
 
+=== Interrupting Evaluations
+
+If there is some input that is taking too long to evaluate or to iterate through, use `ctrl+c` to attempt to interrupt
+that process. It is an "attempt" in the sense that the long running process is only informed of the interruption by
+the user and must respond to it (as with any call to `interrupt()` on a `Thread`). A `Traversal` will typically respond
+to such requests as do most commands, including `:remote` operations.
+
+[source,text]
+----
+gremlin> java.util.stream.IntStream.range(0, 1000).iterator()
+==>0
+==>1
+==>2
+==>3
+==>4
+...
+==>348
+==>349
+==>350
+==>351
+==>352
+Execution interrupted by ctrl+c
+gremlin>
+----
+
 [[console-preferences]]
 === Console Preferences
 

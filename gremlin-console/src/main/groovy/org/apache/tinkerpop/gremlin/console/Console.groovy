@@ -48,6 +48,10 @@ import org.codehaus.groovy.tools.shell.InteractiveShellRunner
 import org.codehaus.groovy.tools.shell.commands.SetCommand
 import org.fusesource.jansi.Ansi
 import picocli.CommandLine
+import sun.misc.Signal
+import sun.misc.SignalHandler
+
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -80,8 +84,20 @@ class Console {
 
         final Mediator mediator = new Mediator(this)
 
-        // make sure that remotes are closed if console takes a ctrl-c
+        // make sure that remotes are closed on jvm shutdown
         addShutdownHook { mediator.close() }
+
+        // try to grab ctrl+c to interrupt an evaluation.
+        final Thread main = Thread.currentThread()
+        Signal.handle(new Signal("INT"), new SignalHandler() {
+            @Override
+            void handle(final Signal signal) {
+                if (mediator.evaluating.get()) {
+                    io.out.println("Execution interrupted by ctrl+c")
+                    main.interrupt()
+                }
+            }
+        })
 
         groovy = new GremlinGroovysh(mediator)
 
@@ -186,6 +202,7 @@ class Console {
     private def handleResultShowNothing = { args -> null }
 
     private def handleResultIterate = { result ->
+
         try {
             // necessary to save persist history to file
             groovy.getHistory().flush()
@@ -194,16 +211,34 @@ class Console {
         }
 
         while (true) {
+            // give ctrl+c a chance
+            Thread.yield()
+
+            // if this is true then ctrl+c was triggered
+            if (Thread.interrupted()) {
+                this.tempIterator = Collections.emptyIterator()
+                return null
+            }
+
             if (this.tempIterator.hasNext()) {
-                int counter = 0;
+                int counter = 0
                 while (this.tempIterator.hasNext() && (Preferences.maxIteration == -1 || counter < Preferences.maxIteration)) {
+                    // give ctrl+c a chance
+                    Thread.yield()
+
+                    // if this is true then ctrl+c was triggered
+                    if (Thread.interrupted()) {
+                        this.tempIterator = Collections.emptyIterator()
+                        return null
+                    }
+
                     printResult(tempIterator.next())
-                    counter++;
+                    counter++
                 }
                 if (this.tempIterator.hasNext())
-                    io.out.println(Colorizer.render(Preferences.resultPromptColor,ELLIPSIS));
-                this.tempIterator = Collections.emptyIterator();
-                return null
+                    io.out.println(Colorizer.render(Preferences.resultPromptColor,ELLIPSIS))
+                this.tempIterator = Collections.emptyIterator()
+                break
             } else {
                 try {
                     // if the result is an empty iterator then the tempIterator needs to be set to one, as a
@@ -219,29 +254,29 @@ class Console {
                     if (result instanceof Iterator) {
                         this.tempIterator = (Iterator) result
                         if (!this.tempIterator.hasNext()) {
-                            this.tempIterator = Collections.emptyIterator();
+                            this.tempIterator = Collections.emptyIterator()
                             return null
                         }
                     } else if (result instanceof Iterable) {
                         this.tempIterator = ((Iterable) result).iterator()
                         if (!this.tempIterator.hasNext()) {
-                            this.tempIterator = Collections.emptyIterator();
+                            this.tempIterator = Collections.emptyIterator()
                             return null
                         }
                     } else if (result instanceof Object[]) {
                         this.tempIterator = new ArrayIterator((Object[]) result)
                         if (!this.tempIterator.hasNext()) {
-                            this.tempIterator = Collections.emptyIterator();
+                            this.tempIterator = Collections.emptyIterator()
                             return null
                         }
                     } else if (result instanceof Map) {
                         this.tempIterator = ((Map) result).entrySet().iterator()
                         if (!this.tempIterator.hasNext()) {
-                            this.tempIterator = Collections.emptyIterator();
+                            this.tempIterator = Collections.emptyIterator()
                             return null
                         }
                     } else if (result instanceof TraversalExplanation) {
-                        final int width = TerminalFactory.get().getWidth();
+                        final int width = TerminalFactory.get().getWidth()
                         io.out.println(Colorizer.render(Preferences.resultPromptColor,(buildResultPrompt() + result.prettyPrint(width < 20 ? 80 : width))))
                         return null
                     } else {
@@ -274,7 +309,7 @@ class Console {
         } else if (object instanceof Edge) {
             return Colorizer.render(Preferences.edgeColor, object.toString())
         } else if (object instanceof Iterable) {
-            List<String> buf = new ArrayList<>();
+            List<String> buf = new ArrayList<>()
             def pathIter = object.iterator()
             while (pathIter.hasNext()) {
                 Object n = pathIter.next()
@@ -282,7 +317,7 @@ class Console {
             }
             return ("[" + buf.join(",") + "]")
         } else if (object instanceof Map) {
-            List<String> buf = new ArrayList<>();
+            List<String> buf = new ArrayList<>()
             object.each{k, v ->
                 buf.add(colorizeResult(k) + ":" + colorizeResult(v))
             }
@@ -299,7 +334,7 @@ class Console {
     }
 
     private def handleError = { err ->
-        this.tempIterator = Collections.emptyIterator();
+        this.tempIterator = Collections.emptyIterator()
         if (err instanceof Throwable) {
             try {
                 final Throwable e = (Throwable) err
@@ -370,9 +405,9 @@ class Console {
 
                 File file = new File(scriptFile)
                 if (!file.exists() && !file.isAbsolute()) {
-                    final String userWorkingDir = System.getProperty("user.working_dir");
+                    final String userWorkingDir = System.getProperty("user.working_dir")
                     if (userWorkingDir != null) {
-                        file = new File(userWorkingDir, scriptFile);
+                        file = new File(userWorkingDir, scriptFile)
                     }
                 }
                 int lineNumber = 0
