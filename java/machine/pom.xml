@@ -29,5 +29,6 @@ limitations under the License.
         <module>machine-test</module>
         <module>processor</module>
         <module>structure</module>
+        <module>machine-perf-test</module>
     </modules>
 </project>
