@@ -44,6 +44,11 @@ public class SimpleRemoteSerialTest extends SimpleTestSuite {
     @AfterAll
     static void stopServer() {
         SERVER.close();
+        try {
+            Thread.sleep(10);
+        } catch (final InterruptedException e) {
+
+        }
     }
 
 }
