@@ -55,7 +55,7 @@ public final class SerialRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
             this.alive.set(Boolean.TRUE);
             SerialRxJava.compile(Flowable.fromIterable(this.starts), this.compilation).
                     doOnNext(this.ends::add).
-                    doOnComplete(() -> this.alive.set(Boolean.FALSE)).
+                    doFinally(() -> this.alive.set(Boolean.FALSE)).
                     subscribe();
         }
         while (this.alive.get() && this.ends.isEmpty()) {

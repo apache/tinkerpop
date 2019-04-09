@@ -56,8 +56,8 @@ public final class RxJavaProcessor implements ProcessorFactory {
     public <C, S, E> Processor<C, S, E> mint(final Compilation<C, S, E> compilation) {
         final int threads = (int) this.configuration.getOrDefault(RxJavaProcessor.RXJAVA_THREADS, 0);
         final String id = (String) BytecodeUtil.getSourceInstructions(BytecodeUtil.getRootBytecode(compilation.getBytecode()), RX_BYCODE_ID).get(0).args()[0];
-        final ExecutorService threadPool = RxJavaProcessor.THREAD_POOLS.compute(id, (key, value) -> null == value && threads > 0 ? Executors.newCachedThreadPool() : value);
-        // System.out.println(id + "--" + threadPool + "---" + THREAD_POOLS);
+        final ExecutorService threadPool = threads > 0 ? RxJavaProcessor.THREAD_POOLS.computeIfAbsent(id, key -> Executors.newFixedThreadPool(threads)) : null;
+        // System.out.println(id + "::" + threads + "--" + threadPool);
         return null == threadPool ?
                 new SerialRxJava<>(compilation) :
                 new ParallelRxJava<>(compilation, threadPool);

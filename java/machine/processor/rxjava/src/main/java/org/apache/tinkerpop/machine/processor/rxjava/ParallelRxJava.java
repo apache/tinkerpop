@@ -64,8 +64,8 @@ public final class ParallelRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
                             runOn(Schedulers.from(this.threadPool)), this.compilation).
                     doOnNext(this.ends::add).
                     sequential().
-                    doOnComplete(() -> this.alive.set(Boolean.FALSE)).
                     doFinally(() -> {
+                        this.alive.set(Boolean.FALSE);
                         if (this.compilation.getBytecode().getParent().isEmpty()) // only the parent compilation should close the thread pool
                             this.threadPool.shutdown();
                     }).

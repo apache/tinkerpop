@@ -22,31 +22,44 @@ import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.bytecode.SourceInstruction;
 import org.apache.tinkerpop.machine.bytecode.compiler.CommonCompiler;
+import org.apache.tinkerpop.machine.bytecode.compiler.CompositeCompiler;
+import org.apache.tinkerpop.machine.bytecode.compiler.FunctionType;
 import org.apache.tinkerpop.machine.processor.rxjava.RxJavaProcessor;
 import org.apache.tinkerpop.machine.strategy.AbstractStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class RxJavaStrategy extends AbstractStrategy<Strategy.ProviderStrategy> implements Strategy.ProviderStrategy {
-
+public final class RxJavaStrategy extends AbstractStrategy<Strategy.ProviderStrategy> implements Strategy.ProviderStrategy {
 
     @Override
     public <C> void apply(final Bytecode<C> bytecode) {
-        if (bytecode.getParent().isEmpty()) {
+        if (bytecode.getParent().isEmpty()) { // root bytecode
             final String id = UUID.randomUUID().toString();
             bytecode.addSourceInstruction(RxJavaProcessor.RX_BYCODE_ID, id);
         } else if (!BytecodeUtil.hasSourceInstruction(bytecode, CommonCompiler.Symbols.WITH_PROCESSOR)) {
-            final Bytecode<C> root = BytecodeUtil.getRootBytecode(bytecode);
-            final List<SourceInstruction> processors = BytecodeUtil.getSourceInstructions(root, CommonCompiler.Symbols.WITH_PROCESSOR);
-            for (final SourceInstruction sourceInstruction : processors) {
-                bytecode.addSourceInstruction(sourceInstruction.op(), sourceInstruction.args());
+            if (RxJavaStrategy.isSimple(bytecode)) {
+                bytecode.addSourceInstruction(CommonCompiler.Symbols.WITH_PROCESSOR, RxJavaProcessor.class, Map.of(RxJavaProcessor.RXJAVA_THREADS, 0)); // guaranteed serial execution
+            } else {
+                final Bytecode<C> root = BytecodeUtil.getRootBytecode(bytecode);
+                final List<SourceInstruction> processors = BytecodeUtil.getSourceInstructions(root, CommonCompiler.Symbols.WITH_PROCESSOR); // potential parallel execution
+                for (final SourceInstruction sourceInstruction : processors) {
+                    bytecode.addSourceInstruction(sourceInstruction.op(), sourceInstruction.args());
+                }
             }
         }
     }
 
+    private static boolean isSimple(final Bytecode<?> bytecode) {
+        final CompositeCompiler compiler = BytecodeUtil.getCompilers(bytecode);
+        return bytecode.getInstructions().size() < 4 && bytecode.getInstructions().stream().noneMatch(i -> {
+            final FunctionType functionType = compiler.getFunctionType(i.op());
+            return FunctionType.FLATMAP == functionType; //|| FunctionType.BRANCH == functionType;
+        });
+    }
 }

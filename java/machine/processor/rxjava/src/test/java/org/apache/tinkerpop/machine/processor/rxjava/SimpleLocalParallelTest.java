@@ -33,7 +33,7 @@ public class SimpleLocalParallelTest extends SimpleTestSuite {
     private final static Bytecode<Long> BYTECODE = new Bytecode<>();
 
     static {
-        BYTECODE.addSourceInstruction(CoreCompiler.Symbols.WITH_PROCESSOR, RxJavaProcessor.class, Map.of(RxJavaProcessor.RXJAVA_THREADS, 20));
+        BYTECODE.addSourceInstruction(CoreCompiler.Symbols.WITH_PROCESSOR, RxJavaProcessor.class, Map.of(RxJavaProcessor.RXJAVA_THREADS, Runtime.getRuntime().availableProcessors()-1));
     }
 
     SimpleLocalParallelTest() {
