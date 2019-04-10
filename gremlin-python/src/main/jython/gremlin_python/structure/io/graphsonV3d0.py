@@ -455,7 +455,14 @@ class SetIO(_GraphSONTypeIO):
         See comments of TINKERPOP-1844 for more details
         """
         new_list = [reader.toObject(obj) for obj in s]
-        new_set = set(new_list)
+
+        dedup_list = []
+        for obj in new_list:
+            if obj not in dedup_list:
+                dedup_list.append(obj)
+
+        new_set = set(dedup_list)
+
         if len(new_list) != len(new_set):
             log.warning("Coercing g:Set to list due to java numeric values. "
                         "See TINKERPOP-1844 for more details.")
