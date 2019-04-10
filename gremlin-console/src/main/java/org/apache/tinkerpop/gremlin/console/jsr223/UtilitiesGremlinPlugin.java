@@ -18,11 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.console.jsr223;
 
-import groovyx.gprof.ProfileStaticExtension;
 import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
-import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.DefaultScriptCustomizer;
-import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptCustomizer;
 
 import java.io.BufferedReader;
@@ -30,8 +27,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -40,49 +35,10 @@ public class UtilitiesGremlinPlugin extends AbstractGremlinPlugin {
 
     private static final String NAME = "tinkerpop.utilities";
 
-    private static final ImportCustomizer imports;
-
     private static final ScriptCustomizer scripts;
 
     static {
         try {
-            imports = DefaultImportCustomizer.build()
-                    .addClassImports(groovyx.gbench.Benchmark.class,
-                            groovyx.gbench.BenchmarkBuilder.class,
-                            groovyx.gbench.BenchmarkConstants.class,
-                            groovyx.gbench.BenchmarkContext.class,
-                            groovyx.gbench.Benchmarker.class,
-                            groovyx.gbench.BenchmarkList.class,
-                            groovyx.gbench.BenchmarkLogger.class,
-                            groovyx.gbench.BenchmarkMath.class,
-                            groovyx.gbench.BenchmarkMeasure.class,
-                            groovyx.gbench.BenchmarkStaticExtension.class,
-                            groovyx.gbench.BenchmarkSystem.class,
-                            groovyx.gbench.BenchmarkTime.class,
-                            groovyx.gbench.BenchmarkWarmUp.class,
-                            groovyx.gprof.Profiler.class,
-                            groovyx.gprof.ProfileStaticExtension.class,
-                            groovyx.gprof.CallFilter.class,
-                            groovyx.gprof.CallInfo.class,
-                            groovyx.gprof.CallInterceptor.class,
-                            groovyx.gprof.CallMatcher.class,
-                            groovyx.gprof.CallTree.class,
-                            groovyx.gprof.MethodCallFilter.class,
-                            groovyx.gprof.MethodCallInfo.class,
-                            groovyx.gprof.MethodInfo.class,
-                            groovyx.gprof.ProfileMetaClass.class,
-                            groovyx.gprof.ProxyReport.class,
-                            groovyx.gprof.Report.class,
-                            groovyx.gprof.ReportElement.class,
-                            groovyx.gprof.ReportNormalizer.class,
-                            groovyx.gprof.ReportPrinter.class,
-                            groovyx.gprof.ThreadInfo.class,
-                            groovyx.gprof.ThreadRunFilter.class,
-                            groovyx.gprof.Utils.class)
-                    .addMethodImports(
-                            ProfileStaticExtension.class.getMethod("profile", Object.class, Callable.class),
-                            ProfileStaticExtension.class.getMethod("profile", Object.class, Map.class, Callable.class)).create();
-
             final BufferedReader reader = new BufferedReader(new InputStreamReader(UtilitiesGremlinPlugin.class.getResourceAsStream("UtilitiesGremlinPluginScript.groovy")));
             final List<String> lines = new ArrayList<>();
             String line;
@@ -98,6 +54,6 @@ public class UtilitiesGremlinPlugin extends AbstractGremlinPlugin {
     }
 
     public UtilitiesGremlinPlugin() {
-        super(NAME, imports, scripts);
+        super(NAME, scripts);
     }
 }

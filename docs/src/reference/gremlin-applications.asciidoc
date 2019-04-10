@@ -2347,37 +2347,18 @@ g.V.map{it.name}  // sugar
 [[utilities-plugin]]
 === Utilities Plugin
 
-The Utilities Plugin provides various functions, helper methods and imports of external classes that are useful in the console.
+The Utilities Plugin provides various functions, helper methods and imports of external classes that are useful in
+the console.
 
 NOTE: The Utilities Plugin is enabled in the Gremlin Console by default.
-
-[[benchmarking-and-profiling]]
-==== Benchmarking and Profiling
-
-The link:https://code.google.com/p/gperfutils/[GPerfUtils] library provides a number of performance utilities for
-Groovy.  Specifically, these tools cover benchmarking and profiling.
-
-Benchmarking allows execution time comparisons of different pieces of code. While such a feature is generally useful,
-in the context of Gremlin, benchmarking can help compare traversal performance times to determine the optimal
-approach.  Profiling helps determine the parts of a program which are taking the most execution time, yielding
-low-level insight into the code being examined.
-
-[gremlin-groovy,modern]
-----
-:plugin use tinkerpop.sugar // Activate sugar plugin for use in benchmark
-benchmark{
- 'sugar' {g.V(1).name.next()}
- 'nosugar' {g.V(1).values('name').next()}
-}.prettyPrint()
-profile { g.V().iterate() }.prettyPrint()
-----
 
 [[describe-graph]]
 ==== Describe Graph
 
-A good implementation of the Gremlin APIs will validate their features against the link:../dev/provider/#validating-with-gremlin-test[Gremlin test suite].
-To learn more about a specific implementation's compliance with the test suite, use the `describeGraph` function.
-The following shows the output for `HadoopGraph`:
+A good implementation of the Gremlin APIs will validate their features against the
+link:../dev/provider/#validating-with-gremlin-test[Gremlin test suite]. To learn more about a specific
+implementation's compliance with the test suite, use the `describeGraph` function. The following shows the output
+for `HadoopGraph`:
 
 [gremlin-groovy,modern]
 ----

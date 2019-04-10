@@ -51,16 +51,6 @@ limitations under the License.
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.gperfutils</groupId>
-            <artifactId>gbench</artifactId>
-            <version>0.4.3-groovy-2.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.gperfutils</groupId>
-            <artifactId>gprof</artifactId>
-            <version>0.3.1-groovy-2.4</version>
-        </dependency>
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <optional>true</optional>
