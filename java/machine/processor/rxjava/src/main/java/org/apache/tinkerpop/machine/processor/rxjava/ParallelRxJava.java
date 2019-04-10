@@ -63,9 +63,7 @@ public final class ParallelRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
     protected void prepareFlow() {
         if (!this.executed) {
             this.executed = true;
-            this.disposable = this.compile(
-                    ParallelFlowable.from(Flowable.fromIterable(this.starts)).
-                            runOn(Schedulers.from(this.threadPool)), this.compilation).
+            this.disposable = this.compile(ParallelFlowable.from(Flowable.fromIterable(this.starts)).runOn(Schedulers.from(this.threadPool)), this.compilation).
                     doOnNext(this.ends::add).
                     sequential().
                     doFinally(() -> {
@@ -77,9 +75,7 @@ public final class ParallelRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
                     subscribe(); // don't block the execution so results can be streamed back in real-time
 
         }
-        while (!this.disposable.isDisposed() && this.ends.isEmpty()) {
-            // only return if there is a result ready from the flow (or the flow is dead)
-        }
+        this.waitForCompletionOrResult();
     }
 
     // EXECUTION PLAN COMPILER

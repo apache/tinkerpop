@@ -37,7 +37,7 @@ public abstract class AbstractTraversal<C, S, E> implements Traversal<C, S, E> {
     protected final Bytecode<C> bytecode;
     protected Coefficient<C> currentCoefficient;
     private Iterator<Traverser<C, E>> traversers = null;
-    private boolean locked = false;
+    private boolean executed = false;
 
     // iteration helpers
     private long lastCount = 0L;
@@ -52,16 +52,16 @@ public abstract class AbstractTraversal<C, S, E> implements Traversal<C, S, E> {
     ///////
 
     protected final <A, B> Traversal<C, A, B> addInstruction(final String op, final Object... args) {
-        if (this.locked)
-            throw new IllegalStateException("The traversal has already been compiled and can no longer be mutated");
+        if (this.executed)
+            throw new IllegalStateException("The traversal has already been submitted and can no longer be mutated");
         this.bytecode.addInstruction(this.currentCoefficient, op, args);
         this.currentCoefficient.unity();
         return (Traversal<C, A, B>) this;
     }
 
-    private final void prepareTraversal() {
-        if (!this.locked) {
-            this.locked = true;
+    private void prepareTraversal() {
+        if (!this.executed) {
+            this.executed = true;
             this.traversers = this.machine.submit(this.bytecode);
         }
     }

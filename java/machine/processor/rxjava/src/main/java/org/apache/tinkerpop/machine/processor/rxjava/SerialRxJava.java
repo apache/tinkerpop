@@ -56,9 +56,7 @@ public final class SerialRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
                     doOnNext(this.ends::add).
                     subscribe(); // don't block the execution so results can be streamed back in real-time
         }
-        while (!this.disposable.isDisposed() && this.ends.isEmpty()) {
-            // only return if there is a result ready from the flow (or the flow is dead)
-        }
+        this.waitForCompletionOrResult();
     }
 
     // EXECUTION PLAN COMPILER

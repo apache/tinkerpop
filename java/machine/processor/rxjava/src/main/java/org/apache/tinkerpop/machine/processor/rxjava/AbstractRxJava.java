@@ -24,8 +24,6 @@ import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserSet;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -69,4 +67,10 @@ public abstract class AbstractRxJava<C, S, E> implements Processor<C, S, E> {
     }
 
     protected abstract void prepareFlow();
+
+    void waitForCompletionOrResult() {
+        while (!this.disposable.isDisposed() && this.ends.isEmpty()) {
+            // wait until either the flow is complete or there is a traverser result
+        }
+    }
 }
