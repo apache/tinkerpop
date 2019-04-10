@@ -72,7 +72,7 @@ public final class ParallelRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
                             RxJavaProcessor.THREAD_POOLS.remove(this.bytecodeId);
                         }
                     }).
-                    subscribe(); // don't block the execution so results can be streamed back in real-time
+                    subscribeOn(Schedulers.newThread()).subscribe(); // don't block the execution so results can be streamed back in real-time
 
         }
         this.waitForCompletionOrResult();

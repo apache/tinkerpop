@@ -20,6 +20,7 @@ package org.apache.tinkerpop.machine.processor.rxjava;
 
 import io.reactivex.Flowable;
 import io.reactivex.processors.PublishProcessor;
+import io.reactivex.schedulers.Schedulers;
 import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.function.BarrierFunction;
 import org.apache.tinkerpop.machine.function.BranchFunction;
@@ -54,7 +55,7 @@ public final class SerialRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
             this.executed = true;
             this.disposable = SerialRxJava.compile(Flowable.fromIterable(this.starts), this.compilation).
                     doOnNext(this.ends::add).
-                    subscribe(); // don't block the execution so results can be streamed back in real-time
+                    subscribeOn(Schedulers.newThread()).subscribe(); // don't block the execution so results can be streamed back in real-time
         }
         this.waitForCompletionOrResult();
     }
