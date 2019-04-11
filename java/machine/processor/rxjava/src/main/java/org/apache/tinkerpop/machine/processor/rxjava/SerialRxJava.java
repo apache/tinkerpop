@@ -116,9 +116,13 @@ public final class SerialRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
                     flow = compile(selectorFlow.filter(list -> list.get(0).equals(1)).map(list -> (Traverser<C, S>) list.get(1)), repeatBranch.getRepeat());
                 } else
                     flow = compile(flow, repeatBranch.getRepeat());
-                selectorFlow = flow.flatMapIterable(new RepeatEnd<>(repeatBranch));
-                outputs.add(selectorFlow.filter(list -> list.get(0).equals(0)).map(list -> (Traverser<C, S>) list.get(1)));
-                flow = selectorFlow.filter(list -> list.get(0).equals(1)).map(list -> (Traverser<C, S>) list.get(1));
+                ///
+                if (repeatBranch.hasEndPredicates()) {
+                    selectorFlow = flow.flatMapIterable(new RepeatEnd<>(repeatBranch)).share();
+                    outputs.add(selectorFlow.filter(list -> list.get(0).equals(0)).map(list -> (Traverser<C, S>) list.get(1)));
+                    flow = selectorFlow.filter(list -> list.get(0).equals(1)).map(list -> (Traverser<C, S>) list.get(1));
+                } else
+                    flow = flow.map(t -> t.repeatLoop(repeatBranch));
             }
             return (Flowable) PublishProcessor.merge(outputs);
         }

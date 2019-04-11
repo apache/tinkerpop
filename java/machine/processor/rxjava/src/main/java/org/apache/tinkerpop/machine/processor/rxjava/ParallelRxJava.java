@@ -136,10 +136,13 @@ public final class ParallelRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
                 } else
                     flow = this.compile(flow, (Compilation) repeatBranch.getRepeat());
                 ///
-                final RepeatEnd<C, S> repeatEnd = new RepeatEnd<>(repeatBranch);
-                selectorFlow = flow.flatMap(t -> Flowable.fromIterable(repeatEnd.apply(t)));
-                outputs.add(selectorFlow.filter(list -> list.get(0).equals(0)).map(list -> (Traverser<C, S>) list.get(1)).sequential());
-                flow = selectorFlow.filter(list -> list.get(0).equals(1)).map(list -> (Traverser<C, S>) list.get(1));
+                if (repeatBranch.hasEndPredicates()) {
+                    final RepeatEnd<C, S> repeatEnd = new RepeatEnd<>(repeatBranch);
+                    selectorFlow = flow.flatMap(t -> Flowable.fromIterable(repeatEnd.apply(t)));
+                    outputs.add(selectorFlow.filter(list -> list.get(0).equals(0)).map(list -> (Traverser<C, S>) list.get(1)).sequential());
+                    flow = selectorFlow.filter(list -> list.get(0).equals(1)).map(list -> (Traverser<C, S>) list.get(1));
+                } else
+                    flow = flow.map(t -> t.repeatLoop(repeatBranch));
             }
             return (ParallelFlowable) PublishProcessor.merge(outputs).parallel().runOn(Schedulers.from(this.threadPool));
         }
