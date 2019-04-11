@@ -60,9 +60,10 @@ public abstract class AbstractRxJava<C, S, E> implements Processor<C, S, E> {
 
     @Override
     public void reset() {
+        if (null != this.disposable)
+            this.disposable.dispose();
         this.starts.clear();
         this.ends.clear();
-        this.disposable = null;
         this.executed = false;
     }
 

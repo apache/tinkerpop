@@ -50,6 +50,7 @@ public final class ParallelRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
 
     private final ExecutorService threadPool;
     private final String bytecodeId;
+    private final ParallelFlowable<Traverser<C, E>> flowable;
 
     ParallelRxJava(final Compilation<C, S, E> compilation, final ExecutorService threadPool) {
         super(compilation);
@@ -57,13 +58,15 @@ public final class ParallelRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
         this.bytecodeId = compilation.getBytecode().getParent().isEmpty() ?
                 (String) BytecodeUtil.getSourceInstructions(compilation.getBytecode(), RxJavaProcessor.RX_ROOT_BYTECODE_ID).get(0).args()[0] :
                 null;
+        // compile once and use many times
+        this.flowable = this.compile(ParallelFlowable.from(Flowable.fromIterable(this.starts)).runOn(Schedulers.from(this.threadPool)), this.compilation);
     }
 
     @Override
     protected void prepareFlow() {
         if (!this.executed) {
             this.executed = true;
-            this.disposable = this.compile(ParallelFlowable.from(Flowable.fromIterable(this.starts)).runOn(Schedulers.from(this.threadPool)), this.compilation).
+            this.disposable = this.flowable.
                     doOnNext(this.ends::add).
                     sequential().
                     doFinally(() -> {

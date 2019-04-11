@@ -45,15 +45,19 @@ import java.util.Map;
  */
 public final class SerialRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
 
+    private final Flowable<Traverser<C, E>> flowable;
+
     SerialRxJava(final Compilation<C, S, E> compilation) {
         super(compilation);
+        // compile once and reuse many times
+        this.flowable = SerialRxJava.compile(Flowable.fromIterable(this.starts), this.compilation);
     }
 
     @Override
     protected void prepareFlow() {
         if (!this.executed) {
             this.executed = true;
-            this.disposable = SerialRxJava.compile(Flowable.fromIterable(this.starts), this.compilation).
+            this.disposable = this.flowable.
                     doOnNext(this.ends::add).
                     subscribeOn(Schedulers.newThread()).subscribe(); // don't block the execution so results can be streamed back in real-time
         }
