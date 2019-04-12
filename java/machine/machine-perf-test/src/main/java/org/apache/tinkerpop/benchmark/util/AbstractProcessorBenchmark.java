@@ -50,6 +50,7 @@ public class AbstractProcessorBenchmark extends AbstractBenchmarkBase {
         switch (processorType) {
             case PIPES:
                 g = g.withProcessor(PipesProcessor.class);
+                break;
             case RX_SERIAL:
                 g = g.withProcessor(RxJavaProcessor.class);
                 break;
