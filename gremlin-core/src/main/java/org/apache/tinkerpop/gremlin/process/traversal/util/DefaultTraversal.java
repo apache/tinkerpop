@@ -53,6 +53,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     private Step<?, E> finalEndStep = EmptyStep.instance();
     private final StepPosition stepPosition = new StepPosition();
     protected transient Graph graph;
+    protected transient TraversalSource g;
     protected List<Step> steps = new ArrayList<>();
     // steps will be repeatedly retrieved from this traversal so wrap them once in an immutable list that can be reused
     protected List<Step> unmodifiableSteps = Collections.unmodifiableList(steps);
@@ -69,6 +70,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         this.graph = graph;
         this.strategies = traversalStrategies;
         this.bytecode = bytecode;
+        this.g = null;
     }
 
     public DefaultTraversal(final Graph graph) {
@@ -77,10 +79,12 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     public DefaultTraversal(final TraversalSource traversalSource) {
         this(traversalSource.getGraph(), traversalSource.getStrategies(), traversalSource.getBytecode());
+        this.g = traversalSource;
     }
 
     public DefaultTraversal(final TraversalSource traversalSource, final DefaultTraversal.Admin<S,E> traversal) {
         this(traversalSource.getGraph(), traversalSource.getStrategies(), traversal.getBytecode());
+        this.g = traversalSource;
         steps.addAll(traversal.getSteps());
     }
 
@@ -329,6 +333,11 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     @Override
     public Optional<Graph> getGraph() {
         return Optional.ofNullable(this.graph);
+    }
+
+    @Override
+    public Optional<TraversalSource> getTraversalSource() {
+        return Optional.ofNullable(this.g);
     }
 
     @Override

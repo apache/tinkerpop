@@ -491,7 +491,19 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
          */
         public boolean isLocked();
 
+        /**
+         * Gets the {@link Graph} instance associated to this {@link Traversal}.
+         */
         public Optional<Graph> getGraph();
+
+        /**
+         * Gets the {@link TraversalSource} that spawned the {@link Traversal} instance initially if present. This
+         * {@link TraversalSource} should have spawned from the associated {@link Graph} returned from
+         * {@link #getGraph()}.
+         */
+        public default Optional<TraversalSource> getTraversalSource() {
+            return Optional.empty();
+        }
 
         public void setGraph(final Graph graph);
 

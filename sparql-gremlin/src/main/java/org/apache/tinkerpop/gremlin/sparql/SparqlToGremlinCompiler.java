@@ -98,15 +98,11 @@ public class SparqlToGremlinCompiler {
         int traversalIndex = 0;
         final int numberOfTraversal = traversalList.size();
         final int numberOfOptionalTraversal = optionalTraversals.size();
-        Traversal arrayOfAllTraversals[] = null;
+        final Traversal[] arrayOfAllTraversals = (numberOfOptionalTraversal > 0) ?
+            new Traversal[numberOfTraversal - numberOfOptionalTraversal + 1] :
+            new Traversal[numberOfTraversal - numberOfOptionalTraversal];
 
-        if (numberOfOptionalTraversal > 0) {
-            arrayOfAllTraversals = new Traversal[numberOfTraversal - numberOfOptionalTraversal +1];
-        } else {
-            arrayOfAllTraversals = new Traversal[numberOfTraversal - numberOfOptionalTraversal];
-        }
-        
-        Traversal arrayOfOptionalTraversals[] = new Traversal[numberOfOptionalTraversal];
+        final Traversal[] arrayOfOptionalTraversals = new Traversal[numberOfOptionalTraversal];
 
         for (Traversal tempTrav : traversalList) {
             arrayOfAllTraversals[traversalIndex++] = tempTrav;
