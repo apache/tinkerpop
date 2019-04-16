@@ -131,7 +131,8 @@ public final class MultiMetaNeo4jTrait implements Neo4jTrait {
     }
 
     @Override
-    public <V> VertexProperty<V> setVertexProperty(Neo4jVertex vertex, VertexProperty.Cardinality cardinality, String key, V value, Object... keyValues) {
+    public <V> VertexProperty<V> setVertexProperty(final Neo4jVertex vertex, final VertexProperty.Cardinality cardinality,
+                                                   final String key, final V value, final Object... keyValues) {
         try {
             final Optional<VertexProperty<V>> optionalVertexProperty = ElementHelper.stageVertexProperty(vertex, cardinality, key, value, keyValues);
             if (optionalVertexProperty.isPresent()) return optionalVertexProperty.get();
