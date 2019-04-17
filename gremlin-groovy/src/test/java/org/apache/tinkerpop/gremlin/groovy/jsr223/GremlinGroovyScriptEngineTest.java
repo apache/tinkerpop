@@ -103,6 +103,7 @@ public class GremlinGroovyScriptEngineTest {
     public void shouldPromoteDefinedVarsInInterpreterModeWithNoBindings() throws Exception {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new InterpreterModeGroovyCustomizer());
         engine.eval("def addItUp = { x, y -> x + y }");
+        engine.eval("def class A { def sub(int x, int y) {x - y}}");
         assertEquals(3, engine.eval("int xxx = 1 + 2"));
         assertEquals(4, engine.eval("yyy = xxx + 1"));
         assertEquals(7, engine.eval("def zzz = yyy + xxx"));
@@ -118,6 +119,7 @@ public class GremlinGroovyScriptEngineTest {
             assertThat(root, instanceOf(MissingPropertyException.class));
         }
 
+        assertEquals(9, engine.eval("new A().sub(10, 1)"));
         assertEquals(10, engine.eval("addItUp(zzz,xxx)"));
     }
 
