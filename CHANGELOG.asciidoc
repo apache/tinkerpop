@@ -352,6 +352,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed `gperfutils` dependencies from Gremlin Console.
 * Ensure `gremlin.sh` works when directories contain spaces
 * Enabled `ctrl+c` to interrupt long running processes in Gremlin Console.
+* Fixed bug in `GremlinGroovyScriptEngine` interpreter mode around class definitions.
 * Implemented `EdgeLabelVerificationStrategy`
 
 [[release-3-3-6]]

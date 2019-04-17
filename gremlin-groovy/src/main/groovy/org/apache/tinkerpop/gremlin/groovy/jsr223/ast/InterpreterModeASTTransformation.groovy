@@ -59,8 +59,13 @@ class InterpreterModeASTTransformation implements ASTTransformation {
     @Override
     void visit(ASTNode[] astNodes, SourceUnit sourceUnit) {
         ClassNode scriptNode = (ClassNode) astNodes[1]
-        def runMethodOfScript = scriptNode.declaredMethodsMap["java.lang.Object run()"]
-        runMethodOfScript.code = wrap(runMethodOfScript)
+
+        // need to check that object is a Script to call run(). this scriptNode may be a user defined class via
+        // "def class" in which case it can be ignored as there are no variables to promote to global status there
+        if (scriptNode.isDerivedFrom(ClassHelper.make(Script))) {
+            def runMethodOfScript = scriptNode.declaredMethodsMap["java.lang.Object run()"]
+            runMethodOfScript.code = wrap(runMethodOfScript)
+        }
     }
 
     private static BlockStatement wrap(MethodNode method) {
