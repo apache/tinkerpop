@@ -146,26 +146,34 @@ public class BytecodeTest {
     }
 
     @Test
-    public void bindingShouldNotHaveHashCollisions() {
+    public void shouldNotHaveHashCollisionsWithBindings() {
         // ideally we should be using guava's EqualsTester to test equals/hashCode but the equals/hashCode contract allows hash collisions.
         // Yet we should avoid hash collisions in case these objects are being used in data structures that rely on hashCode
-        Bytecode.Binding<String> first = new Bytecode.Binding<>("3", "7");
-        Bytecode.Binding<String> second = new Bytecode.Binding<>("7", "3");
+        final Bytecode.Binding<String> first = new Bytecode.Binding<>("3", "7");
+        final Bytecode.Binding<String> second = new Bytecode.Binding<>("7", "3");
         assertNotEquals(first, second);
         assertNotEquals(first.hashCode(), second.hashCode());
     }
 
     @Test
-    public void bytecodeShouldNotHaveHashCollisions() {
+    public void shouldNotHaveHashCollisions() {
         // ideally we should be using guava's EqualsTester to test equals/hashCode but the equals/hashCode contract allows hash collisions.
         // Yet we should avoid hash collisions in case these objects are being used in data structures that rely on hashCode
-        Bytecode first = new Bytecode();
+        final Bytecode first = new Bytecode();
         first.addSource("3", "7");
         first.addStep("7", "3");
-        Bytecode second = new Bytecode();
+        final Bytecode second = new Bytecode();
         second.addSource("7", "3");
         second.addStep("3", "7");
         assertNotEquals(first, second);
         assertNotEquals(first.hashCode(), second.hashCode());
+    }
+
+    @Test
+    public void shouldHandleArrays() {
+        final Bytecode b = new Bytecode();
+        b.addStep(GraphTraversal.Symbols.property, "k", new Object[] { new String[] {"A", "B", "C"}});
+        assertEquals(1, b.getStepInstructions().size());
+        assertEquals(2, b.getStepInstructions().get(0).getArguments().length);
     }
 }
