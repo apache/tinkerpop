@@ -24,6 +24,8 @@ import org.apache.tinkerpop.machine.bytecode.compiler.Order;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.tinkerpop.language.gremlin.P.gt;
 import static org.apache.tinkerpop.language.gremlin.P.lt;
@@ -223,6 +225,18 @@ public class SimpleTestSuite extends AbstractTestSuite<Long> {
     void g_injectX1X_repeatXunionXincr__incr_incrXX_timesX2X() {
         verify(List.of(3L, 4L, 4L, 5L),
                 g.inject(1L).repeat(union(incr(), __.<Long>incr().incr())).times(2));
+    }
+
+    // @Test (Parallel RxJava finds this too compute intensive)
+    void g_injectX1X_repeatXunionXincr__incrX_unionXincr__incrXX_timesX3X() {
+        verify(Stream.generate(() -> 7L).limit(64).collect(Collectors.toList()),
+                g.inject(1L).repeat(__.<Long,Long,Long>union(incr(), incr()).union(incr(),incr())).times(3));
+    }
+
+    // @Test (Parallel RxJava finds this too compute intensive)
+    void g_injectX1X_repeatXunionXincr__unionXincr__incrXX_unionXincr__incrXX_timesX3X() {
+        verify(Stream.generate(() -> 7L).limit(216).collect(Collectors.toList()),
+                g.inject(1L).repeat(__.<Long,Long,Long>union(incr(), __.union(incr(),incr())).union(incr(),incr())).times(3));
     }
 
     @Test
