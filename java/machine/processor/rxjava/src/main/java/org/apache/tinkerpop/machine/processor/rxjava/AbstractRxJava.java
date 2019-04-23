@@ -23,6 +23,7 @@ import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserSet;
+import org.apache.tinkerpop.machine.util.IteratorUtils;
 
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -63,15 +64,8 @@ public abstract class AbstractRxJava<C, S, E> implements Processor<C, S, E> {
 
     @Override
     public Iterator<Traverser<C, E>> iterator(final Iterator<Traverser<C, S>> starts) {
-        if (this.isRunning())
-            throw Processor.Exceptions.processorIsCurrentlyRunning(this);
-
-        this.running.set(Boolean.TRUE);
-        this.starts.clear();
-        this.ends.clear();
-        starts.forEachRemaining(this.starts::add);
-        this.prepareFlow(this.ends::add);
-        return new Iterator<>() {
+        this.prepareFlow(starts, this.ends::add);
+        return IteratorUtils.onLast(new Iterator<>() {
             @Override
             public boolean hasNext() {
                 waitForCompletionOrResult();
@@ -83,11 +77,15 @@ public abstract class AbstractRxJava<C, S, E> implements Processor<C, S, E> {
                 waitForCompletionOrResult();
                 return ends.remove();
             }
-        };
+        }, this::stop);
     }
 
     @Override
     public void subscribe(final Iterator<Traverser<C, S>> starts, final Consumer<Traverser<C, E>> consumer) {
+        this.prepareFlow(starts, consumer::accept);
+    }
+
+    protected void prepareFlow(final Iterator<Traverser<C, S>> starts, final io.reactivex.functions.Consumer<? super Traverser<C, E>> consumer) {
         if (this.isRunning())
             throw Processor.Exceptions.processorIsCurrentlyRunning(this);
 
@@ -95,13 +93,10 @@ public abstract class AbstractRxJava<C, S, E> implements Processor<C, S, E> {
         this.starts.clear();
         this.ends.clear();
         starts.forEachRemaining(this.starts::add);
-        this.prepareFlow(consumer::accept);
     }
 
-    protected abstract void prepareFlow(final io.reactivex.functions.Consumer<? super Traverser<C, E>> consumer);
-
     private void waitForCompletionOrResult() {
-        while (this.ends.isEmpty() && this.isRunning()) {
+        while (this.ends.isEmpty() && this.running.get()) {
             // wait until either the flow is complete or there is a traverser result
         }
     }

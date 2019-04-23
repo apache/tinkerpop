@@ -100,7 +100,6 @@ public final class Pipes<C, S, E> implements Processor<C, S, E> {
 
     @Override
     public Iterator<Traverser<C, E>> iterator(final Iterator<Traverser<C, S>> starts) {
-
         if (this.isRunning())
             throw Processor.Exceptions.processorIsCurrentlyRunning(this);
 

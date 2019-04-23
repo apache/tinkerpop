@@ -32,13 +32,13 @@ import org.apache.tinkerpop.machine.function.InitialFunction;
 import org.apache.tinkerpop.machine.function.MapFunction;
 import org.apache.tinkerpop.machine.function.ReduceFunction;
 import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
-import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 import org.apache.tinkerpop.machine.util.IteratorUtils;
 import org.reactivestreams.Publisher;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -56,7 +56,8 @@ public final class SerialRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
     }
 
     @Override
-    protected void prepareFlow(final Consumer<? super Traverser<C, E>> consumer) {
+    protected void prepareFlow(final Iterator<Traverser<C, S>> starts, final Consumer<? super Traverser<C, E>> consumer) {
+        super.prepareFlow(starts, consumer);
         this.disposable = this.flowable
                 .subscribeOn(Schedulers.newThread())  // don't block the execution so results can be streamed back in real-time
                 .doFinally(() -> this.running.set(Boolean.FALSE))
