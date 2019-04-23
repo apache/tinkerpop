@@ -89,7 +89,7 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
     @Override
     public void stop() {
         try {
-            if (null != this.pipelineResult)
+            if (this.isRunning())
                 this.pipelineResult.cancel();
         } catch (final IOException e) {
             throw new RuntimeException(e.getMessage(), e);

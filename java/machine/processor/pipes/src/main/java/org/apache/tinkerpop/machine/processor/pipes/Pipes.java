@@ -115,7 +115,6 @@ public final class Pipes<C, S, E> implements Processor<C, S, E> {
         if (this.isRunning())
             throw Processor.Exceptions.processorIsCurrentlyRunning(this);
 
-        this.alive.set(Boolean.TRUE);
         new Thread(() -> {
             final Iterator<Traverser<C, E>> iterator = this.iterator(starts);
             while (iterator.hasNext()) {
