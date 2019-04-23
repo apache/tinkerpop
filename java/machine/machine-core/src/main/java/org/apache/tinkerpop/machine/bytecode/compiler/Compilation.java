@@ -28,6 +28,7 @@ import org.apache.tinkerpop.machine.structure.EmptyStructure;
 import org.apache.tinkerpop.machine.structure.StructureFactory;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
+import org.apache.tinkerpop.machine.util.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -75,53 +76,51 @@ public final class Compilation<C, S, E> implements Serializable, Cloneable {
     }
 
     public Processor<C, S, E> getProcessor() {
-        if (null == this.processor)
-            this.processor = this.processorFactory.mint(this);
+        this.prepareProcessor();
         return this.processor;
     }
 
     private void prepareProcessor() {
         if (null == this.processor)
             this.processor = this.processorFactory.mint(this);
-        else
-            this.processor.reset();
     }
 
-    private Traverser<C, S> prepareTraverser(final Traverser<C, S> traverser) {
+    private Iterator<Traverser<C, S>> prepareTraverser(final Traverser<C, S> traverser) {
         final Traverser<C, S> clone = traverser.clone();
         clone.coefficient().unity();
-        return clone;
+        return IteratorUtils.of(clone);
     }
 
     public Traverser<C, E> mapTraverser(final Traverser<C, S> traverser) {
         this.prepareProcessor();
-        this.processor.addStart(this.prepareTraverser(traverser));
-        if (!this.processor.hasNext())
+        final Iterator<Traverser<C, E>> iterator = this.processor.iterator(this.prepareTraverser(traverser));
+        if (!iterator.hasNext())
             throw new RuntimeException("The nested traversal is not a map function: " + this);
-        return this.processor.next();
+        final Traverser<C, E> result = iterator.next();
+        this.processor.stop();
+        return result;
     }
 
     public Traverser<C, E> mapObject(final S object) {
         this.prepareProcessor();
-        this.processor.addStart(this.traverserFactory.create(this.functions.get(0), object));
-        return this.processor.next();
+        final Iterator<Traverser<C, E>> iterator = this.processor.iterator(this.prepareTraverser(this.traverserFactory.create(this.functions.get(0), object)));
+        final Traverser<C, E> result = iterator.next();
+        this.processor.stop();
+        return result;
     }
 
     public Iterator<Traverser<C, E>> flatMapTraverser(final Traverser<C, S> traverser) {
         this.prepareProcessor();
-        this.processor.addStart(this.prepareTraverser(traverser));
-        return this.processor;
+        final Iterator<Traverser<C, E>> iterator = this.processor.iterator(this.prepareTraverser(traverser));
+        return IteratorUtils.onLast(iterator, () -> processor.stop());
     }
 
     public boolean filterTraverser(final Traverser<C, S> traverser) {
         this.prepareProcessor();
-        this.processor.addStart(this.prepareTraverser(traverser));
-        return this.processor.hasNext();
-    }
-
-    public Processor<C, S, E> addTraverser(final Traverser<C, S> traverser) {
-        this.getProcessor().addStart(traverser);
-        return this.processor;
+        final Iterator<Traverser<C, E>> iterator = this.processor.iterator(this.prepareTraverser(traverser));
+        final boolean hasNext = iterator.hasNext();
+        this.processor.stop();
+        return hasNext;
     }
 
     public List<CFunction<C>> getFunctions() {

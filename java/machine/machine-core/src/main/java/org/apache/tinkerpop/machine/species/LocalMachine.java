@@ -26,6 +26,7 @@ import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.bytecode.compiler.SourceCompilation;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
@@ -76,8 +77,8 @@ public final class LocalMachine implements Machine {
         final UUID sourceId = LocalMachine.getSourceId(bytecode).orElse(null);
         final SourceCompilation<C> source = (SourceCompilation<C>) this.sources.get(sourceId);
         return null == source ?
-                Compilation.<C, Object, E>compile(bytecode).getProcessor() :
-                Compilation.<C, Object, E>compile(source, bytecode).getProcessor();
+                Compilation.<C, Object, E>compile(bytecode).getProcessor().iterator(Collections.emptyIterator()) :
+                Compilation.<C, Object, E>compile(source, bytecode).getProcessor().iterator(Collections.emptyIterator());
     }
 
     @Override

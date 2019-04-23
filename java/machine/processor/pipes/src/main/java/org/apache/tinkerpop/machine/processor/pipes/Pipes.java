@@ -31,9 +31,13 @@ import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.pipes.util.InMemoryReducer;
 import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.util.IteratorUtils;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -43,6 +47,7 @@ public final class Pipes<C, S, E> implements Processor<C, S, E> {
     private final List<Step<?, ?, ?>> steps = new ArrayList<>();
     private Step<C, ?, E> endStep;
     private SourceStep<C, S> startStep;
+    private AtomicBoolean alive = new AtomicBoolean(Boolean.FALSE);
 
     public Pipes(final Compilation<C, S, E> compilation) {
         Step<C, ?, S> previousStep = EmptyStep.instance();
@@ -81,25 +86,45 @@ public final class Pipes<C, S, E> implements Processor<C, S, E> {
     }
 
     @Override
-    public void addStart(final Traverser<C, S> traverser) {
-        this.startStep.addStart(traverser);
-    }
-
-    @Override
-    public Traverser<C, E> next() {
-        return this.endStep.next();
-    }
-
-    @Override
-    public boolean hasNext() {
-        return this.endStep.hasNext();
-    }
-
-    @Override
-    public void reset() {
+    public void stop() {
+        this.alive.set(Boolean.FALSE);
         for (final Step<?, ?, ?> step : this.steps) {
             step.reset();
         }
+    }
+
+    @Override
+    public boolean isRunning() {
+        return this.alive.get();
+    }
+
+    @Override
+    public Iterator<Traverser<C, E>> iterator(final Iterator<Traverser<C, S>> starts) {
+
+        if (this.isRunning())
+            throw Processor.Exceptions.processorIsCurrentlyRunning(this);
+
+        this.alive.set(Boolean.TRUE);
+        if (null != this.startStep)
+            starts.forEachRemaining(this.startStep::addStart);
+        return IteratorUtils.onLast(this.endStep, () -> this.alive.set(Boolean.FALSE));
+    }
+
+
+    @Override
+    public void subscribe(final Iterator<Traverser<C, S>> starts, final Consumer<Traverser<C, E>> consumer) {
+        if (this.isRunning())
+            throw Processor.Exceptions.processorIsCurrentlyRunning(this);
+
+        this.alive.set(Boolean.TRUE);
+        new Thread(() -> {
+            final Iterator<Traverser<C, E>> iterator = this.iterator(starts);
+            while (iterator.hasNext()) {
+                if (!this.alive.get())
+                    break;
+                consumer.accept(iterator.next());
+            }
+        }).start();
     }
 
     @Override

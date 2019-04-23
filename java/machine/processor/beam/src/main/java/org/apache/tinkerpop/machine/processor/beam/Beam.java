@@ -50,12 +50,14 @@ import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 import org.apache.tinkerpop.machine.traverser.species.EmptyTraverser;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -85,25 +87,46 @@ public class Beam<C, S, E> implements Processor<C, S, E> {
     }
 
     @Override
-    public void addStart(final Traverser<C, S> traverser) {
-        // TODO: use side-inputs
-    }
-
-    @Override
-    public Traverser<C, E> next() {
-        this.setupPipeline();
-        return this.iterator.next();
-    }
-
-    @Override
-    public boolean hasNext() {
-        this.setupPipeline();
-        return this.iterator.hasNext();
-    }
-
-    @Override
-    public void reset() {
+    public void stop() {
+        try {
+            if (null != this.pipelineResult)
+                this.pipelineResult.cancel();
+        } catch (final IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+        this.pipelineResult = null;
         this.iterator = null;
+    }
+
+    @Override
+    public boolean isRunning() {
+        return null != this.pipelineResult && !this.pipelineResult.getState().isTerminal();
+    }
+
+    @Override
+    public Iterator<Traverser<C, E>> iterator(final Iterator<Traverser<C, S>> starts) { // TODO: use side-inputs for starts
+        if (this.isRunning())
+            throw Processor.Exceptions.processorIsCurrentlyRunning(this);
+        return new Iterator<>() {
+            @Override
+            public boolean hasNext() {
+                setupPipeline();
+                return iterator.hasNext();
+            }
+
+            @Override
+            public Traverser<C, E> next() {
+                setupPipeline();
+                return iterator.next();
+            }
+        };
+    }
+
+    @Override
+    public void subscribe(final Iterator<Traverser<C, S>> starts, final Consumer<Traverser<C, E>> consumer) { // TODO: use side-inputs for starts
+        if (this.isRunning())
+            throw Processor.Exceptions.processorIsCurrentlyRunning(this);
+        // TODO: create an IteratorOutputFn and a ConsumerOutputFn and connect in setupPipeline()
     }
 
     @Override

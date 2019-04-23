@@ -19,19 +19,54 @@
 package org.apache.tinkerpop.machine.processor;
 
 import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.util.IteratorUtils;
 
 import java.util.Iterator;
+import java.util.function.Consumer;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Processor<C, S, E> extends Iterator<Traverser<C, E>> {
+public interface Processor<C, S, E> {
 
-    public void addStart(final Traverser<C, S> traverser);
+    /**
+     * A processor is started using {@link Processor#iterator(Iterator)} or {@link Processor#subscribe(Iterator, Consumer)}.
+     * When the iterator is empty or the subscriber has no more traversers to consume, then the process is no longer running.
+     *
+     * @return whether the processor is running
+     */
+    public boolean isRunning();
 
-    public Traverser<C, E> next();
+    /**
+     * When a processor is stopped, subscriptions and iteration are halted.
+     */
+    public void stop();
 
-    public boolean hasNext();
+    /**
+     * Start the processor and return a pull-based iterator.
+     * If pull-based iteration is used, then push-based subscription can not be used while the processor is running.
+     *
+     * @return an iterator of traverser results
+     */
+    public Iterator<Traverser<C, E>> iterator(final Iterator<Traverser<C, S>> starts);
 
-    public void reset();
+    public default Iterator<Traverser<C, E>> iterator(final Traverser<C, S> start) {
+        return this.iterator(IteratorUtils.of(start));
+    }
+
+    /**
+     * Start the processor and process the resultant traversers using the push-based consumer.
+     * If push-based subscription is used, then pull-based iteration can not be used while the processor is running.
+     *
+     * @param consumer a consumer of traversers results
+     */
+    public void subscribe(final Iterator<Traverser<C, S>> starts, final Consumer<Traverser<C, E>> consumer);
+
+    public class Exceptions {
+
+        public static IllegalStateException processorIsCurrentlyRunning(final Processor processor) {
+            return new IllegalStateException("The processor can not be started because it is currently running: " + processor);
+        }
+    }
+
 }

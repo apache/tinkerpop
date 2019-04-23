@@ -22,6 +22,10 @@ import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.util.FastNoSuchElementException;
 
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.function.Consumer;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -34,22 +38,22 @@ public final class EmptyProcessor<C, S, E> implements Processor<C, S, E>, Proces
     }
 
     @Override
-    public void addStart(final Traverser<C, S> traverser) {
+    public void stop() {
 
     }
 
     @Override
-    public Traverser<C, E> next() {
-        throw FastNoSuchElementException.instance();
-    }
-
-    @Override
-    public boolean hasNext() {
+    public boolean isRunning() {
         return false;
     }
 
     @Override
-    public void reset() {
+    public Iterator<Traverser<C, E>> iterator(final Iterator<Traverser<C,S>> starts) {
+        return Collections.emptyIterator();
+    }
+
+    @Override
+    public void subscribe(final Iterator<Traverser<C,S>> starts,  final Consumer<Traverser<C, E>> consumer) {
 
     }
 

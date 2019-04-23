@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.machine.processor.rxjava;
 
 import io.reactivex.Flowable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.processors.PublishProcessor;
 import io.reactivex.schedulers.Schedulers;
 import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
@@ -31,6 +32,7 @@ import org.apache.tinkerpop.machine.function.InitialFunction;
 import org.apache.tinkerpop.machine.function.MapFunction;
 import org.apache.tinkerpop.machine.function.ReduceFunction;
 import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
+import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 import org.apache.tinkerpop.machine.util.IteratorUtils;
@@ -54,14 +56,11 @@ public final class SerialRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
     }
 
     @Override
-    protected void prepareFlow() {
-        if (!this.executed) {
-            this.executed = true;
-            this.disposable = this.flowable.
-                    doOnNext(this.ends::add).
-                    subscribeOn(Schedulers.newThread()).subscribe(); // don't block the execution so results can be streamed back in real-time
-        }
-        this.waitForCompletionOrResult();
+    protected void prepareFlow(final Consumer<? super Traverser<C, E>> consumer) {
+        this.disposable = this.flowable
+                .subscribeOn(Schedulers.newThread())  // don't block the execution so results can be streamed back in real-time
+                .doFinally(() -> this.running.set(Boolean.FALSE))
+                .subscribe(consumer);
     }
 
     // EXECUTION PLAN COMPILER

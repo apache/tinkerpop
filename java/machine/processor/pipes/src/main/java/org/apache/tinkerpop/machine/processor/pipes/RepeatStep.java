@@ -22,6 +22,10 @@ import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserSet;
+import org.apache.tinkerpop.machine.util.IteratorUtils;
+
+import java.util.Collections;
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -34,6 +38,8 @@ final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
     private final Compilation<C, S, ?> untilCompilation;
     private final Compilation<C, S, ?> emitCompilation;
     private final Compilation<C, S, S> repeat;
+    private Iterator<Traverser<C, S>> repeatIterator = Collections.emptyIterator();
+    private TraverserSet<C, S> repeatStarts = new TraverserSet<>();
     private TraverserSet<C, S> outputTraversers = new TraverserSet<>();
     private TraverserSet<C, S> inputTraversers = new TraverserSet<>();
     private final boolean hasStartPredicates;
@@ -72,19 +78,19 @@ final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
                         this.outputTraversers.add(traverser);
                     } else if (2 == this.emitLocation && this.emitCompilation.filterTraverser(traverser)) {
                         this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
-                        this.repeat.addTraverser(traverser);
+                        this.repeatStarts.add(traverser);
                     } else
-                        this.repeat.addTraverser(traverser);
+                        this.repeatStarts.add(traverser);
                 } else if (1 == this.emitLocation) {
                     if (this.emitCompilation.filterTraverser(traverser))
                         this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
                     if (2 == this.untilLocation && this.untilCompilation.filterTraverser(traverser))
                         this.outputTraversers.add(traverser.repeatDone(this.repeatBranch));
                     else
-                        this.repeat.addTraverser(traverser);
+                        this.repeatStarts.add(traverser);
                 }
             } else {
-                this.repeat.addTraverser(traverser);
+                this.repeatStarts.add(traverser);
             }
             return true;
         }
@@ -92,9 +98,9 @@ final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
     }
 
     private void stageOutput() {
-        while (this.outputTraversers.isEmpty() && (this.repeat.getProcessor().hasNext() || this.stageInput())) {
-            if (this.repeat.getProcessor().hasNext()) {
-                final Traverser<C, S> traverser = this.repeat.getProcessor().next().repeatLoop(this.repeatBranch);
+        while (this.outputTraversers.isEmpty() && (this.repeatIterator.hasNext() || this.stageInput())) {
+            if (this.repeatIterator.hasNext()) {
+                final Traverser<C, S> traverser = this.repeatIterator.next().repeatLoop(this.repeatBranch);
                 if (this.hasEndPredicates) {
                     if (3 == this.untilLocation) {
                         if (this.untilCompilation.filterTraverser(traverser)) {
@@ -115,6 +121,8 @@ final class RepeatStep<C, S> extends AbstractStep<C, S, S> {
                 } else {
                     this.inputTraversers.add(traverser);
                 }
+            } else {
+                this.repeatIterator = this.repeat.getProcessor().iterator(IteratorUtils.removeOnNext(this.repeatStarts.iterator()));
             }
         }
     }

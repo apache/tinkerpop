@@ -20,6 +20,8 @@ package org.apache.tinkerpop.machine.processor;
 
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
+import java.util.Iterator;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -32,9 +34,8 @@ public final class FilterProcessor<C, S> extends SimpleProcessor<C, S, S> {
     }
 
     @Override
-    public void addStart(final Traverser<C, S> traverser) {
+    protected void processTraverser(Iterator<Traverser<C, S>> starts) {
         if (this.allow)
-            this.traverser = traverser;
+            this.traverser = starts.next();
     }
-
 }

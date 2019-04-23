@@ -23,6 +23,7 @@ import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
+import java.util.Collections;
 import java.util.Iterator;
 
 /**
@@ -46,7 +47,7 @@ public final class BasicMachine implements Machine {
 
     @Override
     public <C, E> Iterator<Traverser<C, E>> submit(final Bytecode<C> bytecode) {
-        return Compilation.<C, Object, E>compile(bytecode).getProcessor();
+        return Compilation.<C, Object, E>compile(bytecode).getProcessor().iterator(Collections.emptyIterator());
     }
 
     public static Machine open() {

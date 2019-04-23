@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.machine.processor.rxjava;
 
 import io.reactivex.Flowable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.parallel.ParallelFlowable;
 import io.reactivex.processors.PublishProcessor;
 import io.reactivex.schedulers.Schedulers;
@@ -33,6 +34,7 @@ import org.apache.tinkerpop.machine.function.InitialFunction;
 import org.apache.tinkerpop.machine.function.MapFunction;
 import org.apache.tinkerpop.machine.function.ReduceFunction;
 import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
+import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 import org.apache.tinkerpop.machine.util.IteratorUtils;
@@ -63,22 +65,19 @@ public final class ParallelRxJava<C, S, E> extends AbstractRxJava<C, S, E> {
     }
 
     @Override
-    protected void prepareFlow() {
-        if (!this.executed) {
-            this.executed = true;
-            this.disposable = this.flowable.
-                    doOnNext(this.ends::add).
-                    sequential().
-                    doFinally(() -> {
-                        if (null != this.bytecodeId) { // only the parent compilation should close the thread pool
-                            this.threadPool.shutdown();
-                            RxJavaProcessor.THREAD_POOLS.remove(this.bytecodeId);
-                        }
-                    }).
-                    subscribeOn(Schedulers.newThread()).subscribe(); // don't block the execution so results can be streamed back in real-time
-
-        }
-        this.waitForCompletionOrResult();
+    protected void prepareFlow(final Consumer<? super Traverser<C, E>> consumer) {
+        this.disposable = this.flowable
+                .doOnNext(consumer)
+                .sequential()
+                .subscribeOn(Schedulers.newThread()) // don't block the execution so results can be streamed back in real-time
+                .doFinally(() -> {
+                    if (null != this.bytecodeId) { // only the parent compilation should close the thread pool
+                        RxJavaProcessor.THREAD_POOLS.remove(this.bytecodeId);
+                        this.threadPool.shutdown();
+                    }
+                    this.running.set(Boolean.FALSE);
+                })
+                .subscribe();
     }
 
     // EXECUTION PLAN COMPILER

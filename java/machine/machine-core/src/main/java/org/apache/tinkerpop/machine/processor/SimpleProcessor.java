@@ -22,6 +22,9 @@ import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.util.FastNoSuchElementException;
 
+import java.util.Iterator;
+import java.util.function.Consumer;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -30,23 +33,42 @@ public abstract class SimpleProcessor<C, S, E> implements Processor<C, S, E>, Pr
     protected Traverser<C, E> traverser = null;
 
     @Override
-    public Traverser<C, E> next() {
-        if (null == this.traverser)
-            throw FastNoSuchElementException.instance();
-        else {
-            final Traverser<C, E> temp = this.traverser;
-            this.traverser = null;
-            return temp;
-        }
+    public void stop() {
+        this.traverser = null;
     }
 
     @Override
-    public boolean hasNext() {
+    public boolean isRunning() {
         return null != this.traverser;
     }
 
     @Override
-    public void reset() {
+    public Iterator<Traverser<C, E>> iterator(final Iterator<Traverser<C, S>> starts) {
+        this.processTraverser(starts);
+        return new Iterator<>() {
+            @Override
+            public boolean hasNext() {
+                return null != traverser;
+            }
+
+            @Override
+            public Traverser<C, E> next() {
+                if (null == traverser)
+                    throw FastNoSuchElementException.instance();
+                else {
+                    final Traverser<C, E> temp = traverser;
+                    traverser = null;
+                    return temp;
+                }
+            }
+        };
+    }
+
+    @Override
+    public void subscribe(final Iterator<Traverser<C, S>> starts, final Consumer<Traverser<C, E>> consumer) {
+        this.processTraverser(starts);
+        if (null != this.traverser)
+            consumer.accept(this.traverser);
         this.traverser = null;
     }
 
@@ -54,4 +76,6 @@ public abstract class SimpleProcessor<C, S, E> implements Processor<C, S, E>, Pr
     public <D, T, F> Processor<D, T, F> mint(final Compilation<D, T, F> compilation) {
         return (Processor<D, T, F>) this;
     }
+
+    protected abstract void processTraverser(final Iterator<Traverser<C, S>> starts);
 }

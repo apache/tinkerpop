@@ -75,7 +75,40 @@ public final class IteratorUtils {
         return ix;
     }
 
-    public static final long count(final Iterable iterable) {
+    public static <S> Iterator<S> onLast(final Iterator<S> iterator, final Runnable onLast) {
+        return new Iterator<>() {
+            boolean lastExecuted = false;
+
+            @Override
+            public boolean hasNext() {
+                final boolean hasNext = iterator.hasNext();
+                if (!hasNext && !this.lastExecuted) {
+                    this.lastExecuted = true;
+                    onLast.run();
+                }
+                return hasNext;
+            }
+
+            @Override
+            public void remove() {
+                iterator.remove();
+            }
+
+            @Override
+            public S next() {
+                try {
+                    return iterator.next();
+                } finally {
+                    if (!iterator.hasNext() && !this.lastExecuted) {
+                        this.lastExecuted = true;
+                        onLast.run();
+                    }
+                }
+            }
+        };
+    }
+
+    public static long count(final Iterable iterable) {
         return IteratorUtils.count(iterable.iterator());
     }
 
