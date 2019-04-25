@@ -1103,7 +1103,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
      * @since 3.1.0-incubating
      */
-    public default GraphTraversal<S, E> to(final Traversal<?, Vertex> toVertex) {
+    public default GraphTraversal<S, E> to(final Traversal<?, ?> toVertex) {
         this.asAdmin().getBytecode().addStep(Symbols.to, toVertex);
         ((FromToModulating) this.asAdmin().getEndStep()).addTo(toVertex.asAdmin());
         return this;
@@ -1118,7 +1118,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
      * @since 3.1.0-incubating
      */
-    public default GraphTraversal<S, E> from(final Traversal<?, Vertex> fromVertex) {
+    public default GraphTraversal<S, E> from(final Traversal<?, ?> fromVertex) {
         this.asAdmin().getBytecode().addStep(Symbols.from, fromVertex);
         ((FromToModulating) this.asAdmin().getEndStep()).addFrom(fromVertex.asAdmin());
         return this;
