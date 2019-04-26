@@ -35,6 +35,19 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.4.1/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Gremlin Console Timeout
+
+The Gremlin Console timeout that is set by `:remote config timeout x` was client-side only in prior versions, which
+meant that if the console timeout was less than the server timeout the client would timeout but the server might still
+be processing the request. Similarly, a longer timeout on the console would not change the server and the timeout
+would occur sooner than expected. These discrepancies often led to confusion.
+
+As of 3.4.0, the Java Driver API allowed for timeout settings to be more easily passed per request, so the console
+was modified for this current version to pass the console timeout for each remote submission thus yielding more
+consistent and intuitive behavior.
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-2203[TINKERPOP-2203]
+
 ==== Mix SPARQL and Gremlin
 
 In the initial release of `sparql-gremlin` it was only possible to execute a SPARQL query and have it translate to

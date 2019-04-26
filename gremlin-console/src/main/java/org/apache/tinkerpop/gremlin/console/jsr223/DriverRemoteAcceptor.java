@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.console.jsr223;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
@@ -172,7 +173,12 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
             final Optional<ResponseException> inner = findResponseException(ex);
             if (inner.isPresent()) {
                 final ResponseException responseException = inner.get();
-                if (responseException.getResponseStatusCode() == ResponseStatusCode.SERVER_ERROR_SERIALIZATION)
+                if (responseException.getResponseStatusCode() == ResponseStatusCode.SERVER_ERROR_TIMEOUT) {
+                    if (timeout > NO_TIMEOUT)
+                        throw new RemoteException(String.format("Request timed out at %s ms - increase the timeout with the :remote command", timeout));
+                    else
+                        throw new RemoteException(String.format("Request timed out at %s ms - increase the timeout with the :remote command", timeout));
+                } else if (responseException.getResponseStatusCode() == ResponseStatusCode.SERVER_ERROR_SERIALIZATION)
                     throw new RemoteException(String.format(
                             "Server could not serialize the result requested. Server error - %s. Note that the class must be serializable by the client and server for proper operation.", responseException.getMessage()),
                             responseException.getRemoteStackTrace().orElse(null));
@@ -202,10 +208,12 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
 
     private List<Result> send(final String gremlin) throws SaslException {
         try {
-            final ResultSet rs = this.currentClient.submitAsync(gremlin, aliases, Collections.emptyMap()).get();
-            return timeout > NO_TIMEOUT ? rs.all().get(timeout, TimeUnit.MILLISECONDS) : rs.all().get();
-        } catch(TimeoutException ignored) {
-            throw new IllegalStateException("Request timed out while processing - increase the timeout with the :remote command");
+            final RequestOptions.Builder options = RequestOptions.build();
+            aliases.forEach(options::addAlias);
+            if (timeout > NO_TIMEOUT)
+                options.timeout(timeout);
+
+            return this.currentClient.submit(gremlin, options.create()).all().get();
         } catch (Exception e) {
             // handle security error as-is and unwrapped
             final Optional<Throwable> throwable  = Stream.of(ExceptionUtils.getThrowables(e)).filter(t -> t instanceof SaslException).findFirst();
