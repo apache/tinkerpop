@@ -16,26 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.data;
+package org.apache.tinkerpop.machine.structure.table;
 
-import org.apache.tinkerpop.machine.util.MultiIterator;
-
-import java.util.Iterator;
+import org.apache.tinkerpop.machine.structure.TTuple;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TVertex<V> extends TElement<V> {
-
-    public Iterator<TEdge<V>> inEdges();
-
-    public Iterator<TEdge<V>> outEdges();
-
-    public default Iterator<TEdge<V>> bothEdges() {
-        final MultiIterator<TEdge<V>> iterator = new MultiIterator<>();
-        iterator.addIterator(this.inEdges());
-        iterator.addIterator(this.outEdges());
-        return iterator;
-    }
-
+public interface TDatabase extends TTuple<String,TTable> {
 }

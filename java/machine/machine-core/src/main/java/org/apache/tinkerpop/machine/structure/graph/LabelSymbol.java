@@ -16,22 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.data;
+package org.apache.tinkerpop.machine.structure.graph;
 
-import org.apache.tinkerpop.machine.util.IteratorUtils;
-
-import java.util.Iterator;
+import org.apache.tinkerpop.machine.structure.TSymbol;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TEdge<V> extends TElement<V> {
-
-    public TVertex<V> inVertex();
-
-    public TVertex<V> outVertex();
-
-    public default Iterator<TVertex<V>> bothVertices() {
-        return IteratorUtils.of(this.inVertex(), this.outVertex());
-    }
+public class LabelSymbol implements TSymbol {
 }

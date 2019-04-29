@@ -23,18 +23,15 @@ import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.ReduceFunction;
-import org.apache.tinkerpop.machine.structure.data.JMap;
-import org.apache.tinkerpop.machine.structure.data.TMap;
+import org.apache.tinkerpop.machine.structure.util.JTuple;
+import org.apache.tinkerpop.machine.structure.TTuple;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.util.StringFactory;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupCountReduce<C, S, E> extends AbstractFunction<C> implements ReduceFunction<C, S, TMap<E, Long>> {
+public final class GroupCountReduce<C, S, E> extends AbstractFunction<C> implements ReduceFunction<C, S, TTuple<E, Long>> {
 
     private Compilation<C, S, E> byCompilation;
 
@@ -44,23 +41,23 @@ public final class GroupCountReduce<C, S, E> extends AbstractFunction<C> impleme
     }
 
     @Override
-    public TMap<E, Long> apply(final Traverser<C, S> traverser, final TMap<E, Long> currentValue) {
+    public TTuple<E, Long> apply(final Traverser<C, S> traverser, final TTuple<E, Long> currentValue) {
         final E object = null == this.byCompilation ? (E) traverser.object() : this.byCompilation.mapObject(traverser.object()).object();
-        currentValue.set(object, traverser.coefficient().count() + currentValue.get(object, 0L));
+        currentValue.set(object, traverser.coefficient().count() + currentValue.value(object, 0L));
         return currentValue;
     }
 
     @Override
-    public TMap<E, Long> merge(final TMap<E, Long> valueA, final TMap<E, Long> valueB) {
-        final Map<E, Long> newMap = new HashMap<>();
-        valueA.entries().forEachRemaining(entry -> newMap.put(entry.getA(), entry.getB()));
-        valueB.entries().forEachRemaining(entry -> newMap.put(entry.getA(), entry.getB()));
-        return new JMap<>(newMap);
+    public TTuple<E, Long> merge(final TTuple<E, Long> valueA, final TTuple<E, Long> valueB) {
+        final JTuple<E, Long> tuple = new JTuple<>();
+        valueA.entries().forEach(entry -> tuple.set(entry.key(), entry.value()));
+        valueB.entries().forEach(entry -> tuple.set(entry.key(), entry.value()));
+        return new JTuple<>();
     }
 
     @Override
-    public TMap<E, Long> getInitialValue() {
-        return new JMap<>(new HashMap<>());
+    public TTuple<E, Long> getInitialValue() {
+        return new JTuple<>();
     }
 
     @Override

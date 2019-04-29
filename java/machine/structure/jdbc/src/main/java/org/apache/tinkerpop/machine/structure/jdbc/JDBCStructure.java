@@ -16,15 +16,34 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.data;
+package org.apache.tinkerpop.machine.structure.jdbc;
+
+import org.apache.tinkerpop.machine.strategy.Strategy;
+import org.apache.tinkerpop.machine.structure.Structure;
+import org.apache.tinkerpop.machine.structure.StructureFactory;
+import org.apache.tinkerpop.machine.structure.jdbc.strategy.JDBCStrategy;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TTuple2<A, B> {
+public class JDBCStructure implements StructureFactory {
 
-    public A getA();
+    private final Map<String, Object> configuration;
 
-    public B getB();
+    public JDBCStructure(final Map<String, Object> configuration) {
+        this.configuration = configuration;
+    }
 
+    @Override
+    public Set<Strategy<?>> getStrategies() {
+        return Set.of(new JDBCStrategy());
+    }
+
+    @Override
+    public Structure mint() {
+        return new JDBCDatabase((String) this.configuration.get("jdbc.connection"));
+    }
 }

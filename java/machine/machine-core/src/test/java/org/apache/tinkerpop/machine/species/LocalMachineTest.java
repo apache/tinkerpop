@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.machine.species;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.bytecode.compiler.CommonCompiler;
+import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler;
 import org.apache.tinkerpop.machine.strategy.finalization.CoefficientStrategy;
 import org.apache.tinkerpop.machine.strategy.optimization.IdentityStrategy;
 import org.apache.tinkerpop.machine.strategy.verification.CoefficientVerificationStrategy;
@@ -40,8 +40,8 @@ class LocalMachineTest {
         assertEquals(0, machine.sources.size());
         ///
         final Bytecode<Long> sourceCode = new Bytecode<>();
-        sourceCode.addSourceInstruction(CommonCompiler.Symbols.WITH_STRATEGY, IdentityStrategy.class);
-        sourceCode.addSourceInstruction(CommonCompiler.Symbols.WITH_STRATEGY, CoefficientStrategy.class);
+        sourceCode.addSourceInstruction(CoreCompiler.Symbols.WITH_STRATEGY, IdentityStrategy.class);
+        sourceCode.addSourceInstruction(CoreCompiler.Symbols.WITH_STRATEGY, CoefficientStrategy.class);
         assertEquals(2, sourceCode.getSourceInstructions().size());
         assertEquals(0, sourceCode.getInstructions().size());
         ///
@@ -70,7 +70,7 @@ class LocalMachineTest {
         assertEquals(bytecode, machine.register(bytecode));
         assertEquals(1, machine.sources.size());
         ///
-        bytecode.addSourceInstruction(CommonCompiler.Symbols.WITH_STRATEGY, CoefficientVerificationStrategy.class);
+        bytecode.addSourceInstruction(CoreCompiler.Symbols.WITH_STRATEGY, CoefficientVerificationStrategy.class);
         assertFalse(machine.submit(bytecode).hasNext());
         assertEquals(1, machine.sources.size());
         assertNotEquals(bytecode, machine.register(bytecode));

@@ -19,9 +19,8 @@
 package org.apache.tinkerpop.machine.processor.beam;
 
 import org.apache.tinkerpop.machine.bytecode.compiler.BytecodeCompiler;
-import org.apache.tinkerpop.machine.bytecode.compiler.CommonCompiler;
-import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler;
+import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.processor.beam.strategy.BeamStrategy;
@@ -39,16 +38,12 @@ import java.util.Set;
  */
 public class BeamProcessor implements ProcessorFactory {
 
-    private static final List<BytecodeCompiler> COMPILERS = List.of(CoreCompiler.instance(), CommonCompiler.instance());
+    private static final List<BytecodeCompiler> COMPILERS = List.of(CoreCompiler.instance());
     private static final int DEFAULT_SERVER_PORT = 8888;
     public static final String TRAVERSER_SERVER_LOCATION = "beam.traverserServer.location";
     public static final String TRAVERSER_SERVER_PORT = "beam.traverserServer.port";
 
     private final Map<String, Object> configuration;
-
-    public BeamProcessor() {
-        this.configuration = Collections.emptyMap();
-    }
 
     public BeamProcessor(final Map<String, Object> configuration) {
         this.configuration = configuration;

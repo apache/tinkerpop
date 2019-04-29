@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.language.gremlin;
 
-import org.apache.tinkerpop.language.gremlin.common.CommonTraversal;
+import org.apache.tinkerpop.language.gremlin.core.CoreTraversal;
 import org.apache.tinkerpop.machine.Machine;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
@@ -31,7 +31,8 @@ import org.apache.tinkerpop.machine.strategy.decoration.ExplainStrategy;
 import org.apache.tinkerpop.machine.strategy.finalization.CoefficientStrategy;
 import org.apache.tinkerpop.machine.strategy.verification.CoefficientVerificationStrategy;
 import org.apache.tinkerpop.machine.structure.StructureFactory;
-import org.apache.tinkerpop.machine.structure.data.TVertex;
+import org.apache.tinkerpop.machine.structure.graph.TVertex;
+import org.apache.tinkerpop.machine.structure.table.TDatabase;
 
 import java.util.Map;
 
@@ -78,6 +79,12 @@ public class TraversalSource<C> implements Cloneable {
         return clone;
     }
 
+    public TraversalSource<C> withStructure(final Class<? extends StructureFactory> structure, final Map<String, Object> configuration) {
+        final TraversalSource<C> clone = this.clone();
+        clone.bytecode.addSourceInstruction(Symbols.WITH_STRUCTURE, structure, configuration);
+        return clone;
+    }
+
     public TraversalSource<C> withStrategy(final Class<? extends Strategy> strategy) {
         final TraversalSource<C> clone = this.clone();
         clone.bytecode.addSourceInstruction(Symbols.WITH_STRATEGY, strategy);
@@ -91,7 +98,7 @@ public class TraversalSource<C> implements Cloneable {
         final Bytecode<C> bytecode = this.bytecode.clone();
         final Coefficient<C> coefficient = this.coefficient.clone();
         bytecode.addInstruction(coefficient, Symbols.INITIAL, objects);
-        return new CommonTraversal<>(this.machine, bytecode, coefficient); // TODO
+        return new CoreTraversal<>(this.machine, bytecode, coefficient); // TODO
     }
 
     public Traversal<C, TVertex, TVertex> V() {
@@ -99,7 +106,15 @@ public class TraversalSource<C> implements Cloneable {
         final Bytecode<C> bytecode = this.bytecode.clone();
         final Coefficient<C> coefficient = this.coefficient.clone();
         bytecode.addInstruction(coefficient, Symbols.V);
-        return new CommonTraversal<>(this.machine, bytecode, coefficient); // TODO
+        return new CoreTraversal<>(this.machine, bytecode, coefficient); // TODO
+    }
+
+    public Traversal<C, TDatabase, TDatabase> db() {
+        this.prepareSourceCode();
+        final Bytecode<C> bytecode = this.bytecode.clone();
+        final Coefficient<C> coefficient = this.coefficient.clone();
+        bytecode.addInstruction(coefficient, Symbols.DB);
+        return new CoreTraversal<>(this.machine, bytecode, coefficient); // TODO
     }
 
     //

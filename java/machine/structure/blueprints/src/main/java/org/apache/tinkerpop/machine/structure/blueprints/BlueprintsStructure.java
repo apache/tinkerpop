@@ -36,8 +36,12 @@ public class BlueprintsStructure implements StructureFactory {
 
     private static final List<BytecodeCompiler> COMPILERS = List.of(BlueprintsCompiler.instance());
 
+    public BlueprintsStructure(final Map<String, Object> configuration) {
+
+    }
+
     @Override
-    public Structure mint(final Map<String, Object> configuration) {
+    public Structure mint() {
         return new Blueprints();
     }
 

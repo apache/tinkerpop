@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine;
 
-import org.apache.tinkerpop.language.gremlin.common.__;
+import org.apache.tinkerpop.language.gremlin.core.__;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.compiler.Order;
 import org.junit.jupiter.api.Test;
@@ -29,10 +29,10 @@ import java.util.stream.Stream;
 
 import static org.apache.tinkerpop.language.gremlin.P.gt;
 import static org.apache.tinkerpop.language.gremlin.P.lt;
-import static org.apache.tinkerpop.language.gremlin.common.__.choose;
-import static org.apache.tinkerpop.language.gremlin.common.__.incr;
-import static org.apache.tinkerpop.language.gremlin.common.__.is;
-import static org.apache.tinkerpop.language.gremlin.common.__.union;
+import static org.apache.tinkerpop.language.gremlin.core.__.choose;
+import static org.apache.tinkerpop.language.gremlin.core.__.incr;
+import static org.apache.tinkerpop.language.gremlin.core.__.is;
+import static org.apache.tinkerpop.language.gremlin.core.__.union;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

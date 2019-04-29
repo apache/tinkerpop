@@ -20,8 +20,8 @@ package org.apache.tinkerpop.machine.structure.blueprints.strategy.provider;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
-import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler;
 import org.apache.tinkerpop.machine.bytecode.Instruction;
+import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.strategy.AbstractStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 import org.apache.tinkerpop.machine.structure.blueprints.bytecode.compiler.BlueprintsCompiler;
@@ -34,7 +34,7 @@ public class BlueprintsVerticesStrategy extends AbstractStrategy<Strategy.Provid
     public <C> void apply(final Bytecode<C> bytecode) {
         Instruction<C> temp = null;
         for (final Instruction<C> instruction : bytecode.getInstructions()) {
-            if (instruction.op().equals(CoreCompiler.Symbols.V))
+            if (instruction.op().equals(Symbols.V))
                 temp = instruction;
         }
         if (null != temp)

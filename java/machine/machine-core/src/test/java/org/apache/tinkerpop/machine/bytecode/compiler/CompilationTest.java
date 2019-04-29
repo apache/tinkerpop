@@ -21,7 +21,7 @@ package org.apache.tinkerpop.machine.bytecode.compiler;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
-import org.apache.tinkerpop.machine.structure.data.TMap;
+import org.apache.tinkerpop.machine.structure.TTuple;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -38,12 +38,12 @@ class CompilationTest {
     void shouldCloneCorrectly() {
         final Bytecode<Long> bytecode = new Bytecode<>();
         final Bytecode<Long> inner = new Bytecode<>();
-        inner.addInstruction(LongCoefficient.create(), CommonCompiler.Symbols.VALUE, "name");
-        bytecode.addInstruction(LongCoefficient.create(), CommonCompiler.Symbols.HAS_KEY, "eq", inner);
-        bytecode.addInstruction(LongCoefficient.create(), CommonCompiler.Symbols.COUNT);
+        inner.addInstruction(LongCoefficient.create(), CoreCompiler.Symbols.VALUE, "name");
+        bytecode.addInstruction(LongCoefficient.create(), CoreCompiler.Symbols.HAS_KEY, "eq", inner);
+        bytecode.addInstruction(LongCoefficient.create(), CoreCompiler.Symbols.COUNT);
 
-        final Compilation<Long, TMap, Long> compilationA = Compilation.compile(bytecode);
-        final Compilation<Long, TMap, Long> compilationB = compilationA.clone();
+        final Compilation<Long, TTuple, Long> compilationA = Compilation.compile(bytecode);
+        final Compilation<Long, TTuple, Long> compilationB = compilationA.clone();
         assertEquals(compilationA.hashCode(), compilationB.hashCode());
         assertEquals(compilationA, compilationB);
         assertNotSame(compilationA, compilationB);

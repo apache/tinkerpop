@@ -23,14 +23,14 @@ import org.apache.tinkerpop.machine.bytecode.compiler.Argument;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.FilterFunction;
-import org.apache.tinkerpop.machine.structure.data.TMap;
+import org.apache.tinkerpop.machine.structure.TTuple;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.util.StringFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class HasKeyValueFilter<C, K, V> extends AbstractFunction<C> implements FilterFunction<C, TMap<K, V>> {
+public final class HasKeyValueFilter<C, K, V> extends AbstractFunction<C> implements FilterFunction<C, TTuple<K, V>> {
 
     private Argument<K> key;
     private Argument<V> value;
@@ -42,9 +42,9 @@ public final class HasKeyValueFilter<C, K, V> extends AbstractFunction<C> implem
     }
 
     @Override
-    public boolean test(final Traverser<C, TMap<K, V>> traverser) {
-        final TMap<K, V> object = traverser.object();
-        return this.value.mapArg(traverser).equals(object.get(this.key.mapArg(traverser)));
+    public boolean test(final Traverser<C, TTuple<K, V>> traverser) {
+        final TTuple<K, V> object = traverser.object();
+        return this.value.mapArg(traverser).equals(object.value(this.key.mapArg(traverser)));
     }
 
     @Override

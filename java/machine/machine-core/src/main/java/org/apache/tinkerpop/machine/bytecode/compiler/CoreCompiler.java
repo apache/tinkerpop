@@ -21,16 +21,30 @@ package org.apache.tinkerpop.machine.bytecode.compiler;
 import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.function.barrier.JoinBarrier;
+import org.apache.tinkerpop.machine.function.barrier.OrderBarrier;
 import org.apache.tinkerpop.machine.function.barrier.StallBarrier;
 import org.apache.tinkerpop.machine.function.branch.BranchBranch;
 import org.apache.tinkerpop.machine.function.branch.RepeatBranch;
 import org.apache.tinkerpop.machine.function.filter.FilterFilter;
+import org.apache.tinkerpop.machine.function.filter.HasKeyFilter;
+import org.apache.tinkerpop.machine.function.filter.HasKeyValueFilter;
+import org.apache.tinkerpop.machine.function.filter.IdentityFilter;
+import org.apache.tinkerpop.machine.function.filter.IsFilter;
 import org.apache.tinkerpop.machine.function.flatmap.FlatMapFlatMap;
+import org.apache.tinkerpop.machine.function.flatmap.UnfoldFlatMap;
+import org.apache.tinkerpop.machine.function.flatmap.ValuesFlatMap;
+import org.apache.tinkerpop.machine.function.initial.DbInitial;
 import org.apache.tinkerpop.machine.function.initial.InitialInitial;
+import org.apache.tinkerpop.machine.function.map.ConstantMap;
+import org.apache.tinkerpop.machine.function.map.IncrMap;
+import org.apache.tinkerpop.machine.function.map.LoopsMap;
 import org.apache.tinkerpop.machine.function.map.MapMap;
 import org.apache.tinkerpop.machine.function.map.PathMap;
+import org.apache.tinkerpop.machine.function.map.ValueMap;
+import org.apache.tinkerpop.machine.function.reduce.CountReduce;
 import org.apache.tinkerpop.machine.function.reduce.GroupCountReduce;
 import org.apache.tinkerpop.machine.function.reduce.ReduceReduce;
+import org.apache.tinkerpop.machine.function.reduce.SumReduce;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,16 +67,32 @@ public final class CoreCompiler implements BytecodeCompiler {
     private static final Map<String, FunctionType> OP_TYPES = new HashMap<>() {{
         put(Symbols.BARRIER, FunctionType.BARRIER);
         put(Symbols.BRANCH, FunctionType.BRANCH);
+        put(Symbols.CONSTANT, FunctionType.MAP);
+        put(Symbols.COUNT, FunctionType.REDUCE);
         put(Symbols.FILTER, FunctionType.FILTER);
         put(Symbols.FLATMAP, FunctionType.FLATMAP);
         put(Symbols.GROUP_COUNT, FunctionType.REDUCE);
+        put(Symbols.HAS_KEY, FunctionType.FILTER);
+        put(Symbols.HAS_KEY_VALUE, FunctionType.FILTER);
+        put(Symbols.IDENTITY, FunctionType.FILTER);
+        put(Symbols.INCR, FunctionType.MAP);
         put(Symbols.INITIAL, FunctionType.INITIAL);
+        put(Symbols.IS, FunctionType.FILTER);
         put(Symbols.JOIN, FunctionType.BARRIER);
+        put(Symbols.LOOPS, FunctionType.MAP);
         put(Symbols.MAP, FunctionType.MAP);
+        put(Symbols.ORDER, FunctionType.BARRIER);
         put(Symbols.PATH, FunctionType.MAP);
         put(Symbols.REDUCE, FunctionType.REDUCE);
         put(Symbols.REPEAT, FunctionType.BRANCH);
+        put(Symbols.SUM, FunctionType.REDUCE);
+        put(Symbols.UNFOLD, FunctionType.FLATMAP);
         put(Symbols.V, FunctionType.FLATMAP);
+        put(Symbols.VALUE, FunctionType.MAP);
+        put(Symbols.VALUES, FunctionType.FLATMAP);
+
+        //
+        put(Symbols.DB, FunctionType.FLATMAP);
     }};
 
     @Override
@@ -72,24 +102,52 @@ public final class CoreCompiler implements BytecodeCompiler {
                 return StallBarrier.compile(instruction);
             case Symbols.BRANCH:
                 return BranchBranch.compile(instruction);
+            case Symbols.CONSTANT:
+                return ConstantMap.compile(instruction);
+            case Symbols.COUNT:
+                return CountReduce.compile(instruction);
             case Symbols.FILTER:
                 return FilterFilter.compile(instruction);
             case Symbols.FLATMAP:
                 return FlatMapFlatMap.compile(instruction);
             case Symbols.GROUP_COUNT:
                 return GroupCountReduce.compile(instruction);
+            case Symbols.HAS_KEY:
+                return HasKeyFilter.compile(instruction);
+            case Symbols.HAS_KEY_VALUE:
+                return HasKeyValueFilter.compile(instruction);
+            case Symbols.IDENTITY:
+                return IdentityFilter.compile(instruction);
+            case Symbols.INCR:
+                return IncrMap.compile(instruction);
             case Symbols.INITIAL:
                 return InitialInitial.compile(instruction);
+            case Symbols.IS:
+                return IsFilter.compile(instruction);
             case Symbols.JOIN:
                 return JoinBarrier.compile(instruction);
+            case Symbols.LOOPS:
+                return LoopsMap.compile(instruction);
             case Symbols.MAP:
                 return MapMap.compile(instruction);
+            case Symbols.ORDER:
+                return OrderBarrier.compile(instruction);
             case Symbols.PATH:
                 return PathMap.compile(instruction);
             case Symbols.REDUCE:
                 return ReduceReduce.compile(instruction);
             case Symbols.REPEAT:
                 return RepeatBranch.compile(instruction);
+            case Symbols.SUM:
+                return SumReduce.compile(instruction);
+            case Symbols.UNFOLD:
+                return UnfoldFlatMap.compile(instruction);
+            case Symbols.VALUE:
+                return ValueMap.compile(instruction);
+            case Symbols.VALUES:
+                return ValuesFlatMap.compile(instruction);
+            case Symbols.DB:
+                return DbInitial.compile(instruction);
             default:
                 return null;
         }
@@ -112,7 +170,6 @@ public final class CoreCompiler implements BytecodeCompiler {
 
         // SOURCE OPS
         public static final String WITH_COEFFICIENT = "withCoefficient";
-        public static final String WITH_MACHINE = "withMachine";
         public static final String WITH_PROCESSOR = "withProcessor";
         public static final String WITH_STRUCTURE = "withStructure";
         public static final String WITH_STRATEGY = "withStrategy";
@@ -133,23 +190,32 @@ public final class CoreCompiler implements BytecodeCompiler {
         // INSTRUCTION OPS
         public static final String BARRIER = "barrier";
         public static final String BRANCH = "branch";
+        public static final String CONSTANT = "constant";
+        public static final String COUNT = "count";
         public static final String EXPLAIN = "explain";
-        // [filter, [bc]]
         public static final String FILTER = "filter";
         public static final String FLATMAP = "flatmap";
-        // [groupCount, ?[bc]]
         public static final String GROUP_COUNT = "groupCount";
-        // [incr]
+        public static final String HAS_KEY = "hasKey";
+        public static final String HAS_KEY_VALUE = "hasKeyValue";
+        public static final String IDENTITY = "identity";
+        public static final String INCR = "incr";
         public static final String INITIAL = "initial";
+        public static final String IS = "is";
         public static final String JOIN = "join";
-        // [map, [bc]]
+        public static final String LOOPS = "loops";
         public static final String MAP = "map";
+        public static final String ORDER = "order";
         public static final String PATH = "path";
         public static final String REDUCE = "reduce";
-        // [repeat, (char, [bc]), ?(char, [bc]), ?(char, [bc])]
         public static final String REPEAT = "repeat";
-        // [V]
+        public static final String SUM = "sum";
+        public static final String UNFOLD = "unfold";
         public static final String V = "V";
+        public static final String VALUE = "value";
+        public static final String VALUES = "values";
 
+        //
+        public static final String DB = "db";
     }
 }

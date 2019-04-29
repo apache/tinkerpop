@@ -20,8 +20,8 @@ package org.apache.tinkerpop.machine.function.barrier;
 
 import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.bytecode.compiler.Argument;
+import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
-import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.BarrierFunction;
@@ -39,12 +39,12 @@ import java.util.Map;
  */
 public final class JoinBarrier<C, K, V> extends AbstractFunction<C> implements BarrierFunction<C, Map<K, V>, Map<K, V>, List<Map<K, V>>> {
 
-    private final CoreCompiler.Symbols.Tokens joinType;
+    private final Symbols.Tokens joinType;
     private final Compilation<C, Map<K, V>, Map<K, V>> joinCompilation;
     private final Argument<K> joinKey;
 
     private JoinBarrier(final Coefficient<C> coefficient, final String label,
-                        CoreCompiler.Symbols.Tokens joinType,
+                        Symbols.Tokens joinType,
                         final Compilation<C, Map<K, V>, Map<K, V>> joinCompilation,
                         final Argument<K> joinKey) {
         super(coefficient, label);
@@ -99,7 +99,7 @@ public final class JoinBarrier<C, K, V> extends AbstractFunction<C> implements B
 
     public static <C, K, V> JoinBarrier<C, K, V> compile(final Instruction<C> instruction) {
         return new JoinBarrier<>(instruction.coefficient(), instruction.label(),
-                CoreCompiler.Symbols.Tokens.valueOf((String) instruction.args()[0]),
+                Symbols.Tokens.valueOf((String) instruction.args()[0]),
                 Compilation.compile(instruction.args()[1]),
                 Argument.create(instruction.args()[2]));
     }

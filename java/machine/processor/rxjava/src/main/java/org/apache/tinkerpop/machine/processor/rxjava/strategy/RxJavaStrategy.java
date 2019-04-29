@@ -21,7 +21,7 @@ package org.apache.tinkerpop.machine.processor.rxjava.strategy;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.bytecode.SourceInstruction;
-import org.apache.tinkerpop.machine.bytecode.compiler.CommonCompiler;
+import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler;
 import org.apache.tinkerpop.machine.bytecode.compiler.CompositeCompiler;
 import org.apache.tinkerpop.machine.bytecode.compiler.FunctionType;
 import org.apache.tinkerpop.machine.processor.rxjava.RxJavaProcessor;
@@ -42,12 +42,12 @@ public final class RxJavaStrategy extends AbstractStrategy<Strategy.ProviderStra
         if (bytecode.getParent().isEmpty()) { // root bytecode
             final String id = UUID.randomUUID().toString();
             bytecode.addSourceInstruction(RxJavaProcessor.RX_ROOT_BYTECODE_ID, id);
-        } else if (!BytecodeUtil.hasSourceInstruction(bytecode, CommonCompiler.Symbols.WITH_PROCESSOR)) {
+        } else if (!BytecodeUtil.hasSourceInstruction(bytecode, CoreCompiler.Symbols.WITH_PROCESSOR)) {
             if (RxJavaStrategy.isSimple(bytecode)) {
-                bytecode.addSourceInstruction(CommonCompiler.Symbols.WITH_PROCESSOR, RxJavaProcessor.class, Map.of(RxJavaProcessor.RX_THREAD_POOL_SIZE, 0)); // guaranteed serial execution
+                bytecode.addSourceInstruction(CoreCompiler.Symbols.WITH_PROCESSOR, RxJavaProcessor.class, Map.of(RxJavaProcessor.RX_THREAD_POOL_SIZE, 0)); // guaranteed serial execution
             } else {
                 final Bytecode<C> root = BytecodeUtil.getRootBytecode(bytecode);
-                final List<SourceInstruction> processors = BytecodeUtil.getSourceInstructions(root, CommonCompiler.Symbols.WITH_PROCESSOR); // potential parallel execution
+                final List<SourceInstruction> processors = BytecodeUtil.getSourceInstructions(root, CoreCompiler.Symbols.WITH_PROCESSOR); // potential parallel execution
                 for (final SourceInstruction sourceInstruction : processors) {
                     bytecode.addSourceInstruction(sourceInstruction.op(), sourceInstruction.args());
                 }

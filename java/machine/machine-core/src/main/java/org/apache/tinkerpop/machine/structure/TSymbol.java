@@ -16,14 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.data;
+package org.apache.tinkerpop.machine.structure;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TElement<V> extends TMap<String, V> {
+public interface TSymbol {
 
-    public String label();
-
-    public Object id();
 }

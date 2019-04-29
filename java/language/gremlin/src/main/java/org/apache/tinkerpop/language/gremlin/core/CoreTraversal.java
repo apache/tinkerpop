@@ -22,20 +22,15 @@ import org.apache.tinkerpop.language.gremlin.AbstractTraversal;
 import org.apache.tinkerpop.language.gremlin.P;
 import org.apache.tinkerpop.language.gremlin.Traversal;
 import org.apache.tinkerpop.language.gremlin.TraversalUtil;
-import org.apache.tinkerpop.language.gremlin.common.__;
 import org.apache.tinkerpop.machine.Machine;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.bytecode.compiler.CommonCompiler;
 import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler.Symbols;
-import org.apache.tinkerpop.machine.bytecode.compiler.Oper;
 import org.apache.tinkerpop.machine.bytecode.compiler.Order;
 import org.apache.tinkerpop.machine.bytecode.compiler.Pred;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
-import org.apache.tinkerpop.machine.structure.data.TMap;
+import org.apache.tinkerpop.machine.structure.TTuple;
 import org.apache.tinkerpop.machine.traverser.path.Path;
-
-import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -83,7 +78,7 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
 
     @Override
     public Traversal<C, S, E> by(final Traversal<C, ?, ?> byTraversal, final Order order) {
-        this.bytecode.addArgs(TraversalUtil.getBytecode(byTraversal), order);
+        this.bytecode.addArgs(TraversalUtil.getBytecode(byTraversal), order.name());
         return this;
     }
 
@@ -105,13 +100,12 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
 
     @Override
     public <R> Traversal<C, S, R> constant(final R constant) {
-        return this.addInstruction(Symbols.MAP, constant);
+        return this.addInstruction(Symbols.CONSTANT, constant);
     }
 
     @Override
     public Traversal<C, S, Long> count() {
-        this.addInstruction(Symbols.MAP, "traverser::count");
-        return this.addInstruction(Symbols.REDUCE, Oper.sum.name(), 0L);
+        return this.addInstruction(Symbols.COUNT);
     }
 
     @Override
@@ -136,102 +130,77 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
 
     @Override
     public <R> Traversal<C, S, R> flatMap(final Traversal<C, E, R> flatMapTraversal) {
-        return this.addInstruction(CommonCompiler.Symbols.FLATMAP, TraversalUtil.getBytecode(flatMapTraversal));
+        return this.addInstruction(Symbols.FLATMAP, TraversalUtil.getBytecode(flatMapTraversal));
     }
 
     @Override
-    public Traversal<C, S, TMap<E, Long>> groupCount() {
+    public Traversal<C, S, TTuple<E, Long>> groupCount() {
         return this.addInstruction(Symbols.GROUP_COUNT);
     }
 
     @Override
-    public <K, V> Traversal<C, S, TMap<K, V>> hasKey(final P<K> predicate) {
-        final Bytecode<C> internal = new Bytecode<>();
-        internal.addInstruction(this.currentCoefficient, Symbols.FLATMAP, "dictionary::keys");
-        internal.addInstruction(this.currentCoefficient, Symbols.FILTER, predicate.type().name(), TraversalUtil.tryToGetBytecode(predicate.object()));
-        return this.addInstruction(Symbols.FILTER, internal);
+    public <K, V> Traversal<C, S, TTuple<K, V>> has(final K key, final V value) {
+        return this.addInstruction(Symbols.HAS_KEY_VALUE, TraversalUtil.tryToGetBytecode(key), TraversalUtil.tryToGetBytecode(value));
     }
 
     @Override
-    public <K, V> Traversal<C, S, TMap<K, V>> hasKey(final K key) {
-        final Bytecode<C> internal = new Bytecode<>();
-        internal.addInstruction(this.currentCoefficient, Symbols.FLATMAP, "dictionary::keys");
-        internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), key);
-        return this.addInstruction(Symbols.FILTER, internal);
+    public <K, V> Traversal<C, S, TTuple<K, V>> has(final Traversal<C, TTuple<K, V>, K> keyTraversal, final V value) {
+        return this.addInstruction(Symbols.HAS_KEY_VALUE, TraversalUtil.getBytecode(keyTraversal), TraversalUtil.tryToGetBytecode(value));
     }
 
     @Override
-    public <K, V> Traversal<C, S, TMap<K, V>> hasKey(final Traversal<C, TMap<K, V>, K> keyTraversal) {
-        final Bytecode<C> internal = new Bytecode<>();
-        internal.addInstruction(this.currentCoefficient, Symbols.FLATMAP, "dictionary::keys");
-        internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), TraversalUtil.getBytecode(keyTraversal));
-        return this.addInstruction(Symbols.FILTER, internal);
+    public <K, V> Traversal<C, S, TTuple<K, V>> has(final K key, final Traversal<C, TTuple<K, V>, V> valueTraversal) {
+        return this.addInstruction(Symbols.HAS_KEY_VALUE, TraversalUtil.tryToGetBytecode(key), TraversalUtil.getBytecode(valueTraversal));
     }
 
     @Override
-    public <K, V> Traversal<C, S, TMap<K, V>> has(final K key, final V value) {
-        final Bytecode<C> internal = new Bytecode<>();
-        internal.addInstruction(this.currentCoefficient, Symbols.MAP, "dictionary::get", TraversalUtil.tryToGetBytecode(key));
-        internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), value);
-        return this.addInstruction(Symbols.FILTER, internal);
+    public <K, V> Traversal<C, S, TTuple<K, V>> has(final Traversal<C, TTuple<K, V>, K> keyTraversal, final Traversal<C, TTuple<K, V>, V> valueTraversal) {
+        return this.addInstruction(Symbols.HAS_KEY_VALUE, TraversalUtil.getBytecode(keyTraversal), TraversalUtil.getBytecode(valueTraversal));
     }
 
     @Override
-    public <K, V> Traversal<C, S, TMap<K, V>> has(final Traversal<C, TMap<K, V>, K> keyTraversal, final V value) {
-        final Bytecode<C> internal = new Bytecode<>();
-        internal.addInstruction(this.currentCoefficient, Symbols.MAP, "dictionary::get", TraversalUtil.getBytecode(keyTraversal));
-        internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), value);
-        return this.addInstruction(Symbols.FILTER, internal);
+    public <K, V> Traversal<C, S, TTuple<K, V>> hasKey(final P<K> predicate) {
+        return this.addInstruction(Symbols.HAS_KEY, predicate.type().name(), TraversalUtil.tryToGetBytecode(predicate.object()));
     }
 
     @Override
-    public <K, V> Traversal<C, S, TMap<K, V>> has(final K key, final Traversal<C, TMap<K, V>, V> valueTraversal) {
-        final Bytecode<C> internal = new Bytecode<>();
-        internal.addInstruction(this.currentCoefficient, Symbols.MAP, "dictionary::get", key);
-        internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), TraversalUtil.getBytecode(valueTraversal));
-        return this.addInstruction(Symbols.FILTER, internal);
+    public <K, V> Traversal<C, S, TTuple<K, V>> hasKey(final K key) {
+        return this.addInstruction(Symbols.HAS_KEY, TraversalUtil.tryToGetBytecode(key));
     }
 
     @Override
-    public <K, V> Traversal<C, S, TMap<K, V>> has(final Traversal<C, TMap<K, V>, K> keyTraversal, final Traversal<C, TMap<K, V>, V> valueTraversal) {
-        final Bytecode<C> internal = new Bytecode<>();
-        internal.addInstruction(this.currentCoefficient, Symbols.MAP, "dictionary::get", TraversalUtil.getBytecode(keyTraversal));
-        internal.addInstruction(this.currentCoefficient, Symbols.FILTER, Pred.eq.name(), TraversalUtil.getBytecode(valueTraversal));
-        return this.addInstruction(Symbols.FILTER, internal);
+    public <K, V> Traversal<C, S, TTuple<K, V>> hasKey(final Traversal<C, TTuple<K, V>, K> keyTraversal) {
+        return this.addInstruction(Symbols.HAS_KEY, TraversalUtil.getBytecode(keyTraversal));
     }
 
     @Override
     public Traversal<C, S, E> identity() {
-        return this.addInstruction(Symbols.MAP, "traverser::object");
+        return this.addInstruction(Symbols.IDENTITY);
     }
 
     @Override
     public Traversal<C, S, E> is(final E object) {
-        return this.addInstruction(Symbols.FILTER, Pred.eq.name(), TraversalUtil.tryToGetBytecode(object));
+        return this.addInstruction(Symbols.IS, Pred.eq.name(), TraversalUtil.tryToGetBytecode(object));
     }
 
     @Override
     public Traversal<C, S, E> is(final Traversal<C, E, ?> objectTraversal) {
-        return this.addInstruction(Symbols.FILTER, Pred.eq.name(), TraversalUtil.getBytecode(objectTraversal));
+        return this.addInstruction(Symbols.IS, Pred.eq.name(), TraversalUtil.getBytecode(objectTraversal));
     }
 
     @Override
     public Traversal<C, S, E> is(final P<E> predicate) {
-        return this.addInstruction(Symbols.FILTER, predicate.type().name(), TraversalUtil.tryToGetBytecode(predicate.object()));
+        return this.addInstruction(Symbols.IS, predicate.type().name(), TraversalUtil.tryToGetBytecode(predicate.object()));
     }
 
     @Override
     public Traversal<C, S, Long> incr() {
-        return this.addInstruction(Symbols.MAP, "number::add", 1L);
-    }
-
-    public <K, V> Traversal<C, S, Map<K, V>> join(final Symbols.Tokens joinType, final CoreTraversal<?, ?, Map<K, V>> joinTraversal) {
-        return this.addInstruction(Symbols.JOIN, joinType, joinTraversal.bytecode);
+        return this.addInstruction(Symbols.INCR);
     }
 
     @Override
     public Traversal<C, S, Integer> loops() {
-        return this.addInstruction(Symbols.MAP, "traverser:loops");
+        return this.addInstruction(Symbols.LOOPS);
     }
 
     @Override
@@ -241,7 +210,7 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
 
     @Override
     public Traversal<C, S, E> order() {
-        throw new IllegalStateException("Unimplemented");
+        return this.addInstruction(Symbols.ORDER);
     }
 
     @Override
@@ -256,7 +225,7 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
 
     @Override
     public <R extends Number> Traversal<C, S, R> sum() {
-        return this.addInstruction(Symbols.REDUCE, Oper.sum.name(), 0);
+        return this.addInstruction(Symbols.SUM);
     }
 
     @Override
@@ -266,7 +235,7 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
 
     @Override
     public <R> Traversal<C, S, R> unfold() {
-        return this.addInstruction(Symbols.FLATMAP, "traverser::object");
+        return this.addInstruction(Symbols.UNFOLD);
     }
 
     @Override
@@ -281,6 +250,11 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
 
     @Override
     public <K, V> Traversal<C, S, V> value(final K key) {
-        return this.addInstruction(Symbols.MAP, "dictionary::get", key);
+        return this.addInstruction(Symbols.VALUE, key);
+    }
+
+    @Override
+    public <K, V> Traversal<C, S, V> values(final K key) {
+        return this.addInstruction(Symbols.VALUES, key);
     }
 }

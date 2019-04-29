@@ -26,5 +26,6 @@ limitations under the License.
     <artifactId>structure</artifactId>
     <modules>
         <module>blueprints</module>
+        <module>jdbc</module>
     </modules>
 </project>

@@ -20,7 +20,7 @@ package org.apache.tinkerpop.machine.processor.pipes;
 
 import org.apache.tinkerpop.machine.SimpleTestSuite;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler;
+import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.species.LocalMachine;
 
 /**
@@ -31,7 +31,7 @@ class SimpleLocalTest extends SimpleTestSuite {
     private final static Bytecode<Long> BYTECODE = new Bytecode<>();
 
     static {
-        BYTECODE.addSourceInstruction(CoreCompiler.Symbols.WITH_PROCESSOR, PipesProcessor.class);
+        BYTECODE.addSourceInstruction(Symbols.WITH_PROCESSOR, PipesProcessor.class);
     }
 
     SimpleLocalTest() {

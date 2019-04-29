@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.structure.blueprints.function.initial;
 
-import org.apache.tinkerpop.machine.structure.data.TVertex;
+import org.apache.tinkerpop.machine.structure.graph.TVertex;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.InitialFunction;
@@ -26,7 +26,6 @@ import org.apache.tinkerpop.machine.structure.blueprints.data.BlueprintsVertex;
 import org.apache.tinkerpop.machine.util.IteratorUtils;
 
 import java.util.Iterator;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

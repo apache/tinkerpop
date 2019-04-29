@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.machine.strategy.optimization;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler;
+import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.strategy.AbstractStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
@@ -31,7 +31,7 @@ public final class IdentityStrategy extends AbstractStrategy<Strategy.Optimizati
     @Override
     public <C> void apply(final Bytecode<C> bytecode) {
         bytecode.getInstructions().removeIf(instruction ->
-                instruction.op().equals(CoreCompiler.Symbols.MAP) &&
+                instruction.op().equals(Symbols.MAP) &&
                         instruction.args().length == 1 &&
                         "traverser::object".equals(instruction.args()[0]) &&
                         null != instruction.label() &&

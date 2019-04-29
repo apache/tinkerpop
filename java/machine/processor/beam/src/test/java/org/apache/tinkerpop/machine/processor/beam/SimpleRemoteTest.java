@@ -21,7 +21,7 @@ package org.apache.tinkerpop.machine.processor.beam;
 import org.apache.tinkerpop.machine.AbstractTestSuite;
 import org.apache.tinkerpop.machine.SimpleTestSuite;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler;
+import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.species.remote.MachineServer;
 import org.apache.tinkerpop.machine.species.remote.RemoteMachine;
 import org.junit.jupiter.api.AfterAll;
@@ -38,7 +38,7 @@ public class SimpleRemoteTest extends SimpleTestSuite {
     private static MachineServer SERVER = new MachineServer(7777);
 
     static {
-        BYTECODE.addSourceInstruction(CoreCompiler.Symbols.WITH_PROCESSOR,
+        BYTECODE.addSourceInstruction(Symbols.WITH_PROCESSOR,
                 BeamProcessor.class,
                 Map.of(BeamProcessor.TRAVERSER_SERVER_LOCATION,
                         "localhost", BeamProcessor.TRAVERSER_SERVER_PORT, 6666));

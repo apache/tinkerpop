@@ -19,8 +19,6 @@
 package org.apache.tinkerpop.language.gremlin;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.bytecode.Instruction;
-import org.apache.tinkerpop.machine.bytecode.compiler.CommonCompiler;
 import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler.Symbols;
 
 /**
@@ -55,7 +53,7 @@ public final class TraversalUtil {
     public static <C, S, E> Object[] createUnionArguments(final Traversal<C, S, E>... traversals) {
         final Object[] args = new Object[traversals.length * 2];
         for (int i = 0; i < args.length; i = i + 2) {
-            args[i] = CommonCompiler.Symbols.DEFAULT;
+            args[i] = Symbols.DEFAULT;
         }
         for (int i = 0; i < traversals.length; i++) {
             args[(i * 2) + 1] = TraversalUtil.getBytecode(traversals[i]);

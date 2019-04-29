@@ -32,7 +32,7 @@ public final class EmptyStructure implements Structure, StructureFactory {
     }
 
     @Override
-    public Structure mint(final Map<String, Object> configuration) {
+    public Structure mint() {
         return this;
     }
 

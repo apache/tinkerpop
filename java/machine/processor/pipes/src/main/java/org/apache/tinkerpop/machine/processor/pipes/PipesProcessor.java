@@ -20,16 +20,14 @@ package org.apache.tinkerpop.machine.processor.pipes;
 
 import org.apache.tinkerpop.machine.bytecode.compiler.BytecodeCompiler;
 import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
-import org.apache.tinkerpop.machine.bytecode.compiler.CommonCompiler;
 import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler;
 import org.apache.tinkerpop.machine.processor.Processor;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.processor.pipes.strategy.PipesStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -37,9 +35,9 @@ import java.util.Set;
  */
 public final class PipesProcessor implements ProcessorFactory {
 
-    private static final List<BytecodeCompiler> COMPILERS = List.of(CoreCompiler.instance(), CommonCompiler.instance());
+    private static final List<BytecodeCompiler> COMPILERS = List.of(CoreCompiler.instance());
 
-    public PipesProcessor() {
+    public PipesProcessor(final Map<String, Object> configuration) {
     }
 
     @Override

@@ -16,30 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.data;
-
-import java.io.Serializable;
+package org.apache.tinkerpop.machine.structure;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class JTuple2<A, B> implements TTuple2<A, B>, Serializable {
+public interface TSequence<V> extends Iterable<V> {
 
-    private final A a;
-    private final B b;
-
-    JTuple2(final A a, final B b) {
-        this.a = a;
-        this.b = b;
-    }
-
-    @Override
-    public A getA() {
-        return this.a;
-    }
-
-    @Override
-    public B getB() {
-        return this.b;
-    }
 }

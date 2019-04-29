@@ -16,28 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.data;
+package org.apache.tinkerpop.machine.structure.graph;
 
-import java.io.Serializable;
+import org.apache.tinkerpop.machine.util.MultiIterator;
+
 import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TMap<K, V> extends Serializable {
+public interface TVertex<V> extends TElement<V> {
 
-    public void set(final K key, final V value);
+    public Iterator<TEdge<V>> inE();
 
-    public V get(final K key);
+    public Iterator<TEdge<V>> outE();
 
-    public V get(final K key, final V defaultValue);
-
-    public boolean has(final K key);
-
-    public Iterator<K> keys();
-
-    public Iterator<V> values();
-
-    public Iterator<TTuple2<K, V>> entries();
+    public default Iterator<TEdge<V>> bothE() {
+        final MultiIterator<TEdge<V>> iterator = new MultiIterator<>();
+        iterator.addIterator(this.inE());
+        iterator.addIterator(this.outE());
+        return iterator;
+    }
 
 }

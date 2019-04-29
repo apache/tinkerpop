@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.machine.structure.blueprints.data;
 
-import org.apache.tinkerpop.machine.structure.data.TEdge;
-import org.apache.tinkerpop.machine.structure.data.TTuple2;
-import org.apache.tinkerpop.machine.structure.data.TVertex;
-import org.apache.tinkerpop.machine.util.IteratorUtils;
+import org.apache.tinkerpop.machine.structure.util.T2Tuple;
+import org.apache.tinkerpop.machine.structure.TSequence;
+import org.apache.tinkerpop.machine.structure.graph.TEdge;
+import org.apache.tinkerpop.machine.structure.graph.TVertex;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -34,12 +34,12 @@ import java.util.UUID;
 public class BlueprintsVertex<V> implements TVertex<V>, Serializable {
 
     @Override
-    public Iterator<TEdge<V>> inEdges() {
+    public Iterator<TEdge<V>> inE() {
         return Collections.emptyIterator();
     }
 
     @Override
-    public Iterator<TEdge<V>> outEdges() {
+    public Iterator<TEdge<V>> outE() {
         return Collections.emptyIterator();
     }
 
@@ -59,12 +59,12 @@ public class BlueprintsVertex<V> implements TVertex<V>, Serializable {
     }
 
     @Override
-    public V get(String key) {
+    public V value(String key) {
         return (V) "marko";
     }
 
     @Override
-    public V get(String key, V defaultValue) {
+    public V value(String key, V defaultValue) {
         return defaultValue;
     }
 
@@ -74,18 +74,8 @@ public class BlueprintsVertex<V> implements TVertex<V>, Serializable {
     }
 
     @Override
-    public Iterator keys() {
-        return IteratorUtils.of("name");
-    }
-
-    @Override
-    public Iterator values() {
-        return IteratorUtils.of("marko");
-    }
-
-    @Override
-    public Iterator<TTuple2<String, V>> entries() {
-        return Collections.emptyIterator();
+    public TSequence<T2Tuple<String, V>> entries() {
+        return Collections::emptyIterator;
     }
 
     @Override

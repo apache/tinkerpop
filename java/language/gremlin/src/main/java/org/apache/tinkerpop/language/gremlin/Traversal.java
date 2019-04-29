@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.language.gremlin;
 
 import org.apache.tinkerpop.machine.bytecode.compiler.Order;
-import org.apache.tinkerpop.machine.structure.data.TMap;
+import org.apache.tinkerpop.machine.structure.TTuple;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.path.Path;
 
@@ -63,21 +63,21 @@ public interface Traversal<C, S, E> extends Iterator<E> {
 
     public <R> Traversal<C, S, R> flatMap(final Traversal<C, E, R> flatMapTraversal);
 
-    public Traversal<C, S, TMap<E, Long>> groupCount();
+    public Traversal<C, S, TTuple<E, Long>> groupCount();
 
-    public <K, V> Traversal<C, S, TMap<K, V>> hasKey(final P<K> predicate);
+    public <K, V> Traversal<C, S, TTuple<K, V>> hasKey(final P<K> predicate);
 
-    public <K, V> Traversal<C, S, TMap<K, V>> hasKey(final K key);
+    public <K, V> Traversal<C, S, TTuple<K, V>> hasKey(final K key);
 
-    public <K, V> Traversal<C, S, TMap<K, V>> hasKey(final Traversal<C, TMap<K, V>, K> keyTraversal);
+    public <K, V> Traversal<C, S, TTuple<K, V>> hasKey(final Traversal<C, TTuple<K, V>, K> keyTraversal);
 
-    public <K, V> Traversal<C, S, TMap<K, V>> has(final K key, final V value);
+    public <K, V> Traversal<C, S, TTuple<K, V>> has(final K key, final V value);
 
-    public <K, V> Traversal<C, S, TMap<K, V>> has(final Traversal<C, TMap<K, V>, K> keyTraversal, final V value);
+    public <K, V> Traversal<C, S, TTuple<K, V>> has(final Traversal<C, TTuple<K, V>, K> keyTraversal, final V value);
 
-    public <K, V> Traversal<C, S, TMap<K, V>> has(final K key, final Traversal<C, TMap<K, V>, V> valueTraversal);
+    public <K, V> Traversal<C, S, TTuple<K, V>> has(final K key, final Traversal<C, TTuple<K, V>, V> valueTraversal);
 
-    public <K, V> Traversal<C, S, TMap<K, V>> has(final Traversal<C, TMap<K, V>, K> keyTraversal, final Traversal<C, TMap<K, V>, V> valueTraversal);
+    public <K, V> Traversal<C, S, TTuple<K, V>> has(final Traversal<C, TTuple<K, V>, K> keyTraversal, final Traversal<C, TTuple<K, V>, V> valueTraversal);
 
     public Traversal<C, S, E> identity();
 
@@ -110,6 +110,8 @@ public interface Traversal<C, S, E> extends Iterator<E> {
     public Traversal<C, S, E> until(final Traversal<C, ?, ?> untilTraversal); // TODO: why not <C,E,?>
 
     public <K, V> Traversal<C, S, V> value(final K key);
+
+    public <K, V> Traversal<C, S, V> values(final K key);
 
     /**
      * UTILITY METHODS

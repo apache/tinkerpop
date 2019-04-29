@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.bytecode.compiler;
 
-import org.apache.tinkerpop.machine.structure.data.TElement;
+import org.apache.tinkerpop.machine.structure.TTuple;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.util.IteratorUtils;
 import org.apache.tinkerpop.machine.util.NumberHelper;
@@ -52,9 +52,7 @@ public class MethodArgument<E> implements Argument<E> {
         else if (this.method.equals("keys"))
             return (E) ((Map) traverser.object()).keySet();
         else if (this.method.equals("get"))
-            return (E) (traverser.object() instanceof Map ?
-                    ((Map) traverser.object()).get(this.arguments[0].mapArg(traverser)) :
-                    ((TElement) traverser.object()).get(this.arguments[0].mapArg(traverser)));
+            return (E) ((TTuple) traverser.object()).value(this.arguments[0].mapArg(traverser));
         else if (this.method.equals("add"))
             return (E) NumberHelper.add((Number) traverser.object(), (Number) this.arguments[0].mapArg(traverser));
         else

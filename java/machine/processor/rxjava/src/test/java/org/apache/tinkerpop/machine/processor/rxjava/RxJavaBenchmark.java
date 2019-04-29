@@ -20,11 +20,10 @@ package org.apache.tinkerpop.machine.processor.rxjava;
 
 import org.apache.tinkerpop.language.gremlin.Gremlin;
 import org.apache.tinkerpop.language.gremlin.TraversalSource;
-import org.apache.tinkerpop.language.gremlin.common.__;
+import org.apache.tinkerpop.language.gremlin.core.__;
 import org.apache.tinkerpop.machine.Machine;
 import org.apache.tinkerpop.machine.processor.pipes.PipesProcessor;
 import org.apache.tinkerpop.machine.species.LocalMachine;
-import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;

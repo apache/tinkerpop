@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.machine.bytecode;
 
 import org.apache.tinkerpop.machine.bytecode.compiler.BytecodeCompiler;
-import org.apache.tinkerpop.machine.bytecode.compiler.CommonCompiler;
 import org.apache.tinkerpop.machine.bytecode.compiler.CompositeCompiler;
 import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler;
 import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler.Symbols;
@@ -71,12 +70,10 @@ public final class BytecodeUtil {
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
                 if (sourceInstruction.op().equals(Symbols.WITH_STRATEGY)) {
                     strategies.add(((Class<? extends Strategy>) sourceInstruction.args()[0]).getConstructor().newInstance());
-                } else if (sourceInstruction.op().equals(Symbols.WITH_PROCESSOR)) {
-                    strategies.addAll(ProcessorFactory.processorStrategies(((Class<? extends ProcessorFactory>) sourceInstruction.args()[0])));
-                } else if (sourceInstruction.op().equals(Symbols.WITH_STRUCTURE)) {
-                    strategies.addAll(StructureFactory.structureStrategies(((Class<? extends StructureFactory>) sourceInstruction.args()[0])));
                 }
             }
+            BytecodeUtil.getStructureFactory(bytecode).ifPresent(s -> strategies.addAll(s.getStrategies()));
+            BytecodeUtil.getProcessorFactory(bytecode).ifPresent(s -> strategies.addAll(s.getStrategies()));
             return StrategyUtil.sortStrategies(strategies);
 
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
@@ -88,7 +85,7 @@ public final class BytecodeUtil {
         final List<BytecodeCompiler> compilers = new ArrayList<>();
         BytecodeUtil.getProcessorFactory(bytecode).ifPresent(f -> compilers.addAll(f.getCompilers()));
         BytecodeUtil.getStructureFactory(bytecode).ifPresent(f -> compilers.addAll(f.getCompilers()));
-        return CompositeCompiler.create(compilers.isEmpty() ? List.of(CoreCompiler.instance(), CommonCompiler.instance()) : compilers);
+        return CompositeCompiler.create(compilers.isEmpty() ? List.of(CoreCompiler.instance()) : compilers);
     }
 
     public static <C> Optional<Coefficient<C>> getCoefficient(final Bytecode<C> bytecode) {
@@ -111,9 +108,9 @@ public final class BytecodeUtil {
             ProcessorFactory processor = null;
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
                 if (sourceInstruction.op().equals(Symbols.WITH_PROCESSOR)) {
-                    processor = 1 == sourceInstruction.args().length ?
-                            ((Class<? extends ProcessorFactory>) sourceInstruction.args()[0]).getConstructor().newInstance() :
-                            ((Class<? extends ProcessorFactory>) sourceInstruction.args()[0]).getConstructor(Map.class).newInstance((Map) sourceInstruction.args()[1]);
+                    processor = ((Class<? extends ProcessorFactory>) sourceInstruction.args()[0]).
+                            getConstructor(Map.class).
+                            newInstance(1 == sourceInstruction.args().length ? Map.of() : (Map) sourceInstruction.args()[1]);
                 }
             }
             return Optional.ofNullable(processor);
@@ -127,7 +124,9 @@ public final class BytecodeUtil {
             StructureFactory structure = null;
             for (final SourceInstruction sourceInstruction : bytecode.getSourceInstructions()) {
                 if (sourceInstruction.op().equals(Symbols.WITH_STRUCTURE)) {
-                    structure = ((Class<? extends StructureFactory>) sourceInstruction.args()[0]).getConstructor().newInstance();
+                    structure = ((Class<? extends StructureFactory>) sourceInstruction.args()[0]).
+                            getConstructor(Map.class).
+                            newInstance(1 == sourceInstruction.args().length ? Map.of() : (Map) sourceInstruction.args()[1]);
                 }
             }
             return Optional.ofNullable(structure);

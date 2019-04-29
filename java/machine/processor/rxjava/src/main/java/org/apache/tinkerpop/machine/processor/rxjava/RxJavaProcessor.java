@@ -26,7 +26,6 @@ import org.apache.tinkerpop.machine.processor.rxjava.strategy.RxJavaStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 import org.apache.tinkerpop.machine.util.StringFactory;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,10 +43,6 @@ public final class RxJavaProcessor implements ProcessorFactory {
     static final Map<String, ExecutorService> THREAD_POOLS = new ConcurrentHashMap<>();
 
     private final Map<String, Object> configuration;
-
-    public RxJavaProcessor() {
-        this.configuration = Collections.emptyMap();
-    }
 
     public RxJavaProcessor(final Map<String, Object> configuration) {
         this.configuration = configuration;

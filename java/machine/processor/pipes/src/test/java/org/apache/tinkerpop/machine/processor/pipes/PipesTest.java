@@ -22,13 +22,15 @@ import org.apache.tinkerpop.language.gremlin.Gremlin;
 import org.apache.tinkerpop.language.gremlin.Traversal;
 import org.apache.tinkerpop.language.gremlin.TraversalSource;
 import org.apache.tinkerpop.language.gremlin.TraversalUtil;
-import org.apache.tinkerpop.language.gremlin.common.__;
+import org.apache.tinkerpop.language.gremlin.core.__;
 import org.apache.tinkerpop.machine.Machine;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
 import org.apache.tinkerpop.machine.species.LocalMachine;
 import org.apache.tinkerpop.machine.strategy.optimization.IdentityStrategy;
 import org.apache.tinkerpop.machine.structure.blueprints.BlueprintsStructure;
 import org.junit.jupiter.api.Test;
+
+import static org.apache.tinkerpop.language.gremlin.core.__.count;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -44,7 +46,7 @@ class PipesTest {
                 .withStructure(BlueprintsStructure.class)
                 .withStrategy(IdentityStrategy.class);
 
-        Traversal<Long, ?, ?> traversal = g.V().identity().union(__.count(), __.count()).map(__.<Long, Long>count().identity()).explain();
+        Traversal<Long, ?, ?> traversal = g.V().identity().union(count(), count()).map(__.<Long, Long>count().identity()).explain();
         System.out.println(TraversalUtil.getBytecode(traversal));
         System.out.println(traversal);
         System.out.println(TraversalUtil.getBytecode(traversal));

@@ -23,7 +23,6 @@ import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -43,11 +42,4 @@ public interface ProcessorFactory extends Serializable {
         return Collections.emptyList();
     }
 
-    public static Set<Strategy<?>> processorStrategies(final Class<? extends ProcessorFactory> processFactoryClass) {
-        try {
-            return processFactoryClass.getConstructor().newInstance().getStrategies();
-        } catch (final NoSuchMethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-    }
 }
