@@ -22,6 +22,7 @@ import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.InitialFunction;
 import org.apache.tinkerpop.machine.traverser.species.EmptyTraverser;
+import org.apache.tinkerpop.machine.util.StringFactory;
 
 import java.util.Iterator;
 
@@ -40,5 +41,15 @@ public final class FlatMapInitial<C, S> extends AbstractFunction<C> implements I
     @Override
     public Iterator<S> get() {
         return this.function.apply(EmptyTraverser.instance());
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.function.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.makeFunctionString(this, this.function);
     }
 }
