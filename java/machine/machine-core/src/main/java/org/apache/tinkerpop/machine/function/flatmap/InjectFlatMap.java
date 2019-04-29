@@ -42,7 +42,7 @@ public final class InjectFlatMap<C, S, E> extends AbstractFunction<C> implements
     }
 
     @Override
-    public Iterator<E> apply(Traverser<C, S> traverser) {
+    public Iterator<E> apply(final Traverser<C, S> traverser) {
         return new ArrayIterator<>(this.objects);
     }
 
