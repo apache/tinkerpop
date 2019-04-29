@@ -20,10 +20,10 @@ package org.apache.tinkerpop.machine.bytecode.compiler;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
-import org.apache.tinkerpop.machine.processor.EmptyProcessor;
+import org.apache.tinkerpop.machine.processor.util.EmptyProcessor;
 import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.strategy.Strategy;
-import org.apache.tinkerpop.machine.structure.EmptyStructure;
+import org.apache.tinkerpop.machine.structure.util.EmptyStructure;
 import org.apache.tinkerpop.machine.structure.StructureFactory;
 
 import java.util.Set;

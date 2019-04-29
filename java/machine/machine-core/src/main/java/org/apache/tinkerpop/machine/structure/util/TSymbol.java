@@ -16,11 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure;
+package org.apache.tinkerpop.machine.structure.util;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TSymbol {
+public final class TSymbol {
 
+    private TSymbol() {
+        // static instance
+    }
+
+    public static final String id = "#id";
+    public static final String label = "#label";
+    public static final String key = "#key";
+    public static final String value = "#value";
+
+    public static boolean isSymbol(final String string) {
+        return string.startsWith("#");
+    }
+
+    public static String asSymbol(final String string) {
+        return string.startsWith("#") ? string : "#" + string;
+    }
 }

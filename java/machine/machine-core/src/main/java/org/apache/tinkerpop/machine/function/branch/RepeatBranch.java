@@ -23,8 +23,8 @@ import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
-import org.apache.tinkerpop.machine.processor.FilterProcessor;
-import org.apache.tinkerpop.machine.processor.LoopsProcessor;
+import org.apache.tinkerpop.machine.processor.util.FilterProcessor;
+import org.apache.tinkerpop.machine.processor.util.LoopsProcessor;
 import org.apache.tinkerpop.machine.util.StringFactory;
 
 import java.util.ArrayList;

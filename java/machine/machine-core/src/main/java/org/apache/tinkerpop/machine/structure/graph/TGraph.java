@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.machine.structure.graph;
 
+import org.apache.tinkerpop.machine.structure.Structure;
 import org.apache.tinkerpop.machine.structure.TSequence;
-import org.apache.tinkerpop.machine.structure.TTuple;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TGraph extends TSequence<TVertex> {
+public interface TGraph extends TSequence<TVertex>, Structure {
 }

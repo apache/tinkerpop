@@ -16,37 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.graph;
+package org.apache.tinkerpop.machine.processor.util;
 
-import org.apache.tinkerpop.machine.structure.TSymbol;
+import org.apache.tinkerpop.machine.traverser.Traverser;
+
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class IdSymbol implements TSymbol {
+public final class LoopsProcessor<C, S> extends SimpleProcessor<C, S, S> {
 
-    private static final IdSymbol INSTANCE = new IdSymbol();
+    private final int loops;
 
-    private IdSymbol() {
-        // static instance
+    public LoopsProcessor(final int loops) {
+        this.loops = loops;
     }
 
     @Override
-    public String toString() {
-        return "#id";
-    }
-
-    @Override
-    public int hashCode() {
-        return this.toString().hashCode();
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return other instanceof IdSymbol;
-    }
-
-    public static IdSymbol instance() {
-        return INSTANCE;
+    protected void processTraverser(final Iterator<Traverser<C, S>> starts) {
+        final Traverser<C, S> traverser = starts.next();
+        this.traverser = traverser.loops() == this.loops ? traverser : null;
     }
 }

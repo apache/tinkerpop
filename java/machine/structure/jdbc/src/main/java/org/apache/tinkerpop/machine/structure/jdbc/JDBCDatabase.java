@@ -33,7 +33,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class JDBCDatabase implements TDatabase {
+public final class JDBCDatabase implements TDatabase {
 
     private final Connection connection;
 
@@ -43,6 +43,10 @@ final class JDBCDatabase implements TDatabase {
         } catch (final SQLException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    public Connection getConnection() {
+        return this.connection;
     }
 
     @Override

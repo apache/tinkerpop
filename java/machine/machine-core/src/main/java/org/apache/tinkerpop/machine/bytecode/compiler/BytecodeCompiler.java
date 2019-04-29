@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.machine.bytecode.compiler;
 
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
+import org.apache.tinkerpop.machine.bytecode.BytecodeUtil;
 import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.function.initial.FlatMapInitial;
@@ -37,7 +38,7 @@ public interface BytecodeCompiler {
         for (final Instruction<C> instruction : bytecode.getInstructions()) {
             final CFunction function = this.compile(instruction);
             functions.add(functions.isEmpty() && bytecode.getParent().isEmpty() && function instanceof Initializing ?
-                    new FlatMapInitial<>(function.coefficient(), function.label(), (Initializing) function) : function);
+                    new FlatMapInitial<>(function.coefficient(), function.label(), (Initializing) function, BytecodeUtil.getTraverserFactory(bytecode).get()) : function);
         }
         return functions;
     }

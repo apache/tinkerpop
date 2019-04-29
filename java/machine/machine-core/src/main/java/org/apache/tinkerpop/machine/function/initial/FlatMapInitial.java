@@ -21,7 +21,7 @@ package org.apache.tinkerpop.machine.function.initial;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.InitialFunction;
-import org.apache.tinkerpop.machine.traverser.species.EmptyTraverser;
+import org.apache.tinkerpop.machine.traverser.TraverserFactory;
 
 import java.util.Iterator;
 
@@ -31,14 +31,17 @@ import java.util.Iterator;
 public final class FlatMapInitial<C, S> extends AbstractFunction<C> implements InitialFunction<C, S> {
 
     private final Initializing<C, ?, S> function;
+    private final TraverserFactory<C> traverserFactory;
 
-    public FlatMapInitial(final Coefficient<C> coefficient, final String label, final Initializing<C, ?, S> function) {
+
+    public FlatMapInitial(final Coefficient<C> coefficient, final String label, final Initializing<C, ?, S> function, final TraverserFactory<C> traverserFactory) {
         super(coefficient, label);
         this.function = function;
+        this.traverserFactory = traverserFactory;
     }
 
     @Override
     public Iterator<S> get() {
-        return this.function.apply(EmptyTraverser.instance());
+        return this.function.apply(traverserFactory.create(this, null));
     }
 }

@@ -41,8 +41,13 @@ public class JDBCTest {
         connection.createStatement().execute("CREATE TABLE IF NOT EXISTS people (\n" +
                 "    name VARCHAR(255) NOT NULL,\n" +
                 "    age TINYINT NOT NULL)");
+        connection.createStatement().execute("CREATE TABLE IF NOT EXISTS addresses (\n" +
+                "    name VARCHAR(255) NOT NULL,\n" +
+                "    city VARCHAR(255) NOT NULL)");
         //connection.createStatement().execute("INSERT INTO people(`name`,`age`) VALUES ('marko',29)");
         //connection.createStatement().execute("INSERT INTO people(`name`,`age`) VALUES ('josh',32)");
+        //connection.createStatement().execute("INSERT INTO addresses(`name`,`city`) VALUES ('josh','san jose')");
+        //connection.createStatement().execute("INSERT INTO addresses(`name`,`city`) VALUES ('marko','santa fe')");
 
 
        /* final TDatabase db = new JDBCDatabase("jdbc:h2:/tmp/test");
@@ -67,6 +72,7 @@ public class JDBCTest {
         System.out.println(jdbc.db().values("people").toList());
         System.out.println(jdbc.db().values("people").value("name").toList());
         System.out.println(jdbc.db().values("people").entries().toList());
-        System.out.println(jdbc.db().values("people").as("x").db().values("people").has("name", __.path("x").by("name")).as("y").path("x", "y").toList());
+        System.out.println(jdbc.db().values("people").as("x").db().values("addresses").as("y").has("name", __.path("x").by("name")).path("x", "y").toList());
+        System.out.println(jdbc.db().values("people").as("x").db().values("addresses").as("y").has("name", __.path("x").by("name")).path("x", "y").explain().toList());
     }
 }

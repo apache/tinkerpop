@@ -64,6 +64,11 @@ public final class Bytecode<C> implements Cloneable, Serializable {
         this.instructions.add(new Instruction<>(coefficient, op, args));
     }
 
+    public void addInstruction(final int index, final Coefficient<C> coefficient, final String op, final Object... args) {
+        BytecodeUtil.linkBytecodeChildren(this, args);
+        this.instructions.add(index, new Instruction<>(coefficient, op, args));
+    }
+
     public List<Instruction<C>> getInstructions() {
         return this.instructions;
     }

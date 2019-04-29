@@ -187,4 +187,16 @@ public final class BytecodeUtil {
         }
         return Optional.of(COP_TraverserFactory.instance());
     }
+
+    public static <C> boolean startsWith(final Bytecode<C> bytecode, String... ops) {
+        int i = 0;
+        for (final Instruction<C> instruction : bytecode.getInstructions()) {
+            if (!instruction.op().equals(ops[i]))
+                return false;
+            i++;
+            if (i >= ops.length)
+                return true;
+        }
+        return false;
+    }
 }

@@ -18,11 +18,15 @@
  */
 package org.apache.tinkerpop.machine.structure.jdbc;
 
+import org.apache.tinkerpop.machine.bytecode.compiler.BytecodeCompiler;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 import org.apache.tinkerpop.machine.structure.Structure;
 import org.apache.tinkerpop.machine.structure.StructureFactory;
+import org.apache.tinkerpop.machine.structure.jdbc.bytecode.compiler.JDBCCompiler;
+import org.apache.tinkerpop.machine.structure.jdbc.strategy.JDBCQueryStrategy;
 import org.apache.tinkerpop.machine.structure.jdbc.strategy.JDBCStrategy;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -41,11 +45,16 @@ public class JDBCStructure implements StructureFactory {
 
     @Override
     public Set<Strategy<?>> getStrategies() {
-        return Set.of(new JDBCStrategy());
+        return Set.of(new JDBCStrategy(), new JDBCQueryStrategy());
     }
 
     @Override
     public Structure mint() {
         return new JDBCDatabase((String) this.configuration.get(JDBC_CONNECTION));
+    }
+
+    @Override
+    public List<BytecodeCompiler> getCompilers() {
+        return List.of(JDBCCompiler.instance());
     }
 }

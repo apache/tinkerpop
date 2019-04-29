@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor;
+package org.apache.tinkerpop.machine.processor.util;
 
 import org.apache.tinkerpop.machine.traverser.Traverser;
 
@@ -25,17 +25,17 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LoopsProcessor<C, S> extends SimpleProcessor<C, S, S> {
+public final class FilterProcessor<C, S> extends SimpleProcessor<C, S, S> {
 
-    private final int loops;
+    private final boolean allow;
 
-    public LoopsProcessor(final int loops) {
-        this.loops = loops;
+    public FilterProcessor(final boolean allow) {
+        this.allow = allow;
     }
 
     @Override
-    protected void processTraverser(final Iterator<Traverser<C, S>> starts) {
-        final Traverser<C, S> traverser = starts.next();
-        this.traverser = traverser.loops() == this.loops ? traverser : null;
+    protected void processTraverser(Iterator<Traverser<C, S>> starts) {
+        if (this.allow)
+            this.traverser = starts.next();
     }
 }

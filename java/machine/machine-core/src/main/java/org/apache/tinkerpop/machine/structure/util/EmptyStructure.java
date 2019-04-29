@@ -16,19 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.graph;
+package org.apache.tinkerpop.machine.structure.util;
 
-import org.apache.tinkerpop.machine.structure.TSymbol;
+import org.apache.tinkerpop.machine.structure.Structure;
+import org.apache.tinkerpop.machine.structure.StructureFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class G {
+public final class EmptyStructure implements Structure, StructureFactory {
 
-    private G() {
-        // static instance
+    private static final EmptyStructure INSTANCE = new EmptyStructure();
+
+    private EmptyStructure() {
+        // do nothing
     }
 
-    public static TSymbol id = IdSymbol.instance();
-    public static TSymbol label = LabelSymbol.instance();
+    @Override
+    public Structure mint() {
+        return this;
+    }
+
+    public static EmptyStructure instance() {
+        return EmptyStructure.INSTANCE;
+    }
 }

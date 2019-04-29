@@ -79,6 +79,7 @@ public final class BasicPath implements Path {
 
     @Override
     public Object get(final Pop pop, final String label) {
+       System.out.println(this.labels + ":::" + this.objects);
         if (Pop.last == pop) {
             for (int i = this.labels.size() - 1; i >= 0; i--) {
                 if (label.equals(this.labels.get(i)))

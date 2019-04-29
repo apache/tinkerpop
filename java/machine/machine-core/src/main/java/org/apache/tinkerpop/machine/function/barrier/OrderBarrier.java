@@ -25,7 +25,7 @@ import org.apache.tinkerpop.machine.bytecode.compiler.Order;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.BarrierFunction;
-import org.apache.tinkerpop.machine.processor.FilterProcessor;
+import org.apache.tinkerpop.machine.processor.util.FilterProcessor;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.TraverserSet;
 import org.apache.tinkerpop.machine.traverser.species.ProjectedTraverser;

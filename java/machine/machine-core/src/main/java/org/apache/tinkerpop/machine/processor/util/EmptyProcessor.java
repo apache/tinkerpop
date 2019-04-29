@@ -16,11 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.processor;
+package org.apache.tinkerpop.machine.processor.util;
 
 import org.apache.tinkerpop.machine.bytecode.compiler.Compilation;
+import org.apache.tinkerpop.machine.processor.Processor;
+import org.apache.tinkerpop.machine.processor.ProcessorFactory;
 import org.apache.tinkerpop.machine.traverser.Traverser;
-import org.apache.tinkerpop.machine.util.FastNoSuchElementException;
 
 import java.util.Collections;
 import java.util.Iterator;

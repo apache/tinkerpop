@@ -26,7 +26,9 @@ import org.apache.tinkerpop.machine.strategy.AbstractStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -48,5 +50,10 @@ public final class JDBCStrategy extends AbstractStrategy<Strategy.ProviderStrate
                             Symbols.DB,
                             BytecodeUtil.getStructureFactory(BytecodeUtil.getRootBytecode(bytecode)).get().mint()));
         }
+    }
+
+    @Override
+    public Set<Class<? extends ProviderStrategy>> applyPost() {
+        return Set.of(JDBCQueryStrategy.class);
     }
 }

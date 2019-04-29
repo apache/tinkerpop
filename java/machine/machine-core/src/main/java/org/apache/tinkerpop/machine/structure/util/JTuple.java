@@ -79,4 +79,9 @@ public class JTuple<K, V> implements TTuple<K, V> {
         return IteratorUtils.map(this.map.entrySet().iterator(), e -> new J2Tuple<>(e.getKey(), e.getValue()));
     }
 
+    @Override
+    public String toString() {
+        return this.map.toString();
+    }
+
 }
