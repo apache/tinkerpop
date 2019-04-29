@@ -212,6 +212,33 @@ limitations under the License.
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>uber</shadedClassifierName>
+                            <shadeSourcesContent>true</shadeSourcesContent>
+                            <createSourcesJar>true</createSourcesJar>
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.google.guava</pattern>
+                                    <shadedPattern>com.shaded.google.guava</shadedPattern>
+                                    <pattern>io.netty</pattern>
+                                    <shadedPattern>io.shaded.netty</shadedPattern>
+                                </relocation>
+                            </relocations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
