@@ -34,7 +34,6 @@ public final class JDBCQueryStrategy extends AbstractStrategy<Strategy.ProviderS
     @Override
     public <C> void apply(final Bytecode<C> bytecode) {
         if (bytecode.getParent().isEmpty() && BytecodeUtil.startsWith(bytecode, Symbols.DB, Symbols.VALUES, Symbols.DB, Symbols.VALUES, Symbols.HAS_KEY_VALUE, Symbols.PATH)) {
-            System.out.println(bytecode);
             final JDBCDatabase db = (JDBCDatabase) bytecode.getInstructions().get(0).args()[0];
             bytecode.getInstructions().remove(0); // DB
             final String table1 = (String) bytecode.getInstructions().get(0).args()[0];
@@ -49,7 +48,6 @@ public final class JDBCQueryStrategy extends AbstractStrategy<Strategy.ProviderS
             final Instruction<C> inst = bytecode.getInstructions().remove(0); // HAS_KEY_VALUE
             bytecode.getInstructions().remove(0); // PATH
             bytecode.addInstruction(0, inst.coefficient(), "jdbc:sql", db.getConnection(), as1, as2, query);
-            System.out.println(bytecode);
         }
     }
 }
