@@ -24,5 +24,5 @@ import org.apache.tinkerpop.machine.structure.TTuple;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TGraph extends TTuple<String, TSequence<TVertex>> {
+public interface TGraph extends TSequence<TVertex> {
 }

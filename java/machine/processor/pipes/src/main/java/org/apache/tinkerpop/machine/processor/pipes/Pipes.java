@@ -59,7 +59,9 @@ public final class Pipes<C, S, E> implements Processor<C, S, E> {
                 previousStep = this.startStep;
             }
 
-            if (function instanceof RepeatBranch)
+            if (this.steps.isEmpty() && function instanceof InitialFunction)
+                nextStep = new InitialStep<>((InitialFunction<C, S>) function, compilation.getTraverserFactory()); // TODO: this is a hack for DB
+            else if (function instanceof RepeatBranch)
                 nextStep = new RepeatStep<>(previousStep, (RepeatBranch<C, S>) function);
             else if (function instanceof BranchFunction)
                 nextStep = new BranchStep<>(previousStep, (BranchFunction<C, S, E>) function);
@@ -69,8 +71,6 @@ public final class Pipes<C, S, E> implements Processor<C, S, E> {
                 nextStep = new FlatMapStep<>(previousStep, (FlatMapFunction<C, S, E>) function);
             else if (function instanceof MapFunction)
                 nextStep = new MapStep<>(previousStep, (MapFunction<C, S, E>) function);
-            else if (function instanceof InitialFunction)
-                nextStep = new InitialStep<>((InitialFunction<C, S>) function, compilation.getTraverserFactory());
             else if (function instanceof BarrierFunction)
                 nextStep = new BarrierStep<>(previousStep, (BarrierFunction<C, S, E, Object>) function, compilation.getTraverserFactory());
             else if (function instanceof ReduceFunction)

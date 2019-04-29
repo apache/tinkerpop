@@ -32,7 +32,7 @@ import org.apache.tinkerpop.machine.strategy.finalization.CoefficientStrategy;
 import org.apache.tinkerpop.machine.strategy.verification.CoefficientVerificationStrategy;
 import org.apache.tinkerpop.machine.structure.StructureFactory;
 import org.apache.tinkerpop.machine.structure.graph.TVertex;
-import org.apache.tinkerpop.machine.structure.table.TDatabase;
+import org.apache.tinkerpop.machine.structure.rdbms.TDatabase;
 
 import java.util.Map;
 

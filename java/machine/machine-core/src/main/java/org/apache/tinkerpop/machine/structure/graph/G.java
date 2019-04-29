@@ -16,12 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.table;
+package org.apache.tinkerpop.machine.structure.graph;
 
-import org.apache.tinkerpop.machine.structure.TTuple;
+import org.apache.tinkerpop.machine.structure.TSymbol;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TRow<V> extends TTuple<String,V> {
+public final class G {
+
+    private G() {
+        // static instance
+    }
+
+    public static TSymbol id = IdSymbol.instance();
+    public static TSymbol label = LabelSymbol.instance();
 }

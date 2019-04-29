@@ -25,6 +25,9 @@ import org.apache.tinkerpop.machine.bytecode.compiler.CoreCompiler.Symbols;
 import org.apache.tinkerpop.machine.strategy.AbstractStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -32,16 +35,16 @@ public final class JDBCStrategy extends AbstractStrategy<Strategy.ProviderStrate
 
     @Override
     public <C> void apply(final Bytecode<C> bytecode) {
-        Instruction<C> dbInstruction = null;
+        final List<Instruction<C>> dbInstructions = new ArrayList<>();
         for (final Instruction<C> instruction : bytecode.getInstructions()) {
             if (instruction.op().equals(Symbols.DB)) {
-                dbInstruction = instruction;
+                dbInstructions.add(instruction);
             }
         }
-        if (null != dbInstruction) {
-            BytecodeUtil.replaceInstruction(bytecode, dbInstruction,
+        for (final Instruction<C> instruction : dbInstructions) {
+            BytecodeUtil.replaceInstruction(bytecode, instruction,
                     new Instruction<>(
-                            dbInstruction.coefficient(),
+                            instruction.coefficient(),
                             Symbols.DB,
                             BytecodeUtil.getStructureFactory(BytecodeUtil.getRootBytecode(bytecode)).get().mint()));
         }

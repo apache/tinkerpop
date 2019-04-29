@@ -20,6 +20,8 @@ package org.apache.tinkerpop.machine.structure;
 
 import org.apache.tinkerpop.machine.structure.util.T2Tuple;
 
+import java.util.Iterator;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -35,6 +37,10 @@ public interface TTuple<K, V> {
 
     public void set(final K key, final V value);
 
-    public TSequence<T2Tuple<K, V>> entries();
+    public void add(final K key, final V value);
+
+    public void remove(final K key);
+
+    public Iterator<T2Tuple<K, V>> entries();
 
 }

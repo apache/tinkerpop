@@ -30,6 +30,8 @@ import org.apache.tinkerpop.machine.bytecode.compiler.Pred;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
 import org.apache.tinkerpop.machine.structure.TTuple;
+import org.apache.tinkerpop.machine.structure.rdbms.TDatabase;
+import org.apache.tinkerpop.machine.structure.util.T2Tuple;
 import org.apache.tinkerpop.machine.traverser.path.Path;
 
 /**
@@ -109,6 +111,11 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
     }
 
     @Override
+    public Traversal<C, S, TDatabase> db() {
+        return this.addInstruction(Symbols.DB);
+    }
+
+    @Override
     public Traversal<C, S, E> emit() {
         return TraversalUtil.insertRepeatInstruction(this, 'e', true);
     }
@@ -116,6 +123,11 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
     @Override
     public Traversal<C, S, E> emit(final Traversal<C, ?, ?> emitTraversal) {
         return TraversalUtil.insertRepeatInstruction(this, 'e', TraversalUtil.getBytecode(emitTraversal));
+    }
+
+    @Override
+    public <K, V> Traversal<C, S, T2Tuple<K, V>> entries() {
+        return this.addInstruction(Symbols.ENTRIES);
     }
 
     @Override
@@ -214,8 +226,22 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
     }
 
     @Override
-    public Traversal<C, S, Path> path(final String... labels) {
-        return this.addInstruction(Symbols.PATH, TraversalUtil.addObjects(labels, "|"));
+    public Traversal<C, S, Path> path() {
+        return this.addInstruction(Symbols.PATH, "|");
+    }
+
+    @Override
+    public <R> Traversal<C, S, R> path(final String label) {
+        this.addInstruction(Symbols.PATH, label, "|");
+        return (Traversal) this.addInstruction(Symbols.VALUE, label);
+    }
+
+    @Override
+    public Traversal<C, S, Path> path(final String label, final String... labels) {
+        this.addInstruction(Symbols.PATH, label);
+        this.bytecode.addArgs((Object[]) labels);
+        this.bytecode.addArgs("|");
+        return (Traversal) this;
     }
 
     @Override

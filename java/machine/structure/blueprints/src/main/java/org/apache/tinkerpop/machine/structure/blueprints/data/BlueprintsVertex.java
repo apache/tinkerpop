@@ -59,6 +59,16 @@ public class BlueprintsVertex<V> implements TVertex<V>, Serializable {
     }
 
     @Override
+    public void add(String key, V value) {
+
+    }
+
+    @Override
+    public void remove(String key) {
+
+    }
+
+    @Override
     public V value(String key) {
         return (V) "marko";
     }
@@ -74,8 +84,8 @@ public class BlueprintsVertex<V> implements TVertex<V>, Serializable {
     }
 
     @Override
-    public TSequence<T2Tuple<String, V>> entries() {
-        return Collections::emptyIterator;
+    public Iterator<T2Tuple<String, V>> entries() {
+        return Collections.emptyIterator();
     }
 
     @Override

@@ -18,12 +18,14 @@
  */
 package org.apache.tinkerpop.machine.traverser.path;
 
+import org.apache.tinkerpop.machine.structure.TTuple;
+
 import java.io.Serializable;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Path extends Serializable, Cloneable {
+public interface Path extends Serializable, Cloneable, TTuple<String,Object> {
 
     public enum Pop {
         first, last, all;

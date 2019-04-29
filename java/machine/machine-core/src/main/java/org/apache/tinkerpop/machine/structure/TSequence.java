@@ -23,4 +23,8 @@ package org.apache.tinkerpop.machine.structure;
  */
 public interface TSequence<V> extends Iterable<V> {
 
+    public void add(final V value);
+
+    public void remove(final V value);
+
 }

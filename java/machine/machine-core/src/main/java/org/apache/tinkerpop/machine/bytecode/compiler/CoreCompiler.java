@@ -30,6 +30,7 @@ import org.apache.tinkerpop.machine.function.filter.HasKeyFilter;
 import org.apache.tinkerpop.machine.function.filter.HasKeyValueFilter;
 import org.apache.tinkerpop.machine.function.filter.IdentityFilter;
 import org.apache.tinkerpop.machine.function.filter.IsFilter;
+import org.apache.tinkerpop.machine.function.flatmap.EntriesFlatMap;
 import org.apache.tinkerpop.machine.function.flatmap.FlatMapFlatMap;
 import org.apache.tinkerpop.machine.function.flatmap.UnfoldFlatMap;
 import org.apache.tinkerpop.machine.function.flatmap.ValuesFlatMap;
@@ -69,6 +70,7 @@ public final class CoreCompiler implements BytecodeCompiler {
         put(Symbols.BRANCH, FunctionType.BRANCH);
         put(Symbols.CONSTANT, FunctionType.MAP);
         put(Symbols.COUNT, FunctionType.REDUCE);
+        put(Symbols.ENTRIES, FunctionType.FLATMAP);
         put(Symbols.FILTER, FunctionType.FILTER);
         put(Symbols.FLATMAP, FunctionType.FLATMAP);
         put(Symbols.GROUP_COUNT, FunctionType.REDUCE);
@@ -106,6 +108,8 @@ public final class CoreCompiler implements BytecodeCompiler {
                 return ConstantMap.compile(instruction);
             case Symbols.COUNT:
                 return CountReduce.compile(instruction);
+            case Symbols.ENTRIES:
+                return EntriesFlatMap.compile(instruction);
             case Symbols.FILTER:
                 return FilterFilter.compile(instruction);
             case Symbols.FLATMAP:
@@ -192,6 +196,7 @@ public final class CoreCompiler implements BytecodeCompiler {
         public static final String BRANCH = "branch";
         public static final String CONSTANT = "constant";
         public static final String COUNT = "count";
+        public static final String ENTRIES = "entries";
         public static final String EXPLAIN = "explain";
         public static final String FILTER = "filter";
         public static final String FLATMAP = "flatmap";

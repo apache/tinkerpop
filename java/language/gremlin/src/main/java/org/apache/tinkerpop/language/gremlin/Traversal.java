@@ -20,6 +20,8 @@ package org.apache.tinkerpop.language.gremlin;
 
 import org.apache.tinkerpop.machine.bytecode.compiler.Order;
 import org.apache.tinkerpop.machine.structure.TTuple;
+import org.apache.tinkerpop.machine.structure.rdbms.TDatabase;
+import org.apache.tinkerpop.machine.structure.util.T2Tuple;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.path.Path;
 
@@ -53,9 +55,13 @@ public interface Traversal<C, S, E> extends Iterator<E> {
 
     public Traversal<C, S, Long> count();
 
+    public Traversal<C, S, TDatabase> db();
+
     public Traversal<C, S, E> emit();
 
     public Traversal<C, S, E> emit(final Traversal<C, ?, ?> emitTraversal); // TODO: why not <C,E,?>
+
+    public <K, V> Traversal<C, S, T2Tuple<K, V>> entries();
 
     public Traversal<C, S, String> explain();
 
@@ -95,7 +101,11 @@ public interface Traversal<C, S, E> extends Iterator<E> {
 
     public Traversal<C, S, E> order();
 
-    public Traversal<C, S, Path> path(final String... labels);
+    public Traversal<C, S, Path> path();
+
+    public <R> Traversal<C, S, R> path(final String label);
+
+    public Traversal<C, S, Path> path(final String label, final String... labels);
 
     public Traversal<C, S, E> repeat(final Traversal<C, E, E> repeatTraversal);
 

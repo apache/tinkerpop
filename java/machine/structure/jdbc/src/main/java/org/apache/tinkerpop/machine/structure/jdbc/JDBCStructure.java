@@ -31,6 +31,8 @@ import java.util.Set;
  */
 public class JDBCStructure implements StructureFactory {
 
+    public static final String JDBC_CONNECTION = "jdbc.connection";
+
     private final Map<String, Object> configuration;
 
     public JDBCStructure(final Map<String, Object> configuration) {
@@ -44,6 +46,6 @@ public class JDBCStructure implements StructureFactory {
 
     @Override
     public Structure mint() {
-        return new JDBCDatabase((String) this.configuration.get("jdbc.connection"));
+        return new JDBCDatabase((String) this.configuration.get(JDBC_CONNECTION));
     }
 }

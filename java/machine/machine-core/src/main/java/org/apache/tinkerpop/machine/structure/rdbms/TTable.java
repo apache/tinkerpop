@@ -16,37 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.graph;
+package org.apache.tinkerpop.machine.structure.rdbms;
 
-import org.apache.tinkerpop.machine.structure.TSymbol;
+import org.apache.tinkerpop.machine.structure.TSequence;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class IdSymbol implements TSymbol {
-
-    private static final IdSymbol INSTANCE = new IdSymbol();
-
-    private IdSymbol() {
-        // static instance
-    }
-
-    @Override
-    public String toString() {
-        return "#id";
-    }
-
-    @Override
-    public int hashCode() {
-        return this.toString().hashCode();
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return other instanceof IdSymbol;
-    }
-
-    public static IdSymbol instance() {
-        return INSTANCE;
-    }
+public interface TTable extends TSequence<TRow<?>> {
 }

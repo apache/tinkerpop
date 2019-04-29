@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.machine.structure.util;
 
-import org.apache.tinkerpop.machine.structure.TSequence;
+import org.apache.tinkerpop.machine.util.IteratorUtils;
 
-import java.util.List;
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -56,8 +56,18 @@ public final class J2Tuple<K, V> implements T2Tuple<K, V> {
     }
 
     @Override
-    public TSequence<T2Tuple<K, V>> entries() {
-        return () -> List.of((T2Tuple<K, V>) this).iterator();
+    public void add(final K key, final V value) {
+        throw new IllegalStateException("Can't add key/value for a 2-tuple");
+    }
+
+    @Override
+    public void remove(final K key) {
+        throw new IllegalStateException("Can't remove key/value for a 2-tuple");
+    }
+
+    @Override
+    public Iterator<T2Tuple<K, V>> entries() {
+        return IteratorUtils.of(this);
     }
 
     @Override

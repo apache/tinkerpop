@@ -18,14 +18,15 @@
  */
 package org.apache.tinkerpop.machine.structure.jdbc;
 
-import org.apache.tinkerpop.machine.structure.TSequence;
-import org.apache.tinkerpop.machine.structure.table.TRow;
+import org.apache.tinkerpop.machine.structure.rdbms.TRow;
 import org.apache.tinkerpop.machine.structure.util.J2Tuple;
 import org.apache.tinkerpop.machine.structure.util.T2Tuple;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -73,10 +74,37 @@ final class JDBCRow<V> implements TRow<V> {
     }
 
     @Override
-    public TSequence<T2Tuple<String, V>> entries() {
+    public void add(final String key, final V value) {
         try {
             this.rows.absolute(this.rowId);
-            return () -> new Iterator<>() {
+            Object v = this.rows.getObject(key);
+            if (v instanceof List)
+                ((List) v).add(value);
+            else {
+                v = new ArrayList<>();
+                ((ArrayList) v).add(value);
+            }
+            this.rows.updateObject(key, v);
+        } catch (final SQLException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void remove(final String key) {
+        try {
+            this.rows.absolute(this.rowId);
+            this.rows.updateObject(key, null);
+        } catch (final SQLException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Iterator<T2Tuple<String, V>> entries() {
+        try {
+            this.rows.absolute(this.rowId);
+            return new Iterator<>() {
 
                 int column = 1;
 
@@ -100,6 +128,15 @@ final class JDBCRow<V> implements TRow<V> {
                     }
                 }
             };
+        } catch (final SQLException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public String toString() {
+        try {
+            return "<row#" + this.rows.getMetaData().getTableName(1) + ":" + this.rowId + ">";
         } catch (final SQLException e) {
             throw new RuntimeException(e.getMessage(), e);
         }

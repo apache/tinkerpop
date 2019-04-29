@@ -23,5 +23,30 @@ import org.apache.tinkerpop.machine.structure.TSymbol;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class LabelSymbol implements TSymbol {
+final class LabelSymbol implements TSymbol {
+
+    private static final LabelSymbol INSTANCE = new LabelSymbol();
+
+    private LabelSymbol() {
+        // static instance
+    }
+
+    @Override
+    public String toString() {
+        return "#label";
+    }
+
+    @Override
+    public int hashCode() {
+        return this.toString().hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return other instanceof LabelSymbol;
+    }
+
+    public static LabelSymbol instance() {
+        return INSTANCE;
+    }
 }

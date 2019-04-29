@@ -16,59 +16,50 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.function.initial;
+package org.apache.tinkerpop.machine.function.flatmap;
 
 import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
-import org.apache.tinkerpop.machine.function.InitialFunction;
-import org.apache.tinkerpop.machine.function.MapFunction;
-import org.apache.tinkerpop.machine.structure.rdbms.TDatabase;
+import org.apache.tinkerpop.machine.function.FlatMapFunction;
+import org.apache.tinkerpop.machine.structure.TTuple;
+import org.apache.tinkerpop.machine.structure.util.T2Tuple;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.util.StringFactory;
 
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class DbInitial<C, S> extends AbstractFunction<C> implements InitialFunction<C, TDatabase>, MapFunction<C, S, TDatabase> {
+public final class EntriesFlatMap<C, K, V> extends AbstractFunction<C> implements FlatMapFunction<C, TTuple<K, V>, T2Tuple<K, V>> {
 
-    private TDatabase database;
 
-    private DbInitial(final Coefficient<C> coefficient, final String label, final TDatabase database) {
+    private EntriesFlatMap(final Coefficient<C> coefficient, final String label) {
         super(coefficient, label);
-        this.database = database;
     }
 
+    @Override
+    public Iterator<T2Tuple<K, V>> apply(final Traverser<C, TTuple<K, V>> traverser) {
+        return traverser.object().entries();
+    }
 
     @Override
-    public Iterator<TDatabase> get() {
-        return List.of(this.database).iterator();
+    public EntriesFlatMap<C, K, V> clone() {
+        return (EntriesFlatMap<C, K, V>) super.clone();
     }
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.database.hashCode();
+        return super.hashCode();
     }
 
     @Override
     public String toString() {
-        return StringFactory.makeFunctionString(this, this.database);
+        return StringFactory.makeFunctionString(this);
     }
 
-    public static <C, S> DbInitial<C, S> compile(final Instruction<C> instruction) {
-        return new DbInitial<>(instruction.coefficient(), instruction.label(), (TDatabase) instruction.args()[0]);
-    }
-
-    @Override
-    public TDatabase apply(final Traverser<C, S> traverser) {
-        return this.database;
-    }
-
-    @Override
-    public DbInitial<C, S> clone() {
-        return this;
+    public static <C, K, V> EntriesFlatMap<C, K, V> compile(final Instruction<C> instruction) {
+        return new EntriesFlatMap<>(instruction.coefficient(), instruction.label());
     }
 }

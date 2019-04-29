@@ -20,6 +20,7 @@ package org.apache.tinkerpop.language.gremlin.core;
 
 import org.apache.tinkerpop.language.gremlin.P;
 import org.apache.tinkerpop.language.gremlin.Traversal;
+import org.apache.tinkerpop.machine.traverser.path.Path;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -80,6 +81,18 @@ public class __ {
 
     public static <C, S, E> Traversal<C, S, E> map(final Traversal<C, S, E> traversal) {
         return __.<C, S>start().map(traversal);
+    }
+
+    public static <C, S> Traversal<C, S, Path> path() {
+        return __.<C, S>start().path();
+    }
+
+    public static <C, S, R> Traversal<C, S, R> path(final String label) {
+        return __.<C, S>start().path(label);
+    }
+
+    public static <C, S> Traversal<C, S, Path> path(final String label, final String... labels) {
+        return __.<C, S>start().path(label, labels);
     }
 
     public static <C, S extends Number> Traversal<C, S, S> sum() {

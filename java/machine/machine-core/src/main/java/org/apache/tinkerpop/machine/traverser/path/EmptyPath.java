@@ -18,6 +18,11 @@
  */
 package org.apache.tinkerpop.machine.traverser.path;
 
+import org.apache.tinkerpop.machine.structure.util.T2Tuple;
+
+import java.util.Collections;
+import java.util.Iterator;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -30,8 +35,33 @@ public final class EmptyPath implements Path {
     }
 
     @Override
+    public boolean has(final String key) {
+        return false;
+    }
+
+    @Override
+    public Object value(final String key) {
+        throw new IllegalStateException("No objects in EmptyPath");
+    }
+
+    @Override
+    public void set(final String key, final Object value) {
+
+    }
+
+    @Override
     public void add(final String label, final Object object) {
 
+    }
+
+    @Override
+    public void remove(final String key) {
+
+    }
+
+    @Override
+    public Iterator<T2Tuple<String, Object>> entries() {
+        return Collections.emptyIterator();
     }
 
     @Override

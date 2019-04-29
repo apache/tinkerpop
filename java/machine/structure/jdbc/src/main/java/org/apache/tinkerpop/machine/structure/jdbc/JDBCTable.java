@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.machine.structure.jdbc;
 
-import org.apache.tinkerpop.machine.structure.table.TRow;
-import org.apache.tinkerpop.machine.structure.table.TTable;
+import org.apache.tinkerpop.machine.structure.rdbms.TRow;
+import org.apache.tinkerpop.machine.structure.rdbms.TTable;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -67,4 +67,25 @@ final class JDBCTable implements TTable {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
+
+    @Override
+    public void add(final TRow<?> value) {
+        try {
+            this.connection.createStatement().executeUpdate("INSERT INTO " + this.name + " ()" + " VALUES (" + value + ")");
+        } catch (final SQLException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void remove(final TRow<?> value) {
+        // TODO
+    }
+
+    @Override
+    public String toString() {
+        return "<table#" + this.name + ">";
+    }
+
+    // TODO: equals(), hashcode()
 }

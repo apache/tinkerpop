@@ -18,21 +18,21 @@
  */
 package org.apache.tinkerpop.machine.structure.jdbc;
 
-import org.apache.tinkerpop.machine.structure.Structure;
-import org.apache.tinkerpop.machine.structure.TSequence;
-import org.apache.tinkerpop.machine.structure.table.TDatabase;
-import org.apache.tinkerpop.machine.structure.table.TTable;
+import org.apache.tinkerpop.machine.structure.rdbms.TDatabase;
+import org.apache.tinkerpop.machine.structure.rdbms.TTable;
+import org.apache.tinkerpop.machine.structure.util.J2Tuple;
 import org.apache.tinkerpop.machine.structure.util.T2Tuple;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class JDBCDatabase implements TDatabase, Structure {
+final class JDBCDatabase implements TDatabase {
 
     private final Connection connection;
 
@@ -69,8 +69,52 @@ final class JDBCDatabase implements TDatabase, Structure {
     }
 
     @Override
-    public TSequence<T2Tuple<String, TTable>> entries() {
-        return null;
+    public void add(final String key, final TTable value) {
+        // TODO
+    }
+
+    @Override
+    public void remove(final String key) {
+        try {
+            this.connection.createStatement().execute("DROP TABLE " + key);
+        } catch (final SQLException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Iterator<T2Tuple<String, TTable>> entries() {
+        try {
+            final ResultSet result = this.connection.createStatement().executeQuery("SHOW TABLES");
+            return new Iterator<>() {
+                boolean done = false;
+
+                @Override
+                public boolean hasNext() {
+                    return !this.done;
+                }
+
+                @Override
+                public T2Tuple<String, TTable> next() {
+                    try {
+                        result.next();
+                        final String tableName = result.getString(1);
+                        final T2Tuple<String, TTable> tuple = new J2Tuple<>(tableName, new JDBCTable(connection, tableName));
+                        this.done = result.isLast();
+                        return tuple;
+                    } catch (final SQLException e) {
+                        throw new RuntimeException(e.getMessage(), e);
+                    }
+                }
+            };
+        } catch (final SQLException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "<database#" + this.connection + ">";
     }
 
 }

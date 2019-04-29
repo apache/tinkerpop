@@ -110,6 +110,7 @@ public final class Bytecode<C> implements Cloneable, Serializable {
             }
             for (final Instruction<C> instruction : this.instructions) {
                 clone.addInstruction(instruction.coefficient(), instruction.op(), instruction.args());
+                clone.lastInstruction().setLabel(instruction.label());
             }
             return clone;
         } catch (final CloneNotSupportedException e) {
