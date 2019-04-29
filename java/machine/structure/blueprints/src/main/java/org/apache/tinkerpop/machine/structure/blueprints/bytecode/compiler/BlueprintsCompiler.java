@@ -23,7 +23,7 @@ import org.apache.tinkerpop.machine.bytecode.compiler.BytecodeCompiler;
 import org.apache.tinkerpop.machine.bytecode.compiler.FunctionType;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
-import org.apache.tinkerpop.machine.structure.blueprints.function.initial.VerticesFlatMap;
+import org.apache.tinkerpop.machine.structure.blueprints.function.flatmap.VerticesFlatMap;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -53,7 +53,7 @@ public final class BlueprintsCompiler implements BytecodeCompiler {
 
     @Override
     public FunctionType getFunctionType(final String op) {
-        return op.equals(Symbols.BP_V) ? FunctionType.INITIAL : null;
+        return op.equals(Symbols.BP_V) ? FunctionType.FLATMAP : null;
     }
 
     public static class Symbols {

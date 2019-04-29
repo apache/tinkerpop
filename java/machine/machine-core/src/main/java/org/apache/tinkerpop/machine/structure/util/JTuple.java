@@ -70,6 +70,11 @@ public class JTuple<K, V> implements TTuple<K, V> {
     }
 
     @Override
+    public int size() {
+        return this.map.size();
+    }
+
+    @Override
     public Iterator<T2Tuple<K, V>> entries() {
         return IteratorUtils.map(this.map.entrySet().iterator(), e -> new J2Tuple<>(e.getKey(), e.getValue()));
     }

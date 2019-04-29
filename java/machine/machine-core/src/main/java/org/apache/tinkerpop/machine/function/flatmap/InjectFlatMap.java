@@ -16,59 +16,54 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.function.initial;
+package org.apache.tinkerpop.machine.function.flatmap;
 
 import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
-import org.apache.tinkerpop.machine.function.InitialFunction;
-import org.apache.tinkerpop.machine.function.MapFunction;
-import org.apache.tinkerpop.machine.structure.rdbms.TDatabase;
+import org.apache.tinkerpop.machine.function.initial.Initializing;
 import org.apache.tinkerpop.machine.traverser.Traverser;
+import org.apache.tinkerpop.machine.util.ArrayIterator;
 import org.apache.tinkerpop.machine.util.StringFactory;
 
+import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class DbInitial<C, S> extends AbstractFunction<C> implements InitialFunction<C, TDatabase>, MapFunction<C, S, TDatabase> {
+public final class InjectFlatMap<C, S, E> extends AbstractFunction<C> implements Initializing<C, S, E> {
 
-    private TDatabase database;
+    private final E[] objects;
 
-    private DbInitial(final Coefficient<C> coefficient, final String label, final TDatabase database) {
+    private InjectFlatMap(final Coefficient<C> coefficient, final String label, final E... objects) {
         super(coefficient, label);
-        this.database = database;
+        this.objects = objects;
     }
 
-
     @Override
-    public Iterator<TDatabase> get() {
-        return List.of(this.database).iterator();
+    public Iterator<E> apply(Traverser<C, S> traverser) {
+        return new ArrayIterator<>(this.objects);
     }
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.database.hashCode();
+        return super.hashCode() ^ Arrays.hashCode(this.objects);
     }
 
     @Override
     public String toString() {
-        return StringFactory.makeFunctionString(this, this.database);
-    }
-
-    public static <C, S> DbInitial<C, S> compile(final Instruction<C> instruction) {
-        return new DbInitial<>(instruction.coefficient(), instruction.label(), (TDatabase) instruction.args()[0]);
+        return StringFactory.makeFunctionString(this, this.objects);
     }
 
     @Override
-    public TDatabase apply(final Traverser<C, S> traverser) {
-        return this.database;
+    public InjectFlatMap<C, S, E> clone() {
+        return this; // TODO
     }
 
-    @Override
-    public DbInitial<C, S> clone() {
-        return this;
+    public static <C, S, E> InjectFlatMap<C, S, E> compile(final Instruction<C> instruction) {
+        return new InjectFlatMap<>(instruction.coefficient(), instruction.label(), (E[]) instruction.args());
     }
+
+
 }

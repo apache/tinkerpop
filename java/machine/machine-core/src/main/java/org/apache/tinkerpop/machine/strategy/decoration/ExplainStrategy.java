@@ -50,7 +50,7 @@ public final class ExplainStrategy extends AbstractStrategy<Strategy.DecorationS
             bytecode.getInstructions().clear();
             bytecode.addInstruction(
                     (Coefficient<C>) LongCoefficient.create(),
-                    Symbols.INITIAL,
+                    Symbols.INJECT,
                     ExplainStrategy.explainBytecode(clone));
         }
     }

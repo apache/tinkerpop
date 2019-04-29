@@ -23,6 +23,6 @@ package org.apache.tinkerpop.machine.bytecode.compiler;
  */
 public enum FunctionType {
 
-    BARRIER, INITIAL, MAP, FLATMAP, FILTER, REDUCE, BRANCH
+    BARRIER, MAP, FLATMAP, FILTER, REDUCE, BRANCH
 
 }

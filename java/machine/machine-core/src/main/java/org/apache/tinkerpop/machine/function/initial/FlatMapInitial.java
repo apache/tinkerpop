@@ -18,44 +18,27 @@
  */
 package org.apache.tinkerpop.machine.function.initial;
 
-import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.InitialFunction;
-import org.apache.tinkerpop.machine.util.ArrayIterator;
-import org.apache.tinkerpop.machine.util.StringFactory;
+import org.apache.tinkerpop.machine.traverser.species.EmptyTraverser;
 
-import java.util.Arrays;
 import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class InitialInitial<C, S> extends AbstractFunction<C> implements InitialFunction<C, S> {
+public final class FlatMapInitial<C, S> extends AbstractFunction<C> implements InitialFunction<C, S> {
 
-    private final S[] objects;
+    private final Initializing<C, ?, S> function;
 
-    private InitialInitial(final Coefficient<C> coefficient, final String label, final S... objects) {
+    public FlatMapInitial(final Coefficient<C> coefficient, final String label, final Initializing<C, ?, S> function) {
         super(coefficient, label);
-        this.objects = objects;
+        this.function = function;
     }
 
     @Override
     public Iterator<S> get() {
-        return new ArrayIterator<>(this.objects);
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode() ^ Arrays.hashCode(this.objects);
-    }
-
-    @Override
-    public String toString() {
-        return StringFactory.makeFunctionString(this, this.objects);
-    }
-
-    public static <C, S> InitialInitial<C, S> compile(final Instruction<C> instruction) {
-        return new InitialInitial<>(instruction.coefficient(), instruction.label(), (S[]) instruction.args());
+        return this.function.apply(EmptyTraverser.instance());
     }
 }

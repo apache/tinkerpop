@@ -21,6 +21,8 @@ package org.apache.tinkerpop.machine.bytecode.compiler;
 import org.apache.tinkerpop.machine.bytecode.Bytecode;
 import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.function.CFunction;
+import org.apache.tinkerpop.machine.function.initial.FlatMapInitial;
+import org.apache.tinkerpop.machine.function.initial.Initializing;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +35,9 @@ public interface BytecodeCompiler {
     public default <C> List<CFunction<C>> compile(final Bytecode<C> bytecode) {
         final List<CFunction<C>> functions = new ArrayList<>();
         for (final Instruction<C> instruction : bytecode.getInstructions()) {
-            functions.add(this.compile(instruction));
+            final CFunction function = this.compile(instruction);
+            functions.add(functions.isEmpty() && bytecode.getParent().isEmpty() && function instanceof Initializing ?
+                    new FlatMapInitial<>(function.coefficient(), function.label(), (Initializing) function) : function);
         }
         return functions;
     }

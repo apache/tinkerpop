@@ -61,10 +61,11 @@ public final class TraversalUtil {
         return args;
     }
 
-    public static Object[] addObjects(final Object[] original, final Object... updates) {
-        final Object[] objects = new Object[original.length + updates.length];
-        System.arraycopy(original, 0, objects, 0, original.length);
-        System.arraycopy(updates, 0, objects, original.length, updates.length);
+    public static Object[] addObjects(final Object head, final Object[] original, final Object... updates) {
+        final Object[] objects = new Object[original.length + updates.length + 1];
+        objects[0] = head;
+        System.arraycopy(original, 0, objects, 1, original.length);
+        System.arraycopy(updates, 0, objects, original.length+1, updates.length);
         return objects;
     }
 }

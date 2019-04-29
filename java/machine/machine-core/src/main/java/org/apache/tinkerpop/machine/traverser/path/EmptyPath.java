@@ -40,11 +40,6 @@ public final class EmptyPath implements Path {
     }
 
     @Override
-    public Object value(final String key) {
-        throw new IllegalStateException("No objects in EmptyPath");
-    }
-
-    @Override
     public void set(final String key, final Object value) {
 
     }

@@ -87,7 +87,7 @@ public class __ {
         return __.<C, S>start().path();
     }
 
-    public static <C, S, R> Traversal<C, S, R> path(final String label) {
+    public static <C, S, E> Traversal<C, S, E> path(final String label) {
         return __.<C, S>start().path(label);
     }
 
@@ -105,5 +105,9 @@ public class __ {
 
     public static <C, S, E> Traversal<C, S, E> union(final Traversal<C, S, E>... traversals) {
         return __.<C, S>start().union(traversals);
+    }
+
+    public static <C, S, E> Traversal<C, S, E> value(final String key) {
+        return __.<C, S>start().value(key);
     }
 }

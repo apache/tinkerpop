@@ -22,6 +22,7 @@ import org.apache.tinkerpop.machine.structure.rdbms.TDatabase;
 import org.apache.tinkerpop.machine.structure.rdbms.TTable;
 import org.apache.tinkerpop.machine.structure.util.J2Tuple;
 import org.apache.tinkerpop.machine.structure.util.T2Tuple;
+import org.apache.tinkerpop.machine.util.IteratorUtils;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -80,6 +81,11 @@ final class JDBCDatabase implements TDatabase {
         } catch (final SQLException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public int size() {
+        return (int) IteratorUtils.count(this.entries());
     }
 
     @Override

@@ -30,12 +30,12 @@ import org.apache.tinkerpop.machine.function.filter.HasKeyFilter;
 import org.apache.tinkerpop.machine.function.filter.HasKeyValueFilter;
 import org.apache.tinkerpop.machine.function.filter.IdentityFilter;
 import org.apache.tinkerpop.machine.function.filter.IsFilter;
+import org.apache.tinkerpop.machine.function.flatmap.DbFlatMap;
 import org.apache.tinkerpop.machine.function.flatmap.EntriesFlatMap;
 import org.apache.tinkerpop.machine.function.flatmap.FlatMapFlatMap;
+import org.apache.tinkerpop.machine.function.flatmap.InjectFlatMap;
 import org.apache.tinkerpop.machine.function.flatmap.UnfoldFlatMap;
 import org.apache.tinkerpop.machine.function.flatmap.ValuesFlatMap;
-import org.apache.tinkerpop.machine.function.initial.DbInitial;
-import org.apache.tinkerpop.machine.function.initial.InitialInitial;
 import org.apache.tinkerpop.machine.function.map.ConstantMap;
 import org.apache.tinkerpop.machine.function.map.IncrMap;
 import org.apache.tinkerpop.machine.function.map.LoopsMap;
@@ -78,7 +78,7 @@ public final class CoreCompiler implements BytecodeCompiler {
         put(Symbols.HAS_KEY_VALUE, FunctionType.FILTER);
         put(Symbols.IDENTITY, FunctionType.FILTER);
         put(Symbols.INCR, FunctionType.MAP);
-        put(Symbols.INITIAL, FunctionType.INITIAL);
+        put(Symbols.INJECT, FunctionType.FLATMAP);
         put(Symbols.IS, FunctionType.FILTER);
         put(Symbols.JOIN, FunctionType.BARRIER);
         put(Symbols.LOOPS, FunctionType.MAP);
@@ -89,12 +89,12 @@ public final class CoreCompiler implements BytecodeCompiler {
         put(Symbols.REPEAT, FunctionType.BRANCH);
         put(Symbols.SUM, FunctionType.REDUCE);
         put(Symbols.UNFOLD, FunctionType.FLATMAP);
-        put(Symbols.V, FunctionType.FLATMAP);
         put(Symbols.VALUE, FunctionType.MAP);
         put(Symbols.VALUES, FunctionType.FLATMAP);
 
         //
         put(Symbols.DB, FunctionType.FLATMAP);
+        put(Symbols.V, FunctionType.FLATMAP);
     }};
 
     @Override
@@ -124,8 +124,8 @@ public final class CoreCompiler implements BytecodeCompiler {
                 return IdentityFilter.compile(instruction);
             case Symbols.INCR:
                 return IncrMap.compile(instruction);
-            case Symbols.INITIAL:
-                return InitialInitial.compile(instruction);
+            case Symbols.INJECT:
+                return InjectFlatMap.compile(instruction);
             case Symbols.IS:
                 return IsFilter.compile(instruction);
             case Symbols.JOIN:
@@ -151,7 +151,7 @@ public final class CoreCompiler implements BytecodeCompiler {
             case Symbols.VALUES:
                 return ValuesFlatMap.compile(instruction);
             case Symbols.DB:
-                return DbInitial.compile(instruction);
+                return DbFlatMap.compile(instruction);
             default:
                 return null;
         }
@@ -205,7 +205,7 @@ public final class CoreCompiler implements BytecodeCompiler {
         public static final String HAS_KEY_VALUE = "hasKeyValue";
         public static final String IDENTITY = "identity";
         public static final String INCR = "incr";
-        public static final String INITIAL = "initial";
+        public static final String INJECT = "initial";
         public static final String IS = "is";
         public static final String JOIN = "join";
         public static final String LOOPS = "loops";

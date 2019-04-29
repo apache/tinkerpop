@@ -101,6 +101,16 @@ final class JDBCRow<V> implements TRow<V> {
     }
 
     @Override
+    public int size() {
+        try {
+            this.rows.absolute(this.rowId);
+            return this.rows.getMetaData().getColumnCount();
+        } catch (final SQLException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    @Override
     public Iterator<T2Tuple<String, V>> entries() {
         try {
             this.rows.absolute(this.rowId);

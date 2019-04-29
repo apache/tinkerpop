@@ -38,6 +38,6 @@ public class BlueprintsVerticesStrategy extends AbstractStrategy<Strategy.Provid
                 temp = instruction;
         }
         if (null != temp)
-            BytecodeUtil.replaceInstruction(bytecode, temp, new Instruction<>(temp.coefficient(), BlueprintsCompiler.Symbols.BP_V));
+            BytecodeUtil.replaceInstruction(bytecode, temp, new Instruction<>(temp.coefficient(), BlueprintsCompiler.Symbols.BP_V)); // TODO: as(label)
     }
 }

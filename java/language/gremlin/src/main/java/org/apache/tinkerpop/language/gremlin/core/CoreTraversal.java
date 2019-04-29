@@ -63,8 +63,7 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
 
     @Override
     public Traversal<C, S, E> by(final String byString) {
-        this.bytecode.addArgs(byString);
-        return this;
+        return this.by(__.value(byString));
     }
 
     @Override
@@ -232,16 +231,12 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
 
     @Override
     public <R> Traversal<C, S, R> path(final String label) {
-        this.addInstruction(Symbols.PATH, label, "|");
-        return (Traversal) this.addInstruction(Symbols.VALUE, label);
+        return this.addInstruction(Symbols.PATH, label);
     }
 
     @Override
     public Traversal<C, S, Path> path(final String label, final String... labels) {
-        this.addInstruction(Symbols.PATH, label);
-        this.bytecode.addArgs((Object[]) labels);
-        this.bytecode.addArgs("|");
-        return (Traversal) this;
+        return this.addInstruction(Symbols.PATH,TraversalUtil.addObjects(label,labels,"|"));
     }
 
     @Override

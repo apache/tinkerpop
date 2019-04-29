@@ -41,6 +41,8 @@ public interface TTuple<K, V> {
 
     public void remove(final K key);
 
+    public int size();
+
     public Iterator<T2Tuple<K, V>> entries();
 
 }

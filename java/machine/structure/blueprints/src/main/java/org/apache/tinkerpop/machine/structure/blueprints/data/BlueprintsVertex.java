@@ -69,6 +69,11 @@ public class BlueprintsVertex<V> implements TVertex<V>, Serializable {
     }
 
     @Override
+    public int size() {
+        return 0;
+    }
+
+    @Override
     public V value(String key) {
         return (V) "marko";
     }

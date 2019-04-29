@@ -29,6 +29,7 @@ import org.apache.tinkerpop.machine.traverser.path.BasicPath;
 import org.apache.tinkerpop.machine.traverser.path.Path;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -82,20 +83,25 @@ public final class PathMap<C, S> extends AbstractFunction<C> implements MapFunct
         return clone;
     }
 
-    public static <C, S> PathMap<C, S> compile(final Instruction<C> instruction) {
-        final List<String> labels = new ArrayList<>();
-        final List<Compilation<C, Object, Object>> compilations = new ArrayList<>();
-        boolean processingLabels = true;
-        for (final Object arg : instruction.args()) {
-            if (arg.equals("|")) {
-                processingLabels = false;
-                continue;
+    public static <C, S, E> MapFunction<C, S, E> compile(final Instruction<C> instruction) {
+        if (Arrays.stream(instruction.args()).anyMatch("|"::equals)) {
+            final List<String> labels = new ArrayList<>();
+            final List<Compilation<C, Object, Object>> compilations = new ArrayList<>();
+            boolean processingLabels = true;
+            for (final Object arg : instruction.args()) {
+                if (arg.equals("|")) {
+                    processingLabels = false;
+                    continue;
+                }
+                if (processingLabels)
+                    labels.add((String) arg);
+                else
+                    compilations.add(Compilation.compile(arg));
             }
-            if (processingLabels)
-                labels.add((String) arg);
-            else
-                compilations.add(Compilation.compile(arg));
+            return (MapFunction<C, S, E>) new PathMap<>(instruction.coefficient(), instruction.label(), labels, compilations);
+        } else {
+            return PathObjectMap.compile(instruction);
         }
-        return new PathMap<>(instruction.coefficient(), instruction.label(), labels, compilations);
+
     }
 }

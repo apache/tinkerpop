@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.machine.traverser.path;
 
 import org.apache.tinkerpop.machine.structure.util.T2Tuple;
-import org.apache.tinkerpop.machine.util.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -39,11 +38,6 @@ public final class BasicPath implements Path {
     @Override
     public boolean has(final String key) {
         return this.labels.contains(key);
-    }
-
-    @Override
-    public Object value(final String key) {
-        return this.get(Pop.last, key);
     }
 
     @Override

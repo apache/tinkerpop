@@ -25,7 +25,7 @@ import java.io.Serializable;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Path extends Serializable, Cloneable, TTuple<String,Object> {
+public interface Path extends Serializable, Cloneable, TTuple<String, Object> {
 
     public enum Pop {
         first, last, all;
@@ -38,6 +38,11 @@ public interface Path extends Serializable, Cloneable, TTuple<String,Object> {
     public String label(final int index);
 
     public Object get(final Pop pop, final String label);
+
+    @Override
+    public default Object value(final String key) {
+        return this.get(Pop.last, key);
+    }
 
     public int size();
 

@@ -67,6 +67,6 @@ public class JDBCTest {
         System.out.println(jdbc.db().values("people").toList());
         System.out.println(jdbc.db().values("people").value("name").toList());
         System.out.println(jdbc.db().values("people").entries().toList());
-        System.out.println(jdbc.db().values("people").as("x").db().values("people").has("name", __.path("x").value("name")).as("y").path("x", "y").toList());
+        System.out.println(jdbc.db().values("people").as("x").db().values("people").has("name", __.path("x").by("name")).as("y").path("x", "y").toList());
     }
 }

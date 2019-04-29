@@ -66,6 +66,11 @@ public final class J2Tuple<K, V> implements T2Tuple<K, V> {
     }
 
     @Override
+    public int size() {
+        return 1;
+    }
+
+    @Override
     public Iterator<T2Tuple<K, V>> entries() {
         return IteratorUtils.of(this);
     }

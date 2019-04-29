@@ -16,32 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.bytecode.compiler;
+package org.apache.tinkerpop.machine.function.initial;
 
-import org.apache.tinkerpop.machine.bytecode.Bytecode;
-import org.apache.tinkerpop.machine.traverser.Traverser;
-
-import java.io.Serializable;
-import java.util.Iterator;
+import org.apache.tinkerpop.machine.function.FlatMapFunction;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Argument<E> extends Serializable, Cloneable {
-
-    public <C, S> E mapArg(final Traverser<C, S> traverser);
-
-    public <C, S> Iterator<E> flatMapArg(final Traverser<C, S> traverser);
-
-    public <C, S> boolean filterArg(final Traverser<C, S> traverser);
-
-    public static <C, S, E> Argument<E> create(final Object... args) {
-        if (args[0] instanceof Bytecode)
-            return new BytecodeArgument<>((Bytecode<C>) args[0]);
-        else
-            return new ConstantArgument<>((E) args[0]);
-    }
-
-    public Argument<E> clone();
-
+public interface Initializing<C, S, E> extends FlatMapFunction<C, S, E> {
 }

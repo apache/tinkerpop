@@ -97,7 +97,7 @@ public class TraversalSource<C> implements Cloneable {
         this.prepareSourceCode();
         final Bytecode<C> bytecode = this.bytecode.clone();
         final Coefficient<C> coefficient = this.coefficient.clone();
-        bytecode.addInstruction(coefficient, Symbols.INITIAL, objects);
+        bytecode.addInstruction(coefficient, Symbols.INJECT, objects);
         return new CoreTraversal<>(this.machine, bytecode, coefficient); // TODO
     }
 

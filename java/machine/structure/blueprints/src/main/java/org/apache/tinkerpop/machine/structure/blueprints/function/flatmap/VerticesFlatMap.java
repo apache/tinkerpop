@@ -16,13 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.blueprints.function.initial;
+package org.apache.tinkerpop.machine.structure.blueprints.function.flatmap;
 
-import org.apache.tinkerpop.machine.structure.graph.TVertex;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
-import org.apache.tinkerpop.machine.function.InitialFunction;
+import org.apache.tinkerpop.machine.function.FlatMapFunction;
 import org.apache.tinkerpop.machine.structure.blueprints.data.BlueprintsVertex;
+import org.apache.tinkerpop.machine.structure.graph.TVertex;
+import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.util.IteratorUtils;
 
 import java.util.Iterator;
@@ -30,15 +31,20 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VerticesFlatMap<C> extends AbstractFunction<C> implements InitialFunction<C, TVertex> {
+public class VerticesFlatMap<C, S> extends AbstractFunction<C> implements FlatMapFunction<C, S, TVertex> {
 
     public VerticesFlatMap(final Coefficient<C> coefficient, final String label) {
         super(coefficient, label);
     }
 
     @Override
-    public Iterator<TVertex> get() {
+    public Iterator<TVertex> apply(final Traverser<C, S> traverser) {
         return IteratorUtils.of(new BlueprintsVertex(), new BlueprintsVertex());
+    }
+
+    @Override
+    public VerticesFlatMap<C, S> clone() {
+        return this; // TODO;
     }
 
 }
