@@ -16,29 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.function.initial;
-
-import org.apache.tinkerpop.machine.coefficient.Coefficient;
-import org.apache.tinkerpop.machine.function.AbstractFunction;
-import org.apache.tinkerpop.machine.function.InitialFunction;
-import org.apache.tinkerpop.machine.traverser.species.EmptyTraverser;
-
-import java.util.Iterator;
+package org.apache.tinkerpop.machine.structure.rdf;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class FlatMapInitial<C, S> extends AbstractFunction<C> implements InitialFunction<C, S> {
+public interface TQuad extends TTriple {
 
-    private final Initializing<C, ?, S> function;
-
-    public FlatMapInitial(final Coefficient<C> coefficient, final String label, final Initializing<C, ?, S> function) {
-        super(coefficient, label);
-        this.function = function;
-    }
-
-    @Override
-    public Iterator<S> get() {
-        return this.function.apply(EmptyTraverser.instance());
-    }
+    public String graph();
 }
