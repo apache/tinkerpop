@@ -20,8 +20,8 @@ package org.apache.tinkerpop.machine.structure.jdbc;
 
 import org.apache.tinkerpop.machine.structure.rdbms.TDatabase;
 import org.apache.tinkerpop.machine.structure.rdbms.TTable;
-import org.apache.tinkerpop.machine.structure.util.J2Tuple;
-import org.apache.tinkerpop.machine.structure.util.T2Tuple;
+import org.apache.tinkerpop.machine.structure.util.JPair;
+import org.apache.tinkerpop.machine.structure.TPair;
 import org.apache.tinkerpop.machine.util.IteratorUtils;
 
 import java.sql.Connection;
@@ -74,11 +74,6 @@ public final class JDBCDatabase implements TDatabase {
     }
 
     @Override
-    public void add(final String key, final TTable value) {
-        // TODO
-    }
-
-    @Override
     public void remove(final String key) {
         try {
             this.connection.createStatement().execute("DROP TABLE " + key);
@@ -89,11 +84,11 @@ public final class JDBCDatabase implements TDatabase {
 
     @Override
     public int size() {
-        return (int) IteratorUtils.count(this.entries());
+        return (int) IteratorUtils.count(this);
     }
 
     @Override
-    public Iterator<T2Tuple<String, TTable>> entries() {
+    public Iterator<TPair<String, TTable>> iterator() {
         try {
             final ResultSet result = this.connection.createStatement().executeQuery("SHOW TABLES");
             return new Iterator<>() {
@@ -105,11 +100,11 @@ public final class JDBCDatabase implements TDatabase {
                 }
 
                 @Override
-                public T2Tuple<String, TTable> next() {
+                public TPair<String, TTable> next() {
                     try {
                         result.next();
                         final String tableName = result.getString(1);
-                        final T2Tuple<String, TTable> tuple = new J2Tuple<>(tableName, new JDBCTable(connection, tableName));
+                        final TPair<String, TTable> tuple = new JPair<>(tableName, new JDBCTable(connection, tableName));
                         this.done = result.isLast();
                         return tuple;
                     } catch (final SQLException e) {

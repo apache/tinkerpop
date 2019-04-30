@@ -21,6 +21,7 @@ package org.apache.tinkerpop.machine.structure.util;
 import org.apache.tinkerpop.machine.structure.TSequence;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -30,6 +31,10 @@ import java.util.List;
 public final class JSequence<V> implements TSequence<V> {
 
     private final List<V> list = new ArrayList<>();
+
+    public JSequence(final V... values) {
+        Collections.addAll(this.list, values);
+    }
 
     @Override
     public void add(final V value) {

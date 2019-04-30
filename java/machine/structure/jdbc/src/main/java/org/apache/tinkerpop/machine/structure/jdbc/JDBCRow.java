@@ -19,8 +19,8 @@
 package org.apache.tinkerpop.machine.structure.jdbc;
 
 import org.apache.tinkerpop.machine.structure.rdbms.TRow;
-import org.apache.tinkerpop.machine.structure.util.J2Tuple;
-import org.apache.tinkerpop.machine.structure.util.T2Tuple;
+import org.apache.tinkerpop.machine.structure.util.JPair;
+import org.apache.tinkerpop.machine.structure.TPair;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -74,23 +74,6 @@ final class JDBCRow<V> implements TRow<V> {
     }
 
     @Override
-    public void add(final String key, final V value) {
-        try {
-            this.rows.absolute(this.rowId);
-            Object v = this.rows.getObject(key);
-            if (v instanceof List)
-                ((List) v).add(value);
-            else {
-                v = new ArrayList<>();
-                ((ArrayList) v).add(value);
-            }
-            this.rows.updateObject(key, v);
-        } catch (final SQLException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-    }
-
-    @Override
     public void remove(final String key) {
         try {
             this.rows.absolute(this.rowId);
@@ -111,7 +94,7 @@ final class JDBCRow<V> implements TRow<V> {
     }
 
     @Override
-    public Iterator<T2Tuple<String, V>> entries() {
+    public Iterator<TPair<String, V>> iterator() {
         try {
             this.rows.absolute(this.rowId);
             return new Iterator<>() {
@@ -128,9 +111,9 @@ final class JDBCRow<V> implements TRow<V> {
                 }
 
                 @Override
-                public T2Tuple<String, V> next() {
+                public TPair<String, V> next() {
                     try {
-                        final J2Tuple<String, V> temp = new J2Tuple<>(rows.getMetaData().getColumnName(column), (V) rows.getObject(column));
+                        final JPair<String, V> temp = new JPair<>(rows.getMetaData().getColumnName(column), (V) rows.getObject(column));
                         column++;
                         return temp;
                     } catch (final SQLException e) {

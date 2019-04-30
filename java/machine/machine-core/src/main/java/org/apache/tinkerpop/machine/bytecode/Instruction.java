@@ -29,12 +29,13 @@ import java.util.Arrays;
  */
 public final class Instruction<C> implements Serializable {
 
+    private String label;
     private final Coefficient<C> coefficient;
     private final String op;
     Object[] args;
-    private String label = null;
 
-    public Instruction(final Coefficient<C> coefficient, final String op, final Object... args) {
+    public Instruction(final Coefficient<C> coefficient, final String label, final String op, final Object... args) {
+        this.label = label;
         this.coefficient = coefficient.clone();
         this.op = op;
         this.args = args;
@@ -59,7 +60,6 @@ public final class Instruction<C> implements Serializable {
     public void setLabel(final String label) {
         this.label = label;
     }
-
 
     @Override
     public int hashCode() {

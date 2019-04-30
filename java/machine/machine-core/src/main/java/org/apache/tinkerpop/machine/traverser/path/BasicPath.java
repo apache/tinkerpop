@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.traverser.path;
 
-import org.apache.tinkerpop.machine.structure.util.T2Tuple;
+import org.apache.tinkerpop.machine.structure.TPair;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -41,13 +41,6 @@ public final class BasicPath implements Path {
     }
 
     @Override
-    public void set(final String key, final Object value) {
-        final int index = this.labels.indexOf(key);
-        if (-1 != index)
-            this.objects.set(index, value);
-    }
-
-    @Override
     public void add(final String label, final Object object) {
         this.labels.add(label);
         this.objects.add(object);
@@ -55,16 +48,27 @@ public final class BasicPath implements Path {
 
     @Override
     public void remove(final String key) {
-        final int index = this.labels.indexOf(key);
-        if (-1 != index) {
+        int index;
+        while (-1 != (index = this.labels.indexOf(key))) {
             this.labels.remove(index);
             this.objects.remove(index);
         }
     }
 
     @Override
-    public Iterator<T2Tuple<String, Object>> entries() {
-        return null;
+    public void remove(final TPair<String, Object> pair) {
+        int index;
+        while (-1 != (index = this.labels.indexOf(pair.key()))) {
+            if (pair.value().equals(this.objects.get(index))) {
+                this.labels.remove(index);
+                this.objects.remove(index);
+            }
+        }
+    }
+
+    @Override
+    public Iterator<TPair<String, Object>> iterator() {
+        return null; // TODO
     }
 
     @Override

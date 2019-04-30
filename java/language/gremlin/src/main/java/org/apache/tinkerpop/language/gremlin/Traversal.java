@@ -21,7 +21,7 @@ package org.apache.tinkerpop.language.gremlin;
 import org.apache.tinkerpop.machine.bytecode.compiler.Order;
 import org.apache.tinkerpop.machine.structure.TTuple;
 import org.apache.tinkerpop.machine.structure.rdbms.TDatabase;
-import org.apache.tinkerpop.machine.structure.util.T2Tuple;
+import org.apache.tinkerpop.machine.structure.TPair;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.traverser.path.Path;
 
@@ -61,7 +61,7 @@ public interface Traversal<C, S, E> extends Iterator<E> {
 
     public Traversal<C, S, E> emit(final Traversal<C, ?, ?> emitTraversal); // TODO: why not <C,E,?>
 
-    public <K, V> Traversal<C, S, T2Tuple<K, V>> entries();
+    public <K, V> Traversal<C, S, TPair<K, V>> entries();
 
     public Traversal<C, S, String> explain();
 

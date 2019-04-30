@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.machine.structure.jdbc.function.flatmap;
 
+import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.initial.Initializing;
@@ -101,5 +102,9 @@ public final class SqlFlatMap<C, S> extends AbstractFunction<C> implements Initi
     @Override
     public SqlFlatMap<C, S> clone() {
         return this; // TODO;
+    }
+
+    public static <C, S> SqlFlatMap<C, S> compile(final Instruction<C> instruction) {
+        return new SqlFlatMap<>(instruction.coefficient(), instruction.label(), (Connection) instruction.args()[0], (String) instruction.args()[1], (String) instruction.args()[2], (String) instruction.args()[3]);
     }
 }

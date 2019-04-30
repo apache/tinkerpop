@@ -54,7 +54,7 @@ public abstract class AbstractTraversal<C, S, E> implements Traversal<C, S, E> {
     protected final <A, B> Traversal<C, A, B> addInstruction(final String op, final Object... args) {
         if (this.executed)
             throw new IllegalStateException("The traversal has already been submitted and can no longer be mutated");
-        this.bytecode.addInstruction(this.currentCoefficient, op, args);
+        this.bytecode.addInstruction(this.currentCoefficient, null, op, args);
         this.currentCoefficient.unity();
         return (Traversal<C, A, B>) this;
     }

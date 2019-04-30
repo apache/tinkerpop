@@ -41,6 +41,10 @@ public final class DbFlatMap<C, S> extends AbstractFunction<C> implements Initia
         this.database = database;
     }
 
+    @Override
+    public Iterator<TDatabase> apply(final Traverser<C, S> traverser) {
+        return IteratorUtils.of(this.database);
+    }
 
     @Override
     public int hashCode() {
@@ -52,17 +56,12 @@ public final class DbFlatMap<C, S> extends AbstractFunction<C> implements Initia
         return StringFactory.makeFunctionString(this, this.database);
     }
 
+    @Override
+    public DbFlatMap<C, S> clone() {
+        return (DbFlatMap<C, S>) super.clone();
+    }
+
     public static <C, S> DbFlatMap<C, S> compile(final Instruction<C> instruction) {
-        return new DbFlatMap<>(instruction.coefficient(), instruction.label(), (TDatabase) instruction.args()[0]);
-    }
-
-    @Override
-    public Iterator<TDatabase> apply(final Traverser<C, S> traverser) {
-        return IteratorUtils.of(this.database);
-    }
-
-    @Override
-    public DbFlatMap<C, S> clone() { // TODO
-        return this;
+        return new DbFlatMap<>(instruction.coefficient(), instruction.label(), (TDatabase) instruction.args()[0]); // TODO: db() should be a custom instruction, no complex objects in bytecode
     }
 }

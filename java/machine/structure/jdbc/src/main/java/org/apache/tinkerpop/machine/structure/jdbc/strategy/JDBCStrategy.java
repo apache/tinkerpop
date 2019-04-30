@@ -26,7 +26,6 @@ import org.apache.tinkerpop.machine.strategy.AbstractStrategy;
 import org.apache.tinkerpop.machine.strategy.Strategy;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -47,6 +46,7 @@ public final class JDBCStrategy extends AbstractStrategy<Strategy.ProviderStrate
             BytecodeUtil.replaceInstruction(bytecode, instruction,
                     new Instruction<>(
                             instruction.coefficient(),
+                            instruction.label(),
                             Symbols.DB,
                             BytecodeUtil.getStructureFactory(BytecodeUtil.getRootBytecode(bytecode)).get().mint()));
         }

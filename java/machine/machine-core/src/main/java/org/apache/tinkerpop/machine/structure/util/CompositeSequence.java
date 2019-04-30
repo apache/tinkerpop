@@ -18,14 +18,37 @@
  */
 package org.apache.tinkerpop.machine.structure.util;
 
-import org.apache.tinkerpop.machine.structure.TTuple;
+import org.apache.tinkerpop.machine.structure.TSequence;
+import org.apache.tinkerpop.machine.util.IteratorUtils;
+
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface T2Tuple<K, V> extends TTuple<K, V> {
+public class CompositeSequence<V> implements TSequence<V> {
 
-    public K key();
+    private final List<TSequence<V>> list;
 
-    public V value();
+    public CompositeSequence(final TSequence... sequences) {
+        this.list = Arrays.asList(sequences);
+    }
+
+
+    @Override
+    public void add(V value) {
+
+    }
+
+    @Override
+    public void remove(V value) {
+
+    }
+
+    @Override
+    public Iterator<V> iterator() {
+        return list.stream().flatMap(s -> IteratorUtils.stream(s.iterator())).iterator();
+    }
 }

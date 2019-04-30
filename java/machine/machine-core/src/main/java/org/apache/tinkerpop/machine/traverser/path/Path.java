@@ -18,20 +18,19 @@
  */
 package org.apache.tinkerpop.machine.traverser.path;
 
-import org.apache.tinkerpop.machine.structure.TTuple;
+import org.apache.tinkerpop.machine.structure.TSequence;
+import org.apache.tinkerpop.machine.structure.TPair;
 
 import java.io.Serializable;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Path extends Serializable, Cloneable, TTuple<String, Object> {
+public interface Path extends Serializable, Cloneable, TSequence<TPair<String, Object>> {
 
     public enum Pop {
         first, last, all;
     }
-
-    public void add(final String label, final Object object);
 
     public Object object(final int index);
 
@@ -39,10 +38,20 @@ public interface Path extends Serializable, Cloneable, TTuple<String, Object> {
 
     public Object get(final Pop pop, final String label);
 
-    @Override
-    public default Object value(final String key) {
-        return this.get(Pop.last, key);
+    public default Object get(final String label) {
+        return this.get(Pop.last, label);
     }
+
+    public boolean has(final String key);
+
+    public void add(final String label, final Object object);
+
+    @Override
+    public default void add(final TPair<String, Object> pair) {
+        this.add(pair.key(), pair.value());
+    }
+
+    public void remove(final String key);
 
     public int size();
 

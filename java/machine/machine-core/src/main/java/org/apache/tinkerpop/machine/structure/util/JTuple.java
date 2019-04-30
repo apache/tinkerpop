@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.machine.structure.util;
 
+import org.apache.tinkerpop.machine.structure.TPair;
 import org.apache.tinkerpop.machine.structure.TSequence;
 import org.apache.tinkerpop.machine.structure.TTuple;
 import org.apache.tinkerpop.machine.util.IteratorUtils;
@@ -49,22 +50,6 @@ public class JTuple<K, V> implements TTuple<K, V> {
     }
 
     @Override
-    public void add(final K key, final V value) {
-        if (this.map.containsKey(key)) {
-            final Object v = this.map.get(key);
-            if (v instanceof TSequence) {
-                ((TSequence) v).add(v);
-            } else {
-                final JSequence sequence = new JSequence();
-                sequence.add(v);
-                this.map.put(key, (V) sequence);
-            }
-        } else {
-            this.map.put(key, value);
-        }
-    }
-
-    @Override
     public void remove(final K key) {
         this.map.remove(key);
     }
@@ -75,8 +60,8 @@ public class JTuple<K, V> implements TTuple<K, V> {
     }
 
     @Override
-    public Iterator<T2Tuple<K, V>> entries() {
-        return IteratorUtils.map(this.map.entrySet().iterator(), e -> new J2Tuple<>(e.getKey(), e.getValue()));
+    public Iterator<TPair<K, V>> iterator() {
+        return IteratorUtils.map(this.map.entrySet().iterator(), e -> new JPair<>(e.getKey(), e.getValue()));
     }
 
     @Override

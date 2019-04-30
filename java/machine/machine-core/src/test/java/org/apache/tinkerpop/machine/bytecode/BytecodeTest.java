@@ -36,7 +36,7 @@ class BytecodeTest {
         Bytecode<Long> parent = new Bytecode<>();
         assertFalse(parent.getParent().isPresent());
         Bytecode<Long> child = new Bytecode<>();
-        parent.addInstruction(LongCoefficient.create(), "test", child);
+        parent.addInstruction(LongCoefficient.create(), null, "test", child);
         assertTrue(child.getParent().isPresent());
         assertEquals(parent, child.getParent().get());
         assertFalse(child.getParent().get().getParent().isPresent());
@@ -47,7 +47,7 @@ class BytecodeTest {
         Bytecode<Long> parent = new Bytecode<>();
         assertFalse(parent.getParent().isPresent());
         Bytecode<Long> child = new Bytecode<>();
-        parent.addInstruction(LongCoefficient.create(), "test", child);
+        parent.addInstruction(LongCoefficient.create(), null, "test", child);
 
         Bytecode<Long> cloneParent = parent.clone();
         Bytecode<Long> cloneChild = (Bytecode<Long>) cloneParent.lastInstruction().args()[0];

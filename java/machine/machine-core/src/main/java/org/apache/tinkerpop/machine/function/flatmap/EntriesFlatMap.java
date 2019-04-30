@@ -22,8 +22,8 @@ import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.FlatMapFunction;
+import org.apache.tinkerpop.machine.structure.TPair;
 import org.apache.tinkerpop.machine.structure.TTuple;
-import org.apache.tinkerpop.machine.structure.util.T2Tuple;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.util.StringFactory;
 
@@ -32,21 +32,15 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class EntriesFlatMap<C, K, V> extends AbstractFunction<C> implements FlatMapFunction<C, TTuple<K, V>, T2Tuple<K, V>> {
-
+public final class EntriesFlatMap<C, K, V> extends AbstractFunction<C> implements FlatMapFunction<C, TTuple<K, V>, TPair<K, V>> {
 
     private EntriesFlatMap(final Coefficient<C> coefficient, final String label) {
         super(coefficient, label);
     }
 
     @Override
-    public Iterator<T2Tuple<K, V>> apply(final Traverser<C, TTuple<K, V>> traverser) {
-        return traverser.object().entries();
-    }
-
-    @Override
-    public EntriesFlatMap<C, K, V> clone() {
-        return (EntriesFlatMap<C, K, V>) super.clone();
+    public Iterator<TPair<K, V>> apply(final Traverser<C, TTuple<K, V>> traverser) {
+        return traverser.object().iterator();
     }
 
     @Override
@@ -57,6 +51,11 @@ public final class EntriesFlatMap<C, K, V> extends AbstractFunction<C> implement
     @Override
     public String toString() {
         return StringFactory.makeFunctionString(this);
+    }
+
+    @Override
+    public EntriesFlatMap<C, K, V> clone() {
+        return (EntriesFlatMap<C, K, V>) super.clone();
     }
 
     public static <C, K, V> EntriesFlatMap<C, K, V> compile(final Instruction<C> instruction) {

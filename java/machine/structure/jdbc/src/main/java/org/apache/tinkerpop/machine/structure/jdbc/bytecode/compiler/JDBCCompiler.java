@@ -21,11 +21,8 @@ package org.apache.tinkerpop.machine.structure.jdbc.bytecode.compiler;
 import org.apache.tinkerpop.machine.bytecode.Instruction;
 import org.apache.tinkerpop.machine.bytecode.compiler.BytecodeCompiler;
 import org.apache.tinkerpop.machine.bytecode.compiler.FunctionType;
-import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.CFunction;
 import org.apache.tinkerpop.machine.structure.jdbc.function.flatmap.SqlFlatMap;
-
-import java.sql.Connection;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -38,17 +35,11 @@ public final class JDBCCompiler implements BytecodeCompiler {
         // static instance
     }
 
-    public static JDBCCompiler instance() {
-        return INSTANCE;
-    }
-
     @Override
     public <C> CFunction<C> compile(final Instruction<C> instruction) {
         final String op = instruction.op();
-        final Coefficient<C> coefficient = instruction.coefficient();
-        final String label = instruction.label();
         if (op.equals(Symbols.JDBC_SQL))
-            return new SqlFlatMap<>(coefficient, label, (Connection) instruction.args()[0], (String) instruction.args()[1], (String) instruction.args()[2], (String) instruction.args()[3]);
+            return SqlFlatMap.compile(instruction);
         else
             return null;
     }
@@ -56,6 +47,10 @@ public final class JDBCCompiler implements BytecodeCompiler {
     @Override
     public FunctionType getFunctionType(final String op) {
         return op.equals(Symbols.JDBC_SQL) ? FunctionType.FLATMAP : null;
+    }
+
+    public static JDBCCompiler instance() {
+        return INSTANCE;
     }
 
     public static class Symbols {

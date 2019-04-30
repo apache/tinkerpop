@@ -25,11 +25,9 @@ import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.function.AbstractFunction;
 import org.apache.tinkerpop.machine.function.FilterFunction;
 import org.apache.tinkerpop.machine.structure.TTuple;
-import org.apache.tinkerpop.machine.structure.util.T2Tuple;
+import org.apache.tinkerpop.machine.structure.TPair;
 import org.apache.tinkerpop.machine.traverser.Traverser;
 import org.apache.tinkerpop.machine.util.StringFactory;
-
-import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -52,9 +50,7 @@ public final class HasKeyFilter<C, K, V> extends AbstractFunction<C> implements 
             return object.has(this.key.mapArg(traverser));
         else {
             final K testKey = this.key.mapArg(traverser);
-            final Iterator<T2Tuple<K, V>> iterator = traverser.object().entries();
-            while (iterator.hasNext()) {
-                final T2Tuple<K, V> entry = iterator.next();
+            for (final TPair<K, V> entry : traverser.object()) {
                 if (this.predicate.test(entry.key(), testKey))
                     return true;
             }

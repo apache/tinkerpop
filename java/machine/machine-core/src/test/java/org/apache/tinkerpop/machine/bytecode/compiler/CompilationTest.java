@@ -38,9 +38,9 @@ class CompilationTest {
     void shouldCloneCorrectly() {
         final Bytecode<Long> bytecode = new Bytecode<>();
         final Bytecode<Long> inner = new Bytecode<>();
-        inner.addInstruction(LongCoefficient.create(), CoreCompiler.Symbols.VALUE, "name");
-        bytecode.addInstruction(LongCoefficient.create(), CoreCompiler.Symbols.HAS_KEY, "eq", inner);
-        bytecode.addInstruction(LongCoefficient.create(), CoreCompiler.Symbols.COUNT);
+        inner.addInstruction(LongCoefficient.create(), null, CoreCompiler.Symbols.VALUE, "name");
+        bytecode.addInstruction(LongCoefficient.create(), null, CoreCompiler.Symbols.HAS_KEY, "eq", inner);
+        bytecode.addInstruction(LongCoefficient.create(), null, CoreCompiler.Symbols.COUNT);
 
         final Compilation<Long, TTuple, Long> compilationA = Compilation.compile(bytecode);
         final Compilation<Long, TTuple, Long> compilationB = compilationA.clone();

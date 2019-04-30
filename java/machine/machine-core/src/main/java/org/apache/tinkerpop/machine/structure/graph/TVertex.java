@@ -18,24 +18,20 @@
  */
 package org.apache.tinkerpop.machine.structure.graph;
 
-import org.apache.tinkerpop.machine.util.MultiIterator;
-
-import java.util.Iterator;
+import org.apache.tinkerpop.machine.structure.TSequence;
+import org.apache.tinkerpop.machine.structure.util.CompositeSequence;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface TVertex<V> extends TElement<V> {
 
-    public Iterator<TEdge<V>> inE();
+    public TSequence<TEdge<V>> inE();
 
-    public Iterator<TEdge<V>> outE();
+    public TSequence<TEdge<V>> outE();
 
-    public default Iterator<TEdge<V>> bothE() {
-        final MultiIterator<TEdge<V>> iterator = new MultiIterator<>();
-        iterator.addIterator(this.inE());
-        iterator.addIterator(this.outE());
-        return iterator;
+    public default TSequence<TEdge<V>> bothE() {
+        return new CompositeSequence<>(this.inE(), this.outE());
     }
 
 }

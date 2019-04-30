@@ -18,10 +18,11 @@
  */
 package org.apache.tinkerpop.machine.structure.blueprints.data;
 
-import org.apache.tinkerpop.machine.structure.util.T2Tuple;
 import org.apache.tinkerpop.machine.structure.TSequence;
 import org.apache.tinkerpop.machine.structure.graph.TEdge;
 import org.apache.tinkerpop.machine.structure.graph.TVertex;
+import org.apache.tinkerpop.machine.structure.util.JSequence;
+import org.apache.tinkerpop.machine.structure.TPair;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -34,13 +35,13 @@ import java.util.UUID;
 public class BlueprintsVertex<V> implements TVertex<V>, Serializable {
 
     @Override
-    public Iterator<TEdge<V>> inE() {
-        return Collections.emptyIterator();
+    public TSequence<TEdge<V>> inE() {
+        return new JSequence<>();
     }
 
     @Override
-    public Iterator<TEdge<V>> outE() {
-        return Collections.emptyIterator();
+    public TSequence<TEdge<V>> outE() {
+        return new JSequence<>();
     }
 
     @Override
@@ -55,11 +56,6 @@ public class BlueprintsVertex<V> implements TVertex<V>, Serializable {
 
     @Override
     public void set(String key, V value) {
-
-    }
-
-    @Override
-    public void add(String key, V value) {
 
     }
 
@@ -89,7 +85,7 @@ public class BlueprintsVertex<V> implements TVertex<V>, Serializable {
     }
 
     @Override
-    public Iterator<T2Tuple<String, V>> entries() {
+    public Iterator<TPair<String, V>> iterator() {
         return Collections.emptyIterator();
     }
 

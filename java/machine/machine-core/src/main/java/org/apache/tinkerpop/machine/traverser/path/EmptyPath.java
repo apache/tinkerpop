@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.machine.traverser.path;
 
-import org.apache.tinkerpop.machine.structure.util.T2Tuple;
+import org.apache.tinkerpop.machine.structure.TPair;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -40,11 +40,6 @@ public final class EmptyPath implements Path {
     }
 
     @Override
-    public void set(final String key, final Object value) {
-
-    }
-
-    @Override
     public void add(final String label, final Object object) {
 
     }
@@ -55,7 +50,12 @@ public final class EmptyPath implements Path {
     }
 
     @Override
-    public Iterator<T2Tuple<String, Object>> entries() {
+    public void remove(final TPair<String, Object> pair) {
+
+    }
+
+    @Override
+    public Iterator<TPair<String, Object>> iterator() {
         return Collections.emptyIterator();
     }
 

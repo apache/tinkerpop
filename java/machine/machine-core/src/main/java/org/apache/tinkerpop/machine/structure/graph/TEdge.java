@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.machine.structure.graph;
 
+import org.apache.tinkerpop.machine.structure.TSequence;
+import org.apache.tinkerpop.machine.structure.util.JSequence;
 import org.apache.tinkerpop.machine.util.IteratorUtils;
 
 import java.util.Iterator;
@@ -31,7 +33,7 @@ public interface TEdge<V> extends TElement<V> {
 
     public TVertex<V> outV();
 
-    public default Iterator<TVertex<V>> bothV() {
-        return IteratorUtils.of(this.inV(), this.outV());
+    public default TSequence<TVertex<V>> bothV() {
+        return new JSequence<>(this.outV(),this.inV());
     }
 }

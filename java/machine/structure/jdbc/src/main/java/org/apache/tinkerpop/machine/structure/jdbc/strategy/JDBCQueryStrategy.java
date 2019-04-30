@@ -47,7 +47,7 @@ public final class JDBCQueryStrategy extends AbstractStrategy<Strategy.ProviderS
             final String query = "SELECT " + as1 + ".*, " + as2 + ".* FROM " + table1 + " AS " + as1 + ", " + table2 + " AS " + as2 + " WHERE " + join;
             final Instruction<C> inst = bytecode.getInstructions().remove(0); // HAS_KEY_VALUE
             bytecode.getInstructions().remove(0); // PATH
-            bytecode.addInstruction(0, inst.coefficient(), "jdbc:sql", db.getConnection(), as1, as2, query);
+            bytecode.addInstruction(0, inst.coefficient(), inst.label(), "jdbc:sql", db.getConnection(), as1, as2, query);
         }
     }
 }

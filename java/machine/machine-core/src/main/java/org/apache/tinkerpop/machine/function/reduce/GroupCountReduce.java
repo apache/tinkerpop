@@ -50,8 +50,8 @@ public final class GroupCountReduce<C, S, E> extends AbstractFunction<C> impleme
     @Override
     public TTuple<E, Long> merge(final TTuple<E, Long> valueA, final TTuple<E, Long> valueB) {
         final JTuple<E, Long> tuple = new JTuple<>();
-        valueA.entries().forEachRemaining(entry -> tuple.set(entry.key(), entry.value()));
-        valueB.entries().forEachRemaining(entry -> tuple.set(entry.key(), entry.value()));
+        valueA.forEach(entry -> tuple.set(entry.key(), entry.value()));
+        valueB.forEach(entry -> tuple.set(entry.key(), entry.value()));
         return new JTuple<>();
     }
 

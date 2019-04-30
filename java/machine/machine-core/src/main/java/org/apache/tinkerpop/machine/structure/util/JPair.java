@@ -16,34 +16,35 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure;
+package org.apache.tinkerpop.machine.structure.util;
 
-import org.apache.tinkerpop.machine.util.IteratorUtils;
-
-import java.util.Iterator;
+import org.apache.tinkerpop.machine.structure.TPair;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TTuple<K, V> extends Iterable<TPair<K, V>> {
+public final class JPair<K, V> implements TPair<K, V> {
 
-    public boolean has(final K key);
+    private K key;
+    private V value;
 
-    public V value(final K key);
-
-    public default V value(final K key, final V defaultValue) {
-        return this.has(key) ? this.value(key) : defaultValue;
+    public JPair(final K key, final V value) {
+        this.key = key;
+        this.value = value;
     }
 
-    public default <U> Iterator<U> values(final K key) {
-        final Object object = this.value(key);
-        return object instanceof TSequence ? ((TSequence<U>) object).iterator() : IteratorUtils.of((U) object);
+    @Override
+    public K key() {
+        return this.key;
     }
 
-    public void set(final K key, final V value);
+    @Override
+    public V value() {
+        return this.value;
+    }
 
-    public void remove(final K key);
-
-    public int size();
-
+    @Override
+    public String toString() {
+        return this.key + ":" + this.value;
+    }
 }

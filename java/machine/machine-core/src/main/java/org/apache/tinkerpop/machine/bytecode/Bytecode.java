@@ -59,14 +59,14 @@ public final class Bytecode<C> implements Cloneable, Serializable {
 
     ///
 
-    public void addInstruction(final Coefficient<C> coefficient, final String op, final Object... args) {
+    public void addInstruction(final Coefficient<C> coefficient, final String label, final String op, final Object... args) {
         BytecodeUtil.linkBytecodeChildren(this, args);
-        this.instructions.add(new Instruction<>(coefficient, op, args));
+        this.instructions.add(new Instruction<>(coefficient, label, op, args));
     }
 
-    public void addInstruction(final int index, final Coefficient<C> coefficient, final String op, final Object... args) {
+    public void addInstruction(final int index, final Coefficient<C> coefficient, final String label, final String op, final Object... args) {
         BytecodeUtil.linkBytecodeChildren(this, args);
-        this.instructions.add(index, new Instruction<>(coefficient, op, args));
+        this.instructions.add(index, new Instruction<>(coefficient, label, op, args));
     }
 
     public List<Instruction<C>> getInstructions() {
@@ -114,8 +114,7 @@ public final class Bytecode<C> implements Cloneable, Serializable {
                 clone.addSourceInstruction(sourceInstruction.op(), sourceInstruction.args());
             }
             for (final Instruction<C> instruction : this.instructions) {
-                clone.addInstruction(instruction.coefficient(), instruction.op(), instruction.args());
-                clone.lastInstruction().setLabel(instruction.label());
+                clone.addInstruction(instruction.coefficient(), instruction.label(), instruction.op(), instruction.args());
             }
             return clone;
         } catch (final CloneNotSupportedException e) {

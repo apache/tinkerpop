@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.machine.structure.util;
+package org.apache.tinkerpop.machine.structure;
 
 import org.apache.tinkerpop.machine.util.IteratorUtils;
 
@@ -25,63 +25,39 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class J2Tuple<K, V> implements T2Tuple<K, V> {
+public interface TPair<K, V> extends TTuple<K, V> {
 
-    private K key;
-    private V value;
+    public K key();
 
-    public J2Tuple(final K key, final V value) {
-        this.key = key;
-        this.value = value;
+    public V value();
+
+    @Override
+    public default boolean has(final K key) {
+        return key.equals(this.key());
     }
 
     @Override
-    public K key() {
-        return this.key;
+    public default V value(final K key) {
+        return key.equals(this.key()) ? this.value() : null; // TODO: Exception or Optional?
     }
 
     @Override
-    public V value() {
-        return this.value;
+    public default void set(final K key, final V value) {
+        throw new IllegalStateException("TPairs are immutable: " + this);
     }
 
     @Override
-    public V value(final K key) {
-        return this.key.equals(key) ? this.value : null;
+    public default void remove(final K key) {
+        throw new IllegalStateException("TPairs are immutable: " + this);
     }
 
     @Override
-    public void set(final K key, final V value) {
-        throw new IllegalStateException("Can't set key/value for a 2-tuple");
-    }
-
-    @Override
-    public void add(final K key, final V value) {
-        throw new IllegalStateException("Can't add key/value for a 2-tuple");
-    }
-
-    @Override
-    public void remove(final K key) {
-        throw new IllegalStateException("Can't remove key/value for a 2-tuple");
-    }
-
-    @Override
-    public int size() {
+    public default int size() {
         return 1;
     }
 
     @Override
-    public Iterator<T2Tuple<K, V>> entries() {
+    public default Iterator<TPair<K, V>> iterator() {
         return IteratorUtils.of(this);
-    }
-
-    @Override
-    public boolean has(final K key) {
-        return this.key.equals(key);
-    }
-
-    @Override
-    public String toString() {
-        return this.key + ":" + this.value;
     }
 }

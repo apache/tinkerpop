@@ -31,7 +31,7 @@ import org.apache.tinkerpop.machine.coefficient.Coefficient;
 import org.apache.tinkerpop.machine.coefficient.LongCoefficient;
 import org.apache.tinkerpop.machine.structure.TTuple;
 import org.apache.tinkerpop.machine.structure.rdbms.TDatabase;
-import org.apache.tinkerpop.machine.structure.util.T2Tuple;
+import org.apache.tinkerpop.machine.structure.TPair;
 import org.apache.tinkerpop.machine.traverser.path.Path;
 
 /**
@@ -125,7 +125,7 @@ public class CoreTraversal<C, S, E> extends AbstractTraversal<C, S, E> {
     }
 
     @Override
-    public <K, V> Traversal<C, S, T2Tuple<K, V>> entries() {
+    public <K, V> Traversal<C, S, TPair<K, V>> entries() {
         return this.addInstruction(Symbols.ENTRIES);
     }
 

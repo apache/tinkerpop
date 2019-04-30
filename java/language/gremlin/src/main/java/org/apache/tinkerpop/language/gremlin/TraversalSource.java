@@ -97,7 +97,7 @@ public class TraversalSource<C> implements Cloneable {
         this.prepareSourceCode();
         final Bytecode<C> bytecode = this.bytecode.clone();
         final Coefficient<C> coefficient = this.coefficient.clone();
-        bytecode.addInstruction(coefficient, Symbols.INJECT, objects);
+        bytecode.addInstruction(coefficient, null, Symbols.INJECT, objects);
         return new CoreTraversal<>(this.machine, bytecode, coefficient); // TODO
     }
 
@@ -105,7 +105,7 @@ public class TraversalSource<C> implements Cloneable {
         this.prepareSourceCode();
         final Bytecode<C> bytecode = this.bytecode.clone();
         final Coefficient<C> coefficient = this.coefficient.clone();
-        bytecode.addInstruction(coefficient, Symbols.V);
+        bytecode.addInstruction(coefficient, null, Symbols.V);
         return new CoreTraversal<>(this.machine, bytecode, coefficient); // TODO
     }
 
@@ -113,7 +113,7 @@ public class TraversalSource<C> implements Cloneable {
         this.prepareSourceCode();
         final Bytecode<C> bytecode = this.bytecode.clone();
         final Coefficient<C> coefficient = this.coefficient.clone();
-        bytecode.addInstruction(coefficient, Symbols.DB);
+        bytecode.addInstruction(coefficient, null, Symbols.DB);
         return new CoreTraversal<>(this.machine, bytecode, coefficient); // TODO
     }
 
