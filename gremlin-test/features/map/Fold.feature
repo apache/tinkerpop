@@ -23,10 +23,15 @@ Feature: Step - fold()
       """
       g.V().fold()
       """
-    When iterated to list
+    When iterated next
     Then the result should be unordered
       | result |
-      | l[v[marko],v[vadas],v[lop],v[josh],v[ripple],v[peter]] |
+      | v[marko] |
+      | v[vadas] |
+      | v[lop] |
+      | v[josh] |
+      | v[ripple] |
+      | v[peter]  |
 
   Scenario: g_V_fold_unfold
     Given the modern graph
