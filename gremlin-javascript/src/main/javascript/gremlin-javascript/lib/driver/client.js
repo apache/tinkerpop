@@ -39,6 +39,7 @@ class Client {
    * @param {String} [options.traversalSource] The traversal source. Defaults to: 'g'.
    * @param {GraphSONWriter} [options.writer] The writer to use.
    * @param {Authenticator} [options.authenticator] The authentication handler to use.
+   * @param {String} [options.processor] The name of the opProcessor to use
    * @constructor
    */
   constructor(url, options) {
@@ -70,7 +71,7 @@ class Client {
         'aliases': { 'g': this._options.traversalSource || 'g' }
       };
 
-      return this._connection.submit(null, 'eval', args, null, '');
+      return this._connection.submit(null, 'eval', args, null, this._options.processor || '');
     }
 
     if (message instanceof Bytecode) {

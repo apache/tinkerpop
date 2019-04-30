@@ -30,6 +30,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Quieted "host unavailable" warnings for both the driver and Gremlin Console.
 * Fixed bug in `GremlinGroovyScriptEngine` interpreter mode around class definitions.
 * Implemented `EdgeLabelVerificationStrategy`
+* Gremlin-JavaScript: added parameter to configure processor in client constructor
 
 [[release-3-3-6]]
 === TinkerPop 3.3.6 (Release Date: March 18, 2019)
