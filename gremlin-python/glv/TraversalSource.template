@@ -131,11 +131,25 @@ class P(object):
         self.operator = operator
         self.value = value
         self.other = other
-<% pmethods.each { method -> %>
+<% pmethods.findAll{!(it in ["within","without"])}.each { method -> %>
     @staticmethod
     def <%= method %>(*args):
         return P("<%= toJava.call(method) %>", *args)
 <% } %>
+    @staticmethod
+    def within(*args):
+        if len(args) == 1 and type(args[0]) == list:
+            return P("within", args[0])
+        else:
+            return P("within", list(args))
+        
+    @staticmethod
+    def without(*args):
+        if len(args) == 1 and type(args[0]) == list:
+            return P("without", args[0])
+        else:
+            return P("without", list(args))
+
     def and_(self, arg):
         return P("and", self, arg)
 

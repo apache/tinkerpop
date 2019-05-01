@@ -252,11 +252,17 @@ class P(object):
 
     @staticmethod
     def within(*args):
-        return P("within", *args)
-
+        if len(args) == 1 and type(args[0]) == list:
+            return P("within", args[0])
+        else:
+            return P("within", list(args))
+        
     @staticmethod
     def without(*args):
-        return P("without", *args)
+        if len(args) == 1 and type(args[0]) == list:
+            return P("without", args[0])
+        else:
+            return P("without", list(args))
 
     def and_(self, arg):
         return P("and", self, arg)
