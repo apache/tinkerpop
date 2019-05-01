@@ -26,12 +26,13 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Improved folding of `property()` step into related mutating steps.
 * Removed `gperfutils` dependencies from Gremlin Console.
 * Fixed `PartitionStrategy` when setting vertex label and having `includeMetaProperties` configured to `true`.
-* Ensure `gremlin.sh` works when directories contain spaces
+* Ensure `gremlin.sh` works when directories contain spaces.
+* Fixed bug with `EventStrategy` in relation to `addE()` where detachment was not happening properly.
 * Ensured that `gremlin.sh` works when directories contain spaces.
 * Enabled `ctrl+c` to interrupt long running processes in Gremlin Console.
 * Quieted "host unavailable" warnings for both the driver and Gremlin Console.
 * Fixed bug in `GremlinGroovyScriptEngine` interpreter mode around class definitions.
-* Implemented `EdgeLabelVerificationStrategy`
+* Implemented `EdgeLabelVerificationStrategy`.
 * Added parameter to configure the `processor` in the gremlin-javascript `client` constructor.
 
 [[release-3-3-6]]
