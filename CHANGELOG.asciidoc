@@ -25,6 +25,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Improved folding of `property()` step into related mutating steps.
 * Removed `gperfutils` dependencies from Gremlin Console.
+* Fixed `PartitionStrategy` when setting vertex label and having `includeMetaProperties` configured to `true`.
+* Ensure `gremlin.sh` works when directories contain spaces
 * Ensured that `gremlin.sh` works when directories contain spaces.
 * Enabled `ctrl+c` to interrupt long running processes in Gremlin Console.
 * Quieted "host unavailable" warnings for both the driver and Gremlin Console.

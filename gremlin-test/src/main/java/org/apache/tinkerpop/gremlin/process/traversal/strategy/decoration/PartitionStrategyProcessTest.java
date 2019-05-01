@@ -128,13 +128,23 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
                 .partitionKey(partition).writePartition("B").addReadPartition("B").addReadPartition("A").create());
 
         final Vertex v = gOverA.addV().property("any", "thing").property("some", "thing").next();
+        final Vertex labelledV = gOverA.addV("person").property("name", "thing").property("that", "thing").next();
 
         assertNotNull(v);
         assertEquals("thing", g.V(v).values("any").next());
+        assertEquals(Vertex.DEFAULT_LABEL, g.V(v).label().next());
         assertEquals("A", g.V(v).values(partition).next());
         assertEquals("A", g.V(v).properties("any").values(partition).next());
         assertEquals("thing", g.V(v).values("some").next());
         assertEquals("A", g.V(v).properties("some").values(partition).next());
+
+        assertNotNull(labelledV);
+        assertEquals("thing", g.V(labelledV).values("name").next());
+        assertEquals("person", g.V(labelledV).label().next());
+        assertEquals("A", g.V(labelledV).values(partition).next());
+        assertEquals("A", g.V(labelledV).properties("name").values(partition).next());
+        assertEquals("thing", g.V(labelledV).values("that").next());
+        assertEquals("A", g.V(labelledV).properties("that").values(partition).next());
 
         gOverAB.V(v).property("that", "thing").iterate();
         assertEquals("thing", g.V(v).values("that").next());
