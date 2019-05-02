@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -321,6 +322,48 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
         final BigDecimal o = new BigDecimal("123456789987654321123456789987654321");
         assertEquals(o, serializeDeserialize(mapper, o, BigDecimal.class));
+    }
+
+    @Test
+    public void shouldHandlePMultiValue() throws Exception  {
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+
+        final P o = P.within(1,2,3);
+        assertEquals(o, serializeDeserialize(mapper, o, P.class));
+    }
+
+    @Test
+    public void shouldHandlePSingleValue() throws Exception  {
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+
+        final P o = P.within(1);
+        assertEquals(o, serializeDeserialize(mapper, o, P.class));
+    }
+
+    @Test
+    public void shouldHandlePMultiValueAsCollection() throws Exception  {
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+
+        final P o = P.within(Arrays.asList(1,2,3));
+        assertEquals(o, serializeDeserialize(mapper, o, P.class));
+    }
+
+    @Test
+    public void shouldReadPWithJsonArray() throws Exception {
+        // for some reason v3 is forgiving about the naked json array - leaving this here for backward compaitiblity,
+        // but should be a g:List (i think)
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+
+        final P o = P.within(Arrays.asList(1,2,3));
+        assertEquals(o, mapper.readValue("{\"@type\": \"g:P\", \"@value\": {\"predicate\": \"within\", \"value\": [{\"@type\": \"g:Int32\", \"@value\": 1},{\"@type\": \"g:Int32\", \"@value\": 2},{\"@type\": \"g:Int32\", \"@value\": 3}]}}", Object.class));
+    }
+
+    @Test
+    public void shouldReadPWithGraphSONList() throws Exception {
+        assumeThat(version, startsWith("v3"));
+
+        final P o = P.within(Arrays.asList(1,2,3));
+        assertEquals(o, mapper.readValue("{\"@type\": \"g:P\", \"@value\": {\"predicate\": \"within\", \"value\": {\"@type\": \"g:List\", \"@value\": [{\"@type\": \"g:Int32\", \"@value\": 1},{\"@type\": \"g:Int32\", \"@value\": 2},{\"@type\": \"g:Int32\", \"@value\": 3}]}}}", Object.class));
     }
 
     @Test
