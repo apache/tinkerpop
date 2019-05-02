@@ -50,27 +50,29 @@ class GraphSONWriter {
       }
       s.writer = this;
       // Insert custom serializers first
-      this._serializers.unshift(s);
+      th
+      is._serializers.unshift(s);
     });
   }
 
   adaptObject(value) {
     let s;
-    if (Array.isArray(value)) {
-      return value.map(item => this.adaptObject(item));
-    }
+    let o = value;
     for (let i = 0; i < this._serializers.length; i++) {
       const currentSerializer = this._serializers[i];
-      if (currentSerializer.canBeUsedFor && currentSerializer.canBeUsedFor(value)) {
+      if (currentSerializer.canBeUsedFor && currentSerializer.canBeUsedFor(o)) {
         s = currentSerializer;
         break;
       }
     }
     if (s) {
-      return s.serialize(value);
+      return s.serialize(o);
+    }
+    if (Array.isArray(value)) {
+      o = value.map(item => this.adaptObject(item));
     }
     // Default (strings / objects / ...)
-    return value;
+    return o;
   }
 
   /**

@@ -150,6 +150,23 @@ class P {
     return new P('or', this, arg);
   }
 
+  static within(...args) {
+    if (args.length === 1 && Array.isArray(args[0])) {
+      return new P("within", args[0], null);
+    } else {
+      return new P("within", args, null);
+    }
+  }
+
+  static without(...args) {
+    if (args.length == 1 && Array.isArray(args[0])) {
+      return new P("without", args[0], null);
+    } else {
+      return new P("without", args, null);
+    }
+  }
+
+
   /** @param {...Object} args */
   static between(...args) {
     return createP('between', args);
@@ -203,16 +220,6 @@ class P {
   /** @param {...Object} args */
   static test(...args) {
     return createP('test', args);
-  }
-
-  /** @param {...Object} args */
-  static within(...args) {
-    return createP('within', args);
-  }
-
-  /** @param {...Object} args */
-  static without(...args) {
-    return createP('without', args);
   }
 
 }

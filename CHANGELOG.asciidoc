@@ -31,6 +31,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Ensured that `gremlin.sh` works when directories contain spaces.
 * Enabled `ctrl+c` to interrupt long running processes in Gremlin Console.
 * Quieted "host unavailable" warnings for both the driver and Gremlin Console.
+* Fixed construction of `g:List` from arrays in gremlin-javascript.
 * Fixed bug in `GremlinGroovyScriptEngine` interpreter mode around class definitions.
 * Implemented `EdgeLabelVerificationStrategy`.
 * Added parameter to configure the `processor` in the gremlin-javascript `client` constructor.
