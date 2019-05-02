@@ -27,6 +27,33 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.2/CHANGELOG.asciidoc#release-3-4-2[changelog] for a complete list of all the modifications that are part of this release.
 
+=== Upgrading for Providers
+
+==== Automatic unfolding of valueMap() values
+
+This release contains a new strategy called `SimpleValueMapStrategy`. The strategy is not added by default, but meant to be added mainly by providers who do not support multi-valued
+properties. The strategy will automatically a `.by(unfold())` modulator to all `valueMap()` steps that don't have a `by()` modulator defined by the user. As a result, `valueMap()` will emit
+maps with single-valued values.
+
+```text
+gremlin> g.V().valueMap()
+==>[name:[marko],age:[29]]
+==>[name:[vadas],age:[27]]
+==>[name:[lop],lang:[java]]
+==>[name:[josh],age:[32]]
+==>[name:[ripple],lang:[java]]
+==>[name:[peter],age:[35]]
+gremlin> g.withStrategies(SimpleValueMapStrategy.instance()).V().valueMap()
+==>[name:marko,age:29]
+==>[name:vadas,age:27]
+==>[name:lop,lang:java]
+==>[name:josh,age:32]
+==>[name:ripple,lang:java]
+==>[name:peter,age:35]
+```
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2207[TINKERPOP-2207],
+
 == TinkerPop 3.4.1
 
 *Release Date: March 18, 2019*

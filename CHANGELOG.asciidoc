@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-3-7, 3.3.7>>.
 
+* Implemented `SimpleValueMapStrategy`.
 * Allow a `Traversal` to know what `TraversalSource` it spawned from.
 * Fixed problem with connection pool sizing and retry.
 

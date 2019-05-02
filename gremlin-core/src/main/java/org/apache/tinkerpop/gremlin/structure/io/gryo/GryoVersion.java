@@ -52,6 +52,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Option
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.SimpleValueMapStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
@@ -354,7 +355,8 @@ public enum GryoVersion {
             add(GryoTypeReg.of(EarlyLimitStrategy.class, 188));
             add(GryoTypeReg.of(MatchStep.CountMatchAlgorithm.class, 160));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 164));
-            add(GryoTypeReg.of(EdgeLabelVerificationStrategy.class, 189));   // ***LAST ID***
+            add(GryoTypeReg.of(EdgeLabelVerificationStrategy.class, 189));
+            add(GryoTypeReg.of(SimpleValueMapStrategy.class, 190));   // ***LAST ID***
 
             add(GryoTypeReg.of(TraverserSet.class, 58));
             add(GryoTypeReg.of(Tree.class, 61));
@@ -590,7 +592,8 @@ public enum GryoVersion {
             add(GryoTypeReg.of(EarlyLimitStrategy.class, 188));
             add(GryoTypeReg.of(MatchStep.CountMatchAlgorithm.class, 160));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 167));
-            add(GryoTypeReg.of(EdgeLabelVerificationStrategy.class, 189));   // ***LAST ID***
+            add(GryoTypeReg.of(EdgeLabelVerificationStrategy.class, 189));
+            add(GryoTypeReg.of(SimpleValueMapStrategy.class, 190));   // ***LAST ID***
             // skip 171, 172 to sync with tp33
             add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));
 

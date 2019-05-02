@@ -84,6 +84,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.Refe
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.SimpleValueMapStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
@@ -257,6 +258,7 @@ public final class CoreImports {
         CLASS_IMPORTS.add(ReferenceElementStrategy.class);
         CLASS_IMPORTS.add(StandardVerificationStrategy.class);
         CLASS_IMPORTS.add(EdgeLabelVerificationStrategy.class);
+        CLASS_IMPORTS.add(SimpleValueMapStrategy.class);
         // graph traversal
         CLASS_IMPORTS.add(AnonymousTraversalSource.class);
         CLASS_IMPORTS.add(__.class);
