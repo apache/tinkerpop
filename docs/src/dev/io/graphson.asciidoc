@@ -5274,10 +5274,13 @@ Please see <<_p,P>> for additional information on `within`.
   "@type" : "g:P",
   "@value" : {
     "predicate" : "within",
-    "value" : [ {
-      "@type" : "g:Int32",
-      "@value" : 1
-    } ]
+    "value" : {
+      "@type" : "g:List",
+      "@value" : [ {
+        "@type" : "g:Int32",
+        "@value" : 1
+      } ]
+    }
   }
 }
 ----
@@ -5292,13 +5295,16 @@ Please see <<_p,P>> for additional information on `within`.
   "@type" : "g:P",
   "@value" : {
     "predicate" : "without",
-    "value" : [ {
-      "@type" : "g:Int32",
-      "@value" : 1
-    }, {
-      "@type" : "g:Int32",
-      "@value" : 2
-    } ]
+    "value" : {
+      "@type" : "g:List",
+      "@value" : [ {
+        "@type" : "g:Int32",
+        "@value" : 1
+      }, {
+        "@type" : "g:Int32",
+        "@value" : 2
+      } ]
+    }
   }
 }
 ----
