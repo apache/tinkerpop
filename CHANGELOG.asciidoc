@@ -352,6 +352,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.3.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Improved folding of `property()` step into related mutating steps.
+* Added `inject()` to steps generated on the DSL `TraversalSource`.
 * Removed `gperfutils` dependencies from Gremlin Console.
 * Fixed `PartitionStrategy` when setting vertex label and having `includeMetaProperties` configured to `true`.
 * Ensure `gremlin.sh` works when directories contain spaces.
