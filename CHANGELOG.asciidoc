@@ -28,6 +28,7 @@ This release also includes changes from <<release-3-3-7, 3.3.7>>.
 * Allow a `Traversal` to know what `TraversalSource` it spawned from.
 * Changed definition of generic in signature of `from(Traversal)` and `to(Traversal)` steps to use a wildcard rather than `Vertex`.
 * Fixed problem with connection pool sizing and retry.
+* Changed `:>` in Gremlin Console to submit the client-side timeout on each request.
 
 [[release-3-4-1]]
 === TinkerPop 3.4.1 (Release Date: March 18, 2019)
