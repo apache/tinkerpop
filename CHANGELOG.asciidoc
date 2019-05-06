@@ -23,6 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-3-7]]
 === TinkerPop 3.3.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Generated uberjar artifact for Gremlin Console.
 * Improved folding of `property()` step into related mutating steps.
 * Added `inject()` to steps generated on the DSL `TraversalSource`.
 * Removed `gperfutils` dependencies from Gremlin Console.

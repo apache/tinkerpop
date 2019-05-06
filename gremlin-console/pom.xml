@@ -235,6 +235,62 @@ limitations under the License.
                                     <shadedPattern>io.shaded.netty</shadedPattern>
                                 </relocation>
                             </relocations>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"></transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+                                    <resources>
+                                        <resource>LICENSE.txt</resource>
+                                        <resource>LICENSE</resource>
+                                        <resource>NOTICE.txt</resource>
+                                        <resource>NOTICE</resource>
+                                        <resource>licenses</resource>
+                                    </resources>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/LICENSE</resource>
+                                    <file>src/main/static/LICENSE</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/NOTICE</resource>
+                                    <file>src/main/static/NOTICE</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/licenses/foundation</resource>
+                                    <file>src/main/static/licenses/foundation</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/licenses/jbcrypt</resource>
+                                    <file>src/main/static/licenses/jbcrypt</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/licenses/jcabi-log</resource>
+                                    <file>src/main/static/licenses/jcabi-log</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/licenses/jcabi-manifests</resource>
+                                    <file>src/main/static/licenses/jcabi-manifests</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/licenses/jline2</resource>
+                                    <file>src/main/static/licenses/jline2</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/licenses/kryo</resource>
+                                    <file>src/main/static/licenses/kryo</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/licenses/minlog</resource>
+                                    <file>src/main/static/licenses/minlog</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/licenses/normalize</resource>
+                                    <file>src/main/static/licenses/normalize</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/licenses/slf4j</resource>
+                                    <file>src/main/static/licenses/slf4j</file>
+                                </transformer>
+                            </transformers>
                         </configuration>
                     </execution>
                 </executions>
