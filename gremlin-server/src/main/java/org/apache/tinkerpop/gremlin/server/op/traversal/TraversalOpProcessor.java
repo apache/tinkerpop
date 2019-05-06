@@ -539,9 +539,10 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     // serialize here because in sessionless requests the serialization must occur in the same
                     // thread as the eval.  as eval occurs in the GremlinExecutor there's no way to get back to the
                     // thread that processed the eval of the script so, we have to push serialization down into that
+                    final Map<String, Object> metadata = generateMetaData(ctx, msg, code, itty);
                     Frame frame = null;
                     try {
-                        frame = makeFrame(ctx, msg, serializer, useBinary, aggregate, code, generateMetaData(ctx, msg, code, itty));
+                        frame = makeFrame(ctx, msg, serializer, useBinary, aggregate, code, metadata);
                     } catch (Exception ex) {
                         // a frame may use a Bytebuf which is a countable release - if it does not get written
                         // downstream it needs to be released here
