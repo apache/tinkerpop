@@ -356,6 +356,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed `gperfutils` dependencies from Gremlin Console.
 * Fixed `PartitionStrategy` when setting vertex label and having `includeMetaProperties` configured to `true`.
 * Ensure `gremlin.sh` works when directories contain spaces.
+* Prevented client-side hangs if metadata generation fails on the server.
 * Fixed bug with `EventStrategy` in relation to `addE()` where detachment was not happening properly.
 * Ensured that `gremlin.sh` works when directories contain spaces.
 * Enabled `ctrl+c` to interrupt long running processes in Gremlin Console.
