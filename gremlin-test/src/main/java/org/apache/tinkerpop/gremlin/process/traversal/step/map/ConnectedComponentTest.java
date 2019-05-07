@@ -26,11 +26,16 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -67,16 +72,27 @@ public abstract class ConnectedComponentTest extends AbstractGremlinProcessTest 
         final Traversal<Vertex, Map<String,Object>> traversal = get_g_V_hasLabelXsoftwareX_connectedComponent_project_byXnameX_byXcomponentX();
         printTraversalForm(traversal);
         int counter = 0;
+
+        String softwareComponent = null;
+
         while (traversal.hasNext()) {
             final Map<String,Object> m = traversal.next();
             final String name = m.get("name").toString();
+
+            // since the two returned values are in the same component just need to grab the first one and use that
+            // as a comparison to the other
+            if (null == softwareComponent)
+                softwareComponent = m.get("component").toString();
+
+            assertNotNull(softwareComponent);
+
             switch (name) {
                 case "lop":
                 case "ripple":
-                    assertEquals(convertToVertexId("marko").toString(), m.get("component"));
+                    counter++;
+                    assertEquals(softwareComponent, m.get("component"));
                     break;
             }
-            counter++;
         }
         assertEquals(2, counter);
     }
@@ -87,20 +103,36 @@ public abstract class ConnectedComponentTest extends AbstractGremlinProcessTest 
         final Traversal<Vertex, Map<String,Object>> traversal = get_g_V_connectedComponent_withXedges_bothEXknowsXX_withXpropertyName_clusterX_project_byXnameX_byXclusterX();
         printTraversalForm(traversal);
         int counter = 0;
-        while (traversal.hasNext()) {
-            final Map<String,Object> m = traversal.next();
+
+        String softwareComponent = null;
+
+        // sort to make sure that "peter" is always last
+        final Iterator<Map<String,Object>> itty = traversal.toList().stream().sorted((o1, o2) -> o1.get("name").toString().equals("peter") ? 1 : -1).iterator();
+
+        while (itty.hasNext()) {
+            final Map<String,Object> m = itty.next();
             final String name = m.get("name").toString();
+
+            // since the three of the returned values are in the same component just need to grab the first one and
+            // use that as a comparison to the others and then for the fourth returned item "peter" just needs to not
+            // be in the same component
+            if (null == softwareComponent)
+                softwareComponent = m.get("cluster").toString();
+
+            assertNotNull(softwareComponent);
+
             switch (name) {
                 case "marko":
                 case "vadas":
                 case "josh":
-                    assertEquals(convertToVertexId("marko").toString(), m.get("cluster"));
+                    counter++;
+                    assertEquals(softwareComponent, m.get("cluster"));
                     break;
                 case "peter":
-                    assertEquals(convertToVertexId("peter").toString(), m.get("cluster"));
+                    counter++;
+                    assertNotEquals(softwareComponent, m.get("cluster"));
                     break;
             }
-            counter++;
         }
         assertEquals(4, counter);
     }
