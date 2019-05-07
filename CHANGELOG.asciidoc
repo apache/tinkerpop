@@ -364,6 +364,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Quieted "host unavailable" warnings for both the driver and Gremlin Console.
 * Fixed bug in `GremlinGroovyScriptEngine` interpreter mode around class definitions.
 * Implemented `EdgeLabelVerificationStrategy`.
+* Cleard the input buffer after exceptions in Gremlin Console.
 * Added parameter to configure the `processor` in the gremlin-javascript `client` constructor.
 
 [[release-3-3-6]]
