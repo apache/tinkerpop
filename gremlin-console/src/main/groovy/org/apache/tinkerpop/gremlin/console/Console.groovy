@@ -374,6 +374,8 @@ class Console {
             if (!interactive) System.exit(1)
         }
 
+        groovy.buffers.current().clear()
+
         return null
     }
 
