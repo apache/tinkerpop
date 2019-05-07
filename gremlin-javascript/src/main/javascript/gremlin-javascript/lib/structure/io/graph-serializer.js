@@ -50,29 +50,33 @@ class GraphSONWriter {
       }
       s.writer = this;
       // Insert custom serializers first
-      th
-      is._serializers.unshift(s);
+      this._serializers.unshift(s);
     });
   }
 
   adaptObject(value) {
     let s;
-    let o = value;
+
     for (let i = 0; i < this._serializers.length; i++) {
       const currentSerializer = this._serializers[i];
-      if (currentSerializer.canBeUsedFor && currentSerializer.canBeUsedFor(o)) {
+      if (currentSerializer.canBeUsedFor && currentSerializer.canBeUsedFor(value)) {
         s = currentSerializer;
         break;
       }
     }
+
     if (s) {
-      return s.serialize(o);
+      return s.serialize(value);
     }
+
     if (Array.isArray(value)) {
-      o = value.map(item => this.adaptObject(item));
+      // We need to handle arrays when there is no serializer
+      // for older versions of GraphSON
+      return value.map(item => this.adaptObject(item));
     }
+
     // Default (strings / objects / ...)
-    return o;
+    return value;
   }
 
   /**

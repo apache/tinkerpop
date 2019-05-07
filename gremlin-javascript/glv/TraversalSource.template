@@ -159,7 +159,7 @@ class P {
   }
 
   static without(...args) {
-    if (args.length == 1 && Array.isArray(args[0])) {
+    if (args.length === 1 && Array.isArray(args[0])) {
       return new P("without", args[0], null);
     } else {
       return new P("without", args, null);
