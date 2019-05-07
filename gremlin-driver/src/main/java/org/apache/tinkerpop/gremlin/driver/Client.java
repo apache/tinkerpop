@@ -151,11 +151,41 @@ public abstract class Client {
     }
 
     /**
+     * A version of {@link #submit(Bytecode)} which provides the ability to set per-request options.
+     *
+     * @param bytecode request in the form of gremlin {@link Bytecode}
+     * @param options for the request
+     *
+     * @see #submit(Bytecode)
+     */
+    public ResultSet submit(final Bytecode bytecode, final RequestOptions options) {
+        try {
+            return submitAsync(bytecode, options).get();
+        } catch (UnsupportedOperationException uoe) {
+            throw uoe;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /**
      * An asynchronous version of {@link #submit(Traversal)}. Results are returned as {@link Traverser} instances and
      * are therefore bulked, meaning that to properly iterate the contents of the result each {@link Traverser#bulk()}
      * must be examined to determine the number of times that object should be presented in iteration.
      */
     public CompletableFuture<ResultSet> submitAsync(final Bytecode bytecode) {
+        throw new UnsupportedOperationException("This implementation does not support Traversal submission - use a sessionless Client created with from the alias() method");
+    }
+
+    /**
+     * A version of {@link #submit(Bytecode)} which provides the ability to set per-request options.
+     *
+     * @param bytecode request in the form of gremlin {@link Bytecode}
+     * @param options for the request
+     *
+     * @see #submitAsync(Bytecode)
+     */
+    public CompletableFuture<ResultSet> submitAsync(final Bytecode bytecode, final RequestOptions options) {
         throw new UnsupportedOperationException("This implementation does not support Traversal submission - use a sessionless Client created with from the alias() method");
     }
 
@@ -518,9 +548,23 @@ public abstract class Client {
 
         @Override
         public CompletableFuture<ResultSet> submitAsync(final Bytecode bytecode) {
+            return submitAsync(bytecode, RequestOptions.EMPTY);
+        }
+
+        @Override
+        public CompletableFuture<ResultSet> submitAsync(final Bytecode bytecode, final RequestOptions options) {
             try {
-                return submitAsync(buildMessage(RequestMessage.build(Tokens.OPS_BYTECODE)
-                        .processor("traversal").addArg(Tokens.ARGS_GREMLIN, bytecode)).create());
+                // need to call buildMessage() right away to get client specific configurations, that way request specific
+                // ones can override as needed
+                final RequestMessage.Builder request = buildMessage(RequestMessage.build(Tokens.OPS_BYTECODE)
+                                                                                  .processor("traversal")
+                                                                                  .addArg(Tokens.ARGS_GREMLIN, bytecode));
+
+                // apply settings if they were made available
+                options.getBatchSize().ifPresent(batchSize -> request.add(Tokens.ARGS_BATCH_SIZE, batchSize));
+                options.getTimeout().ifPresent(timeout -> request.add(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT, timeout));
+
+                return submitAsync(request.create());
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
