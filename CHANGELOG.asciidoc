@@ -29,6 +29,8 @@ This release also includes changes from <<release-3-3-7, 3.3.7>>.
 * Changed definition of generic in signature of `from(Traversal)` and `to(Traversal)` steps to use a wildcard rather than `Vertex`.
 * Fixed problem with connection pool sizing and retry.
 * Changed `:>` in Gremlin Console to submit the client-side timeout on each request.
+* Added option to set per-request settings on a `Traversal` submitted via `Bytecode`.
+* Fixed the Gryo registration for `OptionsStrategy` as it was not serializing state properly.
 
 [[release-3-4-1]]
 === TinkerPop 3.4.1 (Release Date: March 18, 2019)

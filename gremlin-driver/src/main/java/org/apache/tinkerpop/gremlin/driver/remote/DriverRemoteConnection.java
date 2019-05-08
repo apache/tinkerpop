@@ -21,13 +21,17 @@ package org.apache.tinkerpop.gremlin.driver.remote;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -210,7 +214,20 @@ public class DriverRemoteConnection implements RemoteConnection {
     @Override
     public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final Bytecode bytecode) throws RemoteConnectionException {
         try {
-            return client.submitAsync(bytecode).thenApply(rs -> new DriverRemoteTraversal<>(rs, client, attachElements, conf));
+            final Iterator<OptionsStrategy> itty = IteratorUtils.map(
+                    IteratorUtils.filter(bytecode.getSourceInstructions().iterator(),
+                    s -> s.getOperator().equals(TraversalSource.Symbols.withStrategies) && s.getArguments()[0] instanceof OptionsStrategy),
+                    os -> (OptionsStrategy) os.getArguments()[0]);
+            final RequestOptions.Builder builder = RequestOptions.build();
+            while (itty.hasNext()) {
+                final OptionsStrategy optionsStrategy = itty.next();
+                if (optionsStrategy.getOptions().containsKey(PER_REQUEST_TIMEOUT))
+                    builder.timeout((long) optionsStrategy.getOptions().get(PER_REQUEST_TIMEOUT));
+                else if (optionsStrategy.getOptions().containsKey(PER_REQUEST_BATCH_SIZE))
+                    builder.batchSize((int) optionsStrategy.getOptions().get(PER_REQUEST_BATCH_SIZE));
+            }
+
+            return client.submitAsync(bytecode, builder.create()).thenApply(rs -> new DriverRemoteTraversal<>(rs, client, attachElements, conf));
         } catch (Exception ex) {
             throw new RemoteConnectionException(ex);
         }

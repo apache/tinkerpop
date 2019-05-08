@@ -27,13 +27,22 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.2/CHANGELOG.asciidoc#release-3-4-2[changelog] for a complete list of all the modifications that are part of this release.
 
-== TinkerPop 3.4.1
-
-*Release Date: March 18, 2019*
-
-Please see the link:https://github.com/apache/tinkerpop/blob/3.4.1/CHANGELOG.asciidoc#release-3-4-1[changelog] for a complete list of all the modifications that are part of this release.
-
 === Upgrading for Users
+
+==== Per Request Options
+
+In 3.4.0, the notion of `RequestOptions` were added so that users could have an easier way to configure settings on
+individual requests made through the Java driver. While that change provided a way to set those configurations for
+script based requests, it didn't include options to make those settings in a `Traversal` submitted via `Bytecode`. In
+this release those settings become available via `with()` step on the `TraversalSource` as follows:
+
+[source,java]
+----
+GraphTraversalSource g = traversal().withRemote(conf);
+List<Vertex> vertices = g.with(RemoteConnection.PER_REQUEST_TIMEOUT, 500).V().out("knows").toList()
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2211[TINKERPOP-2211]
 
 ==== Gremlin Console Timeout
 
@@ -46,14 +55,35 @@ As of 3.4.0, the Java Driver API allowed for timeout settings to be more easily 
 was modified for this current version to pass the console timeout for each remote submission thus yielding more
 consistent and intuitive behavior.
 
-link:https://issues.apache.org/jira/browse/TINKERPOP-2203[TINKERPOP-2203]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2203[TINKERPOP-2203]
+
+=== Upgrading for Providers
+
+==== Graph Driver Providers
+
+===== Per Request Options
+
+In GraphBinary serialization, Java `write()` and `writeValue()` from `TypeSerializer<T>` interface now take a Netty's
+`ByteBuf` instance instead of an `ByteBufAllocator`, that way the same buffer instance gets reused during the write
+of a message. Additionally, we took the opportunity to remove the unused parameter from `ResponseMessageSerializer`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2161[TINKERPOP-2161]
+
+== TinkerPop 3.4.1
+
+*Release Date: March 18, 2019*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.4.1/CHANGELOG.asciidoc#release-3-4-1[changelog] for a complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
 
 ==== Mix SPARQL and Gremlin
 
 In the initial release of `sparql-gremlin` it was only possible to execute a SPARQL query and have it translate to
 Gremlin. Therefore, it was only possible to write a query like this:
 
-```text
+[source,text]
+----
 gremlin> g.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age }")
 ==>[name:marko,age:29]
 ==>[name:vadas,age:27]
@@ -66,11 +96,12 @@ gremlin> g.sparql("SELECT * WHERE { }")
 ==>v[4]
 ==>v[5]
 ==>v[6]
-```
+----
 
 In this release, however, it is now possible to further process that result with Gremlin steps:
 
-```text
+[source,text]
+----
 gremlin> g.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age }").select("name")
 ==>marko
 ==>vadas
@@ -79,7 +110,7 @@ gremlin> g.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:ag
 gremlin> g.sparql("SELECT * WHERE { }").out("knows").values("name")
 ==>vadas
 ==>josh
-```
+----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2171[TINKERPOP-2171],
 link:http://tinkerpop.apache.org/docs/3.4.1/reference/#sparql-with-gremlin[Reference Documentation]
