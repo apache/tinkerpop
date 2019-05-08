@@ -24,6 +24,23 @@ import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.CustomTypeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.TransformSerializer;
 
+/**
+ * Writes a value to a buffer using the {@link TypeSerializer} instances configured in the
+ * {@link TypeSerializerRegistry}.
+ *
+ * <p>
+ *     This class exposes two different methods to write a value to a buffer:
+ *     {@link GraphBinaryWriter#write(Object, ByteBuf)} and
+ *     {@link GraphBinaryWriter#writeValue(Object, ByteBuf, boolean)}:
+ *     <ul>
+ *         <li>{@code write()} method writes the binary representation of the
+ *         <code>{type_code}{type_info}{value_flag}{value}</code> components.</li>
+ *         <li>{@code writeValue()} method writes the <code>{value_flag}{value}</code> when a value is nullable and
+ *         only <code>{value}</code> when a value is not nullable.
+ *         </li>
+ *     </ul>
+ * </p>
+ */
 public class GraphBinaryWriter {
     private final TypeSerializerRegistry registry;
     private final static byte VALUE_FLAG_NULL = 1;
