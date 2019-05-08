@@ -24,6 +24,8 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryIo;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
+import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.TypeSerializerRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
 import org.junit.Test;
@@ -71,6 +73,26 @@ public class SamplePersonSerializerTest {
         serializer.configure(config, Collections.emptyMap());
 
         assertPerson(serializer);
+    }
+
+    @Test
+    public void readValueAndWriteValueShouldBeSymmetric() throws SerializationException {
+        final TypeSerializerRegistry registry = TypeSerializerRegistry.build()
+                .addCustomType(SamplePerson.class, new SamplePersonSerializer()).create();
+        final GraphBinaryReader reader = new GraphBinaryReader(registry);
+        final GraphBinaryWriter writer = new GraphBinaryWriter(registry);
+
+        final SamplePerson person = new SamplePerson("Matias",
+                Date.from(LocalDateTime.of(2005, 8, 5, 1, 0).toInstant(ZoneOffset.UTC)));
+
+        for (boolean nullable: new boolean[] { true, false }) {
+            final ByteBuf buffer = allocator.buffer();
+            writer.writeValue(person, buffer, nullable);
+            final SamplePerson actual = reader.readValue(buffer, SamplePerson.class, nullable);
+
+            assertThat(actual, new ReflectionEquals(person));
+            buffer.release();
+        }
     }
 
     private void assertPerson(final GraphBinaryMessageSerializerV1 serializer) throws SerializationException {
