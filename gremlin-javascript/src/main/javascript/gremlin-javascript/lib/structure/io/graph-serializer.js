@@ -56,9 +56,7 @@ class GraphSONWriter {
 
   adaptObject(value) {
     let s;
-    if (Array.isArray(value)) {
-      return value.map(item => this.adaptObject(item));
-    }
+
     for (let i = 0; i < this._serializers.length; i++) {
       const currentSerializer = this._serializers[i];
       if (currentSerializer.canBeUsedFor && currentSerializer.canBeUsedFor(value)) {
@@ -66,9 +64,17 @@ class GraphSONWriter {
         break;
       }
     }
+
     if (s) {
       return s.serialize(value);
     }
+
+    if (Array.isArray(value)) {
+      // We need to handle arrays when there is no serializer
+      // for older versions of GraphSON
+      return value.map(item => this.adaptObject(item));
+    }
+
     // Default (strings / objects / ...)
     return value;
   }
