@@ -37,11 +37,15 @@ class GraphTraversalSource {
    * @param {Graph} graph
    * @param {TraversalStrategies} traversalStrategies
    * @param {Bytecode} [bytecode]
+   * @param {Class} graphTraversalSourceClass
+   * @param {Class} graphTraversalClass
    */
-  constructor(graph, traversalStrategies, bytecode) {
+  constructor(graph, traversalStrategies, bytecode, graphTraversalSourceClass, graphTraversalClass) {
     this.graph = graph;
     this.traversalStrategies = traversalStrategies;
     this.bytecode = bytecode || new Bytecode();
+    this.graphTraversalSourceClass = graphTraversalSourceClass || GraphTraversalSource;
+    this.graphTraversalClass = graphTraversalClass || GraphTraversal;
   }
 
   /**
@@ -51,7 +55,8 @@ class GraphTraversalSource {
   withRemote(remoteConnection) {
     const traversalStrategy = new TraversalStrategies(this.traversalStrategies);
     traversalStrategy.addStrategy(new remote.RemoteStrategy(remoteConnection));
-    return new GraphTraversalSource(this.graph, traversalStrategy, new Bytecode(this.bytecode));
+    var object = Object.create(this.constructor.prototype);
+    return new this.graphTraversalSourceClass(this.graph, traversalStrategy, new Bytecode(this.bytecode), this.graphTraversalSourceClass, this.graphTraversalClass);
   }
 
   /**
@@ -69,7 +74,7 @@ class GraphTraversalSource {
    */
   <%= toJs.call(method) %>(...args) {
     const b = new Bytecode(this.bytecode).addSource('<%= method %>', args);
-    return new GraphTraversalSource(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    return new this.graphTraversalSourceClass(this.graph, new TraversalStrategies(this.traversalStrategies), b, this.graphTraversalSourceClass, this.graphTraversalClass);
   }
   <%
   }
@@ -81,7 +86,7 @@ class GraphTraversalSource {
    */
   <%= toJs.call(method) %>(...args) {
     const b = new Bytecode(this.bytecode).addStep('<%= method %>', args);
-    return new GraphTraversal(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
   <% } %>
 }

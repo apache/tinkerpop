@@ -31,13 +31,17 @@ const Graph = require('../structure/graph').Graph;
  */
 class AnonymousTraversalSource {
 
+  constructor(traversalSourceClass) {
+    this.traversalSourceClass = traversalSourceClass;
+  }
+
   /**
    * Constructs an {@code AnonymousTraversalSource} which will then be configured to spawn a
    * {@link GraphTraversalSource}.
    * @returns {AnonymousTraversalSource}.
    */
-  static traversal() {
-    return new AnonymousTraversalSource();
+  static traversal(traversalSourceClass) {
+    return new AnonymousTraversalSource(traversalSourceClass || GraphTraversalSource);
   }
 
   /**
@@ -57,7 +61,7 @@ class AnonymousTraversalSource {
    * @return {GraphTraversalSource}
    */
   withGraph(graph) {
-    return new GraphTraversalSource(graph, new TraversalStrategies());
+    return new this.traversalSourceClass(graph, new TraversalStrategies());
   }
 }
 

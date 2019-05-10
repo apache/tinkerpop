@@ -37,11 +37,15 @@ class GraphTraversalSource {
    * @param {Graph} graph
    * @param {TraversalStrategies} traversalStrategies
    * @param {Bytecode} [bytecode]
+   * @param {Class} graphTraversalSourceClass
+   * @param {Class} graphTraversalClass
    */
-  constructor(graph, traversalStrategies, bytecode) {
+  constructor(graph, traversalStrategies, bytecode, graphTraversalSourceClass, graphTraversalClass) {
     this.graph = graph;
     this.traversalStrategies = traversalStrategies;
     this.bytecode = bytecode || new Bytecode();
+    this.graphTraversalSourceClass = graphTraversalSourceClass || GraphTraversalSource;
+    this.graphTraversalClass = graphTraversalClass || GraphTraversal;
   }
 
   /**
@@ -51,7 +55,8 @@ class GraphTraversalSource {
   withRemote(remoteConnection) {
     const traversalStrategy = new TraversalStrategies(this.traversalStrategies);
     traversalStrategy.addStrategy(new remote.RemoteStrategy(remoteConnection));
-    return new GraphTraversalSource(this.graph, traversalStrategy, new Bytecode(this.bytecode));
+    var object = Object.create(this.constructor.prototype);
+    return new this.graphTraversalSourceClass(this.graph, traversalStrategy, new Bytecode(this.bytecode), this.graphTraversalSourceClass, this.graphTraversalClass);
   }
 
   /**
@@ -69,7 +74,7 @@ class GraphTraversalSource {
    */
   withBulk(...args) {
     const b = new Bytecode(this.bytecode).addSource('withBulk', args);
-    return new GraphTraversalSource(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    return new this.graphTraversalSourceClass(this.graph, new TraversalStrategies(this.traversalStrategies), b, this.graphTraversalSourceClass, this.graphTraversalClass);
   }
   
   /**
@@ -79,7 +84,7 @@ class GraphTraversalSource {
    */
   withPath(...args) {
     const b = new Bytecode(this.bytecode).addSource('withPath', args);
-    return new GraphTraversalSource(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    return new this.graphTraversalSourceClass(this.graph, new TraversalStrategies(this.traversalStrategies), b, this.graphTraversalSourceClass, this.graphTraversalClass);
   }
   
   /**
@@ -89,7 +94,7 @@ class GraphTraversalSource {
    */
   withSack(...args) {
     const b = new Bytecode(this.bytecode).addSource('withSack', args);
-    return new GraphTraversalSource(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    return new this.graphTraversalSourceClass(this.graph, new TraversalStrategies(this.traversalStrategies), b, this.graphTraversalSourceClass, this.graphTraversalClass);
   }
   
   /**
@@ -99,7 +104,7 @@ class GraphTraversalSource {
    */
   withSideEffect(...args) {
     const b = new Bytecode(this.bytecode).addSource('withSideEffect', args);
-    return new GraphTraversalSource(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    return new this.graphTraversalSourceClass(this.graph, new TraversalStrategies(this.traversalStrategies), b, this.graphTraversalSourceClass, this.graphTraversalClass);
   }
   
   /**
@@ -109,7 +114,7 @@ class GraphTraversalSource {
    */
   withStrategies(...args) {
     const b = new Bytecode(this.bytecode).addSource('withStrategies', args);
-    return new GraphTraversalSource(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    return new this.graphTraversalSourceClass(this.graph, new TraversalStrategies(this.traversalStrategies), b, this.graphTraversalSourceClass, this.graphTraversalClass);
   }
   
   /**
@@ -119,7 +124,7 @@ class GraphTraversalSource {
    */
   withoutStrategies(...args) {
     const b = new Bytecode(this.bytecode).addSource('withoutStrategies', args);
-    return new GraphTraversalSource(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    return new this.graphTraversalSourceClass(this.graph, new TraversalStrategies(this.traversalStrategies), b, this.graphTraversalSourceClass, this.graphTraversalClass);
   }
   
   /**
@@ -129,7 +134,7 @@ class GraphTraversalSource {
    */
   E(...args) {
     const b = new Bytecode(this.bytecode).addStep('E', args);
-    return new GraphTraversal(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
   
   /**
@@ -139,7 +144,7 @@ class GraphTraversalSource {
    */
   V(...args) {
     const b = new Bytecode(this.bytecode).addStep('V', args);
-    return new GraphTraversal(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
   
   /**
@@ -149,7 +154,7 @@ class GraphTraversalSource {
    */
   addE(...args) {
     const b = new Bytecode(this.bytecode).addStep('addE', args);
-    return new GraphTraversal(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
   
   /**
@@ -159,7 +164,7 @@ class GraphTraversalSource {
    */
   addV(...args) {
     const b = new Bytecode(this.bytecode).addStep('addV', args);
-    return new GraphTraversal(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
   
   /**
@@ -169,7 +174,7 @@ class GraphTraversalSource {
    */
   inject(...args) {
     const b = new Bytecode(this.bytecode).addStep('inject', args);
-    return new GraphTraversal(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
   
 }

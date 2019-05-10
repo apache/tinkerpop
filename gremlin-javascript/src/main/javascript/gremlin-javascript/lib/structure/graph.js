@@ -31,8 +31,9 @@ class Graph {
    * @returns {GraphTraversalSource}
    * @deprecated As of release 3.3.5, replaced by the traversal() anonymous function.
    */
-  traversal() {
-    return new gt.GraphTraversalSource(this, new TraversalStrategies());
+  traversal(traversalSourceClass) {
+    const clazz = traversalSourceClass || gt.GraphTraversalSource;
+    return new clazz(this, new TraversalStrategies());
   }
 
   toString() {
