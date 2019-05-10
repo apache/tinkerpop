@@ -41,16 +41,6 @@ public interface RemoteConnection extends AutoCloseable {
     public static final String GREMLIN_REMOTE_CONNECTION_CLASS = GREMLIN_REMOTE + "remoteConnectionClass";
 
     /**
-     * Key for configuring a per-request timeout option for a {@code RemoteConnection} .
-     */
-    public static final String PER_REQUEST_TIMEOUT = GREMLIN_REMOTE + "timeout";
-
-    /**
-     * Key for configuring a the batch size option for a {@code RemoteConnection} .
-     */
-    public static final String PER_REQUEST_BATCH_SIZE = GREMLIN_REMOTE + "batchSize";
-
-    /**
      * Submits {@link Traversal} {@link Bytecode} to a server and returns a promise of a {@link RemoteTraversal}.
      * The {@link RemoteTraversal} is an abstraction over two types of results that can be returned as part of the
      * response from the server: the results of the {@link Traversal} itself and the side-effects that it produced.

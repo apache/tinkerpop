@@ -26,14 +26,20 @@ import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeUtil;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+
+import static org.apache.tinkerpop.gremlin.driver.Tokens.ARGS_BATCH_SIZE;
+import static org.apache.tinkerpop.gremlin.driver.Tokens.ARGS_OVERRIDE_REQUEST_ID;
+import static org.apache.tinkerpop.gremlin.driver.Tokens.ARGS_SCRIPT_EVAL_TIMEOUT;
 
 /**
  * A {@link RemoteConnection} implementation for Gremlin Server. Each {@code DriverServerConnection} is bound to one
@@ -214,23 +220,26 @@ public class DriverRemoteConnection implements RemoteConnection {
     @Override
     public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final Bytecode bytecode) throws RemoteConnectionException {
         try {
-            final Iterator<OptionsStrategy> itty = IteratorUtils.map(
-                    IteratorUtils.filter(bytecode.getSourceInstructions().iterator(),
-                    s -> s.getOperator().equals(TraversalSource.Symbols.withStrategies) && s.getArguments()[0] instanceof OptionsStrategy),
-                    os -> (OptionsStrategy) os.getArguments()[0]);
-            final RequestOptions.Builder builder = RequestOptions.build();
-            while (itty.hasNext()) {
-                final OptionsStrategy optionsStrategy = itty.next();
-                if (optionsStrategy.getOptions().containsKey(PER_REQUEST_TIMEOUT))
-                    builder.timeout((long) optionsStrategy.getOptions().get(PER_REQUEST_TIMEOUT));
-                else if (optionsStrategy.getOptions().containsKey(PER_REQUEST_BATCH_SIZE))
-                    builder.batchSize((int) optionsStrategy.getOptions().get(PER_REQUEST_BATCH_SIZE));
-            }
-
-            return client.submitAsync(bytecode, builder.create()).thenApply(rs -> new DriverRemoteTraversal<>(rs, client, attachElements, conf));
+            return client.submitAsync(bytecode, getRequestOptions(bytecode)).thenApply(rs -> new DriverRemoteTraversal<>(rs, client, attachElements, conf));
         } catch (Exception ex) {
             throw new RemoteConnectionException(ex);
         }
+    }
+
+    protected static RequestOptions getRequestOptions(final Bytecode bytecode) {
+        final Iterator<OptionsStrategy> itty = BytecodeUtil.findStrategies(bytecode, OptionsStrategy.class);
+        final RequestOptions.Builder builder = RequestOptions.build();
+        while (itty.hasNext()) {
+            final OptionsStrategy optionsStrategy = itty.next();
+            final Map<String,Object> options = optionsStrategy.getOptions();
+            if (options.containsKey(ARGS_SCRIPT_EVAL_TIMEOUT))
+                builder.timeout((long) options.get(ARGS_SCRIPT_EVAL_TIMEOUT));
+            else if (options.containsKey(ARGS_OVERRIDE_REQUEST_ID))
+                builder.overrideRequestId((UUID) options.get(ARGS_OVERRIDE_REQUEST_ID));
+            else if (options.containsKey(ARGS_BATCH_SIZE))
+                builder.batchSize((int) options.get(ARGS_BATCH_SIZE));
+        }
+        return builder.create();
     }
 
     @Override

@@ -343,6 +343,7 @@ public abstract class Client {
         options.getTimeout().ifPresent(timeout -> request.add(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT, timeout));
         options.getParameters().ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, params));
         options.getAliases().ifPresent(aliases -> request.addArg(Tokens.ARGS_ALIASES, aliases));
+        options.getOverrideRequestId().ifPresent(request::overrideRequestId);
 
         return submitAsync(request.create());
     }
