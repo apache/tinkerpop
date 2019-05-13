@@ -31,6 +31,10 @@ const Graph = require('../structure/graph').Graph;
  */
 class AnonymousTraversalSource {
 
+  /**
+   * Creates a new instance of {@link AnonymousTraversalSource}.
+   * @param {Function} [traversalSourceClass] Optional {@code GraphTraversalSource} constructor.
+   */
   constructor(traversalSourceClass) {
     this.traversalSourceClass = traversalSourceClass;
   }
@@ -38,6 +42,7 @@ class AnonymousTraversalSource {
   /**
    * Constructs an {@code AnonymousTraversalSource} which will then be configured to spawn a
    * {@link GraphTraversalSource}.
+   * @param {Function} [traversalSourceClass] Optional {@code GraphTraversalSource} constructor.
    * @returns {AnonymousTraversalSource}.
    */
   static traversal(traversalSourceClass) {

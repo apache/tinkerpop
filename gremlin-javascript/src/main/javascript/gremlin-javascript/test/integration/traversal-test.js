@@ -23,11 +23,10 @@
 'use strict';
 
 const assert = require('assert');
-const graphModule = require('../../lib/structure/graph');
-const Vertex = graphModule.Vertex;
-const traversal = require('../../lib/process/anonymous-traversal').traversal;
-const GraphTraversalSource = require('../../lib/process/graph-traversal').GraphTraversalSource;
-const GraphTraversal = require('../../lib/process/graph-traversal').GraphTraversal;
+const { Vertex } = require('../../lib/structure/graph');
+const { traversal } = require('../../lib/process/anonymous-traversal');
+const { GraphTraversalSource } = require('../../lib/process/graph-traversal');
+const { GraphTraversal } = require('../../lib/process/graph-traversal');
 const utils = require('../../lib/utils');
 const helper = require('../helper');
 
@@ -90,8 +89,8 @@ describe('Traversal', function () {
   });
   describe('dsl', function() {
     it('should expose DSL methods', function() {
-      var g = traversal(SocialTraversalSource).withRemote(connection);
-      var t = g.person('marko').aged(29).values('name');
+      const g = traversal(SocialTraversalSource).withRemote(connection);
+      const t = g.person('marko').aged(29).values('name');
       return g.person('marko').aged(29).values('name').toList().then(function (list) {
           assert.ok(list);
           assert.strictEqual(list.length, 1);

@@ -22,23 +22,25 @@
  */
 'use strict';
 
-const Traversal = require('./traversal').Traversal;
+const { Traversal } = require('./traversal');
 const remote = require('../driver/remote-connection');
 const utils = require('../utils');
 const Bytecode = require('./bytecode');
-const TraversalStrategies = require('./traversal-strategy').TraversalStrategies;
+const { TraversalStrategies } = require('./traversal-strategy');
 
 
 /**
  * Represents the primary DSL of the Gremlin traversal machine.
  */
 class GraphTraversalSource {
+
   /**
+   * Creates a new instance of {@link GraphTraversalSource}.
    * @param {Graph} graph
    * @param {TraversalStrategies} traversalStrategies
    * @param {Bytecode} [bytecode]
-   * @param {Class} graphTraversalSourceClass
-   * @param {Class} graphTraversalClass
+   * @param {Function} [graphTraversalSourceClass] Optional {@link GraphTraversalSource} constructor.
+   * @param {Function} [graphTraversalClass] Optional {@link GraphTraversal} constructor.
    */
   constructor(graph, traversalStrategies, bytecode, graphTraversalSourceClass, graphTraversalClass) {
     this.graph = graph;
@@ -55,7 +57,6 @@ class GraphTraversalSource {
   withRemote(remoteConnection) {
     const traversalStrategy = new TraversalStrategies(this.traversalStrategies);
     traversalStrategy.addStrategy(new remote.RemoteStrategy(remoteConnection));
-    var object = Object.create(this.constructor.prototype);
     return new this.graphTraversalSourceClass(this.graph, traversalStrategy, new Bytecode(this.bytecode), this.graphTraversalSourceClass, this.graphTraversalClass);
   }
 
