@@ -36,6 +36,7 @@ latest version, the process is a bit more elegant and largely handled by extendi
 `Gremlin-JavaScript` which is a bit more in-line with other language variant patterns for DSL development.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2089[TINKERPOP-2089],
+link:http://tinkerpop.apache.org/docs/3.3.7/reference/#gremlin-javascript-dsl[Reference Documentation]
 
 ==== Gremlin Console Interrupt
 
@@ -50,8 +51,7 @@ of these situations typically include:
 In earlier versions, the only option was to kill the Gremlin Console (typically with `ctrl+c`), but as of this version
 `ctrl+c` will be intercepted and attempt to interrupt whatever process is currently executing.
 
-See link:https://issues.apache.org/jira/browse/TINKERPOP-2181[TINKERPOP-2181],
-link:http://tinkerpop.apache.org/docs/3.3.7/reference/#gremlin-javascript-dsl[Reference Documentation]
+See link:https://issues.apache.org/jira/browse/TINKERPOP-2181[TINKERPOP-2181]
 
 ==== Removed gperfutils Dependency
 
