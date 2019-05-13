@@ -27,7 +27,7 @@ const { Vertex } = require('../../lib/structure/graph');
 const { traversal } = require('../../lib/process/anonymous-traversal');
 const { GraphTraversalSource } = require('../../lib/process/graph-traversal');
 const { GraphTraversal } = require('../../lib/process/graph-traversal');
-const utils = require('../../lib/utils');
+const Bytecode = require('../../lib/process/bytecode');
 const helper = require('../helper');
 
 let connection;
@@ -50,6 +50,14 @@ class SocialTraversalSource extends GraphTraversalSource {
   person(name) {
     return this.V().has('person', 'name', name);
   }
+}
+
+function anonymous() {
+  return new SocialTraversal(null, null, new Bytecode());
+}
+
+function aged(age) {
+  return anonymous().aged(age);
 }
 
 describe('Traversal', function () {
@@ -90,12 +98,20 @@ describe('Traversal', function () {
   describe('dsl', function() {
     it('should expose DSL methods', function() {
       const g = traversal(SocialTraversalSource).withRemote(connection);
-      const t = g.person('marko').aged(29).values('name');
       return g.person('marko').aged(29).values('name').toList().then(function (list) {
           assert.ok(list);
           assert.strictEqual(list.length, 1);
           assert.strictEqual(list[0], 'marko');
         });
+    });
+
+    it('should expose anonymous DSL methods', function() {
+      const g = traversal(SocialTraversalSource).withRemote(connection);
+      return g.person('marko').filter(aged(29)).values('name').toList().then(function (list) {
+        assert.ok(list);
+        assert.strictEqual(list.length, 1);
+        assert.strictEqual(list[0], 'marko');
+      });
     });
   });
 });
