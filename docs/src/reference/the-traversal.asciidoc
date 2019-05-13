@@ -2910,11 +2910,13 @@ stores objects in its side-effect collection as they pass through.
 
 [gremlin-groovy,modern]
 ----
-g.V().aggregate('x').limit(1).cap('x')
+g.V().aggregate('x').limit(1).cap('x')                               
 g.V().store('x').limit(1).cap('x')
+g.withoutStrategies(EarlyLimitStrategy).V().store('x').limit(1).cap('x')
 ----
 
-It is interesting to note that there are two results in the `store()` side-effect even though the interval
+It is important to note that `EarlyLimitStrategy` introduced in 3.3.5 alters the behavior of `store()`. Without that
+strategy (which is installed by default), there are two results in the `store()` side-effect even though the interval
 selection is for 1 object. Realize that when the second object is on its way to the `range()` filter (i.e. `[0..1]`),
 it passes through `store()` and thus, stored before filtered.
 
