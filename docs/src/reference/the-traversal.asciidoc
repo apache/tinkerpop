@@ -3786,6 +3786,7 @@ social.persons("marko").knows("josh");
 NOTE: Using Maven, as shown in the `gremlin-archetype-dsl` module, makes developing DSLs with the annotation processor
 straightforward in that it sets up appropriate paths to the generated code automatically.
 
+[[gremlin-python-dsl]]
 === Gremlin-Python
 
 Writing a Gremlin DSL in Python simply requires direct extension of several classes:
@@ -3858,6 +3859,7 @@ social.persons("marko").youngestFriendsAge()
 social.persons().filter(__.createdAtLeast(2)).count()
 ----
 
+[[gremlin-net-dsl]]
 === Gremlin.Net
 
 Developing DSLs for .Net is most easily implemented using link:https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/extension-methods[Extension Methods]
@@ -3948,4 +3950,64 @@ var social = graph.Traversal().WithRemote(connection);
 social.Persons("marko").Knows("josh");
 social.Persons("marko").YoungestFriendsAge();
 social.Persons().Filter(CreatedAtLeast(2)).Count();
+----
+
+[[gremli-javascript-dsl]]
+=== Gremlin-JavaScript
+
+Developing Gremlin DSLs in JavaScript largely requires extension of existing core classes with use of standalone
+functions for anonymous traversal spawning. The pattern is demonstrated in the following example:
+
+[source,javascript]
+----
+class SocialTraversal extends GraphTraversal {
+  constructor(graph, traversalStrategies, bytecode) {
+    super(graph, traversalStrategies, bytecode);
+  }
+
+  aged(age) {
+    return this.has('person', 'age', age);
+  }
+}
+
+class SocialTraversalSource extends GraphTraversalSource {
+  constructor(graph, traversalStrategies, bytecode) {
+    super(graph, traversalStrategies, bytecode, SocialTraversalSource, SocialTraversal);
+  }
+
+  person(name) {
+    return this.V().has('person', 'name', name);
+  }
+}
+
+function anonymous() {
+  return new SocialTraversal(null, null, new Bytecode());
+}
+
+function aged(age) {
+  return anonymous().aged(age);
+}
+----
+
+`SocialTraversal` extends the core `GraphTraversal` class and has a three argument constructor which is immediately
+proxied to the `GraphTraversal` constructor. New DSL steps are then added to this class using available steps to
+construct the underlying traversal to execute as demonstrated in the `aged()` step.
+
+The `SocialTraversal` is spawned from a `SocialTraversalSource` which is extended from `GraphTraversalSource`. Steps
+added here are meant to be start steps. In the above case, the `person()` start step find a "person" vertex to begin
+the traversal from.
+
+Typically, steps that are made available on a `GraphTraversal` (i.e. SocialTraversal in this example) should also be
+made available as spawns for anonymous traversals. The recommendation is that these steps be exposed in the module
+as standalone functions. In the example above, the standalone `aged()` step creates an anonymous traversal through
+an `anonymous()` utility function. The method for creating these standalone functions can be handled in other ways if
+desired.
+
+To use the DSL, simply initialize the `g` as follows:
+
+[source,javascript]
+----
+const g = traversal(SocialTraversalSource).withRemote(connection);
+g.person('marko').aged(29).values('name').toList().
+  then(names => console.log(names));
 ----
