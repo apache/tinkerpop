@@ -38,7 +38,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static org.apache.tinkerpop.gremlin.driver.Tokens.ARGS_BATCH_SIZE;
-import static org.apache.tinkerpop.gremlin.driver.Tokens.ARGS_OVERRIDE_REQUEST_ID;
+import static org.apache.tinkerpop.gremlin.driver.Tokens.REQUEST_ID;
 import static org.apache.tinkerpop.gremlin.driver.Tokens.ARGS_SCRIPT_EVAL_TIMEOUT;
 
 /**
@@ -234,8 +234,8 @@ public class DriverRemoteConnection implements RemoteConnection {
             final Map<String,Object> options = optionsStrategy.getOptions();
             if (options.containsKey(ARGS_SCRIPT_EVAL_TIMEOUT))
                 builder.timeout((long) options.get(ARGS_SCRIPT_EVAL_TIMEOUT));
-            else if (options.containsKey(ARGS_OVERRIDE_REQUEST_ID))
-                builder.overrideRequestId((UUID) options.get(ARGS_OVERRIDE_REQUEST_ID));
+            else if (options.containsKey(REQUEST_ID))
+                builder.overrideRequestId((UUID) options.get(REQUEST_ID));
             else if (options.containsKey(ARGS_BATCH_SIZE))
                 builder.batchSize((int) options.get(ARGS_BATCH_SIZE));
         }

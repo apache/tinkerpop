@@ -41,7 +41,7 @@ public class DriverRemoteConnectionTest {
                 g.with("x").
                         with("y", 100).
                         with(Tokens.ARGS_BATCH_SIZE, 1000).
-                        with(Tokens.ARGS_OVERRIDE_REQUEST_ID, requestId).
+                        with(Tokens.REQUEST_ID, requestId).
                         with(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT, 100000L).
                         V().asAdmin().getBytecode());
         assertEquals(requestId, options.getOverrideRequestId().get());
