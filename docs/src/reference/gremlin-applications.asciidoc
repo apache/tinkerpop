@@ -1721,11 +1721,15 @@ without all the associated structure which can slow the response.
 [[parameterized-scripts]]
 ==== Parameterized Scripts
 
-image:gremlin-parameterized.png[width=150,float=left] Use script parameterization.  Period.  Gremlin Server caches
-all scripts that are passed to it.  The cache is keyed based on the a hash of the script.  Therefore `g.V(1)` and
-`g.V(2)` will be recognized as two separate scripts in the cache.  If that script is parameterized to `g.V(x)`
-where `x` is passed as a parameter from the client, there will be no additional compilation cost for future requests
-on that script.  Compilation of a script should be considered "expensive" and avoided when possible.
+image:gremlin-parameterized.png[width=150,float=left] Use script parameterization. Period. There are at least two good
+reasons for doing so: script caching and protection from "Gremlin injection" (conceptually the same as the notion of
+SQL injection).
+
+With respect to caching, Gremlin Server caches all scripts that are passed to it.  The cache is keyed based on the a
+hash of the script.  Therefore `g.V(1)` and `g.V(2)` will be recognized as two separate scripts in the cache.  If that
+script is parameterized to `g.V(x)` where `x` is passed as a parameter from the client, there will be no additional
+compilation cost for future requests on that script.  Compilation of a script should be considered "expensive" and
+avoided when possible.
 
 [source,java]
 ----
@@ -1742,6 +1746,41 @@ The more parameters that are used in a script the more expensive the compilation
 section. It controls the maximum number of parameters that can be passed to the server for script evaluation purposes.
 Use of this setting can prevent accidental long run compilations, which individually are not terribly oppressive to
 the server, but taken as a group under high concurrency would be considered detrimental.
+
+On the topic of Gremlin injection, note that it is possible to take advantage of Gremlin scripts in the same fashion
+as SQL scripts that are submitted as strings. When using string building patterns for queries without proper input
+scrubbing, it would be quite simple to do:
+
+[source,java]
+----
+String lbl = "person"
+String nodeId = "mary').next();g.V().drop().iterate();g.V().has('id', 'thomas";
+String query = g.addV('" + lbl + "').property('identifier','" + nodeId + "')";
+client.submit(query);
+----
+
+The above case would `drop()` all vertices in the graph. By using script parameterization, there is a different outcome
+in that the `nodeId` string is not treated as something executable, but rather as a literal string that just becomes
+part of the "identifier" for the vertex on insertion:
+
+[source,java]
+----
+String lbl = "person"
+String nodeId = "mary').next();g.V().drop().iterate();g.V().has('id', 'thomas";
+String query = g.addV('" + lbl + "').property('identifier','" + nodeId + "')";
+
+Map<String,Object> params = new HashMap<>();
+params.put("lbl",lbl);
+params.put("nodeId",nodeId);
+client.submit(query, params);
+----
+
+Gremlin injection should not be possible with `Bytecode` based traversals - only scripts - because `Bytecode`
+traversals will treat all arguments as literal values. There is potential for concern if lambda based steps are
+utilized as they execute arbitrary code, which is string based, but configuring `TraversalSource` instances with
+`LambdaRestrictionStrategy`, which prevents lambdas all together, using a graph that does not allow lambdas at all, or
+configuring appropriate <<script-execution,sandbox options>> in Gremlin Server (or such options available to the graph
+database in use) should each help mitigate problems related to this issue.
 
 ==== Properties of Elements
 
