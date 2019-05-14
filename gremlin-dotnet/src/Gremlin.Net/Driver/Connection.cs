@@ -51,12 +51,11 @@ namespace Gremlin.Net.Driver
         private readonly WebSocketConnection _webSocketConnection;
         private readonly string _username;
         private readonly string _password;
-        private readonly ConcurrentQueue<RequestMessage> _writeQueue = new ConcurrentQueue<RequestMessage>();
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
         private readonly ConcurrentDictionary<Guid, IResponseHandlerForSingleRequestMessage> _callbackByRequestId =
             new ConcurrentDictionary<Guid, IResponseHandlerForSingleRequestMessage>();
         private int _connectionState = 0;
-        private int _writeInProgress = 0;
         private const int Closed = 1;
 
         public Connection(Uri uri, string username, string password, GraphSONReader graphSONReader,
@@ -81,13 +80,12 @@ namespace Gremlin.Net.Driver
 
         public bool IsOpen => _webSocketConnection.IsOpen && Volatile.Read(ref _connectionState) != Closed;
 
-        public Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage)
+        public async Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage)
         {
             var receiver = new ResponseHandlerForSingleRequestMessage<T>(_graphSONReader);
             _callbackByRequestId.GetOrAdd(requestMessage.RequestId, receiver);
-            _writeQueue.Enqueue(requestMessage);
-            BeginSendingMessages();
-            return receiver.Result;
+            await SendMessageAsync(requestMessage).ConfigureAwait(false);
+            return await receiver.Result.ConfigureAwait(false);
         }
 
         private void BeginReceiving()
@@ -104,7 +102,7 @@ namespace Gremlin.Net.Driver
                 try
                 {
                     var received = await _webSocketConnection.ReceiveMessageAsync().ConfigureAwait(false);
-                    Parse(received);
+                    await Parse(received).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
@@ -114,13 +112,13 @@ namespace Gremlin.Net.Driver
             }
         }
 
-        private void Parse(byte[] received)
+        private async Task Parse(byte[] received)
         {
             var receivedMsg = _messageSerializer.DeserializeMessage<ResponseMessage<JToken>>(received);
             
             try
             {
-                TryParseResponseMessage(receivedMsg);
+                await TryParseResponseMessage(receivedMsg).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -131,14 +129,14 @@ namespace Gremlin.Net.Driver
             }
         }
 
-        private void TryParseResponseMessage(ResponseMessage<JToken> receivedMsg)
+        private async Task TryParseResponseMessage(ResponseMessage<JToken> receivedMsg)
         {
             var status = receivedMsg.Status;
             status.ThrowIfStatusIndicatesError();
 
             if (status.Code == ResponseStatusCode.Authenticate)
             {
-                Authenticate();
+                await Authenticate().ConfigureAwait(false);
                 return;
             }
 
@@ -152,7 +150,7 @@ namespace Gremlin.Net.Driver
             }
         }
 
-        private void Authenticate()
+        private Task Authenticate()
         {
             if (string.IsNullOrEmpty(_username) || string.IsNullOrEmpty(_password))
                 throw new InvalidOperationException(
@@ -161,8 +159,7 @@ namespace Gremlin.Net.Driver
             var message = RequestMessage.Build(Tokens.OpsAuthentication).Processor(Tokens.ProcessorTraversal)
                 .AddArgument(Tokens.ArgsSasl, SaslArgument()).Create();
 
-            _writeQueue.Enqueue(message);
-            BeginSendingMessages();
+            return SendMessageAsync(message);
         }
 
         private string SaslArgument()
@@ -172,51 +169,12 @@ namespace Gremlin.Net.Driver
             return Convert.ToBase64String(authBytes);
         }
 
-        private void BeginSendingMessages()
-        {
-            if (Interlocked.CompareExchange(ref _writeInProgress, 1, 0) != 0)
-                return;
-            SendMessagesFromQueueAsync().Forget();
-        }
-
-        private async Task SendMessagesFromQueueAsync()
-        {
-            while (_writeQueue.TryDequeue(out var msg))
-            {
-                try
-                {
-                    await SendMessageAsync(msg).ConfigureAwait(false);
-                }
-                catch (Exception e)
-                {
-                    await CloseConnectionBecauseOfFailureAsync(e).ConfigureAwait(false);
-                    break;
-                }
-            }
-            Interlocked.CompareExchange(ref _writeInProgress, 0, 1);
-
-            // Since the loop ended and the write in progress was set to 0
-            // a new item could have been added, write queue can contain items at this time
-            if (!_writeQueue.IsEmpty && Interlocked.CompareExchange(ref _writeInProgress, 1, 0) == 0)
-            {
-                await SendMessagesFromQueueAsync().ConfigureAwait(false);
-            }
-        }
-
         private async Task CloseConnectionBecauseOfFailureAsync(Exception exception)
         {
-            EmptyWriteQueue();
             await CloseAsync().ConfigureAwait(false);
             NotifyAboutConnectionFailure(exception);
         }
 
-        private void EmptyWriteQueue()
-        {
-            while (_writeQueue.TryDequeue(out _))
-            {
-            }
-        }
-        
         private void NotifyAboutConnectionFailure(Exception exception)
         {
             foreach (var cb in _callbackByRequestId.Values)
@@ -228,9 +186,25 @@ namespace Gremlin.Net.Driver
 
         private async Task SendMessageAsync(RequestMessage message)
         {
-            var graphsonMsg = _graphSONWriter.WriteObject(message);
-            var serializedMsg = _messageSerializer.SerializeMessage(graphsonMsg);
-            await _webSocketConnection.SendMessageAsync(serializedMsg).ConfigureAwait(false);
+            await _semaphore.WaitAsync().ConfigureAwait(false);
+
+            try
+            {
+                if (Volatile.Read(ref _connectionState) == 0)
+                {
+                    var graphsonMsg = _graphSONWriter.WriteObject(message);
+                    var serializedMsg = _messageSerializer.SerializeMessage(graphsonMsg);
+                    await _webSocketConnection.SendMessageAsync(serializedMsg).ConfigureAwait(false);
+                }
+            }
+            catch (Exception e)
+            {
+                await CloseConnectionBecauseOfFailureAsync(e).ConfigureAwait(false);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
         }
 
         public async Task CloseAsync()
@@ -254,7 +228,11 @@ namespace Gremlin.Net.Driver
             if (!_disposed)
             {
                 if (disposing)
+                {
                     _webSocketConnection?.Dispose();
+                    _semaphore.Dispose();
+                }
+
                 _disposed = true;
             }
         }
