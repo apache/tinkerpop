@@ -100,6 +100,11 @@ class PluggedIn {
         }
 
         @Override
+        void errPrintln(final String line) {
+            io.err.println("[warn] " + line);
+        }
+
+        @Override
         def <T> T execute(final String line) {
             return (T) shell.execute(line)
         }
