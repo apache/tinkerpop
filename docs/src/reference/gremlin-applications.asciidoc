@@ -1755,7 +1755,7 @@ scrubbing, it would be quite simple to do:
 ----
 String lbl = "person"
 String nodeId = "mary').next();g.V().drop().iterate();g.V().has('id', 'thomas";
-String query = g.addV('" + lbl + "').property('identifier','" + nodeId + "')";
+String query = "g.addV('" + lbl + "').property('identifier','" + nodeId + "')";
 client.submit(query);
 ----
 
@@ -1767,7 +1767,7 @@ part of the "identifier" for the vertex on insertion:
 ----
 String lbl = "person"
 String nodeId = "mary').next();g.V().drop().iterate();g.V().has('id', 'thomas";
-String query = g.addV('" + lbl + "').property('identifier','" + nodeId + "')";
+String query = "g.addV(lbl).property('identifier',nodeId)";
 
 Map<String,Object> params = new HashMap<>();
 params.put("lbl",lbl);
