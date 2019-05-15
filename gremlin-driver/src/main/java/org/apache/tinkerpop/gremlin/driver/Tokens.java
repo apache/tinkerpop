@@ -34,6 +34,7 @@ public final class Tokens {
     public static final String OPS_KEYS = "keys";
     public static final String OPS_CLOSE = "close";
 
+    public static final String REQUEST_ID = "requestId";
     public static final String ARGS_BATCH_SIZE = "batchSize";
     public static final String ARGS_BINDINGS = "bindings";
     public static final String ARGS_ALIASES = "aliases";
