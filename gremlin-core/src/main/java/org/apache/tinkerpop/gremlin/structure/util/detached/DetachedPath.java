@@ -32,9 +32,7 @@ import java.util.function.Function;
  */
 public class DetachedPath extends MutablePath implements Attachable<Path> {
 
-    private DetachedPath() {
-
-    }
+    private DetachedPath() {}
 
     public Path get() {
         return this;
@@ -42,17 +40,11 @@ public class DetachedPath extends MutablePath implements Attachable<Path> {
 
     protected DetachedPath(final Path path, final boolean withProperties) {
         path.forEach((object, labels) -> {
-            if (object instanceof DetachedElement || object instanceof DetachedProperty || object instanceof DetachedPath) {
+            if (object instanceof DetachedElement || object instanceof DetachedProperty || object instanceof DetachedPath)
                 this.objects.add(object);
-            } else if (object instanceof Element) {
-                this.objects.add(DetachedFactory.detach((Element) object, withProperties));
-            } else if (object instanceof Property) {
-                this.objects.add(DetachedFactory.detach((Property) object));
-            } else if (object instanceof Path) {
-                this.objects.add(DetachedFactory.detach((Path) object, withProperties));
-            } else {
-                this.objects.add(object);
-            }
+            else
+                this.objects.add(DetachedFactory.detach(object, withProperties));
+
             //Make a copy of the labels as its an UnmodifiableSet which can not be serialized.
             this.labels.add(new LinkedHashSet<>(labels));
         });
