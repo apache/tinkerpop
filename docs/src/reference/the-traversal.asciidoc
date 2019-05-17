@@ -4020,5 +4020,5 @@ g.V().hasLabel('person').has('name','marko').
 social.persons("marko").youngestFriendsAge()
 ----
 
-Learn more about hwo to implement these DSLs in the <<gremlin-drivers-variants,Gremlin Language Variants>> section
+Learn more about how to implement these DSLs in the <<gremlin-drivers-variants,Gremlin Language Variants>> section
 specific to the programming language of interest.

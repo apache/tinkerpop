@@ -862,6 +862,7 @@ returns a `concurrent.futures.Future` that resolves to a list when it is complet
 <9> Verify that the all results have been read and stream is closed.
 <10> Close client and underlying pool connections.
 
+[[gremlin-python-dsl]]
 === Domain Specific Languages
 
 Writing a Gremlin <<dsl,Domain Specific Language>> (DSL) in Python simply requires direct extension of several classes:
@@ -1085,6 +1086,7 @@ If the remote system has authentication and SSL enabled, then the `GremlinServer
 include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=submittingScriptsWithAuthentication]
 ----
 
+[[gremlin-net-dsl]]
 === Domain Specific Languages
 
 Developing a <<dsl,Domain Specific Language>> (DSL) for .Net is most easily implemented using
