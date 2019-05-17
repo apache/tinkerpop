@@ -3954,7 +3954,7 @@ social.Persons("marko").YoungestFriendsAge();
 social.Persons().Filter(CreatedAtLeast(2)).Count();
 ----
 
-[[gremli-javascript-dsl]]
+[[gremlin-javascript-dsl]]
 === Gremlin-JavaScript
 
 Developing Gremlin DSLs in JavaScript largely requires extension of existing core classes with use of standalone
