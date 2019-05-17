@@ -179,7 +179,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public interface Admin<S, E> extends Traversal.Admin<S, E>, GraphTraversal<S, E> {
 
         @Override
-        public default <E2> GraphTraversal.Admin<S, E2> addStep(final Step<?, E2> step) {
+        public default <E2> GraphTraversal.Admin<S, E2> addStep(final Step<?, ?> step) {
             return (GraphTraversal.Admin<S, E2>) Traversal.Admin.super.addStep((Step) step);
         }
 
@@ -769,7 +769,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#select-step" target="_blank">Reference Documentation - Select Step</a>
      * @since 3.3.3
      */
-    public default <E2> GraphTraversal<S, E2> select(final Pop pop, final Traversal<S, E2> keyTraversal) {
+    public default <E2> GraphTraversal<S, E2> select(final Pop pop, final Traversal<?, ?> keyTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.select, pop, keyTraversal);
         return this.asAdmin().addStep(new TraversalSelectStep<>(this.asAdmin(), pop, keyTraversal));
     }
@@ -1230,7 +1230,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#inject-step" target="_blank">Reference Documentation - Inject Step</a>
      * @since 3.0.0-incubating
      */
-    public default GraphTraversal<S, E> inject(final E... injections) {
+    public default <M> GraphTraversal<S, E> inject(final M... injections) {
         this.asAdmin().getBytecode().addStep(Symbols.inject, injections);
         return this.asAdmin().addStep(new InjectStep<>(this.asAdmin(), injections));
     }
@@ -1552,7 +1552,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      * @since 3.2.4
      */
-    public default GraphTraversal<S, E> hasId(final P<Object> predicate) {
+    public default GraphTraversal<S, E> hasId(final P<?> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.hasId, predicate);
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.id.getAccessor(), predicate));
     }
@@ -1623,7 +1623,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      * @since 3.2.4
      */
-    public default GraphTraversal<S, E> hasValue(final P<Object> predicate) {
+    public default GraphTraversal<S, E> hasValue(final P<?> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.hasValue, predicate);
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.value.getAccessor(), predicate));
     }
@@ -1636,7 +1636,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#is-step" target="_blank">Reference Documentation - Is Step</a>
      * @since 3.0.0-incubating
      */
-    public default GraphTraversal<S, E> is(final P<E> predicate) {
+    public default GraphTraversal<S, E> is(final P<?> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.is, predicate);
         return this.asAdmin().addStep(new IsStep<>(this.asAdmin(), predicate));
     }
@@ -2233,7 +2233,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> choose(final Traversal<?, ?> traversalPredicate,
-                                                     final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
+                                                     final Traversal<?, ?> trueChoice, final Traversal<?, ?> falseChoice) {
         this.asAdmin().getBytecode().addStep(Symbols.choose, traversalPredicate, trueChoice, falseChoice);
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) traversalPredicate, (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) falseChoice));
     }
@@ -2281,7 +2281,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> choose(final Predicate<E> choosePredicate,
-                                                     final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
+                                                     final Traversal<?, ?> trueChoice, final Traversal<?, ?> falseChoice) {
         this.asAdmin().getBytecode().addStep(Symbols.choose, choosePredicate, trueChoice, falseChoice);
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) __.filter(new PredicateTraverser<>(choosePredicate)), (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) falseChoice));
     }
@@ -2297,7 +2297,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.2.4
      */
     public default <E2> GraphTraversal<S, E2> choose(final Predicate<E> choosePredicate,
-                                                     final Traversal<?, E2> trueChoice) {
+                                                     final Traversal<?, ?> trueChoice) {
         this.asAdmin().getBytecode().addStep(Symbols.choose, choosePredicate, trueChoice);
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) __.filter(new PredicateTraverser<>(choosePredicate)), (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) __.identity()));
     }
@@ -2349,7 +2349,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
      * @since 3.0.0-incubating
      */
-    public default GraphTraversal<S, E> repeat(final Traversal<?, E> repeatTraversal) {
+    public default GraphTraversal<S, E> repeat(final Traversal<?, ?> repeatTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.repeat, repeatTraversal);
         return RepeatStep.addRepeatToTraversal(this, (Traversal.Admin<E, E>) repeatTraversal);
     }
@@ -2363,7 +2363,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#repeat-step" target="_blank">Reference Documentation - Repeat Step</a>
      * @since 3.4.0
      */
-    public default GraphTraversal<S, E> repeat(final String loopName, final Traversal<?, E> repeatTraversal) {
+    public default GraphTraversal<S, E> repeat(final String loopName, final Traversal<?, ?> repeatTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.repeat, loopName, repeatTraversal);
         return RepeatStep.addRepeatToTraversal(this, loopName, (Traversal.Admin<E, E>) repeatTraversal);
     }

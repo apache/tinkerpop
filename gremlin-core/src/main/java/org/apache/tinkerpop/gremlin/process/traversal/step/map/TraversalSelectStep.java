@@ -42,7 +42,7 @@ public final class TraversalSelectStep<S, E> extends MapStep<S, E> implements Tr
     private Traversal.Admin<E, E> selectTraversal = null;
     private Set<String> keepLabels;
 
-    public TraversalSelectStep(final Traversal.Admin traversal, final Pop pop, final Traversal<S, E> keyTraversal) {
+    public TraversalSelectStep(final Traversal.Admin traversal, final Pop pop, final Traversal<S, ?> keyTraversal) {
         super(traversal);
         this.pop = pop;
         this.keyTraversal = this.integrateChild(keyTraversal.asAdmin());

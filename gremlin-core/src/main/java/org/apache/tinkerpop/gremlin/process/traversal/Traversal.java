@@ -341,7 +341,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
          * @return the updated traversal
          * @throws IllegalStateException if the {@link TraversalStrategies} have already been applied
          */
-        public default <E2> Traversal.Admin<S, E2> addStep(final Step<?, E2> step) throws IllegalStateException {
+        public default <E2> Traversal.Admin<S, E2> addStep(final Step<?, ?> step) throws IllegalStateException {
             return this.addStep(this.getSteps().size(), step);
         }
 

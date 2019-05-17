@@ -384,7 +384,7 @@ public class GraphTraversalSource implements TraversalSource {
     /**
      * Spawns a {@link GraphTraversal} by adding a edge with a label as specified by the provided {@link Traversal}.
      */
-    public GraphTraversal<Edge, Edge> addE(final Traversal<?, String> edgeLabelTraversal) {
+    public GraphTraversal<Edge, Edge> addE(final Traversal<?, ?> edgeLabelTraversal) {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.addE, edgeLabelTraversal);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);

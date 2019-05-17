@@ -93,7 +93,7 @@ public final class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public <E2> Traversal.Admin<S, E2> addStep(final Step<?, E2> step) {
+    public <E2> Traversal.Admin<S, E2> addStep(final Step<?, ?> step) {
         return instance();
     }
 
