@@ -23,16 +23,18 @@
 'use strict';
 
 const gt = require('../process/graph-traversal');
-const TraversalStrategies = require('../process/traversal-strategy').TraversalStrategies;
+const { TraversalStrategies } = require('../process/traversal-strategy');
 
 class Graph {
   /**
    * Returns the graph traversal source.
+   * @param {Function} [traversalSourceClass] The constructor to use for the {@code GraphTraversalSource} instance.
    * @returns {GraphTraversalSource}
    * @deprecated As of release 3.3.5, replaced by the traversal() anonymous function.
    */
-  traversal() {
-    return new gt.GraphTraversalSource(this, new TraversalStrategies());
+  traversal(traversalSourceClass) {
+    const traversalSourceConstructor = traversalSourceClass || gt.GraphTraversalSource;
+    return new traversalSourceConstructor(this, new TraversalStrategies());
   }
 
   toString() {
