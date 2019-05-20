@@ -194,6 +194,13 @@ namespace Gremlin.Net.Driver
                 }
             }
             Interlocked.CompareExchange(ref _writeInProgress, 0, 1);
+
+            // Since the loop ended and the write in progress was set to 0
+            // a new item could have been added, write queue can contain items at this time
+            if (!_writeQueue.IsEmpty && Interlocked.CompareExchange(ref _writeInProgress, 1, 0) == 0)
+            {
+                await SendMessagesFromQueueAsync().ConfigureAwait(false);
+            }
         }
 
         private async Task CloseConnectionBecauseOfFailureAsync(Exception exception)
