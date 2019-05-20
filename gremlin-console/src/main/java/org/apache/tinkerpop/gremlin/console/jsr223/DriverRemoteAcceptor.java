@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
+import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment;
@@ -213,7 +214,22 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
             if (timeout > NO_TIMEOUT)
                 options.timeout(timeout);
 
-            return this.currentClient.submit(gremlin, options.create()).all().get();
+            ResultSet rs = this.currentClient.submit(gremlin, options.create());
+            List<Result> results = rs.all().get();
+            Map<String, Object> statusAttributes = rs.statusAttributes().getNow(null);
+
+            // Check for and print warnings
+            if (null != statusAttributes && statusAttributes.containsKey(Tokens.STATUS_ATTRIBUTE_WARNINGS)) {
+                Object warningAttributeObject = statusAttributes.get(Tokens.STATUS_ATTRIBUTE_WARNINGS);
+                if (warningAttributeObject instanceof List) {
+                    for (Object warningListItem : (List<?>)warningAttributeObject)
+                        shellEnvironment.errPrintln(String.valueOf(warningListItem));
+                } else {
+                    shellEnvironment.errPrintln(String.valueOf(warningAttributeObject));
+                }
+            }
+
+            return results;
         } catch (Exception e) {
             // handle security error as-is and unwrapped
             final Optional<Throwable> throwable  = Stream.of(ExceptionUtils.getThrowables(e)).filter(t -> t instanceof SaslException).findFirst();

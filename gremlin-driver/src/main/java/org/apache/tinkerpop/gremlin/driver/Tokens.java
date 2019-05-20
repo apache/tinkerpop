@@ -61,4 +61,19 @@ public final class Tokens {
 
     public static final String STATUS_ATTRIBUTE_EXCEPTIONS = "exceptions";
     public static final String STATUS_ATTRIBUTE_STACK_TRACE = "stackTrace";
+    /**
+     * A {@link ResultSet#statusAttributes()} key for user-facing warnings.
+     * <p>
+     * Implementations that set this key should consider using one of
+     * these two recommended value types:
+     * <ul>
+     *     <li>A {@link java.util.List} implementation containing
+     *     references for which {@link String#valueOf(Object)} produces
+     *     a meaningful return value.  For example, a list of strings.</li>
+     *     <li>Otherwise, any single non-list object for which
+     *     {@link String#valueOf(Object)} produces a meaningful return value.
+     *     For example, a string.</li>
+     * </ul>
+     */
+    public static final String STATUS_ATTRIBUTE_WARNINGS = "warnings";
 }

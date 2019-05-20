@@ -58,6 +58,14 @@ public class MockGroovyGremlinShellEnvironment implements GremlinShellEnvironmen
     }
 
     @Override
+    public void errPrintln(final String line) {
+        if (null == io)
+            groovysh.getIo().err.println("[warn]" + line);
+        else
+            io.err.println("[warn]" + line);
+    }
+
+    @Override
     public <T> T execute(final String line) {
         return (T) groovysh.execute(line);
     }
