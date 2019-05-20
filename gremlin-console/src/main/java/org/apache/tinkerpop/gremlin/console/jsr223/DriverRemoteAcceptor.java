@@ -37,13 +37,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
@@ -214,13 +212,13 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
             if (timeout > NO_TIMEOUT)
                 options.timeout(timeout);
 
-            ResultSet rs = this.currentClient.submit(gremlin, options.create());
-            List<Result> results = rs.all().get();
-            Map<String, Object> statusAttributes = rs.statusAttributes().getNow(null);
+            final ResultSet rs = this.currentClient.submit(gremlin, options.create());
+            final List<Result> results = rs.all().get();
+            final Map<String, Object> statusAttributes = rs.statusAttributes().getNow(null);
 
             // Check for and print warnings
             if (null != statusAttributes && statusAttributes.containsKey(Tokens.STATUS_ATTRIBUTE_WARNINGS)) {
-                Object warningAttributeObject = statusAttributes.get(Tokens.STATUS_ATTRIBUTE_WARNINGS);
+                final Object warningAttributeObject = statusAttributes.get(Tokens.STATUS_ATTRIBUTE_WARNINGS);
                 if (warningAttributeObject instanceof List) {
                     for (Object warningListItem : (List<?>)warningAttributeObject)
                         shellEnvironment.errPrintln(String.valueOf(warningListItem));
