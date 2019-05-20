@@ -26,7 +26,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 This release also includes changes from <<release-3-3-7, 3.3.7>>.
 
 * Allow a `Traversal` to know what `TraversalSource` it spawned from.
-* Changed definition of generic in signature of `from(Traversal)` and `to(Traversal)` steps to use a wildcard rather than `Vertex`.
 * Fixed problem with connection pool sizing and retry.
 * Changed `:>` in Gremlin Console to submit the client-side timeout on each request.
 * Provided method to override the request identifier with `RequestOptions`.
