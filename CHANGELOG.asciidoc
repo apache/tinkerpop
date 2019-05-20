@@ -27,6 +27,8 @@ This release also includes changes from <<release-3-3-7, 3.3.7>>.
 
 * Allow a `Traversal` to know what `TraversalSource` it spawned from.
 * Fixed problem with connection pool sizing and retry.
+* Added status attribute for warnings to be returned to the client.
+* Modified Gremlin Console to report warning status attributes.
 * Changed `:>` in Gremlin Console to submit the client-side timeout on each request.
 * Provided method to override the request identifier with `RequestOptions`.
 * Added option to set per-request settings on a `Traversal` submitted via `Bytecode`.
