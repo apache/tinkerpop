@@ -59,6 +59,17 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2203[TINKERPOP-2203]
 
 === Upgrading for Providers
 
+==== Graph System Providers
+
+===== Warnings
+
+It is now possible to pass warnings over the Gremlin Server protocol using a `warnings` status attribute. The warnings
+are expected to be a string value or a `List` of string values which can be consumed by the user or tools that check
+for that status attribute. Note that Gremlin Console is one such tool that will respond to this status attribute - it
+will print the messages to the console as they are detected when doing remote script submissions.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2216[TINKERPOP-2216]
+
 ==== Graph Driver Providers
 
 ===== Per Request Options
