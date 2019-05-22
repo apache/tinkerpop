@@ -273,7 +273,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_withSideEffectXa_g_VX2XX_VX1X_out_whereXneqXaXX() {
-        final Traversal<Vertex, Vertex> traversal = get_g_withSideEffectXa_graph_verticesX2XX_VX1X_out_whereXneqXaXX(convertToVertexId("marko"), g.V(convertToVertexId("vadas")).next());
+        final Traversal<Vertex, Vertex> traversal = get_g_withSideEffectXa_graph_verticesX2XX_VX1X_out_whereXneqXaXX(convertToVertexId("marko"), convertToVertex("vadas"));
         printTraversalForm(traversal);
         int counter = 0;
         final Set<Vertex> vertices = new HashSet<>();

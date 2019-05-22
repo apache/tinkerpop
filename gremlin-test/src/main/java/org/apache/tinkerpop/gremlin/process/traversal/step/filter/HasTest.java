@@ -222,6 +222,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Vertex> traversalJosh = get_g_VX1X_hasXage_gt_30X(convertToVertexId("josh"));
         printTraversalForm(traversalJosh);
         assertTrue(traversalJosh.hasNext());
+        traversalJosh.iterate();
     }
 
     @Test
@@ -238,6 +239,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Vertex> traversalJosh = get_g_VXv1X_hasXage_gt_30X(convertToVertex(graph,"josh"));
         printTraversalForm(traversalJosh);
         assertTrue(traversalJosh.hasNext());
+        traversalJosh.iterate();
     }
 
     @Test
