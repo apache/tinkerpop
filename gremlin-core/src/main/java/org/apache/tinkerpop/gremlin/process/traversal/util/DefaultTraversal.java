@@ -18,6 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Set;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -32,17 +40,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.DefaultTraverserGeneratorFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -201,6 +201,10 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
             this.lastTraverser.setBulk(this.lastTraverser.bulk() - 1L);
             return this.lastTraverser.get();
         } catch (final FastNoSuchElementException e) {
+            // No more elements will be produced by this traversal. Close this traversal
+            // and release the resources.
+            CloseableIterator.closeIterator(this);
+
             throw this.parent instanceof EmptyStep ? new NoSuchElementException() : e;
         }
     }
