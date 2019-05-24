@@ -422,6 +422,7 @@ steps as shown below:
 
 [gremlin-groovy,modern]
 ----
+g = graph.traversal(SparqlTraversalSource)
 g.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age }")
 g.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age }").select("name")
 g.sparql("SELECT * WHERE { }").out("knows").values("name")
