@@ -418,7 +418,7 @@ WHERE {
 === With Gremlin
 
 The `sparql()`-step takes a SPARQL query and returns a result. That result can be further processed by standard Gremlin
-steps, which introduces some interesting possibilities.
+steps as shown below:
 
 [gremlin-groovy,modern]
 ----
@@ -430,3 +430,5 @@ g.withSack(1.0f).sparql("SELECT * WHERE { }").
     times(2).
   sack()
 ----
+
+Mixing SPARQL with Gremlin steps introduces some interesting possibilities for complex traversals.
