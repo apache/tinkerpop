@@ -180,8 +180,7 @@ sufficient complexity in your traversals where you will need to:
 * Test or debug pieces of the traversal in isolation.
 * Experiment with different ways of expressing the same traversal.
 * Examine the performance of a traversal through the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#profile-step[profile()]
-or link:http://tinkerpop.apache.org/docs/x.y.z/reference/#explain-step[explain()] steps or by other
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#benchmarking-and-profiling[profiling and benchmarking] methods.
+or link:http://tinkerpop.apache.org/docs/x.y.z/reference/#explain-step[explain()] steps.
 
 Consider an example where you are developing an application that uses TinkerGraph and the data from the "modern"
 toy graph. You want to encapsulate some logic for a graph traversal that finds a "person" vertex, iterates outgoing

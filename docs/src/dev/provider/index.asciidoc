@@ -418,7 +418,7 @@ determine how to read and write data to and from Hadoop. For instance, `gremlin.
 
 ===== GraphFilterAware Interface
 
-<<graph-filter,Graph filters>> by OLAP processors to only pull a subgraph of the full graph from the graph data source. For instance, the
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graph-filter[Graph filters] by OLAP processors to only pull a subgraph of the full graph from the graph data source. For instance, the
 example below constructs a `GraphFilter` that will only pull the "knows"-graph amongst people into the `GraphComputer`
 for processing.
 
@@ -441,8 +441,8 @@ if (configuration.containsKey(Constants.GREMLIN_HADOOP_GRAPH_FILTER))
 
 A graph system provider's `OutputFormat` should implement the `PersistResultGraphAware` interface which
 determines which persistence options are available to the user. For the standard file-based `OutputFormats` provided
-by Hadoop-Gremlin (e.g. <<gryo-io-format,`GryoOutputFormat`>>, <<graphson-io-format,`GraphSONOutputFormat`>>,
-and <<script-io-format,`ScriptInputOutputFormat`>>) `ResultGraph.ORIGINAL` is not supported as the original graph
+by Hadoop-Gremlin (e.g. link:++http://tinkerpop.apache.org/docs/x.y.z/reference/#gryo-io-format++[`GryoOutputFormat`], link:++http://tinkerpop.apache.org/docs/x.y.z/reference/#graphson-io-format++[`GraphSONOutputFormat`],
+and link:++http://tinkerpop.apache.org/docs/x.y.z/reference/#script-io-format++[`ScriptInputOutputFormat`]) `ResultGraph.ORIGINAL` is not supported as the original graph
 data files are not random access and are, in essence, immutable. Thus, these file-based `OutputFormats` only support
 `ResultGraph.NEW` which creates a copy of the data specified by the `Persist` enum.
 

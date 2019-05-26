@@ -109,7 +109,7 @@ tutorial, link:https://www.python.org/[Python] will serve as the host language a
 language variant. With link:https://www.jcp.org/en/jsr/detail?id=223[JSR-223], any language compiler written for the JVM
 can directly access the JVM and any of its libraries (including Gremlin-Java).
 
-2. <<using-python-and-gremlin-server,**Using Python and GremlinServer**>>: This model requires that there exist a Python
+2. <<using-python-and-remoteconnection,**Using Python and GremlinServer**>>: This model requires that there exist a Python
 class that mimics Gremlin-Java's `GraphTraversal` API. With each method call of this Python class, Gremlin `Bytecode` is
 generated which is ultimately translated into a Gremlin variant that can execute the traversal (e.g. Gremlin-Java).
 
