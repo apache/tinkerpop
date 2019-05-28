@@ -42,7 +42,7 @@ public enum Compare implements BiPredicate<Object, Object> {
     eq {
         @Override
         public boolean test(final Object first, final Object second) {
-            return null == first ? null == second : (first instanceof Number && second instanceof Number
+            return null == first ? null == second : (bothAreNumber(first, second)
                     ? NumberHelper.compare((Number) first, (Number) second) == 0
                     : first.equals(second));
         }
@@ -86,10 +86,17 @@ public enum Compare implements BiPredicate<Object, Object> {
     gt {
         @Override
         public boolean test(final Object first, final Object second) {
-            return null != first && null != second && (
-                    first instanceof Number && second instanceof Number
-                            ? NumberHelper.compare((Number) first, (Number) second) > 0
-                            : ((Comparable) first).compareTo(second) > 0);
+            if (null != first && null != second) {
+                if (bothAreNumber(first, second)) {
+                    return NumberHelper.compare((Number) first, (Number) second) > 0;
+                }
+                if (bothAreComparableAndOfSameType(first, second)) {
+                    return ((Comparable) first).compareTo(second) > 0;
+                }
+                throwException(first, second);
+            }
+
+            return false;
         }
 
         /**
@@ -131,10 +138,16 @@ public enum Compare implements BiPredicate<Object, Object> {
     lt {
         @Override
         public boolean test(final Object first, final Object second) {
-            return null != first && null != second && (
-                    first instanceof Number && second instanceof Number
-                            ? NumberHelper.compare((Number) first, (Number) second) < 0
-                            : ((Comparable) first).compareTo(second) < 0);
+            if (null != first && null != second) {
+                if (bothAreNumber(first, second)) {
+                    return NumberHelper.compare((Number) first, (Number) second) < 0;
+                }
+                if (bothAreComparableAndOfSameType(first, second)) {
+                    return ((Comparable) first).compareTo(second) < 0;
+                }
+                throwException(first, second);
+            }
+            return false;
         }
 
         /**
@@ -166,6 +179,19 @@ public enum Compare implements BiPredicate<Object, Object> {
             return gt;
         }
     };
+
+    private static boolean bothAreNumber(Object first, Object second) {
+        return first instanceof Number && second instanceof Number;
+    }
+
+    private static boolean bothAreComparableAndOfSameType(Object first, Object second) {
+        return first instanceof Comparable && second instanceof Comparable
+                && (first.getClass().isInstance(second) || second.getClass().isInstance(first));
+    }
+
+    private static void throwException(Object first, Object second) {
+        throw new IllegalArgumentException(String.format("Cannot compare '%s' (%s) and '%s' (%s) as both need to be an instance of Number or Comparable (and of the same type)", first, first.getClass().getSimpleName(), second, second.getClass().getSimpleName()));
+    }
 
     /**
      * Produce the opposite representation of the current {@code Compare} enum.
