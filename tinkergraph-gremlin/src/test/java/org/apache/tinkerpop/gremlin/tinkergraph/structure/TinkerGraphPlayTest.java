@@ -124,20 +124,12 @@ public class TinkerGraphPlayTest {
     @Ignore
     public void testPlayDK() throws Exception {
 
-        Graph graph = TinkerGraph.open();
-        graph.io(GraphMLIo.build()).readGraph("../data/grateful-dead.xml");
-
-        GraphTraversalSource g = graph.traversal();//.withoutStrategies(EarlyLimitStrategy.class);
-        g.V().has("name", "Bob_Dylan").in("sungBy").as("a").
-                repeat(out().order().by(Order.shuffle).simplePath().from("a")).
-                until(out("writtenBy").has("name", "Johnny_Cash")).limit(1).as("b").
-                repeat(out().order().by(Order.shuffle).as("c").simplePath().from("b").to("c")).
-                until(out("sungBy").has("name", "Grateful_Dead")).limit(1).
-                path().from("a").unfold().
-                <List<String>>project("song", "artists").
-                by("name").
-                by(__.coalesce(out("sungBy", "writtenBy").dedup().values("name"), constant("Unknown")).fold()).
-                forEachRemaining(System.out::println);
+        final GraphTraversalSource g = TinkerFactory.createModern().traversal();
+        g.V().match(
+                __.as("b").out("created").as("c"),
+                __.as("a").hasLabel("person"),
+                __.as("b").hasLabel("person"),
+                __.as("a").out("knows").as("b")).forEachRemaining(System.out::println);
     }
 
     @Test

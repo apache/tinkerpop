@@ -78,6 +78,8 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     // linked traversals
     public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_knows_b__b_created_cX();
 
+    public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXb_created_c__a_knows_bX();
+
     // a basic tree with two leaves
     public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_knows_b__a_created_cX();
 
@@ -227,6 +229,16 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_matchXa_knows_b__b_created_cX() throws Exception {
         final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_knows_b__b_created_cX();
+        printTraversalForm(traversal);
+        checkResults(makeMapList(3,
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "josh"), "c", convertToVertex(graph, "lop"),
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "josh"), "c", convertToVertex(graph, "ripple")), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_matchXb_created_c__a_knows_bX() throws Exception {
+        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXb_created_c__a_knows_bX();
         printTraversalForm(traversal);
         checkResults(makeMapList(3,
                 "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "josh"), "c", convertToVertex(graph, "lop"),
@@ -629,6 +641,13 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
             return g.V().match(
                     as("a").out("knows").as("b"),
                     as("b").out("created").as("c"));
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXb_created_c__a_knows_bX() {
+            return g.V().match(
+                    as("b").out("created").as("c"),
+                    as("a").out("knows").as("b"));
         }
 
         @Override

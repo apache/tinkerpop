@@ -658,6 +658,18 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
 
         public static String computeStartLabel(final List<Traversal.Admin<Object, Object>> traversals) {
+            {
+                // a traversal start label, that's not used as an end label, must be the step's start label
+                final Set<String> startLabels = new HashSet<>();
+                final Set<String> endLabels = new HashSet<>();
+                for (final Traversal.Admin<Object, Object> traversal : traversals) {
+                    Helper.getEndLabel(traversal).ifPresent(endLabels::add);
+                    startLabels.addAll(Helper.getStartLabels(traversal));
+                }
+                startLabels.removeAll(endLabels);
+                if (!startLabels.isEmpty())
+                    return startLabels.iterator().next();
+            }
             final List<String> sort = new ArrayList<>();
             for (final Traversal.Admin<Object, Object> traversal : traversals) {
                 Helper.getStartLabels(traversal).stream().filter(startLabel -> !sort.contains(startLabel)).forEach(sort::add);
