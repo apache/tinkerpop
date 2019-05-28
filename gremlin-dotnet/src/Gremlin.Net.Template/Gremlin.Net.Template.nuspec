@@ -3,7 +3,7 @@
     <metadata>
         <id>Gremlin.Net.Template</id>
         <title>Gremlin.Net Template</title>
-        <version>3.3.7-SNAPSHOT</version>
+        <version>3.3.7</version>
         <description>Gremlin.Net template to create a console application with dotnet new.</description>
         <authors>Apache TinkerPop</authors>
         <license type="expression">Apache-2.0</license>

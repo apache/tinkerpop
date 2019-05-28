@@ -27,7 +27,7 @@ limitations under the License.
   <ItemGroup>
     <!-- We need both reference elements until this is resolved: https://github.com/dotnet/sdk/issues/1151 -->
     <ProjectReference Include="../Gremlin.Net/Gremlin.Net.csproj" />
-    <PackageReference Include="Gremlin.Net" Version="3.3.7-SNAPSHOT" />
+    <PackageReference Include="Gremlin.Net" Version="3.3.7" />
   </ItemGroup>
 
 </Project>
