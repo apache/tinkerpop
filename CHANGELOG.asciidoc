@@ -21,7 +21,7 @@ limitations under the License.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-mozart.png[width=185]
 
 [[release-3-3-7]]
-=== TinkerPop 3.3.7 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.3.7 (Release Date: May 28, 2019)
 
 * Developed DSL pattern for gremlin-javascript.
 * Generated uberjar artifact for Gremlin Console.
@@ -42,6 +42,29 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed behavior of `P` for `within()` and `without()` in GLVs to be consistent with Java when using varargs.
 * Cleared the input buffer after exceptions in Gremlin Console.
 * Added parameter to configure the `processor` in the gremlin-javascript `client` constructor.
+
+==== Bugs
+
+* TINKERPOP-2112 Folding in property() step is not being optimally performed
+* TINKERPOP-2180 gremlin.sh doesn't work when directories contain spaces
+* TINKERPOP-2183 InterpreterModeASTTransformation needs to be more specific about what it transforms
+* TINKERPOP-2194 Enforcing an order on properties in one test method of ChooseTest
+* TINKERPOP-2196 PartitionStrategy with includeMetaProperties(true) can't add labeled vertex
+* TINKERPOP-2198 Documentation for Store contradicts itself
+* TINKERPOP-2199 within step does not work with more than two parameters with python
+* TINKERPOP-2200 AddEdgeStartStep used DetachedFactory.detach instead of EventStrategy.detach
+* TINKERPOP-2204 Client receives no response on failed request
+* TINKERPOP-2206 Certain types in javascript don't appear to serialize with a GraphSON type
+* TINKERPOP-2212 Path is not detaching properly under certain conditions
+
+==== Improvements
+
+* TINKERPOP-2089 Javascript DSL support
+* TINKERPOP-2179 Have o.a.t.g.driver.ser.SerializationException extend IOException
+* TINKERPOP-2181 Allow ctrl+c to break out of a long running process in Gremlin Console
+* TINKERPOP-2182 Remove gperfutils from Gremlin Console *(breaking)*
+* TINKERPOP-2191 Implement EdgeLabelVerificationStrategy
+* TINKERPOP-2211 Provide API to add per request option for a bytecode
 
 [[release-3-3-6]]
 === TinkerPop 3.3.6 (Release Date: March 18, 2019)
