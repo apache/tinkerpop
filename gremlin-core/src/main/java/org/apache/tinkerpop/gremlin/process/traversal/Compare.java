@@ -86,10 +86,15 @@ public enum Compare implements BiPredicate<Object, Object> {
     gt {
         @Override
         public boolean test(final Object first, final Object second) {
-            return null != first && null != second && (
-                    first instanceof Number && second instanceof Number
-                            ? NumberHelper.compare((Number) first, (Number) second) > 0
-                            : ((Comparable) first).compareTo(second) > 0);
+            if (first instanceof Number && second instanceof Number) {
+                return NumberHelper.compare((Number) first, (Number) second) > 0;
+            }
+
+            if (first instanceof Comparable && second instanceof Comparable) {
+                return ((Comparable) first).compareTo(second) > 0;
+            }
+
+            return false;
         }
 
         /**
@@ -131,10 +136,15 @@ public enum Compare implements BiPredicate<Object, Object> {
     lt {
         @Override
         public boolean test(final Object first, final Object second) {
-            return null != first && null != second && (
-                    first instanceof Number && second instanceof Number
-                            ? NumberHelper.compare((Number) first, (Number) second) < 0
-                            : ((Comparable) first).compareTo(second) < 0);
+            if (first instanceof Number && second instanceof Number) {
+                return NumberHelper.compare((Number) first, (Number) second) < 0;
+            }
+
+            if (first instanceof Comparable && second instanceof Comparable) {
+                return ((Comparable) first).compareTo(second) < 0;
+            }
+
+            return false;
         }
 
         /**

@@ -48,6 +48,7 @@ public class CompareTest {
                 {Compare.eq, 100, 101, false},
                 {Compare.eq, "z", "a", false},
                 {Compare.eq, "a", "z", false},
+                {Compare.eq, new Object(), new Object(), false},
                 {Compare.neq, null, null, false},
                 {Compare.neq, null, 1, true},
                 {Compare.neq, 1, null, true},
@@ -56,6 +57,7 @@ public class CompareTest {
                 {Compare.neq, 100, 101, true},
                 {Compare.neq, "z", "a", true},
                 {Compare.neq, "a", "z", true},
+                {Compare.neq, new Object(), new Object(), true},
                 {Compare.gt, null, null, false},
                 {Compare.gt, null, 1, false},
                 {Compare.gt, 1, null, false},
@@ -64,6 +66,7 @@ public class CompareTest {
                 {Compare.gt, 100, 101, false},
                 {Compare.gt, "z", "a", true},
                 {Compare.gt, "a", "z", false},
+                {Compare.gt, new Object(), new Object(), false},
                 {Compare.lt, null, null, false},
                 {Compare.lt, null, 1, false},
                 {Compare.lt, 1, null, false},
@@ -72,6 +75,7 @@ public class CompareTest {
                 {Compare.lt, 100, 101, true},
                 {Compare.lt, "z", "a", false},
                 {Compare.lt, "a", "z", true},
+                {Compare.lt, new Object(), new Object(), false},
                 {Compare.gte, null, null, true},
                 {Compare.gte, null, 1, false},
                 {Compare.gte, 1, null, false},
@@ -80,6 +84,8 @@ public class CompareTest {
                 {Compare.gte, 100, 101, false},
                 {Compare.gte, "z", "a", true},
                 {Compare.gte, "a", "z", false},
+                // note that those objects aren't comparable but the result of gt is just negated and so we get true
+                {Compare.gte, new Object(), new Object(), true},
                 {Compare.lte, null, null, true},
                 {Compare.lte, null, 1, false},
                 {Compare.lte, 1, null, false},
@@ -87,7 +93,9 @@ public class CompareTest {
                 {Compare.lte, 100, 99, false},
                 {Compare.lte, 100, 101, true},
                 {Compare.lte, "z", "a", false},
-                {Compare.lte, "a", "z", true}
+                {Compare.lte, "a", "z", true},
+                // note that those objects aren't comparable but the result of gt is just negated and so we get true
+                {Compare.lte, new Object(), new Object(), true},
         }));
         // Compare Numbers of mixed types.
         final List<Object> one = Arrays.asList(1, 1l, 1d, 1f, BigDecimal.ONE, BigInteger.ONE);
