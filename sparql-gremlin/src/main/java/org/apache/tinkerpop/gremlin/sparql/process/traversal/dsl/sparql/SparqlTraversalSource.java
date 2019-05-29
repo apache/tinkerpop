@@ -18,12 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.sparql.process.traversal.dsl.sparql;
 
-import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -33,9 +30,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.sparql.process.traversal.strategy.SparqlStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
-import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
@@ -172,21 +166,6 @@ public class SparqlTraversalSource extends GraphTraversalSource {
     @SuppressWarnings({"unchecked"})
     public SparqlTraversalSource withoutStrategies(final Class<? extends TraversalStrategy>... traversalStrategyClasses) {
         return (SparqlTraversalSource) super.withoutStrategies(traversalStrategyClasses);
-    }
-
-    @Override
-    public SparqlTraversalSource withRemote(final Configuration conf) {
-        return (SparqlTraversalSource) super.withRemote(conf);
-    }
-
-    @Override
-    public SparqlTraversalSource withRemote(final String configFile) throws Exception {
-        return (SparqlTraversalSource) super.withRemote(configFile);
-    }
-
-    @Override
-    public SparqlTraversalSource withRemote(final RemoteConnection connection) {
-        return (SparqlTraversalSource) super.withRemote(connection);
     }
 
     /**

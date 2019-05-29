@@ -15,8 +15,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 
-= TinkerPop 3.4.0
+= TinkerPop 3.5.0
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-running.png[width=225]
 
 *NEED A NAME*
+
+== TinkerPop 3.5.0
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.5.0/CHANGELOG.asciidoc#release-3-5-0[changelog] for a complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+==== Deprecation Removal
+
+The following deprecated classes, methods or fields have been removed in this version:
+
+* `gremlin-core`
+** `org.apache.tinkerpop.gremlin.process.traversal.TraversalSource#withRemote(*)`
+** `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource#withRemote(*)`
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2080[TINKERPOP-2080]

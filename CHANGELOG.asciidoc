@@ -25,7 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-4-3, 3.4.3>>.
 
-
+* Removed previously deprecated `TraversalSource.withRemote()`.
 
 == TinkerPop 3.4.0 (Avant-Gremlin Construction #3 for Theremin and Flowers)
 
