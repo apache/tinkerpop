@@ -18,9 +18,12 @@ limitations under the License.
 
 == TinkerPop 3.5.0 (Release Date: NEED A NAME)
 
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-running.png[width=185]
 
 [[release-3-5-0]]
 === TinkerPop 3.5.0 (Release Date: NOT OFFICIALLY RELEASED YET)
+
+This release also includes changes from <<release-3-4-3, 3.4.3>>.
 
 
 
