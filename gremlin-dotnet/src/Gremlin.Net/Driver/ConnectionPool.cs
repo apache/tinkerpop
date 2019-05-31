@@ -52,7 +52,7 @@ namespace Gremlin.Net.Driver
         }
 
         public int NrConnections => _connections.Count;
-        public Connection FirstConnection
+        internal Connection FirstConnection
         {
             get
             {
