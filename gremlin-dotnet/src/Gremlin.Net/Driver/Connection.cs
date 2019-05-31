@@ -41,9 +41,7 @@ namespace Gremlin.Net.Driver
         void Finalize(Dictionary<string, object> statusAttributes);
         void HandleFailure(Exception objException);
     }
-    /// <summary>
-    ///  Connection Class
-    /// </summary>
+
     public class Connection : IConnection
     {
         private readonly GraphSONReader _graphSONReader;
@@ -60,9 +58,7 @@ namespace Gremlin.Net.Driver
         private int _connectionState = 0;
         private int _writeInProgress = 0;
         private const int Closed = 1;
-        /// <summary>
-        ///   Constructor
-        /// </summary>
+
         public Connection(Uri uri, string username, string password, GraphSONReader graphSONReader,
             GraphSONWriter graphSONWriter, string mimeType, Action<ClientWebSocketOptions> webSocketConfiguration)
         {
@@ -74,25 +70,17 @@ namespace Gremlin.Net.Driver
             _messageSerializer = new JsonMessageSerializer(mimeType);
             _webSocketConnection = new WebSocketConnection(webSocketConfiguration);
         }
-        /// <summary>
-        ///   Constructor
-        /// </summary>
+
         public async Task ConnectAsync()
         {
             await _webSocketConnection.ConnectAsync(_uri).ConfigureAwait(false);
             BeginReceiving();
         }
-        /// <summary>
-        ///   NrRequestsInFlight
-        /// </summary>
+
         public int NrRequestsInFlight => _callbackByRequestId.Count;
-        /// <summary>
-        ///     Exposes Connection Status publicly
-        /// </summary>
+
         public bool IsOpen => _webSocketConnection.IsOpen && Volatile.Read(ref _connectionState) != Closed;
-        /// <summary>
-        ///   Methos to Execute Query
-        /// </summary>
+
         public Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage)
         {
             var receiver = new ResponseHandlerForSingleRequestMessage<T>(_graphSONReader);
@@ -250,9 +238,7 @@ namespace Gremlin.Net.Driver
             var serializedMsg = _messageSerializer.SerializeMessage(graphsonMsg);
             await _webSocketConnection.SendMessageAsync(serializedMsg).ConfigureAwait(false);
         }
-        /// <summary>
-        ///  Close Method
-        /// </summary>
+
         public async Task CloseAsync()
         {
             Interlocked.Exchange(ref _connectionState, Closed);
@@ -263,17 +249,12 @@ namespace Gremlin.Net.Driver
 
         private bool _disposed;
 
-        /// <summary>
-        ///   Dispose
-        /// </summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        /// <summary>
-        ///   Dispose Virtual
-        /// </summary>
+
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)

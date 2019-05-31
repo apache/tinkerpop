@@ -71,13 +71,9 @@ namespace Gremlin.Net.Driver
             _connectionPool =
                 new ConnectionPool(connectionFactory, connectionPoolSettings ?? new ConnectionPoolSettings());
         }
-        /// <summary>
-        ///   Connection Count
-        /// </summary>
+
         public int NrConnections => _connectionPool.NrConnections;
-        /// <summary>
-        ///   Exposes the first available connection on the client
-        /// </summary>
+
         public Connection FirstAvailableConnection => _connectionPool.FirstConnection;
 
 
