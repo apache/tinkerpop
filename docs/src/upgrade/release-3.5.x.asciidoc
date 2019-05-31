@@ -29,6 +29,40 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.5.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== addV() and null
+
+There was a bit of inconsistency in the handling of `null` in calls to `property()` depending on the type of mutation
+being executed demonstrated as follows in earlier versions:
+
+[source,text]
+----
+gremlin> g.V(1).property("x", 1).property("y", null).property("z", 2)
+The AddPropertyStep does not have a provided value: AddPropertyStep({key=[y]})
+Type ':help' or ':h' for help.
+Display stack trace? [yN]N
+gremlin> g.addV("test").property("x", 1).property("y", null).property("z", 2)
+==>v[13]
+gremlin> g.V(13).properties()
+==>vp[x->1]
+==>vp[z->2]
+----
+
+In this release, this behavior has been altered to become consistent as follows:
+
+[source,text]
+----
+gremlin> g.V(1).property("x", 1).property("y", null).property("z", 2)
+Property value can not be null
+Type ':help' or ':h' for help.
+Display stack trace? [yN]n
+gremlin> g.addV().property("x", 1).property("y", null).property("z", 2)
+Property value can not be null
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2099[TINKERPOP-2099]
+
 ==== Deprecation Removal
 
 The following deprecated classes, methods or fields have been removed in this version:

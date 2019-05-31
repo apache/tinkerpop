@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -180,27 +181,24 @@ public final class Parameters implements Cloneable, Serializable {
             if (!(keyValues[ix] instanceof String) && !(keyValues[ix] instanceof T) && !(keyValues[ix] instanceof Traversal))
                 throw new IllegalArgumentException("The provided key/value array must have a String, T, or Traversal on even array indices");
 
-            if (keyValues[ix + 1] != null) {
-
-                // check both key and value for traversal instances. track the list of traversals that are present so
-                // that elsewhere in Parameters there is no need to iterate all values to not find any. also grab
-                // available labels in traversal values
-                for (int iy = 0; iy < 2; iy++) {
-                    if (keyValues[ix + iy] instanceof Traversal.Admin) {
-                        final Traversal.Admin t = (Traversal.Admin) keyValues[ix + iy];
-                        addTraversal(t);
-                        if (parent != null) parent.integrateChild(t);
-                    }
+            // check both key and value for traversal instances. track the list of traversals that are present so
+            // that elsewhere in Parameters there is no need to iterate all values to not find any. also grab
+            // available labels in traversal values
+            for (int iy = 0; iy < 2; iy++) {
+                if (keyValues[ix + iy] instanceof Traversal.Admin) {
+                    final Traversal.Admin t = (Traversal.Admin) keyValues[ix + iy];
+                    addTraversal(t);
+                    if (parent != null) parent.integrateChild(t);
                 }
+            }
 
-                List<Object> values = this.parameters.get(keyValues[ix]);
-                if (null == values) {
-                    values = new ArrayList<>();
-                    values.add(keyValues[ix + 1]);
-                    this.parameters.put(keyValues[ix], values);
-                } else {
-                    values.add(keyValues[ix + 1]);
-                }
+            List<Object> values = this.parameters.get(keyValues[ix]);
+            if (null == values) {
+                values = new ArrayList<>();
+                values.add(keyValues[ix + 1]);
+                this.parameters.put(keyValues[ix], values);
+            } else {
+                values.add(keyValues[ix + 1]);
             }
         }
     }
@@ -254,7 +252,7 @@ public final class Parameters implements Cloneable, Serializable {
         for (final Map.Entry<Object, List<Object>> entry : this.parameters.entrySet()) {
             result ^= entry.getKey().hashCode();
             for (final Object value : entry.getValue()) {
-                result ^= Integer.rotateLeft(value.hashCode(), entry.getKey().hashCode());
+                result ^= Integer.rotateLeft(Objects.hashCode(value), entry.getKey().hashCode());
             }
         }
         return result;
