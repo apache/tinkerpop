@@ -70,9 +70,7 @@ namespace Gremlin.Net.Driver
             _messageSerializer = new JsonMessageSerializer(mimeType);
             _webSocketConnection = new WebSocketConnection(webSocketConfiguration);
         }
-        /// <summary>
-        ///     Gets the number of open connections.
-        /// </summary>
+
         public async Task ConnectAsync()
         {
             await _webSocketConnection.ConnectAsync(_uri).ConfigureAwait(false);
@@ -240,9 +238,7 @@ namespace Gremlin.Net.Driver
             var serializedMsg = _messageSerializer.SerializeMessage(graphsonMsg);
             await _webSocketConnection.SendMessageAsync(serializedMsg).ConfigureAwait(false);
         }
-        /// <summary>
-        ///     Gets the number of open connections.
-        /// </summary>
+   
         public async Task CloseAsync()
         {
             Interlocked.Exchange(ref _connectionState, Closed);
