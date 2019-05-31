@@ -44,7 +44,7 @@ namespace Gremlin.Net.Driver
         /// The GraphSON2 mime type to use.
         /// </summary>
         public const string GraphSON2MimeType = "application/vnd.gremlin-v2.0+json";
-        
+
         private readonly ConnectionPool _connectionPool;
 
         /// <summary>
@@ -69,13 +69,19 @@ namespace Gremlin.Net.Driver
             var connectionFactory = new ConnectionFactory(gremlinServer, reader, writer, mimeType ?? DefaultMimeType,
                 webSocketConfiguration);
             _connectionPool =
-                new ConnectionPool(connectionFactory, connectionPoolSettings ?? new ConnectionPoolSettings());            
+                new ConnectionPool(connectionFactory, connectionPoolSettings ?? new ConnectionPoolSettings());
         }
 
         /// <summary>
         ///     Gets the number of open connections.
         /// </summary>
         public int NrConnections => _connectionPool.NrConnections;
+
+        /// <summary>
+        ///     Gets the number of open connections.
+        /// </summary>
+        public Connection FirstAvailableConnection => _connectionPool.FirstConnection;
+
 
         /// <inheritdoc />
         public async Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage)

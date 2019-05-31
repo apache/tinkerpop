@@ -33,7 +33,7 @@ namespace Gremlin.Net.Driver
     internal class ConnectionPool : IDisposable
     {
         private const int ConnectionIndexOverflowLimit = int.MaxValue - 1000000;
-        
+
         private readonly ConnectionFactory _connectionFactory;
         private readonly CopyOnWriteCollection<Connection> _connections = new CopyOnWriteCollection<Connection>();
         private readonly int _poolSize;
@@ -50,8 +50,22 @@ namespace Gremlin.Net.Driver
             _maxInProcessPerConnection = settings.MaxInProcessPerConnection;
             PopulatePoolAsync().WaitUnwrap();
         }
-        
+
         public int NrConnections => _connections.Count;
+        public Connection FirstConnection
+        {
+            get
+            {
+                for (int i = 0; i < _connections.Count; i++)
+                {
+                    if (_connections != null && _connections.Snapshot != null && _connections.Snapshot[i] != null)
+                    {
+                        return _connections.Snapshot[i];
+                    };
+                }
+                return null;
+            }
+        }
 
         public async Task<IConnection> GetAvailableConnectionAsync()
         {
@@ -75,7 +89,7 @@ namespace Gremlin.Net.Driver
                 Interlocked.CompareExchange(ref _poolState, PoolIdle, PoolPopulationInProgress);
             }
         }
-        
+
         private async Task PopulatePoolAsync()
         {
             var nrConnectionsToCreate = _poolSize - _connections.Count;
@@ -89,7 +103,7 @@ namespace Gremlin.Net.Driver
                 var createdConnections = await Task.WhenAll(connectionCreationTasks).ConfigureAwait(false);
                 _connections.AddRange(createdConnections);
             }
-            catch(Exception)
+            catch (Exception)
             {
                 // Dispose created connections if the connection establishment failed
                 foreach (var creationTask in connectionCreationTasks)
@@ -100,7 +114,7 @@ namespace Gremlin.Net.Driver
                 throw;
             }
         }
-        
+
         private async Task<Connection> CreateNewConnectionAsync()
         {
             var newConnection = _connectionFactory.CreateConnection();
@@ -145,7 +159,7 @@ namespace Gremlin.Net.Driver
             if (_connections.TryRemove(connection))
                 DefinitelyDestroyConnection(connection);
         }
-        
+
         private IConnection ProxiedConnection(Connection connection)
         {
             return new ProxyConnection(connection, ReturnConnectionIfOpen);

@@ -41,8 +41,10 @@ namespace Gremlin.Net.Driver
         void Finalize(Dictionary<string, object> statusAttributes);
         void HandleFailure(Exception objException);
     }
-
-    internal class Connection : IConnection
+    /// <summary>
+    ///     Gets the number of open connections.
+    /// </summary>
+    public class Connection : IConnection
     {
         private readonly GraphSONReader _graphSONReader;
         private readonly GraphSONWriter _graphSONWriter;
@@ -58,7 +60,9 @@ namespace Gremlin.Net.Driver
         private int _connectionState = 0;
         private int _writeInProgress = 0;
         private const int Closed = 1;
-
+        /// <summary>
+        ///     Gets the number of open connections.
+        /// </summary>
         public Connection(Uri uri, string username, string password, GraphSONReader graphSONReader,
             GraphSONWriter graphSONWriter, string mimeType, Action<ClientWebSocketOptions> webSocketConfiguration)
         {
@@ -70,17 +74,25 @@ namespace Gremlin.Net.Driver
             _messageSerializer = new JsonMessageSerializer(mimeType);
             _webSocketConnection = new WebSocketConnection(webSocketConfiguration);
         }
-
+        /// <summary>
+        ///     Gets the number of open connections.
+        /// </summary>
         public async Task ConnectAsync()
         {
             await _webSocketConnection.ConnectAsync(_uri).ConfigureAwait(false);
             BeginReceiving();
         }
-
+        /// <summary>
+        ///     Gets the number of open connections.
+        /// </summary>
         public int NrRequestsInFlight => _callbackByRequestId.Count;
-
+        /// <summary>
+        ///     Gets the number of open connections.
+        /// </summary>
         public bool IsOpen => _webSocketConnection.IsOpen && Volatile.Read(ref _connectionState) != Closed;
-
+        /// <summary>
+        ///     Gets the number of open connections.
+        /// </summary>
         public Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage)
         {
             var receiver = new ResponseHandlerForSingleRequestMessage<T>(_graphSONReader);
@@ -104,7 +116,17 @@ namespace Gremlin.Net.Driver
                 try
                 {
                     var received = await _webSocketConnection.ReceiveMessageAsync().ConfigureAwait(false);
+
                     Parse(received);
+
+                    //if (received.Length > 0)
+                    //{
+                    //    Parse(received);
+                    //}
+                    //else
+                    //{
+                    //    Console.WriteLine("---");
+                    //}
                 }
                 catch (Exception e)
                 {
@@ -117,7 +139,7 @@ namespace Gremlin.Net.Driver
         private void Parse(byte[] received)
         {
             var receivedMsg = _messageSerializer.DeserializeMessage<ResponseMessage<JToken>>(received);
-            
+
             try
             {
                 TryParseResponseMessage(receivedMsg);
@@ -133,6 +155,11 @@ namespace Gremlin.Net.Driver
 
         private void TryParseResponseMessage(ResponseMessage<JToken> receivedMsg)
         {
+            //to reduce trying to process nulls
+            if (receivedMsg == null)
+            {
+                return;
+            }
             var status = receivedMsg.Status;
             status.ThrowIfStatusIndicatesError();
 
@@ -216,7 +243,7 @@ namespace Gremlin.Net.Driver
             {
             }
         }
-        
+
         private void NotifyAboutConnectionFailure(Exception exception)
         {
             foreach (var cb in _callbackByRequestId.Values)
@@ -232,7 +259,9 @@ namespace Gremlin.Net.Driver
             var serializedMsg = _messageSerializer.SerializeMessage(graphsonMsg);
             await _webSocketConnection.SendMessageAsync(serializedMsg).ConfigureAwait(false);
         }
-
+        /// <summary>
+        ///     Gets the number of open connections.
+        /// </summary>
         public async Task CloseAsync()
         {
             Interlocked.Exchange(ref _connectionState, Closed);
@@ -242,13 +271,17 @@ namespace Gremlin.Net.Driver
         #region IDisposable Support
 
         private bool _disposed;
-
+        /// <summary>
+        ///     Gets the number of open connections.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
+        /// <summary>
+        ///     Gets the number of open connections.
+        /// </summary>
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
