@@ -82,7 +82,7 @@ namespace Gremlin.Net.Driver
         /// <inheritdoc />
         public int NrRequestsInFlight => _callbackByRequestId.Count;
         /// <summary>
-        /// Provides whether the first available connection snapshot is open
+        /// Provides whether the first available connection snapshot is open 
         /// </summary>
         public bool IsOpen => _webSocketConnection.IsOpen && Volatile.Read(ref _connectionState) != Closed;
         /// <inheritdoc />

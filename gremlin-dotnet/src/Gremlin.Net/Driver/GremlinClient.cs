@@ -80,7 +80,7 @@ namespace Gremlin.Net.Driver
         /// <summary>
         ///     Provides whether the first available connection snapshot in pool is still open.
         /// </summary>
-        public bool IsConnectionOpen => _connectionPool.FirstConnectionSnapshot.IsOpen;
+        public bool IsConnectionOpen =>  _connectionPool.FirstConnectionSnapshot.IsOpen;
 
 
         /// <inheritdoc />
