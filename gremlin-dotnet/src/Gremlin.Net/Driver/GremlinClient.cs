@@ -72,9 +72,15 @@ namespace Gremlin.Net.Driver
                 new ConnectionPool(connectionFactory, connectionPoolSettings ?? new ConnectionPoolSettings());
         }
 
+        /// <summary>
+        ///     Provides number of connections in pool.
+        /// </summary>
         public int NrConnections => _connectionPool.NrConnections;
 
-        public Connection FirstAvailableConnection => _connectionPool.FirstConnection;
+        /// <summary>
+        ///     Provides whether the first available connection snapshot in pool is still open.
+        /// </summary>
+        public bool IsConnectionOpen => _connectionPool.FirstConnectionSnapshot.IsOpen;
 
 
         /// <inheritdoc />
