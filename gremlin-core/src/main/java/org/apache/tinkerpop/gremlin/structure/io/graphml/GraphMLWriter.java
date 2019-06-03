@@ -310,9 +310,11 @@ public final class GraphMLWriter implements GraphWriter {
             for (String key : keys) {
                 writer.writeStartElement(GraphMLTokens.DATA);
                 writer.writeAttribute(GraphMLTokens.KEY, key);
+                final VertexProperty<Object> currentValue = getCheckedVertexProperty(vertex, key);
+
                 // technically there can't be a null here as gremlin structure forbids that occurrence even if Graph
                 // implementations support it, but out to empty string just in case.
-                writer.writeCharacters(vertex.property(key).orElse("").toString());
+                writer.writeCharacters(currentValue.orElse("").toString());
                 writer.writeEndElement();
             }
             writer.writeEndElement();
@@ -388,12 +390,23 @@ public final class GraphMLWriter implements GraphWriter {
             final Vertex vertex = vertices.next();
             for (String key : vertex.keys()) {
                 if (!vertexKeyTypes.containsKey(key)) {
-                    vertexKeyTypes.put(key, GraphMLWriter.getStringType(vertex.property(key).value()));
+                    final VertexProperty<Object> currentValue = getCheckedVertexProperty(vertex, key);
+
+                    vertexKeyTypes.put(key, GraphMLWriter.getStringType(currentValue.value()));
                 }
             }
         }
 
         return vertexKeyTypes;
+    }
+
+    private static VertexProperty<Object> getCheckedVertexProperty(Vertex vertex, String key) {
+        final Iterator<VertexProperty<Object>> properties = vertex.properties(key);
+        final VertexProperty<Object> currentValue = properties.next();
+
+        if (properties.hasNext())
+            throw new IllegalStateException("Multiple properties exists for the provided key: [%s] and multi-properties are not directly supported by GraphML format");
+        return currentValue;
     }
 
     private static Map<String, String> determineEdgeTypes(final Graph graph) {
