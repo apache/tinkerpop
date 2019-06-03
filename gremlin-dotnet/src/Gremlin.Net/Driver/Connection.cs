@@ -84,7 +84,7 @@ namespace Gremlin.Net.Driver
         /// <summary>
         /// Provides whether the first available connection snapshot is open
         /// </summary>
-        public bool IsOpen => _webSocketConnection.IsOpen && Volatile.Read(ref _connectionState) != Closed;
+        internal bool IsOpen => _webSocketConnection.IsOpen && Volatile.Read(ref _connectionState) != Closed;
         /// <inheritdoc />
         public Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage)
         {
