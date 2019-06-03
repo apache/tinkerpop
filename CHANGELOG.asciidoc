@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-3-8, 3.3.8>>.
 
+* Bump to Groovy 2.5.7.
 
 [[release-3-4-2]]
 === TinkerPop 3.4.2 (Release Date: May 28, 2019)
