@@ -21,6 +21,13 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Gremlin Symphony #40 in G Minor*
 
+== TinkerPop 3.3.8
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.3.8/CHANGELOG.asciidoc#release-3-3-8[changelog] for a complete list of all the modifications that are part of this release.
+
+
 == TinkerPop 3.3.7
 
 *Release Date: May 28, 2019*

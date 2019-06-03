@@ -6,7 +6,7 @@
     <parent>
         <artifactId>gremlin-tools</artifactId>
         <groupId>org.apache.tinkerpop</groupId>
-        <version>3.3.7</version>
+        <version>3.3.8-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-coverage</artifactId>
     <name>Apache TinkerPop :: Gremlin Coverage</name>
