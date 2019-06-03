@@ -72,7 +72,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2216[TINKERPOP-2216]
 
 ==== Graph Driver Providers
 
-===== Per Request Options
+===== GraphBinary API Change
 
 In GraphBinary serialization, Java `write()` and `writeValue()` from `TypeSerializer<T>` interface now take a Netty's
 `ByteBuf` instance instead of an `ByteBufAllocator`, that way the same buffer instance gets reused during the write
