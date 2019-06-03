@@ -92,8 +92,10 @@ import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexProper
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES;
 import static org.apache.tinkerpop.gremlin.structure.io.IoCore.graphson;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
@@ -355,6 +357,18 @@ public class IoTest {
                 w.writeGraph(bos, graph);
                 final String expected = streamToString(IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "tinkerpop-classic-normalized.xml"));
                 assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
+            }
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.CREW)
+        public void shouldNotWriteGraphMLFromGraphWithMultiProperties() throws Exception {
+            try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                final GraphMLWriter w = GraphMLWriter.build().create();
+                w.writeGraph(bos, graph);
+                fail("Should not be able to write multi-properties to GraphML");
+            } catch (IllegalStateException iae) {
+                assertThat(iae.getMessage(), containsString("multi-properties are not directly supported by GraphML format"));
             }
         }
 
