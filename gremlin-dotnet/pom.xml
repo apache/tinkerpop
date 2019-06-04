@@ -124,7 +124,7 @@ limitations under the License.
                     <groupId>org.eobjects.build</groupId>
                     <artifactId>dotnet-maven-plugin</artifactId>
                     <extensions>true</extensions>
-                    <version>0.23</version>
+                    <version>0.24</version>
                 </plugin>
             </plugins>
         </pluginManagement>
