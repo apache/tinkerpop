@@ -110,7 +110,7 @@ limitations under the License.
         </contributor>
     </contributors>
     <prerequisites>
-        <maven>3.2.5</maven>
+        <maven>3.3.9</maven>
     </prerequisites>
     <modules>
         <module>gremlin-shaded</module>
@@ -504,7 +504,7 @@ limitations under the License.
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>xml-maven-plugin</artifactId>
-                    <version>1.0.1</version>
+                    <version>1.0.2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -731,7 +731,7 @@ limitations under the License.
             <dependency>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.3</version>
+                <version>0.8.4</version>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
