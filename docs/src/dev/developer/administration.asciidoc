@@ -209,9 +209,9 @@ PMC member - that remains unchanged. Should a contributor become "inactive" at s
 to become "active" again - they simply update their bio to do so.
 
 Committers and PMC members can keep this information up to date themselves as they have direct access to the Git
-repository. Reminders to update this information will be sent every six months, beginning with a general email to
-the dev list followed by direct emails to individuals who might have missed the reminder. Those who do not update
-their bios or do not reply to the email will be assumed "inactive" for purpose of the listing.
+repository. Reminders to update this information will be sent to the dev list on each release as part of code freeze
+week. Those who have not shown an update to their bio in git in the past year or have otherwise not replied to the dev
+list email to indicate their status in that time will be assumed "inactive" for the purpose of the listing.
 
 The following is a template for the "Bio Update" email:
 
@@ -221,9 +221,9 @@ Subject: Apache TinkerPop Bio Update
 
 To Committers/PMC Members,
 
-As an Apache TinkerPop committer and/or PMC member, your name is listed on the TinkerPop home page in the Contributor List[1] with your "bio". If you are active on the project, your "bio" reflects what you have been working on and what you expect to be working on with respect to TinkerPop for recent times (i.e. for the previous six months and the following six months). If you are currently inactive on the project, your "bio" reflects the full scope of all your contributions throughout your active periods.[2]
+As an Apache TinkerPop committer and/or PMC member, your name is listed on the TinkerPop home page in the Contributor List[1] with your "bio". If you are active on the project, your "bio" reflects what you have been working on and what you expect to be working on with respect to TinkerPop for recent times (i.e. for the previous six months and the following six months). If you are currently inactive on the project, your "bio" reflects the full scope of all your contributions throughout your active periods. You can refer to the contributor listing policy[2] for full details.
 
-Please take a moment to update your bio directly in Git[2] or, if you would prefer, please reply to this email with your bio update and it will be added for you. If no changes are required, please reply to this email to confirm that this is the case.
+Please take a moment to update your bio directly in Git[3] or, if you would prefer, please reply to this email with your bio update and it will be added for you. If no changes are required, please reply to this email to confirm that this is the case.
 
 [1] http://tinkerpop.apache.org/#contributors
 [2] http://tinkerpop.apache.org/docs/current/dev/developer/#contributor-listing
