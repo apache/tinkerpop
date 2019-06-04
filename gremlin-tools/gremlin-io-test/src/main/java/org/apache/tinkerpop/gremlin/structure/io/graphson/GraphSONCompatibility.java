@@ -83,7 +83,11 @@ public enum GraphSONCompatibility implements Compatibility {
     V1D0_3_3_7("3.3.7", "1.0", "v1d0"),
     V2D0_PARTIAL_3_3_7("3.3.7", "2.0", "v2d0-partial"),
     V2D0_NO_TYPE_3_3_7("3.3.7", "2.0", "v2d0-no-types"),
-    V3D0_PARTIAL_3_3_7("3.3.7", "3.0", "v3d0");
+    V3D0_PARTIAL_3_3_7("3.3.7", "3.0", "v3d0"),
+    V1D0_3_3_8("3.3.8", "1.0", "v1d0"),
+    V2D0_PARTIAL_3_3_8("3.3.8", "2.0", "v2d0-partial"),
+    V2D0_NO_TYPE_3_3_8("3.3.8", "2.0", "v2d0-no-types"),
+    V3D0_PARTIAL_3_3_8("3.3.8", "3.0", "v3d0");
 
     private static final String SEP = File.separator;
 
