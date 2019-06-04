@@ -165,9 +165,6 @@ limitations under the License.
         <log4j-silent.properties>file:target/test-classes/log4j-silent.properties</log4j-silent.properties>
 
         <muteTestLogs>false</muteTestLogs>
-
-        <!-- By default API checks are not run. Modules can opt in by setting this property to false in their poms. -->
-        <revapi.skip>true</revapi.skip>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
@@ -316,7 +313,6 @@ limitations under the License.
                             <failIfNoMatch>false</failIfNoMatch>
                         </configuration>
                     </execution>
-                    <!-- Needed to figure out the version components when reading revapi API check config below -->
                     <execution>
                         <id>parse-version</id>
                         <goals>
@@ -420,58 +416,6 @@ limitations under the License.
                         </exclusions>
                     </dependency>
                 </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>org.revapi</groupId>
-                <artifactId>revapi-maven-plugin</artifactId>
-                <version>0.9.1</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.revapi</groupId>
-                        <artifactId>revapi-java</artifactId>
-                        <version>0.13.0</version>
-                    </dependency>
-                </dependencies>
-                <configuration>
-                    <skip>${revapi.skip}</skip>
-                    <versionFormat>\d*\.\d*\.\d*.</versionFormat>
-                    <analysisConfiguration><![CDATA[
-                    {
-                      "revapi": {
-                        "semver": {
-                          "ignore": {
-                            "enabled": true,
-                            "versionIncreaseAllows": {
-                              "major": "breaking",
-                              "minor": "breaking",
-                              "patch": "nonBreaking"
-                            },
-                            "passThroughDifferences": ["java.class.nonPublicPartOfAPI"]
-                          }
-                        }
-                      }
-                    }
-                    ]]></analysisConfiguration>
-                    <analysisConfigurationFiles>
-                        <configurationFile>
-                            <path>${project.basedir}/api-changes.json</path>
-                            <roots>
-                                <root>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</root>
-                            </roots>
-                        </configurationFile>
-                        <configurationFile>
-                            <path>${project.basedir}/api-contents.json</path>
-                        </configurationFile>
-                    </analysisConfigurationFiles>
-                    <failOnMissingConfigurationFiles>false</failOnMissingConfigurationFiles>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <!-- we never use this plugin - disabling helps with speeding up other processing like when using -Dcoverage -->
             <plugin>
