@@ -27,7 +27,7 @@ limitations under the License.
     <artifactId>gremlin-benchmark</artifactId>
     <name>Apache TinkerPop :: Gremlin Benchmark</name>
     <properties>
-        <jmh.version>1.11.3</jmh.version>
+        <jmh.version>1.21</jmh.version>
         <!-- Skip benchmarks by default because they are time consuming. -->
         <skipBenchmarks>true</skipBenchmarks>
         <skipTests>${skipBenchmarks}</skipTests>
