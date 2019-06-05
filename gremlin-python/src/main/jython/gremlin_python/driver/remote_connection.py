@@ -136,6 +136,7 @@ class RemoteTraversalSideEffects(traversal.TraversalSideEffects):
 
 class RemoteStrategy(traversal.TraversalStrategy):
     def __init__(self, remote_connection):
+        traversal.TraversalStrategy.__init__(self)
         self.remote_connection = remote_connection
 
     def apply(self, traversal):
