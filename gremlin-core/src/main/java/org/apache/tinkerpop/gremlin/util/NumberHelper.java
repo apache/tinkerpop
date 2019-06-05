@@ -346,7 +346,7 @@ public final class NumberHelper {
     }
 
     public static Comparable min(final Comparable a, final Comparable b) {
-        if (a instanceof Number && b instanceof Number) {
+        if (a instanceof Number && b instanceof Number && !a.equals(Double.NaN) && !b.equals(Double.NaN)) {
             final Number an = (Number) a, bn = (Number) b;
             final Class<? extends Number> clazz = getHighestCommonNumberClass(an, bn);
             return (Comparable) getHelper(clazz).min.apply(an, bn);
@@ -362,7 +362,7 @@ public final class NumberHelper {
     }
 
     public static Comparable max(final Comparable a, final Comparable b) {
-        if (a instanceof Number && b instanceof Number) {
+        if (a instanceof Number && b instanceof Number && !a.equals(Double.NaN) && !b.equals(Double.NaN)) {
             final Number an = (Number) a, bn = (Number) b;
             final Class<? extends Number> clazz = getHighestCommonNumberClass(an, bn);
             return (Comparable) getHelper(clazz).max.apply(an, bn);
