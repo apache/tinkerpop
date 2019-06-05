@@ -395,6 +395,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.3.8 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Bump to Groovy 2.4.17.
+* Bump to Jackson 2.9.9.
 * Improved error messaging when an attempt is made to serialize multi-properties to GraphML.
 
 [[release-3-3-7]]
