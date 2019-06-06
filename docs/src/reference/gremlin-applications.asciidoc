@@ -1118,9 +1118,11 @@ If the `Client` instance is supplied externally, as is shown above, then it is n
 "g".  In this case, the `Client` and `Cluster` must both be closed explicitly. Closing "g" and the "cluster" aren'
 t actually both necessary - the close of a `Cluster` will close all `Client` instance spawned by the `Cluster`.
 
-IMPORTANT: `RemoteGraph` uses the `TraversalOpProcessor` in Gremlin Server which requires a cache to enable the
-retrieval of side-effects (if the `Traversal` produces any). That cache can be configured (e.g. controlling eviction
-times and sizing) can be done in the Gremlin Server configuration file as described <<traversalopprocessor, here>>.
+IMPORTANT: Traversals spawned from `withRemote()` use the `TraversalOpProcessor` in Gremlin Server which requires a
+cache to enable the retrieval of side-effects (if the `Traversal` produces any). That cache can be configured (e.g.
+controlling eviction times and sizing) can be done in the Gremlin Server configuration file as described
+<<traversalopprocessor, here>>. If side-effects are never retrieved, it is acceptable to set the `cacheMaxSize` to
+zero to completely disable the cache.
 
 Finally, Gremlin `Bytecode` supports the encoding of bindings which allow GremlinServer to cache traversals that will
 be reused over and over again save that some parameterization may change. Thus, instead of translating, compiling, and
@@ -1315,7 +1317,7 @@ method for processing script evaluation requests.
 [[traversalopprocessor]]
 ===== TraversalOpProcessor
 
-The `TraversalOpProcessor` provides a way to use <<connecting-via-remotegraph,RemoteGraph>>.
+The `TraversalOpProcessor` provides a way to accept traversals configured via <<connecting-via-remotegraph,withRemote()>>.
 
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================

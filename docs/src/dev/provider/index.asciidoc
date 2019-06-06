@@ -1133,7 +1133,7 @@ request would have sent back thirty traversers.
 
 The full iteration of a `Traversal` is thus left to the client. It must interpret the bulk on the `Traverser` and
 unroll it to represent the actual number of times it exists when iterated. The unrolling is typically handled
-directly within TinkerPop's `RemoteGraph` implementations.
+directly within TinkerPop's remote traversal implementations.
 
 One of the important aspects of the Traversal OpProcessor is that it enables the user to not only get the results of
 the `Traversal` but also the side-effects that it produces. When the `Traversal` is submitted with the "bytecode"
