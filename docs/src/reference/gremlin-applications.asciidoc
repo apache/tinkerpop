@@ -1074,7 +1074,7 @@ method for processing script evaluation requests.
 [[traversalopprocessor]]
 ===== TraversalOpProcessor
 
-The `TraversalOpProcessor` provides a way to use <<connecting-via-drivers,RemoteGraph>>.
+The `TraversalOpProcessor` provides a way to accept traversals configured via <<connecting-via-drivers,withRemote()>>.
 
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
@@ -1082,6 +1082,9 @@ The `TraversalOpProcessor` provides a way to use <<connecting-via-drivers,Remote
 |cacheExpirationTime |Time in milliseconds before side-effects from a `Traversal` will be evicted. |60000
 |cacheMaxSize |The maximum number of entries in the side-effect cache. |1000
 |=========================================================
+
+If there is no intention to gather side-effects from traversals, the `cacheMaxSize` can be set to zero to disable the
+cache.
 
 [[security]]
 ==== Security
