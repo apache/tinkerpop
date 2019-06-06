@@ -19,10 +19,7 @@
 package org.apache.tinkerpop.gremlin.structure.io;
 
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
-import org.apache.tinkerpop.gremlin.FeatureRequirement;
-import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.*;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -106,9 +103,11 @@ import static org.junit.Assume.assumeThat;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(Enclosed.class)
+@IgnoreIteratorLeak
 public class IoTest {
     private static final Logger logger = LoggerFactory.getLogger(IoTest.class);
 
+    @IgnoreIteratorLeak
     public static class GraphMLTest extends AbstractGremlinTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
