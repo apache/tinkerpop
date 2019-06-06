@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.util.iterator;
 
-import java.util.concurrent.atomic.AtomicLong;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Utility class which can be used by providers to keep a count of the number of

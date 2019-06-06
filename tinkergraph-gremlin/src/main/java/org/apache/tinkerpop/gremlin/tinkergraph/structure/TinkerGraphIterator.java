@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import org.apache.tinkerpop.gremlin.util.iterator.StoreIteratorCounter;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import org.apache.tinkerpop.gremlin.util.iterator.StoreIteratorCounter;
 
 /**
  * Wrapper on top of Iterator representing a closable resource to the underlying storage.

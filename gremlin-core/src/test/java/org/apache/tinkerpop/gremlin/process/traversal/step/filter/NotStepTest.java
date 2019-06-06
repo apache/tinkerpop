@@ -18,11 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
-import java.util.Arrays;
-import java.util.List;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.V;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;

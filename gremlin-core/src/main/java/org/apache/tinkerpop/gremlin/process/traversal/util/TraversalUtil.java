@@ -18,12 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
