@@ -37,6 +37,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-3-8, 3.3.8>>.
 
+* Improved error messaging on timeouts returned to the console from `:>`.
 * Modified `NumberHelper` to better ignore `Double.NaN` in `min()` and `max()` comparisons.
 * Bump to Groovy 2.5.7.
 
