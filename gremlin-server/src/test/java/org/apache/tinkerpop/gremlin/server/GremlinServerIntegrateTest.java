@@ -98,16 +98,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 /**
  * Integration tests for server-side settings and processing.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegrationTest {
-    private static final String PEM_SERVER_KEY = "src/test/resources/server.key.pk8";
-    private static final String PEM_SERVER_CRT = "src/test/resources/server.crt";
-    private static final String PEM_CLIENT_KEY = "src/test/resources/client.key.pk8";
-    private static final String PEM_CLIENT_CRT = "src/test/resources/client.crt";
+
     private Level previousLogLevel;
 
     private Log4jRecordingAppender recordingAppender = null;
@@ -191,36 +189,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.ssl = new Settings.SslSettings();
                 settings.ssl.enabled = true;
                 settings.ssl.overrideSslContext(createServerSslContext());
-                break;
-            case "shouldEnableSslAndClientCertificateAuthWithLegacyPem":
-                settings.ssl = new Settings.SslSettings();
-                settings.ssl.enabled = true;
-                settings.ssl.needClientAuth = ClientAuth.REQUIRE;
-                settings.ssl.keyCertChainFile = PEM_SERVER_CRT;
-                settings.ssl.keyFile = PEM_SERVER_KEY;
-                settings.ssl.keyPassword = KEY_PASS;
-                // Trust the client
-                settings.ssl.trustCertChainFile = PEM_CLIENT_CRT;
-                break;
-            case "shouldEnableSslAndClientCertificateAuthAndFailWithoutCertWithLegacyPem":
-                settings.ssl = new Settings.SslSettings();
-                settings.ssl.enabled = true;
-                settings.ssl.needClientAuth = ClientAuth.REQUIRE;
-                settings.ssl.keyCertChainFile = PEM_SERVER_CRT;
-                settings.ssl.keyFile = PEM_SERVER_KEY;
-                settings.ssl.keyPassword = KEY_PASS;
-                // Trust the client
-                settings.ssl.trustCertChainFile = PEM_CLIENT_CRT;
-                break;
-            case "shouldEnableSslAndClientCertificateAuthAndFailWithoutTrustedClientCertWithLegacyPem":
-                settings.ssl = new Settings.SslSettings();
-                settings.ssl.enabled = true;
-                settings.ssl.needClientAuth = ClientAuth.REQUIRE;
-                settings.ssl.keyCertChainFile = PEM_SERVER_CRT;
-                settings.ssl.keyFile = PEM_SERVER_KEY;
-                settings.ssl.keyPassword = KEY_PASS;
-                // Trust ONLY the server cert
-                settings.ssl.trustCertChainFile = PEM_SERVER_CRT;
                 break;
             case "shouldEnableSslAndClientCertificateAuthWithPkcs12":
                 settings.ssl = new Settings.SslSettings();
@@ -586,54 +554,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try {
             client.submit("'test'").one();
             fail("Should throw exception because ssl is enabled on the server but not on client");
-        } catch(Exception x) {
-            final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldEnableSslAndClientCertificateAuthWithLegacyPem() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(true)
-                .keyCertChainFile(PEM_CLIENT_CRT).keyFile(PEM_CLIENT_KEY)
-                .keyPassword(KEY_PASS).trustCertificateChainFile(PEM_SERVER_CRT).create();
-        final Client client = cluster.connect();
-
-        try {
-            assertEquals("test", client.submit("'test'").one().getString());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldEnableSslAndClientCertificateAuthAndFailWithoutCertWithLegacyPem() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_SERVER_KEY).keyStorePassword(KEY_PASS).sslSkipCertValidation(true).create();
-        final Client client = cluster.connect();
-
-        try {
-            client.submit("'test'").one();
-            fail("Should throw exception because ssl client auth is enabled on the server but client does not have a cert");
-        } catch(Exception x) {
-            final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldEnableSslAndClientCertificateAuthAndFailWithoutTrustedClientCertWithLegacyPem() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(true)
-                .keyCertChainFile(PEM_CLIENT_CRT).keyFile(PEM_CLIENT_KEY)
-                .keyPassword(KEY_PASS).trustCertificateChainFile(PEM_SERVER_CRT).create();
-        final Client client = cluster.connect();
-
-        try {
-            client.submit("'test'").one();
-            fail("Should throw exception because ssl client auth is enabled on the server but does not trust client's cert");
         } catch(Exception x) {
             final Throwable root = ExceptionUtils.getRootCause(x);
             assertThat(root, instanceOf(TimeoutException.class));
