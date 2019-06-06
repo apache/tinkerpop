@@ -19,7 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.spark.structure.io;
 
-import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.spark.storage.StorageLevel;
 import org.apache.tinkerpop.gremlin.TestHelper;
@@ -28,7 +27,6 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
@@ -38,9 +36,7 @@ import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkHadoopGraphProvider;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -204,86 +200,6 @@ public class PersistedInputOutputRDDIntegrateTest extends AbstractSparkTest {
         assertEquals(6, graph.traversal().withComputer(SparkGraphComputer.class).V().out().count().next().longValue());
         assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName)));
         assertEquals(1, Spark.getContext().getPersistentRDDs().size());
-        Spark.close();
-    }
-
-    @Test
-    public void testBulkLoaderVertexProgramChain() throws Exception {
-        Spark.create("local[4]");
-        final String rddName = TestHelper.makeTestDataDirectory(PersistedInputOutputRDDIntegrateTest.class, UUID.randomUUID().toString());
-        final Configuration readConfiguration = super.getBaseConfiguration();
-        readConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
-        readConfiguration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern-v3d0.kryo"));
-        readConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
-        readConfiguration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
-        readConfiguration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
-        Graph pageRankGraph = GraphFactory.open(readConfiguration);
-        ///////////////
-        final Configuration writeConfiguration = new BaseConfiguration();
-        writeConfiguration.setProperty(Graph.GRAPH, TinkerGraph.class.getCanonicalName());
-        writeConfiguration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
-        writeConfiguration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, TestHelper.makeTestDataDirectory(PersistedInputOutputRDDIntegrateTest.class) + "testBulkLoaderVertexProgramChain.kryo");
-        final Graph bulkLoaderGraph = pageRankGraph.compute(SparkGraphComputer.class).persist(GraphComputer.Persist.VERTEX_PROPERTIES).program(PageRankVertexProgram.build().create(pageRankGraph)).submit().get().graph();
-        bulkLoaderGraph.compute(SparkGraphComputer.class)
-                .persist(GraphComputer.Persist.NOTHING)
-                .workers(1)
-                .configure(Constants.GREMLIN_HADOOP_GRAPH_READER, PersistedInputRDD.class.getCanonicalName())
-                .configure(Constants.GREMLIN_HADOOP_INPUT_LOCATION, rddName)
-                .configure(Constants.GREMLIN_HADOOP_GRAPH_WRITER, null)
-                .configure(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, null)
-                .program(BulkLoaderVertexProgram.build().userSuppliedIds(true).writeGraph(writeConfiguration).create(bulkLoaderGraph))
-                .submit().get();
-        ////
-        assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName)));
-        assertEquals(1, Spark.getContext().getPersistentRDDs().size());
-        ////
-        final Graph graph = TinkerGraph.open();
-        final GraphTraversalSource g = graph.traversal();
-        graph.io(IoCore.gryo()).readGraph(TestHelper.makeTestDataDirectory(PersistedInputOutputRDDIntegrateTest.class) + "testBulkLoaderVertexProgramChain.kryo");
-        assertEquals(6l, g.V().count().next().longValue());
-        assertEquals(0l, g.E().count().next().longValue());
-        assertEquals("marko", g.V().has("name", "marko").values("name").next());
-        assertEquals(6l, g.V().values(PageRankVertexProgram.PAGE_RANK).count().next().longValue());
-        ////
-        Spark.close();
-    }
-
-    @Test
-    public void testBulkLoaderVertexProgramChainWithInputOutputHelperMapping() throws Exception {
-        Spark.create("local[4]");
-
-        final String rddName = TestHelper.makeTestDataDirectory(PersistedInputOutputRDDIntegrateTest.class, UUID.randomUUID().toString());
-        final Configuration readConfiguration = super.getBaseConfiguration();
-        readConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
-        readConfiguration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern-v3d0.kryo"));
-        readConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
-        readConfiguration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
-        readConfiguration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
-        Graph pageRankGraph = GraphFactory.open(readConfiguration);
-        ///////////////
-        final Configuration writeConfiguration = new BaseConfiguration();
-        writeConfiguration.setProperty(Graph.GRAPH, TinkerGraph.class.getCanonicalName());
-        writeConfiguration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
-        writeConfiguration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, TestHelper.makeTestDataDirectory(PersistedInputOutputRDDIntegrateTest.class) + "testBulkLoaderVertexProgramChainWithInputOutputHelperMapping.kryo");
-        final Graph bulkLoaderGraph = pageRankGraph.compute(SparkGraphComputer.class).persist(GraphComputer.Persist.EDGES).program(PageRankVertexProgram.build().create(pageRankGraph)).submit().get().graph();
-        bulkLoaderGraph.compute(SparkGraphComputer.class)
-                .persist(GraphComputer.Persist.NOTHING)
-                .workers(1)
-                .program(BulkLoaderVertexProgram.build().userSuppliedIds(true).writeGraph(writeConfiguration).create(bulkLoaderGraph))
-                .submit().get();
-        ////
-        Spark.create(readConfiguration);
-        assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName)));
-        assertEquals(1, Spark.getContext().getPersistentRDDs().size());
-        ////
-        final Graph graph = TinkerGraph.open();
-        final GraphTraversalSource g = graph.traversal();
-        graph.io(IoCore.gryo()).readGraph(TestHelper.makeTestDataDirectory(PersistedInputOutputRDDIntegrateTest.class) + "testBulkLoaderVertexProgramChainWithInputOutputHelperMapping.kryo");
-        assertEquals(6l, g.V().count().next().longValue());
-        assertEquals(6l, g.E().count().next().longValue());
-        assertEquals("marko", g.V().has("name", "marko").values("name").next());
-        assertEquals(6l, g.V().values(PageRankVertexProgram.PAGE_RANK).count().next().longValue());
-        ////
         Spark.close();
     }
 

@@ -79,14 +79,6 @@ import java.util.Iterator;
         method = "*",
         reason = "RemoteGraph does not support direct Graph.compute() access")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVertexProgramTest",
-        method = "*",
-        reason = "RemoteGraph does not support direct Graph.compute() access")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.computer.bulkdumping.BulkDumperVertexProgramTest",
-        method = "*",
-        reason = "RemoteGraph does not support direct Graph.compute() access")
-@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.computer.clone.CloneVertexProgramTest",
         method = "*",
         reason = "RemoteGraph does not support direct Graph.compute() access")
