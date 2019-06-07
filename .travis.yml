@@ -29,11 +29,21 @@ before_install:
 
 jobs:
   include:
-    - script: "mvn clean install -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
-    - script: "touch gremlin-dotnet/src/.glv && touch gremlin-dotnet/test/.glv && mvn clean install -q -DskipTests && mvn verify -pl :gremlin-dotnet,:gremlin-dotnet-tests -P gremlin-dotnet"
+    - stage: "unit tests"
+      script: "mvn clean install -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+      name: "mvn clean install"
+    - stage: "integration tests"
+      script: "touch gremlin-dotnet/src/.glv && touch gremlin-dotnet/test/.glv && mvn clean install -q -DskipTests && mvn verify -pl :gremlin-dotnet,:gremlin-dotnet-tests -P gremlin-dotnet"
+      name: ".net"
     - script: "touch gremlin-python/.glv && mvn clean install -q -DskipTests && mvn verify -pl gremlin-python"
+      name: "python"
     - script: "mvn clean install -q -DskipTests && mvn verify -pl :gremlin-javascript"
+      name: "javascript"
+    - script: "mvn clean install -q -DskipTests && mvn verify -pl :gremlin-server,:gremlin-console -DskipIntegrationTests=false"
+      name: "gremlin server/console"
     - script:
       - "mvn clean install -q -DskipTests"
       - "travis_wait 60 mvn verify -pl :spark-gremlin -DskipIntegrationTests=false"
-    - script: "docker/build.sh"
+      name: "spark"
+    - stage: "docker"
+      script: "docker/build.sh"
