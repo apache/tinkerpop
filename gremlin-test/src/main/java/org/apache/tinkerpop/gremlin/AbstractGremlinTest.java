@@ -189,7 +189,7 @@ public abstract class AbstractGremlinTest {
 
     public Vertex convertToVertex(final Graph graph, final String vertexName) {
         // all test graphs have "name" as a unique id which makes it easy to hardcode this...works for now
-        return graphProvider.traversal(graph).V().has("name", vertexName).toList().get(0);
+        return graph.traversal().V().has("name", vertexName).toList().get(0);
     }
 
     public GraphTraversal<Vertex, Object> convertToVertexPropertyId(final String vertexName, final String vertexPropertyKey) {
