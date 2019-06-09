@@ -37,6 +37,7 @@ public enum Order implements Comparator<Object> {
      * @since 3.0.0-incubating
      * @deprecated As of release 3.3.4, replaced by {@link #asc}.
      */
+    @Deprecated
     incr {
         @Override
         public int compare(final Object first, final Object second) {
@@ -57,6 +58,7 @@ public enum Order implements Comparator<Object> {
      * @since 3.0.0-incubating
      * @deprecated As of release 3.3.4, replaced by {@link #desc}.
      */
+    @Deprecated
     decr {
         @Override
         public int compare(final Object first, final Object second) {
