@@ -18,21 +18,21 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -115,6 +115,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         assertEquals(Integer.valueOf(32), traversal.next().<Integer>value("age"));
+        assertFalse(traversal.hasNext());
     }
 
     @Test

@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.DefaultTraverserGeneratorFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
@@ -201,6 +202,10 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
             this.lastTraverser.setBulk(this.lastTraverser.bulk() - 1L);
             return this.lastTraverser.get();
         } catch (final FastNoSuchElementException e) {
+            // No more elements will be produced by this traversal. Close this traversal
+            // and release the resources.
+            CloseableIterator.closeIterator(this);
+
             throw this.parent instanceof EmptyStep ? new NoSuchElementException() : e;
         }
     }

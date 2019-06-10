@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Ranging;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -62,6 +63,9 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
         if (this.bypass) return true;
 
         if (this.high != -1 && this.counter.get() >= this.high) {
+            // This is a global step and this place would be the end of the traversal.
+            // Close the traversal to free up resources.
+            CloseableIterator.closeIterator(traversal);
             throw FastNoSuchElementException.instance();
         }
 
