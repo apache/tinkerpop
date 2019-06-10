@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -41,9 +42,14 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.Operator.sum;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.between;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.gt;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.gte;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.lt;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.branch;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.choose;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.constant;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
@@ -53,6 +59,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.sack;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.union;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.valueMap;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -130,12 +137,19 @@ public class TinkerGraphPlayTest {
     @Ignore
     public void testPlayDK() throws Exception {
 
-        final GraphTraversalSource g = TinkerFactory.createModern().traversal();
-        g.V().match(
-                __.as("b").out("created").as("c"),
-                __.as("a").hasLabel("person"),
-                __.as("b").hasLabel("person"),
-                __.as("a").out("knows").as("b")).forEachRemaining(System.out::println);
+        GraphTraversalSource g = TinkerFactory.createModern().traversal();
+        System.out.println(g./*withComputer().*/V().hasLabel("person")
+                .project("name", "age", "comments")
+                    .by("name")
+                    .by("age")
+                    .by(branch(values("age"))
+                            .option(TraversalOptionParent.Pick.any, constant("foo"))
+                            .option(29, constant("almost old"))
+                            .option(__.is(32), constant("looks like josh"))
+                            .option(lt(29), constant("pretty young"))
+                            .option(lt(35), constant("younger than peter"))
+                            .option(gte(30), constant("pretty old")).fold()).explain());
+                //.forEachRemaining(System.out::println);
     }
 
     @Test

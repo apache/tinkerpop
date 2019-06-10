@@ -42,10 +42,12 @@ public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
 
     @Override
     public void addGlobalChildOption(final M pickToken, final Traversal.Admin<S, E> traversalOption) {
-        if (Pick.any.equals(pickToken))
-            throw new IllegalArgumentException("Choose step can not have an any-option as only one option per traverser is allowed");
-        if (this.traversalOptions.containsKey(pickToken))
-            throw new IllegalArgumentException("Choose step can only have one traversal per pick token: " + pickToken);
+        if (pickToken instanceof Pick) {
+            if (Pick.any.equals(pickToken))
+                throw new IllegalArgumentException("Choose step can not have an any-option as only one option per traverser is allowed");
+            if (this.traversalPickOptions.containsKey(pickToken))
+                throw new IllegalArgumentException("Choose step can only have one traversal per pick token: " + pickToken);
+        }
         super.addGlobalChildOption(pickToken, traversalOption);
     }
 }

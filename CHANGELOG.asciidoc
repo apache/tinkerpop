@@ -35,6 +35,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in `MatchStep` where the correct was not properly determined.
 * Fixed bug where client/server exception mismatch when server throw StackOverflowError
 * Prevent exception when closing a session that doesn't exist
+* Allow predicates and traversals to be used as options in `BranchStep`.
 
 [[release-3-3-7]]
 === TinkerPop 3.3.7 (Release Date: May 28, 2019)
