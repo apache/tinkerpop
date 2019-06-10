@@ -49,6 +49,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed behavior of `P` for `within()` and `without()` in GLVs to be consistent with Java when using varargs.
 * Cleared the input buffer after exceptions in Gremlin Console.
 * Added parameter to configure the `processor` in the gremlin-javascript `client` constructor.
+* gt/gte/lt/lte can throw a ClassCastException if one of the object isn't a Comparable
 
 ==== Bugs
 
