@@ -98,12 +98,9 @@ need to work via the patch submission process. This should enable better
 productivity.
 ----
 
-Finally, new committers should be sent an email that covers some of the administrative elements of their new role:
-
-* link:https://www.apache.org/dev/new-committers-guide.html[Apache Committer Guide]
-* link:http://www.apache.org/dev/committers.html[Apache Committer FAQ]
-* link:http://tinkerpop.apache.org/docs/current/dev/developer/[TinkerPop Developer Documentation]
-** Bring specific attention to the "committer" section which describes our general policies.
+Finally, new committers should be sent an email that covers some of the administrative elements of their new role.
+Generally speaking the email can largely just point them to the <<initial-setup,Initial Setup>> section of this
+documentation.
 
 == New PMC Members
 
