@@ -27,8 +27,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraphIterator;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -44,9 +46,13 @@ import java.util.stream.Collectors;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Pieter Martin
  */
-public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E> implements HasContainerHolder {
+public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E> implements HasContainerHolder, AutoCloseable {
 
     private final List<HasContainer> hasContainers = new ArrayList<>();
+    /**
+     * List of iterators opened by this step.
+     */
+    private final List<Iterator> iterators = new ArrayList<>();
 
     public TinkerGraphStep(final GraphStep<S, E> originalGraphStep) {
         super(originalGraphStep.getTraversal(), originalGraphStep.getReturnClass(), originalGraphStep.isStartStep(), originalGraphStep.getIds());
@@ -62,32 +68,43 @@ public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E>
     private Iterator<? extends Edge> edges() {
         final TinkerGraph graph = (TinkerGraph) this.getTraversal().getGraph().get();
         final HasContainer indexedContainer = getIndexKey(Edge.class);
+        Iterator<Edge> iterator;
         // ids are present, filter on them first
         if (null == this.ids)
-            return Collections.emptyIterator();
+            iterator = Collections.emptyIterator();
         else if (this.ids.length > 0)
-            return this.iteratorList(graph.edges(this.ids));
+            iterator = this.iteratorList(graph.edges(this.ids));
         else
-            return null == indexedContainer ?
+            iterator = null == indexedContainer ?
                     this.iteratorList(graph.edges()) :
                     TinkerHelper.queryEdgeIndex(graph, indexedContainer.getKey(), indexedContainer.getPredicate().getValue()).stream()
-                            .filter(edge -> HasContainer.testAll(edge, this.hasContainers))
-                            .collect(Collectors.<Edge>toList()).iterator();
+                                .filter(edge -> HasContainer.testAll(edge, this.hasContainers))
+                                .collect(Collectors.<Edge>toList()).iterator();
+
+
+        iterators.add(iterator);
+
+        return iterator;
     }
 
     private Iterator<? extends Vertex> vertices() {
         final TinkerGraph graph = (TinkerGraph) this.getTraversal().getGraph().get();
         final HasContainer indexedContainer = getIndexKey(Vertex.class);
+        Iterator<? extends Vertex> iterator;
         // ids are present, filter on them first
         if (null == this.ids)
-            return Collections.emptyIterator();
+            iterator = Collections.emptyIterator();
         else if (this.ids.length > 0)
-            return this.iteratorList(graph.vertices(this.ids));
+            iterator = this.iteratorList(graph.vertices(this.ids));
         else
-            return null == indexedContainer ?
+            iterator = (null == indexedContainer ?
                     this.iteratorList(graph.vertices()) :
                     IteratorUtils.filter(TinkerHelper.queryVertexIndex(graph, indexedContainer.getKey(), indexedContainer.getPredicate().getValue()).iterator(),
-                            vertex -> HasContainer.testAll(vertex, this.hasContainers));
+                                         vertex -> HasContainer.testAll(vertex, this.hasContainers)));
+
+        iterators.add(iterator);
+
+        return iterator;
     }
 
     private HasContainer getIndexKey(final Class<? extends Element> indexedClass) {
@@ -116,7 +133,12 @@ public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E>
             if (HasContainer.testAll(e, this.hasContainers))
                 list.add(e);
         }
-        return list.iterator();
+
+        // close the old iterator to release resources since we are returning a new iterator (over list)
+        // out of this function.
+        CloseableIterator.closeIterator(iterator);
+
+        return new TinkerGraphIterator<>(list.iterator());
     }
 
     @Override
@@ -137,5 +159,10 @@ public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E>
     @Override
     public int hashCode() {
         return super.hashCode() ^ this.hasContainers.hashCode();
+    }
+
+    @Override
+    public void close() {
+        iterators.forEach(CloseableIterator::closeIterator);
     }
 }

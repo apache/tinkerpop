@@ -22,6 +22,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
+import org.apache.tinkerpop.gremlin.IgnoreIteratorLeak;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -41,9 +42,11 @@ import static org.junit.Assert.assertTrue;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(Enclosed.class)
+@IgnoreIteratorLeak
 public class DistributionGeneratorTest {
 
     @RunWith(Parameterized.class)
+    @IgnoreIteratorLeak
     public static class DifferentDistributionsTest extends AbstractGeneratorTest {
 
         @Parameterized.Parameters(name = "test({0},{1})")
@@ -143,7 +146,7 @@ public class DistributionGeneratorTest {
         }
 
         protected Iterable<Vertex> verticesByOid(final Graph graph) {
-            List<Vertex> vertices = IteratorUtils.list(graph.vertices());
+            List<Vertex> vertices = graph.traversal().V().toList();
             Collections.sort(vertices,
                     (v1, v2) -> ((Integer) v1.value("oid")).compareTo((Integer) v2.value("oid")));
             return vertices;
@@ -152,7 +155,7 @@ public class DistributionGeneratorTest {
         private void distributionGeneratorTest(final Graph graph, final DistributionGenerator generator) {
             final int numEdges = generator.generate();
             assertTrue(numEdges > 0);
-            tryCommit(graph, g -> assertEquals(numEdges, IteratorUtils.count(g.edges())));
+            tryCommit(graph, g -> assertEquals(Long.valueOf(numEdges), g.traversal().E().count().next()));
         }
     }
 
@@ -174,7 +177,7 @@ public class DistributionGeneratorTest {
             assertTrue(edgesGenerated > 0);
             tryCommit(graph, g -> {
                 assertEquals(new Long(edgesGenerated), new Long(IteratorUtils.count(g.edges())));
-                assertTrue(IteratorUtils.count(g.vertices()) > 0);
+                assertTrue(g.traversal().V().count().next() > 0);
                 assertTrue(IteratorUtils.stream(g.edges()).allMatch(e -> e.value("data").equals("test")));
             });
         }

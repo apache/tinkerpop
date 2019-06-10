@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -43,6 +44,9 @@ public final class TraversalUtil {
             return traversal.next(); // map
         } catch (final NoSuchElementException e) {
             throw new IllegalArgumentException("The provided traverser does not map to a value: " + split + "->" + traversal);
+        } finally {
+            //Close the traversal to release any underlying resources.
+            CloseableIterator.closeIterator(traversal);
         }
     }
 
@@ -64,11 +68,19 @@ public final class TraversalUtil {
         traversal.reset();
         traversal.addStart(split);
         final Step<?, E> endStep = traversal.getEndStep();
+        boolean result = false;
         while (traversal.hasNext()) {
-            if (endStep.next().get().equals(end))
-                return true;
+            if (endStep.next().get().equals(end)) {
+                result = true;
+                break;
+            }
         }
-        return false;
+
+        // The traversal might not have been fully consumed in the loop above. Close the traversal to release any underlying
+        // resources.
+        CloseableIterator.closeIterator(traversal);
+
+        return result;
     }
 
     public static final <S, E> E applyNullable(final Traverser.Admin<S> traverser, final Traversal.Admin<S, E> traversal) {
@@ -81,7 +93,12 @@ public final class TraversalUtil {
         split.setBulk(1l);
         traversal.reset();
         traversal.addStart(split);
-        return traversal.hasNext(); // filter
+        boolean val =  traversal.hasNext(); // filter
+
+        //Close the traversal to release any underlying resources.
+        CloseableIterator.closeIterator(traversal);
+
+        return val;
     }
 
     ///////
@@ -93,6 +110,9 @@ public final class TraversalUtil {
             return traversal.next(); // map
         } catch (final NoSuchElementException e) {
             throw new IllegalArgumentException("The provided start does not map to a value: " + start + "->" + traversal);
+        } finally {
+            //Close the traversal to release any underlying resources.
+            CloseableIterator.closeIterator(traversal);
         }
     }
 
@@ -108,11 +128,19 @@ public final class TraversalUtil {
         traversal.reset();
         traversal.addStart(traversal.getTraverserGenerator().generate(start, traversal.getStartStep(), 1l));
         final Step<?, E> endStep = traversal.getEndStep();
+
+        boolean result = false;
         while (traversal.hasNext()) {
-            if (endStep.next().get().equals(end))
-                return true;
+            if (endStep.next().get().equals(end)) {
+                result = true;
+                break;
+            }
         }
-        return false;
+
+        //Close the traversal to release any underlying resources.
+        CloseableIterator.closeIterator(traversal);
+
+        return result;
     }
 
     public static final <S, E> E applyNullable(final S start, final Traversal.Admin<S, E> traversal) {
@@ -122,6 +150,11 @@ public final class TraversalUtil {
     public static final <S, E> boolean test(final S start, final Traversal.Admin<S, E> traversal) {
         traversal.reset();
         traversal.addStart(traversal.getTraverserGenerator().generate(start, traversal.getStartStep(), 1l));
-        return traversal.hasNext(); // filter
+        boolean result = traversal.hasNext(); // filter
+
+        //Close the traversal to release any underlying resources.
+        CloseableIterator.closeIterator(traversal);
+
+        return result;
     }
 }
