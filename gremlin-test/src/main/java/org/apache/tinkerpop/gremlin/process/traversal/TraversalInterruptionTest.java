@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.IgnoreIteratorLeak;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -42,6 +43,7 @@ import static org.junit.Assert.assertThat;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(Parameterized.class)
+@IgnoreIteratorLeak
 public class TraversalInterruptionTest extends AbstractGremlinProcessTest {
 
     @Parameterized.Parameters(name = "expectInterruption({0})")

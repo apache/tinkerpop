@@ -302,7 +302,7 @@ public final class TinkerGraph implements Graph {
                                                                   final Object... ids) {
         final Iterator<T> iterator;
         if (0 == ids.length) {
-            iterator = elements.values().iterator();
+            iterator = new TinkerGraphIterator<T>(elements.values().iterator());
         } else {
             final List<Object> idList = Arrays.asList(ids);
             validateHomogenousIds(idList);
@@ -312,8 +312,8 @@ public final class TinkerGraph implements Graph {
             // stuff - doesn't seem likely someone would detach a Titan vertex then try to expect that
             // vertex to be findable in OrientDB
             return clazz.isAssignableFrom(ids[0].getClass()) ?
-                    IteratorUtils.filter(IteratorUtils.map(idList, id -> elements.get(clazz.cast(id).id())).iterator(), Objects::nonNull)
-                    : IteratorUtils.filter(IteratorUtils.map(idList, id -> elements.get(idManager.convert(id))).iterator(), Objects::nonNull);
+                    new TinkerGraphIterator<T>(IteratorUtils.filter(IteratorUtils.map(idList, id -> elements.get(clazz.cast(id).id())).iterator(), Objects::nonNull))
+                    : new TinkerGraphIterator<T>(IteratorUtils.filter(IteratorUtils.map(idList, id -> elements.get(idManager.convert(id))).iterator(), Objects::nonNull));
         }
         return TinkerHelper.inComputerMode(this) ?
                 (Iterator<T>) (clazz.equals(Vertex.class) ?
