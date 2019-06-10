@@ -18,7 +18,41 @@ limitations under the License.
 
 image::business-gremlin.png[width=400]
 
-The guidelines that follow apply to those with commit access to the main repository:
+The guidelines that follow generally apply to those with commit access to the main repository, but those seeking to
+contribute will also find helpful information here on the development style and process for the project.
+
+[[initial-setup]]
+== Initial Setup
+
+Once the Apache TinkerPop PMC has sent an invitation to a contributor to become a new committer and that contributor
+has accepted that invitation and provided their iCLA to Apache, then there are some administrative steps that the
+new committer can expect to go through to complete the process so that they have access to Apache resources like the
+Git repository. While the information for completing the process can be found in a multitude of places the following
+listing provides a summary of what to do next:
+
+* Look for a welcome email from root_at_apache.org. This will contain your Apache user name
+** e.g. "Welcome to the Apache Software Foundation (ASF)!"
+* Visit https://id.apache.org/reset/enter and enter your user name
+* Look for a password reset email from root_at_apache.org. This will have been sent after you confirmed your user name, above.
+** e.g. "Password reset request for [username] from Apache ID"
+* Visit the link provided in the password reset email, and choose a new password. ASF asks you to choose a strong one. You will see a "Password change successful" page when this is done.
+* You will now have SVN access
+** link:https://svn.apache.org/[svn.apache.org]
+* Try sending yourself an email at your new [username]@apache.org email address. It should forward to your primary address.
+* Check your account details at https://id.apache.org/details/[username]
+* Link your accounts using gitbox (https://gitbox.apache.org/setup/)
+** Link your Apache account
+** Link your GitHub account
+*** You will be asked to "Authorize Apache M.A.T.T."
+** Obtain MFA status
+*** Visit link:https://id.apache.org[id.apache.org] and set your GitHub ID to be invited to the org
+*** Wait for an email to arrive from "support_at_github.com", and click "Join @apache". Accept the invitation on github.com. Your new MFA status will not immediately be reflected on github, but you will get a confirmation email from noreply_at_github.com. Later, the status will read "MFA ENABLED"
+**** e.g. "[GitHub] @asf-gitbox has invited you to join the @apache organization"
+*** You can find yourself by searching in the link:https://github.com/orgs/apache/teams/apache-committers[Apache Committers listing]
+* Read the link:https://www.apache.org/dev/new-committers-guide.html[Apache Committer Guide] and link:http://www.apache.org/dev/committers.html[Apache Committer FAQ]
+* Read through the other sections of this document - the Developer Documentation - for more details on project procedures and other administrative items.
+** In particular, see <<rtc,Review then Commit>>
+* If you have trouble committing, email dev@tinkerpop.apache.org
 
 == Communication
 
