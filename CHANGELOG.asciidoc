@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 This release also includes changes from <<release-3-4-3, 3.4.3>>.
 
 * Removed previously deprecated `TraversalSource.withRemote()`.
+* Removed previously deprecated SSL settings: `keyCertChainFile`, `keyFile`, `keyPassword` and `trustCertChainFile` and related infrastructure.
 * Removed previously deprecated `BulkDumperVertexProgram` and `BulkLoaderVertexProgram`.
 
 == TinkerPop 3.4.0 (Avant-Gremlin Construction #3 for Theremin and Flowers)

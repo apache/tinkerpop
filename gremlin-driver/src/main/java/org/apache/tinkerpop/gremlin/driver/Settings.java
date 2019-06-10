@@ -174,18 +174,6 @@ final class Settings {
             if (connectionPoolConf.containsKey("enableSsl"))
                 cpSettings.enableSsl = connectionPoolConf.getBoolean("enableSsl");
 
-            if (connectionPoolConf.containsKey("keyCertChainFile"))
-                cpSettings.keyCertChainFile = connectionPoolConf.getString("keyCertChainFile");
-
-            if (connectionPoolConf.containsKey("keyFile"))
-                cpSettings.keyFile = connectionPoolConf.getString("keyFile");
-
-            if (connectionPoolConf.containsKey("keyPassword"))
-                cpSettings.keyPassword = connectionPoolConf.getString("keyPassword");
-
-            if (connectionPoolConf.containsKey("trustCertChainFile"))
-                cpSettings.trustCertChainFile = connectionPoolConf.getString("trustCertChainFile");
-
             if (connectionPoolConf.containsKey("keyStore"))
                 cpSettings.keyStore = connectionPoolConf.getString("keyStore");
 
@@ -259,34 +247,6 @@ final class Settings {
          * Determines if SSL should be enabled or not. If enabled on the server then it must be enabled on the client.
          */
         public boolean enableSsl = false;
-
-        /**
-         * The trusted certificate in PEM format.
-         * @deprecated As of release 3.2.10, replaced by {@link #trustStore}
-         */
-        @Deprecated
-        public String trustCertChainFile = null;
-
-        /**
-         * The X.509 certificate chain file in PEM format.
-         * @deprecated As of release 3.2.10, replaced by {@link #keyStore}
-         */
-        @Deprecated
-        public String keyCertChainFile = null;
-
-        /**
-         * The PKCS#8 private key file in PEM format.
-         * @deprecated As of release 3.2.10, replaced by {@link #keyStore}
-         */
-        @Deprecated
-        public String keyFile = null;
-
-        /**
-         * The password of the {@link #keyFile}, or {@code null} if it's not password-protected.
-         * @deprecated As of release 3.2.10, replaced by {@link #keyStorePassword}
-         */
-        @Deprecated
-        public String keyPassword = null;
 
         /**
          * JSSE keystore file path. Similar to setting JSSE property
