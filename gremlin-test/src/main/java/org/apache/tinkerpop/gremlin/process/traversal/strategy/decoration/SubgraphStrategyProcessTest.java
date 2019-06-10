@@ -49,7 +49,12 @@ import java.util.NoSuchElementException;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasNot;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.junit.Assert.assertEquals;
@@ -461,7 +466,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(CREW)
     public void shouldFilterVertexProperties() throws Exception {
         GraphTraversalSource sg = g.withStrategies(SubgraphStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
-            put(SubgraphStrategy.VERTEX_PROPERTIES, __.has("startTime", P.gt(2005)));
+            put(SubgraphStrategy.VERTEX_PROPERTIES, has("startTime", P.gt(2005)));
         }})));
         checkResults(Arrays.asList("purcellville", "baltimore", "oakland", "seattle", "aachen"), sg.V().properties("location").value());
         checkResults(Arrays.asList("purcellville", "baltimore", "oakland", "seattle", "aachen"), sg.V().values("location"));
@@ -489,8 +494,8 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
         checkOrderedResults(Arrays.asList("aachen", "purcellville", "santa fe", "seattle"), sg.V().order().by("location", Order.asc).values("location"));
         //
         sg = g.withStrategies(SubgraphStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
-            put(SubgraphStrategy.VERTICES, __.has("location"));
-            put(SubgraphStrategy.VERTEX_PROPERTIES, __.hasNot("endTime"));
+            put(SubgraphStrategy.VERTICES, has("location"));
+            put(SubgraphStrategy.VERTEX_PROPERTIES, hasNot("endTime"));
         }})));
         checkResults(Arrays.asList("aachen", "purcellville", "santa fe", "seattle"), sg.V().valueMap("location").select(Column.values).unfold().unfold());
         checkResults(Arrays.asList("aachen", "purcellville", "santa fe", "seattle"), sg.V().propertyMap("location").select(Column.values).unfold().unfold().value());
@@ -499,7 +504,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList(5, 5, 5), sg.V().outE().valueMap().select(Column.values).unfold());
         checkResults(Arrays.asList(5, 5, 5), sg.V().outE().propertyMap().select(Column.values).unfold().value());
         //
-        sg = g.withStrategies(SubgraphStrategy.build().vertexProperties(__.hasNot("skill")).create());
+        sg = g.withStrategies(SubgraphStrategy.build().vertexProperties(hasNot("skill")).create());
         checkResults(Arrays.asList(3, 3, 3, 4, 4, 5, 5, 5), sg.V().outE("uses").values("skill"));
         checkResults(Arrays.asList(3, 3, 3, 4, 4, 5, 5, 5), sg.V().as("a").properties().select("a").dedup().outE().values("skill"));
         checkResults(Arrays.asList(3, 3, 3, 4, 4, 5, 5, 5), sg.V().as("a").properties().select("a").dedup().outE().properties("skill").as("b").identity().select("b").by(__.value()));
