@@ -411,6 +411,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Bump to Groovy 2.4.17.
 * Bump to Jackson 2.9.9.
 * Improved error messaging when an attempt is made to serialize multi-properties to GraphML.
+* gt/gte/lt/lte can throw a ClassCastException if one of the object isn't a Comparable
 
 [[release-3-3-7]]
 === TinkerPop 3.3.7 (Release Date: May 28, 2019)
