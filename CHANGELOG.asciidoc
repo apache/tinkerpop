@@ -402,6 +402,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Improved exception and messaging for gt/gte/lt/lte when one of the object isn't a `Comparable`.
 * Added test infrastructure to check for storage iterator leak.
 * Fixed multiple iterator leaks in query processor.
+* Fixed bug in `MatchStep` where the correct was not properly determined.
 
 [[release-3-3-7]]
 === TinkerPop 3.3.7 (Release Date: May 28, 2019)
