@@ -1722,8 +1722,8 @@ g.withSideEffect('x',10).V().values('age').math('_ / x')
 g.withSack(1).V(1).repeat(sack(sum).by(constant(1))).times(10).emit().sack().math('sin _')
 ----
 
-The operators supported by the calculator include: `*`, `+`, `\`, `^`, and `%`.
-Furthermore, the following built in functions are provided:
+The operators supported by the calculator include: `*`, `+`, `/`, `^`, and `%`. Furthermore, the following built in
+functions are provided:
 
 * `abs`: absolute value
 * `acos`: arc cosine
