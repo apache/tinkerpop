@@ -18,13 +18,11 @@ under the License.
 '''
 import sys
 from threading import Thread
-
-import pytest
 from six.moves import queue
 
 from gremlin_python.driver.driver_remote_connection import (
     DriverRemoteConnection)
-from gremlin_python.structure.graph import Graph
+from gremlin_python.process.anonymous_traversal import traversal
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
@@ -63,7 +61,7 @@ def _executor(q, conn):
         conn = DriverRemoteConnection(
             'ws://localhost:45940/gremlin', 'gmodern', pool_size=4)
     try:
-        g = Graph().traversal().withRemote(conn)
+        g = traversal().withRemote(conn)
         future = g.V().promise()
         t = future.result()
         assert len(t.toList()) == 6

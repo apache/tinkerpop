@@ -26,6 +26,7 @@ const assert = require('assert');
 const expect = require('chai').expect;
 const graph = require('../../lib/structure/graph');
 const t = require('../../lib/process/traversal');
+const Bytecode = require('../../lib/process/bytecode');
 const TraversalStrategies = require('../../lib/process/traversal-strategy').TraversalStrategies;
 
 describe('Traversal', function () {
@@ -121,6 +122,15 @@ describe('Traversal', function () {
     });
   });
 
+  if (Symbol.asyncIterator) {
+    describe('@@asyncIterator', function () {
+      it('should expose the async iterator', function () {
+        const traversal = new t.Traversal(null, null, null);
+        assert.strictEqual(typeof traversal[Symbol.asyncIterator], 'function');
+      });
+    });
+  }
+
   describe('#toList()', function () {
 
     it('should apply the strategies and return a Promise with an array', function () {
@@ -185,7 +195,7 @@ describe('Traversal', function () {
       };
       const strategies = new TraversalStrategies();
       strategies.addStrategy(strategyMock);
-      const traversal = new t.Traversal(null, strategies, null);
+      const traversal = new t.Traversal(null, strategies, new Bytecode());
       return traversal.iterate().then(() => {
         assert.strictEqual(applied, true);
       });

@@ -25,6 +25,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.WriteBufferWaterMark;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -38,6 +39,7 @@ import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
 import org.apache.tinkerpop.gremlin.server.util.ThreadFactoryUtil;
+import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +60,7 @@ public class GremlinServer {
 
     static {
         // hook slf4j up to netty internal logging
-        InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
+        InternalLoggerFactory.setDefaultFactory(Slf4JLoggerFactory.INSTANCE);
     }
 
     private static final String SERVER_THREAD_PREFIX = "gremlin-server-";
@@ -140,8 +142,8 @@ public class GremlinServer {
 
             // when high value is reached then the channel becomes non-writable and stays like that until the
             // low value is so that there is time to recover
-            b.childOption(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, settings.writeBufferHighWaterMark);
-            b.childOption(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, settings.writeBufferLowWaterMark);
+            b.childOption(ChannelOption.WRITE_BUFFER_WATER_MARK,
+                    new WriteBufferWaterMark(settings.writeBufferLowWaterMark, settings.writeBufferHighWaterMark));
             b.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
             // fire off any lifecycle scripts that were provided by the user. hooks get initialized during
@@ -350,7 +352,7 @@ public class GremlinServer {
 
     public static String getHeader() {
         final StringBuilder builder = new StringBuilder();
-        builder.append("\r\n");
+        builder.append(Gremlin.version() + "\r\n");
         builder.append("         \\,,,/\r\n");
         builder.append("         (o o)\r\n");
         builder.append("-----oOOo-(3)-oOOo-----\r\n");

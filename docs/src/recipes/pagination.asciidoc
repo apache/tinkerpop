@@ -76,3 +76,13 @@ t = g.V().hasLabel('person');[]
 t.next(2)
 t.next(2)
 ----
+
+A further consideration relates to the order in which results are returned. TinkerPop does not guarantee that the
+order of the items returned on the same traversal will be the same order each time the traversal is iterated.
+TinkerPop only guarantees that it does not re-shuffle the order provided by the underlying graph database. This
+guarantee has two implications:
+
+1. Iteration order is dependent on the underlying graph database. Some graphs may guarantee ordering and some may not
+and still some others may guarantee ordering but only under certain conditions. Consult the documentation of the
+graph database for more information on this.
+2. Use `order()`-step to make iteration order explicit if guarantees are required.  

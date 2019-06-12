@@ -20,11 +20,18 @@
 
 import groovy.text.GStringTemplateEngine
 import org.apache.tinkerpop.gremlin.jsr223.CoreImports
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ConnectedComponent
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRank
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressure
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ShortestPath
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.P
+import org.apache.tinkerpop.gremlin.process.traversal.TextP
+import org.apache.tinkerpop.gremlin.process.traversal.IO
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions
 import java.lang.reflect.Modifier
 
 def toJsMap = ["in": "in_",
@@ -32,6 +39,10 @@ def toJsMap = ["in": "in_",
                "with": "with_"]
 
 def toJs = { symbol -> toJsMap.getOrDefault(symbol, symbol) }
+
+def toJSValue = { type, value ->
+  type == String.class && value != null ? ('"' + value + '"') : value
+}
 
 def decapitalize = {
     String string = it;
@@ -49,12 +60,24 @@ def determineVersion = {
     return mavenVersion.replace("-SNAPSHOT", "-alpha1")
 }
 
+def gatherTokensFrom = { tokenClasses ->
+    def m = [:]
+    tokenClasses.each { tc -> m << [(tc.simpleName) : tc.getFields().sort{ a, b -> a.name <=> b.name }.collectEntries{ f -> [(f.name) : f.get(null)]}]}
+    return m
+}
+
 def binding = ["enums": CoreImports.getClassImports()
         .findAll { Enum.class.isAssignableFrom(it) }
         .sort { a, b -> a.getSimpleName() <=> b.getSimpleName() },
                "pmethods": P.class.getMethods().
                        findAll { Modifier.isStatic(it.getModifiers()) }.
                        findAll { P.class.isAssignableFrom(it.returnType) }.
+                       collect { it.name }.
+                       unique().
+                       sort { a, b -> a <=> b },
+               "tpmethods": TextP.class.getMethods().
+                       findAll { Modifier.isStatic(it.getModifiers()) }.
+                       findAll { TextP.class.isAssignableFrom(it.returnType) }.
                        collect { it.name }.
                        unique().
                        sort { a, b -> a <=> b },
@@ -88,9 +111,12 @@ def binding = ["enums": CoreImports.getClassImports()
                        collect { it.name }.
                        unique().
                        sort { a, b -> a <=> b },
+               "tokens": gatherTokensFrom([IO, ConnectedComponent, ShortestPath, PageRank, PeerPressure]),
                "toJs": toJs,
                "version": determineVersion(),
-               "decapitalize": decapitalize]
+               "decapitalize": decapitalize,
+               "withOptions": WithOptions.getDeclaredFields().
+                        collect {["name": it.name, "value": toJSValue(it.type, it.get(null))]}]
 
 def engine = new GStringTemplateEngine()
 def graphTraversalTemplate = engine.createTemplate(new File("${project.basedir}/glv/GraphTraversalSource.template"))

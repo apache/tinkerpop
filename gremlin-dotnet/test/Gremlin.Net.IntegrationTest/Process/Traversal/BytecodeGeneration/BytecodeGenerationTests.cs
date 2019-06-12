@@ -22,7 +22,6 @@
 #endregion
 
 using Gremlin.Net.Process.Traversal;
-using Gremlin.Net.Structure;
 using Xunit;
 
 namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
@@ -32,7 +31,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void GraphTraversalStepsShouldUnrollParamsParameters()
         {
-            var g = new Graph().Traversal();
+            var g = AnonymousTraversalSource.Traversal();
 
             var bytecode = g.V().HasLabel("firstLabel", "secondLabel", "thirdLabel").Bytecode;
 
@@ -44,7 +43,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void g_V_OutXcreatedX()
         {
-            var g = new Graph().Traversal();
+            var g = AnonymousTraversalSource.Traversal();
 
             var bytecode = g.V().Out("created").Bytecode;
 
@@ -59,7 +58,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void g_WithSackX1X_E_GroupCount_ByXweightX()
         {
-            var g = new Graph().Traversal();
+            var g = AnonymousTraversalSource.Traversal();
 
             var bytecode = g.WithSack(1).E().GroupCount<double>().By("weight").Bytecode;
 
@@ -74,6 +73,18 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
             Assert.Equal(0, bytecode.StepInstructions[0].Arguments.Length);
             Assert.Equal(0, bytecode.StepInstructions[1].Arguments.Length);
             Assert.Equal(1, bytecode.StepInstructions[2].Arguments.Length);
+        }
+
+        [Fact]
+        public void g_InjectX1_2_3X()
+        {
+            var g = AnonymousTraversalSource.Traversal();
+
+            var bytecode = g.Inject(1, 2, 3).Bytecode;
+
+            Assert.Equal(1, bytecode.StepInstructions.Count);
+            Assert.Equal("inject", bytecode.StepInstructions[0].OperatorName);
+            Assert.Equal(3, bytecode.StepInstructions[0].Arguments.Length);
         }
 
         [Fact]

@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Compare;
-import org.apache.tinkerpop.gremlin.process.traversal.Contains;
+import org.apache.tinkerpop.gremlin.process.traversal.Contains;             
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -93,7 +93,7 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
     }
 
     public static boolean isStartStep(final Step<?, ?> step) {
-        return step instanceof GraphStep && ((GraphStep) step).isStartStep();
+        return step instanceof GraphStep && ((GraphStep) step).isStart;
     }
 
     public boolean returnsVertex() {

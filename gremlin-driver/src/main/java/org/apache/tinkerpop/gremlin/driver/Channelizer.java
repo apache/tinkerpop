@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.channel.Channel;
+import io.netty.handler.codec.http.EmptyHttpHeaders;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
@@ -32,7 +33,6 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
@@ -200,7 +200,7 @@ public interface Channelizer extends ChannelHandler {
             final int maxContentLength = cluster.connectionPoolSettings().maxContentLength;
             handler = new WebSocketClientHandler(
                     WebSocketClientHandshakerFactory.newHandshaker(
-                            connection.getUri(), WebSocketVersion.V13, null, false, HttpHeaders.EMPTY_HEADERS, maxContentLength));
+                            connection.getUri(), WebSocketVersion.V13, null, false, EmptyHttpHeaders.INSTANCE, maxContentLength));
 
             pipeline.addLast("http-codec", new HttpClientCodec());
             pipeline.addLast("aggregator", new HttpObjectAggregator(maxContentLength));

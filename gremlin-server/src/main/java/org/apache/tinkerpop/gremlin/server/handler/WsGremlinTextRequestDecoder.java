@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
-import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
@@ -53,7 +52,7 @@ public class WsGremlinTextRequestDecoder extends MessageToMessageDecoder<TextWeb
     protected void decode(final ChannelHandlerContext channelHandlerContext, final TextWebSocketFrame frame, final List<Object> objects) throws Exception {
         try {
             // the default serializer must be a MessageTextSerializer instance to be compatible with this decoder
-            final MessageTextSerializer serializer = (MessageTextSerializer) select("application/json", Serializers.DEFAULT_REQUEST_SERIALIZER);
+            final MessageTextSerializer serializer = (MessageTextSerializer) select("application/json", ServerSerializers.DEFAULT_SERIALIZER);
 
             // it's important to re-initialize these channel attributes as they apply globally to the channel. in
             // other words, the next request to this channel might not come with the same configuration and mixed

@@ -29,8 +29,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
@@ -105,7 +107,15 @@ public class Model {
 
         final Compatibility[] noTypeGraphSONPlusGryo3_2_3 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.2.4").join(Compatibilities.UNTYPED_GRAPHSON).matchToArray();
         final Compatibility[] noTypeGraphSONPlusGryo3_3_0 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.3.0").join(Compatibilities.UNTYPED_GRAPHSON).matchToArray();
-        final Compatibility[] noGraphSONBeforeV3 = Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*v2d0-partial|v1d0|v2d0-no-types").join(Compatibilities.GRYO_ONLY).matchToArray();
+
+        // the inverse of this definition is basically 3.4.0 or better for both GraphSON and Gryo with no support for
+        // untyped GraphSON anywhere along the way
+        final Compatibility[] before3_4_0 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.4.0")
+                .join(Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*no-types|v1d0")
+                .join(Compatibilities.with(GraphSONCompatibility.class).beforeRelease("3.4.0"))).matchToArray();
+
+        // there is no point to testing gryo for list/map/set as they are kryo primitives essentially
+        final Compatibility[] noGraphSONBeforeV3AndNoGryo = Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*v2d0-partial|v1d0|v2d0-no-types").join(Compatibilities.GRYO_ONLY).matchToArray();
 
         // IMPORTANT - the "title" or name of the Entry needs to be unique
 
@@ -115,14 +125,16 @@ public class Model {
         addCoreEntry(100.00d, "Double");
         addCoreEntry(100.00f, "Float", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addCoreEntry(100, "Integer");
-        addCoreEntry(Arrays.asList(1,"person", true), "List", "List is used to distinguish between different collection types as JSON is not explicit enough for all of Gremlin's requirements.", noGraphSONBeforeV3);
+        addCoreEntry(Arrays.asList(1,"person", true), "List", "List is used to distinguish between different collection types as JSON is not explicit enough for all of Gremlin's requirements.", noGraphSONBeforeV3AndNoGryo);
         addCoreEntry(100L, "Long", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+
         final Map<Object,Object> map = new HashMap<>();
         map.put("test", 123);
         map.put(new Date(1481750076295L), "red");
         map.put(Arrays.asList(1,2,3), new Date(1481750076295L));
-        addCoreEntry(map, "Map", "Map is redefined so that to provide the ability to allow for non-String keys, which is not possible in JSON.", noGraphSONBeforeV3);
-        addCoreEntry(new HashSet<>(Arrays.asList(1,"person", true)), "Set", "Allows a JSON collection to behave as a Set.", noGraphSONBeforeV3);
+        addCoreEntry(map, "Map", "Map is redefined so that to provide the ability to allow for non-String keys, which is not possible in JSON.", noGraphSONBeforeV3AndNoGryo);
+
+        addCoreEntry(new HashSet<>(Arrays.asList(1,"person", true)), "Set", "Allows a JSON collection to behave as a Set.", noGraphSONBeforeV3AndNoGryo);
         // Timestamp was added to Gryo 1.0 as of 3.2.4. It was not supported in 3.2.3.
         addCoreEntry(new java.sql.Timestamp(1481750076295L), "Timestamp", "", noTypeGraphSONPlusGryo3_2_3);
         addCoreEntry(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786"), "UUID");
@@ -140,6 +152,12 @@ public class Model {
 
         addGraphProcessEntry(SackFunctions.Barrier.normSack, "Barrier", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(new Bytecode.Binding("x", 1), "Binding", "A \"Binding\" refers to a `Bytecode.Binding`.", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+
+        final BulkSet<String> bulkSet = new BulkSet<>();
+        bulkSet.add("marko", 1);
+        bulkSet.add("josh", 2);
+        addGraphProcessEntry(bulkSet, "BulkSet", "", before3_4_0);
+
         addGraphProcessEntry(g.V().hasLabel("person").out().in().tree().asAdmin().getBytecode(), "Bytecode", "The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` woudl be quite different for the endless variations of commands that could be used together in the Gremlin language.", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(VertexProperty.Cardinality.list, "Cardinality", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(Column.keys, "Column", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
@@ -162,6 +180,8 @@ public class Model {
         addGraphProcessEntry(P.gt(0).or(P.within(-1, -10, -100)), "P or", "", noTypeGraphSONPlusGryo3_2_3);
         addGraphProcessEntry(Scope.local, "Scope", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(T.label, "T", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        // TextP was only added at 3.4.0 and is not supported with untyped GraphSON of any sort
+        addGraphProcessEntry(TextP.containing("ark"), "TextP", "", before3_4_0);
         addGraphProcessEntry(createStaticTraversalMetrics(), "TraversalMetrics", "", noTypeGraphSONPlusGryo3_3_0);
         addGraphProcessEntry(g.V().hasLabel("person").asAdmin().nextTraverser(), "Traverser", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
 

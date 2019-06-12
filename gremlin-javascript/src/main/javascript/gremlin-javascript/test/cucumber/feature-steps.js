@@ -30,7 +30,7 @@ const graphModule = require('../../lib/structure/graph');
 const graphTraversalModule = require('../../lib/process/graph-traversal');
 const traversalModule = require('../../lib/process/traversal');
 const utils = require('../../lib/utils');
-const Graph = graphModule.Graph;
+const traversal = require('../../lib/process/anonymous-traversal').traversal;
 const Path = graphModule.Path;
 const __ = graphTraversalModule.statics;
 const t = traversalModule.t;
@@ -57,12 +57,48 @@ const parsers = [
 
 const ignoreReason = {
   lambdaNotSupported: 'Lambdas are not supported on gremlin-javascript',
+  computerNotSupported: "withComputer() is not supported on gremlin-javascript",
+  setNotSupported: "There is no Set support in gremlin-javascript",
   needsFurtherInvestigation: '',
 };
 
 const ignoredScenarios = {
   // An associative array containing the scenario name as key, for example:
-  // 'g_V_asXa_bX_out_asXcX_path_selectXkeysX': new IgnoreError(ignoreReason.embeddedListAssertion),
+  'g_V_connectedComponent_hasXcomponentX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_dedup_connectedComponent_hasXcomponentX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_hasLabelXsoftwareX_connectedComponent_project_byXnameX_byXcomponentX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_connectedComponent_withXEDGES_bothEXknowsXX_withXPROPERTY_NAME_clusterX_project_byXnameX_byXclusterX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_pageRank_hasXpageRankX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_pageRank_order_byXpageRank_decrX_byXnameX_name': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_pageRank_order_byXpageRank_decrX_name_limitX2X': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_pageRank_byXoutEXknowsXX_byXfriendRankX_project_byXnameX_byXvaluesXfriendRankX_mathX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_hasLabelXpersonX_pageRank_byXpageRankX_project_byXnameX_byXvaluesXpageRankX_mathX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_pageRank_byXpageRankX_asXaX_outXknowsX_pageRank_asXbX_selectXa_bX_by_byXmathX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_byXinEXcreatedXX_timesX1X_byXpriorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_outXcreatedX_groupXmX_byXlabelX_pageRankX1X_byXpageRankX_byXinEX_timesX1X_inXcreatedX_groupXmX_byXpageRankX_capXmX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_peerPressure_hasXclusterX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_peerPressure_byXclusterX_byXoutEXknowsXX_pageRankX1X_byXrankX_byXoutEXknowsXX_timesX2X_group_byXclusterX_byXrank_sumX_limitX100X': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_hasXname_rippleX_inXcreatedX_peerPressure_byXoutEX_byXclusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_hasXname_rippleX_inXcreatedX_peerPressure_withXEDGES_outEX_withXPROPERTY_NAME_clusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_shortestPath': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_both_dedup_shortestPath': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_shortestPath_edgesIncluded': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_shortestPath_directionXINX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_shortestPath_edgesXoutEX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_shortestPath_edgesIncluded_edgesXoutEX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_hasXname_markoX_shortestPath': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_shortestPath_targetXhasXname_markoXX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_shortestPath_targetXvaluesXnameX_isXmarkoXX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_hasXname_markoX_shortestPath_targetXhasLabelXsoftwareXX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_hasXname_markoX_shortestPath_targetXhasXname_joshXX_distanceXweightX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_hasXname_danielX_shortestPath_targetXhasXname_stephenXX_edgesXbothEXusesXX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_hasXsong_name_MIGHT_AS_WELLX_shortestPath_targetXhasXsong_name_MAYBE_YOU_KNOW_HOW_I_FEELXX_edgesXoutEXfollowedByXX_distanceXweightX': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_hasXname_markoX_shortestPath_maxDistanceX1X': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_V_hasXname_vadasX_shortestPath_distanceXweightX_maxDistanceX1_3X': new IgnoreError(ignoreReason.computerNotSupported),
+  'g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
+  'g_V_group_byXoutE_countX_byXnameX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
 };
 
 defineSupportCode(function(methods) {
@@ -72,7 +108,7 @@ defineSupportCode(function(methods) {
     }
     this.graphName = graphName;
     const data = this.getData();
-    this.g = new Graph().traversal().withRemote(data.connection);
+    this.g = traversal().withRemote(data.connection);
     if (graphName === 'empty') {
       return this.cleanEmptyGraph();
     }
@@ -186,12 +222,15 @@ function getSandbox(g, parameters) {
     },
     Order: traversalModule.order,
     P: traversalModule.P,
+    TextP: traversalModule.TextP,
+    IO: traversalModule.IO,
     Pick: traversalModule.pick,
     Pop: traversalModule.pop,
     Scope: traversalModule.scope,
     Operator: traversalModule.operator,
     T: traversalModule.t,
-    toLong: utils.toLong
+    toLong: utils.toLong,
+    WithOptions: traversalModule.withOptions
   };
   // Pass the parameter to the sandbox
   Object.keys(parameters).forEach(paramName => sandbox[paramName] = parameters[paramName]);
@@ -206,6 +245,7 @@ function translate(traversalText) {
   // Change according to naming convention
   traversalText = traversalText.replace(/\.in\(/g, '.in_(');
   traversalText = traversalText.replace(/\.from\(/g, '.from_(');
+  traversalText = traversalText.replace(/\.with\(/g, '.with_(');
   return traversalText;
 }
 

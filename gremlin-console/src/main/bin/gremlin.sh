@@ -22,20 +22,20 @@
 set -e
 set -u
 
-USER_DIR=`pwd`
+USER_DIR=$(pwd)
 
-cd $(dirname $0)
-DIR=`pwd`
+cd "$(dirname "$0")"
+DIR=$(pwd)
 
-SCRIPT_NAME=`basename $0`
+SCRIPT_NAME="$(basename "$0")"
 while [ -h "${SCRIPT_NAME}" ]; do
   SOURCE="$(readlink "${SCRIPT_NAME}")"
   DIR="$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
-  cd ${DIR}
+  cd "${DIR}"
 done
 
 cd ..
-SYSTEM_EXT_DIR="`pwd`/ext"
+SYSTEM_EXT_DIR="$(pwd)/ext"
 
 JAVA_OPTIONS=${JAVA_OPTIONS:-}
 
@@ -43,11 +43,11 @@ if [ ! -z "${JAVA_OPTIONS}" ]; then
   USER_EXT_DIR=$(grep -o '\-Dtinkerpop.ext=\(\([^"][^ ]*\)\|\("[^"]*"\)\)' <<< "${JAVA_OPTIONS}" | cut -f2 -d '=' | xargs -0 echo)
   if [ ! -z "${USER_EXT_DIR}" -a ! -d "${USER_EXT_DIR}" ]; then
     mkdir -p "${USER_EXT_DIR}"
-    cp -R ${SYSTEM_EXT_DIR}/* ${USER_EXT_DIR}/
+    cp -R "${SYSTEM_EXT_DIR}/*" "${USER_EXT_DIR}/"
   fi
 fi
 
-case `uname` in
+case $(uname) in
   CYGWIN*)
     CP="${CP:-}";$( echo lib/*.jar . | sed 's/ /;/g')
     ;;
@@ -92,15 +92,20 @@ while getopts ":l" opt; do
     esac
 done
 
-JAVA_OPTIONS="${JAVA_OPTIONS} -Duser.working_dir=${USER_DIR} -Dtinkerpop.ext=${USER_EXT_DIR:-${SYSTEM_EXT_DIR}} -Dlog4j.configuration=conf/log4j-console.properties -Dgremlin.log4j.level=$GREMLIN_LOG_LEVEL"
-JAVA_OPTIONS=$(awk -v RS=' ' '!/^$/ {if (!x[$0]++) print}' <<< "${JAVA_OPTIONS}" | grep -v '^$' | paste -sd ' ' -)
+JVM_OPTS=()
+if [ ! -z "${JAVA_OPTIONS}" ]; then
+    JVM_OPTS+=( "${JAVA_OPTIONS}" )
+fi
+
+JVM_OPTS+=( "-Duser.working_dir=${USER_DIR}" "-Dtinkerpop.ext=${USER_EXT_DIR:-${SYSTEM_EXT_DIR}}" "-Dlog4j.configuration=conf/log4j-console.properties" "-Dgremlin.log4j.level=$GREMLIN_LOG_LEVEL" )
+JVM_OPTS=$(awk -v RS=' ' '!/^$/ {if (!x[$0]++) print}' <<< "${JVM_OPTS}" | grep -v '^$' | paste -sd ' ' -)
 
 if [ -n "$SCRIPT_DEBUG" ]; then
     # in debug mode enable debugging of :install command
-    JAVA_OPTIONS="${JAVA_OPTIONS} -Divy.message.logger.level=4 -Dgroovy.grape.report.downloads=true"
+    JVM_OPTS+=( "-Divy.message.logger.level=4 -Dgroovy.grape.report.downloads=true" )
     echo "CLASSPATH: $CLASSPATH"
     set -x
 fi
 
 # Start the JVM, execute the application, and return its exit code
-exec $JAVA $JAVA_OPTIONS org.apache.tinkerpop.gremlin.console.Console "$@"
+exec $JAVA "${JVM_OPTS[@]}" org.apache.tinkerpop.gremlin.console.Console "$@"

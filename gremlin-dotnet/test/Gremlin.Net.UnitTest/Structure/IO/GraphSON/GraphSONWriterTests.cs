@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 using Gremlin.Net.Structure;
@@ -42,13 +43,21 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             new object[] { 2 },
             new object[] { 3 }
         };
-        
+
         /// <summary>
         /// Parameters for each collections test supporting multiple versions of GraphSON
         /// </summary>
         public static IEnumerable<object[]> VersionsSupportingCollections => new []
         {
             new object[] { 3 }
+        };
+
+        /// <summary>
+        /// Parameters for each collections test supporting multiple versions of GraphSON
+        /// </summary>
+        public static IEnumerable<object[]> VersionsNotSupportingCollections => new []
+        {
+            new object[] { 2 }
         };
 
         private GraphSONWriter CreateGraphSONWriter(int version)
@@ -98,6 +107,36 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var graphSon = writer.WriteObject(3.2);
 
             Assert.Equal("{\"@type\":\"g:Double\",\"@value\":3.2}", graphSon);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeNaN(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+
+            var graphSon = writer.WriteObject(Double.NaN);
+
+            Assert.Equal("{\"@type\":\"g:Double\",\"@value\":\"NaN\"}", graphSon);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializePositiveInfinity(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+
+            var graphSon = writer.WriteObject(Double.PositiveInfinity);
+
+            Assert.Equal("{\"@type\":\"g:Double\",\"@value\":\"Infinity\"}", graphSon);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeNegativeInfinity(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+
+            var graphSon = writer.WriteObject(Double.NegativeInfinity);
+
+            Assert.Equal("{\"@type\":\"g:Double\",\"@value\":\"-Infinity\"}", graphSon);
         }
 
         [Theory, MemberData(nameof(Versions))]
@@ -277,9 +316,9 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
                                    "{\"@type\":\"g:Int64\",\"@value\":200},\"b\"]}";
             Assert.Equal(expectedGraphSON, serializedGraphSON);
         }
-
-        [Theory, MemberData(nameof(Versions))]
-        public void ShouldSerializePredicateWithTwoValues(int version)
+        
+        [Theory, MemberData(nameof(VersionsNotSupportingCollections))]
+        public void ShouldSerializePredicateWithMultipleValuesAsJSONArray(int version)
         {
             var writer = CreateGraphSONWriter(version);
             var predicate = new P("within", new List<int> {1, 2});
@@ -289,6 +328,32 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var expectedGraphSON =
                 "{\"@type\":\"g:P\",\"@value\":{\"predicate\":\"within\",\"value\":[{\"@type\":\"g:Int32\",\"@value\":1},{\"@type\":\"g:Int32\",\"@value\":2}]}}";
             Assert.Equal(expectedGraphSON, serializedPredicate);
+            
+            predicate = P.Within(1, 2);
+
+            serializedPredicate = writer.WriteObject(predicate);
+
+            Assert.Equal(expectedGraphSON, serializedPredicate);
+        }
+
+        [Theory, MemberData(nameof(VersionsSupportingCollections))]
+        public void ShouldSerializePredicateWithMultipleValues(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+            var predicate = P.Within(new List<int> {1, 2});
+
+            var serializedPredicate = writer.WriteObject(predicate);
+
+            var expectedGraphSON =
+                "{\"@type\":\"g:P\",\"@value\":{\"predicate\":\"within\",\"value\":{\"@type\":\"g:List\",\"@value\":[{\"@type\":\"g:Int32\",\"@value\":1},{\"@type\":\"g:Int32\",\"@value\":2}]}}}";
+            Assert.Equal(expectedGraphSON, serializedPredicate);
+
+            predicate = P.Within(1, 2);
+
+            serializedPredicate = writer.WriteObject(predicate);
+
+            Assert.Equal(expectedGraphSON, serializedPredicate);
+
         }
 
         [Theory, MemberData(nameof(Versions))]
@@ -405,6 +470,70 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             const string expected =
                 "{\"@type\":\"g:Lambda\",\"@value\":{\"script\":\"{ it.get() }\",\"language\":\"gremlin-groovy\",\"arguments\":-1}}";
             Assert.Equal(expected, graphSon);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeTimeSpan(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+            var timeSpan = new TimeSpan(5, 4, 3, 2, 1);
+
+            var graphSon = writer.WriteObject(timeSpan);
+
+            const string expected = "{\"@type\":\"gx:Duration\",\"@value\":\"P5DT4H3M2.001S\"}";
+            Assert.Equal(expected, graphSon);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeBigInteger(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+            var bigInteger = BigInteger.Parse("123456789987654321123456789987654321");
+
+            var graphSon = writer.WriteObject(bigInteger);
+
+            const string expected = "{\"@type\":\"gx:BigInteger\",\"@value\":\"123456789987654321123456789987654321\"}";
+            Assert.Equal(expected, graphSon);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeByte(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+
+            var graphSon = writer.WriteObject((byte)1);
+
+            Assert.Equal("{\"@type\":\"gx:Byte\",\"@value\":1}", graphSon);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeByteBuffer(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+
+            var graphSon = writer.WriteObject(Convert.FromBase64String("c29tZSBieXRlcyBmb3IgeW91"));
+
+            Assert.Equal("{\"@type\":\"gx:ByteBuffer\",\"@value\":\"c29tZSBieXRlcyBmb3IgeW91\"}", graphSon);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeChar(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+
+            var graphSon = writer.WriteObject('x');
+
+            Assert.Equal("{\"@type\":\"gx:Char\",\"@value\":\"x\"}", graphSon);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeInt16(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+
+            var graphSon = writer.WriteObject((short)100);
+
+            Assert.Equal("{\"@type\":\"gx:Int16\",\"@value\":100}", graphSon);
         }
     }
 

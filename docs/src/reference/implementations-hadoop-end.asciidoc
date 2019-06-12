@@ -29,7 +29,7 @@ outgoing edges.
 * **InputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat`
 * **OutputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat`
 
-<<gryo-reader-writer,Gryo>> is a binary graph format that leverages link:https://github.com/EsotericSoftware/kryo[Kryo]
+<<gryo,Gryo>> is a binary graph format that leverages link:https://github.com/EsotericSoftware/kryo[Kryo]
 to make a compact, binary representation of a vertex. It is recommended that users leverage Gryo given its space/time
 savings over text-based representations.
 
@@ -41,7 +41,7 @@ NOTE: The `GryoInputFormat` is splittable.
 * **InputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat`
 * **OutputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONOutputFormat`
 
-<<graphson-reader-writer,GraphSON>> is a JSON based graph format. GraphSON is a space-expensive graph format in that
+<<graphson,GraphSON>> is a JSON based graph format. GraphSON is a space-expensive graph format in that
 it is a text-based markup language. However, it is convenient for many developers to work with as its structure is
 simple (easy to create and parse).
 

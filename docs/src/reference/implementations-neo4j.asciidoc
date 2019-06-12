@@ -93,8 +93,8 @@ labels), a linear scan of the vertex-label partition is still faster than a line
 [gremlin-groovy]
 ----
 graph = Neo4jGraph.open('/tmp/neo4j')
-graph.io(graphml()).readGraph('data/grateful-dead.xml')
 g = graph.traversal()
+g.io('data/grateful-dead.xml').read().iterate()
 g.tx().commit()
 clock(1000) {g.V().hasLabel('artist').has('name','Garcia').iterate()}  <1>
 graph.cypher("CREATE INDEX ON :artist(name)") <2>
@@ -161,7 +161,8 @@ It is possible to leverage Cypher from within Gremlin by using the `Neo4jGraph.c
 [gremlin-groovy]
 ----
 graph = Neo4jGraph.open('/tmp/neo4j')
-graph.io(gryo()).readGraph('data/tinkerpop-modern.kryo')
+g = graph.traversal()
+g.io('data/tinkerpop-modern.kryo').read().iterate()
 graph.cypher('MATCH (a {name:"marko"}) RETURN a')
 graph.cypher('MATCH (a {name:"marko"}) RETURN a').select('a').out('knows').values('name')
 graph.close()
@@ -226,7 +227,7 @@ of `vertex.label()`
 
 === Loading with BulkLoaderVertexProgram
 
-The <<bulkloadervertexprogram, BulkLoaderVertexProgram>> is a generalized bulk loader that can be used to load
+The <<clonevertexprogram, CloneVertexProgram>> is a generalized bulk loader that can be used to load
 large amounts of data to and from Neo4j. The following code demonstrates how to load the modern graph from TinkerGraph
 into Neo4j:
 

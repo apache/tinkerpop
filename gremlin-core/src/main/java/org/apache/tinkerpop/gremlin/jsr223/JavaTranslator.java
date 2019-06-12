@@ -52,7 +52,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
 
     private final S traversalSource;
     private final Class<?> anonymousTraversal;
-    private static final Map<Class<?>, Map<String, List<Method>>> GLOBAL_METHOD_CACHE = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, Map<String, List<ReflectedMethod>>> GLOBAL_METHOD_CACHE = new ConcurrentHashMap<>();
     private final Map<Class<?>, Map<String,Method>> localMethodCache = new ConcurrentHashMap<>();
     private final Method anonymousTraversalStart;
 
@@ -186,11 +186,12 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
 
     private Object invokeMethod(final Object delegate, final Class<?> returnType, final String methodName, final Object... arguments) {
         // populate method cache for fast access to methods in subsequent calls
-        final Map<String, List<Method>> methodCache = GLOBAL_METHOD_CACHE.getOrDefault(delegate.getClass(), new HashMap<>());
+        final Map<String, List<ReflectedMethod>> methodCache = GLOBAL_METHOD_CACHE.getOrDefault(delegate.getClass(), new HashMap<>());
         if (methodCache.isEmpty()) buildMethodCache(delegate, methodCache);
 
-        // create a copy of the argument array so as not to mutate the original bytecode
-        final Object[] argumentsCopy = new Object[arguments.length];
+        // create a copy of the argument array so as not to mutate the original bytecode - no need to create a new
+        // object if there are no arguments.
+        final Object[] argumentsCopy = arguments.length > 0 ? new Object[arguments.length] : arguments;
         for (int i = 0; i < arguments.length; i++) {
             argumentsCopy[i] = translateObject(arguments[i]);
         }
@@ -203,10 +204,11 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
         }
 
         try {
-            for (final Method method : methodCache.get(methodName)) {
+            for (final ReflectedMethod methodx : methodCache.get(methodName)) {
+                final Method method = methodx.method;
                 if (returnType.isAssignableFrom(method.getReturnType())) {
-                    if (method.getParameterCount() == argumentsCopy.length || (method.getParameterCount() > 0 && method.getParameters()[method.getParameters().length - 1].isVarArgs())) {
-                        final Parameter[] parameters = method.getParameters();
+                    final Parameter[] parameters = methodx.parameters;
+                    if (parameters.length == argumentsCopy.length || methodx.hasVarArgs) {
                         final Object[] newArguments = new Object[parameters.length];
                         boolean found = true;
                         for (int i = 0; i < parameters.length; i++) {
@@ -253,11 +255,11 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
         throw new IllegalStateException("Could not locate method: " + delegate.getClass().getSimpleName() + "." + methodName + "(" + Arrays.toString(argumentsCopy) + ")");
     }
 
-    private synchronized static void buildMethodCache(final Object delegate, final Map<String, List<Method>> methodCache) {
+    private synchronized static void buildMethodCache(final Object delegate, final Map<String, List<ReflectedMethod>> methodCache) {
         if (methodCache.isEmpty()) {
             for (final Method method : delegate.getClass().getMethods()) {
-                final List<Method> list = methodCache.computeIfAbsent(method.getName(), k -> new ArrayList<>());
-                list.add(method);
+                final List<ReflectedMethod> list = methodCache.computeIfAbsent(method.getName(), k -> new ArrayList<>());
+                list.add(new ReflectedMethod(method));
             }
             GLOBAL_METHOD_CACHE.put(delegate.getClass(), methodCache);
         }
@@ -272,5 +274,21 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
         }
 
         return null;
+    }
+
+    private static final class ReflectedMethod {
+        private final Method method;
+        private final Parameter[] parameters;
+        private final boolean hasVarArgs;
+
+        public ReflectedMethod(final Method m) {
+            this.method = m;
+
+            // the reflection getParameters() method calls clone() every time to get the Parameter array. caching it
+            // saves a lot of extra processing
+            this.parameters = m.getParameters();
+
+            this.hasVarArgs = parameters.length > 0 && parameters[parameters.length - 1].isVarArgs();
+        }
     }
 }

@@ -48,6 +48,11 @@ final class Settings {
     public int port = 8182;
 
     /**
+     * The path to the Gremlin service which is defaulted to "/gremlin".
+     */
+    public String path = "/gremlin";
+
+    /**
      * The list of hosts that the driver will connect to.
      */
     public List<String> hosts = new ArrayList<>();
@@ -169,17 +174,31 @@ final class Settings {
             if (connectionPoolConf.containsKey("enableSsl"))
                 cpSettings.enableSsl = connectionPoolConf.getBoolean("enableSsl");
 
-            if (connectionPoolConf.containsKey("keyCertChainFile"))
-                cpSettings.keyCertChainFile = connectionPoolConf.getString("keyCertChainFile");
+            if (connectionPoolConf.containsKey("keyStore"))
+                cpSettings.keyStore = connectionPoolConf.getString("keyStore");
 
-            if (connectionPoolConf.containsKey("keyFile"))
-                cpSettings.keyFile = connectionPoolConf.getString("keyFile");
+            if (connectionPoolConf.containsKey("keyStorePassword"))
+                cpSettings.keyStorePassword = connectionPoolConf.getString("keyStorePassword");
 
-            if (connectionPoolConf.containsKey("keyPassword"))
-                cpSettings.keyPassword = connectionPoolConf.getString("keyPassword");
+            if (connectionPoolConf.containsKey("keyStoreType"))
+                cpSettings.keyStoreType = connectionPoolConf.getString("keyStoreType");
 
-            if (connectionPoolConf.containsKey("trustCertChainFile"))
-                cpSettings.trustCertChainFile = connectionPoolConf.getString("trustCertChainFile");
+            if (connectionPoolConf.containsKey("trustStore"))
+                cpSettings.trustStore = connectionPoolConf.getString("trustStore");
+
+            if (connectionPoolConf.containsKey("trustStorePassword"))
+                cpSettings.trustStorePassword = connectionPoolConf.getString("trustStorePassword");
+
+            if (connectionPoolConf.containsKey("sslEnabledProtocols"))
+                cpSettings.sslEnabledProtocols = connectionPoolConf.getList("sslEnabledProtocols").stream().map(Object::toString)
+                        .collect(Collectors.toList());
+
+            if (connectionPoolConf.containsKey("sslCipherSuites"))
+                cpSettings.sslCipherSuites = connectionPoolConf.getList("sslCipherSuites").stream().map(Object::toString)
+                        .collect(Collectors.toList());
+
+            if (connectionPoolConf.containsKey("sslSkipCertValidation"))
+                cpSettings.sslSkipCertValidation = connectionPoolConf.getBoolean("sslSkipCertValidation");
 
             if (connectionPoolConf.containsKey("minSize"))
                 cpSettings.minSize = connectionPoolConf.getInt("minSize");
@@ -214,6 +233,8 @@ final class Settings {
             if (connectionPoolConf.containsKey("keepAliveInterval"))
                 cpSettings.keepAliveInterval = connectionPoolConf.getLong("keepAliveInterval");
 
+            if (connectionPoolConf.containsKey("validationRequest"))
+                cpSettings.validationRequest = connectionPoolConf.getString("validationRequest");
 
             settings.connectionPool = cpSettings;
         }
@@ -228,24 +249,53 @@ final class Settings {
         public boolean enableSsl = false;
 
         /**
-         * The trusted certificate in PEM format.
+         * JSSE keystore file path. Similar to setting JSSE property
+         * {@code javax.net.ssl.keyStore}.
          */
-        public String trustCertChainFile = null;
+        public String keyStore;
 
         /**
-         * The X.509 certificate chain file in PEM format.
+         * JSSE keystore password. Similar to setting JSSE property
+         * {@code javax.net.ssl.keyStorePassword}.
          */
-        public String keyCertChainFile = null;
+        public String keyStorePassword;
 
         /**
-         * The PKCS#8 private key file in PEM format.
+         * JSSE truststore file path. Similar to setting JSSE property
+         * {@code javax.net.ssl.trustStore}.
          */
-        public String keyFile = null;
+        public String trustStore;
 
         /**
-         * The password of the {@link #keyFile}, or {@code null} if it's not password-protected.
+         * JSSE truststore password. Similar to setting JSSE property
+         * {@code javax.net.ssl.trustStorePassword}.
          */
-        public String keyPassword = null;
+        public String trustStorePassword;
+
+        /**
+         * JSSE keystore format. 'jks' or 'pkcs12'. Similar to setting JSSE property
+         * {@code javax.net.ssl.keyStoreType}.
+         */
+        public String keyStoreType;
+
+        /**
+         * @see <a href=
+         *      "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SunJSSE_Protocols">JSSE
+         *      Protocols</a>
+         */
+        public List<String> sslEnabledProtocols = new ArrayList<>();
+
+        /**
+         * @see <a href=
+         *      "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SupportedCipherSuites">Cipher
+         *      Suites</a>
+         */
+        public List<String> sslCipherSuites = new ArrayList<>();
+
+        /**
+         * If true, trust all certificates and do not perform any validation.
+         */
+        public boolean sslSkipCertValidation = false;
 
         /**
          * The minimum size of a connection pool for a {@link Host}. By default this is set to 2.
@@ -326,6 +376,11 @@ final class Settings {
          * {@link org.apache.tinkerpop.gremlin.driver.Channelizer.WebSocketChannelizer}.
          */
         public String channelizer = Channelizer.WebSocketChannelizer.class.getName();
+
+        /**
+         * A valid Gremlin script that can be used to test remote operations.
+         */
+        public String validationRequest = "''";
     }
 
     public static class SerializerSettings {

@@ -18,7 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -45,10 +47,14 @@ public class SettingsTest {
         conf.setProperty("serializer.className", "my.serializers.MySerializer");
         conf.setProperty("serializer.config.any", "thing");
         conf.setProperty("connectionPool.enableSsl", true);
-        conf.setProperty("connectionPool.keyCertChainFile", "X.509");
-        conf.setProperty("connectionPool.keyFile", "PKCS#8");
-        conf.setProperty("connectionPool.keyPassword", "password1");
-        conf.setProperty("connectionPool.trustCertChainFile", "pem");
+        conf.setProperty("connectionPool.keyStore", "server.jks");
+        conf.setProperty("connectionPool.keyStorePassword", "password2");
+        conf.setProperty("connectionPool.keyStoreType", "pkcs12");
+        conf.setProperty("connectionPool.trustStore", "trust.jks");
+        conf.setProperty("connectionPool.trustStorePassword", "password3");
+        conf.setProperty("connectionPool.sslEnabledProtocols", Arrays.asList("TLSv1.1","TLSv1.2"));
+        conf.setProperty("connectionPool.sslCipherSuites", Arrays.asList("TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"));
+        conf.setProperty("connectionPool.sslSkipCertValidation", true);
         conf.setProperty("connectionPool.minSize", 100);
         conf.setProperty("connectionPool.maxSize", 200);
         conf.setProperty("connectionPool.minSimultaneousUsagePerConnection", 300);
@@ -60,6 +66,7 @@ public class SettingsTest {
         conf.setProperty("connectionPool.reconnectInterval", 900);
         conf.setProperty("connectionPool.resultIterationBatchSize", 1100);
         conf.setProperty("connectionPool.channelizer", "channelizer0");
+        conf.setProperty("connectionPool.validationRequest", "g.inject()");
 
         final Settings settings = Settings.from(conf);
 
@@ -70,13 +77,18 @@ public class SettingsTest {
         assertEquals("password1", settings.password);
         assertEquals("JaasIt", settings.jaasEntry);
         assertEquals("protocol0", settings.protocol);
+        assertEquals(Arrays.asList("255.0.0.1", "255.0.0.2", "255.0.0.3"), settings.hosts);
         assertEquals("my.serializers.MySerializer", settings.serializer.className);
         assertEquals("thing", settings.serializer.config.get("any"));
-        assertEquals(true, settings.connectionPool.enableSsl);
-        assertEquals("X.509", settings.connectionPool.keyCertChainFile);
-        assertEquals("PKCS#8", settings.connectionPool.keyFile);
-        assertEquals("password1", settings.connectionPool.keyPassword);
-        assertEquals("pem", settings.connectionPool.trustCertChainFile);
+        assertThat(settings.connectionPool.enableSsl, is(true));
+        assertEquals("server.jks", settings.connectionPool.keyStore);
+        assertEquals("password2", settings.connectionPool.keyStorePassword);
+        assertEquals("pkcs12", settings.connectionPool.keyStoreType);
+        assertEquals("trust.jks", settings.connectionPool.trustStore);
+        assertEquals("password3", settings.connectionPool.trustStorePassword);
+        assertEquals(Arrays.asList("TLSv1.1","TLSv1.2"), settings.connectionPool.sslEnabledProtocols);
+        assertEquals(Arrays.asList("TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"), settings.connectionPool.sslCipherSuites);
+        assertThat(settings.connectionPool.sslSkipCertValidation, is(true));
         assertEquals(100, settings.connectionPool.minSize);
         assertEquals(200, settings.connectionPool.maxSize);
         assertEquals(300, settings.connectionPool.minSimultaneousUsagePerConnection);
@@ -88,5 +100,6 @@ public class SettingsTest {
         assertEquals(900, settings.connectionPool.reconnectInterval);
         assertEquals(1100, settings.connectionPool.resultIterationBatchSize);
         assertEquals("channelizer0", settings.connectionPool.channelizer);
+        assertEquals("g.inject()", settings.connectionPool.validationRequest);
     }
 }

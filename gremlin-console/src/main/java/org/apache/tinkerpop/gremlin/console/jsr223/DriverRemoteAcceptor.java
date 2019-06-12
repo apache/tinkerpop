@@ -18,11 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.console.jsr223;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
+import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment;
@@ -35,13 +37,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
@@ -172,18 +172,23 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
             final Optional<ResponseException> inner = findResponseException(ex);
             if (inner.isPresent()) {
                 final ResponseException responseException = inner.get();
-                if (responseException.getResponseStatusCode() == ResponseStatusCode.SERVER_ERROR_SERIALIZATION)
-                    throw new RemoteException(String.format("Server could not serialize the result requested. Server error - %s. Note that the class must be serializable by the client and server for proper operation.", responseException.getMessage()));
+                if (responseException.getResponseStatusCode() == ResponseStatusCode.SERVER_ERROR_TIMEOUT) {
+                    throw new RemoteException(String.format("%s - try increasing the timeout with the :remote command", responseException.getMessage()));
+                } else if (responseException.getResponseStatusCode() == ResponseStatusCode.SERVER_ERROR_SERIALIZATION)
+                    throw new RemoteException(String.format(
+                            "Server could not serialize the result requested. Server error - %s. Note that the class must be serializable by the client and server for proper operation.", responseException.getMessage()),
+                            responseException.getRemoteStackTrace().orElse(null));
                 else
-                    throw new RemoteException(responseException.getMessage());
+                    throw new RemoteException(responseException.getMessage(), responseException.getRemoteStackTrace().orElse(null));
             } else if (ex.getCause() != null) {
                 final Throwable rootCause = ExceptionUtils.getRootCause(ex);
                 if (rootCause instanceof TimeoutException)
                     throw new RemoteException("Host did not respond in a timely fashion - check the server status and submit again.");
                 else
                     throw new RemoteException(rootCause.getMessage());
-            } else
+            } else {
                 throw new RemoteException(ex.getMessage());
+            }
         }
     }
 
@@ -199,10 +204,27 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
 
     private List<Result> send(final String gremlin) throws SaslException {
         try {
-            final ResultSet rs = this.currentClient.submitAsync(gremlin, aliases, Collections.emptyMap()).get();
-            return timeout > NO_TIMEOUT ? rs.all().get(timeout, TimeUnit.MILLISECONDS) : rs.all().get();
-        } catch(TimeoutException ignored) {
-            throw new IllegalStateException("Request timed out while processing - increase the timeout with the :remote command");
+            final RequestOptions.Builder options = RequestOptions.build();
+            aliases.forEach(options::addAlias);
+            if (timeout > NO_TIMEOUT)
+                options.timeout(timeout);
+
+            final ResultSet rs = this.currentClient.submit(gremlin, options.create());
+            final List<Result> results = rs.all().get();
+            final Map<String, Object> statusAttributes = rs.statusAttributes().getNow(null);
+
+            // Check for and print warnings
+            if (null != statusAttributes && statusAttributes.containsKey(Tokens.STATUS_ATTRIBUTE_WARNINGS)) {
+                final Object warningAttributeObject = statusAttributes.get(Tokens.STATUS_ATTRIBUTE_WARNINGS);
+                if (warningAttributeObject instanceof List) {
+                    for (Object warningListItem : (List<?>)warningAttributeObject)
+                        shellEnvironment.errPrintln(String.valueOf(warningListItem));
+                } else {
+                    shellEnvironment.errPrintln(String.valueOf(warningAttributeObject));
+                }
+            }
+
+            return results;
         } catch (Exception e) {
             // handle security error as-is and unwrapped
             final Optional<Throwable> throwable  = Stream.of(ExceptionUtils.getThrowables(e)).filter(t -> t instanceof SaslException).findFirst();

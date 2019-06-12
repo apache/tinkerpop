@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.4.0-SNAPSHOT</version>
+        <version>3.5.0-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-dotnet</artifactId>
     <name>Apache TinkerPop :: Gremlin.Net</name>
@@ -34,6 +34,26 @@ limitations under the License.
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <filesets>
+                        <!-- kill .cache directory as it seems to cause hassles in docker builds sometimes-->
+                        <fileset>
+                            <directory>src/obj</directory>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.eobjects.build</groupId>
                 <artifactId>dotnet-maven-plugin</artifactId>
@@ -52,7 +72,7 @@ limitations under the License.
                         <groupId>org.codehaus.groovy</groupId>
                         <artifactId>groovy-all</artifactId>
                         <version>${groovy.version}</version>
-                        <classifier>indy</classifier>
+                        <type>pom</type>
                         <scope>runtime</scope>
                     </dependency>
                     <dependency>
@@ -100,12 +120,11 @@ limitations under the License.
         </plugins>
         <pluginManagement>
             <plugins>
-                <!-- bumping past 0.20 yields build errors - not sure what is amiss there -->
                 <plugin>
                     <groupId>org.eobjects.build</groupId>
                     <artifactId>dotnet-maven-plugin</artifactId>
                     <extensions>true</extensions>
-                    <version>0.20</version>
+                    <version>0.24</version>
                 </plugin>
             </plugins>
         </pluginManagement>

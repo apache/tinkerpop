@@ -19,7 +19,7 @@ limitations under the License.
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup Label="Build">
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFrameworks>netstandard1.3;netstandard2.0</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
@@ -36,22 +36,37 @@ Apache TinkerPop™ is a graph computing framework for both graph databases (OLT
 
 Gremlin.Net implements Gremlin within .NET. C# syntax has the same constructs as Java including "dot notation" for function chaining (a.b.c), round bracket function arguments (a(b,c)), and support for global namespaces (a(b()) vs a(__.b())). As such, anyone familiar with Gremlin-Java will immediately be able to work with Gremlin.Net. Moreover, there are a few added constructs to Gremlin.Net that make traversals a bit more succinct.
 
-Please see the reference documentation at Apache TinkerPop for more information on usage.</Description>
+Please see the reference documentation of Apache TinkerPop for more information on usage and use our Google Group gremlin-users if you have any questions:
+https://groups.google.com/forum/#!forum/gremlin-users
+
+NOTE that versions suffixed with "-rc" are considered release candidates (i.e. pre-alpha, alpha, beta, etc.) and thus for early testing purposes only.</Description>
     <AssemblyOriginatorKeyFile>../../build/tinkerpop.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PackageId>Gremlin.Net</PackageId>
     <PackageTags>gremlin;tinkerpop;apache</PackageTags>
     <PackageProjectUrl>http://tinkerpop.apache.org</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/apache/tinkerpop/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageIconUrl>http://tinkerpop.apache.org/docs/current/images/gremlin-dotnet-logo_256x256.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/apache/tinkerpop</RepositoryUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>    
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>\$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 
-  <ItemGroup Label="Package References">
-    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-18618-05" PrivateAssets="All"/>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'\$(TargetFramework)' == 'netstandard1.3'">
     <PackageReference Include="System.Net.WebSockets" Version="4.3.0" />
     <PackageReference Include="System.Net.WebSockets.Client" Version="4.3.0" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../../LICENSE" Pack="true" PackagePath=""/>
+    <None Include="../../NOTICE" Pack="true" PackagePath=""/>
   </ItemGroup>
 
 </Project>

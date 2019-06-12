@@ -100,7 +100,7 @@ BEGIN {
   if (delimiter == 2 && !($0 ~ /^pb\([0-9]*\); '----'/)) {
     switch (lang) {
       case "python":
-        print "processTraversal(\"\"\"" gensub("\\('id',([0-9]+)\\)", "\\1", "g") "\"\"\", jython, groovy)"
+        print "processTraversal(\"\"\"" gensub("Bindings\\.of\\('id',([0-9]+)\\)", "\\1", "g") "\"\"\", jython, groovy)"
         break
       default:
         print

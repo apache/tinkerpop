@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import io.netty.handler.codec.CodecException;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import io.netty.bootstrap.Bootstrap;
@@ -27,8 +26,6 @@ import io.netty.channel.ChannelPromise;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 import java.net.URI;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -77,7 +74,6 @@ final class Connection {
     public final AtomicInteger borrowed = new AtomicInteger(0);
     private final AtomicReference<Class<Channelizer>> channelizerClass = new AtomicReference<>(null);
 
-    private volatile boolean isDead = false;
     private final int maxInProcess;
 
     private final String connectionLabel;
@@ -130,8 +126,14 @@ final class Connection {
         return Math.max(0, maxInProcess - pending.size());
     }
 
+    /**
+     * Consider a connection as dead if the underlying channel is not connected.
+     *
+     * Note: A dead connection does not necessarily imply that the server is unavailable. Additional checks
+     * should be performed to mark the server host as unavailable.
+     */
     public boolean isDead() {
-        return isDead;
+        return (channel !=null && !channel.isActive());
     }
 
     boolean isClosing() {
@@ -201,8 +203,9 @@ final class Connection {
                     if (!f.isSuccess()) {
                         if (logger.isDebugEnabled())
                             logger.debug(String.format("Write on connection %s failed", thisConnection.getConnectionInfo()), f.cause());
-                        thisConnection.isDead = true;
-                        thisConnection.returnToPool();
+
+                        handleConnectionCleanupOnError(thisConnection, f.cause());
+
                         cluster.executor().submit(() -> future.completeExceptionally(f.cause()));
                     } else {
                         final LinkedBlockingQueue<Result> resultLinkedBlockingQueue = new LinkedBlockingQueue<>();
@@ -217,24 +220,11 @@ final class Connection {
 
                         // the callback for when the read failed. a failed read means the request went to the server
                         // and came back with a server-side error of some sort.  it means the server is responsive
-                        // so this isn't going to be like a dead host situation which is handled above on a failed
+                        // so this isn't going to be like a potentially dead host situation which is handled above on a failed
                         // write operation.
-                        //
-                        // in the event of an IOException (typically means that the Connection might have
-                        // been closed from the server side - this is typical in situations like when a request is
-                        // sent that exceeds maxContentLength and the server closes the channel on its side) or other
-                        // exceptions that indicate a non-recoverable state for the Connection object
-                        // (a netty CorruptedFrameException is a good example of that), the Connection cannot simply
-                        // be returned to the pool as future uses will end with refusal from the server and make it
-                        // appear as a dead host as the write will not succeed. instead, the Connection needs to be
-                        // replaced in these scenarios which destroys the dead channel on the client and allows a new
-                        // one to be reconstructed.
                         readCompleted.exceptionally(t -> {
-                            if (t instanceof IOException || t instanceof CodecException) {
-                                if (pool != null) pool.replaceConnection(thisConnection);
-                            } else {
-                                thisConnection.returnToPool();
-                            }
+
+                            handleConnectionCleanupOnError(thisConnection, t);
 
                             // close was signaled in closeAsync() but there were pending messages at that time. attempt
                             // the shutdown if the returned result cleared up the last pending message
@@ -283,6 +273,23 @@ final class Connection {
         }
     }
 
+    /*
+     * In the event of an IOException (typically means that the Connection might have been closed from the server side
+     * - this is typical in situations like when a request is sent that exceeds maxContentLength and the server closes
+     * the channel on its side) or other exceptions that indicate a non-recoverable state for the Connection object
+     * (a netty CorruptedFrameException is a good example of that), the Connection cannot simply be returned to the
+     * pool as future uses will end with refusal from the server and make it appear as a dead host as the write will
+     * not succeed. Instead, the Connection needs to be replaced in these scenarios which destroys the dead channel
+     * on the client and allows a new one to be reconstructed.
+     */
+    private void handleConnectionCleanupOnError(final Connection thisConnection, final Throwable t) {
+        if (thisConnection.isDead()) {
+            if (pool != null) pool.replaceConnection(thisConnection);
+        } else {
+            thisConnection.returnToPool();
+        }
+    }
+
     private boolean isOkToClose() {
         return pending.isEmpty() || (channel !=null && !channel.isOpen()) || !pool.host.isAvailable();
     }
@@ -301,6 +308,8 @@ final class Connection {
         // be called once. once shutdown is initiated, it shouldn't be executed a second time or else it sends more
         // messages at the server and leads to ugly log messages over there.
         if (shutdownInitiated.compareAndSet(false, true)) {
+            final String connectionInfo = this.getConnectionInfo();
+
             // maybe this should be delegated back to the Client implementation??? kinda weird to instanceof here.....
             if (client instanceof Client.SessionedClient) {
                 final boolean forceClose = client.getSettings().getSession().get().isForceClosed();
@@ -332,10 +341,14 @@ final class Connection {
 
             final ChannelPromise promise = channel.newPromise();
             promise.addListener(f -> {
-                if (f.cause() != null)
+                if (f.cause() != null) {
                     future.completeExceptionally(f.cause());
-                else
+                } else {
+                    if (logger.isDebugEnabled())
+                        logger.debug("{} destroyed successfully.", connectionInfo);
+
                     future.complete(null);
+                }
             });
 
             channel.close(promise);
@@ -344,7 +357,7 @@ final class Connection {
 
     public String getConnectionInfo() {
         return String.format("Connection{host=%s, isDead=%s, borrowed=%s, pending=%s}",
-                pool.host, isDead, borrowed, pending.size());
+                pool.host, isDead(), borrowed, pending.size());
     }
 
     @Override

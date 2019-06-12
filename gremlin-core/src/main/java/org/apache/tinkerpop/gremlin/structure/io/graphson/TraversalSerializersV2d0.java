@@ -24,6 +24,7 @@ import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -37,18 +38,14 @@ import org.apache.tinkerpop.shaded.jackson.core.JsonParser;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
 import org.apache.tinkerpop.shaded.jackson.core.JsonToken;
 import org.apache.tinkerpop.shaded.jackson.databind.DeserializationContext;
-import org.apache.tinkerpop.shaded.jackson.databind.JavaType;
-import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.deser.std.StdDeserializer;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
-import org.apache.tinkerpop.shaded.jackson.databind.type.TypeFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -367,6 +364,40 @@ final class TraversalSerializersV2d0 {
                 } catch (final Exception e) {
                     throw new IllegalStateException(e.getMessage(), e);
                 }
+            }
+        }
+
+        @Override
+        public boolean isCachable() {
+            return true;
+        }
+    }
+
+    final static class TextPJacksonDeserializer extends StdDeserializer<TextP> {
+
+        public TextPJacksonDeserializer() {
+            super(TextP.class);
+        }
+
+        @Override
+        public TextP deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            String predicate = null;
+            String value = null;
+
+            while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+                if (jsonParser.getCurrentName().equals(GraphSONTokens.PREDICATE)) {
+                    jsonParser.nextToken();
+                    predicate = jsonParser.getText();
+                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.VALUE)) {
+                    jsonParser.nextToken();
+                    value = deserializationContext.readValue(jsonParser, String.class);
+                }
+            }
+
+            try {
+                return (TextP) TextP.class.getMethod(predicate, String.class).invoke(null, value);
+            } catch (final Exception e) {
+                throw new IllegalStateException(e.getMessage(), e);
             }
         }
 

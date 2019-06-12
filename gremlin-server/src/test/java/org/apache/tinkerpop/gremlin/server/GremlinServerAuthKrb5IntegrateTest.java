@@ -18,18 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
 import org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator;
-import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.ietf.jgss.GSSException;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
@@ -37,21 +35,18 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import javax.security.auth.login.LoginException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-
-
 /**
  * @author Marc de Lignie
- *
  */
 public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerIntegrationTest {
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(GremlinServerAuthKrb5IntegrateTest.class);
-    private Log4jRecordingAppender recordingAppender = null;
 
     static final String TESTCONSOLE = "GremlinConsole";
     static final String TESTCONSOLE_NOT_LOGGED_IN = "UserNotLoggedIn";
@@ -61,7 +56,6 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
     @Before
     @Override
     public void setUp() throws Exception {
-        setupForEachTest();
         try {
             final String buildDir = System.getProperty("build.dir");
             kdcServer = new KdcFixture(buildDir +
@@ -71,19 +65,6 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
             logger.warn(e.getMessage());
         }
         super.setUp();
-    }
-
-    public void setupForEachTest() {
-        recordingAppender = new Log4jRecordingAppender();
-        final Logger rootLogger = Logger.getRootLogger();
-        rootLogger.addAppender(recordingAppender);
-    }
-
-    @After
-    public void teardownForEachTest() throws Exception {
-        final Logger rootLogger = Logger.getRootLogger();
-        rootLogger.removeAppender(recordingAppender);
-        kdcServer.close();
     }
 
     /**
@@ -125,6 +106,9 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
                 break;
             case "shouldAuthenticateWithSsl":
                 sslConfig.enabled = true;
+                sslConfig.keyStore = JKS_SERVER_KEY;
+                sslConfig.keyStorePassword = KEY_PASS;
+                sslConfig.keyStoreType = KEYSTORE_TYPE_JKS;
                 break;
             case "shouldAuthenticateWithQop":
                 break;
@@ -137,13 +121,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
         final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
                 .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
         final Client client = cluster.connect();
-        try {
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
-            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
-        } finally {
-            cluster.close();
-        }
+        assertConnection(cluster, client);
     }
 
     @Test
@@ -180,32 +158,17 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
 
     @Test
     public void shouldFailWithNonexistentServerPrincipal() throws Exception {
-
-        // wait for logger to flush - (don't think there is a way to detect this)
-        stopServer();
-        Thread.sleep(1000);
-
-        assertTrue(recordingAppender.logContainsAny("WARN - Failed to login to kdc"));
+        assertFailedLogin();
     }
 
     @Test
     public void shouldFailWithEmptyServerKeytab() throws Exception {
-
-        // wait for logger to flush - (don't think there is a way to detect this)
-        stopServer();
-        Thread.sleep(1000);
-
-        assertTrue(recordingAppender.logContainsAny("WARN - Failed to login to kdc"));
+        assertFailedLogin();
     }
 
     @Test
     public void shouldFailWithWrongServerKeytab() throws Exception {
-
-        // wait for logger to flush - (don't think there is a way to detect this)
-        stopServer();
-        Thread.sleep(1000);
-
-        assertTrue(recordingAppender.logContainsAny("WARN - Failed to login to kdc"));
+        assertFailedLogin();
     }
 
     @Test
@@ -227,27 +190,37 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
 
     @Test
     public void shouldAuthenticateWithSsl() throws Exception {
-        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE).enableSsl(true)
+        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE).enableSsl(true).sslSkipCertValidation(true)
                 .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
         final Client client = cluster.connect();
-        try {
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
-            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
-        } finally {
-            cluster.close();
-        }
+        assertConnection(cluster, client);
     }
 
     @Test
     public void shouldAuthenticateWithSerializeResultToStringV1() throws Exception {
-        MessageSerializer serializer = new GryoMessageSerializerV1d0();
-        Map config = new HashMap<String, Object>();
+        final MessageSerializer serializer = new GryoMessageSerializerV1d0();
+        final Map<String,Object> config = new HashMap<>();
         config.put("serializeResultToString", true);
         serializer.configure(config, null);
         final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
                 .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).serializer(serializer).create();
         final Client client = cluster.connect();
+        assertConnection(cluster, client);
+    }
+
+    @Test
+    public void shouldAuthenticateWithSerializeResultToStringV3() throws Exception {
+        final MessageSerializer serializer = new GryoMessageSerializerV3d0();
+        final Map<String, Object> config = new HashMap<>();
+        config.put("serializeResultToString", true);
+        serializer.configure(config, null);
+        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
+                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).serializer(serializer).create();
+        final Client client = cluster.connect();
+        assertConnection(cluster, client);
+    }
+
+    private static void assertConnection(final Cluster cluster, final Client client) throws InterruptedException, ExecutionException {
         try {
             assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
             assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
@@ -257,19 +230,20 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
         }
     }
 
-    @Test
-    public void shouldAuthenticateWithSerializeResultToStringV3() throws Exception {
-        MessageSerializer serializer = new GryoMessageSerializerV3d0();
-        Map config = new HashMap<String, Object>();
-        config.put("serializeResultToString", true);
-        serializer.configure(config, null);
+    /**
+     * Tries to force the logger to flush fully or at least wait until it does.
+     */
+    private void assertFailedLogin() throws Exception {
         final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).serializer(serializer).create();
+                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
         final Client client = cluster.connect();
         try {
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
-            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
+            client.submit("1+1").all().get();
+            fail("The kerberos config is a bust so this request should fail");
+        } catch (Exception ex) {
+            final ResponseException re = (ResponseException) ex.getCause();
+            assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
+            assertEquals("Authenticator is not ready to handle requests", re.getMessage());
         } finally {
             cluster.close();
         }

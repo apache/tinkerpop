@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.junit.Test;
@@ -44,6 +44,10 @@ import static org.junit.Assert.fail;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ResultQueueTest extends AbstractResultQueueTest {
+
+    private static final Map<String,Object> ATTRIBUTES = new HashMap<String,Object>() {{
+        put("this", "that");
+    }};
 
     @Test
     public void shouldGetSizeUntilError() throws Exception {
@@ -135,7 +139,7 @@ public class ResultQueueTest extends AbstractResultQueueTest {
         resultQueue.add(new Result("test3"));
 
         assertThat(future.isDone(), is(false));
-        resultQueue.markComplete();
+        resultQueue.markComplete(ATTRIBUTES);
         assertThat(future.isDone(), is(true));
 
         final List<Result> results = future.get();
@@ -145,6 +149,7 @@ public class ResultQueueTest extends AbstractResultQueueTest {
         assertEquals(3, results.size());
 
         assertThat(resultQueue.isEmpty(), is(true));
+        assertEquals("that", resultQueue.getStatusAttributes().get("this"));
     }
 
     @Test
@@ -242,7 +247,7 @@ public class ResultQueueTest extends AbstractResultQueueTest {
         resultQueue.add(new Result("test2"));
         resultQueue.add(new Result("test3"));
 
-        resultQueue.markComplete();
+        resultQueue.markComplete(ATTRIBUTES);
 
         // you might want 30 but there are only three
         final CompletableFuture<List<Result>> future = resultQueue.await(30);
@@ -255,6 +260,7 @@ public class ResultQueueTest extends AbstractResultQueueTest {
         assertEquals(3, results.size());
 
         assertThat(resultQueue.isEmpty(), is(true));
+        assertEquals("that", resultQueue.getStatusAttributes().get("this"));
     }
 
     @Test
@@ -307,12 +313,14 @@ public class ResultQueueTest extends AbstractResultQueueTest {
         resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_BULKSET, new DefaultRemoteTraverser<>("belinda", 6));
         assertThat(o.isDone(), is(false));
 
-        resultQueue.markComplete();
+        resultQueue.markComplete(ATTRIBUTES);
 
         assertThat(o.isDone(), is(true));
         final BulkSet<String> bulkSet = o.get().get(0).get(BulkSet.class);
         assertEquals(4, bulkSet.get("brian"));
         assertEquals(6, bulkSet.get("belinda"));
+
+        assertEquals("that", resultQueue.getStatusAttributes().get("this"));
     }
 
     @Test
@@ -329,13 +337,15 @@ public class ResultQueueTest extends AbstractResultQueueTest {
         resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_LIST, "dave");
         assertThat(o.isDone(), is(false));
 
-        resultQueue.markComplete();
+        resultQueue.markComplete(ATTRIBUTES);
 
         assertThat(o.isDone(), is(true));
         final List<String> list = o.get().get(0).get(ArrayList.class);
         assertEquals("stephen", list.get(0));
         assertEquals("daniel", list.get(1));
         assertEquals("dave", list.get(2));
+
+        assertEquals("that", resultQueue.getStatusAttributes().get("this"));
     }
 
     @Test
@@ -352,13 +362,15 @@ public class ResultQueueTest extends AbstractResultQueueTest {
         resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_SET, "dave");
         assertThat(o.isDone(), is(false));
 
-        resultQueue.markComplete();
+        resultQueue.markComplete(ATTRIBUTES);
 
         assertThat(o.isDone(), is(true));
         final Set<String> set = o.get().get(0).get(HashSet.class);
         assertThat(set.contains("stephen"), is(true));
         assertThat(set.contains("daniel"), is(true));
         assertThat(set.contains("dave"), is(true));
+
+        assertEquals("that", resultQueue.getStatusAttributes().get("this"));
     }
 
     @Test
@@ -376,13 +388,15 @@ public class ResultQueueTest extends AbstractResultQueueTest {
             assertThat(o.isDone(), is(false));
         });
 
-        resultQueue.markComplete();
+        resultQueue.markComplete(ATTRIBUTES);
 
         assertThat(o.isDone(), is(true));
         final Map<String, String> list = o.get().get(0).get(HashMap.class);
         assertEquals("stephen", list.get("s"));
         assertEquals("daniel", list.get("d"));
         assertEquals("marko", list.get("m"));
+
+        assertEquals("that", resultQueue.getStatusAttributes().get("this"));
     }
 
 
@@ -398,12 +412,14 @@ public class ResultQueueTest extends AbstractResultQueueTest {
 
         resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_NONE, m);
 
-        resultQueue.markComplete();
+        resultQueue.markComplete(ATTRIBUTES);
 
         assertThat(o.isDone(), is(true));
         final Map<String, String> list = o.get().get(0).get(HashMap.class);
         assertEquals("stephen", list.get("s"));
         assertEquals("daniel", list.get("d"));
         assertEquals("marko", list.get("m"));
+
+        assertEquals("that", resultQueue.getStatusAttributes().get("this"));
     }
 }

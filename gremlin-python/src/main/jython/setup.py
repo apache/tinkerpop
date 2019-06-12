@@ -47,7 +47,8 @@ version = __version__.version
 install_requires = [
     'aenum>=1.4.5',
     'tornado>=4.4.1,<5.0',
-    'six>=1.10.0'
+    'six>=1.10.0',
+    'isodate>=0.6.0'
 ]
 
 if sys.version_info < (3,2):
@@ -69,6 +70,9 @@ setup(
         'pytest-runner',
     ],
     tests_require=[
+        # more_itertools used by pytest but causes build issues given the following:
+        # https://github.com/pytest-dev/pytest/issues/4770
+        'more_itertools<6.0.0',
         'pytest',
         'mock',
         'radish-bdd==0.8.6',

@@ -65,7 +65,7 @@ class SocialTraversalSource(GraphTraversalSource):
         traversal = self.get_graph_traversal().V().hasLabel("person")
 
         if len(args) > 0:
-            traversal = traversal.has("name", P.within(args))
+            traversal = traversal.has("name", P.within(*args))
 
         return traversal
 

@@ -37,4 +37,9 @@ globals << [hook : [
 ] as LifeCycleHook]
 
 // define the default TraversalSource to bind queries to - this one will be named "g".
-globals << [g : graph.traversal()]
+// ReferenceElementStrategy converts all graph elements (vertices/edges/vertex properties)
+// to "references" (i.e. just id and label without properties). this strategy was added
+// in 3.4.0 to make all Gremlin Server results consistent across all protocols and
+// serialization formats aligning it with TinkerPop recommended practices for writing
+// Gremlin.
+globals << [g : graph.traversal().withStrategies(ReferenceElementStrategy.instance())]

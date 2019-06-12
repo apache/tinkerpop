@@ -47,7 +47,7 @@ public class Spark {
     }
 
     public static SparkContext create(final SparkConf sparkConf) {
-        if (null == CONTEXT || CONTEXT.isStopped()) {
+        if (isContextNullOrStopped()) {
             sparkConf.setAppName("Apache TinkerPop's Spark-Gremlin");
             CONTEXT = SparkContext.getOrCreate(sparkConf);
         }
@@ -144,6 +144,10 @@ public class Spark {
         if (null != CONTEXT)
             CONTEXT.stop();
         CONTEXT = null;
+    }
+
+    public static boolean isContextNullOrStopped() {
+        return null == CONTEXT || CONTEXT.isStopped();
     }
 
 }

@@ -47,6 +47,12 @@ public class ReferenceEdge extends ReferenceElement<Edge> implements Edge {
         this.outVertex = new ReferenceVertex(edge.outVertex());
     }
 
+    public ReferenceEdge(final Object id, final String label, final ReferenceVertex inVertex, final ReferenceVertex outVertex) {
+        super(id, label);
+        this.inVertex = inVertex;
+        this.outVertex = outVertex;
+    }
+
     @Override
     public <V> Property<V> property(final String key, final V value) {
         throw Element.Exceptions.propertyAdditionNotSupported();

@@ -22,7 +22,7 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 == The Gremlin Console
 
 In link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/#_the_first_five_minutes["The First Five Minutes"]
-of the link:http://tinkerpop.apache.org[Apache TinkerPop] tutorial on how to
+of the link:http://tinkerpop.apache.org[Apache TinkerPop™] tutorial on how to
 link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/[get started] with TinkerPop and graphs, the
 importance of the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-console[Gremlin Console] was
 introduced. This tutorial further explores the usage of the console in the daily work of Gremlin developers delving
@@ -79,9 +79,9 @@ g = graph.traversal()        <2>
 ----
 
 <1> Creates the `Graph` instance that is the API to the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_the_graph_structure[structure] of the graph.
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graph-structure[structure] of the graph.
 <2> Creates the `TraversalSource` which is the API for
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_the_graph_process[processing] or
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#the-graph-process[processing] or
 link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/#_graph_traversal_staying_simple[traversing]
 that `Graph`.
 
@@ -180,8 +180,7 @@ sufficient complexity in your traversals where you will need to:
 * Test or debug pieces of the traversal in isolation.
 * Experiment with different ways of expressing the same traversal.
 * Examine the performance of a traversal through the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#profile-step[profile()]
-or link:http://tinkerpop.apache.org/docs/x.y.z/reference/#explain-step[explain()] steps or by other
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#benchmarking-and-profiling[profiling and benchmarking] methods.
+or link:http://tinkerpop.apache.org/docs/x.y.z/reference/#explain-step[explain()] steps.
 
 Consider an example where you are developing an application that uses TinkerGraph and the data from the "modern"
 toy graph. You want to encapsulate some logic for a graph traversal that finds a "person" vertex, iterates outgoing
@@ -216,7 +215,7 @@ public final class Traversals {
 
 NOTE: TinkerPop code samples typically use link:https://docs.oracle.com/javase/8/docs/technotes/guides/language/static-import.html[static importing],
 which allows for a more fluid code style. If the static import above were removed in favor of a standard import of
-the `__` and `T` classes, the traversal would read as follows: `g.V(id).outE().group().by(T.label).by(__.inV()).next()`.
+the `+__+` and `T` classes, the traversal would read as follows: `+g.V(id).outE().group().by(T.label).by(__.inV()).next()+`.
 The console automatically performs the static imports for these methods, so they do not need to be imported again
 in that environment.
 

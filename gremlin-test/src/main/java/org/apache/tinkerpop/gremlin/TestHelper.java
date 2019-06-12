@@ -152,17 +152,27 @@ public final class TestHelper {
      * {@link TestHelper#makeTestDataPath} in a subdirectory called {@code temp/resources}.
      */
     public static File generateTempFileFromResource(final Class graphClass, final Class resourceClass, final String resourceName, final String extension) throws IOException {
+        return generateTempFileFromResource(graphClass, resourceClass, resourceName, extension, true);
+    }
+
+    /**
+     * Copies a file stored as part of a resource to the file system in the path returned from
+     * {@link TestHelper#makeTestDataPath} in a subdirectory called {@code temp/resources}.
+     */
+    public static File generateTempFileFromResource(final Class graphClass, final Class resourceClass, final String resourceName, final String extension, final boolean overwrite) throws IOException {
         final File temp = makeTestDataPath(graphClass, "resources");
         if (!temp.exists()) temp.mkdirs();
         final File tempFile = new File(temp, resourceName + extension);
-        final FileOutputStream outputStream = new FileOutputStream(tempFile);
-        int data;
-        final InputStream inputStream = resourceClass.getResourceAsStream(resourceName);
-        while ((data = inputStream.read()) != -1) {
-            outputStream.write(data);
+        if (!tempFile.exists() || overwrite) {
+            try (final FileOutputStream outputStream = new FileOutputStream(tempFile)) {
+                int data;
+                try (final InputStream inputStream = resourceClass.getResourceAsStream(resourceName)) {
+                    while ((data = inputStream.read()) != -1) {
+                        outputStream.write(data);
+                    }
+                }
+            }
         }
-        outputStream.close();
-        inputStream.close();
         return tempFile;
     }
 

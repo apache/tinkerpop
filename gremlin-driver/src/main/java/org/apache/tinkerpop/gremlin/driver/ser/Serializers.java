@@ -33,6 +33,7 @@ public enum Serializers {
     GRAPHSON_V1D0(SerTokens.MIME_GRAPHSON_V1D0),
     GRAPHSON_V2D0(SerTokens.MIME_GRAPHSON_V2D0),
     GRAPHSON_V3D0(SerTokens.MIME_GRAPHSON_V3D0),
+    GRAPHBINARY_V1D0(SerTokens.MIME_GRAPHBINARY_V1D0),
     GRYO_V1D0(SerTokens.MIME_GRYO_V1D0),
     GRYO_V3D0(SerTokens.MIME_GRYO_V3D0),
     GRYO_LITE_V1D0(SerTokens.MIME_GRYO_LITE_V1D0);
@@ -43,14 +44,20 @@ public enum Serializers {
      * Default serializer for results returned from Gremlin Server. This implementation must be of type
      * {@link org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer} so that it can be compatible with text-based
      * websocket messages.
+     *
+     * @deprecated As of release 3.3.5, not replaced, simply specify the exact version of the serializer to use.
      */
+    @Deprecated
     public static final MessageSerializer DEFAULT_RESULT_SERIALIZER = new GraphSONMessageSerializerV1d0();
 
     /**
      * Default serializer for requests received by Gremlin Server. This implementation must be of type
      * {@link org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer} so that it can be compatible with text-based
      * websocket messages.
+     *
+     * @deprecated As of release 3.3.5, not replaced, simply specify the exact version of the serializer to use.
      */
+    @Deprecated
     public static final MessageSerializer DEFAULT_REQUEST_SERIALIZER = new GraphSONMessageSerializerV1d0();
 
     Serializers(final String mimeType) {
@@ -68,7 +75,7 @@ public enum Serializers {
             case SerTokens.MIME_GRAPHSON_V1D0:
                 return new GraphSONMessageSerializerGremlinV1d0();
             case SerTokens.MIME_GRAPHSON_V2D0:
-                return new GraphSONMessageSerializerGremlinV2d0();
+                return new GraphSONMessageSerializerV2d0();
             case SerTokens.MIME_GRAPHSON_V3D0:
                 return new GraphSONMessageSerializerV3d0();
             case SerTokens.MIME_GRYO_V1D0:
@@ -77,6 +84,8 @@ public enum Serializers {
                 return new GryoMessageSerializerV3d0();
             case SerTokens.MIME_GRYO_LITE_V1D0:
                 return new GryoLiteMessageSerializerV1d0();
+            case SerTokens.MIME_GRAPHBINARY_V1D0:
+                return new GraphBinaryMessageSerializerV1();
             default:
                 throw new RuntimeException("Could not create a simple MessageSerializer instance of " + value);
         }

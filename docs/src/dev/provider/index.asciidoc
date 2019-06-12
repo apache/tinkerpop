@@ -22,10 +22,10 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 
 = Provider Documentation
 
-TinkerPop exposes a set of interfaces, protocols, and tests that make it possible for third-parties to build libraries
-and systems that plug-in to the TinkerPop stack.  TinkerPop refers to those third-parties as "providers" and this
-documentation is designed to help providers understand what is involved in developing code on these lower levels of
-the TinkerPop API.
+Apache TinkerPop™ exposes a set of interfaces, protocols, and tests that make it possible for third-parties to build
+libraries and systems that plug-in to the TinkerPop stack.  TinkerPop refers to those third-parties as "providers" and
+this documentation is designed to help providers understand what is involved in developing code on these lower levels
+of the TinkerPop API.
 
 This document attempts to address the needs of the different providers that have been identified:
 
@@ -54,6 +54,7 @@ exposes the basic components of a property graph to include `Graph`, `Vertex`, `
 The structure API can be used directly as follows:
 
 [source,java]
+----
 Graph graph = TinkerGraph.open(); <1>
 Vertex marko = graph.addVertex(T.label, "person", T.id, 1, "name", "marko", "age", 29); <2>
 Vertex vadas = graph.addVertex(T.label, "person", T.id, 2, "name", "vadas", "age", 27);
@@ -67,6 +68,7 @@ marko.addEdge("created", lop, T.id, 9, "weight", 0.4f);
 josh.addEdge("created", ripple, T.id, 10, "weight", 1.0f);
 josh.addEdge("created", lop, T.id, 11, "weight", 0.4f);
 peter.addEdge("created", lop, T.id, 12, "weight", 0.2f);
+----
 
 <1> Create a new in-memory `TinkerGraph` and assign it to the variable `graph`.
 <2> Create a vertex along with a set of key/value pairs with `T.label` being the vertex label and `T.id` being the vertex id.
@@ -140,23 +142,41 @@ implementations for ideas and patterns.
 
 Please consider the following implementation notes:
 
-* Be sure your `Graph` implementation is named as `XXXGraph` (e.g. TinkerGraph, Neo4jGraph, HadoopGraph, etc.).
-* Use `StringHelper` to ensuring that the `toString()` representation of classes are consistent with other implementations.
-* Ensure that your implementation's `Features` (Graph, Vertex, etc.) are correct so that test cases handle particulars accordingly.
+* Use `StringHelper` to ensuring that the `toString()` representation of classes are consistent with other
+implementations.
+* Ensure that your implementation's `Features` (Graph, Vertex, etc.) are correct so that test cases handle particulars
+accordingly.
 * Use the numerous static method helper classes such as `ElementHelper`, `GraphComputerHelper`, `VertexProgramHelper`, etc.
 * There are a number of default methods on the provided interfaces that are semantically correct. However, if they are
 not efficient for the implementation, override them.
-* Implement the `structure/` package interfaces first and then, if desired, interfaces in the `process/` package interfaces.
+* Implement the `structure/` package interfaces first and then, if desired, interfaces in the `process/` package
+interfaces.
 * `ComputerGraph` is a `Wrapper` system that ensure proper semantics during a GraphComputer computation.
+* The link:http://tinkerpop.apache.org/javadocs/x.y.z/core/[javadoc] is often a good resource in understanding
+expectations from both the user's perspective as well as the graph provider's perspective. Also consider examining
+the javadoc of TinkerGraph which is often well annotated and the interfaces and classes of the test suite itself.
 
 [[oltp-implementations]]
 ==== OLTP Implementations
 
 image:pipes-character-1.png[width=110,float=right] The most important interfaces to implement are in the `structure/`
-package. These include interfaces like Graph, Vertex, Edge, Property, Transaction, etc. The `StructureStandardSuite`
-will ensure that the semantics of the methods implemented are correct. Moreover, there are numerous `Exceptions`
-classes with static exceptions that should be thrown by the graph system so that all the exceptions and their
-messages are consistent amongst all TinkerPop implementations.
+package. These include interfaces like `Graph`, `Vertex`, `Edge`, `Property`, `Transaction`, etc. The
+`StructureStandardSuite` will ensure that the semantics of the methods implemented are correct. Moreover, there are
+numerous `Exceptions` classes with static exceptions that should be thrown by the graph system so that all the
+exceptions and their messages are consistent amongst all TinkerPop implementations.
+
+The following bullets provide some tips to consider when implementing the structure interfaces:
+
+* `Graph`
+** Be sure the `Graph` implementation is named as `XXXGraph` (e.g. TinkerGraph, Neo4jGraph, HadoopGraph, etc.).
+** This implementation needs to be `GraphFactory` compatible which means that the implementation should have a static
+`Graph open(Configuration)` method where the `Configuration` is an Apache Commons class of that name. Alternatively, the
+`Graph` implementation can have the `GraphFactoryClass` annotation which specifies a class with that static
+`Graph open(Configuration)` method.
+* `VertexProperty`
+** This interface is both a `Property` and an `Element` as `VertexProperty` is a first-class graph element in that it
+can have its own properties (i.e. meta-properties). Even if the implementation does not intend to support
+meta-properties, the `VertexProperty` needs to be implemented as an `Element`.
 
 [[olap-implementations]]
 ==== OLAP Implementations
@@ -393,7 +413,7 @@ determine how to read and write data to and from Hadoop. For instance, `gremlin.
 
 ===== GraphFilterAware Interface
 
-<<graph-filter,Graph filters>> by OLAP processors to only pull a subgraph of the full graph from the graph data source. For instance, the
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graph-filter[Graph filters] by OLAP processors to only pull a subgraph of the full graph from the graph data source. For instance, the
 example below constructs a `GraphFilter` that will only pull the "knows"-graph amongst people into the `GraphComputer`
 for processing.
 
@@ -416,8 +436,8 @@ if (configuration.containsKey(Constants.GREMLIN_HADOOP_GRAPH_FILTER))
 
 A graph system provider's `OutputFormat` should implement the `PersistResultGraphAware` interface which
 determines which persistence options are available to the user. For the standard file-based `OutputFormats` provided
-by Hadoop-Gremlin (e.g. <<gryo-io-format,`GryoOutputFormat`>>, <<graphson-io-format,`GraphSONOutputFormat`>>,
-and <<script-io-format,`ScriptInputOutputFormat`>>) `ResultGraph.ORIGINAL` is not supported as the original graph
+by Hadoop-Gremlin (e.g. link:++http://tinkerpop.apache.org/docs/x.y.z/reference/#gryo-io-format++[`GryoOutputFormat`], link:++http://tinkerpop.apache.org/docs/x.y.z/reference/#graphson-io-format++[`GraphSONOutputFormat`],
+and link:++http://tinkerpop.apache.org/docs/x.y.z/reference/#script-io-format++[`ScriptInputOutputFormat`]) `ResultGraph.ORIGINAL` is not supported as the original graph
 data files are not random access and are, in essence, immutable. Thus, these file-based `OutputFormats` only support
 `ResultGraph.NEW` which creates a copy of the data specified by the `Persist` enum.
 
@@ -532,59 +552,16 @@ any .NET language and registering them with the `GremlinClient`.
 
 [source,csharp]
 ----
-internal class MyType
-{
-    public static string GraphsonPrefix = "providerx";
-    public static string GraphsonBaseType = "MyType";
-    public static string GraphsonType = GraphSONUtil.FormatTypeName(GraphsonPrefix, GraphsonBaseType);
+include::../../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Dev/Provider/IndexTests.cs[tags=myTypeSerialization]
 
-    public MyType(int x, int y)
-    {
-        X = x;
-        Y = y;
-    }
-
-    public int X { get; }
-    public int Y { get; }
-}
-
-internal class MyClassWriter : IGraphSONSerializer
-{
-    public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
-    {
-        MyType myType = objectData;
-        var valueDict = new Dictionary<string, object>
-        {
-            {"x", myType.X},
-            {"y", myType.Y}
-        };
-        return GraphSONUtil.ToTypedValue(nameof(TestClass), valueDict, MyType.GraphsonPrefix);
-    }
-}
-
-internal class MyTypeReader : IGraphSONDeserializer
-{
-    public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
-    {
-        var x = reader.ToObject(graphsonObject["x"]);
-        var y = reader.ToObject(graphsonObject["y"]);
-        return new MyType(x, y);
-    }
-}
-
-var graphsonReader = new GraphSONReader(
-    new Dictionary<string, IGraphSONDeserializer> {{MyType.GraphsonType, new MyTypeReader()}});
-var graphsonWriter = new GraphSONWriter(
-    new Dictionary<Type, IGraphSONSerializer> {{typeof(MyType), new MyClassWriter()}});
-
-var gremlinClient = new GremlinClient(new GremlinServer("localhost", 8182), graphsonReader, graphsonWriter);
+include::../../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Dev/Provider/IndexTests.cs[tags=supportingGremlinNetIO]
 ----
 
 [[remoteconnection-implementations]]
 ==== RemoteConnection Implementations
 
 A `RemoteConnection` is an interface that is important for usage on traversal sources configured using the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-remotegraph[withRemote()] option. A `Traversal`
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-drivers[withRemote()] option. A `Traversal`
 that is generated from that source will apply a `RemoteStrategy` which will inject a `RemoteStep` to its end. That
 step will then send the `Bytecode` of the `Traversal` over the `RemoteConnection` to get the results that it will
 iterate.
@@ -616,16 +593,21 @@ something required if there is a need to exploit `withRemote()` in some way. If 
 similar to Gremlin Server that can accept a serialized `Traversal` instance, then that would be one example of a
 reason to implement this interface.
 
-[bulk-import-export]]
+[[bulk-import-export]]
 ==== Bulk Import Export
 
 When it comes to doing "bulk" operations, the diverse nature of the available graph databases and their specific
-capabilities, prevents TinkerPop from doing a good job of generalizing that capability well. TinkerPop refers users to
-the bulk import/export facilities of specific graph providers as they tend to be more efficient and easier to use than
-the options TinkerPop has tried to generalize in the past.
+capabilities, prevents TinkerPop from doing a good job of generalizing that capability well. TinkerPop thus maintains
+two positions on the concept of import and export:
 
-That said, for graph providers that don't have a special bulk loading feature, they can get a basic bulk loader from
-TinkerPop using the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#clonevertexprogram[CloneVertexProgram].
+1. TinkerPop refers users to the bulk import/export facilities of specific graph providers as they tend to be more
+efficient and easier to use than the options TinkerPop has tried to generalize in the past.
+2. TinkerPop encourages graph providers to expose those capabilities via `g.io()` and the `IoStep` by way of a
+`TraversalStrategy`.
+
+That said, for graph providers that don't have a special bulk loading feature, they can either rely on the default
+OLTP (single-threaded) `GraphReader` and `GraphWriter` options that are embedded in `IoStep` or get a basic bulk loader
+from TinkerPop using the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#clonevertexprogram[CloneVertexProgram].
 Simply provide a `InputFormat` and `OutputFormat` that can be referenced by a `HadoopGraph` instance as discussed
 in the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#clonevertexprogram[Reference Documentation].
 
@@ -701,8 +683,9 @@ in this case when running the mis-configured suite).
 
 There are times when there may be a specific test in the suite that the implementation cannot support (despite the
 features it implements) or should not otherwise be executed.  It is possible for implementers to "opt-out" of a test
-by using the `@Graph.OptOut` annotation.  The following is an example of this annotation usage as taken from
-`HadoopGraph`:
+by using the `@Graph.OptOut` annotation. This annotation can be applied to either a `Graph` instance or a
+`GraphProvider` instance (the latter would typically be used for "opting out" for a particular `Graph` configuration
+that was under test). The following is an example of this annotation usage as taken from `HadoopGraph`:
 
 [source,java]
 ----
@@ -773,10 +756,25 @@ off for the test suite (the Maven SureFire Plugin is configured this way by defa
 include this setting, `<reuseForks>false</reuseForks>`, in the SureFire configuration if tests are failing in an
 unexplainable way.
 
+WARNING: For graph implementations that require a schema, take note that TinkerPop tests were originally developed
+without too much concern for these types of graphs. While most tests utilize the standard toy graphs there are
+instances where tests will utilize their own independent schema that stands alone from all other tests. It may be
+necessary to create schemas specific to certain tests in those situations.
+
 TIP: When running the `gremlin-test` suite against your implementation, you may need to set `build.dir` as an
 environment variable, depending on your project layout. Some tests require this to find a writable directory for
 creating temporary files. The value is typically set to the project build directory. For example using the Maven
 SureFire Plugin, this is done via the configuration argLine with `-Dbuild.dir=${project.build.directory}`.
+
+==== Checking resource leak
+TinkerPop query engine retrieves data by interfacing with the provider using iterators. These iterators (depending
+on the provider) may hold up resources in the underlying storage layer and hence, it is critical to close them after
+the query is finished.
+
+TinkerPop provides you with the ability to test for such resource leaks by checking for leaks when you run the
+Gremlin-Test suites against your implementation. To enable this leak detection, providers should increment the
+`StoreIteratorCounter` whenever a reource is opened and decrement it when it is closed. A reference implementation
+is provided with TinkerGraph as `TinkerGraphIterator.java`.
 
 === Accessibility via GremlinPlugin
 
@@ -816,7 +814,11 @@ can be used to alter a traversal prior to its execution. A typical example is co
 lookup becomes an `O(log(|V|))`. Please review `TinkerGraphStepStrategy` for ideas.
 * Step Implementations: Every link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graph-traversal-steps[step] is
 ultimately referenced by the `GraphTraversal` interface. It is possible to extend `GraphTraversal` to use a graph
-system specific step implementation.
+system specific step implementation. Note that while it is sometimes possible to develop custom step implementations
+by extending from a TinkerPop step (typically, `AddVertexStep` and other `Mutating` steps), it's important to
+consider that doing so introduces some greater risk for code breaks on upgrades as opposed to other areas of the code
+base. As steps are more internal features of TinkerPop, they might be subject to breaking API and behavioral changes
+that would be less likely to be accepted by more public facing interfaces.
 
 == Graph Driver Provider Requirements
 
@@ -935,7 +937,8 @@ Gremlin Server will send:
 |206 |PARTIAL CONTENT |The server successfully returned some content, but there is more in the stream to arrive - wait for a `SUCCESS` to signify the end of the stream.
 |401 |UNAUTHORIZED |The request attempted to access resources that the requesting user did not have access to.
 |407 |AUTHENTICATE |A challenge from the server for the client to authenticate its request.
-|498 |MALFORMED REQUEST | The request message was not properly formatted which means it could not be parsed at all or the "op" code was not recognized such that Gremlin Server could properly route it for processing.  Check the message format and retry the request.
+|497 |CLIENT SERIALIZATION ERROR |The request message contained an object that was not serializable.
+|498 |MALFORMED REQUEST |The request message was not properly formatted which means it could not be parsed at all or the "op" code was not recognized such that Gremlin Server could properly route it for processing.  Check the message format and retry the request.
 |499 |INVALID REQUEST ARGUMENTS |The request message was parseable, but the arguments supplied in the message were in conflict or incomplete. Check the message format and retry the request.
 |500 |SERVER ERROR |A general server error occurred that prevented the request from being processed.
 |597 |SCRIPT EVALUATION ERROR |The script submitted for processing evaluated in the `ScriptEngine` with errors and could not be processed.  Check the script submitted for syntax errors or other problems and then resubmit.
@@ -980,7 +983,8 @@ evaluated and is committed when the script completes (or rolled back if an error
 !=========================================================
 |=========================================================
 
-'`authentication` operation arguments'
+**`authentication` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
@@ -988,7 +992,8 @@ evaluated and is committed when the script completes (or rolled back if an error
 |saslMechanism |String | The SASL mechanism: `PLAIN` or `GSSAPI`. Note that it is up to the server implementation to use or disregard this setting (default implementation in Gremlin Server ignores it).
 |=========================================================
 
-'`eval` operation arguments'
+**`eval` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
@@ -1025,7 +1030,8 @@ Gremlin Server are deployed, session state is not shared among them.
 !`close` !Close the specified session. Will return a `NO CONTENT` message as confirmation of the close being completed.
 |=========================================================
 
-'`authentication` operation arguments'
+**`authentication` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
@@ -1033,7 +1039,8 @@ Gremlin Server are deployed, session state is not shared among them.
 |sasl |String | *Required* The response to the server authentication challenge.  This value is dependent on the SASL authentication mechanism required by the server and is Base64 encoded.
 |=========================================================
 
-'`eval` operation arguments'
+**`eval` operation arguments**
+
 [width="100%",options="header"]
 |=========================================================
 |Key |Type |Description
@@ -1050,7 +1057,7 @@ example, if the Gremlin Server defines two `TraversalSource` instances named `g1
 to send an alias pair with key of "g" and value of "g2" and thus allow the script to refer to "g2" simply as "g".
 |=========================================================
 
-'`close` operation arguments'
+**`close` operation arguments**
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
@@ -1085,7 +1092,7 @@ To demonstrate consider this example:
 cluster = Cluster.open()
 client = cluster.connect()
 aliased = client.alias("g")
-g = org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph.INSTANCE.traversal()       <1>
+g = org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph.instance().traversal()     <1>
 rs = aliased.submit(g.V().both().barrier().both().barrier()).all().get()                    <2>
 aliased.submit(g.V().both().barrier().both().barrier().count()).all().get().get(0).getInt() <3>
 rs.collect{[value: it.getObject().get(), bulk: it.getObject().bulk()]}                      <4>
@@ -1101,7 +1108,7 @@ request would have sent back thirty traversers.
 
 The full iteration of a `Traversal` is thus left to the client. It must interpret the bulk on the `Traverser` and
 unroll it to represent the actual number of times it exists when iterated. The unrolling is typically handled
-directly within TinkerPop's `RemoteGraph` implementations.
+directly within TinkerPop's remote traversal implementations.
 
 One of the important aspects of the Traversal OpProcessor is that it enables the user to not only get the results of
 the `Traversal` but also the side-effects that it produces. When the `Traversal` is submitted with the "bytecode"
@@ -1126,14 +1133,16 @@ operation is available to clear the cache of a specific side-effect.
 !`keys` !Gets all the keys of all side-effects as produced by a previously executed `Traversal`.
 |=========================================================
 
-'`authentication` operation arguments'
+**`authentication` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
 |sasl |String | *Required* The response to the server authentication challenge.  This value is dependent on the SASL authentication mechanism required by the server and is Base64 encoded.
 |=========================================================
 
-'`bytecode` operation arguments'
+**`bytecode` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
@@ -1148,14 +1157,16 @@ one key value pair present (since only one `Traversal` is being submitted, there
 single alias).
 |=========================================================
 
-'`close` operation arguments'
+**`close` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
 |sideEffect |UUID | *Required* The unique identifier for the request that original submitted the traversal (side-effects are keyed by that value)
 |=========================================================
 
-'`gather` operation arguments'
+**`gather` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
@@ -1177,7 +1188,8 @@ streamed side-effect data should be treated on the client. It provides a hint as
 rolled back up into a single object or simply left as-is. There are four values for "aggregateTo": `bulkset`, `list`,
 `map`, `set` and `none`.
 
-'`keys` operation arguments'
+**`keys` operation arguments**
+
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
@@ -1244,7 +1256,7 @@ which describes the list of classes to import when the plugin is activated and a
 The `ImportCustomizer` is just one of several provided `Customizer` implementations that can be used in conjunction
 with plugin development:
 
-* link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/BindingCustomizer.html[BindingCustomizer] - Inject a key/value pair into the global bindings of the `GremlinScriptEngine` instances
+* link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/BindingsCustomizer.html[BindingsCustomizer] - Inject a key/value pair into the global bindings of the `GremlinScriptEngine` instances
 * link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/ImportCustomizer.html[ImportCustomizer] - Add imports to a `GremlinScriptEngine`
 * link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/ScriptCustomizer.html[ScriptCustomizer] - Execute a script on a `GremlinScriptEngine` at startup
 

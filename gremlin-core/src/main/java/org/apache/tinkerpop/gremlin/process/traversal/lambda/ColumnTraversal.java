@@ -22,6 +22,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.lambda;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Column;
 
+import java.util.Objects;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -56,5 +58,11 @@ public final class ColumnTraversal extends AbstractLambdaTraversal {
     @Override
     public int hashCode() {
         return this.getClass().hashCode() ^ this.column.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return other instanceof ColumnTraversal
+                && Objects.equals(((ColumnTraversal) other).column, this.column);
     }
 }

@@ -160,28 +160,34 @@ Feature: Step - groupCount()
       | m[{"marko":"d[2].l", "java":"d[2].l"}] |
 
   Scenario: g_V_outXcreatedX_groupCountXxX_capXxX
-    Given an unsupported test
-    Then nothing should happen because
+    Given the modern graph
+    And the traversal of
       """
-      The result returned is not supported under GraphSON 2.x and therefore cannot be properly asserted. More
-      specifically it has vertex keys which basically get toString()'d under GraphSON 2.x. This test can be supported
-      with GraphSON 3.x.
+      g.V().out("created").groupCount("x").cap("x")
       """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | m[{"v[ripple]":"d[1].l","v[lop]":"d[3].l"}] |
 
   Scenario: g_V_groupCount_byXbothE_countX
-    Given an unsupported test
-    Then nothing should happen because
+    Given the modern graph
+    And the traversal of
       """
-      The result returned is not supported under GraphSON 2.x and therefore cannot be properly asserted. More
-      specifically it has vertex keys which basically get toString()'d under GraphSON 2.x. This test can be supported
-      with GraphSON 3.x.
+      g.V().groupCount().by(__.bothE().count())
       """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | m[{"d[1].l":"d[3].l","d[3].l":"d[3].l"}] |
 
   Scenario: g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX
-    Given an unsupported test
-    Then nothing should happen because
+    Given the modern graph
+    And the traversal of
       """
-      The result returned is not supported under GraphSON 2.x and therefore cannot be properly asserted. More
-      specifically it has vertex keys which basically get toString()'d under GraphSON 2.x. This test can be supported
-      with GraphSON 3.x.
+      g.V().both().groupCount("a").out().cap("a").select(Column.keys).unfold().both().groupCount("a").cap("a")
       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"v[marko]":"d[6].l","v[vadas]":"d[2].l","v[lop]":"d[6].l","v[josh]":"d[6].l","v[ripple]":"d[2].l","v[peter]":"d[2].l"}] |

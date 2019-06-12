@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.4.0-SNAPSHOT</version>
+        <version>3.5.0-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-python</artifactId>
     <name>Apache TinkerPop :: Gremlin Python</name>
@@ -34,7 +34,7 @@ limitations under the License.
         <dependency>
             <groupId>org.python</groupId>
             <artifactId>jython-standalone</artifactId>
-            <version>2.7.1b2</version>
+            <version>2.7.1</version>
         </dependency>
         <!-- TESTING -->
         <dependency>
@@ -86,7 +86,6 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -276,10 +275,10 @@ limitations under the License.
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <mkdir dir="${project.build.directory}/python-reports"/>
                                         <mkdir dir="${project.build.directory}/python-packaged/env"/>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                             <!-- copy files in jython directory to target/py and run virtual env to sandbox python.
@@ -317,7 +316,7 @@ limitations under the License.
                                         </exec>
                                         <exec dir="${project.build.directory}/python2" executable="env/bin/pip"
                                               failonerror="true">
-                                            <arg line="install wheel radish-bdd PyHamcrest aenum"/>
+                                            <arg line="install wheel radish-bdd PyHamcrest aenum isodate"/>
                                         </exec>
                                         <exec dir="${project.build.directory}/python3" executable="virtualenv"
                                               failonerror="true">
@@ -325,7 +324,7 @@ limitations under the License.
                                         </exec>
                                         <exec dir="${project.build.directory}/python3" executable="env/bin/pip"
                                               failonerror="true">
-                                            <arg line="install wheel radish-bdd PyHamcrest aenum"/>
+                                            <arg line="install wheel radish-bdd PyHamcrest aenum isodate"/>
                                         </exec>
                                         <exec dir="${project.build.directory}/python-packaged" executable="virtualenv"
                                               failonerror="true">
@@ -425,14 +424,14 @@ limitations under the License.
                                               failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
                                             <env key="PYTHONIOENCODING" value="utf-8:surrogateescape"/>
-                                            <arg line="-e -t -b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/ --user-data=&quot;graphson=v2&quot;"/> <!-- -no-line-jump -->
+                                            <arg line="-f dots -e -t -b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/ --user-data=&quot;graphson=v2&quot;"/> <!-- -no-line-jump -->
                                         </exec>
                                         <!-- run for graphson 3.0 -->
                                         <exec executable="env/bin/radish" dir="${project.build.directory}/python2"
                                               failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
                                             <env key="PYTHONIOENCODING" value="utf-8:surrogateescape"/>
-                                            <arg line="-e -t -b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/ --user-data=&quot;graphson=v3&quot;"/> <!-- -no-line-jump -->
+                                            <arg line="-f dots -e -t -b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/ --user-data=&quot;graphson=v3&quot;"/> <!-- -no-line-jump -->
                                         </exec>
                                     </target>
                                 </configuration>
@@ -464,7 +463,7 @@ limitations under the License.
                                 <groupId>org.codehaus.groovy</groupId>
                                 <artifactId>groovy-all</artifactId>
                                 <version>${groovy.version}</version>
-                                <classifier>indy</classifier>
+                                <type>pom</type>
                                 <scope>runtime</scope>
                             </dependency>
                             <dependency>
@@ -599,17 +598,17 @@ limitations under the License.
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <exec dir="${project.build.directory}/python-packaged" executable="env/bin/pip"
                                               failonerror="true">
-                                            <arg line="install twine"/>
+                                            <arg line="install twine==1.12.1"/>
                                         </exec>
                                         <!-- to use the pypi test environment add: -r pypitest -->
                                         <exec dir="${project.build.directory}/python-packaged" executable="env/bin/twine"
                                               failonerror="true">
                                             <arg line="upload dist/* -r pypi -s "/>
                                         </exec>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                         </executions>

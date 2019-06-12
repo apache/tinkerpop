@@ -26,6 +26,7 @@ const assert = require('assert');
 const graph = require('../../lib/structure/graph');
 const t = require('../../lib/process/traversal.js');
 const gs = require('../../lib/structure/io/graph-serializer.js');
+const utils = require('../../lib/utils');
 const GraphSONReader = gs.GraphSONReader;
 const GraphSONWriter = gs.GraphSONWriter;
 const P = t.P;
@@ -45,6 +46,37 @@ describe('GraphSONReader', function () {
       assert.strictEqual(typeof result, 'number');
       assert.strictEqual(result, item[1]);
     });
+  });
+  it('should parse GraphSON NaN from GraphSON', function () {
+      const reader = new GraphSONReader();
+      var result = reader.read({
+                "@type": "g:Double",
+                "@value": "NaN"
+              });
+      assert.ok(isNaN(result));
+  });
+  it('should parse GraphSON -Infinity from GraphSON', function () {
+      const reader = new GraphSONReader();
+      var result = reader.read({
+                "@type": "g:Double",
+                "@value": "-Infinity"
+              });
+      assert.strictEqual(result, Number.NEGATIVE_INFINITY);
+  });
+  it('should parse GraphSON Infinity from GraphSON', function () {
+      const reader = new GraphSONReader();
+      var result = reader.read({
+                "@type": "g:Double",
+                "@value": "Infinity"
+              });
+      assert.strictEqual(result, Number.POSITIVE_INFINITY);
+  });
+  it('should parse BulkSet', function() {
+      const obj = {"@type": "g:BulkSet", "@value": ["marko", {"@type": "g:Int64", "@value": 1}, "josh", {"@type": "g:Int64", "@value": 3}]};
+      const reader = new GraphSONReader();
+      const result = reader.read(obj);
+      assert.strictEqual(result.length, 4);
+      assert.deepStrictEqual(result, ["marko", "josh", "josh", "josh"]);
   });
   it('should parse Date', function() {
     const obj = { "@type" : "g:Date", "@value" : 1481750076295 };
@@ -102,6 +134,21 @@ describe('GraphSONWriter', function () {
     const writer = new GraphSONWriter();
     assert.strictEqual(writer.write(2), '2');
   });
+  it('should write NaN', function () {
+    const writer = new GraphSONWriter();
+    const expected = JSON.stringify({ "@type" : "g:Double", "@value" : "NaN" });
+    assert.strictEqual(writer.write(NaN), expected);
+  });
+  it('should write Infinity', function () {
+    const writer = new GraphSONWriter();
+    const expected = JSON.stringify({ "@type" : "g:Double", "@value" : "Infinity" });
+    assert.strictEqual(writer.write(Number.POSITIVE_INFINITY), expected);
+  });
+  it('should write -Infinity', function () {
+    const writer = new GraphSONWriter();
+    const expected = JSON.stringify({ "@type" : "g:Double", "@value" : "-Infinity" });
+    assert.strictEqual(writer.write(Number.NEGATIVE_INFINITY), expected);
+  });
   it('should write Date', function() {
     const writer = new GraphSONWriter();
     const expected = JSON.stringify({ "@type" : "g:Date", "@value" : 1481750076295 });
@@ -112,6 +159,15 @@ describe('GraphSONWriter', function () {
     assert.strictEqual(writer.write(true), 'true');
     assert.strictEqual(writer.write(false), 'false');
   });
+  it('should write list values', function () {
+    const writer = new GraphSONWriter();
+    const expected = JSON.stringify({"@type": "g:List", "@value": ["marko"]});
+    assert.strictEqual(writer.write(["marko"]), expected);
+  });
+  it('should write enum values', function () {
+    const writer = new GraphSONWriter();
+    assert.strictEqual(writer.write(t.cardinality.set), '{"@type":"g:Cardinality","@value":"set"}');
+  });
   it('should write P', function () {
     const writer = new GraphSONWriter();
     const expected = JSON.stringify({"@type":"g:P","@value":{"predicate":"and","value":[
@@ -119,5 +175,17 @@ describe('GraphSONWriter', function () {
         {"@type":"g:P","@value":{"predicate":"gt","value":"c"}}]}},
       {"@type":"g:P","@value":{"predicate":"neq","value":"d"}}]}});
     assert.strictEqual(writer.write(P.lt("b").or(P.gt("c")).and(P.neq("d"))), expected);
+  });
+  it('should write P.within single', function () {
+    const writer = new GraphSONWriter();
+    const expected = JSON.stringify({"@type": "g:P", "@value": {"predicate": "within", "value": {"@type": "g:List", "@value": [ "marko" ]}}});
+    assert.strictEqual(writer.write(P.within(["marko"])), expected);
+    assert.strictEqual(writer.write(P.within("marko")), expected);
+  });
+  it('should write P.within multiple', function () {
+    const writer = new GraphSONWriter();
+    const expected = JSON.stringify({"@type": "g:P", "@value": {"predicate": "within", "value": {"@type": "g:List", "@value": [ "marko", "josh"]}}});
+    assert.strictEqual(writer.write(P.within(["marko","josh"])), expected);
+    assert.strictEqual(writer.write(P.within("marko","josh")), expected);
   });
 });

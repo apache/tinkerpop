@@ -21,9 +21,226 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Gremlin Symphony #40 in G Minor*
 
-== TinkerPop 3.3.4
+== TinkerPop 3.3.8
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.3.8/CHANGELOG.asciidoc#release-3-3-8[changelog] for a complete list of all the modifications that are part of this release.
+
+
+== TinkerPop 3.3.7
+
+*Release Date: May 28, 2019*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.3.7/CHANGELOG.asciidoc#release-3-3-7[changelog] for a complete list of all the modifications that are part of this release.
+
+== Upgrading for Users
+
+==== JavaScript DSL Pattern
+
+Gremlin DSL developers had to rely on monkey patching to build a Domain Specific Language in JavaScript. With this
+latest version, the process is a bit more elegant and largely handled by extending existing core classes of
+`Gremlin-JavaScript` which is a bit more in-line with other language variant patterns for DSL development.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2089[TINKERPOP-2089],
+link:http://tinkerpop.apache.org/docs/3.3.7/reference/#gremlin-javascript-dsl[Reference Documentation]
+
+==== Gremlin Console Interrupt
+
+There are occasions where a traversal (or other evaluation) takes longer than expected to complete. Common examples
+of these situations typically include:
+
+* Accidentally executing `g.V()` (i.e. full graph scan) on a very large graph as an OLTP style traversal.
+* Not terminating a `repeat()` properly which results in an infinite loop.
+* Bad data might create a cycle in the graph where one wasn't expected.
+* Failing to properly bound a traversal's path through one or more supernodes.
+
+In earlier versions, the only option was to kill the Gremlin Console (typically with `ctrl+c`), but as of this version
+`ctrl+c` will be intercepted and attempt to interrupt whatever process is currently executing.
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP-2181[TINKERPOP-2181]
+
+==== Removed gperfutils Dependency
+
+Gremlin Console included references to:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.gperfutils</groupId>
+    <artifactId>gbench</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.gperfutils</groupId>
+    <artifactId>gprof</artifactId>
+</dependency
+----
+
+to provide some benchmarking and profiling tools for the Utilities Plugin. Neither project is well maintained at this
+point and given that TinkerPop has moved past the versions of Groovy that are supported by these tools it doesn't
+make sense to retain the dependencies. Users who wish to continue to use these tools can obviously do so still by
+manually adding the dependencies to the Gremlin Console or with the following command:
+
+[source,text]
+----
+gremlin> :install org.gperfutils gbench <version>
+gremlin> :install org.gperfutils gprof <version>
+----
+
+and then import the appropriate classes and methods to use.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2182[TINKERPOP-2182]
+
+=== Upgrading for Providers
+
+==== Detection of Anti-Patterns
+
+This release adds a strategy named `EdgeLabelVerificationStrategy`. The strategy will not be added by default to the traversal source, however, providers can add it explicitly to encourage (or enforce)
+users to always specify at least one edge label. `EdgeLabelVerificationStrategy` can be configured to either throw an exception if no edge label was specified, log a warning or do both.
+
+[source,text]
+----
+gremlin> // throw an exception if edge label was not specified
+gremlin> g = TinkerFactory.createModern().traversal().withStrategies(EdgeLabelVerificationStrategy.build().throwException().create())
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+gremlin> g.V(1).out('knows')
+==>v[2]
+==>v[4]
+gremlin> g.V(1).out()
+The provided traversal contains a vertex step without any specified edge label: VertexStep(OUT,vertex)
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+----
+
+[source,text]
+----
+gremlin> // log a warning if edge label was not specified (Log4j has to be configured properly)
+gremlin> g = TinkerFactory.createModern().traversal().withStrategies(EdgeLabelVerificationStrategy.build().logWarning().create())
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+gremlin> g.V(1).out('knows')
+==>v[2]
+==>v[4]
+gremlin> g.V(1).out()
+WARN  org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy  - The provided traversal contains a vertex step without any specified edge label: VertexStep(OUT,vertex)
+==>v[3]
+==>v[2]
+==>v[4]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2191[TINKERPOP-2191]
+
+== TinkerPop 3.3.6
+
+*Release Date: March 18, 2019*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.3.6/CHANGELOG.asciidoc#release-3-3-6[changelog] for a complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+==== Anti-Patterns Documentation
+
+The Gremlin Recipes documentation now has a new section which discusses anti-patterns in Gremlin. Its subsections
+detail commonly seen approaches to the Gremlin language which can lead to poorly written and/or under-performing
+traversals. The new Anti-Patterns Section can be found
+link:http://tinkerpop.apache.org/docs/3.3.6/recipes/#_anti_patterns[here].
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2114[TINKERPOP-2114]
+
+== TinkerPop 3.3.5
+
+*Release Date: January 2, 2019*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.3.5/CHANGELOG.asciidoc#release-3-3-5[changelog] for a complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+==== AnonymousTraversalSource
+
+The `AnonymousTraversalSource` provides for a more unified syntax for `TraversalSource` construction by placing greater
+user emphasis on the creation of the source rather than the `Graph` it is connected to. It has a number of different
+static `traversal()` methods available and when imported as:
+
+[source,java]
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+
+allows `TraversalSource` construction syntax such as:
+
+[source,text]
+----
+gremlin> g = traversal().withGraph(TinkerFactory.createModern())
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+gremlin> g = traversal().withRemote('conf/remote-graph.properties')
+==>graphtraversalsource[emptygraph[empty], standard]
+gremlin> g = traversal().withRemote(DriverRemoteConnection.using('localhost',8182))
+==>graphtraversalsource[emptygraph[empty], standard]
+----
+
+Typically, this syntax is used for "remote" traversal construction for bytecode based requests, but has the option to
+bind a local `Graph` instance to it as well. It doesn't save much typing to do so obviously, so it may not be best
+used in that situation. Python, Javascript and .NET have similar syntax.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2078[TINKERPOP-2078]
+
+==== Bytecode Command
+
+The Gremlin Console now has a new `:bytecode` command to help users work more directly with Gremlin bytecode. The
+command is more of a debugging tool than something that would be used for every day purposes. It is sometimes helpful
+to look at Gremlin bytecode directly and the process for viewing it in human readable format is not a single step
+process. It is also not immediately clear how to convert bytecode to a Gremlin string. The `:bytecode` command aims to
+help with both of these issues:
+
+[source,text]
+----
+gremlin> g = TinkerFactory.createModern().traversal()
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+gremlin> :bytecode from g.V().out('knows')  <1>
+==>{"@type":"g:Bytecode","@value":{"step":[["V"],["out","knows"]]}}
+gremlin> :bytecode translate g {"@type":"g:Bytecode","@value":{"step":[["V"],["out","knows"]]}} <2>
+==>g.V().out("knows")
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2050[TINKERPOP-2050],
+link:http://tinkerpop.apache.org/docs/3.3.5/reference/#_console_commands[Reference Documentation - Console Commands]
+
+==== Configurable Class Map Cache
+
+The "class map" cache in Gremlin Server (specifically the `GremlinGroovyScriptEngine`) that holds compiled scripts is
+now fully configurable via the `GroovyCompilerGremlinPlugin.classMapCacheSpecification`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2038[TINKERPOP-2038],
+link:http://tinkerpop.apache.org/docs/3.3.5/reference/#gremlin-server-cache[Reference Documentation - Cache Management]
+
+==== RangeStep Optimizing Strategy
+
+A new strategy named `EarlyLimitStrategy` was added. The strategy will try to find a better spot for any `RangeStep`,
+which is as early as possible in the traversal. If possible it will also merge multiple `RangeStep`s into a single one
+by recalculating the range for the first step and removing the second. If it turns out that the merge of two steps won't
+produce a valid range (an empty result), then the `EarlyLimitStrategy` will remove the `RangeStep`s and insert a `NoneStep`
+instead.
+
+This strategy is particularly useful when a provider implementation generates the queries to the underlying database. By
+making sure that the ranges are applied as early as possible, we can ensure that the underlying database is only asked
+for the least amount of data necessary to continue the traversal evaluation.
+
+=== Upgrading for Providers
+
+==== Graph Database Providers
+
+===== OptOut on GraphProvider
+
+It is not uncommon for those utilizing the TinkerPop test suite to have multiple configurations of their graph under
+test. The multiple configurations typically manifest as multiple `GraphProvider` implementations which supply the
+different configurations to test. It is sometimes the case, that a particular `Graph` configuration cannot support all
+of the tests in the suite at which point some less than straightforward approaches to dealing with that present as
+solutions.
+
+It has always been possible to apply an `OptOut` annotation to a `Graph` instance, to avoid a particular test
+execution. It is now possible to apply that same `OptOut` to a `GraphProvider` instance for that same purpose.
+Hopefully, this feature will make multiple configuration testing easier.
+
+== TinkerPop 3.3.4
+
+*Release Date: October 15, 2018*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.3.4/CHANGELOG.asciidoc#release-3-3-4[changelog] for a complete list of all the modifications that are part of this release.
 
@@ -40,9 +257,9 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1956[TINKERPOP-1956]
 
 ==== TimedInterrupt
 
-In Gremlin Server, it is best not to use the {{timedInterrupt}} option on {{GroovyCompilerGremlinPlugin}} because it
-can compete with the {{scriptEvaluationTimeout}} setting and produce a different error path. Simply rely on
-{{scriptEvaluationTimeout}} as it covers both script evaluation time and result iteration time.
+In Gremlin Server, it is best not to use the `timedInterrupt` option on `GroovyCompilerGremlinPlugin` because it
+can compete with the `scriptEvaluationTimeout` setting and produce a different error path. Simply rely on
+`scriptEvaluationTimeout` as it covers both script evaluation time and result iteration time.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1778[TINKERPOP-1778]
 

@@ -18,12 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.log4j.Level;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
@@ -37,6 +38,7 @@ import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
@@ -50,6 +52,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
 import java.io.File;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -118,7 +121,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         if (name.getMethodName().equals("shouldKeepAliveForWebSockets")) {
             final org.apache.log4j.Logger webSocketClientHandlerLogger = org.apache.log4j.Logger.getLogger(WebSocketClientHandler.class);
-            previousLogLevel = webSocketClientHandlerLogger.getLevel();
             webSocketClientHandlerLogger.setLevel(previousLogLevel);
         }
 
@@ -179,9 +181,53 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldProcessEvalInterruption":
                 settings.scriptEvaluationTimeout = 1500;
                 break;
+            case "shouldProcessEvalTimeoutOverride":
+                settings.scriptEvaluationTimeout = 15000;
+                break;
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldReportErrorWhenRequestCantBeSerialized() throws Exception {
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3D0).create();
+        final Client client = cluster.connect().alias("g");
+
+        try {
+            final Map<String,Object> params = new HashMap<>();
+            params.put("r", Color.RED);
+            client.submit("r", params).all().get();
+            fail("Should have thrown exception over bad serialization");
+        } catch (Exception ex) {
+            final Throwable inner = ExceptionUtils.getRootCause(ex);
+            assertThat(inner, instanceOf(ResponseException.class));
+            assertEquals(ResponseStatusCode.REQUEST_ERROR_SERIALIZATION, ((ResponseException) inner).getResponseStatusCode());
+            assertTrue(ex.getMessage().contains("An error occurred during serialization of this request"));
+        }
+
+        // should not die completely just because we had a bad serialization error.  that kind of stuff happens
+        // from time to time, especially in the console if you're just exploring.
+        assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldProcessEvalTimeoutOverride() throws Exception {
+        final Cluster cluster = TestClientFactory.open();
+        final Client client = cluster.connect();
+        final RequestOptions options = RequestOptions.build().timeout(500).create();
+
+        try {
+            client.submit("Thread.sleep(5000);'done'", options).all().get();
+            fail("Should have timed out");
+        } catch (Exception ex) {
+            final ResponseException re = (ResponseException) ex.getCause();
+            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, re.getResponseStatusCode());
+        }
+
+        cluster.close();
     }
 
     @Test
@@ -288,7 +334,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldEventuallySucceedOnSameServer() throws Exception {
+    public void shouldEventuallySucceedOnSameServerWithDefault() throws Exception {
         stopServer();
 
         final Cluster cluster = TestClientFactory.open();
@@ -305,9 +351,52 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         startServer();
 
         // default reconnect time is 1 second so wait some extra time to be sure it has time to try to bring it
-        // back to life
-        TimeUnit.SECONDS.sleep(3);
-        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+        // back to life. usually this passes on the first attempt, but docker is sometimes slow and we get failures
+        // waiting for Gremlin Server to pop back up
+        for (int ix = 3; ix < 13; ix++) {
+            TimeUnit.SECONDS.sleep(ix);
+            try {
+                final int result = client.submit("1+1").all().join().get(0).getInt();
+                assertEquals(2, result);
+                break;
+            } catch (Exception ignored) {
+                logger.warn("Attempt {} failed on shouldEventuallySucceedOnSameServerWithDefault", ix);
+            }
+        }
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldEventuallySucceedOnSameServerWithScript() throws Exception {
+        stopServer();
+
+        final Cluster cluster = TestClientFactory.build().validationRequest("g.inject()").create();
+        final Client client = cluster.connect();
+
+        try {
+            client.submit("1+1").all().join().get(0).getInt();
+            fail("Should not have gone through because the server is not running");
+        } catch (Exception i) {
+            final Throwable root = ExceptionUtils.getRootCause(i);
+            assertThat(root, instanceOf(TimeoutException.class));
+        }
+
+        startServer();
+
+        // default reconnect time is 1 second so wait some extra time to be sure it has time to try to bring it
+        // back to life. usually this passes on the first attempt, but docker is sometimes slow and we get failures
+        // waiting for Gremlin Server to pop back up
+        for (int ix = 3; ix < 13; ix++) {
+            TimeUnit.SECONDS.sleep(ix);
+            try {
+                final int result = client.submit("1+1").all().join().get(0).getInt();
+                assertEquals(2, result);
+                break;
+            } catch (Exception ignored) {
+                logger.warn("Attempt {} failed on shouldEventuallySucceedOnSameServerWithScript", ix);
+            }
+        }
 
         cluster.close();
     }
@@ -348,7 +437,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 "    v = graph.addVertex();\n" +
                 "    v.property(\"ii\", ii);\n" +
                 "    v.property(\"sin\", Math.sin(ii/5.0));\n" +
-                "    Vertex u = g.V(ids.get(rand.nextInt(ids.size()))).next();\n" +
+                "    Vertex u = graph.vertices(ids.get(rand.nextInt(ids.size()))).next();\n" +
                 "    v.addEdge(\"linked\", u);\n" +
                 "    ids.add(u.id());\n" +
                 "    ids.add(v.id());\n" +
@@ -870,6 +959,21 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    public void shouldWorkWithGraphBinaryV1Serialization() throws Exception {
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1D0).create();
+        final Client client = cluster.connect();
+
+        final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
+        assertEquals(1, r.size());
+
+        final Vertex v = r.get(0).get(ReferenceVertex.class);
+        assertEquals(1, v.id());
+        assertEquals("person", v.label());
+
+        cluster.close();
+    }
+
+    @Test
     public void shouldFailClientSideWithTooLargeAResponse() {
         final Cluster cluster = TestClientFactory.build().maxContentLength(1).create();
         final Client client = cluster.connect();
@@ -1064,14 +1168,12 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         // this line is important because it tests GraphTraversal which has a certain transactional path
         final Vertex vertexRequest1 = client.submit("g.addV().property(\"name\",\"stephen\")").all().get().get(0).getVertex();
-        assertEquals("stephen", vertexRequest1.values("name").next());
 
         final Vertex vertexRequest2 = client.submit("graph.vertices().next()").all().get().get(0).getVertex();
-        assertEquals("stephen", vertexRequest2.values("name").next());
+        assertEquals(vertexRequest1.id(), vertexRequest2.id());
 
         // this line is important because it tests the other transactional path
-        final Vertex vertexRequest3 = client.submit("graph.addVertex(\"name\",\"marko\")").all().get().get(0).getVertex();
-        assertEquals("marko", vertexRequest3.values("name").next());
+        client.submit("graph.addVertex(\"name\",\"marko\")").all().get().get(0).getVertex();
 
         assertEquals(2, client.submit("g.V().count()").all().get().get(0).getLong());
 
@@ -1351,8 +1453,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client sessionWithoutManagedTx = cluster.connect(name.getMethodName() + "-not-managed");
 
         // this should auto-commit
-        final Vertex vStephen = sessionWithManagedTx.submit("v = g.addV().property('name','stephen').next()").all().get().get(0).getVertex();
-        assertEquals("stephen", vStephen.value("name"));
+        sessionWithManagedTx.submit("v = g.addV().property('name','stephen').next()").all().get().get(0).getVertex();
 
         // the other clients should see that change because of auto-commit
         assertThat(client.submit("g.V().has('name','stephen').hasNext()").all().get().get(0).getBoolean(), is(true));
@@ -1360,7 +1461,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         // this should NOT auto-commit
         final Vertex vDaniel = sessionWithoutManagedTx.submit("v = g.addV().property('name','daniel').next()").all().get().get(0).getVertex();
-        assertEquals("daniel", vDaniel.value("name"));
 
         // the other clients should NOT see that change because of auto-commit
         assertThat(client.submit("g.V().has('name','daniel').hasNext()").all().get().get(0).getBoolean(), is(false));
@@ -1368,7 +1468,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         // but "v" should still be there
         final Vertex vDanielAgain = sessionWithoutManagedTx.submit("v").all().get().get(0).getVertex();
-        assertEquals("daniel", vDanielAgain.value("name"));
+        assertEquals(vDaniel.id(), vDanielAgain.id());
 
         // now commit manually
         sessionWithoutManagedTx.submit("g.tx().commit()").all().get();

@@ -20,27 +20,37 @@ package org.apache.tinkerpop.gremlin.driver.exception;
 
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ResponseException extends Exception {
-    private ResponseStatusCode responseStatusCode;
-    private String remoteStackTrace = null;
-    private List<String> remoteExceptionHierarchy = null;
+    private final ResponseStatusCode responseStatusCode;
+    private final String remoteStackTrace;
+    private final List<String> remoteExceptionHierarchy;
+    private final Map<String,Object> attributes;
 
     public ResponseException(final ResponseStatusCode responseStatusCode, final String serverMessage) {
-        super(serverMessage);
-        this.responseStatusCode = responseStatusCode;
+        this(responseStatusCode, serverMessage, null, null);
     }
 
     public ResponseException(final ResponseStatusCode responseStatusCode, final String serverMessage,
                              final List<String> remoteExceptionHierarchy, final String remoteStackTrace) {
-        this(responseStatusCode, serverMessage);
-        this.remoteExceptionHierarchy = remoteExceptionHierarchy;
+        this(responseStatusCode, serverMessage, remoteExceptionHierarchy, remoteStackTrace, null);
+    }
+
+    public ResponseException(final ResponseStatusCode responseStatusCode, final String serverMessage,
+                             final List<String> remoteExceptionHierarchy, final String remoteStackTrace,
+                             final Map<String,Object> statusAttributes) {
+        super(serverMessage);
+        this.responseStatusCode = responseStatusCode;
+        this.remoteExceptionHierarchy = remoteExceptionHierarchy != null ? Collections.unmodifiableList(remoteExceptionHierarchy) : null;
         this.remoteStackTrace = remoteStackTrace;
+        this.attributes = statusAttributes != null ? Collections.unmodifiableMap(statusAttributes) : null;
     }
 
     public ResponseStatusCode getResponseStatusCode() {
@@ -60,5 +70,12 @@ public class ResponseException extends Exception {
      */
     public Optional<List<String>> getRemoteExceptionHierarchy() {
         return Optional.ofNullable(remoteExceptionHierarchy);
+    }
+
+    /**
+     * Gets any status attributes from the response.
+     */
+    public Optional<Map<String, Object>> getStatusAttributes() {
+        return Optional.ofNullable(attributes);
     }
 }

@@ -78,7 +78,7 @@ public class ServiceTest {
 
     @Test
     public void shouldCreateGraph() throws Exception {
-        final List<String> result = service.findCreatorsOfSoftware("lop");
+        final List<Object> result = service.findCreatorsOfSoftware("lop");
         assertThat(result, is(Arrays.asList("marko", "josh", "peter")));
     }
 }

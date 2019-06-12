@@ -23,6 +23,8 @@ import datetime
 import time
 import json
 import uuid
+import math
+from decimal import *
 
 from mock import Mock
 
@@ -50,11 +52,20 @@ class TestGraphSONReader(object):
         assert x[1] == 2
         assert x[2] == "3"
         ##
+
         x = self.graphson_reader.readObject(
             json.dumps({"@type": "g:Set", "@value": [{"@type": "g:Int32", "@value": 1},
                                                      {"@type": "g:Int32", "@value": 2},
-                                                     {"@type": "g:Float", "@value": 2.0},
                                                      "3"]}))
+        # return a set as normal
+        assert isinstance(x, set)
+        assert x == set([1, 2, "3"])
+
+        x = self.graphson_reader.readObject(
+            json.dumps({"@type": "g:Set", "@value": [{"@type": "g:Int32", "@value": 1},
+                                                    {"@type": "g:Int32", "@value": 2},
+                                                    {"@type": "g:Float", "@value": 2.0},
+                                                    "3"]}))
         # coerce to list here because Java might return numerics of different types which python won't recognize
         # see comments of TINKERPOP-1844 for more details
         assert isinstance(x, list)
@@ -68,7 +79,23 @@ class TestGraphSONReader(object):
         assert x['b'] == "marko"
         assert len(x) == 2
 
+        # BulkSet gets coerced to a List - both have the same behavior
+        x = self.graphson_reader.readObject(
+            json.dumps({"@type": "g:BulkSet",
+                        "@value": ["marko", {"@type": "g:Int64", "@value": 1}, "josh", {"@type": "g:Int64", "@value": 3}]}))
+        assert isinstance(x, list)
+        assert len(x) == 4
+        assert x.count("marko") == 1
+        assert x.count("josh") == 3
+
+
     def test_number_input(self):
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "gx:Byte",
+            "@value": 1
+        }))
+        assert isinstance(x, SingleByte)
+        assert 1 == x
         x = self.graphson_reader.readObject(json.dumps({
             "@type": "g:Int32",
             "@value": 31
@@ -96,6 +123,76 @@ class TestGraphSONReader(object):
         }))
         assert isinstance(x, float)
         assert 31.2 == x
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "g:Double",
+            "@value": "NaN"
+        }))
+        assert isinstance(x, float)
+        assert math.isnan(x)
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "g:Double",
+            "@value": "Infinity"
+        }))
+        assert isinstance(x, float)
+        assert math.isinf(x) and x > 0
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "g:Double",
+            "@value": "-Infinity"
+        }))
+        assert isinstance(x, float)
+        assert math.isinf(x) and x < 0
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "gx:BigDecimal",
+            "@value": 31.2
+        }))
+        assert isinstance(x, Decimal)
+        assert Decimal(31.2) == x
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "gx:BigDecimal",
+            "@value": 123456789987654321123456789987654321
+        }))
+        assert isinstance(x, Decimal)
+        assert Decimal('123456789987654321123456789987654321') == x
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "gx:BigDecimal",
+            "@value": "NaN"
+        }))
+        assert isinstance(x, Decimal)
+        assert math.isnan(x)
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "gx:BigDecimal",
+            "@value": "Infinity"
+        }))
+        assert isinstance(x, Decimal)
+        assert math.isinf(x) and x > 0
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "gx:BigDecimal",
+            "@value": "-Infinity"
+        }))
+        assert isinstance(x, Decimal)
+        assert math.isinf(x) and x < 0
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "gx:BigInteger",
+            "@value": 31
+        }))
+        assert isinstance(x, long)
+        assert 31 == x
+        ##
+        x = self.graphson_reader.readObject(json.dumps({
+            "@type": "gx:BigInteger",
+            "@value": 123456789987654321123456789987654321
+        }))
+        assert isinstance(x, long)
+        assert 123456789987654321123456789987654321 == x
 
     def test_graph(self):
         vertex = self.graphson_reader.readObject("""
@@ -207,11 +304,39 @@ class TestGraphSONReader(object):
         assert isinstance(dt, timestamp)
         assert float(dt) == 1481750076.295
 
+    def test_duration(self):
+        d = self.graphson_reader.readObject(json.dumps({"@type": "gx:Duration", "@value": "PT120H"}))
+        assert isinstance(d, datetime.timedelta)
+        assert d == datetime.timedelta(hours=120)
+
     def test_uuid(self):
         prop = self.graphson_reader.readObject(
             json.dumps({'@type': 'g:UUID', '@value': "41d2e28a-20a4-4ab0-b379-d810dede3786"}))
         assert isinstance(prop, uuid.UUID)
         assert str(prop) == '41d2e28a-20a4-4ab0-b379-d810dede3786'
+
+    def test_metrics(self):
+        prop = self.graphson_reader.readObject(
+            json.dumps([{'@type': 'g:TraversalMetrics', '@value': {'dur': 1.468594, 'metrics': [
+                {'@type': 'g:Metrics', '@value': {'dur': 1.380957, 'counts': {}, 'name': 'GraphStep(__.V())', 'annotations': {'percentDur': 94.03259171697556}, 'id': '4.0.0()'}},
+                {'@type': 'g:Metrics', '@value': {'dur': 0.087637, 'counts': {}, 'name': 'ReferenceElementStep', 'annotations': {'percentDur': 5.967408283024444}, 'id': '3.0.0()'}}
+            ]}}]))
+        assert isinstance(prop, list)
+        assert prop == [{'dur': 1.468594, 'metrics': [
+                {'dur': 1.380957, 'counts': {}, 'name': 'GraphStep(__.V())', 'annotations': {'percentDur': 94.03259171697556}, 'id': '4.0.0()'},
+                {'dur': 0.087637, 'counts': {}, 'name': 'ReferenceElementStep', 'annotations': {'percentDur': 5.967408283024444}, 'id': '3.0.0()'}
+                ]}]
+
+    def test_bytebuffer(self):
+        bb = self.graphson_reader.readObject(
+            json.dumps({"@type": "gx:ByteBuffer", "@value": "c29tZSBieXRlcyBmb3IgeW91"}))
+        assert isinstance(bb, ByteBufferType)
+        assert ByteBufferType("c29tZSBieXRlcyBmb3IgeW91", "utf8") == bb
+
+    def test_char(self):
+        c = self.graphson_reader.readObject(json.dumps({"@type": "gx:Char", "@value": "L"}))
+        assert isinstance(c, SingleChar)
+        assert chr(76) == c
 
 
 class TestGraphSONWriter(object):
@@ -238,9 +363,19 @@ class TestGraphSONWriter(object):
         assert """true""" == self.graphson_writer.writeObject(True)
 
     def test_numbers(self):
+        assert {"@type": "gx:Byte", "@value": 1} == json.loads(self.graphson_writer.writeObject(int.__new__(SingleByte, 1)))
         assert {"@type": "g:Int64", "@value": 2} == json.loads(self.graphson_writer.writeObject(long(2)))
         assert {"@type": "g:Int32", "@value": 1} == json.loads(self.graphson_writer.writeObject(1))
         assert {"@type": "g:Double", "@value": 3.2} == json.loads(self.graphson_writer.writeObject(3.2))
+        assert {"@type": "g:Double", "@value": "NaN"} == json.loads(self.graphson_writer.writeObject(float('nan')))
+        assert {"@type": "g:Double", "@value": "Infinity"} == json.loads(self.graphson_writer.writeObject(float('inf')))
+        assert {"@type": "g:Double", "@value": "-Infinity"} == json.loads(self.graphson_writer.writeObject(float('-inf')))
+        assert {"@type": "gx:BigDecimal", "@value": "123456789987654321123456789987654321"} == json.loads(self.graphson_writer.writeObject(Decimal('123456789987654321123456789987654321')))
+        assert {"@type": "gx:BigDecimal", "@value": "NaN"} == json.loads(self.graphson_writer.writeObject(Decimal('nan')))
+        assert {"@type": "gx:BigDecimal", "@value": "Infinity"} == json.loads(self.graphson_writer.writeObject(Decimal('inf')))
+        assert {"@type": "gx:BigDecimal", "@value": "-Infinity"} == json.loads(self.graphson_writer.writeObject(Decimal('-inf')))
+        assert {"@type": "gx:BigInteger", "@value": "123456789987654321123456789987654321"} == json.loads(self.graphson_writer.writeObject(long(123456789987654321123456789987654321)))
+        assert {"@type": "gx:BigInteger", "@value": "123456789987654321123456789987654321"} == json.loads(self.graphson_writer.writeObject(123456789987654321123456789987654321))
         assert """true""" == self.graphson_writer.writeObject(True)
 
     def test_P(self):
@@ -267,6 +402,12 @@ class TestGraphSONWriter(object):
         result = {'@type': 'g:P', '@value': {'predicate': 'within', 'value': {'@type': 'g:List', '@value': [
             {"@type": "g:Int32", "@value": 1}, {"@type": "g:Int32", "@value": 2}]}}}
         assert result == json.loads(self.graphson_writer.writeObject(P.within([1, 2])))
+        assert result == json.loads(self.graphson_writer.writeObject(P.within(1, 2)))
+
+        result = {'@type': 'g:P', '@value': {'predicate': 'within', 'value': {'@type': 'g:List', '@value': [
+            {"@type": "g:Int32", "@value": 1}]}}}
+        assert result == json.loads(self.graphson_writer.writeObject(P.within([1])))
+        assert result == json.loads(self.graphson_writer.writeObject(P.within(1)))
 
     def test_strategies(self):
         # we have a proxy model for now given that we don't want to have to have g:XXX all registered on the Gremlin traversal machine (yet)
@@ -371,10 +512,28 @@ class TestGraphSONWriter(object):
         output = self.graphson_writer.writeObject(ts)
         assert expected == output
 
+    def test_duration(self):
+        expected = json.dumps({"@type": "gx:Duration", "@value": "P5D"}, separators=(',', ':'))
+        d = datetime.timedelta(hours=120)
+        output = self.graphson_writer.writeObject(d)
+        assert expected == output
+
     def test_uuid(self):
         expected = json.dumps({'@type': 'g:UUID', '@value': "41d2e28a-20a4-4ab0-b379-d810dede3786"}, separators=(',', ':'))
         prop = uuid.UUID("41d2e28a-20a4-4ab0-b379-d810dede3786")
         output = self.graphson_writer.writeObject(prop)
+        assert expected == output
+
+    def test_bytebuffer(self):
+        expected = json.dumps({'@type': 'gx:ByteBuffer', '@value': 'c29tZSBieXRlcyBmb3IgeW91'}, separators=(',', ':'))
+        bb = ByteBufferType("c29tZSBieXRlcyBmb3IgeW91", "utf8")
+        output = self.graphson_writer.writeObject(bb)
+        assert expected == output
+
+    def test_char(self):
+        expected = json.dumps({'@type': 'gx:Char', '@value': 'L'}, separators=(',', ':'))
+        c = str.__new__(SingleChar, chr(76))
+        output = self.graphson_writer.writeObject(c)
         assert expected == output
 
 

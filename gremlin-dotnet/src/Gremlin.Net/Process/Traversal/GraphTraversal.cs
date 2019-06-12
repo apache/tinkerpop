@@ -22,6 +22,7 @@
 #endregion
 
 using System.Collections.Generic;
+using System.Linq;
 using Gremlin.Net.Structure;
 
 // THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
@@ -397,6 +398,15 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal<S, E> Coin (double probability)
         {
             Bytecode.AddStep("coin", probability);
+            return Wrap<S, E>(this);
+        }
+
+        /// <summary>
+        ///     Adds the connectedComponent step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, E> ConnectedComponent ()
+        {
+            Bytecode.AddStep("connectedComponent");
             return Wrap<S, E>(this);
         }
 
@@ -831,12 +841,21 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Adds the index step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, E2> Index<E2> ()
+        {
+            Bytecode.AddStep("index");
+            return Wrap<S, E2>(this);
+        }
+
+        /// <summary>
         ///     Adds the inject step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal<S, E> Inject (params E[] injections)
         {
-            var args = new List<E>(0 + injections.Length) {};
-            args.AddRange(injections);
+            var args = new List<object>(0 + injections.Length) {};
+            args.AddRange(injections.Cast<object>());
             Bytecode.AddStep("inject", args.ToArray());
             return Wrap<S, E>(this);
         }
@@ -1256,6 +1275,15 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Adds the read step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, E> Read ()
+        {
+            Bytecode.AddStep("read");
+            return Wrap<S, E>(this);
+        }
+
+        /// <summary>
         ///     Adds the repeat step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal<S, E> Repeat (string loopName, ITraversal repeatTraversal)
@@ -1374,6 +1402,15 @@ namespace Gremlin.Net.Process.Traversal
         {
             Bytecode.AddStep("select", keyTraversal);
             return Wrap<S, E2>(this);
+        }
+
+        /// <summary>
+        ///     Adds the shortestPath step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, Path> ShortestPath ()
+        {
+            Bytecode.AddStep("shortestPath");
+            return Wrap<S, Path>(this);
         }
 
         /// <summary>
@@ -1697,9 +1734,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the with step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<S, E> With (string key, object value)
+        public GraphTraversal<S, E> With (string key)
         {
-            Bytecode.AddStep("with", key, value);
+            Bytecode.AddStep("with", key);
             return Wrap<S, E>(this);
         }
 
@@ -1709,6 +1746,15 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal<S, E> With (string key, object value)
         {
             Bytecode.AddStep("with", key, value);
+            return Wrap<S, E>(this);
+        }
+
+        /// <summary>
+        ///     Adds the write step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, E> Write ()
+        {
+            Bytecode.AddStep("write");
             return Wrap<S, E>(this);
         }
 

@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.console
 
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor
 
+import java.util.concurrent.atomic.AtomicBoolean
+
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -28,6 +30,11 @@ class Mediator {
     public final List<RemoteAcceptor> remotes = []
     public int position
     public boolean localEvaluation = true
+
+    /**
+     * Determines when the Console is evaluating/iterating input/result.
+     */
+    public AtomicBoolean evaluating = new AtomicBoolean(false)
 
     private final Console console
 

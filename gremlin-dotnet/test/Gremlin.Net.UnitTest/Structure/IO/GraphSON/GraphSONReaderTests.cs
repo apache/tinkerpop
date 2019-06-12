@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
 using Gremlin.Net.Structure.IO.GraphSON;
@@ -42,7 +43,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             new object[] { 2 },
             new object[] { 3 }
         };
-        
+
         /// <summary>
         /// Parameters for each collections test supporting multiple versions of GraphSON
         /// </summary>
@@ -50,7 +51,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         {
             new object[] { 3 }
         };
-        
+
         private GraphSONReader CreateStandardGraphSONReader(int version)
         {
             if (version == 3)
@@ -58,6 +59,17 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
                 return new GraphSON3Reader();
             }
             return new GraphSON2Reader();
+        }
+
+        //During CI, we encountered a case where Newtonsoft.Json version 9.0.0
+        //was loaded although there is no obvious direct nor indirect dependency
+        //on that version of the library. An explicit reference to version
+        //11.0.0 from Gremlin.Net.UnitTest fixes that, however, it is
+        //still unclear what causes the downgrade. Until resolution, we keep this test.
+        [Fact]
+        public void NewtonsoftJsonVersionShouldSupportReallyBigIntegers()
+        {
+            Assert.Equal(new Version(11, 0, 0, 0), typeof(JToken).Assembly.GetName().Version);
         }
 
         [Fact]
@@ -186,6 +198,42 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         }
 
         [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializeNaN(int version)
+        {
+            var serializedValue = "{\"@type\":\"g:Double\",\"@value\":'NaN'}";
+            var reader = CreateStandardGraphSONReader(version);
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(Double.NaN, deserializedValue);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializePositiveInfinity(int version)
+        {
+            var serializedValue = "{\"@type\":\"g:Double\",\"@value\":'Infinity'}";
+            var reader = CreateStandardGraphSONReader(version);
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(Double.PositiveInfinity, deserializedValue);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializeNegativeInfinity(int version)
+        {
+            var serializedValue = "{\"@type\":\"g:Double\",\"@value\":'-Infinity'}";
+            var reader = CreateStandardGraphSONReader(version);
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(Double.NegativeInfinity, deserializedValue);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
         public void ShouldDeserializeDecimal(int version)
         {
             var serializedValue = "{\"@type\":\"gx:BigDecimal\",\"@value\":-8.201}";
@@ -208,7 +256,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 
             Assert.Equal(7.5M, deserializedValue);
         }
-        
+
         [Theory, MemberData(nameof(Versions))]
         public void ShouldDeserializeList(int version)
         {
@@ -380,7 +428,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var reader = CreateStandardGraphSONReader(version);
 
             var deserializedValue = reader.ToObject(JObject.Parse(json));
-                
+
             Assert.Equal((IList<object>)new object[] { 1, 2, 3}, deserializedValue);
         }
 
@@ -392,7 +440,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var reader = CreateStandardGraphSONReader(version);
 
             var deserializedValue = reader.ToObject(JObject.Parse(json));
-                
+
             Assert.Equal((ISet<object>)new HashSet<object>{ 1, 2, 3}, deserializedValue);
         }
 
@@ -404,17 +452,135 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var reader = CreateStandardGraphSONReader(version);
 
             var deserializedValue = reader.ToObject(JObject.Parse(json));
-                
+
             Assert.Equal(new Dictionary<object, object>{ { "a", 1 }, { "b", 2 }}, deserializedValue);
+        }
+
+        [Theory, MemberData(nameof(VersionsSupportingCollections))]
+        public void ShouldDeserializeBulkSet(int version)
+        {
+            const string json = "{\"@type\": \"g:BulkSet\", \"@value\": [" +
+                                "\"marko\", {\"@type\": \"g:Int64\", \"@value\": 1}, " +
+                                "\"josh\", {\"@type\": \"g:Int64\", \"@value\": 3}]}";
+            var reader = CreateStandardGraphSONReader(version);
+
+            var deserializedValue = reader.ToObject(JObject.Parse(json));
+
+            Assert.Equal(new List<object>{ "marko", "josh", "josh", "josh" }, deserializedValue);
+        }
+
+        [Fact]
+        public void ShouldDeserializeBulkSetWithGraphSON3()
+        {
+            const string json =
+                "{\"@type\":\"g:List\",\"@value\":[{\"@type\":\"g:Traverser\",\"@value\":{\"bulk\":{\"@type\":\"g:Int64\",\"@value\":1},\"value\":{\"@type\":\"g:BulkSet\",\"@value\":[{\"@type\":\"g:Int64\",\"@value\":1},{\"@type\":\"g:Int64\",\"@value\":2},{\"@type\":\"g:Int64\",\"@value\":0},{\"@type\":\"g:Int64\",\"@value\":3},{\"@type\":\"g:Int64\",\"@value\":2},{\"@type\":\"g:Int64\",\"@value\":1},{\"@type\":\"g:Double\",\"@value\":1.0},{\"@type\":\"g:Int64\",\"@value\":2}]}}}]}";
+            var reader = CreateStandardGraphSONReader(3);
+            var deserializedValue = reader.ToObject(JObject.Parse(json));
         }
 
         [Fact]
         public void ShouldDeserializeTraverser()
         {
-            dynamic d = JObject.Parse("{\"@type\":\"g:Traverser\",\"@value\":1}");
+            dynamic d = JObject.Parse("{\"@type\":\"g:Traverser\",\"@value\":1,\"bulk\": {\"type\":\"g:Int64\",\"value\":10}}");
 
             Assert.NotNull(d);
             Assert.Equal("g:Traverser", (string)d["@type"]);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializeDurationToTimeSpan(int version)
+        {
+            var serializedValue = "{\"@type\":\"gx:Duration\",\"@value\":\"PT120H\"}";
+            var reader = CreateStandardGraphSONReader(version);
+
+            var jObject = JObject.Parse(serializedValue);
+            TimeSpan deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(TimeSpan.FromDays(5), deserializedValue);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializeBigInteger(int version)
+        {
+            var serializedValue = "{\"@type\":\"gx:BigInteger\",\"@value\":123456789}";
+            var reader = CreateStandardGraphSONReader(version);
+
+            var jObject = JObject.Parse(serializedValue);
+            BigInteger deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(BigInteger.Parse("123456789"), deserializedValue);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializeBigIntegerValueAsString(int version)
+        {
+            var serializedValue = "{\"@type\":\"gx:BigInteger\",\"@value\":\"123456789\"}";
+            var reader = CreateStandardGraphSONReader(version);
+
+            var jObject = JObject.Parse(serializedValue);
+            BigInteger deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(BigInteger.Parse("123456789"), deserializedValue);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializeReallyBigIntegerValue(int version)
+        {
+            var serializedValue = "{\"@type\":\"gx:BigInteger\",\"@value\":123456789987654321123456789987654321}";
+            var reader = CreateStandardGraphSONReader(version);
+
+            var jObject = JObject.Parse(serializedValue);
+            BigInteger deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(BigInteger.Parse("123456789987654321123456789987654321"), deserializedValue);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializeByte(int version)
+        {
+            var serializedValue = "{\"@type\":\"gx:Byte\",\"@value\":1}";
+            var reader = CreateStandardGraphSONReader(version);
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(1, deserializedValue);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializeByteBuffer(int version)
+        {
+            var serializedValue = "{\"@type\":\"gx:ByteBuffer\",\"@value\":\"c29tZSBieXRlcyBmb3IgeW91\"}";
+            var reader = CreateStandardGraphSONReader(version);
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(Convert.FromBase64String("c29tZSBieXRlcyBmb3IgeW91"), deserializedValue);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializeChar(int version)
+        {
+            var serializedValue = "{\"@type\":\"gx:Char\",\"@value\":\"x\"}";
+            var reader = CreateStandardGraphSONReader(version);
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal('x', deserializedValue);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializeInt16(int version)
+        {
+            var serializedValue = "{\"@type\":\"gx:Int16\",\"@value\":100}";
+            var reader = CreateStandardGraphSONReader(version);
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(100, deserializedValue);
         }
     }
 

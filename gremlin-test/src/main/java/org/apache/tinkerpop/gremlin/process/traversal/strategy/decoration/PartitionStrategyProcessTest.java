@@ -128,13 +128,23 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
                 .partitionKey(partition).writePartition("B").readPartitions("B","A").create());
 
         final Vertex v = gOverA.addV().property("any", "thing").property("some", "thing").next();
+        final Vertex labelledV = gOverA.addV("person").property("name", "thing").property("that", "thing").next();
 
         assertNotNull(v);
         assertEquals("thing", g.V(v).values("any").next());
+        assertEquals(Vertex.DEFAULT_LABEL, g.V(v).label().next());
         assertEquals("A", g.V(v).values(partition).next());
         assertEquals("A", g.V(v).properties("any").values(partition).next());
         assertEquals("thing", g.V(v).values("some").next());
         assertEquals("A", g.V(v).properties("some").values(partition).next());
+
+        assertNotNull(labelledV);
+        assertEquals("thing", g.V(labelledV).values("name").next());
+        assertEquals("person", g.V(labelledV).label().next());
+        assertEquals("A", g.V(labelledV).values(partition).next());
+        assertEquals("A", g.V(labelledV).properties("name").values(partition).next());
+        assertEquals("thing", g.V(labelledV).values("that").next());
+        assertEquals("A", g.V(labelledV).properties("that").values(partition).next());
 
         gOverAB.V(v).property("that", "thing").iterate();
         assertEquals("thing", g.V(v).values("that").next());
@@ -297,7 +307,8 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
         final GraphTraversalSource source = g.withStrategies(partitionStrategy);
         final Vertex v1 = source.addV().property("any", "thing").next();
         final Vertex v2 = source.addV().property("some", "thing").next();
-        final Edge e = source.withSideEffect("v2", v2).V(v1.id()).addE("connectsTo").from("v2").property("every", "thing").next();
+        final Edge e1 = source.V(v1).addE("connectsTo").from(v2).property("every", "thing").next();
+        final Edge e2 = source.addE("relatesTo").from(v2).to(v1).property("every", "thing").next();
 
         assertNotNull(v1);
         assertEquals("thing", g.V(v1).values("any").next());
@@ -307,10 +318,15 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals("thing", g.V(v2).values("some").next());
         assertEquals("A", g.V(v2).values(partition).next());
 
-        assertNotNull(e);
-        assertEquals("thing", g.E(e).values("every").next());
-        assertEquals("connectsTo", e.label());
-        assertEquals("A", g.E(e).values(partition).next());
+        assertNotNull(e1);
+        assertEquals("thing", g.E(e1).values("every").next());
+        assertEquals("connectsTo", e1.label());
+        assertEquals("A", g.E(e1).values(partition).next());
+
+        assertNotNull(e2);
+        assertEquals("thing", g.E(e2).values("every").next());
+        assertEquals("relatesTo", e2.label());
+        assertEquals("A", g.E(e2).values(partition).next());
     }
 
     @Test

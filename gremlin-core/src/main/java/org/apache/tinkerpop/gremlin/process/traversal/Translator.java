@@ -19,6 +19,8 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import java.util.function.BiFunction;
+
 /**
  * A Translator will translate {@link Bytecode} into another representation. That representation may be a
  * Java instance via {@link StepTranslator} or a String script in some language via {@link ScriptTranslator}.
@@ -55,10 +57,21 @@ public interface Translator<S, T> {
 
     ///
 
+    /**
+     * Translates bytecode to a string representation.
+     */
     public interface ScriptTranslator extends Translator<String, String> {
 
+        /**
+         * Provides a way for the {@link ScriptTranslator} to convert various data types to their string
+         * representations in their target language.
+         */
+        public interface TypeTranslator extends BiFunction<String, Object, Object> { }
     }
 
+    /**
+     * Translates bytecode to actual steps.
+     */
     public interface StepTranslator<S extends TraversalSource, T extends Traversal.Admin<?, ?>> extends Translator<S, T> {
 
     }

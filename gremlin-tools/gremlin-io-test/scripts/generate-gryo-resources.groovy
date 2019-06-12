@@ -68,14 +68,14 @@ writeSupportedObjects = { mapper, toGryoFunction ->
 
 mapper = GryoMapper.build().
         version(GryoVersion.V1_0).
-        addRegistry(TinkerIoRegistryV2d0.instance()).
+        addRegistry(TinkerIoRegistryV1d0.instance()).
         create().createMapper()
 
 writeSupportedObjects(mapper, toGryoV1d0)
 
 mapper = GryoMapper.build().
         version(GryoVersion.V3_0).
-        addRegistry(TinkerIoRegistryV2d0.instance()).
+        addRegistry(TinkerIoRegistryV3d0.instance()).
         create().createMapper()
 
 writeSupportedObjects(mapper, toGryoV3d0)

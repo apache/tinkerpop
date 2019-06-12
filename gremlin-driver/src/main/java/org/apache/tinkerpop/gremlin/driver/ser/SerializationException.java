@@ -18,15 +18,21 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser;
 
+import java.io.IOException;
+
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SerializationException extends Exception {
+public class SerializationException extends IOException {
     public SerializationException(final String msg) {
         super(msg);
     }
 
     public SerializationException(final Throwable t) {
         super(t);
+    }
+
+    public SerializationException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

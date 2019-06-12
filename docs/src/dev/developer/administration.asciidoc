@@ -77,10 +77,11 @@ established the PMC chair will then need to:
 
 . Validate that the iCLA is on file either through link:https://svn.apache.org/repos/private/foundation/officers/[svn]
 or through link:http://people.apache.org/committer-index.html[people.apache.org].
-. Request that the account be created. The PMC Chair may do this through the link:http://infra.apache.org/[Account Request Form].
+. Request that the account be created. The PMC Chair may do this through the link:https://whimsy.apache.org/officers/acreq[Account Request Form].
 . Once verified, provide the new committer access to the repository, which is most easily done through
 link:https://whimsy.apache.org/roster/committee/[Whimsy].
 . Send an announcement email to the developer and user mailing lists with the template below.
+. Update JIRA to include this person in the "committers" group.
 
 [source,text]
 ----
@@ -97,12 +98,9 @@ need to work via the patch submission process. This should enable better
 productivity.
 ----
 
-Finally, new committers should be sent an email that covers some of the administrative elements of their new role:
-
-* link:https://www.apache.org/dev/new-committers-guide.html[Apache Committer Guide]
-* link:http://www.apache.org/dev/committers.html[Apache Committer FAQ]
-* link:http://tinkerpop.apache.org/docs/current/dev/developer/[TinkerPop Developer Documentation]
-** Bring specific attention to the "committer" section which describes our general policies.
+Finally, new committers should be sent an email that covers some of the administrative elements of their new role.
+Generally speaking the email can largely just point them to the <<initial-setup,Initial Setup>> section of this
+documentation.
 
 == New PMC Members
 
@@ -125,7 +123,23 @@ The vote result is available here:
 
 If the candidate does not (yet) have an Apache account, then please note that fact in the notification email. Provide
 the board 72 hours to respond with objection before extending the invite to the new PMC member. Once that time has
-elapsed, the invite may be sent to the new PMC member. If they accept, then the PMC chair should refer to the
+elapsed, the invite may be sent to the new PMC member. The following template may be used for the invitation (be sure
+to copy private@ when sending the email):
+
+[source,text]
+----
+Subject Invitation to join the Apache TinkerPop PMC: [name of PMC new member]
+
+In recognition of your contributions to Apache TinkerPop, the TinkerPop PMC has voted to make you a PMC member. If you are unfamiliar with what the PMC does, please see this link to be sure you are comfortable with the responsibilities:
+
+https://www.apache.org/dev/pmc.html
+
+As you have already signed an ICLA and have an Apache account no additional paperwork is required by you other than replying to this email (ensuring to include private@ which is CC'd) to say if you accept or reject the invitation. Obviously there is no requirement to accept - you maybe simply choose to continue working in the capacity of a committer as you are now. We're happy to answer any questions you might have.
+
+Thank you for your efforts on the project.
+----
+
+If they accept, then the PMC chair should refer to the
 link:http://www.apache.org/dev/pmc.html#newpmc[How to Add a New PMC Member] section in the Apache docs for how to
 complete the process. Use link:https://whimsy.apache.org/roster/committee/[Whimsy] to update PMC membership.
 
@@ -168,3 +182,47 @@ committed to the appropriate meeting agenda in SVN at:
 [source,text]
 https://svn.apache.org/repos/private/foundation/board
 
+[[contributor-listing]]
+== Contributor Listing
+
+Contributions can come in <<ways-to-contribute,many forms>> and extend well beyond code contributions. TinkerPop
+strives to ensure that contributions are honestly and accurately recognized for the benefit of the individuals who
+help make TinkerPop possible.
+
+One of the ways in which this recognition is supported is by way of the
+link:http://tinkerpop.apache.org/#contributors[Contributor Listing] on the TinkerPop home page, which list those who
+have contributed to the project in some way. It lists both committers and PMC members and provides a short "bio"
+(i.e. a description of their contributions) as well as an indication of whether they are currently participating in
+the project or not, i.e. active or inactive.  The bios have a slightly different form depending on that status:
+
+* An _active_ bio should be reflective of current contributions, roughly representing the past six months and the
+following six months of the update.
+* An _inactive_ bio for those not currently contributing to the project, should reflect the full scope of all
+contributions made by that individual during their active periods.
+
+IMPORTANT: Irrespective of being active or inactive, the contributor's name and tenure accomplishments remain present
+on the front page of the web site. Being "inactive" does *not* affect the contributors status as an Apache committer or
+PMC member - that remains unchanged. Should a contributor become "inactive" at some point, there is no special process
+to become "active" again - they simply update their bio to do so.
+
+Committers and PMC members can keep this information up to date themselves as they have direct access to the Git
+repository. Reminders to update this information will be sent to the dev list on each release as part of code freeze
+week. Those who have not shown an update to their bio in git in the past year or have otherwise not replied to the dev
+list email to indicate their status in that time will be assumed "inactive" for the purpose of the listing.
+
+The following is a template for the "Bio Update" email:
+
+[source,text]
+----
+Subject: Apache TinkerPop Bio Update
+
+To Committers/PMC Members,
+
+As an Apache TinkerPop committer and/or PMC member, your name is listed on the TinkerPop home page in the Contributor List[1] with your "bio". If you are active on the project, your "bio" reflects what you have been working on and what you expect to be working on with respect to TinkerPop for recent times (i.e. for the previous six months and the following six months). If you are currently inactive on the project, your "bio" reflects the full scope of all your contributions throughout your active periods. You can refer to the contributor listing policy[2] for full details.
+
+Please take a moment to update your bio directly in Git[3] or, if you would prefer, please reply to this email with your bio update and it will be added for you. If no changes are required, please reply to this email to confirm that this is the case.
+
+[1] http://tinkerpop.apache.org/#contributors
+[2] http://tinkerpop.apache.org/docs/current/dev/developer/#contributor-listing
+[3] https://github.com/apache/tinkerpop/blob/master/docs/site/home/index.html
+----

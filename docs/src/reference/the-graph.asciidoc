@@ -19,6 +19,44 @@ limitations under the License.
 
 image::gremlin-standing.png[width=125]
 
+The <<intro,Introduction>> discussed the diversity of TinkerPop-enabled graphs, with special attention paid to the
+different <<connecting-gremlin,connection models>>, and how TinkerPop makes it possible to bridge that diversity in
+an <<staying-agnostic,agnostic>> manner. This particular section deals with elements of the Graph API which was noted
+as an API to avoid when trying to build an agnostic system. The Graph API refers to the core elements of what composes
+the <<graph-computing,structure of a graph>> within the Gremlin Traversal Machine (GTM), such as the `Graph`, `Vertex`
+and `Edge` Java interfaces.
+
+To maintain the most portable code, users should only reference these interfaces. To "reference", simply means to
+utilize it as a pointer. For `Graph`, that means holding a pointer to the location of graph data and then using it to
+spawn `GraphTraversalSource` instances so as to write Gremlin:
+
+[gremlin-groovy]
+----
+graph = TinkerGraph.open()
+g = graph.traversal()
+g.addV('person')
+----
+
+In the above example, "graph" is the `Graph` interface produced by calling `open()` on `TinkerGraph` which creates the
+instance. Note that while the end intent of the code is to create a "person" vertex, it does not use the APIs on
+`Graph` to do that - e.g. `graph.addVertex(T.label,'person')`.
+
+Even if the developer desired to use the `graph.addVertex()` method there are only a handful of scenarios where it is
+possible:
+
+* The application is being developed on the JVM and the developer is using <<connecting-embedded, embedded>> mode
+* The architecture includes Gremlin Server and the user is sending Gremlin scripts to the server
+* The graph system chosen is a <<connecting-rgp, Remote Gremlin Provider>> and they expose the Graph API via scripts
+
+Note that Gremlin Language Variants force developers to use the Graph API by reference. There is no `addVertex()`
+method available to GLVs on their respective `Graph` instances, nor are their graph elements filled with data at the
+call of `properties()`. Developing applications to meet this lowest common denominator in API usage will go a long
+way to making that application portable across TinkerPop-enabled systems.
+
+When considering the remaining sub-sections that follow, recall that they are all generally bound to the Graph API.
+They are described here for reference and in some sense backward compatibility with older recommended models of
+development. In the future, the contents of this section will become less and less relevant.
+
 == Features
 
 A `Feature` implementation describes the capabilities of a `Graph` instance. This interface is implemented by graph
@@ -47,8 +85,9 @@ TIP: To ensure provider agnostic code, always check feature support prior to usa
 way, the application can behave gracefully in case a particular implementation is provided at runtime that does not
 support a function being accessed.
 
-WARNING: Assignments of a `GraphStrategy` can alter the base features of a `Graph` in dynamic ways, such that checks
-against a `Feature` may not always reflect the behavior exhibited when the `GraphStrategy` is in use.
+WARNING: Features of reference graphs which are used to connect to remote graphs do not reflect the features of the
+graph to which it connects. It reflects the features of instantiated graph itself, which will likely be quite
+different considering that reference graphs will typically be immutable.
 
 [[vertex-properties]]
 == Vertex Properties
@@ -60,8 +99,8 @@ pairs. Moreover, while an `Edge` can only have one property of key "name" (for e
 "name" properties. With the inclusion of vertex properties, two features are introduced which ultimately advance the
 graph modelers toolkit:
 
-. Multiple properties (*multi-properties*): a vertex property key can have multiple values.  For example, a vertex can have
-multiple "name" properties.
+. Multiple properties (*multi-properties*): a vertex property key can have multiple values.  For example, a vertex can
+have multiple "name" properties.
 . Properties on properties (*meta-properties*): a vertex property can have properties (i.e. a vertex property can
 have key/value data associated with it).
 
@@ -165,14 +204,28 @@ graph.variables().keys()
 IMPORTANT: Graph variables are not intended to be subject to heavy, concurrent mutation nor to be used in complex
 computations. The intention is to have a location to store data about the graph for administrative purposes.
 
+WARNING: Attempting to set graph variables in a reference graph will not promote them to the remote graph. Typically,
+a reference graph has immutable features and will not support this features.
+
 [[transactions]]
 == Graph Transactions
 
 image:gremlin-coins.png[width=100,float=right] A link:http://en.wikipedia.org/wiki/Database_transaction[database transaction]
-represents a unit of work to execute against the database.  Transactions are controlled by an implementation of the
-`Transaction` interface and that object can be obtained from the `Graph` interface using the `tx()` method.  It is
-important to note that the `Transaction` object does not represent a "transaction" itself.  It merely exposes the
-methods for working with transactions (e.g. committing, rolling back, etc).
+represents a unit of work to execute against the database. Transactions in TinkerPop can be considered in several
+contexts: transactions for <<connecting-embedded,embedded graphs>> via the Graph API,
+transactions for <<connecting-gremlin-server,Gremlin Server>> and transactions within
+<<connecting-rgp,Remote Gremlin Providers>>. For those following recommended patterns, the concepts presented in the
+embedded section should generally be of little interest and are present mainly for reference. Utilizing those
+transactional features will greatly reduce the portability of an application's Gremlin code.
+
+[[tx-embedded]]
+=== Embedded
+
+When on the JVM using an <<connecting-embedded,embedded graph>>, there is considerable flexibility for working with
+transactions. With the Graph API, transactions are controlled by an implementation of the `Transaction` interface and
+that object can be obtained from the `Graph` interface using the `tx()` method.  It is important to note that the
+`Transaction` object does not represent a "transaction" itself.  It merely exposes the methods for working with
+transactions (e.g. committing, rolling back, etc).
 
 Most `Graph` implementations that `supportsTransactions` will implement an "automatic" `ThreadLocal` transaction,
 which means that when a read or write occurs after the `Graph` is instantiated, a transaction is automatically
@@ -197,7 +250,7 @@ graph system provider to choose the specific aspects of how their implementation
 TinkerPop stack. Be sure to understand the transaction semantics of the specific graph implementation that is being
 utilized as it may present differing functionality than described here.
 
-=== Configuring
+==== Configuring
 
 Determining when a transaction starts is dependent upon the behavior assigned to the `Transaction`.  It is up to the
 `Graph` implementation to determine the default behavior and unless the implementation doesn't allow it, the behavior
@@ -280,7 +333,7 @@ NOTE: It may be important to consult the documentation of the `Graph` implementa
 specifics of how transactions will behave.  TinkerPop allows some latitude in this area and implementations may not have
 the exact same behaviors and link:https://en.wikipedia.org/wiki/ACID[ACID] guarantees.
 
-=== Threaded Transactions
+==== Threaded Transactions
 
 Most `Graph` implementations that support transactions do so in a `ThreadLocal` manner, where the current transaction
 is bound to the current thread of execution. Consider the following example to demonstrate:
@@ -345,375 +398,42 @@ In the above case, the call to `graph.tx().createThreadedTx()` creates a new `Gr
 `ThreadLocal` transaction, thus allowing each thread to operate on it in the same context.  In this case, there would
 be three separate vertices persisted to the `Graph`.
 
-== Gremlin I/O
+[[tx-gremlin-server]]
+=== Gremlin Server
 
-image:gremlin-io.png[width=250,float=right] The task of getting data in and out of `Graph` instances is the job of
-the Gremlin I/O packages.  Gremlin I/O provides two interfaces for reading and writing `Graph` instances: `GraphReader`
-and `GraphWriter`.  These interfaces expose methods that support:
+The available capability for transactions with <<gremlin-server,Gremlin Server>> is dependent upon the method of
+interaction that is used. The preferred method for <<connecting-gremlin-server,interacting with Gremlin Server>>
+is via websockets and bytecode based requests. In this mode of operations each Gremlin traversal that is executed will
+be treated as a single transaction. Traversals that fail will have their transaction rolled back and successful
+iteration of a traversal will conclude with a transactional commit. How the graph hosted in Gremlin Server reacts to
+those commands is dependent on the graph chosen and it is therefore important to understand the transactional semantics
+of that graph when developing an application.
 
-* Reading and writing an entire `Graph`
-* Reading and writing a `Traversal<Vertex>` as adjacency list format
-* Reading and writing a single `Vertex` (with and without associated `Edge` objects)
-* Reading and writing a single `Edge`
-* Reading and writing a single `VertexProperty`
-* Reading and writing a single `Property`
-* Reading and writing an arbitrary `Object`
+Gremlin Server also has the option to accept Gremlin-based scripts. The scripting approach provides access to the
+Graph API and thus also the transactional model described in the <<tx-embedded,embedded>> section. Therefore a single
+script can have the ability to execute multiple transactions per request with complete control provided to the
+developer to commit or rollback transactions as needed.
 
-In all cases, these methods operate in the currency of `InputStream` and `OutputStream` objects, allowing graphs and
-their related elements to be written to and read from files, byte arrays, etc.  The `Graph` interface offers the `io`
-method, which provides access to "reader/writer builder" objects that are pre-configured with serializers provided by
-the `Graph`, as well as helper methods for the various I/O capabilities. Unless there are very advanced requirements
-for the serialization process, it is always best to utilize the methods on the `Io` interface to construct
-`GraphReader` and `GraphWriter` instances, as the implementation may provide some custom settings that would otherwise
-have to be configured manually by the user to do the serialization.
+There are two methods for sending scripts to Gremlin Server: sessionless and session-based. With sessionless requests
+there will always be an attempt to close the transaction at the end of the request with a commit if there are no errors
+or a rollback if there is a failure. It is therefore unnecessary to close transactions manually within scripts
+themselves. By default, session-based requests do not have this quality. The transaction will be held open on the
+server until the user closes it manually. There is an option to have automatic transaction management for sessions.
+More information on this topic can be found in the <<considering-transactions,Considering Transactions>> Section and
+the <<sessions,Considering Sessions>> Section.
 
-It is up to the implementations of the `GraphReader` and `GraphWriter` interfaces to choose the methods they
-implement and the manner in which they work together.  The only characteristic enforced and expected is that the write
-methods should produce output that is compatible with the corresponding read method.  For example, the output of
-`writeVertices` should be readable as input to `readVertices` and the output of `writeProperty` should be readable as
-input to `readProperty`.
+While those sections provide some additional details, the short advice is to avoid scripts when possible and prefer
+bytecode based requests.
 
-NOTE: Additional documentation for TinkerPop IO formats can be found in the link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/[IO Reference].
+[[tx-rgp]]
+=== Remote Gremlin Providers
 
-=== GraphML Reader/Writer
-
-image:gremlin-graphml.png[width=350,float=left] The link:http://graphml.graphdrawing.org/[GraphML] file format is a
-common XML-based representation of a graph. It is widely supported by graph-related tools and libraries making it a
-solid interchange format for TinkerPop. In other words, if the intent is to work with graph data in conjunction with
-applications outside of TinkerPop, GraphML may be the best choice to do that. Common use cases might be:
-
-* Generate a graph using link:https://networkx.github.io/[NetworkX], export it with GraphML and import it to TinkerPop.
-* Produce a subgraph and export it to GraphML to be consumed by and visualized in link:https://gephi.org/[Gephi].
-* Migrate the data of an entire graph to a different graph database not supported by TinkerPop.
-
-As GraphML is a specification for the serialization of an entire graph and not the individual elements of a graph,
-methods that support input and output of single vertices, edges, etc. are not supported.
-
-WARNING: GraphML is a "lossy" format in that it only supports primitive values for properties and does not have
-support for `Graph` variables.  It will use `toString` to serialize property values outside of those primitives.
-
-WARNING: GraphML as a specification allows for `<edge>` and `<node>` elements to appear in any order.  Most software
-that writes GraphML (including as TinkerPop's `GraphMLWriter`) write `<node>` elements before `<edge>` elements.  However it
-is important to note that `GraphMLReader` will read this data in order and order can matter.  This is because TinkerPop
-does not allow the vertex label to be changed after the vertex has been created.  Therefore, if an `<edge>` element
-comes before the `<node>`, the label on the vertex will be ignored.  It is thus better to order `<node>` elements in the
-GraphML to appear before all `<edge>` elements if vertex labels are important to the graph.
-
-The following code shows how to write a `Graph` instance to file called `tinkerpop-modern.xml` and then how to read
-that file back into a different instance:
-
-[source,java]
-----
-Graph graph = TinkerFactory.createModern();
-graph.io(IoCore.graphml()).writeGraph("tinkerpop-modern.xml");
-Graph newGraph = TinkerGraph.open();
-newGraph.io(IoCore.graphml()).readGraph("tinkerpop-modern.xml");
-----
-
-If a custom configuration is required, then have the `Graph` generate a `GraphReader` or `GraphWriter` "builder" instance:
-
-[source,java]
-----
-Graph graph = TinkerFactory.createModern();
-try (OutputStream os = new FileOutputStream("tinkerpop-modern.xml")) {
-    graph.io(IoCore.graphml()).writer().normalize(true).create().writeGraph(os, graph);
-}
-
-Graph newGraph = TinkerGraph.open();
-try (InputStream stream = new FileInputStream("tinkerpop-modern.xml")) {
-    newGraph.io(IoCore.graphml()).reader().create().readGraph(stream, newGraph);
-}
-----
-
-NOTE: If using GraphML generated from TinkerPop 2.x,  you can read more about its incompatibilities in the
-link:http://tinkerpop.apache.org/docs/x.y.z/upgrade/#graphml-format[Upgrade Documentation].
-
-[[graphson-reader-writer]]
-=== GraphSON Reader/Writer
-
-image:gremlin-graphson.png[width=350,float=left] GraphSON is a link:http://json.org/[JSON]-based format extended
-from earlier versions of TinkerPop. It is important to note that TinkerPop's GraphSON is not backwards compatible
-with prior TinkerPop GraphSON versions. GraphSON has some support from graph-related application outside of TinkerPop,
-but it is generally best used in two cases:
-
-* A text format of the graph or its elements is desired (e.g. debugging, usage in source control, etc.)
-* The graph or its elements need to be consumed by code that is not JVM-based (e.g. JavaScript, Python, .NET, etc.)
-
-GraphSON supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an
-entire `Graph`, vertices, arbitrary objects, etc.  The following code shows how to write a `Graph` instance to file
-called `tinkerpop-modern.json` and then how to read that file back into a different instance:
-
-[source,java]
-----
-Graph graph = TinkerFactory.createModern();
-graph.io(graphson()).writeGraph("tinkerpop-modern.json");
-
-Graph newGraph = TinkerGraph.open();
-newGraph.io(graphson()).readGraph("tinkerpop-modern.json");
-----
-
-NOTE: Using `graphson()`, which is a static helper method of `IoCore`, will default to the most current version of GraphSON which is 3.0.
-
-If a custom configuration is required, then have the `Graph` generate a `GraphReader` or `GraphWriter` "builder" instance:
-
-[source,java]
-----
-Graph graph = TinkerFactory.createModern();
-try (OutputStream os = new FileOutputStream("tinkerpop-modern.json")) {
-    GraphSONMapper mapper = graph.io(IoCore.graphson()).mapper().normalize(true).create()
-    graph.io(graphson()).writer().mapper(mapper).create().writeGraph(os, graph)
-}
-
-Graph newGraph = TinkerGraph.open();
-try (InputStream stream = new FileInputStream("tinkerpop-modern.json")) {
-    newGraph.io(graphson()).reader().create().readGraph(stream, newGraph);
-}
-----
-
-The following example shows how a single `Vertex` is written to GraphSON using the Gremlin Console:
-
-[gremlin-groovy]
-----
-graph = TinkerFactory.createModern()
-g = graph.traversal()
-f = new ByteArrayOutputStream()
-graph.io(graphson()).writer().create().writeVertex(f, g.V(1).next(), BOTH)
-f.close()
-----
-
-The following GraphSON example shows the output of `GraphSONWriter.writeVertex()` with associated edges:
-
-[source,json]
-----
-{
-	"id": {
-		"@type": "g:Int32",
-		"@value": 1
-	},
-	"label": "person",
-	"outE": {
-		"created": [{
-			"id": {
-				"@type": "g:Int32",
-				"@value": 9
-			},
-			"inV": {
-				"@type": "g:Int32",
-				"@value": 3
-			},
-			"properties": {
-				"weight": {
-					"@type": "g:Double",
-					"@value": 0.4
-				}
-			}
-		}],
-		"knows": [{
-			"id": {
-				"@type": "g:Int32",
-				"@value": 7
-			},
-			"inV": {
-				"@type": "g:Int32",
-				"@value": 2
-			},
-			"properties": {
-				"weight": {
-					"@type": "g:Double",
-					"@value": 0.5
-				}
-			}
-		}, {
-			"id": {
-				"@type": "g:Int32",
-				"@value": 8
-			},
-			"inV": {
-				"@type": "g:Int32",
-				"@value": 4
-			},
-			"properties": {
-				"weight": {
-					"@type": "g:Double",
-					"@value": 1.0
-				}
-			}
-		}]
-	},
-	"properties": {
-		"name": [{
-			"id": {
-				"@type": "g:Int64",
-				"@value": 0
-			},
-			"value": "marko"
-		}],
-		"age": [{
-			"id": {
-				"@type": "g:Int64",
-				"@value": 1
-			},
-			"value": {
-				"@type": "g:Int32",
-				"@value": 29
-			}
-		}]
-	}
-}
-----
-
-GraphSON has several versions and each has differences that prevent complete compatibility with one another. While the
-default version provided by `IoCore.graphson()` is recommended, it is possible to make changes to revert to an earlier
-version. The following shows an example of how to use 1.0 (with type embedding):
-
-[gremlin-groovy]
-----
-graph = TinkerFactory.createModern()
-g = graph.traversal()
-f = new ByteArrayOutputStream()
-mapper = graph.io(GraphSONIo.build(GraphSONVersion.V1_0)).mapper().typeInfo(TypeInfo.PARTIAL_TYPES).create()
-graph.io(GraphSONIo.build(GraphSONVersion.V1_0)).writer().mapper(mapper).create().writeVertex(f, g.V(1).next(), BOTH)
-f.close()
-----
-
-NOTE: Additional documentation for GraphSON can be found in the link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[IO Reference].
-
-IMPORTANT: When using the extended type system in Gremlin Server, support for these types when used in the context of
-Gremlin Language Variants is dependent on the programming language, the driver and its serializers. These
-implementations are only required to support the core types and not the extended ones.
-
-Here's the same previous example of GraphSON 1.0, but with GraphSON 2.0:
-
-[gremlin-groovy]
-----
-graph = TinkerFactory.createModern()
-g = graph.traversal()
-f = new ByteArrayOutputStream()
-mapper = graph.io(graphson()).mapper().version(GraphSONVersion.V2_0).create()
-graph.io(graphson()).writer().mapper(mapper).create().writeVertex(f, g.V(1).next(), BOTH)
-f.close()
-----
-
-Creating a GraphSON 2.0 mapper is done by calling `.version(GraphSONVersion.V2_0)` on the mapper builder. Here's is the
-example output from the code above:
-
-[source,json]
-----
-{
-    "@type": "g:Vertex",
-    "@value": {
-        "id": {
-            "@type": "g:Int32",
-            "@value": 1
-        },
-        "label": "person",
-        "properties": {
-            "name": [{
-                "@type": "g:VertexProperty",
-                "@value": {
-                    "id": {
-                        "@type": "g:Int64",
-                        "@value": 0
-                    },
-                    "value": "marko",
-                    "label": "name"
-                }
-            }],
-            "uuid": [{
-                "@type": "g:VertexProperty",
-                "@value": {
-                    "id": {
-                        "@type": "g:Int64",
-                        "@value": 12
-                    },
-                    "value": {
-                        "@type": "g:UUID",
-                        "@value": "829c7ddb-3831-4687-a872-e25201230cd3"
-                    },
-                    "label": "uuid"
-                }
-            }],
-            "age": [{
-                "@type": "g:VertexProperty",
-                "@value": {
-                    "id": {
-                        "@type": "g:Int64",
-                        "@value": 1
-                    },
-                    "value": {
-                        "@type": "g:Int32",
-                        "@value": 29
-                    },
-                    "label": "age"
-                }
-            }]
-        }
-    }
-}
-----
-
-Types can be disabled when creating a GraphSON 2.0 `Mapper` with:
-
-[source,groovy]
-----
-graph.io(graphson()).mapper().
-      version(GraphSONVersion.V2_0).
-      typeInfo(GraphSONMapper.TypeInfo.NO_TYPES).create()
-----
-
-By disabling types, the JSON payload produced will lack the extra information that is written for types. Please note,
-disabling types can be unsafe with regards to the written data in that types can be lost.
-
-[[gryo-reader-writer]]
-=== Gryo Reader/Writer
-
-image:gremlin-kryo.png[width=400,float=left] link:https://github.com/EsotericSoftware/kryo[Kryo] is a popular
-serialization package for the JVM. Gremlin-Kryo is a binary `Graph` serialization format for use on the JVM by JVM
-languages. It is designed to be space efficient, non-lossy and is promoted as the standard format to use when working
-with graph data inside of the TinkerPop stack. A list of common use cases is presented below:
-
-* Migration from one Gremlin Structure implementation to another (e.g. `TinkerGraph` to `Neo4jGraph`)
-* Serialization of individual graph elements to be sent over the network to another JVM.
-* Backups of in-memory graphs or subgraphs.
-
-WARNING: When migrating between Gremlin Structure implementations, Kryo may not lose data, but it is important to
-consider the features of each `Graph` and whether or not the data types supported in one will be supported in the
-other.  Failure to do so, may result in errors.
-
-Kryo supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an entire
-`Graph`, vertices, edges, etc.  The following code shows how to write a `Graph` instance to file called
-`tinkerpop-modern.kryo` and then how to read that file back into a different instance:
-
-[source,java]
-----
-Graph graph = TinkerFactory.createModern();
-graph.io(gryo()).writeGraph("tinkerpop-modern.kryo");
-
-Graph newGraph = TinkerGraph.open();
-newGraph.io(gryo()).readGraph("tinkerpop-modern.kryo");
-----
-
-NOTE: Using `gryo()`, which is a static helper method of `IoCore`, will default to the most current version of Gryo which is 3.0.
-
-If a custom configuration is required, then have the `Graph` generate a `GraphReader` or `GraphWriter` "builder" instance:
-
-[source,java]
-----
-Graph graph = TinkerFactory.createModern();
-try (OutputStream os = new FileOutputStream("tinkerpop-modern.kryo")) {
-    graph.io(GryoIo.build(GryoVersion.V1_0)).writer().create().writeGraph(os, graph);
-}
-
-Graph newGraph = TinkerGraph.open();
-try (InputStream stream = new FileInputStream("tinkerpop-modern.kryo")) {
-    newGraph.io(GryoIo.build(GryoVersion.V1_0)).reader().create().readGraph(stream, newGraph);
-}
-----
-
-NOTE: The preferred extension for files names produced by Gryo is `.kryo`.
-
-NOTE: Data migrations from TinkerPop 2.x are discussed in the Appendix of the
-link:http://tinkerpop.apache.org/docs/x.y.z/upgrade/#appendix[Upgrade Documentation].
+At this time, transactional patterns for Remote Gremlin Providers are largely in line with Gremlin Server. Most
+offer bytecode or script based sessionless requests, which have automatic transaction management, such that a
+successful traversal will commit on success and a failing traversal will rollback. As most of these RGPs do not
+expose a `Graph` instances, access to lower level transactional functions even in a sessionless fashion are not
+typically allowed. The nature of what a "transaction" means will be dependent on the RGP as is the case with any
+TinkerPop-enabled graph system, so it is important to consult that systems documentation for more details.
 
 == Namespace Conventions
 
@@ -727,8 +447,8 @@ stakeholders do not conflict.
 Data keyed as such is only accessible via the graph system implementation and no other stakeholders are granted read
 nor write access to data prefixed with "~" (see `Graph.Hidden`). Test coverage and exceptions exist to ensure that
 graph systems respect this hard boundary.
-* <<vertexprogram,`VertexProgram`>> and <<mapreduce,`MapReduce`>> developers should, like `GraphStrategy` developers,
-leverage _qualified namespaces_ particular to their domain (e.g. `mydomain.myvertexprogram.computedata`).
+* <<vertexprogram,`VertexProgram`>> and <<mapreduce,`MapReduce`>> developers should leverage _qualified namespaces_
+particular to their domain (e.g. `mydomain.myvertexprogram.computedata`).
 * `GremlinPlugin` creators should prefix their plugin name with their domain (e.g. `mydomain.myplugin`).
 
 IMPORTANT: TinkerPop uses `tinkerpop.` and `gremlin.` as the prefixes for provided strategies, vertex programs, map

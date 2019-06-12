@@ -52,7 +52,7 @@ public abstract class AbstractGremlinScriptEngineFactory implements GremlinScrip
     }
 
     @Override
-    public String getEngineName() {
+    public final String getEngineName() {
         return engineName;
     }
 
@@ -67,7 +67,7 @@ public abstract class AbstractGremlinScriptEngineFactory implements GremlinScrip
     }
 
     @Override
-    public String getLanguageName() {
+    public final String getLanguageName() {
         return languageName;
     }
 
@@ -89,13 +89,13 @@ public abstract class AbstractGremlinScriptEngineFactory implements GremlinScrip
     @Override
     public Object getParameter(final String key) {
         if (key.equals(ScriptEngine.ENGINE)) {
-            return this.getEngineName();
+            return engineName;
         } else if (key.equals(ScriptEngine.ENGINE_VERSION)) {
             return this.getEngineVersion();
         } else if (key.equals(ScriptEngine.NAME)) {
             return engineName;
         } else if (key.equals(ScriptEngine.LANGUAGE)) {
-            return this.getLanguageName();
+            return languageName;
         } else if (key.equals(ScriptEngine.LANGUAGE_VERSION)) {
             return this.getLanguageVersion();
         } else
@@ -107,12 +107,12 @@ public abstract class AbstractGremlinScriptEngineFactory implements GremlinScrip
      */
     @Override
     public String getProgram(final String... statements) {
-        String program = "";
+        final StringBuilder program = new StringBuilder();
 
         for (String statement : statements) {
-            program = program + statement + System.lineSeparator();
+            program.append(statement).append(System.lineSeparator());
         }
 
-        return program;
+        return program.toString();
     }
 }

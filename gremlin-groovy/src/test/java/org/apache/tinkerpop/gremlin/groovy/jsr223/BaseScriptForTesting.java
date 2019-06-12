@@ -20,11 +20,17 @@ package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import groovy.lang.Script;
 
+import java.util.Map;
+
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class BaseScriptForTesting extends Script {
     public String hello(final String name) {
         return "hello, " + name;
+    }
+
+    public String typeOf(final String name) {
+        return ((Map<String,Object>) getBinding().getVariable("registry")).get(name).getClass().getSimpleName();
     }
 }

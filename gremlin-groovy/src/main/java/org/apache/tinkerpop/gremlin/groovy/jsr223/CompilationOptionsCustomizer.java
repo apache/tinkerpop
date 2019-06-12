@@ -28,12 +28,53 @@ import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 class CompilationOptionsCustomizer implements Customizer {
 
     private final long expectedCompilationTime;
+    private final String cacheSpecification;
+    private final boolean globalFunctionCacheEnabled;
 
-    public CompilationOptionsCustomizer(final long expectedCompilationTime) {
-        this.expectedCompilationTime = expectedCompilationTime;
+    private CompilationOptionsCustomizer(final Builder builder) {
+        this.expectedCompilationTime = builder.expectedCompilationTime;
+        this.cacheSpecification = builder.cacheSpecification;
+        this.globalFunctionCacheEnabled = builder.globalFunctionCacheEnabled;
     }
 
     public long getExpectedCompilationTime() {
         return expectedCompilationTime;
+    }
+
+    public String getClassMapCacheSpecification() {
+        return cacheSpecification;
+    }
+
+    public boolean isGlobalFunctionCacheEnabled() {
+        return globalFunctionCacheEnabled;
+    }
+
+    public static Builder build() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private long expectedCompilationTime;
+        private String cacheSpecification = "softValues";
+        private boolean globalFunctionCacheEnabled = true;
+
+        public Builder setExpectedCompilationTime(final long expectedCompilationTime) {
+            this.expectedCompilationTime = expectedCompilationTime;
+            return this;
+        }
+
+        public Builder setClassMapCacheSpecification(final String cacheSpecification) {
+            this.cacheSpecification = cacheSpecification;
+            return this;
+        }
+
+        public Builder enableGlobalFunctionCache(final boolean enabled) {
+            this.globalFunctionCacheEnabled = enabled;
+            return this;
+        }
+
+        public CompilationOptionsCustomizer create() {
+            return new CompilationOptionsCustomizer(this);
+        }
     }
 }

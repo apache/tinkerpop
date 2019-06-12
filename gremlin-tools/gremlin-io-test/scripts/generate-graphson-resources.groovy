@@ -59,19 +59,19 @@ toJson = { o, type, mapper, comment = "", suffix = "" ->
 
 writeSupportedV1Objects = { writer, mapper ->
     writer.write("=== Graph Structure\n\n")
-    model.entries("Graph Structure").findAll{it.isCompatibleWith(GraphSONCompatibility.V1D0_3_3_0)}.each {
+    model.entries("Graph Structure").findAll{it.isCompatibleWith(GraphSONCompatibility.V1D0_3_4_0)}.each {
         writer.write(toJsonV1d0NoTypes(it.getObject(), it.getTitle(), mapper, it.getDescription()))
     }
 
     writer.write("\n")
     writer.write("=== RequestMessage\n\n")
-    model.entries("RequestMessage").findAll{it.isCompatibleWith(GraphSONCompatibility.V1D0_3_3_0)}.each {
+    model.entries("RequestMessage").findAll{it.isCompatibleWith(GraphSONCompatibility.V1D0_3_4_0)}.each {
         writer.write(toJsonV1d0NoTypes(it.getObject(), it.getTitle(), mapper, it.getDescription()))
     }
 
     writer.write("\n")
     writer.write("=== ResponseMessage\n\n")
-    model.entries("ResponseMessage").findAll{it.isCompatibleWith(GraphSONCompatibility.V1D0_3_3_0)}.each {
+    model.entries("ResponseMessage").findAll{it.isCompatibleWith(GraphSONCompatibility.V1D0_3_4_0)}.each {
         writer.write(toJsonV1d0NoTypes(it.getObject(), it.getTitle(), mapper, it.getDescription()))
     }
 }
@@ -156,7 +156,7 @@ mapper = GraphSONMapper.build().
 
 file = new File("${projectBuildDir}/dev-docs/out-graphson-2d0-partial.txt")
 if (file.exists()) file.delete()
-file.withWriter { writeSupportedV2V3Objects(it, mapper, toJsonV2d0PartialTypes, {it.isCompatibleWith(GraphSONCompatibility.V2D0_PARTIAL_3_3_1)}, v2ExtendedDescription) }
+file.withWriter { writeSupportedV2V3Objects(it, mapper, toJsonV2d0PartialTypes, {it.isCompatibleWith(GraphSONCompatibility.V2D0_PARTIAL_3_4_0)}, v2ExtendedDescription) }
 
 mapper = GraphSONMapper.build().
         addRegistry(TinkerIoRegistryV2d0.instance()).
@@ -167,7 +167,7 @@ mapper = GraphSONMapper.build().
 
 file = new File("${projectBuildDir}/dev-docs/out-graphson-2d0-no-type.txt")
 if (file.exists()) file.delete()
-file.withWriter { writeSupportedV2V3Objects(it, mapper, toJsonV2d0NoTypes, {it.isCompatibleWith(GraphSONCompatibility.V2D0_NO_TYPE_3_3_1)}, v2ExtendedDescription) }
+file.withWriter { writeSupportedV2V3Objects(it, mapper, toJsonV2d0NoTypes, {it.isCompatibleWith(GraphSONCompatibility.V2D0_NO_TYPE_3_4_0)}, v2ExtendedDescription) }
 
 mapper = GraphSONMapper.build().
         addRegistry(TinkerIoRegistryV2d0.instance()).
@@ -189,7 +189,7 @@ mapper = GraphSONMapper.build().
 
 file = new File("${projectBuildDir}/dev-docs/out-graphson-3d0.txt")
 if (file.exists()) file.delete()
-file.withWriter { writeSupportedV2V3Objects(it, mapper, toJsonV3d0, {it.isCompatibleWith(GraphSONCompatibility.V3D0_PARTIAL_3_3_1)}, v3ExtendedDescription) }
+file.withWriter { writeSupportedV2V3Objects(it, mapper, toJsonV3d0, {it.isCompatibleWith(GraphSONCompatibility.V3D0_PARTIAL_3_4_0)}, v3ExtendedDescription) }
 
 def ver = "_" + "${projectVersion}".replace(".","_").replace("-SNAPSHOT","")
 def target = "${projectBaseDir}/src/test/resources/org/apache/tinkerpop/gremlin/structure/io/graphson/" + ver

@@ -19,7 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -100,11 +101,11 @@ public final class Parameters implements Cloneable, Serializable {
      * Gets the value of a key and if that key isn't present returns the default value from the {@link Supplier}.
      *
      * @param key          the key to retrieve
-     * @param defaultValue the default value generator
+     * @param defaultValue the default value generator which if null will return an empty list
      */
     public <E> List<E> get(final Object key, final Supplier<E> defaultValue) {
         final List<E> list = (List<E>) this.parameters.get(key);
-        return (null == list) ? Collections.singletonList(defaultValue.get()) : list;
+        return (null == list) ? (null == defaultValue ? Collections.emptyList() : Collections.singletonList(defaultValue.get())) : list;
 
     }
 
@@ -180,27 +181,24 @@ public final class Parameters implements Cloneable, Serializable {
             if (!(keyValues[ix] instanceof String) && !(keyValues[ix] instanceof T) && !(keyValues[ix] instanceof Traversal))
                 throw new IllegalArgumentException("The provided key/value array must have a String, T, or Traversal on even array indices");
 
-            if (keyValues[ix + 1] != null) {
-
-                // check both key and value for traversal instances. track the list of traversals that are present so
-                // that elsewhere in Parameters there is no need to iterate all values to not find any. also grab
-                // available labels in traversal values
-                for (int iy = 0; iy < 2; iy++) {
-                    if (keyValues[ix + iy] instanceof Traversal.Admin) {
-                        final Traversal.Admin t = (Traversal.Admin) keyValues[ix + iy];
-                        addTraversal(t);
-                        if (parent != null) parent.integrateChild(t);
-                    }
+            // check both key and value for traversal instances. track the list of traversals that are present so
+            // that elsewhere in Parameters there is no need to iterate all values to not find any. also grab
+            // available labels in traversal values
+            for (int iy = 0; iy < 2; iy++) {
+                if (keyValues[ix + iy] instanceof Traversal.Admin) {
+                    final Traversal.Admin t = (Traversal.Admin) keyValues[ix + iy];
+                    addTraversal(t);
+                    if (parent != null) parent.integrateChild(t);
                 }
+            }
 
-                List<Object> values = this.parameters.get(keyValues[ix]);
-                if (null == values) {
-                    values = new ArrayList<>();
-                    values.add(keyValues[ix + 1]);
-                    this.parameters.put(keyValues[ix], values);
-                } else {
-                    values.add(keyValues[ix + 1]);
-                }
+            List<Object> values = this.parameters.get(keyValues[ix]);
+            if (null == values) {
+                values = new ArrayList<>();
+                values.add(keyValues[ix + 1]);
+                this.parameters.put(keyValues[ix], values);
+            } else {
+                values.add(keyValues[ix + 1]);
             }
         }
     }
@@ -254,7 +252,7 @@ public final class Parameters implements Cloneable, Serializable {
         for (final Map.Entry<Object, List<Object>> entry : this.parameters.entrySet()) {
             result ^= entry.getKey().hashCode();
             for (final Object value : entry.getValue()) {
-                result ^= Integer.rotateLeft(value.hashCode(), entry.getKey().hashCode());
+                result ^= Integer.rotateLeft(Objects.hashCode(value), entry.getKey().hashCode());
             }
         }
         return result;

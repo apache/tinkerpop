@@ -25,21 +25,45 @@
 const t = require('../process/traversal');
 const TraversalStrategy = require('../process/traversal-strategy').TraversalStrategy;
 
+/**
+ * Represents an abstraction of a "connection" to a "server" that is capable of processing a traversal and
+ * returning results.
+ */
 class RemoteConnection {
   constructor(url) {
     this.url = url;
   }
 
   /**
-   * @abstract
-   * @param {Bytecode} bytecode
+   * Opens the connection, if its not already opened.
    * @returns {Promise}
    */
+  open() {
+    throw new Error('open() must be implemented');
+  }
+
+  /**
+   * Submits the <code>Bytecode</code> provided and returns a <code>RemoteTraversal</code>.
+   * @abstract
+   * @param {Bytecode} bytecode
+   * @returns {Promise} Returns a <code>Promise</code> that resolves to a <code>RemoteTraversal</code>.
+   */
   submit(bytecode) {
-    throw new Error('submit() was not implemented');
+    throw new Error('submit() must be implemented');
   };
+
+  /**
+   * Closes the connection, if its not already opened.
+   * @returns {Promise}
+   */
+  close() {
+    throw new Error('close() must be implemented');
+  }
 }
 
+/**
+ * Represents a traversal as a result of a {@link RemoteConnection} submission.
+ */
 class RemoteTraversal extends t.Traversal {
   constructor(traversers, sideEffects) {
     super(null, null, null);
@@ -63,6 +87,7 @@ class RemoteStrategy extends TraversalStrategy {
     if (traversal.traversers) {
       return Promise.resolve();
     }
+
     return this.connection.submit(traversal.getBytecode()).then(function (remoteTraversal) {
       traversal.sideEffects = remoteTraversal.sideEffects;
       traversal.traversers = remoteTraversal.traversers;
@@ -70,8 +95,4 @@ class RemoteStrategy extends TraversalStrategy {
   }
 }
 
-module.exports = {
-  RemoteConnection: RemoteConnection,
-  RemoteStrategy: RemoteStrategy,
-  RemoteTraversal: RemoteTraversal
-};
+module.exports = { RemoteConnection, RemoteStrategy, RemoteTraversal };

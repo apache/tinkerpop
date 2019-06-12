@@ -20,15 +20,17 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.junit.rules.TestName;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -44,16 +46,15 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.hamcrest.CoreMatchers.any;
 import static org.hamcrest.Matchers.either;
+import static org.hamcrest.core.AnyOf.anyOf;
+import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeThat;
@@ -83,6 +84,32 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Parameterized.Parameter(0)
     public String version;
+
+    @Test
+    public void shouldHandleBulkSet() throws Exception {
+        // only supported on V3
+        assumeThat(version, not(anyOf(startsWith("v1"), startsWith("v2"))));
+
+        final BulkSet<String> bs = new BulkSet<>();
+        bs.add("test1", 1);
+        bs.add("test2", 2);
+        bs.add("test3", 3);
+
+        assertEquals(bs, serializeDeserialize(mapper, bs, BulkSet.class));
+    }
+
+    @Test
+    public void shouldHandleNumberConstants() throws Exception {
+        assumeThat(version, not(startsWith("v1")));
+
+        final List<Object> o = new ArrayList<>();
+        o.add(123.321d);
+        o.add(Double.NaN);
+        o.add(Double.NEGATIVE_INFINITY);
+        o.add(Double.POSITIVE_INFINITY);
+
+        assertEquals(o, serializeDeserialize(mapper, o, List.class));
+    }
 
     @Test
     public void shouldHandleMap() throws Exception {
@@ -274,5 +301,103 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
     public void shouldHandleZonedOffset() throws Exception  {
         final ZoneOffset o  = ZonedDateTime.now().getOffset();
         assertEquals(o, serializeDeserialize(mapper, o, ZoneOffset.class));
+    }
+
+    @Test
+    public void shouldHandleBigInteger() throws Exception  {
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        
+        final BigInteger o = new BigInteger("123456789987654321123456789987654321");
+        assertEquals(o, serializeDeserialize(mapper, o, BigInteger.class));
+    }
+
+    @Test
+    public void shouldReadBigIntegerAsString() throws Exception {
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+
+        final BigInteger o = new BigInteger("123456789987654321123456789987654321");
+        assertEquals(o, mapper.readValue("{\"@type\": \"gx:BigInteger\", \"@value\": \"123456789987654321123456789987654321\"}", Object.class));
+    }
+
+    @Test
+    public void shouldReadBigIntegerAsNumber() throws Exception {
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+
+        // this was the original GraphSON 2.0/3.0 format published for BigInteger but jackson is flexible enough to
+        // do it as a string. the string approach is probably better for most language variants so while this tests
+        // enforces this approach but leaves open the opportunity to accept either. at some point in the future
+        // perhaps it can switch fully - TINKERPOP-2156
+        final BigInteger o = new BigInteger("123456789987654321123456789987654321");
+        assertEquals(o, mapper.readValue("{\"@type\": \"gx:BigInteger\", \"@value\": 123456789987654321123456789987654321}", Object.class));
+    }
+
+    @Test
+    public void shouldHandleBigDecimal() throws Exception  {
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+
+        final BigDecimal o = new BigDecimal("123456789987654321123456789987654321");
+        assertEquals(o, serializeDeserialize(mapper, o, BigDecimal.class));
+    }
+
+    @Test
+    public void shouldHandlePMultiValue() throws Exception  {
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+
+        final P o = P.within(1,2,3);
+        assertEquals(o, serializeDeserialize(mapper, o, P.class));
+    }
+
+    @Test
+    public void shouldHandlePSingleValue() throws Exception  {
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+
+        final P o = P.within(1);
+        assertEquals(o, serializeDeserialize(mapper, o, P.class));
+    }
+
+    @Test
+    public void shouldHandlePMultiValueAsCollection() throws Exception  {
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+
+        final P o = P.within(Arrays.asList(1,2,3));
+        assertEquals(o, serializeDeserialize(mapper, o, P.class));
+    }
+
+    @Test
+    public void shouldReadPWithJsonArray() throws Exception {
+        // for some reason v3 is forgiving about the naked json array - leaving this here for backward compaitiblity,
+        // but should be a g:List (i think)
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+
+        final P o = P.within(Arrays.asList(1,2,3));
+        assertEquals(o, mapper.readValue("{\"@type\": \"g:P\", \"@value\": {\"predicate\": \"within\", \"value\": [{\"@type\": \"g:Int32\", \"@value\": 1},{\"@type\": \"g:Int32\", \"@value\": 2},{\"@type\": \"g:Int32\", \"@value\": 3}]}}", Object.class));
+    }
+
+    @Test
+    public void shouldReadPWithGraphSONList() throws Exception {
+        assumeThat(version, startsWith("v3"));
+
+        final P o = P.within(Arrays.asList(1,2,3));
+        assertEquals(o, mapper.readValue("{\"@type\": \"g:P\", \"@value\": {\"predicate\": \"within\", \"value\": {\"@type\": \"g:List\", \"@value\": [{\"@type\": \"g:Int32\", \"@value\": 1},{\"@type\": \"g:Int32\", \"@value\": 2},{\"@type\": \"g:Int32\", \"@value\": 3}]}}}", Object.class));
+    }
+
+    @Test
+    public void shouldReadBigDecimalAsString() throws Exception {
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+
+        final BigDecimal o = new BigDecimal("123456789987654321123456789987654321");
+        assertEquals(o, mapper.readValue("{\"@type\": \"gx:BigDecimal\", \"@value\": \"123456789987654321123456789987654321\"}", Object.class));
+    }
+
+    @Test
+    public void shouldReadBigDecimalAsNumber() throws Exception {
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+
+        // this was the original GraphSON 2.0/3.0 format published for BigDecimal but jackson is flexible enough to
+        // do it as a string. the string approach is probably better for most language variants so while this tests
+        // enforces this approach but leaves open the opportunity to accept either. at some point in the future
+        // perhaps it can switch fully - TINKERPOP-2156
+        final BigDecimal o = new BigDecimal("123456789987654321123456789987654321");
+        assertEquals(o, mapper.readValue("{\"@type\": \"gx:BigDecimal\", \"@value\": 123456789987654321123456789987654321}", Object.class));
     }
 }

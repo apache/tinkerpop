@@ -28,7 +28,7 @@ is not different in that respect. There are many commonly occurring traversal th
 to any graph. Gremlin Recipes present these common traversal patterns and methods of usage that will
 provide some basic building blocks for virtually any graph in any domain.
 
-Recipes assume general familiarity with Gremlin and the TinkerPop stack. Be sure to have read the
+Recipes assume general familiarity with Gremlin and the Apache TinkerPop™ stack. Be sure to have read the
 link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started[Getting Started] tutorial and the
 link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[The Gremlin Console] tutorial.
 
@@ -65,6 +65,12 @@ include::traversal-induced-values.asciidoc[]
 include::tree.asciidoc[]
 
 include::olap-spark-yarn.asciidoc[]
+
+= Anti-Patterns
+
+image:gremlin-anti-gremlin.png[width=250]
+
+include::anti-patterns.asciidoc[]
 
 = Implementation Recipes
 

@@ -28,7 +28,7 @@ $inactive: #e9ffe9;
 
 $tabHeight: 50px;
 $minTabs: 2;
-$maxTabs: 4;
+$maxTabs: 6;
 
 @mixin single-transition($property:all, $speed:150ms, $ease:ease, $delay: 0s) {
   -webkit-transition: $property $speed $ease $delay;  

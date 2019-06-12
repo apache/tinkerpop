@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
+import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
@@ -53,6 +54,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -88,6 +90,20 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
     }
 
     @Test
+    public void shouldReturnResponseAttributesViaNoContent() throws Exception {
+        final ResultSet results = client.submit("[]");
+        final Map<String,Object> attr = results.statusAttributes().get(20000, TimeUnit.MILLISECONDS);
+        assertThat(attr.containsKey(Tokens.ARGS_HOST), is(true));
+    }
+
+    @Test
+    public void shouldReturnResponseAttributesViaSuccess() throws Exception {
+        final ResultSet results = client.submit("gmodern.V()");
+        final Map<String,Object> attr = results.statusAttributes().get(20000, TimeUnit.MILLISECONDS);
+        assertThat(attr.containsKey(Tokens.ARGS_HOST), is(true));
+    }
+
+    @Test
     public void shouldHandleVertexResultFromTraversalBulked() throws Exception {
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();
@@ -119,7 +135,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldHandleVertexResult() throws Exception {
-        final ResultSet results = client.submit("gmodern.V(1).next()");
+        final ResultSet results = client.submit("gmodern.withoutStrategies(ReferenceElementStrategy).V(1).next()");
         final Vertex v = results.all().get().get(0).getVertex();
         assertThat(v, instanceOf(DetachedVertex.class));
 
@@ -149,28 +165,28 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldHandleVertexPropertyResult() throws Exception {
-        final ResultSet results = client.submit("gmodern.V().properties('name').next()");
+        final ResultSet results = client.submit("gmodern.withoutStrategies(ReferenceElementStrategy).V().properties('name').next()");
         final VertexProperty<String> v = results.all().get().get(0).getVertexProperty();
         assertThat(v, instanceOf(DetachedVertexProperty.class));
     }
 
     @Test
     public void shouldHandleEdgeResult() throws Exception {
-        final ResultSet results = client.submit("gmodern.E().next()");
+        final ResultSet results = client.submit("gmodern.withoutStrategies(ReferenceElementStrategy).E().next()");
         final Edge e = results.all().get().get(0).getEdge();
         assertThat(e, instanceOf(DetachedEdge.class));
     }
 
     @Test
     public void shouldHandlePropertyResult() throws Exception {
-        final ResultSet results = client.submit("gmodern.E().properties('weight').next()");
+        final ResultSet results = client.submit("gmodern.withoutStrategies(ReferenceElementStrategy).E().properties('weight').next()");
         final Property<Double> p = results.all().get().get(0).getProperty();
         assertThat(p, instanceOf(DetachedProperty.class));
     }
 
     @Test
     public void shouldHandlePathResult() throws Exception {
-        final ResultSet results = client.submit("gmodern.V().out().path()");
+        final ResultSet results = client.submit("gmodern.withoutStrategies(ReferenceElementStrategy).V().out().path()");
         final Path p = results.all().get().get(0).getPath();
         assertThat(p, instanceOf(DetachedPath.class));
     }

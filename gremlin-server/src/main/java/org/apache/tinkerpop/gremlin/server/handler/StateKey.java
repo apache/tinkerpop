@@ -29,7 +29,10 @@ import io.netty.util.AttributeKey;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class StateKey {
+public final class StateKey {
+
+    private StateKey() {}
+
     /**
      * The key for the current serializer requested by the client.
      */

@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.step.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -45,7 +44,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
+public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
         implements Mutating<Event.VertexAddedEvent>, TraversalParent, Scoping {
 
     private Parameters parameters = new Parameters();
@@ -54,7 +53,7 @@ public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
 
     public AddVertexStartStep(final Traversal.Admin traversal, final String label) {
         super(traversal);
-        this.parameters.set(this, T.label, label);
+        this.parameters.set(this, T.label, null == label ? Vertex.DEFAULT_LABEL : label);
     }
 
     public AddVertexStartStep(final Traversal.Admin traversal, final Traversal<?, String> vertexLabelTraversal) {

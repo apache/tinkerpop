@@ -40,7 +40,7 @@ weightFilter = outE("knows").has('weight', P.gt(0.5d)).inV();[]
 g.V(1).flatMap(weightFilter).both()
 ----
 
-The `weightFilter` is an anonymous traversal and it is created by way `__` class. The `__` is omitted above from
+The `weightFilter` is an anonymous traversal and it is created by way `+__+` class. The `+__+` is omitted above from
 initalization of `weightFilter` because it is statically imported to the Gremlin Console. The `weightFilter` gets
 passed to the "full" traversal by way for `flatMap()`-step and the results are the same. Of course, there is a problem.
 If there is an attempt to use that `weightFilter` a second time, the traversal with thrown an exception because both

@@ -20,13 +20,10 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.4.0-SNAPSHOT</version>
+        <version>3.5.0-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-core</artifactId>
     <name>Apache TinkerPop :: Gremlin Core</name>
-    <properties>
-        <revapi.skip>false</revapi.skip>
-    </properties>
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
@@ -40,6 +37,10 @@ limitations under the License.
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
         </dependency>
         <dependency>
             <groupId>org.yaml</groupId>

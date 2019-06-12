@@ -18,7 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import io.netty.util.AttributeMap;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -85,8 +86,8 @@ final class Handler {
             // We are only interested in AUTHENTICATE responses here. Everything else can
             // get passed down the pipeline
             if (response.getStatus().getCode() == ResponseStatusCode.AUTHENTICATE) {
-                final Attribute<SaslClient> saslClient = channelHandlerContext.attr(saslClientKey);
-                final Attribute<Subject> subject = channelHandlerContext.attr(subjectKey);
+                final Attribute<SaslClient> saslClient = ((AttributeMap) channelHandlerContext).attr(saslClientKey);
+                final Attribute<Subject> subject = ((AttributeMap) channelHandlerContext).attr(subjectKey);
                 final RequestMessage.Builder messageBuilder = RequestMessage.build(Tokens.OPS_AUTHENTICATION);
                 // First time through we don't have a sasl client
                 if (saslClient.get() == null) {
@@ -255,13 +256,14 @@ final class Handler {
                         final List<String> exceptions = attributes.containsKey(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS) ?
                                 (List<String>) attributes.get(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS) : null;
                         queue.markError(new ResponseException(response.getStatus().getCode(), response.getStatus().getMessage(),
-                                exceptions, stackTrace));
+                                exceptions, stackTrace, cleanStatusAttributes(attributes)));
                     }
                 }
 
-                // as this is a non-PARTIAL_CONTENT code - the stream is done
-                if (response.getStatus().getCode() != ResponseStatusCode.PARTIAL_CONTENT)
-                    pending.remove(response.getRequestId()).markComplete();
+                // as this is a non-PARTIAL_CONTENT code - the stream is done.
+                if (statusCode != ResponseStatusCode.PARTIAL_CONTENT) {
+                    pending.remove(response.getRequestId()).markComplete(response.getStatus().getAttributes());
+                }
             } finally {
                 // in the event of an exception above the exception is tossed and handled by whatever channelpipeline
                 // error handling is at play.
@@ -283,6 +285,15 @@ final class Handler {
             // serialization exceptions should not close the channel - that's worth a retry
             if (!IteratorUtils.anyMatch(ExceptionUtils.getThrowableList(cause).iterator(), t -> t instanceof SerializationException))
                 if (ctx.channel().isActive()) ctx.close();
+        }
+
+        private Map<String,Object> cleanStatusAttributes(final Map<String,Object> statusAttributes) {
+            final Map<String,Object> m = new HashMap<>();
+            statusAttributes.forEach((k,v) -> {
+                if (!k.equals(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS) && !k.equals(Tokens.STATUS_ATTRIBUTE_STACK_TRACE))
+                    m.put(k,v);
+            });
+            return m;
         }
     }
 

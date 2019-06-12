@@ -22,12 +22,10 @@
 #endregion
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Gremlin.Net.Process.Traversal;
-using Gremlin.Net.Structure;
 using Xunit;
 
 namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
@@ -39,9 +37,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         [Fact]
         public void ShouldReturnCachedSideEffectWhenGetIsCalledAfterClose()
         {
-            var graph = new Graph();
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = graph.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
             var t = g.V().Aggregate("a").Iterate();
 
             t.SideEffects.Get("a");
@@ -54,9 +51,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         [Fact]
         public void ShouldThrowWhenGetIsCalledAfterCloseAndNoSideEffectsAreCachec()
         {
-            var graph = new Graph();
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = graph.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
             var t = g.V().Aggregate("a").Iterate();
 
             t.SideEffects.Close();
@@ -66,9 +62,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         [Fact]
         public void ShouldThrowWhenGetIsCalledAfterDisposeAndNoSideEffectsAreCachec()
         {
-            var graph = new Graph();
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = graph.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
             var t = g.V().Aggregate("a").Iterate();
 
             t.SideEffects.Dispose();
@@ -78,9 +73,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         [Fact]
         public void ShouldThrowWhenGetIsCalledWithAnUnknownKey()
         {
-            var graph = new Graph();
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = graph.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
             var t = g.V().Iterate();
 
             Assert.Throws<KeyNotFoundException>(() => t.SideEffects.Get("m"));
@@ -89,9 +83,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         [Fact]
         public void ShouldReturnAnEmptyCollectionWhenKeysIsCalledForTraversalWithoutSideEffect()
         {
-            var graph = new Graph();
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = graph.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
 
             var t = g.V().Iterate();
             var keys = t.SideEffects.Keys();
@@ -102,9 +95,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         [Fact]
         public void ShouldReturnCachedKeysWhenForCloseAfterSomeGet()
         {
-            var graph = new Graph();
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = graph.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
             var t = g.V().Aggregate("a").Aggregate("b").Iterate();
 
             t.SideEffects.Get("a");
@@ -119,9 +111,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         [Fact]
         public void ShouldReturnSideEffectKeyWhenKeysIsCalledForNamedGroupCount()
         {
-            var graph = new Graph();
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = graph.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
             var t = g.V().Out("created").GroupCount("m").By("name").Iterate();
 
             var keys = t.SideEffects.Keys();
@@ -134,9 +125,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         [Fact]
         public async Task ShouldReturnSideEffectsKeysWhenKeysIsCalledOnTraversalThatExecutedAsynchronously()
         {
-            var graph = new Graph();
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = graph.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
 
             var t = await g.V().Aggregate("a").Promise(x => x);
             var keys = t.SideEffects.Keys();
@@ -148,9 +138,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         [Fact]
         public async Task ShouldReturnSideEffectValueWhenGetIsCalledOnTraversalThatExecutedAsynchronously()
         {
-            var graph = new Graph();
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = graph.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
 
             var t = await g.V().Aggregate("a").Promise(x => x);
             var value = t.SideEffects.Get("a");
@@ -161,9 +150,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         [Fact]
         public async Task ShouldNotThrowWhenCloseIsCalledOnTraversalThatExecutedAsynchronously()
         {
-            var graph = new Graph();
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = graph.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
 
             var t = await g.V().Aggregate("a").Promise(x => x);
             t.SideEffects.Close();

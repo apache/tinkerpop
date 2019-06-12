@@ -50,10 +50,12 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.hamcrest.core.AnyOf.anyOf;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -339,7 +341,14 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
     public void g_V_repeatXout_repeatXoutX_timesX1XX_timesX1X_limitX1X_path_by_name() {
         // This traversal gets optimised by the RepeatUnrollStrategy
         final Traversal<Vertex, Path> traversal_unrolled = get_g_V_repeatXout_repeatXoutX_timesX1XX_timesX1X_limitX1X_path_by_name();
-        final Path path_original = traversal_unrolled.next();
+        final Path pathOriginal = traversal_unrolled.next();
+        assertFalse(traversal_unrolled.hasNext());
+        assertEquals(3, pathOriginal.size());
+        assertEquals("marko", pathOriginal.get(0));
+        assertEquals("josh", pathOriginal.get(1));
+
+        // could be lop or ripple depending on what the graph chooses to traverse first
+        assertThat(pathOriginal.get(2), anyOf(equalTo("ripple"), equalTo("lop")));
 
         g = g.withoutStrategies(RepeatUnrollStrategy.class);
 
@@ -350,9 +359,9 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         assertEquals(3, path.size());
         assertEquals("marko", path.get(0));
         assertEquals("josh", path.get(1));
-        assertEquals("ripple", path.get(2));
 
-        assertEquals(path, path_original);
+        // could be lop or ripple depending on what the graph chooses to traverse first
+        assertThat(path.get(2), anyOf(equalTo("ripple"), equalTo("lop")));
     }
 
     @Test

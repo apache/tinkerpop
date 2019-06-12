@@ -24,6 +24,7 @@
 
 const utils = require('../utils');
 const itemDone = Object.freeze({ value: null, done: true });
+const asyncIteratorSymbol = Symbol.asyncIterator || Symbol('@@asyncIterator');
 
 class Traversal {
   constructor(graph, traversalStrategies, bytecode) {
@@ -35,6 +36,13 @@ class Traversal {
     this.sideEffects = null;
     this._traversalStrategiesPromise = null;
     this._traversersIteratorIndex = 0;
+  }
+
+  /**
+   * Async iterable method implementation.
+   */
+  [asyncIteratorSymbol]() {
+    return this;
   }
 
   /** @returns {Bytecode} */
@@ -62,6 +70,7 @@ class Traversal {
    * @returns {Promise}
    */
   iterate() {
+    this.bytecode.addStep('none');
     return this._applyStrategies().then(() => {
       let it;
       while ((it = this._getNext()) && !it.done) {
@@ -111,6 +120,103 @@ class Traversal {
   };
 }
 
+
+class IO {
+
+ static get graphml() {
+   return "graphml"
+ }
+
+ static get graphson() {
+   return "graphson"
+ }
+
+ static get gryo() {
+   return "gryo"
+ }
+
+ static get reader() {
+   return "~tinkerpop.io.reader"
+ }
+
+ static get registry() {
+   return "~tinkerpop.io.registry"
+ }
+
+ static get writer() {
+   return "~tinkerpop.io.writer"
+ }
+}
+
+class ConnectedComponent {
+
+ static get component() {
+   return "gremlin.connectedComponentVertexProgram.component"
+ }
+
+ static get edges() {
+   return "~tinkerpop.connectedComponent.edges"
+ }
+
+ static get propertyName() {
+   return "~tinkerpop.connectedComponent.propertyName"
+ }
+}
+
+class ShortestPath {
+
+ static get distance() {
+   return "~tinkerpop.shortestPath.distance"
+ }
+
+ static get edges() {
+   return "~tinkerpop.shortestPath.edges"
+ }
+
+ static get includeEdges() {
+   return "~tinkerpop.shortestPath.includeEdges"
+ }
+
+ static get maxDistance() {
+   return "~tinkerpop.shortestPath.maxDistance"
+ }
+
+ static get target() {
+   return "~tinkerpop.shortestPath.target"
+ }
+}
+
+class PageRank {
+
+ static get edges() {
+   return "~tinkerpop.pageRank.edges"
+ }
+
+ static get propertyName() {
+   return "~tinkerpop.pageRank.propertyName"
+ }
+
+ static get times() {
+   return "~tinkerpop.pageRank.times"
+ }
+}
+
+class PeerPressure {
+
+ static get edges() {
+   return "~tinkerpop.peerPressure.edges"
+ }
+
+ static get propertyName() {
+   return "~tinkerpop.peerPressure.propertyName"
+ }
+
+ static get times() {
+   return "~tinkerpop.peerPressure.times"
+ }
+}
+
+
 class P {
   /**
    * Represents an operation.
@@ -140,6 +246,23 @@ class P {
   or(arg) {
     return new P('or', this, arg);
   }
+
+  static within(...args) {
+    if (args.length === 1 && Array.isArray(args[0])) {
+      return new P("within", args[0], null);
+    } else {
+      return new P("within", args, null);
+    }
+  }
+
+  static without(...args) {
+    if (args.length === 1 && Array.isArray(args[0])) {
+      return new P("without", args[0], null);
+    } else {
+      return new P("without", args, null);
+    }
+  }
+
 
   /** @param {...Object} args */
   static between(...args) {
@@ -196,21 +319,78 @@ class P {
     return createP('test', args);
   }
 
-  /** @param {...Object} args */
-  static within(...args) {
-    return createP('within', args);
-  }
-
-  /** @param {...Object} args */
-  static without(...args) {
-    return createP('without', args);
-  }
-
 }
 
 function createP(operator, args) {
   args.unshift(null, operator);
   return new (Function.prototype.bind.apply(P, args));
+}
+
+class TextP {
+  /**
+   * Represents an operation.
+   * @constructor
+   */
+  constructor(operator, value, other) {
+    this.operator = operator;
+    this.value = value;
+    this.other = other;
+  }
+
+  /**
+   * Returns the string representation of the instance.
+   * @returns {string}
+   */
+  toString() {
+    if (this.other === undefined) {
+      return this.operator + '(' + this.value + ')';
+    }
+    return this.operator + '(' + this.value + ', ' + this.other + ')';
+  }
+
+  and(arg) {
+    return new P('and', this, arg);
+  }
+
+  or(arg) {
+    return new P('or', this, arg);
+  }
+
+  /** @param {...Object} args */
+  static containing(...args) {
+    return createTextP('containing', args);
+  }
+
+  /** @param {...Object} args */
+  static endingWith(...args) {
+    return createTextP('endingWith', args);
+  }
+
+  /** @param {...Object} args */
+  static notContaining(...args) {
+    return createTextP('notContaining', args);
+  }
+
+  /** @param {...Object} args */
+  static notEndingWith(...args) {
+    return createTextP('notEndingWith', args);
+  }
+
+  /** @param {...Object} args */
+  static notStartingWith(...args) {
+    return createTextP('notStartingWith', args);
+  }
+
+  /** @param {...Object} args */
+  static startingWith(...args) {
+    return createTextP('startingWith', args);
+  }
+
+}
+
+function createTextP(operator, args) {
+  args.unshift(null, operator);
+  return new (Function.prototype.bind.apply(TextP, args));
 }
 
 class Traverser {
@@ -223,6 +403,19 @@ class Traverser {
 class TraversalSideEffects {
 
 }
+
+const withOptions = {
+  tokens: "~tinkerpop.valueMap.tokens",
+  none: 0,
+  ids: 1,
+  labels: 2,
+  keys: 4,
+  values: 8,
+  all: 15,
+  indexer: "~tinkerpop.index.indexer",
+  list: 0,
+  map: 1
+};
 
 function toEnum(typeName, keys) {
   const result = {};
@@ -250,6 +443,9 @@ class EnumValue {
 module.exports = {
   EnumValue,
   P,
+  TextP,
+  withOptions,
+  IO,
   Traversal,
   TraversalSideEffects,
   Traverser,

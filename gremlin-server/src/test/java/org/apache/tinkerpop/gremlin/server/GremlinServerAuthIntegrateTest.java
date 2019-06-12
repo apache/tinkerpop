@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
@@ -31,6 +31,7 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
@@ -68,6 +69,8 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
             case "shouldFailIfSslEnabledOnServerButNotClient":
                 final Settings.SslSettings sslConfig = new Settings.SslSettings();
                 sslConfig.enabled = true;
+                sslConfig.keyStore = JKS_SERVER_KEY;
+                sslConfig.keyStorePassword = KEY_PASS;
                 settings.ssl = sslConfig;
                 break;
         }
@@ -97,29 +100,17 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         final Cluster cluster = TestClientFactory.build().credentials("stephen", "password").create();
         final Client client = cluster.connect();
 
-        try {
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
-            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
-        } finally {
-            cluster.close();
-        }
+        assertConnection(cluster, client);
     }
 
     @Test
     public void shouldAuthenticateOverSslWithPlainText() throws Exception {
         final Cluster cluster = TestClientFactory.build()
-                .enableSsl(true)
+                .enableSsl(true).sslSkipCertValidation(true)
                 .credentials("stephen", "password").create();
         final Client client = cluster.connect();
 
-        try {
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
-            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
-        } finally {
-            cluster.close();
-        }
+        assertConnection(cluster, client);
     }
 
     @Test
@@ -179,13 +170,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
                 .credentials("stephen", "password").create();
         final Client client = cluster.connect();
 
-        try {
-            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
-        } finally {
-            cluster.close();
-        }
+        assertConnection(cluster, client);
     }
 
     @Test
@@ -194,13 +179,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
                 .credentials("stephen", "password").create();
         final Client client = cluster.connect();
 
-        try {
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
-            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
-        } finally {
-            cluster.close();
-        }
+        assertConnection(cluster, client);
     }
 
     @Test
@@ -233,6 +212,16 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
 
             final Map vpName = (Map)client.submit("v.property('name')").all().get().get(0).getObject();
             assertEquals("stephen", vpName.get("value"));
+        } finally {
+            cluster.close();
+        }
+    }
+
+    private static void assertConnection(final Cluster cluster, final Client client) throws InterruptedException, ExecutionException {
+        try {
+            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
+            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
         } finally {
             cluster.close();
         }

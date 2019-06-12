@@ -51,10 +51,10 @@ IMPORTANT: The basics for starting a traversal are described in <<the-graph-proc
 well as in the link:http://tinkerpop.apache.org/docs/current/tutorials/getting-started/[Getting Started] tutorial.
 
 NOTE: To reduce the verbosity of the expression, it is good to
-`import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*`. This way, instead of doing `__.inE()`
+`+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*+`. This way, instead of doing `+__.inE()+`
 for an anonymous traversal, it is possible to simply write `inE()`. Be aware of language-specific reserved keywords
 when using anonymous traversals. For example, `in` and `as` are reserved keywords in Groovy, therefore you must use
-the verbose syntax `__.in()` and `__.as()` to avoid collisions.
+the verbose syntax `+__.in()+` and `+__.as()+` to avoid collisions.
 
 [[general-steps]]
 === General Steps
@@ -162,17 +162,21 @@ g.V().out('created').fill(results) <8>
 g.addV('person').iterate() <9>
 ----
 
-<1> `hasNext()` determines whether there are available results.
+<1> `hasNext()` determines whether there are available results (not supported in `gremlin-javascript`).
 <2> `next()` will return the next result.
-<3> `next(n)` will return the next `n` results in a list.
-<4> `tryNext()` will return an `Optional` and thus, is a composite of `hasNext()`/`next()`.
+<3> `next(n)` will return the next `n` results in a list (not supported in `gremlin-javascript` or Gremlin.NET).
+<4> `tryNext()` will return an `Optional` and thus, is a composite of `hasNext()`/`next()` (only supported for JVM languages).
 <5> `toList()` will return all results in a list.
-<6> `toSet()` will return all results in a set (thus, duplicates removed).
-<7> `toBulkSet()` will return all results in a weighted set (thus, duplicates preserved via weighting).
-<8> `fill(collection)` will put all results in the provided collection and return the collection when complete.
+<6> `toSet()` will return all results in a set and thus, duplicates removed (not supported in `gremlin-javascript`).
+<7> `toBulkSet()` will return all results in a weighted set and thus, duplicates preserved via weighting (only supported for JVM languages).
+<8> `fill(collection)` will put all results in the provided collection and return the collection when complete (only supported for JVM languages).
 <9> `iterate()` does not exactly fit the definition of a terminal step in that it doesn't return a result, but still
 returns a traversal - it does however behave as a terminal step in that it iterates the traversal and generates side
 effects without returning the actual result.
+
+There is also the `promise()` terminator step, which can only be used with remote traversals to
+<<connecting-gremlin-server,Gremlin Server>> or <<connecting-rgp,RGPs>>. It starts a promise to execute a function
+on the current `Traversal` that will be completed in the future.
 
 Finally, <<explain-step,`explain()`>>-step is also a terminal step and is described in its own section.
 
@@ -339,8 +343,7 @@ g.V().and(
 The `and()`-step can take an arbitrary number of traversals. All traversals must produce at least one output for the
 original traverser to pass to the next step.
 
-An link:http://en.wikipedia.org/wiki/Infix_notation[infix notation] can be used as well. Though, with infix notation,
-only two traversals can be and'd together.
+An link:http://en.wikipedia.org/wiki/Infix_notation[infix notation] can be used as well.
 
 [gremlin-groovy,modern]
 ----
@@ -416,7 +419,8 @@ made more salient on a larger graph. Therefore, the example below leverages the 
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-graph.io(graphml()).readGraph('data/grateful-dead.xml')
+g = graph.traversal()
+g.io('data/grateful-dead.xml').read().iterate()
 g = graph.traversal().withoutStrategies(LazyBarrierStrategy) <1>
 clockWithResult(1){g.V().both().both().both().count().next()} <2>
 clockWithResult(1){g.V().repeat(both()).times(3).count().next()} <3>
@@ -438,8 +442,8 @@ optimization scenario with the added benefit of reducing the risk of an out-of-m
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-graph.io(graphml()).readGraph('data/grateful-dead.xml')
-g = graph.traversal() <1>
+g = graph.traversal()  <1>
+g.io('data/grateful-dead.xml').read().iterate()
 clockWithResult(1){g.V().both().both().both().count().next()}
 g.V().both().both().both().count().iterate().toString()  <2>
 ----
@@ -624,6 +628,41 @@ g.V().coin(1.0)
 
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#coin-double-++[`coin(double)`]
 
+[[connectedcomponent-step]]
+=== ConnectedComponent Step
+
+The `connectedComponent()` step performs a computation to identify link:https://en.wikipedia.org/wiki/Connected_component_(graph_theory)[Connected Component]
+instances in a graph. When this step completes, the vertices will be labelled with a component identifier to denote
+the component to which they are associated.
+
+IMPORTANT: The `connectedComponent()`-step is a `VertexComputing`-step and as such, can only be used against a graph
+that supports `GraphComputer` (OLAP).
+
+[gremlin-groovy,modern]
+----
+g = graph.traversal().withComputer()
+g.V().
+  connectedComponent().
+    with(ConnectedComponent.propertyName, 'component').
+  project('name','component').
+    by('name').
+    by('component')
+g.V().hasLabel('person').
+  connectedComponent().
+    with(ConnectedComponent.propertyName, 'component').
+    with(ConnectedComponent.edges, outE('knows')).
+  project('name','component').
+    by('name').
+    by('component')
+----
+
+Note the use of the `with()` modulating step which provides configuration options to the algorithm. It takes
+configuration keys from the `ConnectedComponent` class and is automatically imported to the Gremlin Console.
+
+*Additional References*
+
+link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#connectedComponent--++[`connectedComponent()`]
+
 [[constant-step]]
 === Constant Step
 
@@ -723,7 +762,7 @@ has been seen or not.
 
 [gremlin-groovy,modern]
 ----
-g.V().valueMap(true, 'name')
+g.V().valueMap('name').with(WithOptions.tokens)
 g.V().dedup().by(label).values('name')
 ----
 
@@ -833,7 +872,7 @@ means by which they are added. The general pattern is `step().from()`. See <<to-
 The list of steps that support `from()`-modulation are: <<simplepath-step,`simplePath()`>>, <<cyclicpath-step,`cyclicPath()`>>,
  <<path-step,`path()`>>, and <<addedge-step,`addE()`>>.
 
-[NOTE, caption=Javasacript]
+[NOTE, caption=Javascript]
 ====
 The term `from` is a reserved word in Javascript, and therefore must be referred to in Gremlin with `from_()`.
 ====
@@ -978,8 +1017,8 @@ g.V().properties().hasKey('age').value() <6>
 g.V().hasNot('age').values('name') <7>
 ----
 
-<1> Find all vertices whose ages are between 20 (inclusive) and 30 (exclusive).
-<2> Find all vertices whose ages are not between 20 (inclusive) and 30 (exclusive).
+<1> Find all vertices whose ages are between 20 (exclusive) and 30 (exclusive). In other words, the age must be greater than 20 and less than 30.
+<2> Find all vertices whose ages are not between 20 (inclusive) and 30 (inclusive). In other words, the age must be less than 20 or greater than 30.
 <3> Find all vertices whose names are exact matches to any names in the collection `[josh,marko]`, display all
 the key,value pairs for those vertices.
 <4> Find all vertices whose names are not in the collection `[josh,marko]`, display all the key,value pairs for those vertices.
@@ -1045,6 +1084,44 @@ g.V().identity()
 
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#identity--++[`identity()`]
 
+[[index-step]]
+=== Index Step
+
+The `index()`-step (*map*) indexes each element in the current collection. If the current traverser's value is not a collection, then it's treated as a single-item collection. There are two indexers
+available, which can be chosen using the `with()` modulator. The list indexer (default) creates a list for each collection item, with the first item being the original element and the second element
+being the index. The map indexer created a linked hash map in which the index represents the key and the original item is used as the value.
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel("software").index()  <1>
+g.V().hasLabel("software").values("name").fold().
+  order(Scope.local).
+  index().
+  unfold().
+  order().
+    by(__.tail(Scope.local, 1))     <2>
+g.V().hasLabel("software").values("name").fold().
+  order(Scope.local).
+  index().
+    with(WithOptions.indexer, WithOptions.list).
+  unfold().
+  order().
+    by(__.tail(Scope.local, 1))     <3>
+g.V().hasLabel("person").values("name").fold().
+  order(Scope.local).
+  index().
+    with(WithOptions.indexer, WithOptions.map)  <4>
+----
+
+<1> Indexing non-collection items results in multiple indexed single-item collections.
+<2> Index all software names in their alphabetical order.
+<3> Same as statement 1, but with an explicitely specified list indexer.
+<4> Index all person names in their alphabetical order and store the result in an ordered map.
+
+*Additional References*
+
+link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#index--++[`index()`]
+
 [[inject-step]]
 === Inject Step
 
@@ -1074,6 +1151,179 @@ inject(1,2).map {it.get() + 1}.map {g.V(it.get()).next()}.values('name')
 *Additional References*
 
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#inject-E...-++[`inject(Object)`]
+
+anchor:_gremlin_i_o[]
+[[io-step]]
+=== IO Step
+
+image:gremlin-io.png[width=250,float=left] The task of importing and exporting the data of `Graph` instances is the
+job of the `io()`-step. By default, TinkerPop supports three formats for importing and exporting graph data in
+<<graphml,GraphML>>, <<graphson,GraphSON>>, and <<gryo,Gryo>>.
+
+NOTE: Additional documentation for TinkerPop IO formats can be found in the link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/[IO Reference].
+
+By itself the `io()`-step merely configures the kind of importing and exporting that is going
+to occur and it is the follow-on call to the `read()` or `write()` step that determines which of those actions will
+execute. Therefore, a typical usage of the `io()`-step would look like this:
+
+[source,java]
+----
+g.io(someInputFile).read().iterate()
+g.io(someOutputFile).write().iterate()
+----
+
+IMPORTANT: The commands above are still traversals and therefore require iteration to be executed, hence the use of
+`iterate()` as a termination step.
+
+By default, the `io()`-step will try to detect the right file format using the file name extension. To gain greater
+control of the format use the `with()` step modulator to provide further information to `io()`. For example:
+
+[source,java]
+----
+g.io(someInputFile).
+    with(IO.reader, IO.graphson).
+  read().iterate()
+g.io(someOutputFile).
+    with(IO.writer,IO.graphml).
+  write().iterate()
+----
+
+The `IO` class is a helper for the `io()`-step that provides expressions that can be used to help configure it
+and in this case it allows direct specification of the "reader" or "writer" to use. The "reader" actually refers to
+a `GraphReader` implementation and the "writer" refers to a `GraphWriter` implementation. The implementations of
+those interfaces provided by default are the standard TinkerPop implementations.
+
+That default is an important point to consider for users. The default TinkerPop implementations are not designed with
+massive, complex, parallel bulk loading in mind. They are designed to do single-threaded, OLTP-style loading of data
+in the most generic way possible so as to accommodate the greatest number of graph databases out there. As such, from
+a reading perspective, they work best for small datasets (or perhaps medium datasets where memory is plentiful and
+time is not critical) that are loading to an empty graph - incremental loading is not supported. The story from the
+writing perspective is not that different in there are no parallel operations in play, however streaming the output
+to disk requires a single pass of the data without high memory requirements for larger datasets.
+
+In general, TinkerPop recommends that users examine the native bulk import/export tools of the graph implementation
+that they choose. Those tools will often outperform the `io()`-step and perhaps be easier to use with a greater
+feature set. That said, graph providers do have the option to optimize `io()` to back it with their own
+import/export utilities and therefore the default behavior provided by TinkerPop described above might be overridden
+by the graph.
+
+An excellent example of this lies in <<hadoop-gremlin,HadoopGraph>> with <<sparkgraphcomputer,SparkGraphComputer>>
+which replaces the default single-threaded implementation with a more advanced OLAP style bulk import/export
+functionality internally using <<clonevertexprogram,CloneVertexProgram>>. With this model, graphs of arbitrary size
+can be imported/exported assuming that there is a Hadoop `InputFormat` or `OutputFormat` to support it.
+
+IMPORTANT: Remote Gremlin Console users or Gremlin Language Variant (GLV) users (e.g. gremlin-python) who utilize
+the `io()`-step should recall that their `read()` or `write()` operation will occur on the server and not locally
+and therefore the file specified for import/export must be something accessible by the server.
+
+GraphSON and Gryo formats are extensible allowing users and graph providers to extend supported serialization options.
+These extensions are exposed through `IoRegistry` implementations. To apply an `IoRegistry` use the `with()` option
+and the `IO.registry` key, where the value is either an actual `IoRegistry` instance or the fully qualified class
+name of one.
+
+[source,java]
+----
+g.io(someInputFile).
+    with(IO.reader, IO.gryo).
+    with(IO.registry, TinkerIoRegistryV3d0.instance())
+  read().iterate()
+g.io(someOutputFile).
+    with(IO.writer,IO.graphson).
+    with(IO.registry, "org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3d0")
+  write().iterate()
+----
+
+GLVs will obviously always be forced to use the latter form as they can't explicitly create an instance of an
+`IoRegistry` to pass to the server (nor are `IoRegistry` instances necessarily serializable).
+
+The version of the formats (e.g. GraphSON 2.0 or 3.0) utilized by `io()` is determined entirely by the `IO.reader` and
+`IO.writer` configurations or their defaults. The defaults will always be the latest version for the current release
+of TinkerPop. It is also possible for graph providers to override these defaults, so consult the documentation of the
+underlying graph database in use for any details on that.
+
+For more advanced configuration of `GraphReader` and `GraphWriter` operations (e.g. normalized output for GraphSON,
+disabling class registrations for Gryo, etc.) then construct the appropriate `GraphReader` and `GraphWriter` using
+the `build()` method on their implementations and use it directly. It can be passed directly to the `IO.reader` or
+`IO.writer` options. Obviously, these are JVM based operations and thus not available to GLVs as portable features.
+
+anchor:_graphml_reader_writer[]
+[[graphml]]
+==== GraphML
+
+image:gremlin-graphml.png[width=350,float=left] The link:http://graphml.graphdrawing.org/[GraphML] file format is a
+common XML-based representation of a graph. It is widely supported by graph-related tools and libraries making it a
+solid interchange format for TinkerPop. In other words, if the intent is to work with graph data in conjunction with
+applications outside of TinkerPop, GraphML may be the best choice to do that. Common use cases might be:
+
+* Generate a graph using link:https://networkx.github.io/[NetworkX], export it with GraphML and import it to TinkerPop.
+* Produce a subgraph and export it to GraphML to be consumed by and visualized in link:https://gephi.org/[Gephi].
+* Migrate the data of an entire graph to a different graph database not supported by TinkerPop.
+
+WARNING: GraphML is a "lossy" format in that it only supports primitive values for properties and does not have
+support for `Graph` variables.  It will use `toString` to serialize property values outside of those primitives.
+
+WARNING: GraphML as a specification allows for `<edge>` and `<node>` elements to appear in any order.  Most software
+that writes GraphML (including as TinkerPop's `GraphMLWriter`) write `<node>` elements before `<edge>` elements.  However it
+is important to note that `GraphMLReader` will read this data in order and order can matter.  This is because TinkerPop
+does not allow the vertex label to be changed after the vertex has been created.  Therefore, if an `<edge>` element
+comes before the `<node>`, the label on the vertex will be ignored.  It is thus better to order `<node>` elements in the
+GraphML to appear before all `<edge>` elements if vertex labels are important to the graph.
+
+[source,java]
+----
+g.io("graph.xml").read().iterate()
+g.io("graph.xml").write().iterate()
+----
+
+NOTE: If using GraphML generated from TinkerPop 2.x, read more about its incompatibilities in the
+link:http://tinkerpop.apache.org/docs/x.y.z/upgrade/#graphml-format[Upgrade Documentation].
+
+anchor:graphson-reader-writer[]
+[[graphson]]
+==== GraphSON
+
+image:gremlin-graphson.png[width=350,float=left] GraphSON is a link:http://json.org/[JSON]-based format extended
+from earlier versions of TinkerPop. It is important to note that TinkerPop's GraphSON is not backwards compatible
+with prior TinkerPop GraphSON versions. GraphSON has some support from graph-related application outside of TinkerPop,
+but it is generally best used in two cases:
+
+* A text format of the graph or its elements is desired (e.g. debugging, usage in source control, etc.)
+* The graph or its elements need to be consumed by code that is not JVM-based (e.g. JavaScript, Python, .NET, etc.)
+
+[source,java]
+----
+g.io("graph.json").read().iterate()
+g.io("graph.json").write().iterate()
+----
+
+NOTE: Additional documentation for GraphSON can be found in the link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[IO Reference].
+
+anchor:gryo-reader-writer[]
+[[gryo]]
+==== Gryo
+
+image:gremlin-kryo.png[width=400,float=left] link:https://github.com/EsotericSoftware/kryo[Kryo] is a popular
+serialization package for the JVM. Gremlin-Kryo is a binary `Graph` serialization format for use on the JVM by JVM
+languages. It is designed to be space efficient, non-lossy and is promoted as the standard format to use when working
+with graph data inside of the TinkerPop stack. A list of common use cases is presented below:
+
+* Migration from one Gremlin Structure implementation to another (e.g. `TinkerGraph` to `Neo4jGraph`)
+* Serialization of individual graph elements to be sent over the network to another JVM.
+* Backups of in-memory graphs or subgraphs.
+
+WARNING: When migrating between Gremlin Structure implementations, Kryo may not lose data, but it is important to
+consider the features of each `Graph` and whether or not the data types supported in one will be supported in the
+other.  Failure to do so, may result in errors.
+
+[source,java]
+----
+g.io("graph.kryo").read().iterate()
+g.io("graph.kryo").write().iterate()
+----
+
+*Additional References*
+
+link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversalSource.html#io-java.lang.String-++[`io(String)`]
 
 [[is-step]]
 === Is Step
@@ -1292,8 +1542,8 @@ songs which Jerry Garcia has both sung and written (using the Grateful Dead grap
 
 [gremlin-groovy]
 ----
-graph.io(graphml()).readGraph('data/grateful-dead.xml')
 g = graph.traversal()
+g.io('data/grateful-dead.xml').read().iterate()
 g.V().match(
         __.as('a').has('name', 'Garcia'),
         __.as('a').in('writtenBy').as('b'),
@@ -1472,8 +1722,8 @@ g.withSideEffect('x',10).V().values('age').math('_ / x')
 g.withSack(1).V(1).repeat(sack(sum).by(constant(1))).times(10).emit().sack().math('sin _')
 ----
 
-The operators supported by the calculator include: `*`, `+`, `\`, `^`, and `%`.
-Furthermore, the following built in functions are provided:
+The operators supported by the calculator include: `*`, `+`, `/`, `^`, and `%`. Furthermore, the following built in
+functions are provided:
 
 * `abs`: absolute value
 * `acos`: arc cosine
@@ -1565,6 +1815,21 @@ link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/grem
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#min-org.apache.tinkerpop.gremlin.process.traversal.Scope-++[`min(Scope)`],
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`]
 
+[[none-step]]
+=== None Step
+
+The `none()`-step (*filter*) filters all objects from a traversal stream. It is especially useful for to traversals
+that are executed remotely where returning results is not useful and the traversal is only meant to generate
+side-effects. Choosing not to return results saves in serialization and network costs as the objects are filtered on
+the remote end and not returned to the client side. Typically, this step does not need to be used directly and is
+quietly used by the `iterate()` terminal step which appends `none()` to the traversal before actually cycling through
+results.
+
+*Additional References*
+
+link:++http://tinkerpop.apache.org/javadocs/current/core/org/apache/tinkerpop/gremlin/process/traversal/Traversal.html#none--++['none()']
+link:++http://tinkerpop.apache.org/javadocs/current/core/org/apache/tinkerpop/gremlin/process/traversal/Traversal.html#iterate--++['iterate()']
+
 [[not-step]]
 === Not Step
 
@@ -1584,7 +1849,7 @@ The term `not` is a reserved word in Python, and therefore must be referred to i
 
 [gremlin-groovy,modern]
 ----
-g.V().not(hasLabel('person')).valueMap(true)
+g.V().not(hasLabel('person')).valueMap().with(WithOptions.tokens)
 g.V().hasLabel('person').
   not(out('created').count().is(gt(1))).values('name')   <1>
 ----
@@ -1655,8 +1920,7 @@ g.V().or(
 The `or()`-step can take an arbitrary number of traversals. At least one of the traversals must produce at least one
 output for the original traverser to pass to the next step.
 
-An link:http://en.wikipedia.org/wiki/Infix_notation[infix notation] can be used as well. Though, with infix notation,
-only two traversals can be or'd together.
+An link:http://en.wikipedia.org/wiki/Infix_notation[infix notation] can be used as well.
 
 [gremlin-groovy,modern]
 ----
@@ -2041,7 +2305,7 @@ g.V().hasLabel('person').
   valueMap('name', 'rank')
 ----
 
-[properties-step]]
+[[properties-step]]
 === Properties Step
 
 The `properties()`-step (*map*) extracts properties from an `Element` in the traversal stream.
@@ -2400,8 +2664,8 @@ ranking.
 
 [gremlin-groovy]
 ----
-graph.io(graphml()).readGraph('data/grateful-dead.xml')
 g = graph.traversal()
+g.io('data/grateful-dead.xml').read().iterate()
 g.V().hasLabel('song').out('followedBy').groupCount().by('name').
       order(local).by(values,desc).limit(local, 5)
 g.V().hasLabel('song').out('followedBy').groupCount().by('name').
@@ -2414,8 +2678,8 @@ Similarly, for extracting the values from a path or map.
 
 [gremlin-groovy]
 ----
-graph.io(graphml()).readGraph('data/grateful-dead.xml')
 g = graph.traversal()
+g.io('data/grateful-dead.xml').read().iterate()
 g.V().hasLabel('song').out('sungBy').groupCount().by('name') <1>
 g.V().hasLabel('song').out('sungBy').groupCount().by('name').select(values) <2>
 g.V().hasLabel('song').out('sungBy').groupCount().by('name').select(values).unfold().
@@ -2488,6 +2752,67 @@ link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/grem
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#select-org.apache.tinkerpop.gremlin.process.traversal.Pop-org.apache.tinkerpop.gremlin.process.traversal.Traversal-++[`select(Pop,Traversal)`],
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/structure/Column.html++[`Column`],
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Pop.html++[`Pop`]
+
+[[shortestpath-step]]
+=== ShortestPath step
+
+The `shortestPath()`-step provides an easy way to find shortest non-cyclic paths in a graph. It is configurable
+using the `with()`-modulator with the options given below.
+
+[width="100%",cols="3,3,15,5",options="header"]
+|=========================================================
+| Key | Type | Description | Default
+| `target` | `Traversal` | Sets a filter traversal for the end vertices (e.g. `+__.has('name','marko')+`). | all vertices (`+__.identity()+`)
+| `edges` | `Traversal` or `Direction` | Sets a `Traversal` that emits the edges to traverse from the current vertex or the `Direction` to traverse during the shortest path discovery. | `Direction.BOTH`
+| `distance` | `Traversal` or `String` | Sets the `Traversal` that calculates the distance for the current edge or the name of an edge property to use for the distance calculations. | `__.constant(1)`
+| `maxDistance` | `Number` | Sets the distance limit for all shortest paths. | none
+| `includeEdges` | `Boolean` | Whether to include edges in the result or not. | `false`
+|=========================================================
+
+[gremlin-groovy,modern]
+----
+g = g.withComputer()
+g.V().shortestPath() <1>
+g.V().has('person','name','marko').shortestPath() <2>
+g.V().shortestPath().with(ShortestPath.target, __.has('name','peter')) <3>
+g.V().shortestPath().
+        with(ShortestPath.edges, Direction.IN).
+        with(ShortestPath.target, __.has('name','josh')) <4>
+g.V().has('person','name','marko').
+      shortestPath().
+        with(ShortestPath.target, __.has('name','josh')) <5>
+g.V().has('person','name','marko').
+      shortestPath().
+        with(ShortestPath.target, __.has('name','josh')).
+        with(ShortestPath.distance, 'weight') <6>
+g.V().has('person','name','marko').
+      shortestPath().
+        with(ShortestPath.target, __.has('name','josh')).
+        with(ShortestPath.includeEdges, true) <7>
+----
+
+<1> Find all shortest paths.
+<2> Find all shortest paths from `marko`.
+<3> Find all shortest paths to `peter`.
+<4> Find all in-directed paths to `josh`.
+<5> Find all shortest paths from `marko` to `josh`.
+<6> Find all shortest paths from `marko` to `josh` using a custom distance property.
+<7> Find all shortest paths from `marko` to `josh` and include edges in the result.
+
+[gremlin-groovy,modern]
+----
+g.inject(g.withComputer().V().shortestPath().
+           with(ShortestPath.distance, 'weight').
+           with(ShortestPath.includeEdges, true).
+           with(ShortestPath.maxDistance, 1).toList().toArray()).
+  map(unfold().values('name','weight').fold()) <1>
+----
+
+<1> Find all shortest paths using a custom distance property and limit the distance to 1. Inject the result into a OLTP `GraphTraversal` in order to be able to select properties from all elements in all paths.
+
+*Additional References*
+
+link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#shortestPath--++[`shortestPath()`]
 
 [[simplepath-step]]
 === SimplePath Step
@@ -2585,11 +2910,13 @@ stores objects in its side-effect collection as they pass through.
 
 [gremlin-groovy,modern]
 ----
-g.V().aggregate('x').limit(1).cap('x')
+g.V().aggregate('x').limit(1).cap('x')                               
 g.V().store('x').limit(1).cap('x')
+g.withoutStrategies(EarlyLimitStrategy).V().store('x').limit(1).cap('x')
 ----
 
-It is interesting to note that there are two results in the `store()` side-effect even though the interval
+It is important to note that `EarlyLimitStrategy` introduced in 3.3.5 alters the behavior of `store()`. Without that
+strategy (which is installed by default), there are two results in the `store()` side-effect even though the interval
 selection is for 1 object. Realize that when the second object is on its way to the `range()` filter (i.e. `[0..1]`),
 it passes through `store()` and thus, stored before filtered.
 
@@ -2644,8 +2971,36 @@ t.sideEffects.get('knowsG').traversal().E()
 t.sideEffects.get('createdG').traversal().E()
 ----
 
-IMPORTANT: The `subgraph()`-step only writes to graphs that support user supplied ids for its elements. Moreover,
-if no graph is specified via `withSideEffect()`, then <<tinkergraph-gremlin,TinkerGraph>> is assumed.
+TinkerGraph is the ideal (and default) `Graph` into which a subgraph is extracted as it's fast, in-memory, and supports
+user-supplied identifiers which can be any Java object. It is this last feature that needs some focus as many
+TinkerPop-enabled graphs have complex identifier types and TinkerGraph's ability to consume those makes it a perfect
+host for an incoming subgraph. However care needs to be taken when using the elements of the TinkerGraph subgraph.
+The original graph's identifiers may be preserved, but the elements of the graph are now TinkerGraph objects like,
+`TinkerVertex` and `TinkerEdge`. As a result, they can not be used directly in Gremlin running against the original
+graph. For example, the following traversal would likely return an error:
+
+[source,text]
+----
+Vertex v = sg.V().has('name','marko').next();  <1>
+List<Vertex> vertices = g.V(v).out().toList(); <2>
+----
+
+<1> Here "sg" is a reference to a TinkerGraph subgraph and "v" is a `TinkerVertex`.
+<2> The `g.V(v)` has the potential to fail as "g" is the original `Graph` instance and not a TinkerGraph - it could
+reject the `TinkerVertex` instance as it will not recognize it.
+
+It is safer to wrap the `TinkerVertex` in a `ReferenceVertex` or simply reference the `id()` as follows:
+
+[source,text]
+----
+Vertex v = sg.V().has('name','marko').next();
+List<Vertex> vertices = g.V(v.id()).out().toList();
+
+// OR
+
+Vertex v = new ReferenceVertex(sg.V().has('name','marko').next());
+List<Vertex> vertices = g.V(v).out().toList();
+----
 
 *Additional References*
 
@@ -2902,7 +3257,7 @@ g.E().valueMap()
 
 It is important to note that the map of a vertex maintains a list of values for each key. The map of an edge or
 vertex-property represents a single property (not a list). The reason is that vertices in TinkerPop leverage
-<<vertex-properties,vertex properties>> which are support multiple values per key. Using the <<the-crew-toy-graph,
+<<vertex-properties,vertex properties>> which support multiple values per key. Using the <<the-crew-toy-graph,
 "The Crew">> toy graph, the point is made explicit.
 
 [gremlin-groovy,theCrew]
@@ -2912,22 +3267,29 @@ g.V().has('name','marko').properties('location')
 g.V().has('name','marko').properties('location').valueMap()
 ----
 
-If the `id`, `label`, `key`, and `value` of the `Element` is desired, then a boolean triggers its insertion into the
-returned map.
+To turn list of values into single items, the `by()` modulator can be used as shown below.
 
 [gremlin-groovy,theCrew]
 ----
-g.V().hasLabel('person').valueMap(true)
-g.V().hasLabel('person').valueMap(true,'name')
-g.V().hasLabel('person').properties('location').valueMap(true)
+g.V().valueMap().by(unfold())
+g.V().valueMap('name','location').by().by(unfold())
+----
+
+If the `id`, `label`, `key`, and `value` of the `Element` is desired, then the `with()` modulator can be used to
+trigger its insertion into the returned map.
+
+[gremlin-groovy,theCrew]
+----
+g.V().hasLabel('person').valueMap().with(WithOptions.tokens)
+g.V().hasLabel('person').valueMap('name').with(WithOptions.tokens, WithOptions.labels)
+g.V().hasLabel('person').properties('location').valueMap().with(WithOptions.tokens, WithOptions.values)
 ----
 
 *Additional References*
 
-link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#valueMap-boolean-java.lang.String...-++[`valueMap(boolean,String...)`],
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#valueMap-java.lang.String...-++[`valueMap(String...)`]
 
-[values-step]]
+[[values-step]]
 === Values Step
 
 The `values()`-step (*map*) extracts the values of properties from an `Element` in the traversal stream.
@@ -3088,24 +3450,32 @@ interface. Steps that allow for this type of modulation will explicitly state so
 [[a-note-on-predicates]]
 == A Note on Predicates
 
-A `P` is a predicate of the form `Function<Object,Boolean>`. That is, given some object, return true or false. The
-provided predicates are outlined in the table below and are used in various steps such as <<has-step,`has()`>>-step,
+A `P` is a predicate of the form `Function<Object,Boolean>`. That is, given some object, return true or false. As of
+the relase of TinkerPop 3.4.0, Gremlin also supports simple text predicates, which only work on `String` values. The `TextP`
+text predicates extend the `P` predicates, but are specialized in that they are of the form `Function<String,Boolean>`.
+The provided predicates are outlined in the table below and are used in various steps such as <<has-step,`has()`>>-step,
 <<where-step,`where()`>>-step, <<is-step,`is()`>>-step, etc.
 
 [width="100%",cols="3,15",options="header"]
 |=========================================================
 | Predicate | Description
-| `eq(object)` | Is the incoming object equal to the provided object?
-| `neq(object)` | Is the incoming object not equal to the provided object?
-| `lt(number)` | Is the incoming number less than the provided number?
-| `lte(number)` | Is the incoming number less than or equal to the provided number?
-| `gt(number)` | Is the incoming number greater than the provided number?
-| `gte(number)` | Is the incoming number greater than or equal to the provided number?
-| `inside(number,number)` | Is the incoming number greater than the first provided number and less than the second?
-| `outside(number,number)` | Is the incoming number less than the first provided number or greater than the second?
-| `between(number,number)` | Is the incoming number greater than or equal to the first provided number and less than the second?
-| `within(objects...)` | Is the incoming object in the array of provided objects?
-| `without(objects...)` | Is the incoming object not in the array of the provided objects?
+| `P.eq(object)` | Is the incoming object equal to the provided object?
+| `P.neq(object)` | Is the incoming object not equal to the provided object?
+| `P.lt(number)` | Is the incoming number less than the provided number?
+| `P.lte(number)` | Is the incoming number less than or equal to the provided number?
+| `P.gt(number)` | Is the incoming number greater than the provided number?
+| `P.gte(number)` | Is the incoming number greater than or equal to the provided number?
+| `P.inside(number,number)` | Is the incoming number greater than the first provided number and less than the second?
+| `P.outside(number,number)` | Is the incoming number less than the first provided number or greater than the second?
+| `P.between(number,number)` | Is the incoming number greater than or equal to the first provided number and less than the second?
+| `P.within(objects...)` | Is the incoming object in the array of provided objects?
+| `P.without(objects...)` | Is the incoming object not in the array of the provided objects?
+| `TextP.startingWith(string)` | Does the incoming `String` start with the provided `String`?
+| `TextP.endingWith(string)` | Does the incoming `String` end with the provided `String`?
+| `TextP.containing(string)` | Does the incoming `String` contain the provided `String`?
+| `TextP.notStartingWith(string)` | Does the incoming `String` not start with the provided `String`?
+| `TextP.notEndingWith(string)` | Does the incoming `String` not end with the provided `String`?
+| `TextP.notContaining(string)` | Does the incoming `String` not contain the provided `String`?
 |=========================================================
 
 [gremlin-groovy]
@@ -3176,6 +3546,11 @@ The `Scope` enum has two constants: `Scope.local` and `Scope.global`. Scope dete
 being scoped is with respects to the current object (`local`) at that step or to the entire stream of objects up to that
 step (`global`).
 
+[NOTE, caption=Python]
+====
+The term `global` is a reserved word in Python, and therefore a `Scope` using that term must be referred as `global_`.
+====
+
 [gremlin-groovy,modern]
 ----
 g.V().has('name','marko').out('knows').count() <1>
@@ -3244,7 +3619,8 @@ Gremlin attempts to provide the user a comprehensive collection of steps in the 
 leverage a lambda in practice. It is advised that users only leverage a lambda if and only if there is no
 corresponding lambda-less step that encompasses the desired functionality. The reason being, lambdas can not be
 optimized by Gremlin's compiler strategies as they can not be programmatically inspected (see
-<<traversalstrategy,traversal strategies>>). It is also not currently possible to send a lambda for remote execution to Gremlin-Server or a driver that supports remote execution.
+<<traversalstrategy,traversal strategies>>). It is also not currently possible to send a natively written lambda for
+remote execution to Gremlin-Server or a driver that supports remote execution.
 
 In many situations where a lambda could be used, either a corresponding step exists or a traversal can be provided in
 its place. A `TraversalLambda` behaves like a typical lambda, but it can be optimized and it yields less objects than
@@ -3584,8 +3960,8 @@ g = graph.traversal().withStrategies(SubgraphStrategy.build().
   vertices(or(hasNot('location'),properties('location').count().is(gt(3)))).
   edges(hasLabel('develops')).
   vertexProperties(or(hasLabel(neq('location')),hasNot('endTime'))).create())
-g.V().valueMap(true)
-g.E().valueMap(true)
+g.V().valueMap().with(WithOptions.tokens)
+g.E().valueMap().with(WithOptions.tokens)
 g.V().outE().inV().
   path().
     by('name').
@@ -3644,295 +4020,5 @@ g.V().hasLabel('person').has('name','marko').
 social.persons("marko").youngestFriendsAge()
 ----
 
-The following sections explain how to develop application specific DSLs for different <<gremlin-variants,Gremlin Language Variants>>
-using the examples above of the Social DSL as the API for the implementation.
-
-[[gremlin-java-dsl]]
-=== Gremlin-Java
-
-Creating a DSL in Java requires the `@GremlinDsl` Java annotation in `gremlin-core`. This annotation should be applied
-to a "DSL interface" that extends `GraphTraversal.Admin`.
-
-[source,java]
-----
-@GremlinDsl
-public interface SocialTraversalDsl<S, E> extends GraphTraversal.Admin<S, E> {
-}
-----
-
-IMPORTANT: The name of the DSL interface should be suffixed with "TraversalDSL". All characters in the interface name
-before that become the "name" of the DSL.
-
-In this interface, define the methods that the DSL will be composed of:
-
-[source,java]
-----
-@GremlinDsl
-public interface SocialTraversalDsl<S, E> extends GraphTraversal.Admin<S, E> {
-    public default GraphTraversal<S, Vertex> knows(String personName) {
-        return out("knows").hasLabel("person").has("name", personName);
-    }
-
-    public default <E2 extends Number> GraphTraversal<S, E2> youngestFriendsAge() {
-        return out("knows").hasLabel("person").values("age").min();
-    }
-
-    public default GraphTraversal<S, Long> createdAtLeast(int number) {
-        return outE("created").count().is(P.gte(number));
-    }
-}
-----
-
-IMPORTANT: Follow the TinkerPop convention of using `<S,E>` in naming generics as those conventions are taken into
-account when generating the anonymous traversal class. The processor attempts to infer the appropriate type parameters
-when generating the anonymous traversal class. If it cannot do it correctly, it is possible to avoid the inference by
-using the `GremlinDsl.AnonymousMethod` annotation on the DSL method. It allows explicit specification of the types to
-use.
-
-The `@GremlinDsl` annotation is used by the link:https://docs.oracle.com/javase/8/docs/api/index.html?javax/annotation/processing/Processor.html[Java Annotation Processor]
-to generate the boilerplate class structure required to properly use the DSL within the TinkerPop framework. These
-classes can be generated and maintained by hand, but it would be time consuming, monotonous and error-prone to do so.
-Typically, the Java compilation process is automatically configured to detect annotation processors on the classpath
-and will automatically use them when found. If that does not happen, it may be necessary to make configuration changes
-to the build to allow for the compilation process to be aware of the following `javax.annotation.processing.Processor`
-implementation:
-
-[source,java]
-----
-org.apache.tinkerpop.gremlin.process.traversal.dsl.GremlinDslProcessor
-----
-
-The annotation processor will generate several classes for the DSL:
-
-* `SocialTraversal` - A `Traversal` interface that extends the `SocialTraversalDsl` proxying methods to its underlying
-interfaces (such as `GraphTraversal`) to instead return a `SocialTraversal`
-* `DefaultSocialTraversal` - A default implementation of `SocialTraversal` (typically not used directly by the user)
-* `SocialTraversalSource` - Spawns `DefaultSocialTraversal` instances.
-* `__` - Spawns anonymous `DefaultSocialTraversal` instances.
-
-Using the DSL then just involves telling the `Graph` to use it:
-
-[source,java]
-----
-SocialTraversalSource social = graph.traversal(SocialTraversalSource.class);
-social.V().has("name","marko").knows("josh");
-----
-
-The `SocialTraversalSource` can also be customized with DSL functions. As an additional step, include a class that
-extends from `GraphTraversalSource` and with a name that is suffixed with "TraversalSourceDsl". Include in this class,
-any custom methods required by the DSL:
-
-[source,java]
-----
-public class SocialTraversalSourceDsl extends GraphTraversalSource {
-
-    public SocialTraversalSourceDsl(Graph graph, TraversalStrategies traversalStrategies) {
-        super(graph, traversalStrategies);
-    }
-
-    public SocialTraversalSourceDsl(Graph graph) {
-        super(graph);
-    }
-
-    public GraphTraversal<Vertex, Vertex> persons(String... names) {
-        GraphTraversalSource clone = this.clone();
-
-        // Manually add a "start" step for the traversal in this case the equivalent of V(). GraphStep is marked
-        // as a "start" step by passing "true" in the constructor.
-        clone.getBytecode().addStep(GraphTraversal.Symbols.V);
-        GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        traversal.asAdmin().addStep(new GraphStep<>(traversal.asAdmin(), Vertex.class, true));
-
-        traversal = traversal.hasLabel("person");
-        if (names.length > 0) traversal = traversal.has("name", P.within(names));
-
-        return traversal;
-    }
-}
-----
-
-Then, back in the `SocialTraversal` interface, update the `GremlinDsl` annotation with the `traversalSource` argument
-to point to the fully qualified class name of the `SocialTraversalSourceDsl`:
-
-[source,java]
-----
-@GremlinDsl(traversalSource = "com.company.SocialTraversalSourceDsl")
-public interface SocialTraversalDsl<S, E> extends GraphTraversal.Admin<S, E> {
-    ...
-}
-----
-
-It is then possible to use the `persons()` method to start traversals:
-
-[source,java]
-----
-SocialTraversalSource social = graph.traversal(SocialTraversalSource.class);
-social.persons("marko").knows("josh");
-----
-
-NOTE: Using Maven, as shown in the `gremlin-archetype-dsl` module, makes developing DSLs with the annotation processor
-straightforward in that it sets up appropriate paths to the generated code automatically.
-
-=== Gremlin-Python
-
-Writing a Gremlin DSL in Python simply requires direct extension of several classes:
-
-* `GraphTraversal` - which exposes the various steps used in traversal writing
-* `__` - which spawns anonymous traversals from steps
-* `GraphTraversalSource` - which spawns `GraphTraversal` instances
-
-The Social DSL based on the link:http://tinkerpop.apache.org/docs/current/images/tinkerpop-modern.png["modern" toy graph]
-might look like this:
-
-[source,python]
-----
-class SocialTraversal(GraphTraversal):
-
-    def knows(self, person_name):
-        return self.out("knows").hasLabel("person").has("name", person_name)
-
-    def youngestFriendsAge(self):
-        return self.out("knows").hasLabel("person").values("age").min()
-
-    def createdAtLeast(self, number):
-        return self.outE("created").count().is_(P.gte(number))
-
-class __(AnonymousTraversal):
-
-    graph_traversal = SocialTraversal
-
-    @classmethod
-    def knows(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).knows(*args)
-
-    @classmethod
-    def youngestFriendsAge(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).youngestFriendsAge(*args)
-
-    @classmethod
-    def createdAtLeast(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).createdAtLeast(*args)
-
-
-class SocialTraversalSource(GraphTraversalSource):
-
-    def __init__(self, *args, **kwargs):
-        super(SocialTraversalSource, self).__init__(*args, **kwargs)
-        self.graph_traversal = SocialTraversal
-
-    def persons(self, *args):
-        traversal = self.get_graph_traversal()
-        traversal.bytecode.add_step("V")
-        traversal.bytecode.add_step("hasLabel", "person")
-
-        if len(args) > 0:
-            traversal.bytecode.add_step("has", "name", P.within(args))
-
-        return traversal
-----
-
-NOTE: The `AnonymousTraversal` class above is just an alias for `__` as in
-`from gremlin_python.process.graph_traversal import __ as AnonymousTraversal`
-
-Using the DSL is straightforward and just requires that the graph instance know the `SocialTraversalSource` should
-be used:
-
-[source,python]
-----
-social = Graph().traversal(SocialTraversalSource).withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
-social.persons("marko").knows("josh")
-social.persons("marko").youngestFriendsAge()
-social.persons().filter(__.createdAtLeast(2)).count()
-----
-
-=== Gremlin.Net
-
-Developing DSLs for .Net is most easily implemented using link:https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/extension-methods[Extension Methods]
-as they don't require direct extension of classes in the TinkerPop hierarchy. Extension Method classes simply need to
-be constructed for the `GraphTraversal` and the `GraphTraversalSource`. Unfortunately, anonymous traversals (spawned
-from `__`) can't use the Extension Method approach as they do not work for static classes and static classes can't be
-extended. The only option is to re-implement the methods of `__` as a wrapper in the anonymous traversal for the DSL
-or to simply create a static class for the DSL and use the two anonymous traversals creators independently. The
-following example uses the latter approach as it saves a lot of boilerplate code with the minor annoyance of having a
-second static class to deal with when writing traversals rather than just calling `__` for everything.
-
-[source,csharp]
-----
-namespace Dsl
-{
-
-    public static class SocialTraversalExtensions
-    {
-        public static GraphTraversal<Vertex,Vertex> Knows(this GraphTraversal<Vertex,Vertex> t, string personName)
-        {
-            return t.Out("knows").HasLabel("person").Has("name", personName);
-        }
-
-        public static GraphTraversal<Vertex, int> YoungestFriendsAge(this GraphTraversal<Vertex,Vertex> t)
-        {
-            return t.Out("knows").HasLabel("person").Values<int>("age").Min<int>();
-        }
-
-        public static GraphTraversal<Vertex,long> CreatedAtLeast(this GraphTraversal<Vertex,Vertex> t, long number)
-        {
-            return t.OutE("created").Count().Is(P.Gte(number));
-        }
-    }
-
-    public static class __Social
-    {
-        public static GraphTraversal<object,Vertex> Knows(string personName)
-        {
-            return __.Out("knows").HasLabel("person").Has("name", personName);
-        }
-
-        public static GraphTraversal<object, int> YoungestFriendsAge()
-        {
-            return __.Out("knows").HasLabel("person").Values<int>("age").Min<int>();
-        }
-
-        public static GraphTraversal<object,long> CreatedAtLeast(long number)
-        {
-            return __.OutE("created").Count().Is(P.Gte(number));
-        }
-    }
-
-    public static class SocialTraversalSourceExtensions
-    {
-        public static GraphTraversal<Vertex,Vertex> Persons(this GraphTraversalSource g, params string[] personNames)
-        {
-            GraphTraversal<Vertex,Vertex> t = g.V().HasLabel("person");
-
-            if (personNames.Length > 0)
-            {
-                t = t.Has("name", P.Within(personNames));
-            }
-
-            return t;
-        }
-    }
-}
-----
-
-Note the creation of `__Social` as the Social DSL's "extension" to the available ways in which to spawn anonymous
-traversals. The use of the double underscore prefix in the name is just a convention to consider using and is not a
-requirement. To use the DSL, bring it into scope with the `using` directive:
-
-[source,csharp]
-----
-using Dsl;
-using static Dsl.__Social;
-----
-
-and then it can be called from the application as follows:
-
-[source,csharp]
-----
-var graph = new Graph();
-var connection = new DriverRemoteConnection(new GremlinClient(new GremlinServer("localhost", 8182)));
-var social = graph.Traversal().WithRemote(connection);
-
-social.Persons("marko").Knows("josh");
-social.Persons("marko").YoungestFriendsAge();
-social.Persons().Filter(CreatedAtLeast(2)).Count();
-----
+Learn more about how to implement these DSLs in the <<gremlin-drivers-variants,Gremlin Language Variants>> section
+specific to the programming language of interest.

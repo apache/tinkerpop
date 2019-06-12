@@ -36,46 +36,51 @@ import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.bulkdumping.BulkDumperVertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoader;
-import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.bulkloading.IncrementalBulkLoader;
-import org.apache.tinkerpop.gremlin.process.computer.bulkloading.OneTimeBulkLoader;
 import org.apache.tinkerpop.gremlin.process.computer.clone.CloneVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.clustering.connected.ConnectedComponentVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.ClusterCountMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.ClusterPopulationMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.search.path.ShortestPathVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.MemoryTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ConnectedComponent;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRank;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressure;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ShortestPath;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
-import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
+import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ReferenceElementStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategy;
@@ -85,6 +90,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Orde
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathProcessorStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
@@ -131,6 +137,7 @@ import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
@@ -145,6 +152,7 @@ import java.util.stream.Stream;
 public final class CoreImports {
 
     private final static Set<Class> CLASS_IMPORTS = new LinkedHashSet<>();
+    private final static Set<Field> FIELD_IMPORTS = new LinkedHashSet<>();
     private final static Set<Method> METHOD_IMPORTS = new LinkedHashSet<>();
     private final static Set<Enum> ENUM_IMPORTS = new LinkedHashSet<>();
 
@@ -176,14 +184,16 @@ public final class CoreImports {
         CLASS_IMPORTS.add(TraversalOptionParent.class);
         CLASS_IMPORTS.add(TraversalOptionParent.Pick.class);
         CLASS_IMPORTS.add(P.class);
+        CLASS_IMPORTS.add(TextP.class);
+        CLASS_IMPORTS.add(WithOptions.class);
         // remote
         CLASS_IMPORTS.add(RemoteConnection.class);
-        CLASS_IMPORTS.add(RemoteGraph.class);
         CLASS_IMPORTS.add(EmptyGraph.class);
         // io
         CLASS_IMPORTS.add(GraphReader.class);
         CLASS_IMPORTS.add(GraphWriter.class);
         CLASS_IMPORTS.add(Io.class);
+        CLASS_IMPORTS.add(IO.class);
         CLASS_IMPORTS.add(IoCore.class);
         CLASS_IMPORTS.add(Storage.class);
         CLASS_IMPORTS.add(GraphMLIo.class);
@@ -232,32 +242,34 @@ public final class CoreImports {
         CLASS_IMPORTS.add(IdentityRemovalStrategy.class);
         CLASS_IMPORTS.add(IncidentToAdjacentStrategy.class);
         CLASS_IMPORTS.add(MatchPredicateStrategy.class);
+        CLASS_IMPORTS.add(EarlyLimitStrategy.class);
         CLASS_IMPORTS.add(OrderLimitStrategy.class);
         CLASS_IMPORTS.add(PathProcessorStrategy.class);
         CLASS_IMPORTS.add(CountStrategy.class);
         CLASS_IMPORTS.add(ComputerVerificationStrategy.class);
         CLASS_IMPORTS.add(LambdaRestrictionStrategy.class);
         CLASS_IMPORTS.add(ReadOnlyStrategy.class);
+        CLASS_IMPORTS.add(ReferenceElementStrategy.class);
         CLASS_IMPORTS.add(StandardVerificationStrategy.class);
+        CLASS_IMPORTS.add(EdgeLabelVerificationStrategy.class);
         // graph traversal
+        CLASS_IMPORTS.add(AnonymousTraversalSource.class);
         CLASS_IMPORTS.add(__.class);
         CLASS_IMPORTS.add(GraphTraversal.class);
         CLASS_IMPORTS.add(GraphTraversalSource.class);
+        CLASS_IMPORTS.add(Traversal.class);
         CLASS_IMPORTS.add(TraversalMetrics.class);
         CLASS_IMPORTS.add(Translator.class);
         CLASS_IMPORTS.add(Bindings.class);
         // graph computer
         CLASS_IMPORTS.add(Computer.class);
         CLASS_IMPORTS.add(ComputerResult.class);
+        CLASS_IMPORTS.add(ConnectedComponent.class);
+        CLASS_IMPORTS.add(ConnectedComponentVertexProgram.class);
         CLASS_IMPORTS.add(GraphComputer.class);
         CLASS_IMPORTS.add(Memory.class);
         CLASS_IMPORTS.add(VertexProgram.class);
         CLASS_IMPORTS.add(CloneVertexProgram.class);
-        CLASS_IMPORTS.add(BulkDumperVertexProgram.class);
-        CLASS_IMPORTS.add(BulkLoader.class);
-        CLASS_IMPORTS.add(BulkLoaderVertexProgram.class);
-        CLASS_IMPORTS.add(IncrementalBulkLoader.class);
-        CLASS_IMPORTS.add(OneTimeBulkLoader.class);
         CLASS_IMPORTS.add(ClusterCountMapReduce.class);
         CLASS_IMPORTS.add(ClusterPopulationMapReduce.class);
         CLASS_IMPORTS.add(MemoryTraversalSideEffects.class);
@@ -266,6 +278,8 @@ public final class CoreImports {
         CLASS_IMPORTS.add(PageRank.class);
         CLASS_IMPORTS.add(PageRankMapReduce.class);
         CLASS_IMPORTS.add(PageRankVertexProgram.class);
+        CLASS_IMPORTS.add(ShortestPath.class);
+        CLASS_IMPORTS.add(ShortestPathVertexProgram.class);
         CLASS_IMPORTS.add(GraphFilterStrategy.class);
         CLASS_IMPORTS.add(TraversalVertexProgram.class);
         CLASS_IMPORTS.add(VertexProgramStrategy.class);
@@ -281,6 +295,8 @@ public final class CoreImports {
 
         uniqueMethods(IoCore.class).forEach(METHOD_IMPORTS::add);
         uniqueMethods(P.class).forEach(METHOD_IMPORTS::add);
+        uniqueMethods(AnonymousTraversalSource.class).forEach(METHOD_IMPORTS::add);
+        uniqueMethods(TextP.class).forEach(METHOD_IMPORTS::add);
         uniqueMethods(__.class).filter(m -> !m.getName().equals("__")).forEach(METHOD_IMPORTS::add);
         uniqueMethods(Computer.class).forEach(METHOD_IMPORTS::add);
         uniqueMethods(TimeUtil.class).forEach(METHOD_IMPORTS::add);
@@ -316,6 +332,10 @@ public final class CoreImports {
 
     public static Set<Enum> getEnumImports() {
         return Collections.unmodifiableSet(ENUM_IMPORTS);
+    }
+
+    public static Set<Field> getFieldImports() {
+        return Collections.unmodifiableSet(FIELD_IMPORTS);
     }
 
     /**

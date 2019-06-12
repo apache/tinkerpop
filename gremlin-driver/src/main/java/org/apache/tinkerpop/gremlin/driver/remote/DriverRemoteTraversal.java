@@ -23,8 +23,8 @@ import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.AbstractRemoteTraversal;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.RemoteStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -37,6 +37,8 @@ import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Supplier;
+
+import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE;
 
 /**
  * A {@link AbstractRemoteTraversal} implementation for the Gremlin Driver. This {@link Traversal} implementation is
@@ -51,7 +53,6 @@ public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
     private final Iterator<Traverser.Admin<E>> traversers;
     private Traverser.Admin<E> lastTraverser = EmptyTraverser.instance();
     private final RemoteTraversalSideEffects sideEffects;
-    private final ResultSet rs;
 
     public DriverRemoteTraversal(final ResultSet rs, final Client client, final boolean attach, final Optional<Configuration> conf) {
         // attaching is really just for testing purposes. it doesn't make sense in any real-world scenario as it would
@@ -59,16 +60,13 @@ public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
         // attachment process to properly execute in full hence this little hack.
         if (attach) {
             if (!conf.isPresent()) throw new IllegalStateException("Traverser can't be reattached for testing");
-            final Graph graph = ((Supplier<Graph>) conf.get().getProperty("hidden.for.testing.only")).get();
+            final Graph graph = ((Supplier<Graph>) conf.get().getProperty(GREMLIN_REMOTE + "attachment")).get();
             this.traversers = new AttachingTraverserIterator<>(rs.iterator(), graph);
         } else {
             this.traversers = new TraverserIterator<>(rs.iterator());
         }
 
-        this.rs = rs;
-        this.sideEffects = new DriverRemoteTraversalSideEffects(client,
-                rs.getOriginalRequestMessage().getRequestId(),
-                rs.getHost(), rs.allItemsAvailableAsync());
+        this.sideEffects = new DriverRemoteTraversalSideEffects(client,rs);
     }
 
     /**
@@ -139,7 +137,7 @@ public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
 
         @Override
         public Traverser.Admin<E> next() {
-            return (DefaultRemoteTraverser<E>) inner.next().getObject();
+            return (RemoteTraverser<E>) inner.next().getObject();
         }
     }
 

@@ -20,9 +20,10 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.IgnoreIteratorLeak;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
+import org.apache.tinkerpop.gremlin.structure.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -61,6 +62,7 @@ import static org.junit.Assume.assumeThat;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(GremlinProcessRunner.class)
+@IgnoreIteratorLeak
 public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
 
     @Test

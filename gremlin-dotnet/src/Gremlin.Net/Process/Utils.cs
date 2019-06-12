@@ -51,5 +51,17 @@ namespace Gremlin.Net.Process
                 throw;
             }
         }
+        
+        /// <summary>
+        /// Designed for Tasks that were started but the result should not be awaited upon (fire and forget).
+        /// </summary>
+        public static void Forget(this Task task)
+        {
+            // Avoid compiler warning CS4014 and Unobserved exceptions
+            task?.ContinueWith(t =>
+            {
+                t.Exception?.Handle(_ => true);
+            }, TaskContinuationOptions.ExecuteSynchronously);
+        }
     }
 }

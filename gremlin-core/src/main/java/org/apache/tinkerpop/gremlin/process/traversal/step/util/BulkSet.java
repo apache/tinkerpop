@@ -104,11 +104,6 @@ public final class BulkSet<S> extends AbstractSet<S> implements Set<S>, Serializ
         return null == bulk ? 0 : bulk;
     }
 
-    /*public void set(final S s, final long bulk) {
-        this.map.remove(s);
-        this.map.put(s, bulk);
-    }*/
-
     @Override
     public boolean remove(final Object s) {
         return this.map.remove(s) != null;

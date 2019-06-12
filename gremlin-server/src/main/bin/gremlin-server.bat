@@ -36,18 +36,12 @@ cd ..
 set JAVA_OPTIONS=-Xms32m -Xmx512m
 
 if "%1" == "" goto server
-if "%1" == "-i" goto dashi
 if "%1" == "install" goto install
 
 :server
 
 :: Launch the application
-java -Dlog4j.configuration=conf/log4j-server.properties %JAVA_OPTIONS% %JAVA_ARGS% -cp %LIBDIR%/*;%EXTDIR%; org.apache.tinkerpop.gremlin.server.GremlinServer %*
-
-:dashi
-
-echo NOTE: -i is deprecated. Please update your scripts. Using 'install' command...
-goto install
+java -Dlog4j.configuration=conf/log4j-server.properties %JAVA_OPTIONS% %JAVA_ARGS% -cp "%LIBDIR%/*;%EXTDIR%;" org.apache.tinkerpop.gremlin.server.GremlinServer %*
 
 :install
 
@@ -61,4 +55,4 @@ goto loop1
 
 :after_loop
 
-java -Dlog4j.configuration=conf/log4j-server.properties %JAVA_OPTIONS% %JAVA_ARGS% -cp %LIBDIR%/*;%EXTDIR%; org.apache.tinkerpop.gremlin.server.util.GremlinServerInstall %RESTVAR%
+java -Dlog4j.configuration=conf/log4j-server.properties %JAVA_OPTIONS% %JAVA_ARGS% -cp "%LIBDIR%/*;%EXTDIR%;" org.apache.tinkerpop.gremlin.server.util.GremlinServerInstall %RESTVAR%

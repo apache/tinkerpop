@@ -1,5 +1,5 @@
 Apache TinkerPop
-Copyright 2015-2017 The Apache Software Foundation.
+Copyright 2015-2019 The Apache Software Foundation.
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
@@ -18,8 +18,8 @@ https://github.com/Activiti/Activiti/tree/activiti-5.16/modules/activiti-bpmn-co
 Apache Kerby
 ------------------------------------------------------------------------
 Apache Kerby
-Copyright 2015-2016 The Apache Software Foundation
+Copyright 2015-2017 The Apache Software Foundation
 
 gremlin-server/src/main/java/org/apache/tinkerpop/gremlin/server/auth/JaasKrbUtil.java
 from
-https://github.com/apache/directory-kerby/blob/kerby-all-1.0.0-RC2/kerby-kerb/kerb-simplekdc/src/main/java/org/apache/kerby/kerberos/kerb/client/JaasKrbUtil.java
+https://github.com/apache/directory-kerby/blob/kerby-all-1.0.0/kerby-kerb/kerb-simplekdc/src/main/java/org/apache/kerby/kerberos/kerb/client/JaasKrbUtil.java

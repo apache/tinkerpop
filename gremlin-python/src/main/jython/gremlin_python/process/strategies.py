@@ -45,6 +45,11 @@ class HaltedTraverserStrategy(TraversalStrategy):
             self.configuration["haltedTraverserFactory"] = halted_traverser_factory
 
 
+class OptionsStrategy(TraversalStrategy):
+    def __init__(self, options=None):
+        TraversalStrategy.__init__(self, configuration=options)
+
+
 class PartitionStrategy(TraversalStrategy):
     def __init__(self, partition_key=None, write_partition=None, read_partitions=None, include_meta_properties=None):
         TraversalStrategy.__init__(self)
@@ -168,6 +173,9 @@ class GraphFilterStrategy(TraversalStrategy):
     def __init__(self):
         TraversalStrategy.__init__(self)
 
+class EarlyLimitStrategy(TraversalStrategy):
+    def __init__(self):
+        TraversalStrategy.__init__(self)
 
 ###########################
 # VERIFICATION STRATEGIES #

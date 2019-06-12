@@ -1,24 +1,24 @@
 Apache TinkerPop
-Copyright 2015-2017 The Apache Software Foundation.
+Copyright 2015-2019 The Apache Software Foundation.
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
 
 ------------------------------------------------------------------------
-Apache Commons Codec 1.9 (AL ASF)
+Apache Commons Codec 1.12 (AL ASF)
 ------------------------------------------------------------------------
 src/test/org/apache/commons/codec/language/DoubleMetaphoneTest.java
 contains test data from http://aspell.net/test/orig/batch0.tab.
 Copyright (C) 2002 Kevin Atkinson (kevina@gnu.org)
 
-------------------------------------------------------------------------
-Apache Commons Lang 3.3.1/2.6 (AL ASF)
-------------------------------------------------------------------------
-This product includes software from the Spring Framework,
-under the Apache License 2.0 (see: StringUtils.containsWhitespace())
+The content of package org.apache.commons.codec.language.bm has been translated
+from the original php source code available at http://stevemorse.org/phoneticinfo.htm
+with permission from the original authors.
+Original source copyright:
+Copyright (c) 2008 Alexander Beider & Stephen P. Morse.
 
 ------------------------------------------------------------------------
-Apache Groovy 2.4.15 (AL ASF)
+Apache Groovy 2.5.4 (AL ASF)
 ------------------------------------------------------------------------
 This product includes/uses ANTLR (http://www.antlr2.org/)
 developed by Terence Parr 1989-2006
@@ -48,7 +48,7 @@ JavaTuples 1.2
 Copyright (c) 2010, The JAVATUPLES team (http://www.javatuples.org)
 
 ------------------------------------------------------------------------
-Netty 4.1.25
+Netty 4.1.32
 ------------------------------------------------------------------------
 Copyright 2014 The Netty Project
 

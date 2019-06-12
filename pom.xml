@@ -21,11 +21,11 @@ limitations under the License.
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
-        <version>19</version>
+        <version>21</version>
     </parent>
     <groupId>org.apache.tinkerpop</groupId>
     <artifactId>tinkerpop</artifactId>
-    <version>3.4.0-SNAPSHOT</version>
+    <version>3.5.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Apache TinkerPop</name>
     <description>A Graph Computing Framework</description>
@@ -108,9 +108,21 @@ limitations under the License.
             <email>twilmes@gmail.com</email>
             <url>https://github.com/twilmes</url>
         </contributor>
+        <contributor>
+            <name>Harsh Thakkar</name>
+            <email>harsh9t@gmail.com</email>
+            <organization>University of Bonn</organization>
+            <organizationUrl>http://harshthakkar.in</organizationUrl>
+        </contributor>
+        <contributor>
+            <name>Dharmen Punjani</name>
+            <email>dharmen.punjani@gmail.com</email>
+            <organization>National and Kapodistrian University of Athens</organization>
+            <organizationUrl>http://wdaqua.eu/students/dharmen-punjani</organizationUrl>
+        </contributor>
     </contributors>
     <prerequisites>
-        <maven>3.1.0</maven>
+        <maven>3.3.9</maven>
     </prerequisites>
     <modules>
         <module>gremlin-shaded</module>
@@ -124,6 +136,7 @@ limitations under the License.
         <module>hadoop-gremlin</module>
         <module>spark-gremlin</module>
         <module>neo4j-gremlin</module>
+        <module>sparql-gremlin</module>
         <module>gremlin-driver</module>
         <module>gremlin-console</module>
         <module>gremlin-server</module>
@@ -131,25 +144,25 @@ limitations under the License.
         <module>gremlin-tools</module>
     </modules>
     <scm>
-        <connection>scm:git:git@git-wip-us.apache.org:repos/asf/tinkerpop.git</connection>
-        <developerConnection>scm:git:git@git-wip-us.apache.org:repos/asf/tinkerpop.git</developerConnection>
-        <url>https://git-wip-us.apache.org/repos/asf?p=tinkerpop.git</url>
+        <connection>scm:git:git@github.com:apache/tinkerpop.git</connection>
+        <developerConnection>scm:git:git@github.com:apache/tinkerpop.git</developerConnection>
+        <url>https://github.com/apache/tinkerpop</url>
     </scm>
     <properties>
         <commons.configuration.version>1.10</commons.configuration.version>
         <commons.lang.version>2.6</commons.lang.version>
-        <commons.lang3.version>3.3.1</commons.lang3.version>
-        <groovy.version>2.4.15</groovy.version>
+        <commons.lang3.version>3.8.1</commons.lang3.version>
+        <groovy.version>2.5.7</groovy.version>
         <hadoop.version>2.7.2</hadoop.version>
         <java.tuples.version>1.2</java.tuples.version>
         <javadoc-plugin.version>2.10.4</javadoc-plugin.version>
         <jcabi.version>1.1</jcabi.version>
         <log4j.version>1.2.17</log4j.version>
         <metrics.version>3.0.2</metrics.version>
-        <netty.version>4.1.25.Final</netty.version>
-        <slf4j.version>1.7.21</slf4j.version>
+        <netty.version>4.1.32.Final</netty.version>
+        <slf4j.version>1.7.25</slf4j.version>
         <snakeyaml.version>1.15</snakeyaml.version>
-        <spark.version>2.3.1</spark.version>
+        <spark.version>2.4.0</spark.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -164,9 +177,6 @@ limitations under the License.
         <log4j-silent.properties>file:target/test-classes/log4j-silent.properties</log4j-silent.properties>
 
         <muteTestLogs>false</muteTestLogs>
-
-        <!-- By default API checks are not run. Modules can opt in by setting this property to false in their poms. -->
-        <revapi.skip>true</revapi.skip>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
@@ -174,7 +184,7 @@ limitations under the License.
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
-                <version>2.5</version>
+                <version>2.7</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -213,8 +223,19 @@ limitations under the License.
                         <goals>
                             <goal>jar-no-fork</goal>
                         </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>gremlin-dotnet/src/obj/**</exclude>
+                                <exclude>gremlin-dotnet/src/_site/**</exclude>
+                                <exclude>gremlin-javascript/src/main/javascript/gremlin-javascript/node_modules/**</exclude>
+                            </excludes>
+                        </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -328,7 +349,7 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
-                <version>0.12</version>
+                <version>0.13</version>
                 <executions>
                     <execution>
                         <id>rat-checks</id>
@@ -341,6 +362,7 @@ limitations under the License.
                 <configuration>
                     <excludeSubProjects>false</excludeSubProjects>
                     <excludes>
+                        <exclude>.mailmap</exclude>
                         <exclude>.travis.yml</exclude>
                         <exclude>.travis.*.sh</exclude>
                         <exclude>.dockerignore</exclude>
@@ -384,9 +406,12 @@ limitations under the License.
                         <exclude>**/*.nuspec</exclude>
                         <exclude>**/*.nuspec.template</exclude>
                         <exclude>**/gremlin-javascript/node_modules/**</exclude>
+                        <exclude>**/gremlin-javascript/doc/**</exclude>
                         <exclude>**/node/node_modules/**</exclude>
                         <exclude>**/node/node</exclude>
                         <exclude>**/npm-debug.log</exclude>
+                        <exclude>**/_site/**</exclude>
+                        <exclude>**/.idea/**</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
@@ -405,73 +430,6 @@ limitations under the License.
                         </exclusions>
                     </dependency>
                 </dependencies>
-            </plugin>
-            <!-- Needed to figure out the version components when reading revapi API check config below -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-		<version>3.0.0</version>
-                <executions>
-                    <execution>
-                        <id>parse-version</id>
-                        <goals>
-                            <goal>parse-version</goal>
-                        </goals>
-                        <phase>validate</phase>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.revapi</groupId>
-                <artifactId>revapi-maven-plugin</artifactId>
-                <version>0.8.0</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.revapi</groupId>
-                        <artifactId>revapi-java</artifactId>
-                        <version>0.13.0</version>
-                    </dependency>
-                </dependencies>
-                <configuration>
-                    <skip>${revapi.skip}</skip>
-                    <versionFormat>\d*\.\d*\.\d*.</versionFormat>
-                    <analysisConfiguration><![CDATA[
-                    {
-                      "revapi": {
-                        "semver": {
-                          "ignore": {
-                            "enabled": true,
-                            "versionIncreaseAllows": {
-                              "major": "breaking",
-                              "minor": "breaking",
-                              "patch": "nonBreaking"
-                            },
-                            "passThroughDifferences": ["java.class.nonPublicPartOfAPI"]
-                          }
-                        }
-                      }
-                    }
-                    ]]></analysisConfiguration>
-                    <analysisConfigurationFiles>
-                        <configurationFile>
-                            <path>${project.basedir}/api-changes.json</path>
-                            <roots>
-                                <root>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</root>
-                            </roots>
-                        </configurationFile>
-                        <configurationFile>
-                            <path>${project.basedir}/api-contents.json</path>
-                        </configurationFile>
-                    </analysisConfigurationFiles>
-                    <failOnMissingConfigurationFiles>false</failOnMissingConfigurationFiles>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <!-- we never use this plugin - disabling helps with speeding up other processing like when using -Dcoverage -->
             <plugin>
@@ -560,7 +518,7 @@ limitations under the License.
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>xml-maven-plugin</artifactId>
-                    <version>1.0.1</version>
+                    <version>1.0.2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -570,7 +528,7 @@ limitations under the License.
                 <plugin>
                     <groupId>org.codehaus.gmavenplus</groupId>
                     <artifactId>gmavenplus-plugin</artifactId>
-                    <version>1.6</version>
+                    <version>1.7.1</version>
                     <configuration>
                         <targetBytecode>1.8</targetBytecode>
                         <invokeDynamic>true</invokeDynamic>
@@ -579,12 +537,12 @@ limitations under the License.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>3.2.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>3.1.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -594,7 +552,17 @@ limitations under the License.
                 <plugin>
                     <groupId>com.spotify</groupId>
                     <artifactId>dockerfile-maven-plugin</artifactId>
-                    <version>1.3.7</version>
+                    <version>1.4.10</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>1.8</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>3.1.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -602,6 +570,7 @@ limitations under the License.
 
     <dependencyManagement>
         <dependencies>
+            <!-- commons-configuration drags in the old commons-lang. need to update someday -->
             <dependency>
                 <groupId>commons-configuration</groupId>
                 <artifactId>commons-configuration</artifactId>
@@ -708,7 +677,14 @@ limitations under the License.
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
-                <version>4.5.5</version>
+                <version>4.5.8</version>
+                <exclusions>
+                    <!-- bring commons-codec in line with TinkerPop -->
+                    <exclusion>
+                        <groupId>commons-codec</groupId>
+                        <artifactId>commons-codec</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>log4j</groupId>
@@ -760,7 +736,17 @@ limitations under the License.
             <dependency>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.4.201502262128</version>
+                <version>0.8.4</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.6</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>1.12</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -1276,10 +1262,16 @@ limitations under the License.
                                         <include>org/apache/tinkerpop/gremlin/process/computer/*.java
                                         </include>
                                         <include>
+                                            org/apache/tinkerpop/gremlin/process/computer/clustering/connected/ConnectedComponentVertexProgram.java
+                                        </include>
+                                        <include>
                                             org/apache/tinkerpop/gremlin/process/computer/clustering/peerpressure/PeerPressureVertexProgram.java
                                         </include>
                                         <include>
                                             org/apache/tinkerpop/gremlin/process/computer/ranking/pagerank/PageRankVertexProgram.java
+                                        </include>
+                                        <include>
+                                            org/apache/tinkerpop/gremlin/process/computer/search/path/ShortestPathVertexProgram.java
                                         </include>
                                         <include>
                                             org/apache/tinkerpop/gremlin/process/computer/traversal/TraversalVertexProgram.java
@@ -1543,7 +1535,7 @@ limitations under the License.
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-report-plugin</artifactId>
-                        <version>2.19.1</version>
+                        <version>2.20</version>
                         <executions>
                             <execution>
                                 <id>aggregate-surefire-report</id>
@@ -1561,6 +1553,50 @@ limitations under the License.
                 </plugins>
             </build>
 
+        </profile>
+
+        <!--
+        overriding the default apache release a bit from here:
+             https://github.com/apache/maven-apache-parent/blob/apache-21/pom.xml
+        because it doesn't filter all the files out that we need as it assumes a pure java infrastructure and we
+        have all manner of different languages hanging about
+        -->
+        
+        <profile>
+            <id>apache-release</id>
+            <build>
+                <plugins>
+                    <!-- Create a source-release artifact that contains the fully buildable
+                         project directory source structure. This is the artifact which is
+                         the official subject of any release vote. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <!-- explicitly ignore the apache parent execution or we generate two zips -->
+                            <execution>
+                                <id>source-release-assembly</id>
+                                <phase>none</phase>
+                            </execution>
+                            <!-- this is the tinkerpop version that generates the "good" zip -->
+                            <execution>
+                                <id>tinkerpop-source-release-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <runOnlyAtExecutionRoot>true</runOnlyAtExecutionRoot>
+                                    <descriptors>
+                                        <descriptor>source-release.xml</descriptor>
+                                    </descriptors>
+                                    <tarLongFileMode>posix</tarLongFileMode>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
 
     </profiles>

@@ -23,6 +23,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationUtils;
 import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.IgnoreIteratorLeak;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
@@ -110,6 +111,7 @@ import static org.junit.Assume.assumeNoException;
         "graphDoesNotSupportProvidedGraphComputer"
 })
 @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
+@IgnoreIteratorLeak
 public class GraphComputerTest extends AbstractGremlinProcessTest {
 
     @Test
@@ -2495,7 +2497,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         try {
             g.V().repeat(__.out()).emit().program(vp).dedup()
-                    .valueMap("name", "pl").forEachRemaining((Map<String, Object> map) -> {
+                    .valueMap("name", "pl").forEachRemaining((Map<Object, Object> map) -> {
 
                 final String name = (String) ((List) map.get("name")).get(0);
                 final List<Integer> pathLengths = (List<Integer>) map.get("pl");
@@ -2560,10 +2562,6 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
                     ConfigurationUtils.append(graph.configuration().subset(VERTEX_PROGRAM_Q_CFG_PREFIX), configuration);
                 }
                 return (VertexProgramQ) VertexProgram.createVertexProgram(graph, configuration);
-            }
-
-            public VertexProgramQ create() {
-                return create(null);
             }
 
             public Builder property(final String name) {
@@ -2863,10 +2861,6 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
                     ConfigurationUtils.append(graph.configuration().subset(SIMPLE_VERTEX_PROGRAM_CFG_PREFIX), configuration);
                 }
                 return (VertexProgramR) VertexProgram.createVertexProgram(graph, configuration);
-            }
-
-            public VertexProgramR create() {
-                return create(null);
             }
 
             public Builder direction(final Direction direction) {

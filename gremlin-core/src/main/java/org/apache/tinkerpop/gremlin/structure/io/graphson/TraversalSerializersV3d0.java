@@ -24,9 +24,11 @@ import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
@@ -47,10 +49,11 @@ import org.apache.tinkerpop.shaded.jackson.databind.type.TypeFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -183,6 +186,24 @@ final class TraversalSerializersV3d0 {
             jsonGenerator.writeEndObject();
         }
 
+    }
+
+    final static class BulkSetJacksonSerializer extends StdScalarSerializer<BulkSet> {
+
+        public BulkSetJacksonSerializer() {
+            super(BulkSet.class);
+        }
+
+        @Override
+        public void serialize(final BulkSet bulkSet, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException {
+            jsonGenerator.writeStartArray();
+            for (Map.Entry entry : (Set<Map.Entry>) bulkSet.asBulk().entrySet()) {
+                jsonGenerator.writeObject(entry.getKey());
+                jsonGenerator.writeObject(entry.getValue());
+            }
+            jsonGenerator.writeEndArray();
+        }
     }
 
     final static class BindingJacksonSerializer extends StdScalarSerializer<Bytecode.Binding> {
@@ -370,6 +391,40 @@ final class TraversalSerializersV3d0 {
         }
     }
 
+    final static class TextPJacksonDeserializer extends StdDeserializer<TextP> {
+
+        public TextPJacksonDeserializer() {
+            super(TextP.class);
+        }
+
+        @Override
+        public TextP deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            String predicate = null;
+            String value = null;
+
+            while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+                if (jsonParser.getCurrentName().equals(GraphSONTokens.PREDICATE)) {
+                    jsonParser.nextToken();
+                    predicate = jsonParser.getText();
+                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.VALUE)) {
+                    jsonParser.nextToken();
+                    value = deserializationContext.readValue(jsonParser, String.class);
+                }
+            }
+
+            try {
+                return (TextP) TextP.class.getMethod(predicate, String.class).invoke(null, value);
+            } catch (final Exception e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        }
+
+        @Override
+        public boolean isCachable() {
+            return true;
+        }
+    }
+
     final static class LambdaJacksonDeserializer extends StdDeserializer<Lambda> {
 
         public LambdaJacksonDeserializer() {
@@ -403,6 +458,32 @@ final class TraversalSerializersV3d0 {
                 return new Lambda.OneArgLambda<>(script, language);
             else
                 return new Lambda.TwoArgLambda<>(script, language);
+        }
+
+        @Override
+        public boolean isCachable() {
+            return true;
+        }
+    }
+
+    final static class BulkSetJacksonDeserializer extends StdDeserializer<BulkSet> {
+        public BulkSetJacksonDeserializer() {
+            super(BulkSet.class);
+        }
+
+        @Override
+        public BulkSet deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+
+            final BulkSet<Object> bulkSet = new BulkSet<>();
+
+            while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+                final Object key = deserializationContext.readValue(jsonParser, Object.class);
+                jsonParser.nextToken();
+                final Long val = deserializationContext.readValue(jsonParser, Long.class);
+                bulkSet.add(key, val);
+            }
+
+            return bulkSet;
         }
 
         @Override

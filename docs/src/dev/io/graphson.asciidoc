@@ -1171,6 +1171,8 @@ types. By default, TinkerPop types will have the namespace "g" (or "gx" for "ext
 
 ==== Double
 
+While the `@value` is expected to be a JSON number, it might also be a `String` of `NaN`, `Infinity` or `-Infinity`.
+
 [source,json]
 ----
 {
@@ -3011,6 +3013,19 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 {
   "@type" : "g:T",
   "@value" : "label"
+}
+----
+
+==== TextP
+
+[source,json]
+----
+{
+  "@type" : "g:TextP",
+  "@value" : {
+    "predicate" : "containing",
+    "value" : "ark"
+  }
 }
 ----
 
@@ -5078,6 +5093,22 @@ A "Binding" refers to a `Bytecode.Binding`.
 }
 ----
 
+==== BulkSet
+
+[source,json]
+----
+{
+  "@type" : "g:BulkSet",
+  "@value" : [ "marko", {
+    "@type" : "g:Int64",
+    "@value" : 1
+  }, "josh", {
+    "@type" : "g:Int64",
+    "@value" : 2
+  } ]
+}
+----
+
 ==== Bytecode
 
 The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` woudl be quite different for the endless variations of commands that could be used together in the Gremlin language.
@@ -5272,10 +5303,13 @@ Please see <<_p,P>> for additional information on `within`.
   "@type" : "g:P",
   "@value" : {
     "predicate" : "within",
-    "value" : [ {
-      "@type" : "g:Int32",
-      "@value" : 1
-    } ]
+    "value" : {
+      "@type" : "g:List",
+      "@value" : [ {
+        "@type" : "g:Int32",
+        "@value" : 1
+      } ]
+    }
   }
 }
 ----
@@ -5290,13 +5324,16 @@ Please see <<_p,P>> for additional information on `within`.
   "@type" : "g:P",
   "@value" : {
     "predicate" : "without",
-    "value" : [ {
-      "@type" : "g:Int32",
-      "@value" : 1
-    }, {
-      "@type" : "g:Int32",
-      "@value" : 2
-    } ]
+    "value" : {
+      "@type" : "g:List",
+      "@value" : [ {
+        "@type" : "g:Int32",
+        "@value" : 1
+      }, {
+        "@type" : "g:Int32",
+        "@value" : 2
+      } ]
+    }
   }
 }
 ----
@@ -5389,6 +5426,19 @@ Please see <<_p,P>> for additional information on `within`.
 {
   "@type" : "g:T",
   "@value" : "label"
+}
+----
+
+==== TextP
+
+[source,json]
+----
+{
+  "@type" : "g:TextP",
+  "@value" : {
+    "predicate" : "containing",
+    "value" : "ark"
+  }
 }
 ----
 

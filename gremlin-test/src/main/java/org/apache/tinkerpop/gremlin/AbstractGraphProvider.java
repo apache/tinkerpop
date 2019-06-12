@@ -20,10 +20,13 @@ package org.apache.tinkerpop.gremlin;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
+import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoResourceAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,17 +43,21 @@ import java.util.Map;
  */
 public abstract class AbstractGraphProvider implements GraphProvider {
     private static final Logger logger = LoggerFactory.getLogger(AbstractGraphProvider.class);
+
     /**
-     * Provides a basic configuration for a particular {@link org.apache.tinkerpop.gremlin.structure.Graph} instance and used
-     * the {@code graphName} to ensure that the instance is unique.  It is up to the Gremlin implementation
-     * to determine how best to use the {@code graphName} to ensure uniqueness.  For example, Neo4j, might use the
-     * {@code graphName} might be used to create a different sub-directory where the graph is stored.
+     * Provides a basic configuration for a particular {@link Graph} instance and uses the {@code graphName} to ensure
+     * that the instance is unique.  It is up to the Gremlin implementation to determine how best to use the
+     * {@code graphName} to ensure uniqueness.  For example, Neo4j, might use the {@code graphName} might be used to
+     * create a different sub-directory where the graph is stored.
      * <p/>
      * The @{code test} and @{code testMethodName} can be used to alter graph configurations for specific tests.
      * For example, a graph that has support for different transaction isolation levels might only support a feature
      * in a specific configuration.  Using these arguments, the implementation could detect when a test was being
      * fired that required the database to be configured in a specific isolation level and return a configuration
      * to support that.
+     * <p/>
+     * Ultimately, the returned {@code Map} should minimally contain a configuration that can be given to a
+     * {@link GraphFactory} so that it can be instantiated.
      *
      * @param graphName      a value that represents a unique configuration for a graph
      * @param test           the test class
@@ -131,12 +138,18 @@ public abstract class AbstractGraphProvider implements GraphProvider {
         return methodName.replaceAll("[0-9, -]+$", String.valueOf(random));
     }
 
-    protected void readIntoGraph(final Graph g, final String path) throws IOException {
-        final GraphReader reader = GryoReader.build()
-                .mapper(g.io(GryoIo.build()).mapper().create())
-                .create();
-        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream(path)) {
-            reader.readGraph(stream, g);
-        }
+    /**
+     * Used by the default implementation of {@link AbstractGraphProvider#loadGraphData(Graph, LoadGraphWith, Class, String)}
+     * to read the graph from a Kryo file using the default {@link GryoReader} implementation. If the default
+     * implementation does not work (perhaps a graph implementation needs to register some special {@link IoRegistry}
+     * then this method or its caller should be overridden to suit the implementation.
+     *
+     * @param graph the graph to load to
+     * @param path the path to the file to load into the graph
+     */
+    protected void readIntoGraph(final Graph graph, final String path) throws IOException {
+        final String dataFile = TestHelper.generateTempFileFromResource(graph.getClass(),
+                GryoResourceAccess.class, path.substring(path.lastIndexOf(File.separator) + 1), "", false).getAbsolutePath();
+        graph.traversal().io(dataFile).read().iterate();
     }
 }

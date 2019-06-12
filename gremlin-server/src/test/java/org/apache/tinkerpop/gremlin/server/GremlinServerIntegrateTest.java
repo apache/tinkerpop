@@ -26,7 +26,7 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.TestHelper;
@@ -47,7 +47,7 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
-import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
+import org.apache.tinkerpop.gremlin.structure.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -59,17 +59,17 @@ import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import java.lang.reflect.Field;
-import java.nio.channels.ClosedChannelException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -83,18 +83,21 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.apache.tinkerpop.gremlin.driver.Tokens.ARGS_SCRIPT_EVAL_TIMEOUT;
 import static org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin.Compilation.COMPILE_STATIC;
-import static org.apache.tinkerpop.gremlin.process.traversal.TraversalSource.GREMLIN_REMOTE_CONNECTION_CLASS;
+import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE;
+import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE_CONNECTION_CLASS;
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.StringStartsWith.startsWith;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Integration tests for server-side settings and processing.
@@ -103,11 +106,6 @@ import static org.junit.Assert.assertEquals;
  */
 public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegrationTest {
 
-    private static final String SERVER_KEY = "src/test/resources/server.key.pk8";
-    private static final String SERVER_CRT = "src/test/resources/server.crt";
-    private static final String KEY_PASS = "changeit";
-    private static final String CLIENT_KEY = "src/test/resources/client.key.pk8";
-    private static final String CLIENT_CRT = "src/test/resources/client.crt";
     private Level previousLogLevel;
 
     private Log4jRecordingAppender recordingAppender = null;
@@ -116,7 +114,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         setProperty(Graph.GRAPH, RemoteGraph.class.getName());
         setProperty(GREMLIN_REMOTE_CONNECTION_CLASS, DriverRemoteConnection.class.getName());
         setProperty(DriverRemoteConnection.GREMLIN_REMOTE_DRIVER_SOURCENAME, "g");
-        setProperty("hidden.for.testing.only", graphGetter);
+        setProperty(GREMLIN_REMOTE + "attachment", graphGetter);
         setProperty("clusterConfiguration.port", TestClientFactory.PORT);
         setProperty("clusterConfiguration.hosts", "localhost");
     }};
@@ -143,7 +141,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         if (name.getMethodName().equals("shouldPingChannelIfClientDies")||
                 name.getMethodName().equals("shouldCloseChannelIfClientDoesntRespond")) {
             final org.apache.log4j.Logger webSocketClientHandlerLogger = org.apache.log4j.Logger.getLogger(OpSelectorHandler.class);
-            previousLogLevel = webSocketClientHandlerLogger.getLevel();
             webSocketClientHandlerLogger.setLevel(previousLogLevel);
         }
 
@@ -184,42 +181,69 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldEnableSslButFailIfClientConnectsWithoutIt":
                 settings.ssl = new Settings.SslSettings();
                 settings.ssl.enabled = true;
+                settings.ssl.keyStore = JKS_SERVER_KEY;
+                settings.ssl.keyStorePassword = KEY_PASS;
+                settings.ssl.keyStoreType = KEYSTORE_TYPE_JKS;
                 break;
             case "shouldEnableSslWithSslContextProgrammaticallySpecified":
                 settings.ssl = new Settings.SslSettings();
                 settings.ssl.enabled = true;
                 settings.ssl.overrideSslContext(createServerSslContext());
                 break;
+            case "shouldEnableSslAndClientCertificateAuthWithPkcs12":
+                settings.ssl = new Settings.SslSettings();
+                settings.ssl.enabled = true;
+                settings.ssl.needClientAuth = ClientAuth.REQUIRE;
+                settings.ssl.keyStore = P12_SERVER_KEY;
+                settings.ssl.keyStorePassword = KEY_PASS;
+                settings.ssl.keyStoreType = KEYSTORE_TYPE_PKCS12;
+                settings.ssl.trustStore = P12_SERVER_TRUST;
+                settings.ssl.trustStorePassword = KEY_PASS;
+                break;
             case "shouldEnableSslAndClientCertificateAuth":
                 settings.ssl = new Settings.SslSettings();
                 settings.ssl.enabled = true;
                 settings.ssl.needClientAuth = ClientAuth.REQUIRE;
-                settings.ssl.keyCertChainFile = SERVER_CRT;
-                settings.ssl.keyFile = SERVER_KEY;
-                settings.ssl.keyPassword =KEY_PASS;
-                // Trust the client
-                settings.ssl.trustCertChainFile = CLIENT_CRT;
-            	break;
+                settings.ssl.keyStore = JKS_SERVER_KEY;
+                settings.ssl.keyStorePassword = KEY_PASS;
+                settings.ssl.keyStoreType = KEYSTORE_TYPE_JKS;
+                settings.ssl.trustStore = JKS_SERVER_TRUST;
+                settings.ssl.trustStorePassword = KEY_PASS;
+                break;
             case "shouldEnableSslAndClientCertificateAuthAndFailWithoutCert":
                 settings.ssl = new Settings.SslSettings();
                 settings.ssl.enabled = true;
                 settings.ssl.needClientAuth = ClientAuth.REQUIRE;
-                settings.ssl.keyCertChainFile = SERVER_CRT;
-                settings.ssl.keyFile = SERVER_KEY;
-                settings.ssl.keyPassword =KEY_PASS;
-                // Trust the client
-                settings.ssl.trustCertChainFile = CLIENT_CRT;
-            	break;
+                settings.ssl.keyStore = JKS_SERVER_KEY;
+                settings.ssl.keyStorePassword = KEY_PASS;
+                settings.ssl.keyStoreType = KEYSTORE_TYPE_JKS;
+                settings.ssl.trustStore = JKS_SERVER_TRUST;
+                settings.ssl.trustStorePassword = KEY_PASS;
+                break;
             case "shouldEnableSslAndClientCertificateAuthAndFailWithoutTrustedClientCert":
                 settings.ssl = new Settings.SslSettings();
                 settings.ssl.enabled = true;
                 settings.ssl.needClientAuth = ClientAuth.REQUIRE;
-                settings.ssl.keyCertChainFile = SERVER_CRT;
-                settings.ssl.keyFile = SERVER_KEY;
-                settings.ssl.keyPassword =KEY_PASS;
-                // Trust ONLY the server cert
-                settings.ssl.trustCertChainFile = SERVER_CRT;
-            	break;
+                settings.ssl.keyStore = JKS_SERVER_KEY;
+                settings.ssl.keyStorePassword = KEY_PASS;
+                settings.ssl.keyStoreType = KEYSTORE_TYPE_JKS;
+                break;
+            case "shouldEnableSslAndFailIfProtocolsDontMatch":
+                settings.ssl = new Settings.SslSettings();
+                settings.ssl.enabled = true;
+                settings.ssl.keyStore = JKS_SERVER_KEY;
+                settings.ssl.keyStorePassword = KEY_PASS;
+                settings.ssl.keyStoreType = KEYSTORE_TYPE_JKS;
+                settings.ssl.sslEnabledProtocols = Arrays.asList("TLSv1.1");
+                break;
+            case "shouldEnableSslAndFailIfCiphersDontMatch":
+                settings.ssl = new Settings.SslSettings();
+                settings.ssl.enabled = true;
+                settings.ssl.keyStore = JKS_SERVER_KEY;
+                settings.ssl.keyStorePassword = KEY_PASS;
+                settings.ssl.keyStoreType = KEYSTORE_TYPE_JKS;
+                settings.ssl.sslCipherSuites = Arrays.asList("TLS_DHE_RSA_WITH_AES_128_CBC_SHA");
+                break;
             case "shouldUseSimpleSandbox":
                 settings.scriptEngines.get("gremlin-groovy").plugins.put(GroovyCompilerGremlinPlugin.class.getName(), getScriptEngineConfForSimpleSandbox());
                 // remove the script because it isn't used in the test but also because it's not CompileStatic ready
@@ -331,8 +355,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldTimeOutRemoteTraversal() throws Exception {
-        final Graph graph = EmptyGraph.instance();
-        final GraphTraversalSource g = graph.traversal().withRemote(conf);
+        final GraphTraversalSource g = traversal().withRemote(conf);
 
         try {
             // tests sleeping thread
@@ -356,6 +379,68 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(t, instanceOf(ResponseException.class));
             assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
         }
+    }
+
+    @Test
+    public void shouldTimeOutRemoteTraversalWithPerRequestOption() {
+        final GraphTraversalSource g = traversal().withRemote(conf);
+
+        try {
+            // tests sleeping thread
+            g.with(ARGS_SCRIPT_EVAL_TIMEOUT, 500L).inject(1).sideEffect(Lambda.consumer("Thread.sleep(10000)")).iterate();
+            fail("This traversal should have timed out");
+        } catch (Exception ex) {
+            final Throwable t = ex.getCause();
+            assertThat(t, instanceOf(ResponseException.class));
+            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+        }
+
+        // make a graph with a cycle in it to force a long run traversal
+        graphGetter.get().traversal().addV("person").as("p").addE("self").to("p").iterate();
+
+        try {
+            // tests an "unending" traversal
+            g.with(ARGS_SCRIPT_EVAL_TIMEOUT, 500L).V().repeat(__.out()).until(__.outE().count().is(0)).iterate();
+            fail("This traversal should have timed out");
+        } catch (Exception ex) {
+            final Throwable t = ex.getCause();
+            assertThat(t, instanceOf(ResponseException.class));
+            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+        }
+    }
+
+    @Test
+    public void shouldProduceProperExceptionOnTimeout() throws Exception {
+        final Cluster cluster = TestClientFactory.open();
+        final Client client = cluster.connect(name.getMethodName());
+
+        boolean success = false;
+        // Run a short test script a few times with progressively longer timeouts.
+        // Each submissions should either succeed or fail with a timeout.
+        // Note: the range of timeouts is intended to cover the case when the script finishes at about the
+        // same time when the timeout occurs. In this situation either a timeout response or a successful
+        // response is acceptable, however no other processing errors should occur.
+        // Note: the timeout of 30 ms is generally sufficient for running a simple groovy script, so using longer
+        // timeouts are not likely to results in a success/timeout response collision, which is the purpose
+        // of this test.
+        // Note: this test may have a false negative result, but a failure  would indicate a real problem.
+        for(int i = 0; i < 30; i++) {
+            int timeout = 1 + i;
+            overrideScriptEvaluationTimeout(timeout);
+
+            try {
+                client.submit("x = 1 + 1").all().get().get(0).getInt();
+                success = true;
+            } catch (Exception ex) {
+                final Throwable t = ex.getCause();
+                assertThat("Unexpected exception with script evaluation timeout: " + timeout, t, instanceOf(ResponseException.class));
+                assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+            }
+        }
+
+        assertTrue("Some script submissions should succeed", success);
+
+        cluster.close();
     }
 
     @Test
@@ -432,7 +517,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldEnableSsl() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(true).create();
+        final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_SERVER_KEY).keyStorePassword(KEY_PASS).sslSkipCertValidation(true).create();
         final Client client = cluster.connect();
 
         try {
@@ -476,16 +561,28 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             cluster.close();
         }
     }
+    
+    @Test
+    public void shouldEnableSslAndClientCertificateAuthWithPkcs12() {
+        final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(P12_CLIENT_KEY).keyStorePassword(KEY_PASS)
+                .keyStoreType(KEYSTORE_TYPE_PKCS12).trustStore(P12_CLIENT_TRUST).trustStorePassword(KEY_PASS).create();
+        final Client client = cluster.connect();
+
+        try {
+            assertEquals("test", client.submit("'test'").one().getString());
+        } finally {
+            cluster.close();
+        }
+    }
 
     @Test
     public void shouldEnableSslAndClientCertificateAuth() {
-		final Cluster cluster = TestClientFactory.build().enableSsl(true)
-				.keyCertChainFile(CLIENT_CRT).keyFile(CLIENT_KEY)
-				.keyPassword(KEY_PASS).trustCertificateChainFile(SERVER_CRT).create();
-		final Client client = cluster.connect();
+        final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_CLIENT_KEY).keyStorePassword(KEY_PASS)
+                .keyStoreType(KEYSTORE_TYPE_JKS).trustStore(JKS_CLIENT_TRUST).trustStorePassword(KEY_PASS).create();
+        final Client client = cluster.connect();
 
         try {
-        	assertEquals("test", client.submit("'test'").one().getString());
+            assertEquals("test", client.submit("'test'").one().getString());
         } finally {
             cluster.close();
         }
@@ -493,13 +590,14 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldEnableSslAndClientCertificateAuthAndFailWithoutCert() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(true).create();
+        final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_SERVER_KEY).keyStorePassword(KEY_PASS)
+                .keyStoreType(KEYSTORE_TYPE_JKS).sslSkipCertValidation(true).create();
         final Client client = cluster.connect();
 
         try {
             client.submit("'test'").one();
             fail("Should throw exception because ssl client auth is enabled on the server but client does not have a cert");
-        } catch(Exception x) {
+        } catch (Exception x) {
             final Throwable root = ExceptionUtils.getRootCause(x);
             assertThat(root, instanceOf(TimeoutException.class));
         } finally {
@@ -509,15 +607,48 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldEnableSslAndClientCertificateAuthAndFailWithoutTrustedClientCert() {
-		final Cluster cluster = TestClientFactory.build().enableSsl(true)
-				.keyCertChainFile(CLIENT_CRT).keyFile(CLIENT_KEY)
-				.keyPassword(KEY_PASS).trustCertificateChainFile(SERVER_CRT).create();
-		final Client client = cluster.connect();
+        final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_CLIENT_KEY).keyStorePassword(KEY_PASS)
+                .keyStoreType(KEYSTORE_TYPE_JKS).trustStore(JKS_CLIENT_TRUST).trustStorePassword(KEY_PASS).create();
+        final Client client = cluster.connect();
 
         try {
             client.submit("'test'").one();
             fail("Should throw exception because ssl client auth is enabled on the server but does not trust client's cert");
-        } catch(Exception x) {
+        } catch (Exception x) {
+            final Throwable root = ExceptionUtils.getRootCause(x);
+            assertThat(root, instanceOf(TimeoutException.class));
+        } finally {
+            cluster.close();
+        }
+    }
+    
+    @Test
+    public void shouldEnableSslAndFailIfProtocolsDontMatch() {
+        final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_SERVER_KEY).keyStorePassword(KEY_PASS)
+                .sslSkipCertValidation(true).sslEnabledProtocols(Arrays.asList("TLSv1.2")).create();
+        final Client client = cluster.connect();
+
+        try {
+            client.submit("'test'").one();
+            fail("Should throw exception because ssl client requires TLSv1.2 whereas server supports only TLSv1.1");
+        } catch (Exception x) {
+            final Throwable root = ExceptionUtils.getRootCause(x);
+            assertThat(root, instanceOf(TimeoutException.class));
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldEnableSslAndFailIfCiphersDontMatch() {
+        final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_SERVER_KEY).keyStorePassword(KEY_PASS)
+                .sslSkipCertValidation(true).sslCipherSuites(Arrays.asList("SSL_RSA_WITH_RC4_128_SHA")).create();
+        final Client client = cluster.connect();
+
+        try {
+            client.submit("'test'").one();
+            fail("Should throw exception because ssl client requires TLSv1.2 whereas server supports only TLSv1.1");
+        } catch (Exception x) {
             final Throwable root = ExceptionUtils.getRootCause(x);
             assertThat(root, instanceOf(TimeoutException.class));
         } finally {
@@ -781,7 +912,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldReceiveFailureTimeOutOnScriptEvalUsingOverride() throws Exception {
         try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
             final RequestMessage msg = RequestMessage.build("eval")
-                    .addArg(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT, 100)
+                    .addArg(ARGS_SCRIPT_EVAL_TIMEOUT, 100L)
                     .addArg(Tokens.ARGS_GREMLIN, "Thread.sleep(3000);'some-stuff-that-should not return'")
                     .create();
             final List<ResponseMessage> responses = client.submit(msg);
@@ -893,7 +1024,13 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             // it seems ok to pass in this case.
         } catch (Exception re) {
             final Throwable root = ExceptionUtils.getRootCause(re);
-            assertEquals("Connection reset by peer", root.getMessage());
+            // Netty closes the channel to the server on a non-recoverable error such as CorruptedFrameException
+            // and the connection is subsequently destroyed. Each of the pending requests are given an error with
+            // the following error message.
+            //
+            // went with two possible error messages here as i think that there is some either non-deterministic
+            // behavior around the error message or it's environmentally dependent (e.g. different jdk, versions, etc)
+            assertThat(root.getMessage(), Matchers.anyOf(is("Connection to server is no longer active"), is("Connection reset by peer")));
 
             // validate that we can still send messages to the server
             assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
@@ -915,10 +1052,12 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
         try {
             // try to re-issue a request now that the server is down
-            client.submit("1+1").all().join();
-            fail();
+            client.submit("g").all().join();
+            fail("Should throw an exception.");
         } catch (RuntimeException re) {
-            assertThat(re.getCause().getCause() instanceof ClosedChannelException, is(true));
+            // Client would have no active connections to the host, hence it would encounter a timeout
+            // trying to find an alive connection to the host.
+            assertThat(re.getCause().getCause() instanceof TimeoutException, is(true));
 
             //
             // should recover when the server comes back
@@ -950,6 +1089,21 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    public void shouldHavePartialContentWithLongResultsCollection() throws Exception {
+        try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
+            final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_GREMLIN, "new String[100]").create();
+            final List<ResponseMessage> responses = client.submit(request);
+            assertThat(responses.size(), Matchers.greaterThan(1));
+            for (Iterator<ResponseMessage> it = responses.iterator(); it.hasNext(); ) {
+                final ResponseMessage msg = it.next();
+                final ResponseStatusCode expected = it.hasNext() ? ResponseStatusCode.PARTIAL_CONTENT : ResponseStatusCode.SUCCESS;
+                assertEquals(expected, msg.getStatus().getCode());
+            }
+        }
+    }
+
+    @Test
     public void shouldFailWithBadScriptEval() throws Exception {
         try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
@@ -962,22 +1116,21 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldSupportLambdasUsingWithRemote() throws Exception {
-        final Graph graph = EmptyGraph.instance();
-        final GraphTraversalSource g = graph.traversal().withRemote(conf);
+        final GraphTraversalSource g = traversal().withRemote(conf);
         g.addV("person").property("age", 20).iterate();
         g.addV("person").property("age", 10).iterate();
         assertEquals(50L, g.V().hasLabel("person").map(Lambda.function("it.get().value('age') + 10")).sum().next());
     }
 
     @Test
-    public void shouldGetSideEffectKeysUsingWithRemote() throws Exception {
-        final Graph graph = EmptyGraph.instance();
-        final GraphTraversalSource g = graph.traversal().withRemote(conf);
+    public void shouldGetSideEffectKeysAndStatusUsingWithRemote() throws Exception {
+        final GraphTraversalSource g = traversal().withRemote(conf);
         g.addV("person").property("age", 20).iterate();
         g.addV("person").property("age", 10).iterate();
         final GraphTraversal traversal = g.V().aggregate("a").aggregate("b");
         traversal.iterate();
         final DriverRemoteTraversalSideEffects se = (DriverRemoteTraversalSideEffects) traversal.asAdmin().getSideEffects();
+        assertThat(se.statusAttributes().containsKey(Tokens.ARGS_HOST), is(true));
 
         // Get keys
         final Set<String> sideEffectKeys = se.keys();
@@ -1000,12 +1153,16 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
         final BulkSet localBSideEffects = se.get("b");
         assertThat(localBSideEffects.isEmpty(), is(false));
+
+        final GraphTraversal gdotv = g.V();
+        gdotv.toList();
+        final DriverRemoteTraversalSideEffects gdotvSe = (DriverRemoteTraversalSideEffects) gdotv.asAdmin().getSideEffects();
+        assertThat(gdotvSe.statusAttributes().containsKey(Tokens.ARGS_HOST), is(true));
     }
 
     @Test
     public void shouldCloseSideEffectsUsingWithRemote() throws Exception {
-        final Graph graph = EmptyGraph.instance();
-        final GraphTraversalSource g = graph.traversal().withRemote(conf);
+        final GraphTraversalSource g = traversal().withRemote(conf);
         g.addV("person").property("age", 20).iterate();
         g.addV("person").property("age", 10).iterate();
         final GraphTraversal traversal = g.V().aggregate("a").aggregate("b");
@@ -1055,8 +1212,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldBlockWhenGettingSideEffectKeysUsingWithRemote() throws Exception {
-        final Graph graph = EmptyGraph.instance();
-        final GraphTraversalSource g = graph.traversal().withRemote(conf);
+        final GraphTraversalSource g = traversal().withRemote(conf);
         g.addV("person").property("age", 20).iterate();
         g.addV("person").property("age", 10).iterate();
         final GraphTraversal traversal = g.V().aggregate("a")
@@ -1098,8 +1254,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldBlockWhenGettingSideEffectValuesUsingWithRemote() throws Exception {
-        final Graph graph = EmptyGraph.instance();
-        final GraphTraversalSource g = graph.traversal().withRemote(conf);
+        final GraphTraversalSource g = traversal().withRemote(conf);
         g.addV("person").property("age", 20).iterate();
         g.addV("person").property("age", 10).iterate();
         final GraphTraversal traversal = g.V().aggregate("a")
@@ -1141,8 +1296,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldDoNonBlockingPromiseWithRemote() throws Exception {
-        final Graph graph = EmptyGraph.instance();
-        final GraphTraversalSource g = graph.traversal().withRemote(conf);
+        final GraphTraversalSource g = traversal().withRemote(conf);
         g.addV("person").property("age", 20).promise(Traversal::iterate).join();
         g.addV("person").property("age", 10).promise(Traversal::iterate).join();
         assertEquals(50L, g.V().hasLabel("person").map(Lambda.function("it.get().value('age') + 10")).sum().promise(t -> t.next()).join());
@@ -1184,7 +1338,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             client.submit(script, b).all().get();
             fail("Should have tanked out because of number of parameters used and size of the compile script");
         } catch (Exception ex) {
-            assertThat(ex.getMessage(), containsString("The Gremlin statement that was submitted exceed the maximum compilation size allowed by the JVM"));
+            assertThat(ex.getMessage(), containsString("The Gremlin statement that was submitted exceeds the maximum compilation size allowed by the JVM"));
         }
     }
 }

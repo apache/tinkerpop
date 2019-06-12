@@ -22,102 +22,158 @@
 #endregion
 
 using System;
-using System.Collections.Concurrent;
-using System.Linq;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.Process;
 
 namespace Gremlin.Net.Driver
 {
     internal class ConnectionPool : IDisposable
     {
+        private const int ConnectionIndexOverflowLimit = int.MaxValue - 1000000;
+        
         private readonly ConnectionFactory _connectionFactory;
-        private readonly ConcurrentBag<Connection> _connections = new ConcurrentBag<Connection>();
-        private readonly object _connectionsLock = new object();
+        private readonly CopyOnWriteCollection<Connection> _connections = new CopyOnWriteCollection<Connection>();
+        private readonly int _poolSize;
+        private readonly int _maxInProcessPerConnection;
+        private int _connectionIndex;
+        private int _poolState;
+        private const int PoolIdle = 0;
+        private const int PoolPopulationInProgress = 1;
 
-        public ConnectionPool(ConnectionFactory connectionFactory)
+        public ConnectionPool(ConnectionFactory connectionFactory, ConnectionPoolSettings settings)
         {
             _connectionFactory = connectionFactory;
+            _poolSize = settings.PoolSize;
+            _maxInProcessPerConnection = settings.MaxInProcessPerConnection;
+            PopulatePoolAsync().WaitUnwrap();
         }
-
-        public int NrConnections { get; private set; }
+        
+        public int NrConnections => _connections.Count;
 
         public async Task<IConnection> GetAvailableConnectionAsync()
         {
-            if (!TryGetConnectionFromPool(out var connection))
-                connection = await CreateNewConnectionAsync().ConfigureAwait(false);
-
-            return new ProxyConnection(connection, AddConnectionIfOpen);
+            await EnsurePoolIsPopulatedAsync().ConfigureAwait(false);
+            return ProxiedConnection(GetConnectionFromPool());
         }
 
-        private bool TryGetConnectionFromPool(out Connection connection)
+        private async Task EnsurePoolIsPopulatedAsync()
         {
-            while (true)
+            // The pool could have been (partially) empty because of connection problems. So, we need to populate it again.
+            if (_poolSize <= NrConnections) return;
+            var poolState = Interlocked.CompareExchange(ref _poolState, PoolPopulationInProgress, PoolIdle);
+            if (poolState == PoolPopulationInProgress) return;
+            try
             {
-                connection = null;
-                lock (_connectionsLock)
-                {
-                    if (_connections.IsEmpty) return false;
-                    _connections.TryTake(out connection);
-                }
-
-                if (connection.IsOpen) return true;
-                connection.Dispose();
+                await PopulatePoolAsync().ConfigureAwait(false);
+            }
+            finally
+            {
+                // We need to remove the PoolPopulationInProgress flag again even if an exception occurred, so we don't block the pool population for ever
+                Interlocked.CompareExchange(ref _poolState, PoolIdle, PoolPopulationInProgress);
             }
         }
-
+        
+        private async Task PopulatePoolAsync()
+        {
+            var nrConnectionsToCreate = _poolSize - _connections.Count;
+            var connectionCreationTasks = new List<Task<Connection>>(nrConnectionsToCreate);
+            try
+            {
+                for (var i = 0; i < nrConnectionsToCreate; i++)
+                {
+                    connectionCreationTasks.Add(CreateNewConnectionAsync());
+                }
+                var createdConnections = await Task.WhenAll(connectionCreationTasks).ConfigureAwait(false);
+                _connections.AddRange(createdConnections);
+            }
+            catch(Exception)
+            {
+                // Dispose created connections if the connection establishment failed
+                foreach (var creationTask in connectionCreationTasks)
+                {
+                    if (!creationTask.IsFaulted)
+                        creationTask.Result?.Dispose();
+                }
+                throw;
+            }
+        }
+        
         private async Task<Connection> CreateNewConnectionAsync()
         {
-            NrConnections++;
             var newConnection = _connectionFactory.CreateConnection();
             await newConnection.ConnectAsync().ConfigureAwait(false);
             return newConnection;
         }
 
-        private void AddConnectionIfOpen(Connection connection)
+        private Connection GetConnectionFromPool()
         {
-            if (!connection.IsOpen)
-            {
-                ConsiderUnavailable();
-                connection.Dispose();
-                return;
-            }
-            AddConnection(connection);
+            var connections = _connections.Snapshot;
+            if (connections.Length == 0) throw new ServerUnavailableException();
+            return TryGetAvailableConnection(connections);
         }
 
-        private void AddConnection(Connection connection)
+        private Connection TryGetAvailableConnection(Connection[] connections)
         {
-            lock (_connectionsLock)
+            var index = Interlocked.Increment(ref _connectionIndex);
+            ProtectIndexFromOverflowing(index);
+
+            for (var i = 0; i < connections.Length; i++)
             {
-                _connections.Add(connection);
+                var connection = connections[(index + i) % connections.Length];
+                if (connection.NrRequestsInFlight >= _maxInProcessPerConnection) continue;
+                if (!connection.IsOpen)
+                {
+                    RemoveConnectionFromPool(connection);
+                    continue;
+                }
+                return connection;
             }
+            throw new ConnectionPoolBusyException(_poolSize, _maxInProcessPerConnection);
+        }
+
+        private void ProtectIndexFromOverflowing(int currentIndex)
+        {
+            if (currentIndex > ConnectionIndexOverflowLimit)
+                Interlocked.Exchange(ref _connectionIndex, 0);
+        }
+
+        private void RemoveConnectionFromPool(Connection connection)
+        {
+            if (_connections.TryRemove(connection))
+                DefinitelyDestroyConnection(connection);
+        }
+        
+        private IConnection ProxiedConnection(Connection connection)
+        {
+            return new ProxyConnection(connection, ReturnConnectionIfOpen);
+        }
+
+        private void ReturnConnectionIfOpen(Connection connection)
+        {
+            if (connection.IsOpen) return;
+            ConsiderUnavailable();
         }
 
         private void ConsiderUnavailable()
         {
-            CloseAndRemoveAllConnections();
+            CloseAndRemoveAllConnectionsAsync().WaitUnwrap();
         }
 
-        private void CloseAndRemoveAllConnections()
+        private async Task CloseAndRemoveAllConnectionsAsync()
         {
-            lock (_connectionsLock)
+            foreach (var connection in _connections.RemoveAndGetAll())
             {
-                TeardownAsync().WaitUnwrap();
-                RemoveAllConnections();
+                await connection.CloseAsync().ConfigureAwait(false);
+                DefinitelyDestroyConnection(connection);
             }
         }
 
-        private void RemoveAllConnections()
+        private void DefinitelyDestroyConnection(Connection connection)
         {
-            while (_connections.TryTake(out var connection))
-            {
-                connection.Dispose();
-            }
-        }
-
-        private async Task TeardownAsync()
-        {
-            await Task.WhenAll(_connections.Select(c => c.CloseAsync())).ConfigureAwait(false);
+            connection.Dispose();
         }
 
         #region IDisposable Support
@@ -135,10 +191,11 @@ namespace Gremlin.Net.Driver
             if (!_disposed)
             {
                 if (disposing)
-                    CloseAndRemoveAllConnections();
+                    CloseAndRemoveAllConnectionsAsync().WaitUnwrap();
                 _disposed = true;
             }
         }
+
         #endregion
     }
 }

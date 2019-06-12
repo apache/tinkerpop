@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.dsl;
 
+import com.squareup.javapoet.ArrayTypeName;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -34,6 +35,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -329,6 +331,18 @@ public class GremlinDslProcessor extends AbstractProcessor {
                     .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, $T.class, true, edgeIds))", ctx.traversalClassName, GraphStep.class, Edge.class)
                     .returns(ParameterizedTypeName.get(ctx.traversalClassName, ClassName.get(Edge.class), ClassName.get(Edge.class)))
                     .build());
+            traversalSourceClass.addMethod(MethodSpec.methodBuilder("inject")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addAnnotation(Override.class)
+                    .addParameter(ArrayTypeName.of(TypeVariableName.get("S")), "starts")
+                    .varargs(true)
+                    .addTypeVariable(TypeVariableName.get("S"))
+                    .addStatement("$N clone = this.clone()", ctx.traversalSourceClazz)
+                    .addStatement("clone.getBytecode().addStep($T.inject, starts)", GraphTraversal.Symbols.class)
+                    .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
+                    .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, starts))", ctx.traversalClassName, InjectStep.class)
+                    .returns(ParameterizedTypeName.get(ctx.traversalClassName, TypeVariableName.get("S"), TypeVariableName.get("S")))
+                    .build());
             traversalSourceClass.addMethod(MethodSpec.methodBuilder("getAnonymousTraversalClass")
                     .addModifiers(Modifier.PUBLIC)
                     .addAnnotation(Override.class)
@@ -461,23 +475,25 @@ public class GremlinDslProcessor extends AbstractProcessor {
     private void addMethodBody(final MethodSpec.Builder methodToAdd, final ExecutableElement templateMethod,
                                final String startBody, final String endBody, final Object... statementArgs) {
         final List<? extends VariableElement> parameters = templateMethod.getParameters();
-        String body = startBody;
+        final StringBuilder body = new StringBuilder(startBody);
 
         final int numberOfParams = parameters.size();
         for (int ix = 0; ix < numberOfParams; ix++) {
             final VariableElement param = parameters.get(ix);
             methodToAdd.addParameter(ParameterSpec.get(param));
-            body = body + param.getSimpleName();
-            if (ix < numberOfParams - 1) body = body + ",";
+            body.append(param.getSimpleName());
+            if (ix < numberOfParams - 1) {
+                body.append(",");
+            }
         }
 
-        body = body + endBody;
+        body.append(endBody);
 
         // treat a final array as a varargs param
         if (!parameters.isEmpty() && parameters.get(parameters.size() - 1).asType().getKind() == TypeKind.ARRAY)
             methodToAdd.varargs(true);
 
-        methodToAdd.addStatement(body, statementArgs);
+        methodToAdd.addStatement(body.toString(), statementArgs);
     }
 
     private TypeName getOverridenReturnTypeDefinition(final ClassName returnClazz, final String[] typeValues) {

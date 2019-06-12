@@ -65,9 +65,10 @@ import org.junit.runners.model.RunnerBuilder;
  * executed. Note that while the above example demonstrates configuration of this suite, this approach generally
  * applies to all other test suites.
  * <p/>
- * Set the {@code GREMLIN_TESTS} environment variable to a comma separated list of test classes to execute.
- * This setting can be helpful to restrict execution of tests to specific ones being focused on during development.
-
+ * Set the {@code GREMLIN_TESTS} environment variable to a comma separated list of qualified names of the test classes
+ * to execute. This setting can be helpful to restrict execution of tests to specific ones being focused on during
+ * development.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class StructureStandardSuite extends AbstractGremlinSuite {

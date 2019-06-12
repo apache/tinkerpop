@@ -19,7 +19,9 @@
 package org.apache.tinkerpop.gremlin.driver.handler;
 
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
+import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
@@ -58,7 +60,9 @@ public final class WebSocketGremlinRequestEncoder extends MessageToMessageEncode
                 objects.add(new TextWebSocketFrame(textSerializer.serializeRequestAsString(requestMessage)));
             }
         } catch (Exception ex) {
-            logger.warn(String.format("An error occurred during serialization of this request [%s] - it could not be sent to the server.", requestMessage), ex);
+            throw new ResponseException(ResponseStatusCode.REQUEST_ERROR_SERIALIZATION, String.format(
+                    "An error occurred during serialization of this request [%s] - it could not be sent to the server - Reason: %s",
+                    requestMessage, ex));
         }
     }
 }

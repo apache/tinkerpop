@@ -41,3 +41,6 @@ Gremlin-Python. Moreover, there are a few added constructs to Gremlin-Python tha
 
 Please see the `reference documentation <http://tinkerpop.apache.org/docs/current/reference/#gremlin-python>`_
 at Apache TinkerPop for more information on usage.
+
+NOTE that versions suffixed with "rc" are considered release candidates (i.e. pre-alpha, alpha, beta, etc.) and
+thus for early testing purposes only.

@@ -56,9 +56,7 @@ class GraphSONWriter {
 
   adaptObject(value) {
     let s;
-    if (Array.isArray(value)) {
-      return value.map(item => this.adaptObject(item));
-    }
+
     for (let i = 0; i < this._serializers.length; i++) {
       const currentSerializer = this._serializers[i];
       if (currentSerializer.canBeUsedFor && currentSerializer.canBeUsedFor(value)) {
@@ -66,9 +64,17 @@ class GraphSONWriter {
         break;
       }
     }
+
     if (s) {
       return s.serialize(value);
     }
+
+    if (Array.isArray(value)) {
+      // We need to handle arrays when there is no serializer
+      // for older versions of GraphSON
+      return value.map(item => this.adaptObject(item));
+    }
+
     // Default (strings / objects / ...)
     return value;
   }
@@ -162,9 +168,11 @@ const deserializers = {
   'g:Property': typeSerializers.PropertySerializer,
   'g:Path': typeSerializers.Path3Serializer,
   'g:T': typeSerializers.TSerializer,
+  'g:TextP': typeSerializers.TextPSerializer,
   'g:List': typeSerializers.ListSerializer,
   'g:Set': typeSerializers.SetSerializer,
-  'g:Map': typeSerializers.MapSerializer
+  'g:Map': typeSerializers.MapSerializer,
+  'g:BulkSet': typeSerializers.BulkSetSerializer
 };
 
 const serializers = [
@@ -173,6 +181,7 @@ const serializers = [
   typeSerializers.BytecodeSerializer,
   typeSerializers.TraverserSerializer,
   typeSerializers.PSerializer,
+  typeSerializers.TextPSerializer,
   typeSerializers.LambdaSerializer,
   typeSerializers.EnumSerializer,
   typeSerializers.VertexSerializer,

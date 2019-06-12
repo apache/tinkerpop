@@ -21,7 +21,7 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 from gremlin_python.structure.graph import Graph
 from gremlin_python.process.traversal import P
-from gremlin_python.process.traversal import Binding
+from gremlin_python.process.traversal import Binding, Bindings
 from gremlin_python.process.graph_traversal import __
 
 
@@ -52,7 +52,10 @@ class TestTraversal(object):
         assert 1 == len(bytecode.step_instructions[1])
         assert 2 == len(bytecode.step_instructions[2])
         ##
-        bytecode = g.V(('a',[1,2,3])).out(('b','created')).where(__.in_(('c','created'),('d','knows')).count().is_(('e',P.gt(2)))).bytecode
+        bytecode = g.V(Bindings.of('a', [1,2,3])) \
+            .out(Bindings.of('b','created')) \
+            .where(__.in_(Bindings.of('c','created'), Bindings.of('d','knows')) \
+            .count().is_(Bindings.of('e',P.gt(2)))).bytecode
         assert 5 == len(bytecode.bindings.keys())
         assert [1,2,3] == bytecode.bindings['a']
         assert 'created' == bytecode.bindings['b']

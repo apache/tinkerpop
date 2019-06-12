@@ -60,10 +60,10 @@ globals << [hook : [
 ] as LifeCycleHook]
 
 // add default TraversalSource instances for each graph instance
-globals << [gclassic : classic.traversal()]
-globals << [gmodern : modern.traversal()]
-globals << [g : graph.traversal()]
-globals << [gcrew : crew.traversal()]
-globals << [ggraph : graph.traversal()]
-globals << [ggrateful : grateful.traversal()]
-globals << [gsink : sink.traversal()]
+globals << [gclassic : classic.traversal().withStrategies(ReferenceElementStrategy.instance())]
+globals << [gmodern : modern.traversal().withStrategies(ReferenceElementStrategy.instance())]
+globals << [g : graph.traversal().withStrategies(ReferenceElementStrategy.instance())]
+globals << [gcrew : crew.traversal().withStrategies(ReferenceElementStrategy.instance())]
+globals << [ggraph : graph.traversal().withStrategies(ReferenceElementStrategy.instance())]
+globals << [ggrateful : grateful.traversal().withStrategies(ReferenceElementStrategy.instance())]
+globals << [gsink : sink.traversal().withStrategies(ReferenceElementStrategy.instance())]

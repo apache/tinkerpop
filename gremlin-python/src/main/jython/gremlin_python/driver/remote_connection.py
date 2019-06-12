@@ -63,12 +63,17 @@ class RemoteTraversal(traversal.Traversal):
 
 
 class RemoteTraversalSideEffects(traversal.TraversalSideEffects):
-    def __init__(self, side_effect, client):
+    def __init__(self, side_effect, client, status_attributes):
         self._side_effect = side_effect
         self._client = client
         self._keys = set()
         self._side_effects = {}
         self._closed = False
+        self._status_attributes = status_attributes
+
+    @property
+    def status_attributes(self):
+        return self._status_attributes
 
     def keys(self):
         if not self._closed:
@@ -136,6 +141,7 @@ class RemoteTraversalSideEffects(traversal.TraversalSideEffects):
 
 class RemoteStrategy(traversal.TraversalStrategy):
     def __init__(self, remote_connection):
+        traversal.TraversalStrategy.__init__(self)
         self.remote_connection = remote_connection
 
     def apply(self, traversal):

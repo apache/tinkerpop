@@ -42,14 +42,6 @@ public class GraphSONTypeIdResolver implements TypeIdResolver {
 
     private final Map<Class, String> typeToId = new HashMap<>();
 
-    public Map<String, JavaType> getIdToType() {
-        return idToType;
-    }
-
-    public Map<Class, String> getTypeToId() {
-        return typeToId;
-    }
-
     // Override manually a type definition.
     public GraphSONTypeIdResolver addCustomType(final String name, final Class clasz) {
         if (Tree.class.isAssignableFrom(clasz)) {
@@ -57,12 +49,20 @@ public class GraphSONTypeIdResolver implements TypeIdResolver {
             // and for which creating a default type is failing because it may fall into a
             // a self-referencing never-ending loop. Temporarily we force Tree<Element>
             // which should cover all the usage TinkerPop would do of the Trees anyway.
-            getIdToType().put(name, TypeFactory.defaultInstance().constructType(new TypeReference<Tree<? extends Element>>() {}));
+            idToType.put(name, TypeFactory.defaultInstance().constructType(new TypeReference<Tree<? extends Element>>() {}));
         } else {
-            getIdToType().put(name, TypeFactory.defaultInstance().constructType(clasz));
+            idToType.put(name, TypeFactory.defaultInstance().constructType(clasz));
         }
-        getTypeToId().put(clasz, name);
+        typeToId.put(clasz, name);
         return this;
+    }
+
+    public final Map<String, JavaType> getIdToType() {
+        return idToType;
+    }
+
+    public final Map<Class, String> getTypeToId() {
+        return typeToId;
     }
 
     @Override
@@ -76,13 +76,13 @@ public class GraphSONTypeIdResolver implements TypeIdResolver {
 
     @Override
     public String idFromValueAndType(final Object o, final Class<?> aClass) {
-        if (!getTypeToId().containsKey(aClass)) {
+        if (!typeToId.containsKey(aClass)) {
             // If one wants to serialize an object with a type, but hasn't registered
             // a typeID for that class, fail.
             throw new IllegalArgumentException(String.format("Could not find a type identifier for the class : %s. " +
                     "Make sure the value to serialize has a type identifier registered for its class.", aClass));
         } else {
-            return getTypeToId().get(aClass);
+            return typeToId.get(aClass);
         }
     }
 
@@ -94,15 +94,11 @@ public class GraphSONTypeIdResolver implements TypeIdResolver {
     @Override
     public JavaType typeFromId(final DatabindContext databindContext, final String s) {
         // Get the type from the string from the stored Map. If not found, default to deserialize as a String.
-        return getIdToType().containsKey(s)
-                ? getIdToType().get(s)
-                // TODO: shouldn't we fail instead, if the type is not found? Or log something?
-                : databindContext.constructType(String.class);
+        return idToType.containsKey(s) ? idToType.get(s) : databindContext.constructType(String.class);
     }
 
     @Override
     public String getDescForKnownTypeIds() {
-        // TODO: Not sure what to put here.
         return "GraphSON advanced typing system";
     }
 

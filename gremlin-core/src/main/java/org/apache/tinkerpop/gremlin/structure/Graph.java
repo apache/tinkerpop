@@ -23,6 +23,8 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
+import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.util.FeatureDescriptor;
@@ -300,7 +302,10 @@ public interface Graph extends AutoCloseable, Host {
      * For those graphs that do not need to register any custom serializers, the default implementation should suffice.
      * If the default is overridden, take care to register the current graph via the
      * {@link org.apache.tinkerpop.gremlin.structure.io.Io.Builder#graph(Graph)} method.
+     *
+     * @deprecated As of release 3.4.0, replaced by {@link GraphTraversalSource#io(String)}.
      */
+    @Deprecated
     public default <I extends Io> I io(final Io.Builder<I> builder) {
         return (I) builder.graph(this).create();
     }
@@ -400,6 +405,12 @@ public interface Graph extends AutoCloseable, Host {
      * should check features prior to using various functions of TinkerPop to help ensure code portability
      * across implementations.  For example, a common usage would be to check if a graph supports transactions prior
      * to calling the commit method on {@link #tx()}.
+     * <p/>
+     * As an additional notice to Graph Providers, feature methods will be used by the test suite to determine which
+     * tests will be ignored and which will be executed, therefore proper setting of these features is essential to
+     * maximizing the amount of testing performed by the suite. Further note, that these methods may be called by the
+     * TinkerPop core code to determine what operations may be appropriately executed which will have impact on
+     * features utilized by users.
      */
     public interface Features {
 
@@ -436,6 +447,8 @@ public interface Graph extends AutoCloseable, Host {
             public static final String FEATURE_PERSISTENCE = "Persistence";
             public static final String FEATURE_THREADED_TRANSACTIONS = "ThreadedTransactions";
             public static final String FEATURE_CONCURRENT_ACCESS = "ConcurrentAccess";
+            public static final String FEATURE_IO_READ = "IoRead";
+            public static final String FEATURE_IO_WRITE = "IoWrite";
 
             /**
              * Determines if the {@code Graph} implementation supports {@link GraphComputer} based processing.
@@ -482,6 +495,29 @@ public interface Graph extends AutoCloseable, Host {
              */
             @FeatureDescriptor(name = FEATURE_THREADED_TRANSACTIONS)
             public default boolean supportsThreadedTransactions() {
+                return true;
+            }
+
+            /**
+             * Determines if the {@code Graph} implementations supports read operations as executed with the
+             * {@link GraphTraversalSource#io(String)} step. Graph implementations will generally support this by
+             * default as any graph that can support direct mutation through the Structure API will by default
+             * accept data from the standard TinkerPop {@link GraphReader} implementations. However, some graphs like
+             * {@code HadoopGraph} don't accept direct mutations but can still do reads from that {@code io()} step.
+             */
+            @FeatureDescriptor(name = FEATURE_IO_READ)
+            public default boolean supportsIoRead() {
+                return true;
+            }
+
+            /**
+             * Determines if the {@code Graph} implementations supports write operations as executed with the
+             * {@link GraphTraversalSource#io(String)} step. Graph implementations will generally support this by
+             * default given the standard TinkerPop {@link GraphWriter} implementations. However, some graphs like
+             * {@code HadoopGraph} will use a different approach to handle writes.
+             */
+            @FeatureDescriptor(name = FEATURE_IO_WRITE)
+            public default boolean supportsIoWrite() {
                 return true;
             }
 

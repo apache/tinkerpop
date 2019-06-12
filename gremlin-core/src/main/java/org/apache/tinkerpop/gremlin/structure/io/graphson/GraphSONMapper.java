@@ -100,7 +100,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         if (version == GraphSONVersion.V3_0 || (version == GraphSONVersion.V2_0 && typeInfo != TypeInfo.NO_TYPES)) {
             final GraphSONTypeIdResolver graphSONTypeIdResolver = new GraphSONTypeIdResolver();
             final TypeResolverBuilder typer = new GraphSONTypeResolverBuilder(version)
-                    .typesEmbedding(getTypeInfo())
+                    .typesEmbedding(this.typeInfo)
                     .valuePropertyName(GraphSONTokens.VALUEPROP)
                     .init(JsonTypeInfo.Id.CUSTOM, graphSONTypeIdResolver)
                     .typeProperty(GraphSONTokens.VALUETYPE);
@@ -159,6 +159,23 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
 
     public static Builder build() {
         return new Builder();
+    }
+
+    /**
+     * Create a new Builder from a given {@link GraphSONMapper}.
+     *
+     * @return a new builder, with properties taken from the original mapper already applied.
+     */
+    public static Builder build(final GraphSONMapper mapper) {
+        Builder builder = build();
+
+        builder.customModules = mapper.customModules;
+        builder.version = mapper.version;
+        builder.loadCustomModules = mapper.loadCustomSerializers;
+        builder.normalize = mapper.normalize;
+        builder.typeInfo = mapper.typeInfo;
+
+        return builder;
     }
 
     public TypeInfo getTypeInfo() {

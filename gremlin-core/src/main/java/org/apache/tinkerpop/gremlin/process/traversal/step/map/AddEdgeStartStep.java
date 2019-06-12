@@ -19,7 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.step.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -33,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -50,7 +50,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AddEdgeStartStep extends AbstractStep<Edge, Edge>
+public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
         implements Mutating<Event.EdgeAddedEvent>, TraversalParent, Scoping, FromToModulating {
 
     private static final String FROM = Graph.Hidden.hide("from");
@@ -117,7 +117,8 @@ public final class AddEdgeStartStep extends AbstractStep<Edge, Edge>
             final String edgeLabel = (String) this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
             final Edge edge = fromVertex.addEdge(edgeLabel, toVertex, this.parameters.getKeyValues(traverser, TO, FROM, T.label));
             if (callbackRegistry != null) {
-                final Event.EdgeAddedEvent vae = new Event.EdgeAddedEvent(DetachedFactory.detach(edge, true));
+                final EventStrategy eventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
+                final Event.EdgeAddedEvent vae = new Event.EdgeAddedEvent(eventStrategy.detach(edge));
                 callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
             }
             return generator.generate(edge, this, 1L);

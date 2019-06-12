@@ -51,6 +51,8 @@ describe('API', function () {
     assert.strictEqual(typeof glvModule.process.scope, 'object');
     assert.strictEqual(typeof glvModule.process.t, 'object');
     assert.ok(glvModule.process.statics);
+    validateConstructor(glvModule.process, 'AnonymousTraversalSource');
+    assert.strictEqual(typeof glvModule.process.traversal, 'function');
   });
   it('should expose fields under structure', function () {
     assert.ok(glvModule.structure);
@@ -66,10 +68,16 @@ describe('API', function () {
   });
   it('should expose fields under driver', function () {
     assert.ok(glvModule.driver);
-    assert.strictEqual(typeof glvModule.driver.RemoteConnection, 'function');
-    assert.strictEqual(typeof glvModule.driver.RemoteStrategy, 'function');
-    assert.strictEqual(typeof glvModule.driver.RemoteTraversal, 'function');
-    assert.strictEqual(typeof glvModule.driver.DriverRemoteConnection, 'function');
-    assert.strictEqual(glvModule.driver.DriverRemoteConnection.name, 'DriverRemoteConnection');
+    validateConstructor(glvModule.driver, 'RemoteConnection');
+    validateConstructor(glvModule.driver, 'RemoteStrategy');
+    validateConstructor(glvModule.driver, 'RemoteTraversal');
+    validateConstructor(glvModule.driver, 'DriverRemoteConnection');
+    validateConstructor(glvModule.driver, 'Client');
+    validateConstructor(glvModule.driver, 'ResultSet');
   });
 });
+
+function validateConstructor(parent, name) {
+  assert.strictEqual(typeof parent[name], 'function');
+  assert.strictEqual(parent[name].name, name);
+}

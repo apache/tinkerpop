@@ -24,6 +24,7 @@
 
 const utils = require('../utils');
 const itemDone = Object.freeze({ value: null, done: true });
+const asyncIteratorSymbol = Symbol.asyncIterator || Symbol('@@asyncIterator');
 
 class Traversal {
   constructor(graph, traversalStrategies, bytecode) {
@@ -35,6 +36,13 @@ class Traversal {
     this.sideEffects = null;
     this._traversalStrategiesPromise = null;
     this._traversersIteratorIndex = 0;
+  }
+
+  /**
+   * Async iterable method implementation.
+   */
+  [asyncIteratorSymbol]() {
+    return this;
   }
 
   /** @returns {Bytecode} */
@@ -62,6 +70,7 @@ class Traversal {
    * @returns {Promise}
    */
   iterate() {
+    this.bytecode.addStep('none');
     return this._applyStrategies().then(() => {
       let it;
       while ((it = this._getNext()) && !it.done) {
@@ -111,6 +120,15 @@ class Traversal {
   };
 }
 
+<% tokens.each { k,v -> %>
+class <%= k %> {
+<% v.each {a,b -> %>
+ static get <%= a %>() {
+   return "<%= b %>"
+ }
+<% } %>}
+<% } %>
+
 class P {
   /**
    * Represents an operation.
@@ -140,7 +158,24 @@ class P {
   or(arg) {
     return new P('or', this, arg);
   }
-<% pmethods.each{ method -> %>
+
+  static within(...args) {
+    if (args.length === 1 && Array.isArray(args[0])) {
+      return new P("within", args[0], null);
+    } else {
+      return new P("within", args, null);
+    }
+  }
+
+  static without(...args) {
+    if (args.length === 1 && Array.isArray(args[0])) {
+      return new P("without", args[0], null);
+    } else {
+      return new P("without", args, null);
+    }
+  }
+
+<% pmethods.findAll{!(it in ["within","without"])}.each{ method -> %>
   /** @param {...Object} args */
   static <%= toJs.call(method) %>(...args) {
     return createP('<%= method %>', args);
@@ -153,6 +188,48 @@ function createP(operator, args) {
   return new (Function.prototype.bind.apply(P, args));
 }
 
+class TextP {
+  /**
+   * Represents an operation.
+   * @constructor
+   */
+  constructor(operator, value, other) {
+    this.operator = operator;
+    this.value = value;
+    this.other = other;
+  }
+
+  /**
+   * Returns the string representation of the instance.
+   * @returns {string}
+   */
+  toString() {
+    if (this.other === undefined) {
+      return this.operator + '(' + this.value + ')';
+    }
+    return this.operator + '(' + this.value + ', ' + this.other + ')';
+  }
+
+  and(arg) {
+    return new P('and', this, arg);
+  }
+
+  or(arg) {
+    return new P('or', this, arg);
+  }
+<% tpmethods.each{ method -> %>
+  /** @param {...Object} args */
+  static <%= toJs.call(method) %>(...args) {
+    return createTextP('<%= method %>', args);
+  }
+<% } %>
+}
+
+function createTextP(operator, args) {
+  args.unshift(null, operator);
+  return new (Function.prototype.bind.apply(TextP, args));
+}
+
 class Traverser {
   constructor(object, bulk) {
     this.object = object;
@@ -163,6 +240,10 @@ class Traverser {
 class TraversalSideEffects {
 
 }
+
+const withOptions = {
+  <%= withOptions.collect { it.name + ": " + it.value }.join(",\n  ")%>
+};
 
 function toEnum(typeName, keys) {
   const result = {};
@@ -190,6 +271,9 @@ class EnumValue {
 module.exports = {
   EnumValue,
   P,
+  TextP,
+  withOptions,
+  IO,
   Traversal,
   TraversalSideEffects,
   Traverser<%

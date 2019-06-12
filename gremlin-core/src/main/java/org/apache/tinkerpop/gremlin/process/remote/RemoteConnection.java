@@ -18,11 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.remote;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
+import java.lang.reflect.Constructor;
 import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 
@@ -36,42 +37,32 @@ import java.util.concurrent.CompletableFuture;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface RemoteConnection extends AutoCloseable {
-
-    /**
-     * @deprecated As of release 3.2.2, replaced by {@link #submitAsync(Bytecode)}.
-     */
-    @Deprecated
-    public <E> Iterator<Traverser.Admin<E>> submit(final Traversal<?, E> traversal) throws RemoteConnectionException;
-
-    /**
-     * Submits {@link Traversal} {@link Bytecode} to a server and returns a {@link RemoteTraversal}.
-     * The {@link RemoteTraversal} is an abstraction over two types of results that can be returned as part of the
-     * response from the server: the results of the {@link Traversal} itself and the side-effects that it produced.
-     *
-     * @deprecated As of release 3.2.4, replaced by {@link #submitAsync(Bytecode)}.
-     */
-    @Deprecated
-    public <E> RemoteTraversal<?,E> submit(final Bytecode bytecode) throws RemoteConnectionException;
+    public static final String GREMLIN_REMOTE = "gremlin.remote.";
+    public static final String GREMLIN_REMOTE_CONNECTION_CLASS = GREMLIN_REMOTE + "remoteConnectionClass";
 
     /**
      * Submits {@link Traversal} {@link Bytecode} to a server and returns a promise of a {@link RemoteTraversal}.
      * The {@link RemoteTraversal} is an abstraction over two types of results that can be returned as part of the
      * response from the server: the results of the {@link Traversal} itself and the side-effects that it produced.
-     * <p/>
-     * The default implementation calls the {@link #submit(Bytecode)} method for backward compatibility, but generally
-     * speaking this method should be implemented directly as {@link #submit(Bytecode)} is not called directly by
-     * any part of TinkerPop. Even if the {@code RemoteConnection} itself is not capable of asynchronous behaviour, it
-     * should simply implement this method in a blocking form.
      */
-    public default <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final Bytecode bytecode) throws RemoteConnectionException {
-        // default implementation for backward compatibility to 3.2.4 - this method will probably just become
-        // the new submit() in 3.3.x when the deprecation is removed
-        final CompletableFuture<RemoteTraversal<?, E>> promise = new CompletableFuture<>();
+    public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final Bytecode bytecode) throws RemoteConnectionException;
+
+    /**
+     * Create a {@link RemoteConnection} from a {@code Configuration} object. The configuration must contain a
+     * {@code gremlin.remote.remoteConnectionClass} key which is the fully qualified class name of a
+     * {@link RemoteConnection} class.
+     */
+    public static RemoteConnection from(final Configuration conf) {
+        if (!conf.containsKey(RemoteConnection.GREMLIN_REMOTE_CONNECTION_CLASS))
+            throw new IllegalArgumentException("Configuration must contain the '" + GREMLIN_REMOTE_CONNECTION_CLASS + "' key");
+
         try {
-            promise.complete(submit(bytecode));
-        } catch (Exception t) {
-            promise.completeExceptionally(t);
+            final Class<? extends RemoteConnection> clazz = Class.forName(
+                    conf.getString(GREMLIN_REMOTE_CONNECTION_CLASS)).asSubclass(RemoteConnection.class);
+            final Constructor<? extends RemoteConnection> ctor = clazz.getConstructor(Configuration.class);
+            return ctor.newInstance(conf);
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
         }
-        return promise;
     }
 }

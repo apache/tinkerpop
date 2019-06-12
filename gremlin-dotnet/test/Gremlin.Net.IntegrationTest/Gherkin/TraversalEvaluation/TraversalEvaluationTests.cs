@@ -23,8 +23,9 @@
 
 using System;
 using System.Linq;
-using Gremlin.Net.Structure;
 using Xunit;
+
+using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 {
@@ -87,7 +88,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 //                Tuple.Create("g.V().constant(123L)", 2), // Can be parsed using the new type-safe API
                 Tuple.Create("g.V().has(\"no\").count()", 3),
                 Tuple.Create("g.V().values(\"age\")", 2),
-                Tuple.Create("g.V().valueMap(true, \"name\", \"age\")", 2),
+                Tuple.Create("g.V().valueMap(\"name\", \"age\").with(WithOptions.tokens)", 3),
                 Tuple.Create("g.V().where(__.in(\"created\").count().is(1)).values(\"name\")", 3),
                 Tuple.Create("g.V().count(Scope.local)", 2),
                 Tuple.Create("g.V().values(\"age\").is(P.lte(30))", 3),
@@ -102,7 +103,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 Tuple.Create("g.V().as(\"a\").out().as(\"a\").out().as(\"a\").select(\"a\").by(__.unfold().values(\"name\").fold()).tail(Scope.local, 2)", 9),
                 Tuple.Create("g.V().coin(1.0)", 2)
             };
-            var g = new Graph().Traversal();
+            var g = Traversal();
             foreach (var tuple in traversalTexts)
             {
                 var traversal = TraversalParser.GetTraversal(tuple.Item1, g, null);

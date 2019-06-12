@@ -194,6 +194,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <returns>The fully drained traversal.</returns>
         public ITraversal<S, E> Iterate()
         {
+            Bytecode.AddStep("none");
             while (MoveNext())
             {
             }

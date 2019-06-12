@@ -32,9 +32,11 @@ if six.PY3:
     ListType = list
     DictType = dict
     SetType = set
+    ByteBufferType = bytes
 else:
     long = long
     SetType = set
+    ByteBufferType = bytearray
     from types import FloatType
     from types import IntType
     from types import LongType
@@ -49,6 +51,28 @@ class timestamp(float):
     in a GLV script to make sure the value is serialized as a GraphSON timestamp.
     """
     pass
+
+
+class SingleByte(int):
+    """
+    Provides a way to pass a single byte via GraphSON.
+    """
+    def __new__(cls, b):
+        if -128 <= b < 128:
+            int.__new__(cls, b)
+        else:
+            raise ValueError("value must be between -128 and 127 inclusive")
+
+
+class SingleChar(str):
+    """
+    Provides a way to pass a single character via GraphSON.
+    """
+    def __new__(cls, c):
+        if len(b) == 1:
+            str.__new__(cls, c)
+        else:
+            raise ValueError("string must contain a single character")
 
 
 staticMethods = {}

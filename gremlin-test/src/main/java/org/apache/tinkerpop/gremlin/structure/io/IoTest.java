@@ -19,10 +19,7 @@
 package org.apache.tinkerpop.gremlin.structure.io;
 
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
-import org.apache.tinkerpop.gremlin.FeatureRequirement;
-import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.*;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -92,8 +89,10 @@ import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexProper
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES;
 import static org.apache.tinkerpop.gremlin.structure.io.IoCore.graphson;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
@@ -104,10 +103,93 @@ import static org.junit.Assume.assumeThat;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(Enclosed.class)
+@IgnoreIteratorLeak
 public class IoTest {
     private static final Logger logger = LoggerFactory.getLogger(IoTest.class);
 
+    private static final String CLASSIC_GRAPH_WITH_COLOR = "<?xml version=\"1.0\" ?>\n" +
+            "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.1/graphml.xsd\">\n" +
+            "    <key id=\"age\" for=\"node\" attr.name=\"age\" attr.type=\"int\"></key>\n" +
+            "    <key id=\"colorV\" for=\"node\" attr.name=\"color\" attr.type=\"string\"></key>\n" +
+            "    <key id=\"labelV\" for=\"node\" attr.name=\"labelV\" attr.type=\"string\"></key>\n" +
+            "    <key id=\"lang\" for=\"node\" attr.name=\"lang\" attr.type=\"string\"></key>\n" +
+            "    <key id=\"name\" for=\"node\" attr.name=\"name\" attr.type=\"string\"></key>\n" +
+            "    <key id=\"colorE\" for=\"edge\" attr.name=\"color\" attr.type=\"string\"></key>\n" +
+            "    <key id=\"labelE\" for=\"edge\" attr.name=\"labelE\" attr.type=\"string\"></key>\n" +
+            "    <key id=\"weight\" for=\"edge\" attr.name=\"weight\" attr.type=\"float\"></key>\n" +
+            "    <graph id=\"G\" edgedefault=\"directed\">\n" +
+            "        <node id=\"1\">\n" +
+            "            <data key=\"labelV\">vertex</data>\n" +
+            "            <data key=\"age\">29</data>\n" +
+            "            <data key=\"colorV\">#6495ed</data>\n" +
+            "            <data key=\"name\">marko</data>\n" +
+            "        </node>\n" +
+            "        <node id=\"2\">\n" +
+            "            <data key=\"labelV\">vertex</data>\n" +
+            "            <data key=\"age\">27</data>\n" +
+            "            <data key=\"colorV\">#6495ed</data>\n" +
+            "            <data key=\"name\">vadas</data>\n" +
+            "        </node>\n" +
+            "        <node id=\"3\">\n" +
+            "            <data key=\"labelV\">vertex</data>\n" +
+            "            <data key=\"lang\">java</data>\n" +
+            "            <data key=\"colorV\">#6495ed</data>\n" +
+            "            <data key=\"name\">lop</data>\n" +
+            "        </node>\n" +
+            "        <node id=\"4\">\n" +
+            "            <data key=\"labelV\">vertex</data>\n" +
+            "            <data key=\"age\">32</data>\n" +
+            "            <data key=\"colorV\">#6495ed</data>\n" +
+            "            <data key=\"name\">josh</data>\n" +
+            "        </node>\n" +
+            "        <node id=\"5\">\n" +
+            "            <data key=\"labelV\">vertex</data>\n" +
+            "            <data key=\"lang\">java</data>\n" +
+            "            <data key=\"colorV\">#6495ed</data>\n" +
+            "            <data key=\"name\">ripple</data>\n" +
+            "        </node>\n" +
+            "        <node id=\"6\">\n" +
+            "            <data key=\"labelV\">vertex</data>\n" +
+            "            <data key=\"age\">35</data>\n" +
+            "            <data key=\"colorV\">#6495ed</data>\n" +
+            "            <data key=\"name\">peter</data>\n" +
+            "        </node>\n" +
+            "        <edge id=\"10\" source=\"4\" target=\"5\">\n" +
+            "            <data key=\"labelE\">created</data>\n" +
+            "            <data key=\"colorE\">#ee0000</data>\n" +
+            "            <data key=\"weight\">1.0</data>\n" +
+            "        </edge>\n" +
+            "        <edge id=\"11\" source=\"4\" target=\"3\">\n" +
+            "            <data key=\"labelE\">created</data>\n" +
+            "            <data key=\"colorE\">#ee0000</data>\n" +
+            "            <data key=\"weight\">0.4</data>\n" +
+            "        </edge>\n" +
+            "        <edge id=\"12\" source=\"6\" target=\"3\">\n" +
+            "            <data key=\"labelE\">created</data>\n" +
+            "            <data key=\"colorE\">#ee0000</data>\n" +
+            "            <data key=\"weight\">0.2</data>\n" +
+            "        </edge>\n" +
+            "        <edge id=\"7\" source=\"1\" target=\"2\">\n" +
+            "            <data key=\"labelE\">knows</data>\n" +
+            "            <data key=\"colorE\">#ee0000</data>\n" +
+            "            <data key=\"weight\">0.5</data>\n" +
+            "        </edge>\n" +
+            "        <edge id=\"8\" source=\"1\" target=\"4\">\n" +
+            "            <data key=\"labelE\">knows</data>\n" +
+            "            <data key=\"colorE\">#ee0000</data>\n" +
+            "            <data key=\"weight\">1.0</data>\n" +
+            "        </edge>\n" +
+            "        <edge id=\"9\" source=\"1\" target=\"3\">\n" +
+            "            <data key=\"labelE\">created</data>\n" +
+            "            <data key=\"colorE\">#ee0000</data>\n" +
+            "            <data key=\"weight\">0.4</data>\n" +
+            "        </edge>\n" +
+            "    </graph>\n" +
+            "</graphml>";
+
+    @IgnoreIteratorLeak
     public static class GraphMLTest extends AbstractGremlinTest {
+
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
@@ -205,6 +287,39 @@ public class IoTest {
             assertEquals(2, IteratorUtils.count(graph.vertices()));
         }
 
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_REMOVE_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_VERTICES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+        @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_STRING_VALUES)
+        public void shouldReadGraphMLWithCommonVertexAndEdgePropertyNames() throws IOException {
+            final GraphReader reader = GraphMLReader.build().create();
+            try (final InputStream stream = new ByteArrayInputStream(CLASSIC_GRAPH_WITH_COLOR.getBytes("UTF-8"))) {
+                reader.readGraph(stream, graph);
+            }
+
+            // there is also a "color" property on this dataset that is on both edges and vertices
+            graph.vertices().forEachRemaining(v -> assertEquals("#6495ed", v.value("color")));
+            graph.edges().forEachRemaining(e -> assertEquals("#ee0000", e.value("color")));
+
+            final GraphWriter writer = GraphMLWriter.build().create();
+            try (final OutputStream out = new ByteArrayOutputStream()) {
+                writer.writeGraph(out, graph);
+
+                graph.vertices().forEachRemaining(Element::remove);
+                try (final InputStream stream = new ByteArrayInputStream(((ByteArrayOutputStream) out).toByteArray())) {
+                    reader.readGraph(stream, graph);
+                }
+
+                // there is also a "color" property on this dataset that is on both edges and vertices
+                graph.vertices().forEachRemaining(v -> assertEquals("#6495ed", v.value("color")));
+                graph.edges().forEachRemaining(e -> assertEquals("#ee0000", e.value("color")));
+            }
+        }
 
         @Test(expected = NumberFormatException.class)
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
@@ -239,9 +354,20 @@ public class IoTest {
             try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
                 final GraphMLWriter w = GraphMLWriter.build().normalize(true).create();
                 w.writeGraph(bos, graph);
-
                 final String expected = streamToString(IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "tinkerpop-classic-normalized.xml"));
                 assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
+            }
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.CREW)
+        public void shouldNotWriteGraphMLFromGraphWithMultiProperties() throws Exception {
+            try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                final GraphMLWriter w = GraphMLWriter.build().create();
+                w.writeGraph(bos, graph);
+                fail("Should not be able to write multi-properties to GraphML");
+            } catch (IllegalStateException iae) {
+                assertThat(iae.getMessage(), containsString("multi-properties are not directly supported by GraphML format"));
             }
         }
 

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
@@ -27,7 +28,9 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
  * methods statically.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.4.0, replaced by {@link GraphTraversalSource#io(String)}.
  */
+@Deprecated
 public final class IoCore {
 
     private IoCore() {}

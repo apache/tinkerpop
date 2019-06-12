@@ -43,10 +43,21 @@ import static org.mockito.Mockito.when;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ParametersTest {
+
     @Test
     public void shouldGetKeyValuesEmpty() {
         final Parameters parameters = new Parameters();
         assertThat(Arrays.equals(parameters.getKeyValues(mock(Traverser.Admin.class)), new Object[0]), is(true));
+    }
+
+    @Test
+    public void shouldAllowNullValues() {
+        final Parameters parameters = new Parameters();
+        parameters.set(null, "a", null, "b", "bat", "c", "cat");
+
+        final Object[] params = parameters.getKeyValues(mock(Traverser.Admin.class));
+        assertEquals(6, params.length);
+        assertThat(Arrays.equals(new Object[] {"a", null, "b", "bat", "c", "cat"}, params), is(true));
     }
 
     @Test

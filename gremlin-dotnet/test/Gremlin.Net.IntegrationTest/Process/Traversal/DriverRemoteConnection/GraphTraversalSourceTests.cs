@@ -23,7 +23,6 @@
 
 using System.Collections.Generic;
 using Gremlin.Net.Process.Traversal;
-using Gremlin.Net.Structure;
 using Xunit;
 
 namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
@@ -35,9 +34,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         [Fact]
         public void ShouldUseSideEffectSpecifiedInWithSideEffect()
         {
-            var graph = new Graph();
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = graph.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
 
             var results = g.WithSideEffect("a", new List<string> {"josh", "peter"})
                 .V(1)

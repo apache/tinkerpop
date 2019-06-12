@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.4.0-SNAPSHOT</version>
+        <version>3.5.0-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-javascript</artifactId>
     <name>Apache TinkerPop :: Gremlin Javascript</name>
@@ -34,13 +34,6 @@ limitations under the License.
         <directory>${basedir}/target</directory>
         <finalName>${project.artifactId}-${project.version}</finalName>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
             <plugin>
                 <!--
                 Use gmavenplus-plugin to:
@@ -65,7 +58,7 @@ limitations under the License.
                         <groupId>org.codehaus.groovy</groupId>
                         <artifactId>groovy-all</artifactId>
                         <version>${groovy.version}</version>
-                        <classifier>indy</classifier>
+                        <type>pom</type>
                         <scope>runtime</scope>
                     </dependency>
                 </dependencies>
@@ -157,7 +150,6 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -169,23 +161,33 @@ limitations under the License.
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
-                <version>1.6</version>
+                <version>1.7.6</version>
                 <executions>
                     <execution>
                         <id>install node and npm</id>
-                        <phase>generate-test-resources</phase>
+                        <phase>generate-resources</phase>
                         <goals>
                             <goal>install-node-and-npm</goal>
                         </goals>
                     </execution>
                     <execution>
                         <id>npm install</id>
-                        <phase>generate-test-resources</phase>
+                        <phase>generate-resources</phase>
                         <goals>
                             <goal>npm</goal>
                         </goals>
                         <configuration>
                             <arguments>install</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>grunt jsdoc</id>
+                        <goals>
+                            <goal>grunt</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <arguments>jsdoc</arguments>
                         </configuration>
                     </execution>
                     <execution>
@@ -195,7 +197,8 @@ limitations under the License.
                             <goal>npm</goal>
                         </goals>
                         <configuration>
-                            <arguments>test</arguments>
+                            <skip>${skipTests}</skip>
+                            <arguments>test --exit</arguments>
                             <failOnError>true</failOnError>
                         </configuration>
                     </execution>
@@ -206,20 +209,41 @@ limitations under the License.
                             <goal>npm</goal>
                         </goals>
                         <configuration>
+                            <skip>${skipTests}</skip>
                             <arguments>run-script features</arguments>
                             <failOnError>true</failOnError>
                         </configuration>
                     </execution>
                 </executions>
                 <configuration>
-                    <skip>${skipTests}</skip>
                     <workingDirectory>src/main/javascript/gremlin-javascript</workingDirectory>
                     <nodeVersion>v6.12.3</nodeVersion>
                 </configuration>
             </plugin>
             <!--
-            there is no point to deploying the jvm stuff - there is no java source really - just poms
+            there is no point to building/deploying the jvm stuff - there is no java source really - just poms
             -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <configuration>
+                    <skipSource>true</skipSource>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>

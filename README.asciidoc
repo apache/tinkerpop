@@ -20,7 +20,7 @@ image:https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/imag
 
 === Documentation
 
-TinkerPop3 provides graph computing capabilities for both graph databases (OLTP) and graph analytic systems (OLAP).
+Apache TinkerPop™ provides graph computing capabilities for both graph databases (OLTP) and graph analytic systems (OLAP).
 
 * link:http://tinkerpop.apache.org/[homepage (downloads)]
 * link:http://tinkerpop.apache.org/docs/current/reference/[reference documentation]

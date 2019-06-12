@@ -23,13 +23,42 @@
 'use strict';
 
 const assert = require('assert');
-const graphModule = require('../../lib/structure/graph');
-const Graph = graphModule.Graph;
-const Vertex = graphModule.Vertex;
-const utils = require('../../lib/utils');
+const { Vertex } = require('../../lib/structure/graph');
+const { traversal } = require('../../lib/process/anonymous-traversal');
+const { GraphTraversalSource } = require('../../lib/process/graph-traversal');
+const { GraphTraversal } = require('../../lib/process/graph-traversal');
+const Bytecode = require('../../lib/process/bytecode');
 const helper = require('../helper');
 
 let connection;
+
+class SocialTraversal extends GraphTraversal {
+  constructor(graph, traversalStrategies, bytecode) {
+    super(graph, traversalStrategies, bytecode);
+  }
+
+  aged(age) {
+    return this.has('person', 'age', age);
+  }
+}
+
+class SocialTraversalSource extends GraphTraversalSource {
+  constructor(graph, traversalStrategies, bytecode) {
+    super(graph, traversalStrategies, bytecode, SocialTraversalSource, SocialTraversal);
+  }
+
+  person(name) {
+    return this.V().has('person', 'name', name);
+  }
+}
+
+function anonymous() {
+  return new SocialTraversal(null, null, new Bytecode());
+}
+
+function aged(age) {
+  return anonymous().aged(age);
+}
 
 describe('Traversal', function () {
   before(function () {
@@ -41,7 +70,7 @@ describe('Traversal', function () {
   });
   describe('#toList()', function () {
     it('should submit the traversal and return a list', function () {
-      var g = new Graph().traversal().withRemote(connection);
+      var g = traversal().withRemote(connection);
       return g.V().toList().then(function (list) {
         assert.ok(list);
         assert.strictEqual(list.length, 6);
@@ -51,19 +80,38 @@ describe('Traversal', function () {
   });
   describe('#next()', function () {
     it('should submit the traversal and return an iterator', function () {
-      var g = new Graph().traversal().withRemote(connection);
-      var traversal = g.V().count();
-      return traversal.next()
+      var g = traversal().withRemote(connection);
+      var t = g.V().count();
+      return t.next()
         .then(function (item) {
           assert.ok(item);
           assert.strictEqual(item.done, false);
           assert.strictEqual(typeof item.value, 'number');
-          return traversal.next();
+          return t.next();
         }).then(function (item) {
           assert.ok(item);
           assert.strictEqual(item.done, true);
           assert.strictEqual(item.value, null);
         });
+    });
+  });
+  describe('dsl', function() {
+    it('should expose DSL methods', function() {
+      const g = traversal(SocialTraversalSource).withRemote(connection);
+      return g.person('marko').aged(29).values('name').toList().then(function (list) {
+          assert.ok(list);
+          assert.strictEqual(list.length, 1);
+          assert.strictEqual(list[0], 'marko');
+        });
+    });
+
+    it('should expose anonymous DSL methods', function() {
+      const g = traversal(SocialTraversalSource).withRemote(connection);
+      return g.person('marko').filter(aged(29)).values('name').toList().then(function (list) {
+        assert.ok(list);
+        assert.strictEqual(list.length, 1);
+        assert.strictEqual(list[0], 'marko');
+      });
     });
   });
 });

@@ -74,13 +74,14 @@ The site will be generated to the `target/site/home` directory.
 [[python-environment]]
 === Python Environment
 
-As of TinkerPop 3.2.2, the build optionally requires link:https://www.python.org/[Python 2.x] to work with the
-`gremlin-python` module. If Python is not installed, TinkerPop will still build with Maven, but native Python tests and
+As of TinkerPop 3.2.2, the build optionally requires link:https://www.python.org/[Python] to build the `gremlin-python`
+module. If Python is not installed, TinkerPop will still build with Maven, but native Python tests and
 Java tests that require Python code will be skipped. Developers should also install link:https://pypi.python.org/pypi/pip[pip]
 and link:https://virtualenv.pypa.io/en/stable/[virtualenv] (version 15.0.2 - older versions may cause build failures).
 
-Once the Python environment is established, the full building and testing of `gremlin-python` may commence. It can be
-done manually from the command line with:
+The build expects two Python executables `python` and `python3` where `python` maps to 2.7.6 and `python3` is 3.4.3 or
+higher. Once the Python environment is established, the full building and testing of `gremlin-python` may commence. It
+can be done manually from the command line with:
 
 [source,text]
 mvn clean install -Pglv-python
@@ -102,7 +103,7 @@ See the <<release-environment,Release Environment>> section for more information
 [[dotnet-environment]]
 === DotNet Environment
 
-The build optionally requires link:https://www.microsoft.com/net/core[.NET Core SDK] (>=2.1.101) to work with the
+The build optionally requires link:https://www.microsoft.com/net/core[.NET Core SDK] (>=2.1.300) to work with the
 `gremlin-dotnet` module. If .NET Core SDK is not installed, TinkerPop will still build with Maven, but .NET projects
 will be skipped.
 
@@ -236,7 +237,9 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 ** Build AsciiDocs (but don't evaluate code blocks in specific files): `bin/process-docs.sh --dryRun docs/src/reference/the-graph.asciidoc,docs/src/tutorial/getting-started,...`
 ** Build AsciiDocs (but evaluate code blocks only in specific files): `bin/process-docs.sh --fullRun docs/src/reference/the-graph.asciidoc,docs/src/tutorial/getting-started,...`
 ** Process a single AsciiDoc file: +pass:[docs/preprocessor/preprocess-file.sh `pwd`/gremlin-console/target/apache-tinkerpop-gremlin-console-*-standalone "" "*" `pwd`/docs/src/xyz.asciidoc]+
-* Build JavaDocs: `mvn process-resources -Djavadoc`
+* Build JavaDocs/JSDoc: `mvn process-resources -Djavadoc`
+** Javadoc to `target/site/apidocs` directory
+** JSDoc to the `gremlin-javascript/src/main/javascript/gremlin-javascript/doc/` directory
 * Check for Apache License headers: `mvn apache-rat:check`
 * Specify the seed used for `Random` in tests `mvn clean install -DtestSeed` - useful when a test fails, the seed will be printed in the build output so that the test can run with the same version of random (look for "TestHelper" logger in output)
 * Check for newer dependencies: `mvn versions:display-dependency-updates` or `mvn versions:display-plugin-updates`
@@ -324,6 +327,6 @@ that:
 . `File | Settings | Compiler | Annotation Processors` has the checkbox with the "Enable annotation processing" checked.
 Intellij should be able to detect the processor automatically on build.
 . The `gremlin-core/target` directory should not be hidden and `target/classes`, `target/generated-sources` and
-`target/generated-test-sources should be marked as "Generated Sources Root". If they are not setup that way by
+`target/generated-test-sources` should be marked as "Generated Sources Root". If they are not setup that way by
 Intellij by default then simply right-click on them use the "Mark Directory with" option to make the appropriate
 selections.

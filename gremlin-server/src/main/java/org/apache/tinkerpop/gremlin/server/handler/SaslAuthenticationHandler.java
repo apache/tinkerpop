@@ -21,8 +21,6 @@ package org.apache.tinkerpop.gremlin.server.handler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.base64.Base64Decoder;
 import io.netty.util.Attribute;
 
 import java.net.InetAddress;
@@ -32,6 +30,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.netty.util.AttributeMap;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -72,15 +71,28 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
         if (msg instanceof RequestMessage){
             final RequestMessage requestMessage = (RequestMessage) msg;
 
-            final Attribute<Authenticator.SaslNegotiator> negotiator = ctx.attr(StateKey.NEGOTIATOR);
-            final Attribute<RequestMessage> request = ctx.attr(StateKey.REQUEST_MESSAGE);
+            final Attribute<Authenticator.SaslNegotiator> negotiator = ((AttributeMap) ctx).attr(StateKey.NEGOTIATOR);
+            final Attribute<RequestMessage> request = ((AttributeMap) ctx).attr(StateKey.REQUEST_MESSAGE);
             if (negotiator.get() == null) {
-                // First time through so save the request and send an AUTHENTICATE challenge with no data
-                negotiator.set(authenticator.newSaslNegotiator(getRemoteInetAddress(ctx)));
-                request.set(requestMessage);
-                final ResponseMessage authenticate = ResponseMessage.build(requestMessage)
-                        .code(ResponseStatusCode.AUTHENTICATE).create();
-                ctx.writeAndFlush(authenticate);
+                try {
+                    // First time through so save the request and send an AUTHENTICATE challenge with no data
+                    negotiator.set(authenticator.newSaslNegotiator(getRemoteInetAddress(ctx)));
+                    request.set(requestMessage);
+                    final ResponseMessage authenticate = ResponseMessage.build(requestMessage)
+                            .code(ResponseStatusCode.AUTHENTICATE).create();
+                    ctx.writeAndFlush(authenticate);
+                } catch (Exception ex) {
+                    // newSaslNegotiator can cause troubles - if we don't catch and respond nicely the driver seems
+                    // to hang until timeout which isn't so nice. treating this like a server error as it means that
+                    // the Authenticator isn't really ready to deal with requests for some reason.
+                    logger.error("{} is not ready to handle requests - check it's configuration or related services",
+                            authenticator.getClass().getSimpleName());
+
+                    final ResponseMessage error = ResponseMessage.build(requestMessage)
+                            .statusMessage("Authenticator is not ready to handle requests")
+                            .code(ResponseStatusCode.SERVER_ERROR).create();
+                    ctx.writeAndFlush(error);
+                }
             } else {
                 if (requestMessage.getOp().equals(Tokens.OPS_AUTHENTICATION) && requestMessage.getArgs().containsKey(Tokens.ARGS_SASL)) {
                     
@@ -105,7 +117,7 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
                             if (authenticationSettings.enableAuditLog) {
                                 String address = ctx.channel().remoteAddress().toString();
                                 if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
-                                String[] authClassParts = authenticator.getClass().toString().split("[.]");
+                                final String[] authClassParts = authenticator.getClass().toString().split("[.]");
                                 auditLogger.info("User {} with address {} authenticated by {}",
                                         user.getName(), address, authClassParts[authClassParts.length - 1]);
                             }
@@ -144,14 +156,14 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
         }
     }
 
-    private InetAddress getRemoteInetAddress(ChannelHandlerContext ctx)
+    private InetAddress getRemoteInetAddress(final ChannelHandlerContext ctx)
     {
-        Channel channel = ctx.channel();
+        final Channel channel = ctx.channel();
 
         if (null == channel)
             return null;
 
-        SocketAddress genericSocketAddr = channel.remoteAddress();
+        final SocketAddress genericSocketAddr = channel.remoteAddress();
 
         if (null == genericSocketAddr || !(genericSocketAddr instanceof InetSocketAddress))
             return null;

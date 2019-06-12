@@ -65,6 +65,11 @@ public enum ResponseStatusCode {
     AUTHENTICATE(407),
 
     /**
+     * The request message contains objects that were not serializable on the client side.
+     */
+    REQUEST_ERROR_SERIALIZATION(497),
+
+    /**
      * The request message was not properly formatted which means it could not be parsed at all or the "op" code was
      * not recognized such that Gremlin Server could properly route it for processing.  Check the message format and
      * retry the request.
@@ -122,5 +127,12 @@ public enum ResponseStatusCode {
 
     public boolean isSuccess() {
         return String.valueOf(this.value).startsWith("2");
+    }
+
+    /**
+     * Indicates whether the status code can only be used in the last response for a particular request.
+     */
+    public boolean isFinalResponse() {
+        return this != PARTIAL_CONTENT && this != AUTHENTICATE;
     }
 }

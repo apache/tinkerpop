@@ -23,11 +23,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.WebSockets;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.IntegrationTest.Util;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Gremlin.Net.IntegrationTest.Driver
@@ -64,6 +66,34 @@ namespace Gremlin.Net.IntegrationTest.Driver
                 var response = await gremlinClient.SubmitWithSingleResultAsync<string>(requestMsg);
 
                 Assert.Equal(responseMsgSize, response.Length);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldReturnResultWithoutDeserializingItForJTokenType()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using (var gremlinClient = new GremlinClient(gremlinServer))
+            {
+                var gremlinScript = "'someString'";
+                
+                var response = await gremlinClient.SubmitWithSingleResultAsync<JToken>(gremlinScript);
+
+                //Expected:
+                /* {
+                  "@type": "g:List",
+                  "@value": [
+                    "someString"
+                  ]
+                }*/
+
+                Assert.IsType<JObject>(response);
+                Assert.Equal("g:List", response["@type"]);
+
+                var jArray = response["@value"] as JArray;
+                Assert.NotNull(jArray);
+                Assert.Equal(1, jArray.Count);
+                Assert.Equal("someString", (jArray[0] as JValue)?.Value);
             }
         }
 
@@ -168,6 +198,22 @@ namespace Gremlin.Net.IntegrationTest.Driver
         }
 
         [Fact]
+        public async Task ShouldReturnResponseAttributes()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using (var gremlinClient = new GremlinClient(gremlinServer))
+            {
+                var requestMsg = _requestMessageProvider.GetDummyMessage();
+                var resultSet = await gremlinClient.SubmitAsync<int>(requestMsg);
+
+                Assert.NotNull(resultSet.StatusAttributes);
+
+                var values= resultSet.StatusAttributes["@value"] as JArray;
+                Assert.True(values.First.ToString().Equals("host"));
+            }
+        }
+
+        [Fact]
         public async Task ShouldThrowOnExecutionOfSimpleInvalidScript()
         {
             var gremlinServer = new GremlinServer(TestHost, TestPort);
@@ -206,6 +252,30 @@ namespace Gremlin.Net.IntegrationTest.Driver
                     await gremlinClient.SubmitWithSingleResultAsync<int>(requestMsg, bindings);
 
                 Assert.Equal(a + b, response);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldConfigureWebSocketOptionsAsSpecified()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            ClientWebSocketOptions optionsSet = null;
+            var expectedKeepAliveInterval = TimeSpan.FromMilliseconds(11);
+            var webSocketConfiguration =
+                new Action<ClientWebSocketOptions>(options =>
+                {
+                    options.UseDefaultCredentials = false;
+                    options.KeepAliveInterval = expectedKeepAliveInterval;
+                    optionsSet = options;
+                });
+            using (var gremlinClient = new GremlinClient(gremlinServer, webSocketConfiguration: webSocketConfiguration))
+            {
+                // send dummy message to create at least one connection
+                await gremlinClient.SubmitAsync(_requestMessageProvider.GetDummyMessage());
+                
+                Assert.NotNull(optionsSet);
+                Assert.False(optionsSet.UseDefaultCredentials);
+                Assert.Equal(expectedKeepAliveInterval, optionsSet.KeepAliveInterval);
             }
         }
     }

@@ -50,9 +50,11 @@ public final class CoalesceStep<S, E> extends FlatMapStep<S, E> implements Trave
 
     @Override
     protected Iterator<E> flatMap(final Traverser.Admin<S> traverser) {
+        final Traverser.Admin<S> innerTraverser = traverser.clone().asAdmin();
+        innerTraverser.setBulk(1L);
         for (final Traversal.Admin<S, E> coalesceTraversal : this.coalesceTraversals) {
             coalesceTraversal.reset();
-            coalesceTraversal.addStart(traverser.split());
+            coalesceTraversal.addStart(innerTraverser.split());
             if (coalesceTraversal.hasNext())
                 return coalesceTraversal;
         }

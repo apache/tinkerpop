@@ -21,13 +21,13 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>gremlin-dotnet</artifactId>
-        <version>3.4.0-SNAPSHOT</version>
+        <version>3.5.0-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-dotnet-source</artifactId>
     <name>Apache TinkerPop :: Gremlin.Net - Source</name>
     <packaging>${packaging.type}</packaging>
     <properties>
-        <nugetVersion>4.4.1</nugetVersion>
+        <nugetVersion>4.9.2</nugetVersion>
         <nugetExe>nuget-${nugetVersion}.exe</nugetExe>
     </properties>
 
@@ -45,7 +45,7 @@ limitations under the License.
                 </executions>
             </plugin>
             <!--
-            there is no point to deploying the jvm stuff - there is no java source really - just poms
+            there is no point to building/deploying the jvm stuff - there is no java source really - just poms
             -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -93,6 +93,70 @@ limitations under the License.
                             <nugetAddEnabled>false</nugetAddEnabled>
                         </configuration>
                     </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>docfx</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+                                        <if>
+                                            <!-- docfx sadly requires mono and nuget at this time:
+                                                 1. https://github.com/dotnet/docfx/issues/3389 (nuget required for a dll not in mono
+                                                 2. https://github.com/dotnet/docfx/issues/718#issuecomment-256700598 (mono workaround) -->
+                                            <and>
+                                                <available file="mono" filepath="${env.PATH}"/>
+                                                <available file="${nugetExe}"/>
+                                            </and>
+                                            <then>
+                                                <if>
+                                                    <available file="docfx/docfx.exe"/>
+                                                    <then>
+                                                        <echo>docfx already downloaded.</echo>
+                                                    </then>
+
+                                                    <else>
+                                                        <exec executable="wget" failonerror="true">
+                                                            <arg line="https://github.com/dotnet/docfx/releases/download/v2.40.2/docfx.zip"/>
+                                                        </exec>
+                                                        <mkdir dir="docfx"/>
+                                                        <exec executable="unzip" failonerror="true">
+                                                            <arg line="docfx.zip -d docfx"/>
+                                                        </exec>
+                                                        <delete file="docfx.zip"/>
+                                                        <exec executable="mono" failonerror="true">
+                                                            <arg line="${nugetExe} install -OutputDirectory docfx SQLitePCLRaw.core -ExcludeVersion"/>
+                                                        </exec>
+                                                        <copy file="docfx/SQLitePCLRaw.core/lib/net45/SQLitePCLRaw.core.dll" todir="docfx"/>
+                                                    </else>
+                                                </if>
+                                                <exec executable="mono" failonerror="true">
+                                                    <arg line="docfx/docfx.exe"/>
+                                                </exec>
+                                            </then>
+                                            <else>
+                                                <echo>Skipping docfx generation as mono and nuget are required.</echo>
+                                                <echo>nuget must be installed as it would if doing a .NET deployment - see the glv-dotnet-deploy Maven profile for more information.</echo>
+                                            </else>
+                                        </if>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>ant-contrib</groupId>
+                                <artifactId>ant-contrib</artifactId>
+                                <version>20020829</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
@@ -131,7 +195,7 @@ limitations under the License.
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <taskdef resource="net/sf/antcontrib/antcontrib.properties" />                                       
                                         <if>
                                             <available file="mono" filepath="${env.PATH}"/>
@@ -156,7 +220,7 @@ limitations under the License.
                                                 <echo>Skipping packaging of Gremlin.Net.Template as mono is not available</echo>
                                             </else>
                                         </if>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                             <execution>
@@ -186,10 +250,10 @@ limitations under the License.
                                         the "ConfigFile" option to nuget.
                                         -->
                                         <exec executable="mono" failonerror="true">
-                                            <arg line="${nugetExe} push Gremlin.Net/bin/Gremlin.Net.*.nupkg -Source https://www.nuget.org/api/v2/package -ConfigFile ${user.home}/.config/NuGet/NuGet.Config"/>
+                                            <arg line="${nugetExe} push Gremlin.Net/bin/Gremlin.Net.${project.version}.nupkg -Source https://api.nuget.org/v3/index.json -ConfigFile ${user.home}/.config/NuGet/NuGet.Config"/>
                                         </exec>
                                         <exec executable="mono" failonerror="true">
-                                            <arg line="${nugetExe} push Gremlin.Net.Template.*.nupkg -Source https://www.nuget.org/api/v2/package -ConfigFile ${user.home}/.config/NuGet/NuGet.Config"/>
+                                            <arg line="${nugetExe} push Gremlin.Net.Template.${project.version}.nupkg -Source https://api.nuget.org/v3/index.json -ConfigFile ${user.home}/.config/NuGet/NuGet.Config"/>
                                         </exec>
                                     </tasks>
                                 </configuration>
@@ -217,6 +281,7 @@ limitations under the License.
                                 <groupId>org.codehaus.groovy</groupId>
                                 <artifactId>groovy-all</artifactId>
                                 <version>${groovy.version}</version>
+                                <type>pom</type>
                                 <scope>runtime</scope>
                             </dependency>
                             <dependency>

@@ -24,8 +24,8 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 
 image:gremlin-io2.png[width=300]
 
-IO features, capabilities and use cases are initially discussed in the TinkerPop
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_gremlin_i_o[Reference Documentation]. This document focuses
+IO features, capabilities and use cases are initially discussed in the Apache TinkerPop™
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#io-step[Reference Documentation]. This document focuses
 more on the details of the implementations for both production and consumption of the various formats. It contains
 samples of the various formats and development details that provide deeper insight for their usage.
 
@@ -34,3 +34,5 @@ include::graphml.asciidoc[]
 include::graphson.asciidoc[]
 
 include::gryo.asciidoc[]
+
+include::graphbinary.asciidoc[]

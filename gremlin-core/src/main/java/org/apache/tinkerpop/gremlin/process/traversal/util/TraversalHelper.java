@@ -40,6 +40,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
@@ -51,6 +53,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -126,6 +129,9 @@ public final class TraversalHelper {
                         state = 'e';
                 }
                 states.clear();
+                if (step instanceof SelectStep || step instanceof SelectOneStep) {
+                    states.add('u');
+                }
                 for (final Traversal.Admin<?, ?> local : ((TraversalParent) step).getGlobalChildren()) {
                     final char s = isLocalStarGraph(local, currState);
                     if ('x' == s) return 'x';
@@ -579,7 +585,7 @@ public final class TraversalHelper {
     }
 
     public static Set<Scoping.Variable> getVariableLocations(final Traversal.Admin<?, ?> traversal) {
-        return TraversalHelper.getVariableLocations(new HashSet<>(), traversal);
+        return TraversalHelper.getVariableLocations(EnumSet.noneOf(Scoping.Variable.class), traversal);
     }
 
     private static Set<Scoping.Variable> getVariableLocations(final Set<Scoping.Variable> variables, final Traversal.Admin<?, ?> traversal) {

@@ -67,6 +67,11 @@ class GraphTraversalSource(object):
         source.bytecode.add_source("withStrategies", *args)
         return source
 
+    def with_(self, *args):
+        source = self.get_graph_traversal_source()
+        source.bytecode.add_source("with", *args)
+        return source
+
     def withoutStrategies(self, *args):
         source = self.get_graph_traversal_source()
         source.bytecode.add_source("withoutStrategies", *args)
@@ -77,9 +82,9 @@ class GraphTraversalSource(object):
         source = self.get_graph_traversal_source()
         source.traversal_strategies.add_strategies([RemoteStrategy(remote_connection)])
         return source
+
     def withComputer(self,graph_computer=None, workers=None, result=None, persist=None, vertices=None, edges=None, configuration=None):
         return self.withStrategies(VertexProgramStrategy(graph_computer,workers,result,persist,vertices,edges,configuration))
-
 
     def E(self, *args):
         traversal = self.get_graph_traversal()
@@ -104,6 +109,11 @@ class GraphTraversalSource(object):
     def inject(self, *args):
         traversal = self.get_graph_traversal()
         traversal.bytecode.add_step("inject", *args)
+        return traversal
+
+    def io(self, *args):
+        traversal = self.get_graph_traversal()
+        traversal.bytecode.add_step("io", *args)
         return traversal
 
 
@@ -187,6 +197,10 @@ class GraphTraversal(Traversal):
 
     def coin(self, *args):
         self.bytecode.add_step("coin", *args)
+        return self
+
+    def connectedComponent(self, *args):
+        self.bytecode.add_step("connectedComponent", *args)
         return self
 
     def constant(self, *args):
@@ -279,6 +293,10 @@ class GraphTraversal(Traversal):
 
     def in_(self, *args):
         self.bytecode.add_step("in", *args)
+        return self
+
+    def index(self, *args):
+        self.bytecode.add_step("index", *args)
         return self
 
     def inject(self, *args):
@@ -409,6 +427,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("range", *args)
         return self
 
+    def read(self, *args):
+        self.bytecode.add_step("read", *args)
+        return self
+
     def repeat(self, *args):
         self.bytecode.add_step("repeat", *args)
         return self
@@ -423,6 +445,10 @@ class GraphTraversal(Traversal):
 
     def select(self, *args):
         self.bytecode.add_step("select", *args)
+        return self
+
+    def shortestPath(self, *args):
+        self.bytecode.add_step("shortestPath", *args)
         return self
 
     def sideEffect(self, *args):
@@ -507,6 +533,10 @@ class GraphTraversal(Traversal):
 
     def with_(self, *args):
         self.bytecode.add_step("with", *args)
+        return self
+
+    def write(self, *args):
+        self.bytecode.add_step("write", *args)
         return self
 
 
@@ -667,6 +697,10 @@ class __(object):
     @classmethod
     def in_(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).in_(*args)
+
+    @classmethod
+    def index(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).index(*args)
 
     @classmethod
     def inject(cls, *args):
@@ -1021,6 +1055,10 @@ statics.add_static('inV', inV)
 def in_(*args):
     return __.in_(*args)
 statics.add_static('in_', in_)
+
+def index(*args):
+    return __.index(*args)
+statics.add_static('index', index)
 
 def inject(*args):
     return __.inject(*args)

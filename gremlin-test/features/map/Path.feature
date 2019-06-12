@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-Feature: Step - count()
+Feature: Step - path()
 
   Scenario: g_VX1X_name_path
     Given the modern graph

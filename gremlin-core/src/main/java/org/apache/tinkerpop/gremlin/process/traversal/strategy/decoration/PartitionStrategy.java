@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
@@ -43,6 +44,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -180,7 +182,8 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                     // as this is a value map, replace that step with propertiesMap() that returns PropertyType.VALUE.
                     // from there, add the filter as shown above and then unwrap the properties as they would have
                     // been done under valueMap()
-                    final PropertyMapStep propertyMapStep = new PropertyMapStep(traversal, step.isIncludeTokens(), PropertyType.PROPERTY, step.getPropertyKeys());
+                    final PropertyMapStep propertyMapStep = new PropertyMapStep(traversal, PropertyType.PROPERTY, step.getPropertyKeys());
+                    propertyMapStep.configure(WithOptions.tokens, step.getIncludedTokens());
                     TraversalHelper.replaceStep(step, propertyMapStep, traversal);
 
                     final LambdaMapStep mapPropertiesFilterStep = new LambdaMapStep<>(traversal, new MapPropertiesFilter());
@@ -195,7 +198,8 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
 
         final List<Step> stepsToInsertPropertyMutations = traversal.getSteps().stream().filter(step ->
                 step instanceof AddEdgeStep || step instanceof AddVertexStep ||
-                        step instanceof AddVertexStartStep || (includeMetaProperties && step instanceof AddPropertyStep)
+                step instanceof AddEdgeStartStep || step instanceof AddVertexStartStep ||
+                (includeMetaProperties && step instanceof AddPropertyStep)
         ).collect(Collectors.toList());
 
         stepsToInsertPropertyMutations.forEach(step -> {
@@ -212,20 +216,24 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                     final Parameters parameters = ((Parameterizing) step).getParameters();
                     final Map<Object, List<Object>> params = parameters.getRaw();
                     params.forEach((k, v) -> {
-                        final List<Step> addPropertyStepsToAppend = new ArrayList<>(v.size());
-                        final VertexProperty.Cardinality cardinality = vertexFeatures.getCardinality((String) k);
-                        v.forEach(o -> {
-                            final AddPropertyStep addPropertyStep = new AddPropertyStep(traversal, cardinality, k, o);
-                            addPropertyStep.configure(partitionKey, writePartition);
-                            addPropertyStepsToAppend.add(addPropertyStep);
 
-                            // need to remove the parameter from the AddVertex/StartStep because it's now being added
-                            // via the AddPropertyStep
-                            parameters.remove(k);
-                        });
+                        // need to filter out T based keys
+                        if (k instanceof String) {
+                            final List<Step> addPropertyStepsToAppend = new ArrayList<>(v.size());
+                            final VertexProperty.Cardinality cardinality = vertexFeatures.getCardinality((String) k);
+                            v.forEach(o -> {
+                                final AddPropertyStep addPropertyStep = new AddPropertyStep(traversal, cardinality, k, o);
+                                addPropertyStep.configure(partitionKey, writePartition);
+                                addPropertyStepsToAppend.add(addPropertyStep);
 
-                        Collections.reverse(addPropertyStepsToAppend);
-                        addPropertyStepsToAppend.forEach(s -> TraversalHelper.insertAfterStep(s, step, traversal));
+                                // need to remove the parameter from the AddVertex/StartStep because it's now being added
+                                // via the AddPropertyStep
+                                parameters.remove(k);
+                            });
+
+                            Collections.reverse(addPropertyStepsToAppend);
+                            addPropertyStepsToAppend.forEach(s -> TraversalHelper.insertAfterStep(s, step, traversal));
+                        }
                     });
                 }
             }

@@ -39,9 +39,11 @@ import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConnectedComponentTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PageRankTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PeerPressureTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ShortestPathTest;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.SparkContextStorageCheck;
@@ -64,6 +66,7 @@ import java.util.Set;
 public class SparkHadoopGraphProvider extends AbstractFileGraphProvider {
 
     static final String PREVIOUS_SPARK_PROVIDER = "previous.spark.provider";
+    private final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
 
     public static final Set<Class> IMPLEMENTATION = Collections.unmodifiableSet(new HashSet<Class>() {{
         add(HadoopEdge.class);
@@ -115,6 +118,8 @@ public class SparkHadoopGraphProvider extends AbstractFileGraphProvider {
         if (null != loadGraphWith &&
                 !test.equals(ProgramTest.Traversals.class) &&
                 !test.equals(PageRankTest.Traversals.class) &&
+                !test.equals(ConnectedComponentTest.Traversals.class) &&
+                !test.equals(ShortestPathTest.Traversals.class) &&
                 !test.equals(PeerPressureTest.Traversals.class) &&
                 !test.equals(FileSystemStorageCheck.class) &&
                 !testMethodName.equals("shouldSupportJobChaining") &&  // GraphComputerTest.shouldSupportJobChaining
@@ -129,7 +134,7 @@ public class SparkHadoopGraphProvider extends AbstractFileGraphProvider {
         }
 
         config.put(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());
-        config.put(SparkLauncher.SPARK_MASTER, "local[4]");
+        config.put(SparkLauncher.SPARK_MASTER, "local[" + AVAILABLE_PROCESSORS + "]");
         config.put(Constants.SPARK_SERIALIZER, KryoSerializer.class.getCanonicalName());
         config.put(Constants.SPARK_KRYO_REGISTRATOR, GryoRegistrator.class.getCanonicalName());
         config.put(Constants.SPARK_KRYO_REGISTRATION_REQUIRED, true);
@@ -139,14 +144,14 @@ public class SparkHadoopGraphProvider extends AbstractFileGraphProvider {
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
         return RANDOM.nextBoolean() ?
-                graph.traversal().withComputer(Computer.compute(SparkGraphComputer.class).workers(RANDOM.nextInt(3) + 1)) :
+                graph.traversal().withComputer(Computer.compute(SparkGraphComputer.class).workers(RANDOM.nextInt(AVAILABLE_PROCESSORS) + 1)) :
                 graph.traversal().withComputer();
     }
 
     @Override
     public GraphComputer getGraphComputer(final Graph graph) {
         return RANDOM.nextBoolean() ?
-                graph.compute().workers(RANDOM.nextInt(3) + 1) :
+                graph.compute().workers(RANDOM.nextInt(AVAILABLE_PROCESSORS) + 1) :
                 graph.compute(SparkGraphComputer.class);
     }
 }

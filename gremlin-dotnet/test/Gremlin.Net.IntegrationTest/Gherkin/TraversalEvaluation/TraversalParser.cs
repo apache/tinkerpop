@@ -44,6 +44,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 
         private static readonly Regex RegexEnum = new Regex(@"\w+\.\w+", RegexOptions.Compiled);
 
+        private static readonly Regex RegexIO = new Regex(@"IO.\w+", RegexOptions.Compiled);
+
+        private static readonly Regex RegexWithOptions = new Regex(@"WithOptions.\w+", RegexOptions.Compiled);
+
         private static readonly Regex RegexParam = new Regex(@"\w+", RegexOptions.Compiled);
         
         private static readonly HashSet<Type> NumericTypes = new HashSet<Type>
@@ -124,7 +128,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             var compatibleMethods = new Dictionary<int, MethodInfo>();
             foreach (var method in ordered)
             {
-                lastMethod = method;
                 var methodParameters = method.GetParameters();
                 var requiredParameters = methodParameters.Length;
                 if (requiredParameters > 0 && IsParamsArray(methodParameters.Last()))
@@ -136,6 +139,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 {
                     continue;
                 }
+                lastMethod = method;
                 var matched = true;
                 var exactMatches = 0;
                 for (var i = 0; i < tokenParameters.Count; i++)
@@ -245,6 +249,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                         // if we have the type of value we have the type of E2. 
                         genericParameterTypes.Add(info.ParameterType.Name, tokenParameter.GetParameterType());
                     }
+                    else if (IsParamsArray(info) && info.ParameterType.GetElementType().IsGenericParameter)
+                    {
+                        // Its a method where the type parameter comes from an params Array
+                        // e.g., Inject<S>(params S[] value)
+                        genericParameterTypes.Add(info.ParameterType.GetElementType().Name,
+                            tokenParameter.GetParameterType());
+                    }
+
                     if (info.ParameterType != tokenParameter.GetParameterType() && IsNumeric(info.ParameterType) &&
                         IsNumeric(tokenParameter.GetParameterType()))
                     {
@@ -252,6 +264,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                         value = Convert.ChangeType(value, info.ParameterType);
                     }
                 }
+
                 if (IsParamsArray(info))
                 {
                     // For `params type[] value` we should provide an empty array
@@ -264,11 +277,19 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                     {
                         // An array with the parameter values
                         // No more method parameters after this one
-                        var arr = Array.CreateInstance(info.ParameterType.GetElementType(), token.Parameters.Count - i);
+                        var elementType = info.ParameterType.GetElementType();
+
+                        if (elementType.IsGenericParameter)
+                        {
+                            // The Array element type is generic, so we use type of the value to specify it
+                            elementType = value.GetType();
+                        }
+
+                        var arr = Array.CreateInstance(elementType, token.Parameters.Count - i);
                         arr.SetValue(value, 0);
                         for (var j = 1; j < token.Parameters.Count - i; j++)
                         {
-                            arr.SetValue(token.Parameters[i + j].GetValue(), j);   
+                            arr.SetValue(token.Parameters[i + j].GetValue(), j);
                         }
                         value = arr;
                     }
@@ -404,6 +425,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                 var tokens = ParseTokens(text, ref i);
                 return new StaticTraversalParameter(tokens, text.Substring(startIndex, i - startIndex));
             }
+            if (text.Length >= i + 6 && text.Substring(i, 6) == "TextP.")
+            {
+                return new TextPParameter(ParseTokens(text, ref i));
+            }
             if (text.Substring(i, 2).StartsWith("P."))
             {
                 return new PParameter(ParseTokens(text, ref i));
@@ -423,6 +448,16 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             {
                 i += parameterText.Length - 1;
                 return LiteralParameter.Create(Convert.ToBoolean(parameterText));
+            }
+            if (RegexIO.IsMatch(parameterText))
+            {
+                i += parameterText.Length - 1;
+                return new IOParameter(parameterText);
+            }
+            if (RegexWithOptions.IsMatch(parameterText))
+            {
+                i += parameterText.Length - 1;
+                return new WithOptionsParameter(parameterText);
             }
             if (RegexEnum.IsMatch(parameterText))
             {

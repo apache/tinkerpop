@@ -46,7 +46,7 @@ public class GremlinProcessRunner extends BlockJUnit4ClassRunner {
         if (this.isIgnored(method)) {
             notifier.fireTestIgnored(description);
         } else {
-            EachTestNotifier eachNotifier = new EachTestNotifier(notifier, description);
+            final EachTestNotifier eachNotifier = new EachTestNotifier(notifier, description);
             eachNotifier.fireTestStarted();
             boolean ignored = false;
             try {
@@ -73,8 +73,6 @@ public class GremlinProcessRunner extends BlockJUnit4ClassRunner {
             if (ex instanceof VerificationException)
                 return true;
             else if (ex instanceof NotSerializableException)
-                return true;
-            else if (ex.getClass().getSimpleName().contains("ResponseException"))
                 return true;
             ex = ex.getCause();
         }

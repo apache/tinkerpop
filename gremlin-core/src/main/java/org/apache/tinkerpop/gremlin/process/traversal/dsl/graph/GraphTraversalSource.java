@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -31,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IoStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -39,6 +41,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.Optional;
 import java.util.function.BinaryOperator;
@@ -51,6 +54,7 @@ import java.util.function.UnaryOperator;
  * Any DSL can be constructed based on the methods of both {@code GraphTraversalSource} and {@link GraphTraversal}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphTraversalSource implements TraversalSource {
     protected transient RemoteConnection connection;
@@ -87,6 +91,12 @@ public class GraphTraversalSource implements TraversalSource {
         this(graph, TraversalStrategies.GlobalCache.getStrategies(graph.getClass()));
     }
 
+    public GraphTraversalSource(final RemoteConnection connection) {
+        this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class).clone());
+        this.connection = connection;
+        this.strategies.addStrategies(new RemoteStrategy(connection));
+    }
+
     @Override
     public TraversalStrategies getStrategies() {
         return this.strategies;
@@ -115,6 +125,22 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     //// CONFIGURATIONS
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversalSource with(final String key) {
+        return (GraphTraversalSource) TraversalSource.super.with(key);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversalSource with(final String key, final Object value) {
+        return (GraphTraversalSource) TraversalSource.super.with(key, value);
+    }
 
     /**
      * {@inheritDoc}
@@ -269,38 +295,6 @@ public class GraphTraversalSource implements TraversalSource {
         return clone;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public GraphTraversalSource withRemote(final Configuration conf) {
-        return (GraphTraversalSource) TraversalSource.super.withRemote(conf);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public GraphTraversalSource withRemote(final String configFile) throws Exception {
-        return (GraphTraversalSource) TraversalSource.super.withRemote(configFile);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public GraphTraversalSource withRemote(final RemoteConnection connection) {
-        // check if someone called withRemote() more than once, so just release resources on the initial
-        // connection as you can't have more than one. maybe better to toss IllegalStateException??
-        if (this.connection != null)
-            throw new IllegalStateException(String.format("TraversalSource already configured with a RemoteConnection [%s]", connection));
-
-        final GraphTraversalSource clone = this.clone();
-        clone.connection = connection;
-        clone.getStrategies().addStrategies(new RemoteStrategy(connection));
-        return clone;
-    }
-
     //// SPAWNS
 
 
@@ -384,6 +378,27 @@ public class GraphTraversalSource implements TraversalSource {
         clone.bytecode.addStep(GraphTraversal.Symbols.E, edgesIds);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new GraphStep<>(traversal, Edge.class, true, edgesIds));
+    }
+
+    /**
+     * Performs a read or write based operation on the {@link Graph} backing this {@code GraphTraversalSource}. This
+     * step can be accompanied by the {@link GraphTraversal#with(String, Object)} modulator for further configuration
+     * and must be accompanied by a {@link GraphTraversal#read()} or {@link GraphTraversal#write()} modulator step
+     * which will terminate the traversal.
+     *
+     * @param file the name of file for which the read or write will apply - note that the context of how this
+     *             parameter is used is wholly dependent on the implementation
+     * @return the traversal with the {@link IoStep} added
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#io-step" target="_blank">Reference Documentation - IO Step</a>
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#read-step" target="_blank">Reference Documentation - Read Step</a>
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#write-step" target="_blank">Reference Documentation - Write Step</a>
+     * @since 3.4.0
+     */
+    public <S> GraphTraversal<S, S> io(final String file) {
+        final GraphTraversalSource clone = this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.io, file);
+        final GraphTraversal.Admin<S,S> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new IoStep<S>(traversal, file));
     }
 
     /**

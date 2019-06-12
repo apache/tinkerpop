@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -66,7 +67,6 @@ public class VertexProgramStrategyTest {
     public static Iterable<Object[]> generateTestParameters() {
 
         final ComputerResultStep computerResultStep = new ComputerResultStep(EmptyTraversal.instance());
-
         return Arrays.asList(new Traversal[][]{
                 {__.V().out().count(), start().addStep(traversal(__.V().out().count())).addStep(computerResultStep)},
                 {__.V().pageRank().out().count(), start().pageRank().asAdmin().addStep(traversal(__.V().out().count())).addStep(computerResultStep)},

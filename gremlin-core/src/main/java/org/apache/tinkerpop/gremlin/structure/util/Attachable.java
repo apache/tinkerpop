@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.Iterator;
 import java.util.Optional;
@@ -70,7 +71,7 @@ public interface Attachable<V> {
      */
     public static class Method {
         public static <V> Function<Attachable<V>, V> get(final Host hostVertexOrGraph) {
-            return (Attachable<V> attachable) -> {
+            return hostVertexOrGraph instanceof EmptyGraph ? Attachable::get : (Attachable<V> attachable) -> {
                 final Object base = attachable.get();
                 if (base instanceof Vertex) {
                     final Optional<Vertex> optional = hostVertexOrGraph instanceof Graph ?

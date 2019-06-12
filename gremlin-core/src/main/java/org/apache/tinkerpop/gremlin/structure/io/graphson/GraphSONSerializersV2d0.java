@@ -286,7 +286,7 @@ class GraphSONSerializersV2d0 {
         }
     }
 
-    final static class TraversalExplanationJacksonSerializer extends StdSerializer<TraversalExplanation> {
+    final static class TraversalExplanationJacksonSerializer extends StdScalarSerializer<TraversalExplanation> {
         public TraversalExplanationJacksonSerializer() {
             super(TraversalExplanation.class);
         }
@@ -677,7 +677,7 @@ class GraphSONSerializersV2d0 {
         }
 
         @Override
-        public Integer deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+        public Integer deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
             return jsonParser.getIntValue();
         }
 
@@ -694,8 +694,21 @@ class GraphSONSerializersV2d0 {
         }
 
         @Override
-        public Double deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            return jsonParser.getDoubleValue();
+        public Double deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            if (jsonParser.getCurrentToken().isNumeric())
+                return jsonParser.getDoubleValue();
+            else  {
+                final String numberText = jsonParser.getValueAsString();
+                if ("NaN".equalsIgnoreCase(numberText))
+                    return Double.NaN;
+                else if ("-Infinity".equals(numberText) || "-INF".equalsIgnoreCase(numberText))
+                    return Double.NEGATIVE_INFINITY;
+                else if ("Infinity".equals(numberText) || "INF".equals(numberText))
+                    return Double.POSITIVE_INFINITY;
+                else
+                    throw new IllegalStateException("Double value unexpected: " + numberText);
+            }
+
         }
 
         @Override

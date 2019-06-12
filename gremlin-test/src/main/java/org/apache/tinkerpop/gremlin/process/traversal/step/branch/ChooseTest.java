@@ -30,8 +30,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +58,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(GremlinProcessRunner.class)
 public abstract class ChooseTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, Object> get_g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX();
+    public abstract Traversal<Vertex, Object> get_g_V_chooseXout_countX_optionX2L_nameX_optionX3L_ageX();
 
     public abstract Traversal<Vertex, String> get_g_V_chooseXlabel_eqXpersonX__outXknowsX__inXcreatedXX_name();
 
@@ -78,19 +78,19 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX() {
-        final Traversal<Vertex, Object> traversal = get_g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX();
+    public void g_V_chooseXout_countX_optionX2L_nameX_optionX3L_ageX() {
+        final Traversal<Vertex, Object> traversal = get_g_V_chooseXout_countX_optionX2L_nameX_optionX3L_ageX();
         printTraversalForm(traversal);
         final Map<String, Long> counts = new HashMap<>();
         int counter = 0;
         while (traversal.hasNext()) {
-            MapHelper.incr(counts, traversal.next().toString(), 1l);
+            MapHelper.incr(counts, traversal.next().toString(), 1L);
             counter++;
         }
         assertFalse(traversal.hasNext());
         assertEquals(2, counter);
         assertEquals(2, counts.size());
-        assertEquals(Long.valueOf(1), counts.get("{name=[marko], age=[29]}"));
+        assertEquals(Long.valueOf(1), counts.get("29"));
         assertEquals(Long.valueOf(1), counts.get("josh"));
     }
 
@@ -157,7 +157,8 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
     public void g_injectX1X_chooseXisX1X__constantX10Xfold__foldX() {
         final Traversal<Integer, List<Integer>> traversal = get_g_injectX1X_chooseXisX1X__constantX10Xfold__foldX();
         printTraversalForm(traversal);
-        assertEquals(Collections.singletonList(10), traversal.next());
+        final List expected = new ArrayList() {{ add(10);}};
+        assertEquals(expected, traversal.next());
         assertThat(traversal.hasNext(), is(false));
     }
 
@@ -165,17 +166,18 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
     public void g_injectX2X_chooseXisX1X__constantX10Xfold__foldX() {
         final Traversal<Integer, List<Integer>> traversal = get_g_injectX2X_chooseXisX1X__constantX10Xfold__foldX();
         printTraversalForm(traversal);
-        assertEquals(Collections.singletonList(2), traversal.next());
+        final List expected = new ArrayList() {{ add(2);}};
+        assertEquals(expected, traversal.next());
         assertThat(traversal.hasNext(), is(false));
     }
 
     public static class Traversals extends ChooseTest {
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX() {
+        public Traversal<Vertex, Object> get_g_V_chooseXout_countX_optionX2L_nameX_optionX3L_ageX() {
             return g.V().choose(out().count())
                     .option(2L, values("name"))
-                    .option(3L, valueMap());
+                    .option(3L, values("age"));
         }
 
         @Override

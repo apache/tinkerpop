@@ -24,9 +24,11 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.AbstractHadoopGraphComputer;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.traversal.strategy.HadoopIoStrategy;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopEdgeIterator;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopVertexIterator;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -140,6 +142,22 @@ import java.util.stream.Stream;
         method = "g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.",
         computers = {"ALL"})
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ReadTest$Traversals",
+        method = "g_io_readXxmlX",
+        reason = "Hadoop-Gremlin does not support reads/writes with GraphML.")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ReadTest$Traversals",
+        method = "g_io_read_withXreader_graphmlX",
+        reason = "Hadoop-Gremlin does not support reads/writes with GraphML.")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.WriteTest$Traversals",
+        method = "g_io_writeXxmlX",
+        reason = "Hadoop-Gremlin does not support reads/writes with GraphML.")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.WriteTest$Traversals",
+        method = "g_io_write_withXwriter_graphmlX",
+        reason = "Hadoop-Gremlin does not support reads/writes with GraphML.")
 public final class HadoopGraph implements Graph {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(HadoopGraph.class);
@@ -147,6 +165,12 @@ public final class HadoopGraph implements Graph {
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
         this.setProperty(Graph.GRAPH, HadoopGraph.class.getName());
     }};
+
+    static {
+        TraversalStrategies.GlobalCache.registerStrategies(HadoopGraph.class,
+                TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().addStrategies(
+                        HadoopIoStrategy.instance()));
+    }
 
     protected final HadoopConfiguration configuration;
 

@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.driver.ser;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -32,9 +34,12 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3d0;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.shaded.jackson.databind.JsonMappingException;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -48,6 +53,7 @@ import java.util.UUID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -55,6 +61,7 @@ import static org.junit.Assert.fail;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@SuppressWarnings("unchecked")
 public class GraphSONMessageSerializerV3d0Test {
 
     private final UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
@@ -337,14 +344,52 @@ public class GraphSONMessageSerializerV3d0Test {
         assertEquals("bytecode", m.getOp());
         assertNotNull(m.getArgs());
     }
-    
+
+    @Test
+    public void shouldRegisterGremlinServerModuleAutomaticallyWithMapper() throws SerializationException {
+        GraphSONMapper.Builder builder = GraphSONMapper.build().addCustomModule(GraphSONXModuleV3d0.build().create(false));
+        GraphSONMessageSerializerV3d0 graphSONMessageSerializerV3d0 = new GraphSONMessageSerializerV3d0(builder);
+
+        ResponseMessage rm = convert("hello", graphSONMessageSerializerV3d0);
+        assertEquals(rm.getRequestId(), requestId);
+        assertEquals(rm.getResult().getData(), "hello");
+    }
+
+    @Test
+    public void shouldFailOnMessageSerializerWithMapperIfNoGremlinServerModule() {
+        Logger logger = Logger.getLogger(AbstractGraphSONMessageSerializerV2d0.class);
+        Level previousLevel = logger.getLevel();
+
+        // Disable temporarily logging for this test
+        logger.setLevel(Level.OFF);
+
+        GraphSONMapper.Builder builder = GraphSONMapper.build().addCustomModule(GraphSONXModuleV3d0.build().create(false));
+        GraphSONMessageSerializerV3d0 graphSONMessageSerializerV3d0 = new GraphSONMessageSerializerV3d0(builder.create());
+
+        try {
+            convert("hello", graphSONMessageSerializerV3d0);
+            fail("Serialization should have failed since no GremlinServerModule registered.");
+        } catch (SerializationException e) {
+            assertTrue(e.getMessage().contains("Could not find a type identifier for the class"));
+            assertTrue(e.getCause() instanceof JsonMappingException);
+            assertTrue(e.getCause().getCause() instanceof IllegalArgumentException);
+        }
+
+        // Put logger level back to its original value
+        logger.setLevel(previousLevel);
+    }
+
     private void assertCommon(final ResponseMessage response) {
         assertEquals(requestId, response.getRequestId());
         assertEquals(ResponseStatusCode.SUCCESS, response.getStatus().getCode());
     }
 
-    private ResponseMessage convert(final Object toSerialize) throws SerializationException {
+    private ResponseMessage convert(final Object toSerialize, MessageSerializer serializer) throws SerializationException {
         final ByteBuf bb = serializer.serializeResponseAsBinary(responseMessageBuilder.result(toSerialize).create(), allocator);
         return serializer.deserializeResponse(bb);
+    }
+
+    private ResponseMessage convert(final Object toSerialize) throws SerializationException {
+        return convert(toSerialize, this.serializer);
     }
 }

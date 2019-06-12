@@ -42,12 +42,17 @@ public abstract class ReferenceElement<E extends Element> implements Element, Se
 
     }
 
+    protected ReferenceElement(final Object id, final String label) {
+        this.id = id;
+        this.label = label;
+    }
+
     public ReferenceElement(final Element element) {
         this.id = element.id();
         try {
             //Exception creation takes too much time, return default values for known types
             if (element instanceof ComputerGraph.ComputerAdjacentVertex) {
-                this.label = VertexProperty.DEFAULT_LABEL;
+                this.label = Vertex.DEFAULT_LABEL;
             } else {
                 this.label = element.label();
             }

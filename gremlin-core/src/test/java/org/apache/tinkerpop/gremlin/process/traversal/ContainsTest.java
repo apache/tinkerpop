@@ -43,7 +43,7 @@ public class ContainsTest {
                 {Contains.within, 10, Collections.emptyList(), false},
                 {Contains.without, 10, Collections.emptyList(), true},
                 {Contains.within, 100, Arrays.asList(1, 2, 3, 4, 10), false},
-                {Contains.without, 10l, Arrays.asList(1, 2, 3, 4, 10), true},    // no forgiveness
+                {Contains.without, 10L, Arrays.asList(1, 2, 3, 4, 10), false},
                 {Contains.within, "test", Arrays.asList(1, 2, 3, "test", 10), true},
                 {Contains.without, "testing", Arrays.asList(1, 2, 3, "test", 10), true}
         }));

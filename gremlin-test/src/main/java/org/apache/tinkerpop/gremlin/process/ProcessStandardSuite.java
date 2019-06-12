@@ -51,6 +51,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FlatMapTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.IndexTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LoopsTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest;
@@ -63,11 +64,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProjectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ReadTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ValueMapTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.WriteTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ExplainTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountTest;
@@ -84,6 +87,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventS
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategyProcessTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -140,6 +144,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             FoldTest.Traversals.class,
             GraphTest.Traversals.class,
             LoopsTest.Traversals.class,
+            IndexTest.Traversals.class,
             MapTest.Traversals.class,
             MatchTest.CountMatchTraversals.class,
             MatchTest.GreedyMatchTraversals.class,
@@ -153,10 +158,12 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             ProfileTest.Traversals.class,
             ProjectTest.Traversals.class,
             PropertiesTest.Traversals.class,
+            ReadTest.Traversals.class,
             SelectTest.Traversals.class,
             VertexTest.Traversals.class,
             UnfoldTest.Traversals.class,
             ValueMapTest.Traversals.class,
+            WriteTest.Traversals.class,
 
             // sideEffect
             AggregateTest.Traversals.class,
@@ -187,7 +194,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             SubgraphStrategyProcessTest.class,
 
             // optimizations
-            IncidentToAdjacentStrategyProcessTest.class
+            IncidentToAdjacentStrategyProcessTest.class,
+            EarlyLimitStrategyProcessTest.class
     };
 
     /**
@@ -227,6 +235,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             FlatMapTest.class,
             FoldTest.class,
             LoopsTest.class,
+            IndexTest.class,
             MapTest.class,
             MatchTest.class,
             MathTest.class,

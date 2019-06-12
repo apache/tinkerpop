@@ -50,19 +50,20 @@ Feature: Step - store()
 
   Scenario: g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
     And using the parameter initial defined as "s[]"
     And the traversal of
       """
       g.withSideEffect("a", initial).V().both().values("name").store("a").cap("a")
       """
     When iterated next
-    Then nothing should happen because
-      """
-      The result returned is not supported under GraphSON 2.x and therefore cannot be properly asserted. More
-      specifically it requires specification of a Set as a parameter which only becomes available in
-      GraphSON 3.0.
-      """
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter  |
 
   Scenario: g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX
     Given the modern graph

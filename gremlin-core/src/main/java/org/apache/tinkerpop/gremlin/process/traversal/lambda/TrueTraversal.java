@@ -43,4 +43,9 @@ public final class TrueTraversal<S> extends AbstractLambdaTraversal<S, S> {
     public TrueTraversal<S> clone() {
         return INSTANCE;
     }
+
+    @Override
+    public boolean equals(final Object other) {
+        return other instanceof TrueTraversal;
+    }
 }

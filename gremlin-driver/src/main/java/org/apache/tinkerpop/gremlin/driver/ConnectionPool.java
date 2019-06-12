@@ -98,7 +98,7 @@ final class ConnectionPool {
             // ok if we don't get it initialized here - when a request is attempted in a connection from the
             // pool it will try to create new connections as needed.
             logger.debug("Could not initialize connections in pool for {} - pool size at {}", host, this.connections.size());
-            considerUnavailable();
+            considerHostUnavailable();
         }
 
         this.open = new AtomicInteger(connections.size());
@@ -171,9 +171,10 @@ final class ConnectionPool {
         if (isClosed()) throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
 
         final int borrowed = connection.borrowed.decrementAndGet();
+
         if (connection.isDead()) {
             logger.debug("Marking {} as dead", this.host);
-            considerUnavailable();
+            this.replaceConnection(connection);
         } else {
             if (bin.contains(connection) && borrowed == 0) {
                 logger.debug("{} is already in the bin and it has no inflight requests so it is safe to close", connection);
@@ -228,6 +229,13 @@ final class ConnectionPool {
         final CompletableFuture<Void> future = killAvailableConnections();
         closeFuture.set(future);
         return future;
+    }
+
+    /**
+     * Required for testing
+     */
+    int numConnectionsWaitingToCleanup() {
+        return bin.size();
     }
 
     private CompletableFuture<Void> killAvailableConnections() {
@@ -293,7 +301,7 @@ final class ConnectionPool {
         } catch (ConnectionException ce) {
             logger.debug("Connections were under max, but there was an error creating the connection.", ce);
             open.decrementAndGet();
-            considerUnavailable();
+            considerHostUnavailable();
             return false;
         }
 
@@ -317,16 +325,18 @@ final class ConnectionPool {
 
     private void definitelyDestroyConnection(final Connection connection) {
         // only add to the bin for future removal if its not already there.
-        if (!bin.contains(connection)) {
+        if (!bin.contains(connection) && !connection.isClosing()) {
             bin.add(connection);
             connections.remove(connection);
             open.decrementAndGet();
         }
 
-        // only close the connection for good once it is done being borrowed
-        if (connection.borrowed.get() == 0 && bin.remove(connection)) {
-            connection.closeAsync();
-            logger.debug("{} destroyed", connection.getConnectionInfo());
+        // only close the connection for good once it is done being borrowed or when it is dead
+        if (connection.isDead() || connection.borrowed.get() == 0) {
+            if(bin.remove(connection)) {
+                connection.closeAsync();
+                logger.debug("{} destroyed", connection.getConnectionInfo());
+            }
         }
     }
 
@@ -372,14 +382,13 @@ final class ConnectionPool {
 
         // if we timeout borrowing a connection that might mean the host is dead (or the timeout was super short).
         // either way supply a function to reconnect
-        this.considerUnavailable();
+        this.considerHostUnavailable();
 
-        throw new TimeoutException();
+        throw new TimeoutException("Timed-out waiting for connection on " + host + " - possibly unavailable");
     }
 
-    private void considerUnavailable() {
-        // called when a connection is "dead" such that a "dead" connection means the host itself is basically
-        // "dead".  that's probably ok for now, but this decision should likely be more flexible.
+    public void considerHostUnavailable() {
+        // called when a connection is "dead" due to a non-recoverable error.
         host.makeUnavailable(this::tryReconnect);
 
         // if the host is unavailable then we should release the connections
@@ -387,7 +396,6 @@ final class ConnectionPool {
 
         // let the load-balancer know that the host is acting poorly
         this.cluster.loadBalancingStrategy().onUnavailable(host);
-
     }
 
     /**
@@ -400,7 +408,7 @@ final class ConnectionPool {
         Connection connection = null;
         try {
             connection = borrowConnection(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
-            final RequestMessage ping = RequestMessage.build(Tokens.OPS_EVAL).add(Tokens.ARGS_GREMLIN, "''").create();
+            final RequestMessage ping = client.buildMessage(cluster.validationRequest()).create();
             final CompletableFuture<ResultSet> f = new CompletableFuture<>();
             connection.write(ping, f);
             f.get().all().get();

@@ -20,7 +20,11 @@ package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import org.junit.Test;
 
+import javax.script.Bindings;
 import javax.script.ScriptEngine;
+import javax.script.SimpleBindings;
+
+import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 
@@ -35,5 +39,13 @@ public class GremlinGroovyScriptEngineConfigTest {
                 new ConfigurationGroovyCustomizer("ScriptBaseClass", BaseScriptForTesting.class.getName()));
 
         assertEquals("hello, stephen", engine.eval("hello('stephen')"));
+
+        final Bindings b = new SimpleBindings();
+        b.put("registry", new HashMap<String,Object>(){{
+            put("xxx", String.class.getSimpleName());
+        }});
+
+        assertEquals(String.class.getSimpleName(), engine.eval("typeOf('xxx')", b));
     }
+
 }

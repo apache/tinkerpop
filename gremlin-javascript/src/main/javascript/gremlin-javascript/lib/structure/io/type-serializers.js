@@ -49,11 +49,37 @@ class TypeSerializer {
 
 class NumberSerializer extends TypeSerializer {
   serialize(item) {
-    return item;
+    if (isNaN(item)) {
+      return {
+        [typeKey]: 'g:Double',
+        [valueKey]: 'NaN'
+      };
+    } else if (item === Number.POSITIVE_INFINITY) {
+      return {
+        [typeKey]: 'g:Double',
+        [valueKey]: 'Infinity'
+      };
+    } else if (item === Number.NEGATIVE_INFINITY) {
+      return {
+        [typeKey]: 'g:Double',
+        [valueKey]: '-Infinity'
+      };
+    } else {
+      return item;
+    }
   }
 
   deserialize(obj) {
-    return parseFloat(obj[valueKey]);
+    var val = obj[valueKey];
+    if (val === 'NaN') {
+      return NaN;
+    } else if (val === 'Infinity') {
+      return Number.POSITIVE_INFINITY;
+    } else if (val === '-Infinity') {
+      return Number.NEGATIVE_INFINITY;
+    } else {
+      return parseFloat(val);
+    }
   }
 
   canBeUsedFor(value) {
@@ -118,7 +144,7 @@ class BytecodeSerializer extends TypeSerializer {
     const result = new Array(instructions.length);
     result[0] = instructions[0];
     for (let i = 0; i < instructions.length; i++) {
-      result[i] = this.writer.adaptObject(instructions[i]);
+      result[i] = instructions[i].map(item => this.writer.adaptObject(item));
     }
     return result;
   }
@@ -147,6 +173,28 @@ class PSerializer extends TypeSerializer {
 
   canBeUsedFor(value) {
     return (value instanceof t.P);
+  }
+}
+
+class TextPSerializer extends TypeSerializer {
+  /** @param {TextP} item */
+  serialize(item) {
+    const result = {};
+    result[typeKey] = 'g:TextP';
+    const resultValue = result[valueKey] = {
+      'predicate': item.operator
+    };
+    if (item.other === undefined || item.other === null) {
+      resultValue['value'] = this.writer.adaptObject(item.value);
+    }
+    else {
+      resultValue['value'] = [ this.writer.adaptObject(item.value), this.writer.adaptObject(item.other) ];
+    }
+    return result;
+  }
+
+  canBeUsedFor(value) {
+    return (value instanceof t.TextP);
   }
 }
 
@@ -327,6 +375,27 @@ class ArraySerializer extends TypeSerializer {
   }
 }
 
+class BulkSetSerializer extends TypeSerializer {
+  deserialize(obj) {
+      const value = obj[valueKey];
+      if (!Array.isArray(value)) {
+          throw new Error('Expected Array, obtained: ' + value);
+      }
+
+      // coerce the BulkSet to List. if the bulk exceeds the int space then we can't coerce to List anyway,
+      // so this query will be trouble. we'd need a legit BulkSet implementation here in js. this current
+      // implementation is here to replicate the previous functionality that existed on the server side in
+      // previous versions.
+      let result = [];
+      for (let ix = 0, iy = value.length; ix < iy; ix += 2) {
+        const pair = value.slice(ix, ix + 2);
+        result = result.concat(Array(this.reader.read(pair[1])).fill(this.reader.read(pair[0])));
+      }
+
+      return result;
+  }
+}
+
 class MapSerializer extends TypeSerializer {
   deserialize(obj) {
     const value = obj[valueKey];
@@ -371,6 +440,7 @@ class SetSerializer extends ArraySerializer {
 }
 
 module.exports = {
+  BulkSetSerializer,
   BytecodeSerializer,
   DateSerializer,
   EdgeSerializer,
@@ -384,6 +454,7 @@ module.exports = {
   PathSerializer,
   PropertySerializer,
   PSerializer,
+  TextPSerializer,
   SetSerializer,
   TSerializer,
   TraverserSerializer,

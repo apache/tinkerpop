@@ -39,7 +39,7 @@ function usage {
 
 while [ ! -z "$1" ]; do
   case "$1" in
-    -t | --tests ) RUN_TESTS=tue; shift ;;
+    -t | --tests ) RUN_TESTS=true; shift ;;
     -i | --integration-tests ) RUN_INTEGRATION_TESTS=true; shift ;;
     -n | --neo4j ) INCLUDE_NEO4J=true; shift ;;
     -j | --java-docs ) BUILD_JAVA_DOCS=true; shift ;;
@@ -67,9 +67,7 @@ if [ -d "${TINKERMEM_PATH}" ]; then
   cd ${TINKERMEM_PATH}
 fi
 
-touch gremlin-python/.glv
-touch gremlin-dotnet/src/.glv
-touch gremlin-dotnet/test/.glv
+touch {gremlin-dotnet,gremlin-dotnet/src,gremlin-dotnet/test,gremlin-python,gremlin-javascript}/.glv
 
 # use a custom maven settings.xml
 if [ -r "settings.xml" ]; then
@@ -78,7 +76,7 @@ if [ -r "settings.xml" ]; then
   cp settings.xml ~/.m2/
 fi
 
-mvn clean install process-resources ${TINKERPOP_BUILD_OPTIONS} || exit 1
+mvn clean install process-resources --batch-mode ${TINKERPOP_BUILD_OPTIONS} || exit 1
 [ -z "${BUILD_JAVA_DOCS}" ] || mvn process-resources -Djavadoc || exit 1
 
 if [ ! -z "${BUILD_USER_DOCS}" ]; then

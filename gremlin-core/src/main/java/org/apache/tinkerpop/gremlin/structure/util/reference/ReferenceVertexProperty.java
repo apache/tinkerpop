@@ -46,6 +46,13 @@ public class ReferenceVertexProperty<V> extends ReferenceElement<VertexProperty<
         this.value = vertexProperty.value();
     }
 
+    public ReferenceVertexProperty(final Object id, final String label, final V value) {
+        this.id = id;
+        this.label = label;
+        this.value = value;
+        this.vertex = null;
+    }
+
     @Override
     public String toString() {
         return StringFactory.propertyString(this);

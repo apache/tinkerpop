@@ -24,8 +24,9 @@
 using System.Collections.Generic;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Remote;
-using Gremlin.Net.Structure;
 using Xunit;
+
+using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
 
 namespace Gremlin.Net.Template.IntegrationTest
 {
@@ -40,7 +41,7 @@ namespace Gremlin.Net.Template.IntegrationTest
         {
             using (var client = CreateClient())
             {
-                var g = new Graph().Traversal().WithRemote(new DriverRemoteConnection(client, TestTraversalSource));
+                var g = Traversal().WithRemote(new DriverRemoteConnection(client, TestTraversalSource));
                 var service = new Service(g);
             
                 var creators = service.FindCreatorsOfSoftware("lop");

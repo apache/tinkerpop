@@ -23,13 +23,54 @@
  */
 'use strict';
 
+const crypto = require('crypto');
+
 exports.toLong = function toLong(value) {
   return new Long(value);
 };
 
 const Long = exports.Long = function Long(value) {
   if (typeof value !== 'string' && typeof value !== 'number') {
-    throw new TypeError('Ty')
+    throw new TypeError('The value must be a string or a number');
   }
   this.value = value.toString();
 };
+
+exports.getUuid = function getUuid() {
+  const buffer = crypto.randomBytes(16);
+  //clear the version
+  buffer[6] &= 0x0f;
+  //set the version 4
+  buffer[6] |= 0x40;
+  //clear the variant
+  buffer[8] &= 0x3f;
+  //set the IETF variant
+  buffer[8] |= 0x80;
+  const hex = buffer.toString('hex');
+  return (
+    hex.substr(0, 8) + '-' +
+    hex.substr(8, 4) + '-' +
+    hex.substr(12, 4) + '-' +
+    hex.substr(16, 4) + '-' +
+    hex.substr(20, 12));
+};
+
+exports.emptyArray = Object.freeze([]);
+
+class ImmutableMap extends Map {
+  constructor(iterable) {
+    super(iterable);
+  }
+
+  set(){
+    return this;
+  }
+
+  ['delete'](){
+    return false;
+  }
+
+  clear() { }
+}
+
+exports.ImmutableMap = ImmutableMap;

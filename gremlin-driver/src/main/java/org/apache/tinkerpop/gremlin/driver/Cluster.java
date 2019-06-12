@@ -25,6 +25,7 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.EventLoopGroup;
@@ -33,15 +34,25 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,9 +61,10 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -166,12 +178,17 @@ public final class Cluster {
 
         final Builder builder = new Builder(settings.hosts.get(0))
                 .port(settings.port)
+                .path(settings.path)
                 .enableSsl(settings.connectionPool.enableSsl)
-                .trustCertificateChainFile(settings.connectionPool.trustCertChainFile)
                 .keepAliveInterval(settings.connectionPool.keepAliveInterval)
-                .keyCertChainFile(settings.connectionPool.keyCertChainFile)
-                .keyFile(settings.connectionPool.keyFile)
-                .keyPassword(settings.connectionPool.keyPassword)
+                .keyStore(settings.connectionPool.keyStore)
+                .keyStorePassword(settings.connectionPool.keyStorePassword)
+                .keyStoreType(settings.connectionPool.keyStoreType)
+                .trustStore(settings.connectionPool.trustStore)
+                .trustStorePassword(settings.connectionPool.trustStorePassword)
+                .sslCipherSuites(settings.connectionPool.sslCipherSuites)
+                .sslEnabledProtocols(settings.connectionPool.sslEnabledProtocols)
+                .sslSkipCertValidation(settings.connectionPool.sslSkipCertValidation)
                 .nioPoolSize(settings.nioPoolSize)
                 .workerPoolSize(settings.workerPoolSize)
                 .reconnectInterval(settings.connectionPool.reconnectInterval)
@@ -184,7 +201,8 @@ public final class Cluster {
                 .maxSimultaneousUsagePerConnection(settings.connectionPool.maxSimultaneousUsagePerConnection)
                 .minSimultaneousUsagePerConnection(settings.connectionPool.minSimultaneousUsagePerConnection)
                 .maxConnectionPoolSize(settings.connectionPool.maxSize)
-                .minConnectionPoolSize(settings.connectionPool.minSize);
+                .minConnectionPoolSize(settings.connectionPool.minSize)
+                .validationRequest(settings.connectionPool.validationRequest);
 
         if (settings.username != null && settings.password != null)
             builder.credentials(settings.username, settings.password);
@@ -269,6 +287,13 @@ public final class Cluster {
                 .filter(Host::isAvailable)
                 .map(Host::getHostUri)
                 .collect(Collectors.toList()));
+    }
+
+    /**
+     * Gets the path to the Gremlin service.
+     */
+    public String getPath() {
+        return manager.path;
     }
 
     /**
@@ -438,27 +463,68 @@ public final class Cluster {
         return manager.authProps;
     }
 
-    SslContext createSSLContext() throws Exception  {
+    RequestMessage.Builder validationRequest() {
+        return manager.validationRequest.get();
+    }
+
+    SslContext createSSLContext() throws Exception {
         // if the context is provided then just use that and ignore the other settings
-        if (manager.sslContextOptional.isPresent()) return manager.sslContextOptional.get();
+        if (manager.sslContextOptional.isPresent())
+            return manager.sslContextOptional.get();
 
         final SslProvider provider = SslProvider.JDK;
         final Settings.ConnectionPoolSettings connectionPoolSettings = connectionPoolSettings();
         final SslContextBuilder builder = SslContextBuilder.forClient();
 
-        if (connectionPoolSettings.trustCertChainFile != null)
-            builder.trustManager(new File(connectionPoolSettings.trustCertChainFile));
-        else {
-            logger.warn("SSL configured without a trustCertChainFile and thus trusts all certificates without verification (not suitable for production)");
-            builder.trustManager(InsecureTrustManagerFactory.INSTANCE);
+        // Build JSSE SSLContext
+        try {
+
+            // Load private key/public cert for client auth
+            if (null != connectionPoolSettings.keyStore) {
+                final String keyStoreType = null == connectionPoolSettings.keyStoreType ? KeyStore.getDefaultType()
+                        : connectionPoolSettings.keyStoreType;
+                final KeyStore keystore = KeyStore.getInstance(keyStoreType);
+                final char[] password = null == connectionPoolSettings.keyStorePassword ? null
+                        : connectionPoolSettings.keyStorePassword.toCharArray();
+                try (final InputStream in = new FileInputStream(connectionPoolSettings.keyStore)) {
+                    keystore.load(in, password);
+                }
+                final KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                kmf.init(keystore, password);
+                builder.keyManager(kmf);
+            }
+
+            // Load custom truststore
+            if (null != connectionPoolSettings.trustStore) {
+                final String keystoreType = null == connectionPoolSettings.keyStoreType ? KeyStore.getDefaultType()
+                        : connectionPoolSettings.keyStoreType;
+                final KeyStore truststore = KeyStore.getInstance(keystoreType);
+                final char[] password = null == connectionPoolSettings.trustStorePassword ? null
+                        : connectionPoolSettings.trustStorePassword.toCharArray();
+                try (final InputStream in = new FileInputStream(connectionPoolSettings.trustStore)) {
+                    truststore.load(in, password);
+                }
+                final TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                tmf.init(truststore);
+                builder.trustManager(tmf);
+            }
+
+        } catch (UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException e) {
+            logger.error("There was an error enabling SSL.", e);
+            return null;
         }
 
-        if (null != connectionPoolSettings.keyCertChainFile && null != connectionPoolSettings.keyFile) {
-            final File keyCertChainFile = new File(connectionPoolSettings.keyCertChainFile);
-            final File keyFile = new File(connectionPoolSettings.keyFile);
+        if (null != connectionPoolSettings.sslCipherSuites && !connectionPoolSettings.sslCipherSuites.isEmpty()) {
+            builder.ciphers(connectionPoolSettings.sslCipherSuites);
+        }
 
-            // note that keyPassword may be null here if the keyFile is not password-protected.
-            builder.keyManager(keyCertChainFile, keyFile, connectionPoolSettings.keyPassword);
+        if (null != connectionPoolSettings.sslEnabledProtocols && !connectionPoolSettings.sslEnabledProtocols.isEmpty()) {
+            builder.protocols(connectionPoolSettings.sslEnabledProtocols.toArray(new String[] {}));
+        }
+
+        if (connectionPoolSettings.sslSkipCertValidation) {
+            logger.warn("SSL configured with sslSkipCertValidation thus trusts all certificates without verification (not suitable for production)");
+            builder.trustManager(InsecureTrustManagerFactory.INSTANCE);
         }
 
         builder.sslProvider(provider);
@@ -469,6 +535,7 @@ public final class Cluster {
     public final static class Builder {
         private List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
+        private String path = "/gremlin";
         private MessageSerializer serializer = Serializers.GRYO_V3D0.simpleInstance();
         private int nioPoolSize = Runtime.getRuntime().availableProcessors();
         private int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
@@ -486,10 +553,15 @@ public final class Cluster {
         private long keepAliveInterval = Connection.KEEP_ALIVE_INTERVAL;
         private String channelizer = Channelizer.WebSocketChannelizer.class.getName();
         private boolean enableSsl = false;
-        private String trustCertChainFile = null;
-        private String keyCertChainFile = null;
-        private String keyFile = null;
-        private String keyPassword = null;
+        private String keyStore = null;
+        private String keyStorePassword = null;
+        private String trustStore = null;
+        private String trustStorePassword = null;
+        private String keyStoreType = null;
+        private String validationRequest = "''";
+        private List<String> sslEnabledProtocols = new ArrayList<>();
+        private List<String> sslCipherSuites = new ArrayList<>();
+        private boolean sslSkipCertValidation = false;
         private SslContext sslContext = null;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
         private AuthProperties authProps = new AuthProperties();
@@ -520,9 +592,17 @@ public final class Cluster {
         }
 
         /**
-         * Set the {@link MessageSerializer} to use given its MIME type.  Note that setting this value this way
-         * will not allow specific configuration of the serializer itself.  If specific configuration is required
-         * please use {@link #serializer(MessageSerializer)}.
+         * The path to the Gremlin service on the host which is "/gremlin" by default.
+         */
+        public Builder path(final String path) {
+            this.path = path;
+            return this;
+        }
+
+        /**
+         * Set the {@link MessageSerializer} to use given the exact name of a {@link Serializers} enum.  Note that
+         * setting this value this way will not allow specific configuration of the serializer itself.  If specific
+         * configuration is required * please use {@link #serializer(MessageSerializer)}.
          */
         public Builder serializer(final String mimeType) {
             serializer = Serializers.valueOf(mimeType).simpleInstance();
@@ -567,16 +647,6 @@ public final class Cluster {
         }
 
         /**
-         * File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and
-         * SSL is enabled, the {@link TrustManager} will be established with a self-signed certificate which is NOT
-         * suitable for production purposes.
-         */
-        public Builder trustCertificateChainFile(final String certificateChainFile) {
-            this.trustCertChainFile = certificateChainFile;
-            return this;
-        }
-
-        /**
          * Length of time in milliseconds to wait on an idle connection before sending a keep-alive request. This
          * setting is only relevant to {@link Channelizer} implementations that return {@code true} for
          * {@link Channelizer#supportsKeepAlive()}.  Set to zero to disable this feature.
@@ -587,26 +657,71 @@ public final class Cluster {
         }
 
         /**
-         * The X.509 certificate chain file in PEM format.
+         * The file location of the private key in JKS or PKCS#12 format.
          */
-        public Builder keyCertChainFile(final String keyCertChainFile) {
-            this.keyCertChainFile = keyCertChainFile;
+        public Builder keyStore(final String keyStore) {
+            this.keyStore = keyStore;
             return this;
         }
 
         /**
-         * The PKCS#8 private key file in PEM format.
+         * The password of the {@link #keyStore}, or {@code null} if it's not password-protected.
          */
-        public Builder keyFile(final String keyFile) {
-            this.keyFile = keyFile;
+        public Builder keyStorePassword(final String keyStorePassword) {
+            this.keyStorePassword = keyStorePassword;
             return this;
         }
 
         /**
-         * The password of the {@link #keyFile}, or {@code null} if it's not password-protected.
+         * The file location for a SSL Certificate Chain to use when SSL is enabled. If
+         * this value is not provided and SSL is enabled, the default {@link TrustManager} will be used.
          */
-        public Builder keyPassword(final String keyPassword) {
-            this.keyPassword = keyPassword;
+        public Builder trustStore(final String trustStore) {
+            this.trustStore = trustStore;
+            return this;
+        }
+
+        /**
+         * The password of the {@link #trustStore}, or {@code null} if it's not password-protected.
+         */
+        public Builder trustStorePassword(final String trustStorePassword) {
+            this.trustStorePassword = trustStorePassword;
+            return this;
+        }
+
+        /**
+         * The format of the {@link #keyStore}, either {@code JKS} or {@code PKCS12}
+         */
+        public Builder keyStoreType(final String keyStoreType) {
+            this.keyStoreType = keyStoreType;
+            return this;
+        }
+
+        /**
+         * A list of SSL protocols to enable. @see <a href=
+         *      "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SunJSSE_Protocols">JSSE
+         *      Protocols</a>
+         */
+        public Builder sslEnabledProtocols(final List<String> sslEnabledProtocols) {
+            this.sslEnabledProtocols = sslEnabledProtocols;
+            return this;
+        }
+
+        /**
+         * A list of cipher suites to enable. @see <a href=
+         *      "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SupportedCipherSuites">Cipher
+         *      Suites</a>
+         */
+        public Builder sslCipherSuites(final List<String> sslCipherSuites) {
+            this.sslCipherSuites = sslCipherSuites;
+            return this;
+        }
+
+        /**
+         * If true, trust all certificates and do not perform any validation.
+         */
+        public Builder sslSkipCertValidation(final boolean sslSkipCertValidation) {
+            this.sslSkipCertValidation = sslSkipCertValidation;
             return this;
         }
 
@@ -722,6 +837,17 @@ public final class Cluster {
          */
         public Builder channelizer(final Class channelizerClass) {
             return channelizer(channelizerClass.getCanonicalName());
+        }
+
+        /**
+         * Specify a valid Gremlin script that can be used to test remote operations. This script should be designed
+         * to return quickly with the least amount of overhead possible. By default, the script sends an empty string.
+         * If the graph does not support that sort of script because it requires all scripts to include a reference
+         * to a graph then a good option might be {@code g.inject()}.
+         */
+        public Builder validationRequest(final String script) {
+            validationRequest = script;
+            return this;
         }
 
         /**
@@ -845,12 +971,14 @@ public final class Cluster {
         private final LoadBalancingStrategy loadBalancingStrategy;
         private final AuthProperties authProps;
         private final Optional<SslContext> sslContextOptional;
+        private final Supplier<RequestMessage.Builder> validationRequest;
 
-        private final ScheduledExecutorService executor;
+        private final ScheduledThreadPoolExecutor executor;
 
         private final int nioPoolSize;
         private final int workerPoolSize;
         private final int port;
+        private final String path;
 
         private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
@@ -876,23 +1004,33 @@ public final class Cluster {
             connectionPoolSettings.reconnectInterval = builder.reconnectInterval;
             connectionPoolSettings.resultIterationBatchSize = builder.resultIterationBatchSize;
             connectionPoolSettings.enableSsl = builder.enableSsl;
-            connectionPoolSettings.trustCertChainFile = builder.trustCertChainFile;
-            connectionPoolSettings.keyCertChainFile = builder.keyCertChainFile;
-            connectionPoolSettings.keyFile = builder.keyFile;
-            connectionPoolSettings.keyPassword = builder.keyPassword;
+            connectionPoolSettings.keyStore = builder.keyStore;
+            connectionPoolSettings.keyStorePassword = builder.keyStorePassword;
+            connectionPoolSettings.trustStore = builder.trustStore;
+            connectionPoolSettings.trustStorePassword = builder.trustStorePassword;
+            connectionPoolSettings.keyStoreType = builder.keyStoreType;
+            connectionPoolSettings.sslCipherSuites = builder.sslCipherSuites;
+            connectionPoolSettings.sslEnabledProtocols = builder.sslEnabledProtocols;
+            connectionPoolSettings.sslSkipCertValidation = builder.sslSkipCertValidation;
             connectionPoolSettings.keepAliveInterval = builder.keepAliveInterval;
             connectionPoolSettings.channelizer = builder.channelizer;
+            connectionPoolSettings.validationRequest = builder.validationRequest;
 
             sslContextOptional = Optional.ofNullable(builder.sslContext);
 
             nioPoolSize = builder.nioPoolSize;
             workerPoolSize = builder.workerPoolSize;
             port = builder.port;
+            path = builder.path;
 
             this.factory = new Factory(builder.nioPoolSize);
             this.serializer = builder.serializer;
-            this.executor = Executors.newScheduledThreadPool(builder.workerPoolSize,
+            
+            this.executor = new ScheduledThreadPoolExecutor(builder.workerPoolSize,
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-worker-%d").build());
+            this.executor.setRemoveOnCancelPolicy(true);
+
+            validationRequest = () -> RequestMessage.build(Tokens.OPS_EVAL).add(Tokens.ARGS_GREMLIN, builder.validationRequest);
         }
 
         private void validateBuilder(final Builder builder) {
@@ -943,7 +1081,6 @@ public final class Cluster {
 
             if (builder.workerPoolSize < 1)
                 throw new IllegalArgumentException("workerPoolSize must be greater than zero");
-
         }
 
         synchronized void init() {

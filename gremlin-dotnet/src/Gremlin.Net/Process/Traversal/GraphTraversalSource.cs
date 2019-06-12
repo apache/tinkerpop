@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Gremlin.Net.Process.Remote;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 using Gremlin.Net.Structure;
@@ -71,6 +72,22 @@ namespace Gremlin.Net.Process.Traversal
             Bytecode = bytecode;
         }
 
+
+        public GraphTraversalSource With(string key)
+        {
+            var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
+                                                  new Bytecode(Bytecode));
+            source.Bytecode.AddSource("with", key);
+            return source;
+        }
+
+        public GraphTraversalSource With(string key, object value)
+        {
+            var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
+                                                  new Bytecode(Bytecode));
+            source.Bytecode.AddSource("with", key, value);
+            return source;
+        }
 
         public GraphTraversalSource WithBulk(bool useBulk)
         {
@@ -327,9 +344,20 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal<S, S> Inject<S>(params S[] starts)
         {
             var traversal = new GraphTraversal<S, S>(TraversalStrategies, new Bytecode(Bytecode));
-            var args = new List<S>(0 + starts.Length) {};
-            args.AddRange(starts);
+            var args = new List<object>(0 + starts.Length) {};
+            args.AddRange(starts.Cast<object>());
             traversal.Bytecode.AddStep("inject", args.ToArray());
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the io step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal<S, S> Io<S>(string file)
+        {
+            var traversal = new GraphTraversal<S, S>(TraversalStrategies, new Bytecode(Bytecode));
+                traversal.Bytecode.AddStep("io", file);
             return traversal;
         }
 

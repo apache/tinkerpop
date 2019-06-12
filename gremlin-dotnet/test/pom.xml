@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>gremlin-dotnet</artifactId>
-        <version>3.4.0-SNAPSHOT</version>
+        <version>3.5.0-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-dotnet-tests</artifactId>
     <name>Apache TinkerPop :: Gremlin.Net - Tests</name>
@@ -48,7 +48,7 @@ limitations under the License.
                 </executions>
             </plugin>
             <!--
-            there is no point to deploying the jvm stuff - there is no java source really - just poms
+            there is no point to building/deploying the jvm stuff - there is no java source really - just poms
             -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

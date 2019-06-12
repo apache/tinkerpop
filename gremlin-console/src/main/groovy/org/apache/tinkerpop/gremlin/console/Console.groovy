@@ -18,10 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.console
 
+import groovy.cli.picocli.CliBuilder
+import groovy.cli.picocli.OptionAccessor
 import jline.TerminalFactory
 import jline.console.history.FileHistory
 
-import org.apache.commons.cli.Option
+import org.apache.tinkerpop.gremlin.console.commands.BytecodeCommand
 import org.apache.tinkerpop.gremlin.console.commands.GremlinSetCommand
 import org.apache.tinkerpop.gremlin.console.commands.InstallCommand
 import org.apache.tinkerpop.gremlin.console.commands.PluginCommand
@@ -32,6 +34,7 @@ import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader
 import org.apache.tinkerpop.gremlin.jsr223.CoreGremlinPlugin
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer
+import org.apache.tinkerpop.gremlin.jsr223.console.RemoteException
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.T
@@ -43,8 +46,9 @@ import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.IO
 import org.codehaus.groovy.tools.shell.InteractiveShellRunner
 import org.codehaus.groovy.tools.shell.commands.SetCommand
-import org.codehaus.groovy.tools.shell.util.HelpFormatter
 import org.fusesource.jansi.Ansi
+import sun.misc.Signal
+import sun.misc.SignalHandler
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -77,10 +81,22 @@ class Console {
 
         final Mediator mediator = new Mediator(this)
 
-        // make sure that remotes are closed if console takes a ctrl-c
+        // make sure that remotes are closed on jvm shutdown
         addShutdownHook { mediator.close() }
 
-        groovy = new GremlinGroovysh(mediator)
+        // try to grab ctrl+c to interrupt an evaluation.
+        final Thread main = Thread.currentThread()
+        Signal.handle(new Signal("INT"), new SignalHandler() {
+            @Override
+            void handle(final Signal signal) {
+                if (mediator.evaluating.get()) {
+                    io.out.println("Execution interrupted by ctrl+c")
+                    main.interrupt()
+                }
+            }
+        })
+
+        groovy = new GremlinGroovysh(mediator, io)
 
         def commandsToRemove = groovy.getRegistry().commands().findAll { it instanceof SetCommand }
         commandsToRemove.each { groovy.getRegistry().remove(it) }
@@ -90,6 +106,7 @@ class Console {
         groovy.register(new PluginCommand(groovy, mediator))
         groovy.register(new RemoteCommand(groovy, mediator))
         groovy.register(new SubmitCommand(groovy, mediator))
+        groovy.register(new BytecodeCommand(groovy, mediator))
 
         // hide output temporarily while imports execute
         showShellEvaluationOutput(false)
@@ -98,8 +115,11 @@ class Console {
         imports.getClassPackages().collect { Mediator.IMPORT_SPACE + it.getName() + Mediator.IMPORT_WILDCARD }.each { groovy.execute(it) }
         imports.getMethodClasses().collect { Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each{ groovy.execute(it) }
         imports.getEnumClasses().collect { Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each{ groovy.execute(it) }
+        imports.getFieldClasses().collect { Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each{ groovy.execute(it) }
 
         final InteractiveShellRunner runner = new InteractiveShellRunner(groovy, handlePrompt)
+        runner.reader.setHandleUserInterrupt(false)
+        runner.reader.setHandleLitteralNext(false)
         runner.setErrorHandler(handleError)
         try {
             final FileHistory history = new FileHistory(new File(ConsoleFs.HISTORY_FILE))
@@ -181,6 +201,7 @@ class Console {
     private def handleResultShowNothing = { args -> null }
 
     private def handleResultIterate = { result ->
+
         try {
             // necessary to save persist history to file
             groovy.getHistory().flush()
@@ -189,16 +210,34 @@ class Console {
         }
 
         while (true) {
+            // give ctrl+c a chance
+            Thread.yield()
+
+            // if this is true then ctrl+c was triggered
+            if (Thread.interrupted()) {
+                this.tempIterator = Collections.emptyIterator()
+                return null
+            }
+
             if (this.tempIterator.hasNext()) {
-                int counter = 0;
+                int counter = 0
                 while (this.tempIterator.hasNext() && (Preferences.maxIteration == -1 || counter < Preferences.maxIteration)) {
+                    // give ctrl+c a chance
+                    Thread.yield()
+
+                    // if this is true then ctrl+c was triggered
+                    if (Thread.interrupted()) {
+                        this.tempIterator = Collections.emptyIterator()
+                        return null
+                    }
+
                     printResult(tempIterator.next())
-                    counter++;
+                    counter++
                 }
                 if (this.tempIterator.hasNext())
-                    io.out.println(Colorizer.render(Preferences.resultPromptColor,ELLIPSIS));
-                this.tempIterator = Collections.emptyIterator();
-                return null
+                    io.out.println(Colorizer.render(Preferences.resultPromptColor,ELLIPSIS))
+                this.tempIterator = Collections.emptyIterator()
+                break
             } else {
                 try {
                     // if the result is an empty iterator then the tempIterator needs to be set to one, as a
@@ -214,29 +253,29 @@ class Console {
                     if (result instanceof Iterator) {
                         this.tempIterator = (Iterator) result
                         if (!this.tempIterator.hasNext()) {
-                            this.tempIterator = Collections.emptyIterator();
+                            this.tempIterator = Collections.emptyIterator()
                             return null
                         }
                     } else if (result instanceof Iterable) {
                         this.tempIterator = ((Iterable) result).iterator()
                         if (!this.tempIterator.hasNext()) {
-                            this.tempIterator = Collections.emptyIterator();
+                            this.tempIterator = Collections.emptyIterator()
                             return null
                         }
                     } else if (result instanceof Object[]) {
                         this.tempIterator = new ArrayIterator((Object[]) result)
                         if (!this.tempIterator.hasNext()) {
-                            this.tempIterator = Collections.emptyIterator();
+                            this.tempIterator = Collections.emptyIterator()
                             return null
                         }
                     } else if (result instanceof Map) {
                         this.tempIterator = ((Map) result).entrySet().iterator()
                         if (!this.tempIterator.hasNext()) {
-                            this.tempIterator = Collections.emptyIterator();
+                            this.tempIterator = Collections.emptyIterator()
                             return null
                         }
                     } else if (result instanceof TraversalExplanation) {
-                        final int width = TerminalFactory.get().getWidth();
+                        final int width = TerminalFactory.get().getWidth()
                         io.out.println(Colorizer.render(Preferences.resultPromptColor,(buildResultPrompt() + result.prettyPrint(width < 20 ? 80 : width))))
                         return null
                     } else {
@@ -269,7 +308,7 @@ class Console {
         } else if (object instanceof Edge) {
             return Colorizer.render(Preferences.edgeColor, object.toString())
         } else if (object instanceof Iterable) {
-            List<String> buf = new ArrayList<>();
+            List<String> buf = new ArrayList<>()
             def pathIter = object.iterator()
             while (pathIter.hasNext()) {
                 Object n = pathIter.next()
@@ -277,7 +316,7 @@ class Console {
             }
             return ("[" + buf.join(",") + "]")
         } else if (object instanceof Map) {
-            List<String> buf = new ArrayList<>();
+            List<String> buf = new ArrayList<>()
             object.each{k, v ->
                 buf.add(colorizeResult(k) + ":" + colorizeResult(v))
             }
@@ -294,7 +333,7 @@ class Console {
     }
 
     private def handleError = { err ->
-        this.tempIterator = Collections.emptyIterator();
+        this.tempIterator = Collections.emptyIterator()
         if (err instanceof Throwable) {
             try {
                 final Throwable e = (Throwable) err
@@ -316,7 +355,12 @@ class Console {
                     io.err.print(line.trim())
                     io.err.println()
                     if (line.trim().equals("y") || line.trim().equals("Y")) {
-                        e.printStackTrace(io.err)
+                        if (err instanceof RemoteException && err.remoteStackTrace.isPresent()) {
+                            io.err.print(err.remoteStackTrace.get())
+                            io.err.flush()
+                        } else {
+                            e.printStackTrace(io.err)
+                        }
                     }
                 } else {
                     e.printStackTrace(io.err)
@@ -330,6 +374,8 @@ class Console {
             io.err.println(Colorizer.render(Preferences.errorColor, "An undefined error has occurred: " + err.toString()))
             if (!interactive) System.exit(1)
         }
+
+        groovy.buffers.current().clear()
 
         return null
     }
@@ -360,9 +406,9 @@ class Console {
 
                 File file = new File(scriptFile)
                 if (!file.exists() && !file.isAbsolute()) {
-                    final String userWorkingDir = System.getProperty("user.working_dir");
+                    final String userWorkingDir = System.getProperty("user.working_dir")
                     if (userWorkingDir != null) {
-                        file = new File(userWorkingDir, scriptFile);
+                        file = new File(userWorkingDir, scriptFile)
                     }
                 }
                 int lineNumber = 0
@@ -400,21 +446,22 @@ class Console {
 
         IO io = new IO(System.in, System.out, System.err)
 
-        final CliBuilder cli = new CliBuilder(usage: 'gremlin.sh [options] [...]', formatter: new HelpFormatter(), stopAtNonOption: false)
+        final CliBuilder cli = new CliBuilder()
+        cli.stopAtNonOption = false
+        cli.name = "gremlin.sh"
 
         // note that the inclusion of -l is really a setting handled by gremlin.sh and not by Console class itself.
         // it is mainly listed here for informational purposes when the user starts things up with -h
-        cli.with {
-            h(longOpt: 'help', "Display this help message")
-            v(longOpt: 'version', "Display the version")
-            l("Set the logging level of components that use standard logging output independent of the Console")
-            V(longOpt: 'verbose', "Enable verbose Console output")
-            Q(longOpt: 'quiet', "Suppress superfluous Console output")
-            D(longOpt: 'debug', "Enabled debug Console output")
-            i(longOpt: 'interactive', argName: "SCRIPT ARG1 ARG2 ...", args: Option.UNLIMITED_VALUES, valueSeparator: ' ' as char, "Execute the specified script and leave the console open on completion")
-            e(longOpt: 'execute', argName: "SCRIPT ARG1 ARG2 ...", args: Option.UNLIMITED_VALUES, valueSeparator: ' ' as char, "Execute the specified script (SCRIPT ARG1 ARG2 ...) and close the console on completion")
-            C(longOpt: 'color', "Disable use of ANSI colors")
-        }
+        cli.h(type: Boolean, longOpt: 'help', "Display this help message")
+        cli.v(type: Boolean,longOpt: 'version', "Display the version")
+        cli.l("Set the logging level of components that use standard logging output independent of the Console")
+        cli.V(type: Boolean, longOpt: 'verbose', "Enable verbose Console output")
+        cli.Q(type: Boolean, longOpt: 'quiet', "Suppress superfluous Console output")
+        cli.D(type: Boolean, longOpt: 'debug', "Enabled debug Console output")
+        cli.i(type: List, longOpt: 'interactive', arity: "1..*", argName: "SCRIPT ARG1 ARG2 ...", "Execute the specified script and leave the console open on completion")
+        cli.e(type: List, longOpt: 'execute', argName: "SCRIPT ARG1 ARG2 ...", "Execute the specified script (SCRIPT ARG1 ARG2 ...) and close the console on completion")
+        cli.C(type: Boolean, longOpt: 'color', "Disable use of ANSI colors")
+
         OptionAccessor options = cli.parse(args)
 
         if (options == null) {
@@ -472,7 +519,7 @@ class Console {
                 def parsedSet = []
                 for (ix; ix < normalizedArgs.length; ix++) {
                     // this is a do nothing as there's no arguments to the option or it's the start of a new option
-                    if (cli.options.options.any { "-" + it.opt == normalizedArgs[ix] || "--" + it.longOpt == normalizedArgs[ix] }) {
+                    if (cli.savedTypeOptions.values().any { "-" + it.opt == normalizedArgs[ix] || "--" + it.longOpt == normalizedArgs[ix] }) {
                         // rollback the counter now that we hit the next option
                         ix--
                         break

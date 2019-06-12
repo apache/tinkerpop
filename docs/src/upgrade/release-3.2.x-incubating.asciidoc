@@ -21,13 +21,52 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Nine Inch Gremlins*
 
+== TinkerPop 3.2.11
+
+*Release Date: January 2, 2019*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.2.11/CHANGELOG.asciidoc#release-3-2-11[changelog] for a complete list of all the modifications that are part of this release.
+
 == TinkerPop 3.2.10
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: October 15, 2018*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.2.10/CHANGELOG.asciidoc#release-3-2-10[changelog] for a complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
+
+==== SASL in Gremlin.Net
+
+The Gremlin Javascript Driver now supports SASL Plain Text authentication against a Gremlin Server.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1977[TINKERPOP-1977],
+link:http://tinkerpop.apache.org/docs/3.2.10/reference#gremlin-javascript[Reference Documentation - Gremlin Javascript]
+
+==== SSL Security
+
+TinkerPop improves its security posture by removing insecure defaults and adding forward-looking standards support.
+
+Gremlin Server no longer supports automatically creating self-signed certificates.
+Self-signed certificates can still be created manually outside of Gremlin Server.
+If ssl is enabled, a key store must be configured.
+
+Cluster client no longer trusts all certs by default as this is an insecure configuration.
+Instead, if no trust store is configured, Cluster will use the default CA certs.
+To revert to the previous behavior and accept all certs, it must be explicitly configured.
+
+This release introduces JKS and PKCS12 support. JKS is the legacy Java Key Store. PKCS12 has better cross-platform support and is gaining in adoption.
+Be aware that JKS is the default on Java 8.  Java 9 and higher use PKCS12 as the default. Both Java keytool and OpenSSL tools can create, read, update PKCS12 files.
+
+Other new features include specifying SSL protocols and cipher suites.
+The packaged `*-secure.yaml` files now restrict the protocol to `TLSv1.2` by default.
+
+PEM-based configurations are deprecated and may be removed in a future release.
+
+See also http://tinkerpop.apache.org/docs/current/reference/#_configuration[Connecting via Java Configuration],
+http://tinkerpop.apache.org/docs/current/reference/#_configuring_2[Gremlin Server Configuration].
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-2022[TINKERPOP-2022]
+link:https://issues.apache.org/jira/browse/TINKERPOP-2023[TINKERPOP-2023]
 
 ==== Bulk Import and Export
 
@@ -59,8 +98,8 @@ link:http://tinkerpop.apache.org/docs/current/reference#gremlin-server-docker-im
 
 ==== TimedInterruptCustomizerProvider
 
-In Gremlin Server, it is best not to use {{TimedInterruptCustomizerProvider}} because it can compete with the
-{{scriptEvaluationTimeout}} setting and produce a different error path. Simply rely on {{scriptEvaluationTimeout}}
+In Gremlin Server, it is best not to use 'TimedInterruptCustomizerProvider' because it can compete with the
+'scriptEvaluationTimeout' setting and produce a different error path. Simply rely on 'scriptEvaluationTimeout'
 as it covers both script evaluation time and result iteration time.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1778[TINKERPOP-1778]
@@ -71,6 +110,48 @@ The Grateful Dead dataset has been with TinkerPop since the early days of 1.x. I
 packaged dataset that needed to be loaded through the various IO options available, while other toy graphs had the
 benefit of `TinkerFactory` to help get them bootstrapped. For 3.2.10, Grateful Dead is now more conveniently loaded
 via that same method as the other toy graphs with `TinkerFactory.createGratefulDead()`.
+
+==== Gremlin Javascript Script Submission
+
+Gremlin Javascript can now submit script, with optional bindings, using the `Client` class:
+
+[source,javascript]
+----
+const gremlin = require('gremlin');
+const client = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traversalSource: 'g' });
+
+client.submit('g.V().tail()')
+    .then(result => {
+        console.log(result.length);
+        console.log(result.toArray()[0]);
+    });
+
+client.submit('g.V(vid)', { vid: 1 })
+    .then(result => {
+        console.log(result.length);
+        // Get the first item
+        console.log(result.first());
+    });
+----
+
+and also allows translation of bytecode steps into script:
+
+[source,javascript]
+----
+const gremlin = require('gremlin');
+const graph = new gremlin.process.Graph();
+const client = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traversalSource: 'g' });
+const translator = new gremlin.process.Translator('g');
+
+const g = graph.traversal();
+const script = translator.translate(g.V().tail().getBytecode());
+
+client.submit(script)
+    .then(result => {
+        console.log(result.length);
+        console.log(result.first());
+    });
+----
 
 === Upgrading for Providers
 

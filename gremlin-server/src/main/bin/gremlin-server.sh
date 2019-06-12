@@ -252,11 +252,6 @@ case "$1" in
   stop)
     stop
     ;;
-  -i)
-    shift
-    echo "Redirecting to 'install $@' (-i will be removed in a future release)"
-    install "$@"
-    ;;
   install)
     shift
     install "$@"
@@ -275,6 +270,20 @@ case "$1" in
       fi
       echo Configuration file not found.
     fi
-    echo "Usage: $0 {start|stop|restart|status|console|install <group> <artifact> <version>|<conf file>}"; exit 1;
+    echo "Usage: $0 {start|stop|restart|status|console|install <group> <artifact> <version>|<conf file>}"
+    echo
+    echo "    start        Start the server in the background using conf/gremlin-server.yaml as the"
+    echo "                 default configuration file"
+    echo "    stop         Stop the server"
+    echo "    restart      Stop and start the server"
+    echo "    status       Check if the server is running"
+    echo "    console      Start the server in the foreground using conf/gremlin-server.yaml as the"
+    echo "                 default configuration file"
+    echo "    install      Install dependencies"
+    echo
+    echo "If using a custom YAML configuration file then specify it as the only argument for Gremlin"
+    echo "Server to run in the foreground or specify it via the GREMLIN_YAML environment variable."
+    echo
+    exit 1
     ;;
 esac

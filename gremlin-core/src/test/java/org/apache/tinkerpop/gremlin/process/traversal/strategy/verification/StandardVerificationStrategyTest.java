@@ -18,16 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.io.File;
 import java.util.Arrays;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
@@ -43,14 +46,17 @@ import static org.junit.Assert.fail;
 @RunWith(Parameterized.class)
 public class StandardVerificationStrategyTest {
 
+
     @Parameterized.Parameters(name = "{0}")
-    public static Iterable<Object[]> data() {
+    public static Iterable<Object[]> data() throws Exception {
+
+        final String file = TestHelper.generateTempFile(StandardVerificationStrategyTest.class, "shouldBeVerified", ".kryo").getAbsolutePath();
+
         return Arrays.asList(new Object[][]{
                 // traversals that should fail verification
                 {"__.repeat(out().fold().unfold()).times(2)", repeat(out().fold().unfold()).times(2), false},
                 {"__.repeat(sum()).times(2)", repeat(sum()).times(2), false},
                 {"__.repeat(out().count())", repeat(out().count()), false},
-                // traversals that should pass verification
                 {"__.V().profile()",
                         __.V().profile(), true},
                 {"__.V().profile('metrics').cap('metrics')",

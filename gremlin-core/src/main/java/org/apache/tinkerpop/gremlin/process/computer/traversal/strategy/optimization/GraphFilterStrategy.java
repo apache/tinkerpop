@@ -39,7 +39,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -77,7 +77,7 @@ public final class GraphFilterStrategy extends AbstractTraversalStrategy<Travers
             return null; // if the traversal is an edge traversal, don't filter (this can be made less stringent)
         if (TraversalHelper.hasStepOfAssignableClassRecursively(LambdaHolder.class, traversal))
             return null; // if the traversal contains lambdas, don't filter as you don't know what is being accessed by the lambdas
-        final Map<Direction, Set<String>> directionLabels = new HashMap<>();
+        final Map<Direction, Set<String>> directionLabels = new EnumMap<>(Direction.class);
         final Set<String> outLabels = new HashSet<>();
         final Set<String> inLabels = new HashSet<>();
         final Set<String> bothLabels = new HashSet<>();

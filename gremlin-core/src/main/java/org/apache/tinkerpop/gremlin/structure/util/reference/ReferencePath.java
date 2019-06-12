@@ -32,9 +32,7 @@ import java.util.function.Function;
  */
 public class ReferencePath extends MutablePath implements Attachable<Path> {
 
-    private ReferencePath() {
-
-    }
+    private ReferencePath() {}
 
     public Path get() {
         return this;
@@ -42,22 +40,11 @@ public class ReferencePath extends MutablePath implements Attachable<Path> {
 
     protected ReferencePath(final Path path) {
         path.forEach((object, labels) -> {
-            if (object instanceof ReferenceElement || object instanceof ReferenceProperty || object instanceof ReferencePath) {
+            if (object instanceof ReferenceElement || object instanceof ReferenceProperty || object instanceof ReferencePath)
                 this.objects.add(object);
-                this.labels.add(new HashSet<>(labels));
-            } else if (object instanceof Element) {
-                this.objects.add(ReferenceFactory.detach((Element) object));
-                this.labels.add(new HashSet<>(labels));
-            } else if (object instanceof Property) {
-                this.objects.add(ReferenceFactory.detach((Property) object));
-                this.labels.add(new HashSet<>(labels));
-            } else if (object instanceof Path) {
-                this.objects.add(ReferenceFactory.detach((Path) object));
-                this.labels.add(new HashSet<>(labels));
-            } else {
-                this.objects.add(object);
-                this.labels.add(new HashSet<>(labels));
-            }
+            else
+                this.objects.add(ReferenceFactory.detach(object));
+            this.labels.add(new HashSet<>(labels));
         });
     }
 

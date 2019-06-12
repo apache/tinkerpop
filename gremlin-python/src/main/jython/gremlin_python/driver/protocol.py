@@ -20,6 +20,7 @@ import abc
 import base64
 
 import six
+
 try:
     import ujson as json
 except ImportError:
@@ -31,7 +32,14 @@ __author__ = 'David M. Brown (davebshow@gmail.com)'
 
 
 class GremlinServerError(Exception):
-    pass
+    def __init__(self, status):
+        super(GremlinServerError, self).__init__("{0}: {1}".format(status["code"], status["message"]))
+        self._status_attributes = status["attributes"]
+        self.status_code = status["code"]
+
+    @property
+    def status_attributes(self):
+        return self._status_attributes
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -66,6 +74,10 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
         self._transport.write(message)
 
     def data_received(self, message, results_dict):
+        # if Gremlin Server cuts off then we get a None for the message
+        if message is None:
+            raise GremlinServerError({'code': 500, 'message':'Server disconnected - please try to reconnect', 'attributes': {}})
+
         message = self._message_serializer.deserialize_message(json.loads(message.decode('utf-8')))
         request_id = message['requestId']
         result_set = results_dict[request_id]
@@ -82,20 +94,17 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
             self.write(request_id, request_message)
             data = self._transport.read()
             # Allow recursive call for auth
-            self.data_received(data, results_dict)
+            return self.data_received(data, results_dict)
         elif status_code == 204:
             result_set.stream.put_nowait([])
             del results_dict[request_id]
             return status_code
         elif status_code in [200, 206]:
             result_set.stream.put_nowait(data)
-            if status_code == 206:
-                message = self._transport.read()
-                self.data_received(message, results_dict)
-            else:
+            if status_code == 200:
+                result_set.status_attributes = message['status']['attributes']
                 del results_dict[request_id]
             return status_code
         else:
             del results_dict[request_id]
-            raise GremlinServerError(
-                "{0}: {1}".format(status_code, message["status"]["message"]))
+            raise GremlinServerError(message["status"])

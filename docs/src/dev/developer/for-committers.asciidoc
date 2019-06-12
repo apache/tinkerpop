@@ -18,22 +18,52 @@ limitations under the License.
 
 image::business-gremlin.png[width=400]
 
-The guidelines that follow apply to those with commit access to the main repository:
+The guidelines that follow generally apply to those with commit access to the main repository, but those seeking to
+contribute will also find helpful information here on the development style and process for the project.
+
+[[initial-setup]]
+== Initial Setup
+
+Once the Apache TinkerPop PMC has sent an invitation to a contributor to become a new committer and that contributor
+has accepted that invitation and provided their iCLA to Apache, then there are some administrative steps that the
+new committer can expect to go through to complete the process so that they have access to Apache resources like the
+Git repository. While the information for completing the process can be found in a multitude of places the following
+listing provides a summary of what to do next:
+
+* Look for a welcome email from root_at_apache.org. This will contain your Apache user name
+** e.g. "Welcome to the Apache Software Foundation (ASF)!"
+* Visit https://id.apache.org/reset/enter and enter your user name
+* Look for a password reset email from root_at_apache.org. This will have been sent after you confirmed your user name, above.
+** e.g. "Password reset request for [username] from Apache ID"
+* Visit the link provided in the password reset email, and choose a new password. ASF asks you to choose a strong one. You will see a "Password change successful" page when this is done.
+* You will now have SVN access
+** link:https://svn.apache.org/[svn.apache.org]
+* Try sending yourself an email at your new [username]@apache.org email address. It should forward to your primary address.
+* Check your account details at https://id.apache.org/details/[username]
+* Link your accounts using gitbox (https://gitbox.apache.org/setup/)
+** Link your Apache account
+** Link your GitHub account
+*** You will be asked to "Authorize Apache M.A.T.T."
+** Obtain MFA status
+*** Visit link:https://id.apache.org[id.apache.org] and set your GitHub ID to be invited to the org
+*** Wait for an email to arrive from "support_at_github.com", and click "Join @apache". Accept the invitation on github.com. Your new MFA status will not immediately be reflected on github, but you will get a confirmation email from noreply_at_github.com. Later, the status will read "MFA ENABLED"
+**** e.g. "[GitHub] @asf-gitbox has invited you to join the @apache organization"
+*** You can find yourself by searching in the link:https://github.com/orgs/apache/teams/apache-committers[Apache Committers listing]
+* Read the link:https://www.apache.org/dev/new-committers-guide.html[Apache Committer Guide] and link:http://www.apache.org/dev/committers.html[Apache Committer FAQ]
+* Read through the other sections of this document - the Developer Documentation - for more details on project procedures and other administrative items.
+** In particular, see <<rtc,Review then Commit>>
+* If you have trouble committing, email dev@tinkerpop.apache.org
 
 == Communication
 
 TinkerPop has a link:http://groups.google.com/group/gremlin-users[user mailing list] and a
-link:https://lists.apache.org/list.html?dev@tinkerpop.apache.org[developer mailing list].  As a committer,
+pass:[<a href="https://lists.apache.org/list.html?dev@tinkerpop.apache.org">dev mailing list</a>].  As a committer,
 it is a good idea to join both.
 
-It would also be helpful to join the public link:https://apache.hipchat.com/chat/room/2013155[TinkerPop HipChat room]
-for developer discussion.  This helps contributors to communicate in a more real-time way.  Anyone can join as a guest,
-but for regular contributors it may be best to request that an Apache HipChat account be created.
-
-Occasionally, online meetings via video conference are held.  These meetings are schedule via the dev mailing list
+Occasionally, online meetings via video conference are held. These meetings are schedule via the dev mailing list
 about a week before they are to occur to find a day and time that is available for those interested in attending.
-On the day of the meeting, the meeting organizer will create a Google Hangout (or similar video conferencing link) to
-post to the TinkerPop room in HipChat.  At that point, all who are interested can attend.  Meeting minutes should be
+On the day of the meeting, the meeting organizer will create a Google Hangout (or similar video conferencing link).
+At that point, all who are interested can attend.  Meeting minutes should be
 taken and added to the <<meetings,Meetings>> section of this document using the pattern already established.
 
 == Release Notes
@@ -64,9 +94,10 @@ TinkerPop has several release branches:
 
 * `tp30` - 3.0.x (no longer maintained)
 * `tp31` - 3.1.x (no longer maintained)
-* `tp32` - 3.2.x (bug fixes and documentation updates only)
+* `tp32` - 3.2.x (major bug fixes only)
 * `tp33` - 3.3.x (current development)
-* `master` - 3.4.x (future development)
+* `tp34` - 3.4.x (current development)
+* `master` - 3.5.x (future development)
 
 Changes to `tp32` should merge to `tp33` and then `tp33` to `master`. Please read more about this process in the
 <<pull-requests, Pull Requests>> section.
@@ -112,6 +143,11 @@ which that particular issue will completed. This is a field usually only set by 
 * The "priority" field can be arbitrarily applied with one exception.  The "trivial" option should be reserved for
 tasks that are "easy" for a potential new contributor to jump into and do not have significant impact to urgently
 required improvements.
+* The "resolution" field which is set on the close of the issue should specify the status most closely related to why
+the issue was closed. In most cases, this will mean "Fixed" for a "Bug" or "Done" for an "Improvement". Only one
+resolution has special meaning and care should be taken with this particular option: "Later". "Later" means that the
+item is a good idea but likely will not be implemented in any foreseeable future. By closing uncompleted issues with
+this resolution, it should be easy to come back to them later when needed.
 
 == Code Style
 
@@ -123,8 +159,9 @@ be adjusted accordingly to not auto-wildcard the imports.
 
 TinkerPop uses link:https://travis-ci.com/[Travis] for link:https://en.wikipedia.org/wiki/Continuous_integration[CI]
 services. The build status can be found link:https://travis-ci.org/apache/tinkerpop[here].  Note that the CI process
-does not run integration tests or include Neo4j-related tests as those tests would likely exceed the allowable times
-for builds on these servers.
+does not run all possible tests (e.g. Neo4j-related tests) as a full execution would likely exceed the allowable times
+for builds on these servers. Instead Travis runs a basic cross-section of tests selected to provide a reasonably high
+degree of confidence in the branch built.
 
 == Deprecation
 
@@ -432,7 +469,7 @@ that may be used as building blocks for your benchmarks; `AbstractBenchmarkBase`
 [[rtc]]
 == Review then Commit
 
-Code modifications must go through a link:http://www.apache.org/foundation/glossary.html#ReviewThenCommit[review-then-committ] (RTC)
+Code modifications must go through a link:http://www.apache.org/foundation/glossary.html#ReviewThenCommit[review-then-commit] (RTC)
 process before being merged into a release branch. All committers should follow the pattern below, where "you" refers
 to the committer wanting to put code into a release branch.
 
@@ -440,11 +477,11 @@ to the committer wanting to put code into a release branch.
 * Fork the release branch that the fix will be put into.
 ** The branch name should be the JIRA issue identifier (e.g. `TINKERPOP-XXX`).
 * Develop your fix in your branch.
-* When your fix is complete and ready to merge, issue a link:https://git-scm.com/docs/git-request-pull[pull request].
+* When your fix is complete and ready to merge, issue a <<pull-requests,pull request>>.
 ** Be certain that the test suite is passing.
 ** If you updated documentation, be sure that the `process-docs.sh` is building the documentation correctly.
 * Before you can merge your branch into the release branch, you must have at least 3 +1 link:http://www.apache.org/foundation/glossary.html#ConsensusApproval[consensus votes]
-from other committers OR a single +1 from a committer and a one week review period for objections (i.e. a "cool down
+from other committers OR a single +1 from a committer and a seven day review period for objections (i.e. a "cool down
 period") at which point we will assume a lazy consensus.
 ** Please see the Apache Software Foundations regulations regarding link:http://www.apache.org/foundation/voting.html#votes-on-code-modification[Voting on Code Modifications].
 ** With the "cool down" process and lazy consensus the single +1 may (should) come from the committer who submitted
@@ -453,7 +490,7 @@ the pull request (in other words, the change submitter and the reviewer are the 
 not rely strictly on lazy consensus.
 * Votes are issued by TinkerPop committers as comments to the pull request.
 * Once either consensus position is reached, you are responsible for merging to the release branch and handling any merge conflicts.
-** If there is a higher version release branch that requires your fix (e.g. `3.y-1.z` fix going to a `3.y.z` release), be sure to merge to that release branch as well.
+** If there is a higher version release branch that requires your fix (e.g. `3.y-1.z` fix going to a `3.y.z` release), multiple pull requests may be necessary (i.e. one for each branch).
 * Be conscious of deleting your branch if it is no longer going to be used so stale branches don't pollute the repository.
 
 NOTE: These steps also generally apply to external pull requests from those who are not official Apache committers. In
@@ -489,7 +526,9 @@ require a review.
 
 When the committer chooses CTR, it is considered good form to include something in the commit message that explains
 that CTR was invoked and the reason for doing so.  For example, "Invoking CTR as this change encompasses minor
-adjustments to text formatting."
+adjustments to text formatting." CTR based commits will still require manual merging through all release branches.
+Merges should occur in reverse order, starting with the latest release version first (e.g. if the fix is going to
+3.2.x then the change should be merged in the following order `master`, `tp33`, `tp32`).
 
 [[pull-requests]]
 === Pull Requests
@@ -513,6 +552,11 @@ A pull request will typically be made to a target <<branches, branch>>. Assuming
 release branches (e.g. a pull request made to for the branch containing 3.2.x must merge to the branch that releases
 3.3.x), it is important to be sure that those changes are merged to the downstream release branches. Typically,
 this process is best handled by multiple pull requests: one to each release branch.
+
+While merges can be handled manually with `git` commands, it is typically best to use the GitHub UI itself and the
+"Merge Pull Request" button instead. Branches should be merged in reverse order, starting with the latest release
+version first (e.g. if the fix is going to 3.2.x then the change should be merged in the following order `master`,
+`tp33`, `tp32`).
 
 As an example, consider a situation where there is a feature branch named "TINKERPOP-1234" that contains a fix for
 the `tp32` branch:
@@ -560,7 +604,7 @@ Again, depending on the changes, it may make sense to re-test at this point, oth
 git push origin TINKERPOP-1234-master --force
 ----
 
-It should not be safe to merge both pull requests to their release branches.
+It should now be safe to merge both pull requests to their release branches.
 
 IMPORTANT: Always take a moment to review the commits in a particular pull request. Be sure that they are *all* related
 to the work that was done and that no extraneous commits are present that cannot be explained. Ensuring a pull request
@@ -611,15 +655,18 @@ that LICENSE in the root `/licenses` directory of the code repository.
 === Binary LICENSE and NOTICE
 
 The binary LICENSE/NOTICE is perhaps most impacted by changes to the various `pom.xml` files. After altering the
-`pom.xml` file of any module, build both Gremlin Console and Gremlin Server and examine the contents of both binary
-distributions, either:
+`pom.xml` file of any module, build both Gremlin Console and Gremlin Server and examine the contents of the binary
+distributions:
 
+* target/gremlin-console-x.y.z-uber.jar
 * target/apache-tinkerpop-gremlin-console-x.y.z-distribution.zip
 * target/apache-tinkerpop-gremlin-server-x.y.z-distribution.zip
 
 Apache licensed software does not need to be included in LICENSE, but if the new dependency is an Apache-approved
 license (e.g. BSD, MIT) then it should be added in the pattern already defined. A copy of the LICENSE should be
-added to the `<project>/src/main/static/licenses` directory of the code repository.
+added to the `<project>/src/main/static/licenses` directory of the code repository and the `maven-shade-plugin` section
+of the `gremlin-console` `pom.xml` should be updated to reference this new license file so that it is included in the
+uber jar.
 
 To determine if changes are required to the NOTICE, first check if the bundled jar has a NOTICE file in it (typically
 found in `/META-INF` directory of the jar).
@@ -684,7 +731,7 @@ best for everyone's general purposes, so if changes are made please revert them 
 
 The link:http://tinkerpop.apache.org/docs/x.y.z/dev/io[IO Documentation] provides more details into GraphML, GraphSON
 and Gryo with a special focus on the needs of developers who are working directly with these formats. GraphSON gets
-the greatest focus here as it is used as the primary IO format for link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-variants[GLVs].
+the greatest focus here as it is used as the primary IO format for link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[GLVs].
 This documentation is largely generated from the `gremlin-io-test` module found under `gremlin-tools`. The
 `gremlin-io-test` module also includes a testing framework which validates that formats don't break between TinkerPop
 versions. Unfortunately, this module requires some maintenance to ensure that the documentation and tests both stay

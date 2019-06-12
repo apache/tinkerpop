@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.WebSockets;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Structure.IO.GraphSON;
@@ -53,13 +54,22 @@ namespace Gremlin.Net.Driver
         /// <param name="graphSONReader">A <see cref="GraphSONReader" /> instance to read received GraphSON data.</param>
         /// <param name="graphSONWriter">a <see cref="GraphSONWriter" /> instance to write GraphSON data.</param>
         /// <param name="mimeType">The GraphSON version mime type, defaults to latest supported by the server.</param>
+        /// <param name="connectionPoolSettings">The <see cref="ConnectionPoolSettings"/> for the connection pool.</param>
+        /// <param name="webSocketConfiguration">
+        ///     A delegate that will be invoked with the <see cref="ClientWebSocketOptions" />
+        ///     object used to configure WebSocket connections.
+        /// </param>
         public GremlinClient(GremlinServer gremlinServer, GraphSONReader graphSONReader = null,
-                             GraphSONWriter graphSONWriter = null, string mimeType = null)
+            GraphSONWriter graphSONWriter = null, string mimeType = null,
+            ConnectionPoolSettings connectionPoolSettings = null,
+            Action<ClientWebSocketOptions> webSocketConfiguration = null)
         {
             var reader = graphSONReader ?? new GraphSON3Reader();
             var writer = graphSONWriter ?? new GraphSON3Writer();
-            var connectionFactory = new ConnectionFactory(gremlinServer, reader, writer, mimeType ?? DefaultMimeType);
-            _connectionPool = new ConnectionPool(connectionFactory);
+            var connectionFactory = new ConnectionFactory(gremlinServer, reader, writer, mimeType ?? DefaultMimeType,
+                webSocketConfiguration);
+            _connectionPool =
+                new ConnectionPool(connectionFactory, connectionPoolSettings ?? new ConnectionPoolSettings());            
         }
 
         /// <summary>
@@ -68,7 +78,7 @@ namespace Gremlin.Net.Driver
         public int NrConnections => _connectionPool.NrConnections;
 
         /// <inheritdoc />
-        public async Task<IReadOnlyCollection<T>> SubmitAsync<T>(RequestMessage requestMessage)
+        public async Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage)
         {
             using (var connection = await _connectionPool.GetAvailableConnectionAsync().ConfigureAwait(false))
             {

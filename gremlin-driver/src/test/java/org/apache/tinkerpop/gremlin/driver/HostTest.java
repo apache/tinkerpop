@@ -31,11 +31,19 @@ import static org.junit.Assert.assertEquals;
 public class HostTest {
 
     @Test
-    public void shouldConstructHost() {
+    public void shouldConstructHostWithDefaultPath() {
         final InetSocketAddress addy = new InetSocketAddress("localhost", 8182);
         final Host host = new Host(addy, Cluster.open());
         final URI webSocketUri = host.getHostUri();
         assertEquals("ws://localhost:8182/gremlin", webSocketUri.toString());
+    }
+
+    @Test
+    public void shouldConstructHostWithCustomPath() {
+        final InetSocketAddress addy = new InetSocketAddress("localhost", 8183);
+        final Host host = new Host(addy, Cluster.build().port(8183).path("/argh").create());
+        final URI webSocketUri = host.getHostUri();
+        assertEquals("ws://localhost:8183/argh", webSocketUri.toString());
     }
 
 }

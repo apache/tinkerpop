@@ -18,10 +18,13 @@ under the License.
 '''
 import pytest
 
+from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver.client import Client
+from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver.request import RequestMessage
+from gremlin_python.process.strategies import OptionsStrategy
+from gremlin_python.process.graph_traversal import __
 from gremlin_python.structure.graph import Graph
-from gremlin_python.driver import serializer
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
@@ -35,6 +38,8 @@ def test_connection(connection):
     results = future.result()
     assert len(results) == 6
     assert isinstance(results, list)
+    assert results_set.done.done()
+    assert 'host' in results_set.status_attributes
 
 
 def test_client_simple_eval(client):
@@ -49,9 +54,48 @@ def test_client_eval_traversal(client):
     assert len(client.submit('g.V()').all().result()) == 6
 
 
+def test_client_error(client):
+    try:
+        # should fire an exception
+        client.submit('1/0').all().result()
+        assert False
+    except GremlinServerError as ex:
+        assert 'exceptions' in ex.status_attributes
+        assert 'stackTrace' in ex.status_attributes
+
+
+def test_client_connection_pool_after_error(client):
+    # Overwrite fixture with pool_size=1 client
+    client = Client('ws://localhost:45940/gremlin', 'gmodern', pool_size=1)
+
+    try:
+        # should fire an exception
+        client.submit('1/0').all().result()
+        assert False
+    except GremlinServerError as gse:
+        # expecting the pool size to be 1 again after query returned
+        assert gse.status_code == 597
+        assert client.available_pool_size == 1
+
+
 def test_client_bytecode(client):
     g = Graph().traversal()
     t = g.V()
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
+    result_set = client.submit(message)
+    assert len(result_set.all().result()) == 6
+
+
+def test_client_bytecode_options(client):
+    # smoke test to validate serialization of OptionsStrategy. no way to really validate this from an integration
+    # test perspective because there's no way to access the internals of the strategy via bytecode
+    g = Graph().traversal()
+    t = g.withStrategies(OptionsStrategy(options={"x": "test", "y": True})).V()
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
+    result_set = client.submit(message)
+    assert len(result_set.all().result()) == 6
+    ##
+    t = g.with_("x", "test").with_("y", True).V()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
     result_set = client.submit(message)
     assert len(result_set.all().result()) == 6
@@ -111,3 +155,89 @@ def test_multi_conn_pool(client):
     # with connection pool `future` may or may not be done here
     result_set = future.result()
     assert len(result_set.all().result()) == 6
+
+
+def test_big_result_set(client):
+    g = Graph().traversal()
+    t = g.inject(1).repeat(__.addV('person').property('name', __.loops())).times(20000).count()
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
+    result_set = client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 1
+
+    t = g.V().limit(10)
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
+    result_set = client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 10
+
+    t = g.V().limit(100)
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
+    result_set = client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 100
+
+    t = g.V().limit(1000)
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
+    result_set = client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 1000
+
+    t = g.V().limit(10000)
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
+    result_set = client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 10000
+
+
+def test_big_result_set_secure(secure_client):
+    g = Graph().traversal()
+    t = g.inject(1).repeat(__.addV('person').property('name', __.loops())).times(20000).count()
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
+    result_set = secure_client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 1
+
+    t = g.V().limit(10)
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
+    result_set = secure_client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 10
+
+    t = g.V().limit(100)
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
+    result_set = secure_client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 100
+
+    t = g.V().limit(1000)
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
+    result_set = secure_client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 1000
+
+    t = g.V().limit(10000)
+    message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
+    result_set = secure_client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 10000

@@ -21,7 +21,7 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 
 == Getting Started
 
-link:http://tinkerpop.apache.org[Apache TinkerPop] is an open source Graph Computing Framework. Within itself, TinkerPop
+link:http://tinkerpop.apache.org[Apache TinkerPop™] is an open source Graph Computing Framework. Within itself, TinkerPop
 represents a large collection of capabilities and technologies and, in its wider ecosystem, an additionally extended
 world of link:http://tinkerpop.apache.org/#graph-systems[third-party contributed] graph libraries and
 systems. TinkerPop's ecosystem can appear complex to newcomers of all experience, especially when glancing at the
@@ -77,12 +77,14 @@ the more complex need to "create a project" to try things out. The console is no
 You will find yourself using it for a variety of TinkerPop-related activities, such as loading data, administering
 graphs, working out complex traversals, etc.
 
-To get Gremlin to traverse a graph, you need a `Graph` instance, which holds the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_the_graph_structure[structure] and data of the
+To get Gremlin to traverse a graph, you need a `TraversalSource` instance, which holds a reference to the a
+`Graph` instance which in turn holds the
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graph-structure[structure] and data of the
 graph. TinkerPop is a graph abstraction layer over different graph databases and different graph processors, so there
-are many `Graph` instances you can choose from to instantiate in the console. The best `Graph` instance to start with
-however is link:http://tinkerpop.apache.org/docs/x.y.z/reference/#tinkergraph-gremlin[TinkerGraph]. TinkerGraph
-is a fast, in-memory graph database with a small handful of configuration options, making it a good choice for beginners.
+are many `Graph` instances link:http://tinkerpop.apache.org/#graph-systems[you can choose from] to instantiate a
+connection to in the console. The best `Graph` instance to start with however is
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#tinkergraph-gremlin[TinkerGraph]. TinkerGraph is a fast,
+in-memory graph database with a small handful of configuration options, making it a good choice for beginners.
 
 TIP: TinkerGraph is not just a toy for beginners. It is useful in analyzing subgraphs taken from a large graph,
 working with a small static graph that doesn't change much, writing unit tests and other use cases where the graph
@@ -99,10 +101,11 @@ documentation is based on them and when you need help and have to come to the
 link:http://groups.google.com/group/gremlin-users[mailing list], a failing example put in the context of the toy graphs
 can usually get you a fast answer to your problem.
 
-TIP: When asking questions on the mailing list or StackOverflow about Gremlin, it's is always helpful to include a
-sample graph so that those attempting to answer your question understand exactly what kind of graph you have and can
-focus their energies on a good answer rather than trying to build sample data themselves. The sample graph should just
-be a simple Gremlin script that can be cut and paste into a Gremlin Console session.
+TIP: When asking questions on the mailing list or StackOverflow about Gremlin, it's is always helpful to
+link:https://stackoverflow.com/questions/51388315/gremlin-choose-one-item-at-random[include a sample graph] so that
+those attempting to answer your question understand exactly what kind of graph you have and can focus their energies
+on a good, tested answer rather than trying to build sample data themselves. The sample graph should just be a simple
+Gremlin script that can be cut and paste into a Gremlin Console session.
 
 For your first graph, use the "Modern" graph which looks like this:
 
@@ -123,6 +126,12 @@ provides additional information to Gremlin (such as the link:http://tinkerpop.ap
 to apply and the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graphcomputer[traversal engine] to use) which
 provides him guidance on how to execute his trip around the `Graph`.
 
+There are several ways to create a `TraversalSource`. The example above uses the
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-embedded[embedded] style and is an approach
+restricted to languages using the Java Virtual Machine. Other methods are similar in form, but are not the focus of
+this tutorial. See the Reference Documentation for more information on the different ways of
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-gremlin[connecting with Gremlin].
+
 With your `TraversalSource` `g` available it is now possible to ask Gremlin to traverse the `Graph`:
 
 [gremlin-groovy,modern]
@@ -142,7 +151,7 @@ g.V(1).out('knows').has('age', gt(30)).values('name')    <7>
 <4> Get the edges with the label "knows" for the vertex with the unique identifier of "1".
 <5> Get the names of the people that the vertex with the unique identifier of "1" "knows".
 <6> Note that when one uses `outE().inV()` as shown in the previous command, this can be shortened to just `out()`
-(similar to `inE().inV()` and `in` for incoming edges).
+(similar to `inE().outV()` and `in()` for incoming edges).
 <7> Get the names of the people vertex "1" knows who are over the age of 30.
 
 IMPORTANT: A `Traversal` is essentially an `Iterator` so if you have code like `x = g.V()`, the `x` does not contain
@@ -206,7 +215,7 @@ g.addE("created").from(v1).to(v2).property(id, 9).property("weight", 0.4)
 ----
 
 There are a number of important things to consider in the above code. First, recall that `id` is
-"reserved" for special usage in TinkerPop and are members of the enum, `T`. Those "keys" supplied to the creation
+"reserved" for special usage in TinkerPop and is a member of the enum, `T`. Those "keys" supplied to the creation
 method are link:https://docs.oracle.com/javase/8/docs/technotes/guides/language/static-import.html[statically imported]
 to the console, which allows you to access them without having to specify their owning enum. Think of it as a
 shorthand form that enables a more fluid code style. You would normally refer to it as `T.id`. Without
@@ -221,9 +230,12 @@ v2 = g.addV("software").property(T.id, 3).property("name", "lop").property("lang
 g.addE("created").from(v1).to(v2).property(T.id, 9).property("weight", 0.4)
 ----
 
-NOTE: The fully qualified name for `T` is `org.apache.tinkerpop.gremlin.structure.T`. Another important static import
-that is often seen in Gremlin comes from `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__`, which allows
-for the creation of link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graph-traversal-steps[anonymous traversals].
+NOTE: On the JVM, the fully qualified name for `T` is `org.apache.tinkerpop.gremlin.structure.T`. Another important
+static import that is often seen in Gremlin comes from `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__`,
+which allows for the creation of link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graph-traversal-steps[anonymous traversals].
+You can find the analogous variations of `T` and `__` for other Gremlin languages by viewing the "Common Imports"
+sections for the programming language you are interested in in the
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Reference Documentation].
 
 Second, don't forget that you are working with TinkerGraph which allows for identifier assignment. That is _not_ the
 case with most graph databases.
@@ -235,7 +247,7 @@ creating an edge that goes _out_ of `v1` and into `v2` with a label of "created"
 === Graph Traversal - Staying Simple
 
 Now that Gremlin knows where the graph data is, you can ask him to get you some data from it by doing a traversal,
-which you can think of as executing some link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_the_graph_process[process]
+which you can think of as executing some link:http://tinkerpop.apache.org/docs/x.y.z/reference/#the-graph-process[process]
 over the structure of the graph. We can form our question in English and then translate it to Gremlin. For this
 initial example, let's ask Gremlin: "What software has Marko created?"
 
@@ -246,9 +258,9 @@ To answer this question, we would want Gremlin to:
 . Select the "name" property of the "software" vertices
 
 The English-based steps above largely translate to Gremlin's position in the graph and to the steps we need to take
-to ask him to answer our question. By stringing these steps together, we form a `Traversal` or the sequence of programmatic
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graph-traversal-steps[steps] Gremlin needs to perform
-in order to get you an answer.
+to ask him to answer our question. By stringing these steps together, we form a `Traversal` or the sequence of
+programmatic link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graph-traversal-steps[steps] Gremlin needs to
+perform in order to get you an answer.
 
 Let's start with finding "marko". This operation is a filtering step as it searches the full set of vertices to match
 those that have the "name" property value of "marko". This can be done with the
@@ -261,6 +273,15 @@ g.V().has('name','marko')
 
 NOTE: The variable `g` is the `TraversalSource`, which was introduced in the "The First Five Minutes". The
 `TraversalSource` is created with `graph.traversal()` and is the object used to spawn new traversals.
+
+This bit of Gremlin can be improved and made more
+link:http://tinkerpop.apache.org/docs/x.y.z/recipes/#unspecified-label-in-global-vertex-lookup[idiomatically pleasing]
+by including the vertex label as part of the filter to ensure that the "name" property key refers to a "person" vertex.
+
+[gremlin-groovy,modern]
+----
+g.V().has('person','name','marko')
+----
 
 We can picture this traversal in our little graph with Gremlin sitting on vertex "1".
 
@@ -281,7 +302,7 @@ we use the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-steps[o
 
 [gremlin-groovy,modern]
 ----
-g.V().has('name','marko').outE('created')
+g.V().has('person','name','marko').outE('created')
 ----
 
 At this point, you can picture Gremlin moving from the "marko" vertex to the "created" edge.
@@ -293,7 +314,7 @@ vertex with `inV()`.
 
 [gremlin-groovy,modern]
 ----
-g.V().has('name','marko').outE('created').inV()
+g.V().has('person','name','marko').outE('created').inV()
 ----
 
 You can now picture Gremlin on the "software" vertex as follows:
@@ -305,7 +326,7 @@ statement above with:
 
 [gremlin-groovy,modern]
 ----
-g.V().has('name','marko').out('created')
+g.V().has('person','name','marko').out('created')
 ----
 
 image:modern-edge-1-to-3-4-gremlin.png[width=325]
@@ -315,7 +336,7 @@ Finally, now that Gremlin has reached the "software that Marko created", he has 
 
 [gremlin-groovy,modern]
 ----
-g.V().has('name','marko').out('created').values('name')
+g.V().has('person','name','marko').out('created').values('name')
 ----
 
 You should now be able to see the connection Gremlin has to the structure of the graph and how Gremlin maneuvers from
@@ -340,20 +361,22 @@ use the `within` comparator with `has()` as follows:
 
 [gremlin-groovy,modern]
 ----
-g.V().has('name',within('vadas','marko')).values('age')
+g.V().has('person','name',within('vadas','marko')).values('age')
 ----
 
 It is worth noting that `within` is statically imported from `P` to the Gremlin Console (much like `T` is, as described
 earlier).
 
-NOTE: The fully qualified name for `P` is `org.apache.tinkerpop.gremlin.process.traversal.P`.
+NOTE: On the JVM, the fully qualified name for `P` is `org.apache.tinkerpop.gremlin.process.traversal.P`. You can find
+the analogous variation of `P` for other Gremlin languages by viewing the "Common Imports" sections for the programming
+language you are interested in in the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Reference Documentation].
 
 If we wanted to ask Gremlin the average age of "vadas" and "marko" we could use the
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#mean-step[mean()] step as follows:
 
 [gremlin-groovy,modern]
 ----
-g.V().has('name',within('vadas','marko')).values('age').mean()
+g.V().has('person','name',within('vadas','marko')).values('age').mean()
 ----
 
 Another method of filtering is seen in the use of the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#where-step[where]
@@ -361,7 +384,7 @@ step. We know how to find the "software" that "marko" created:
 
 [gremlin-groovy,modern]
 ----
-g.V().has('name','marko').out('created')
+g.V().has('person','name','marko').out('created')
 ----
 
 image:gremlin-on-software-vertex.png[width=325,float=right] Let's extend on that query to try to learn who "marko"
@@ -376,7 +399,7 @@ on what well formatted Gremlin should look like.
 
 [gremlin-groovy,modern]
 ----
-g.V().has('name','marko').
+g.V().has('person','name','marko').
   out('created').in('created').
   values('name')
 ----
@@ -387,7 +410,7 @@ know about the involvement of "marko" and it seems strange to say that "marko" c
 
 [gremlin-groovy,modern]
 ----
-g.V().has('name','marko').as('exclude').
+g.V().has('person','name','marko').as('exclude').
   out('created').in('created').
   where(neq('exclude')).
   values('name')
@@ -450,11 +473,11 @@ identify areas of interest and dig into the details from there.
 
 === Why TinkerPop?
 
-image:provider-integration.png[float=right,width=350] The goal of TinkerPop, as a Graph Computing Framework, is to make it
-easy for developers to create graph applications by providing APIs and tools that simplify their endeavors. One of
-the fundamental aspects to what TinkerPop offers in this area lies in the fact that TinkerPop is an abstraction layer
-over different graph databases and different graph processors. As an abstraction layer, TinkerPop provides a way to
-avoid vendor lock-in to a specific database or processor. This capability provides immense value to developers who
+image:provider-integration.png[float=right,width=350] The goal of TinkerPop, as a Graph Computing Framework, is to
+make it easy for developers to create graph applications by providing APIs and tools that simplify their endeavors.
+One of the fundamental aspects to what TinkerPop offers in this area lies in the fact that TinkerPop is an abstraction
+layer over different graph databases and different graph processors. As an abstraction layer, TinkerPop provides a way
+to avoid vendor lock-in to a specific database or processor. This capability provides immense value to developers who
 are thus afforded options in their architecture and development because:
 
 * They can try different implementations using the same code to decide which is best for their environment.
@@ -503,7 +526,7 @@ graph.createIndex('userId', Vertex.class) <1>
 g = graph.traversal()
 
 getOrCreate = { id ->
-  g.V().has('userId', id).
+  g.V().has('user','userId', id).
     fold().
     coalesce(unfold(),
              addV('user').property('userId', id)).next()  <2>
@@ -529,7 +552,7 @@ the line and stores those vertices in the `fromVertex` and `toVertex` variables 
 
 NOTE: While this is a tab-delimited structure, this same pattern can be applied
 to any data source you require and Groovy tends to have nice libraries that can help making working with data
-link:http://thinkaurelius.com/2013/02/04/polyglot-persistence-and-query-with-gremlin/[quite enjoyable].
+link:https://thinkaurelius.wordpress.com/2013/02/04/polyglot-persistence-and-query-with-gremlin/[quite enjoyable].
 
 WARNING: Take care if using a `Graph` implementation that supports
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#transactions[transactions]. As TinkerGraph does not, there is
@@ -537,73 +560,50 @@ no need to `commit()`.  If your `Graph` does support transactions, intermediate 
 applied.
 
 To load larger data sets you should read about the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#bulkloadervertexprogram[BulkLoaderVertexProgram] (BLVP), which
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#clonevertexprogram[BulkLoaderVertexProgram] (BLVP), which
 provides a generalized method for loading graphs of virtually any size.
 
-=== Gremlin Server
+=== Gremlin in Other Programming Languages
 
-image:gremlin-server-protocol.png[width=325,float=right] link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-server[Gremlin Server]
-provides a way to remotely execute Gremlin scripts against one or more `Graph` instances hosted within it. It does
-this by exposing different endpoints, such as link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_connecting_via_http[HTTP]
-and link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_connecting_via_java[WebSocket], which allow a request
-containing a Gremlin script to be processed with results returned.
+This tutorial focused on Gremlin usage within the
+link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[Gremlin Console] which means that the
+examples were Groovy-based and oriented toward the JVM. Gremlin, however, is far from being a Java-only library.
+TinkerPop natively supports a number of different programming languages, making it possible to execute all of the
+examples presented in this tutorial with little modification. These different language implementations of Gremlin are
+referred to as link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Gremlin Language Variants] and
+they help make Gremlin more accessible and easier to use for those who do not use Java as their primary programming
+language.
 
-[source,text]
+[gremlin-groovy]
 ----
-$ curl -L -O https://www.apache.org/dist/tinkerpop/x.y.z/apache-tinkerpop-gremlin-server-x.y.z-bin.zip
-$ unzip apache-tinkerpop-gremlin-server-x.y.z-bin.zip
-$ cd apache-tinkerpop-gremlin-server-x.y.z
-$ bin/gremlin-server.sh conf/gremlin-server-rest-modern.yaml
-[INFO] GremlinServer -
-         \,,,/
-         (o o)
------oOOo-(3)-oOOo-----
-
-[INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-rest-modern.yaml
-...
-[INFO] GremlinServer$1 - Channel started at port 8182.
+v1 = g.addV('person').property('name','marko').next()
+v2 = g.addV('person').property('name','stephen').next()
+g.V(v1).addE('knows').to(v2).property('weight',0.75).iterate()
 ----
-
-[source,text]
-$ curl -X POST -d "{\"gremlin\":\"g.V(x).out().values('name')\", \"language\":\"gremlin-groovy\", \"bindings\":{\"x\":1}}" "http://localhost:8182"
-
-[source,json]
+[source,csharp]
 ----
-{
-	"requestId": "f67dbfff-b33a-4ae3-842d-c6e7c97b246b",
-	"status": {
-		"message": "",
-		"code": 200,
-		"attributes": {
-			"@type": "g:Map",
-			"@value": []
-		}
-	},
-	"result": {
-		"data": {
-			"@type": "g:List",
-			"@value": ["lop", "vadas", "josh"]
-		},
-		"meta": {
-			"@type": "g:Map",
-			"@value": []
-		}
-	}
-}
+Vertex v1 = g.AddV("person").Property("name","marko").Next();
+Vertex v2 = g.AddV("person").Property("name","stephen").Next();
+g.V(v1).AddE("knows").To(v2).Property("weight",0.75).Iterate();
 ----
-
-IMPORTANT: Take careful note of the use of "bindings" in the arguments on the request. These are variables that are
-applied to the script on execution and is essentially a way to parameterize your scripts. This "parameterization" is
-critical to link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_best_practices[performance].  Whenever
-possible, parameterize your queries.
-
-As mentioned earlier, Gremlin Server can also be configured with a WebSocket endpoint. This endpoint has an
-embedded link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_developing_a_driver[subprotocol] that allow a
-compliant driver to communicate with it.  TinkerPop supplies a
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_connecting_via_java[reference driver] written in Java, but
-there are drivers developed by both TinkerPop and third-parties for other link:http://tinkerpop.apache.org/#graph-libraries[languages]
-such as Python, Javascript, etc. Gremlin Server therefore represents the method by which non-JVM languages can
-interact with TinkerPop.
+[source,java]
+----
+Vertex v1 = g.addV("person").property("name","marko").next();
+Vertex v2 = g.addV("person").property("name","stephen").next();
+g.V(v1).addE("knows").to(v2).property("weight",0.75).iterate();
+----
+[source,javascript]
+----
+const v1 = g.addV('person').property('name','marko').next();
+const v2 = g.addV('person').property('name','stephen').next();
+g.V(v1).addE('knows').to(v2).property('weight',0.75).iterate();
+----
+[source,python]
+----
+v1 = g.addV('person').property('name','marko').next()
+v2 = g.addV('person').property('name','stephen').next()
+g.V(v1).addE('knows').to(v2).property('weight',0.75).iterate()
+----
 
 === Conclusion
 

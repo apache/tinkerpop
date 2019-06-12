@@ -19,9 +19,12 @@
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.clustering.connected.ConnectedComponentVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ConnectedComponentVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRankVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressureVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ProgramVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ShortestPathVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
@@ -39,6 +42,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ReadWriting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TimesModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchStep;
@@ -81,6 +85,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.IndexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaCollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
@@ -123,6 +128,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCount
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IoStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.LambdaSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackValueStep;
@@ -147,11 +153,13 @@ import org.apache.tinkerpop.gremlin.structure.PropertyType;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -164,6 +172,7 @@ import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
@@ -553,7 +562,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#valuemap-step" target="_blank">Reference Documentation - ValueMap Step</a>
      * @since 3.0.0-incubating
      */
-    public default <E2> GraphTraversal<S, Map<String, E2>> valueMap(final String... propertyKeys) {
+    public default <E2> GraphTraversal<S, Map<Object, E2>> valueMap(final String... propertyKeys) {
         this.asAdmin().getBytecode().addStep(Symbols.valueMap, propertyKeys);
         return this.asAdmin().addStep(new PropertyMapStep<>(this.asAdmin(), false, PropertyType.VALUE, propertyKeys));
     }
@@ -568,7 +577,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link PropertyMapStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#valuemap-step" target="_blank">Reference Documentation - ValueMap Step</a>
      * @since 3.0.0-incubating
+     * @deprecated As of release 3.4.0, deprecated in favor of {@link GraphTraversal#valueMap(String...)} in conjunction with
+     *             {@link GraphTraversal#with(String, Object)}.
      */
+    @Deprecated
     public default <E2> GraphTraversal<S, Map<Object, E2>> valueMap(final boolean includeTokens, final String... propertyKeys) {
         this.asAdmin().getBytecode().addStep(Symbols.valueMap, includeTokens, propertyKeys);
         return this.asAdmin().addStep(new PropertyMapStep<>(this.asAdmin(), includeTokens, PropertyType.VALUE, propertyKeys));
@@ -1496,26 +1508,39 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.2.2
      */
     public default GraphTraversal<S, E> hasId(final Object id, final Object... otherIds) {
-        if (id instanceof P)
+        if (id instanceof P) {
             return this.hasId((P) id);
+        }
         else {
-            final List<Object> ids = new ArrayList<>();
+            Object[] ids;
             if (id instanceof Object[]) {
-                for (final Object i : (Object[]) id) {
-                    ids.add(i);
-                }
-            } else
-                ids.add(id);
+                ids = (Object[]) id;
+            } else {
+                ids = new Object[] {id};
+            }
+            int size = ids.length;
+            int capacity = size;
             for (final Object i : otherIds) {
                 if (i.getClass().isArray()) {
-                    for (final Object ii : (Object[]) i) {
-                        ids.add(ii);
+                    final Object[] tmp = (Object[]) i;
+                    int newLength = size + tmp.length;
+                    if (capacity < newLength) {
+                        ids = Arrays.copyOf(ids, capacity = size + tmp.length);
                     }
-                } else
-                    ids.add(i);
+                    System.arraycopy(tmp, 0, ids, size, tmp.length);
+                    size = newLength;
+                } else {
+                    if (capacity == size) {
+                        ids = Arrays.copyOf(ids, capacity = size * 2);
+                    }
+                    ids[size++] = i;
+                }
             }
-            this.asAdmin().getBytecode().addStep(Symbols.hasId, ids.toArray());
-            return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.id.getAccessor(), ids.size() == 1 ? P.eq(ids.get(0)) : P.within(ids)));
+            if (capacity > size) {
+                ids = Arrays.copyOf(ids, size);
+            }
+            this.asAdmin().getBytecode().addStep(Symbols.hasId, ids);
+            return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.id.getAccessor(), ids.length == 1 ? P.eq(ids[0]) : P.within(ids)));
         }
     }
 
@@ -1576,16 +1601,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         else {
             final List<Object> values = new ArrayList<>();
             if (value instanceof Object[]) {
-                for (final Object v : (Object[]) value) {
-                    values.add(v);
-                }
+                Collections.addAll(values, (Object[]) value);
             } else
                 values.add(value);
             for (final Object v : otherValues) {
                 if (v instanceof Object[]) {
-                    for (final Object vv : (Object[]) v) {
-                        values.add(vv);
-                    }
+                    Collections.addAll(values, (Object[]) v);
                 } else
                     values.add(v);
             }
@@ -2085,13 +2106,44 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
         // if it can be detected that this call to property() is related to an addV/E() then we can attempt to fold
         // the properties into that step to gain an optimization for those graphs that support such capabilities.
-        final Step endStep = this.asAdmin().getEndStep();
-        if ((endStep instanceof AddVertexStep || endStep instanceof AddEdgeStep || endStep instanceof AddVertexStartStep || endStep instanceof AddEdgeStartStep) &&
-                keyValues.length == 0 && null == cardinality) {
+        Step endStep = this.asAdmin().getEndStep();
+
+        // always try to fold the property() into the initial "AddElementStep" as the performance will be better
+        // and as it so happens with T the value must be set by way of that approach otherwise you get an error.
+        // it should be safe to execute this loop this way as we'll either hit an "AddElementStep" or an "EmptyStep".
+        // if empty, it will just use the regular AddPropertyStep being tacked on to the end of the traversal as usual
+        while (endStep instanceof AddPropertyStep) {
+            endStep = endStep.getPreviousStep();
+        }
+
+        // edge properties can always be folded as there is no cardinality/metaproperties. for a vertex mutation,
+        // it's possible to fold the property() into the Mutating step if there are no metaproperties (i.e. keyValues)
+        // and if (1) the key is an instance of T OR OR (3) the key is a string and the cardinality is not specifiied.
+        // Note that checking for single cardinality of the argument doesn't work well because once folded we lose
+        // the cardinality argument associated to the key/value pair and then it relies on the graph. that
+        // means that if you do:
+        //
+        // g.addV().property(single, 'k',1).property(single,'k',2)
+        //
+        // you could end up with whatever the cardinality is for the key which might seem "wrong" if you were explicit
+        // about the specification of "single". it also isn't possible to check the Graph Features for cardinality
+        // as folding seems to have different behavior based on different graphs - we clearly don't have that aspect
+        // of things tested/enforced well.
+        //
+        // of additional note is the folding that occurs if the key is a Traversal. the key here is technically
+        // unknown until traversal execution as the anonymous traversal result isn't evaluated during traversal
+        // construction but during iteration. not folding to AddVertexStep creates different (breaking) traversal
+        // semantics than we've had in previous versions so right/wrong could be argued, but since it's a breaking
+        // change we'll just arbitrarily account for it to maintain the former behavior.
+        if ((endStep instanceof AddEdgeStep || endStep instanceof AddEdgeStartStep) ||
+                ((endStep instanceof AddVertexStep || endStep instanceof AddVertexStartStep) &&
+                  keyValues.length == 0 &&
+                  (key instanceof T || (key instanceof String && null == cardinality) || key instanceof Traversal))) {
             ((Mutating) endStep).configure(key, value);
         } else {
-            this.asAdmin().addStep(new AddPropertyStep(this.asAdmin(), cardinality, key, value));
-            ((AddPropertyStep) this.asAdmin().getEndStep()).configure(keyValues);
+            final AddPropertyStep<Element> addPropertyStep = new AddPropertyStep<>(this.asAdmin(), cardinality, key, value);
+            this.asAdmin().addStep(addPropertyStep);
+            addPropertyStep.configure(keyValues);
         }
         return this;
     }
@@ -2450,6 +2502,37 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * Executes a Connected Component algorithm over the graph.
+     *
+     * @return the traversal with the appended {@link ConnectedComponentVertexProgram}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#connectedcomponent-step" target="_blank">Reference Documentation - ConnectedComponent Step</a>
+     * @since 3.4.0
+     */
+    public default GraphTraversal<S, E> connectedComponent() {
+        this.asAdmin().getBytecode().addStep(Symbols.connectedComponent);
+        return this.asAdmin().addStep((Step<E, E>) new ConnectedComponentVertexProgramStep(this.asAdmin()));
+    }
+
+
+    /**
+     * Executes a Shortest Path algorithm over the graph.
+     *
+     * @return the traversal with the appended {@link ShortestPathVertexProgramStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#shortestpath-step" target="_blank">Reference Documentation - ShortestPath Step</a>
+     */
+    public default GraphTraversal<S, Path> shortestPath() {
+        if (this.asAdmin().getEndStep() instanceof GraphStep) {
+            // This is very unfortunate, but I couldn't find another way to make it work. Without the additional
+            // IdentityStep, TraversalVertexProgram doesn't handle halted traversers as expected (it ignores both:
+            // HALTED_TRAVERSER stored in memory and stored as vertex properties); instead it just emits all vertices.
+            this.identity();
+        }
+        this.asAdmin().getBytecode().addStep(Symbols.shortestPath);
+        return (GraphTraversal<S, Path>) ((Traversal.Admin) this.asAdmin())
+                .addStep(new ShortestPathVertexProgramStep(this.asAdmin()));
+    }
+
+    /**
      * Executes an arbitrary {@link VertexProgram} over the graph.
      *
      * @return the traversal with the appended {@link ProgramVertexProgramStep}
@@ -2511,6 +2594,27 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * Indexes all items of the current collection. The indexing format can be configured using the {@link GraphTraversal#with(String, Object)}
+     * and {@link org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions#indexer}.
+     *
+     * Indexed as list: ["a","b","c"] => [["a",0],["b",1],["c",2]]
+     * Indexed as map:  ["a","b","c"] => {0:"a",1:"b",2:"c"}
+     *
+     * If the current object is not a collection, this step will map the object to a single item collection/map:
+     *
+     * Indexed as list: "a" => ["a",0]
+     * Indexed as map:  "a" => {0:"a"}
+     *
+     * @return the traversal with an appended {@link IndexStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#index-step" target="_blank">Reference Documentation - Index Step</a>
+     * @since 3.4.0
+     */
+    public default <E2> GraphTraversal<S, E2> index() {
+        this.asAdmin().getBytecode().addStep(Symbols.index);
+        return this.asAdmin().addStep(new IndexStep<>(this.asAdmin()));
+    }
+
+    /**
      * Turns the lazy traversal pipeline into a bulk-synchronous pipeline which basically iterates that traversal to
      * the size of the barrier. In this case, it iterates the entire thing as the default barrier size is set to
      * {@code Integer.MAX_VALUE}.
@@ -2526,6 +2630,23 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     //// WITH-MODULATOR
+
+    /**
+     * Provides a configuration to a step in the form of a key which is the same as {@code with(key, true)}. The key
+     * of the configuration must be step specific and therefore a configuration could be supplied that is not known to
+     * be valid until execution.
+     *
+     * @param key the key of the configuration to apply to a step
+     * @return the traversal with a modulated step
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#with-step" target="_blank">Reference Documentation - With Step</a>
+     * @since 3.4.0
+     */
+    public default GraphTraversal<S,E> with(final String key) {
+        this.asAdmin().getBytecode().addStep(Symbols.with, key);
+        final Object[] configPair = { key, true };
+        ((Configuring) this.asAdmin().getEndStep()).configure(configPair);
+        return this;
+    }
 
     /**
      * Provides a configuration to a step in the form of a key and value pair. The key of the configuration must be
@@ -2733,6 +2854,38 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     ////
 
+    ///////////////////// IO STEPS /////////////////////
+
+    /**
+     * This step is technically a step modulator for the the {@link GraphTraversalSource#io(String)} step which
+     * instructs the step to perform a read with its given configuration.
+     *
+     * @return the traversal with the {@link IoStep} modulated to read
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#io-step" target="_blank">Reference Documentation - IO Step</a>
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#read-step" target="_blank">Reference Documentation - Read Step</a>
+     * @since 3.4.0
+     */
+    public default GraphTraversal<S,E> read() {
+        this.asAdmin().getBytecode().addStep(Symbols.read);
+        ((ReadWriting) this.asAdmin().getEndStep()).setMode(ReadWriting.Mode.READING);
+        return this;
+    }
+
+    /**
+     * This step is technically a step modulator for the the {@link GraphTraversalSource#io(String)} step which
+     * instructs the step to perform a write with its given configuration.
+     *
+     * @return the traversal with the {@link IoStep} modulated to write
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#io-step" target="_blank">Reference Documentation - IO Step</a>
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#write-step" target="_blank">Reference Documentation - Write Step</a>
+     * @since 3.4.0
+     */
+    public default GraphTraversal<S,E> write() {
+        this.asAdmin().getBytecode().addStep(Symbols.write);
+        ((ReadWriting) this.asAdmin().getEndStep()).setMode(ReadWriting.Mode.WRITING);
+        return this;
+    }
+
     /**
      * Iterates the traversal presumably for the generation of side-effects.
      */
@@ -2817,6 +2970,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String skip = "skip";
         public static final String tail = "tail";
         public static final String coin = "coin";
+        public static final String io = "io";
+        public static final String read = "read";
+        public static final String write = "write";
 
         public static final String timeLimit = "timeLimit";
         public static final String simplePath = "simplePath";
@@ -2832,6 +2988,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String aggregate = "aggregate";
         public static final String subgraph = "subgraph";
         public static final String barrier = "barrier";
+        public static final String index = "index";
         public static final String local = "local";
         public static final String emit = "emit";
         public static final String repeat = "repeat";
@@ -2845,6 +3002,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
         public static final String pageRank = "pageRank";
         public static final String peerPressure = "peerPressure";
+        public static final String connectedComponent = "connectedComponent";
+        public static final String shortestPath = "shortestPath";
         public static final String program = "program";
 
         public static final String by = "by";

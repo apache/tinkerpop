@@ -21,13 +21,13 @@ package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
 import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
-import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
+import org.apache.tinkerpop.gremlin.structure.RemoteGraph;
 import org.junit.runner.RunWith;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(ProcessStandardSuite.class)
-@GraphProviderClass(provider = RemoteGraphGroovyTranslatorProvider.class, graph = RemoteGraph.class)
+@GraphProviderClass(provider = GryoRemoteGraphGroovyTranslatorProvider.class, graph = RemoteGraph.class)
 public class RemoteGraphGroovyTranslatorProcessStandardTest {
 }

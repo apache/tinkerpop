@@ -44,4 +44,10 @@ globals << [hook : [
 //
 // Please see conf/gremlin-server-spark.yaml for a working example of a config file that will
 // work with this init script.
-globals << [g : graph.traversal().withComputer(SparkGraphComputer)]
+//
+// ReferenceElementStrategy converts all graph elements (vertices/edges/vertex properties)
+// to "references" (i.e. just id and label without properties). this strategy was added
+// in 3.4.0 to make all Gremlin Server results consistent across all protocols and
+// serialization formats aligning it with TinkerPop recommended practices for writing
+// Gremlin.
+globals << [g : graph.traversal().withComputer(SparkGraphComputer).withStrategies(ReferenceElementStrategy.instance())]

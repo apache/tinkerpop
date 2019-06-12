@@ -344,8 +344,10 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         final Map<String, String> aliases = (Map<String, String>) msg.optionalArgs(Tokens.ARGS_ALIASES).get();
 
         // timeout override
-        final long seto = msg.getArgs().containsKey(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT) ?
-                Long.parseLong(msg.getArgs().get(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT).toString()) : context.getSettings().scriptEvaluationTimeout;
+        final long seto = msg.getArgs().containsKey(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT)
+            // could be sent as an integer or long
+            ? ((Number) msg.getArgs().get(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT)).longValue()
+            : context.getSettings().scriptEvaluationTimeout;
 
         final GraphManager graphManager = context.getGraphManager();
         final String traversalSourceName = aliases.entrySet().iterator().next().getValue();
@@ -449,6 +451,9 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
     @Override
     protected Map<String, Object> generateMetaData(final ChannelHandlerContext ctx, final RequestMessage msg,
                                                    final ResponseStatusCode code, final Iterator itty) {
+        // leaving this overriding the deprecated version of this method because it provides a decent test to those
+        // who might have their own OpProcessor implementations that apply meta-data. leaving this alone helps validate
+        // that the upgrade path is clean.  it can be removed at the next breaking change 3.5.0
         Map<String, Object> metaData = Collections.emptyMap();
         if (itty instanceof SideEffectIterator) {
             final SideEffectIterator traversalIterator = (SideEffectIterator) itty;
@@ -458,6 +463,9 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                 metaData.put(Tokens.ARGS_SIDE_EFFECT_KEY, key);
                 metaData.put(Tokens.ARGS_AGGREGATE_TO, traversalIterator.getSideEffectAggregator());
             }
+        } else {
+            // this is a standard traversal iterator
+            metaData = super.generateMetaData(ctx, msg, code, itty);
         }
 
         return metaData;
@@ -483,6 +491,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             }
             ctx.writeAndFlush(ResponseMessage.build(msg)
                     .code(ResponseStatusCode.NO_CONTENT)
+                    .statusAttributes(generateStatusAttributes(ctx, msg, ResponseStatusCode.NO_CONTENT, itty, settings))
                     .create());
             return;
         }
@@ -528,9 +537,12 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     // serialize here because in sessionless requests the serialization must occur in the same
                     // thread as the eval.  as eval occurs in the GremlinExecutor there's no way to get back to the
                     // thread that processed the eval of the script so, we have to push serialization down into that
+                    final Map<String, Object> metadata = generateResultMetaData(ctx, msg, code, itty, settings);
+                    final Map<String, Object> statusAttrb = generateStatusAttributes(ctx, msg, code, itty, settings);
                     Frame frame = null;
                     try {
-                        frame = makeFrame(ctx, msg, serializer, useBinary, aggregate, code, generateMetaData(ctx, msg, code, itty));
+                        frame = makeFrame(ctx, msg, serializer, useBinary, aggregate, code,
+                                          metadata, statusAttrb);
                     } catch (Exception ex) {
                         // a frame may use a Bytebuf which is a countable release - if it does not get written
                         // downstream it needs to be released here

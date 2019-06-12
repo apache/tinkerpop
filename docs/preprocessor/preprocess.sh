@@ -42,7 +42,7 @@ if [ "${DRYRUN_DOCS}" != "*" ]; then
   done
 
   netstat -an | awk '{print $4}' | grep -o '[0-9]*$' | grep '\b8182\b' > /dev/null && {
-    echo "The port 8182 is required for Gremlin Server, but already in use. Be sure to close the application that currently uses the port before processing the docs."
+    echo "The port 8182 is required for Gremlin Server, but it is already in use. Be sure to close the application that currently uses the port before processing the docs."
     exit 1
   }
 

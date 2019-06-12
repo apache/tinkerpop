@@ -52,9 +52,9 @@ class GraphTraversalSource(object):
         source = self.get_graph_traversal_source()
         source.traversal_strategies.add_strategies([RemoteStrategy(remote_connection)])
         return source
+
     def withComputer(self,graph_computer=None, workers=None, result=None, persist=None, vertices=None, edges=None, configuration=None):
         return self.withStrategies(VertexProgramStrategy(graph_computer,workers,result,persist,vertices,edges,configuration))
-
 <% sourceSpawnMethods.each { method -> %>
     def <%= method %>(self, *args):
         traversal = self.get_graph_traversal()

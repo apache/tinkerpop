@@ -33,20 +33,38 @@ namespace Gremlin.Net.Driver
     {
         private const int ReceiveBufferSize = 1024;
         private const WebSocketMessageType MessageType = WebSocketMessageType.Binary;
-        private ClientWebSocket _client;
+        private readonly ClientWebSocket _client;
+
+        public WebSocketConnection(Action<ClientWebSocketOptions> webSocketConfiguration)
+        {
+            _client = new ClientWebSocket();
+            webSocketConfiguration?.Invoke(_client.Options);
+        }
 
         public async Task ConnectAsync(Uri uri)
         {
-            _client = new ClientWebSocket();
             await _client.ConnectAsync(uri, CancellationToken.None).ConfigureAwait(false);
         }
 
         public async Task CloseAsync()
         {
-            await
-                _client.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None)
-                    .ConfigureAwait(false);
+            if (CloseAlreadyInitiated) return;
+
+            try
+            {
+                await
+                    _client.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None)
+                        .ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // Swallow exceptions silently as there is nothing to do when closing fails
+            }
         }
+
+        private bool CloseAlreadyInitiated => _client.State == WebSocketState.Closed ||
+                                            _client.State == WebSocketState.Aborted ||
+                                            _client.State == WebSocketState.CloseSent;
 
         public async Task SendMessageAsync(byte[] message)
         {

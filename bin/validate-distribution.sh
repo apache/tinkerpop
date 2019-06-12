@@ -23,6 +23,7 @@
 # published KEYS file in order for that aspect of the validation
 # to pass.
 
+SCRIPT_DIR=$(cd `dirname $0` ; pwd)
 TMP_DIR="/tmp/tpdv"
 
 # Required. Only the latest version on each release stream is available on dist.
@@ -85,11 +86,12 @@ fi
 
 echo -n "* downloading ${COMPONENT} (${ZIP_FILENAME})... "
 curl -Lsf ${URL} -o ${ZIP_FILENAME} || { echo "Failed to download ${COMPONENT}" ; exit 1; }
-for ext in "asc" "sha1"
+for ext in "asc" "sha512"
 do
   curl -Lsf ${URL}.${ext} -o ${ZIP_FILENAME}.${ext} || { echo "Failed to download ${COMPONENT} (${ext})" ; exit 1 ; }
 done
 curl -Lsf ${URL}.md5 -o ${ZIP_FILENAME}.md5 && { echo "MD5 checksums should not be released (${ZIP_FILENAME}.md5)" ; exit 1 ; }
+curl -Lsf ${URL}.sha1 -o ${ZIP_FILENAME}.sha1 && { echo "SHA1 checksums should not be released (${ZIP_FILENAME}.sha1)" ; exit 1 ; }
 echo "OK"
 
 # validate zip file
@@ -122,9 +124,9 @@ echo "OK"
 #[ "$ACTUAL" = "${EXPECTED}" ] || { echo "failed"; exit 1; }
 #echo "OK"
 
-echo -n "  * SHA1 checksum ... "
-EXPECTED=`cat ${ZIP_FILENAME}.sha1`
-ACTUAL=`sha1sum ${ZIP_FILENAME} | awk '{print $1}'`
+echo -n "  * SHA512 checksum ... "
+EXPECTED=`cat ${ZIP_FILENAME}.sha512`
+ACTUAL=`sha512sum ${ZIP_FILENAME} | awk '{print $1}'`
 [ "$ACTUAL" = "${EXPECTED}" ] || { echo "failed"; exit 1; }
 echo "OK"
 
@@ -135,7 +137,22 @@ echo "OK"
 
 if [ "${TYPE}" = "SOURCE" ]; then
 cd ${DIR_NAME}
+echo -n "* checking source files ... "
+find . -type f | xargs -n1 -I {} file {} --mime | grep 'charset=binary' | cut -f1 -d: |
+  grep -Pv '^\./docs/(static|(site/home))/(img|images)/((icons|logos|policy|resources)/)?[^/]*\.(png|jpg|ico|pdf)$' |
+  grep -Pv '^./gremlin-dotnet/src/images/[^/]*\.(png|ico)$' |
+  grep -Pv '^./gremlin-dotnet/.*\.snk$' |
+  grep -Pv '^./gremlin-server/src/test/resources/[^/]*\.(p12|jks)$' |
+  grep -Pv '/(resources|data)/.*\.(kryo|json)$' > ../binary-files.txt
+if [ -s ../binary-files.txt ]; then
+  echo "Found unexpected binary files (see $(cd .. ; pwd)/binary-files.txt)"
+  exit 1
+else
+  rm -f ../binary-files.txt
+  echo "OK"
+fi
 echo -n "* building project ... "
+touch {gremlin-dotnet,gremlin-dotnet/src,gremlin-dotnet/test,gremlin-python,gremlin-javascript}/.glv
 LOG_FILE="${TMP_DIR}/mvn-clean-install-${VERSION}.log"
 mvn clean install -q > "${LOG_FILE}" 2>&1 || {
   echo "failed"
@@ -192,7 +209,7 @@ if [ "${TYPE}" = "CONSOLE" ]; then
   SCRIPT_FILENAME="test.groovy"
   SCRIPT_PATH="${TMP_DIR}/${SCRIPT_FILENAME}"
   echo ${SCRIPT} > ${SCRIPT_PATH}
-  [[ `bin/gremlin.sh <<< ${SCRIPT} | grep '^==>' | sed -e 's/^==>//'` -eq 6 ]] || { echo "failed to evaluate sample script"; exit 1; }
+  [[ `bin/gremlin.sh <<< ${SCRIPT} | ${SCRIPT_DIR}/../docs/preprocessor/control-characters.sh | grep '^==>' | sed -e 's/^==>//'` -eq 6 ]] || { echo "failed to evaluate sample script"; exit 1; }
   [[ `bin/gremlin.sh -e ${SCRIPT_PATH}` -eq 6 ]] || { echo "failed to evaluate sample script using -e option"; exit 1; }
   CONSOLE_DIR=`pwd`
   cd ${TMP_DIR}

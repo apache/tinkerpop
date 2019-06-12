@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
@@ -47,10 +48,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategy;
@@ -62,6 +65,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Path
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_O_P_S_SE_SL_Traverser;
@@ -114,10 +118,10 @@ import org.apache.tinkerpop.gremlin.util.function.MultiComparator;
 import org.apache.tinkerpop.shaded.kryo.ClassResolver;
 import org.apache.tinkerpop.shaded.kryo.KryoSerializable;
 import org.apache.tinkerpop.shaded.kryo.serializers.JavaSerializer;
-import org.javatuples.Pair;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.LabelledCounter;
 import org.apache.commons.collections.map.ReferenceMap;
-import java.util.Stack;
+import org.javatuples.Pair;
+import org.javatuples.Triplet;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -154,6 +158,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Stack;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -243,6 +248,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Collections.singleton(null).getClass(), 54));
             add(GryoTypeReg.of(Collections.singletonList(null).getClass(), 24));
             add(GryoTypeReg.of(Collections.singletonMap(null, null).getClass(), 23));
+            add(GryoTypeReg.of(Types.COLLECTIONS_SYNCHRONIZED_MAP, 185, new UtilSerializers.SynchronizedMapSerializer()));
             add(GryoTypeReg.of(Contains.class, 49));
             add(GryoTypeReg.of(Currency.class, 40));
             add(GryoTypeReg.of(Date.class, 38));
@@ -309,6 +315,7 @@ public enum GryoVersion {
 
             add(GryoTypeReg.of(Bytecode.class, 122, new GryoSerializersV3d0.BytecodeSerializer()));
             add(GryoTypeReg.of(P.class, 124, new GryoSerializersV3d0.PSerializer()));
+            add(GryoTypeReg.of(TextP.class, 186, new GryoSerializersV3d0.TextPSerializer()));
             add(GryoTypeReg.of(Lambda.class, 125, new GryoSerializersV3d0.LambdaSerializer()));
             add(GryoTypeReg.of(Bytecode.Binding.class, 126, new GryoSerializersV3d0.BindingSerializer()));
             add(GryoTypeReg.of(Order.class, 127));
@@ -336,6 +343,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LazyBarrierStrategy.class, 150));
             add(GryoTypeReg.of(MatchPredicateStrategy.class, 151));
             add(GryoTypeReg.of(OrderLimitStrategy.class, 152));
+            add(GryoTypeReg.of(OptionsStrategy.class, 187, new JavaSerializer()));
             add(GryoTypeReg.of(PathProcessorStrategy.class, 153));
             add(GryoTypeReg.of(PathRetractionStrategy.class, 154));
             add(GryoTypeReg.of(CountStrategy.class, 155));
@@ -343,8 +351,10 @@ public enum GryoVersion {
             add(GryoTypeReg.of(GraphFilterStrategy.class, 157));
             add(GryoTypeReg.of(LambdaRestrictionStrategy.class, 158));
             add(GryoTypeReg.of(ReadOnlyStrategy.class, 159));
+            add(GryoTypeReg.of(EarlyLimitStrategy.class, 188));
             add(GryoTypeReg.of(MatchStep.CountMatchAlgorithm.class, 160));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 164));
+            add(GryoTypeReg.of(EdgeLabelVerificationStrategy.class, 189));   // ***LAST ID***
 
             add(GryoTypeReg.of(TraverserSet.class, 58));
             add(GryoTypeReg.of(Tree.class, 61));
@@ -356,6 +366,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MapReduce.NullObject.class, 74));
             add(GryoTypeReg.of(AtomicLong.class, 79));
             add(GryoTypeReg.of(Pair.class, 88, new UtilSerializers.PairSerializer()));
+            add(GryoTypeReg.of(Triplet.class, 183, new UtilSerializers.TripletSerializer()));
             add(GryoTypeReg.of(TraversalExplanation.class, 106, new JavaSerializer()));
 
             add(GryoTypeReg.of(Duration.class, 93, new JavaTimeSerializers.DurationSerializer()));
@@ -393,8 +404,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LP_NL_O_OB_P_S_SE_SL_Traverser.class, 179));
             add(GryoTypeReg.of(LabelledCounter.class, 180));
             add(GryoTypeReg.of(Stack.class, 181));
-            add(GryoTypeReg.of(ReferenceMap.class, 182));                        // ***LAST ID***
-
+            add(GryoTypeReg.of(ReferenceMap.class, 182));
 
             // placeholder serializers for classes that don't live here in core. this will allow them to be used if
             // present  or ignored if the class isn't available. either way the registration numbers are held as
@@ -403,6 +413,9 @@ public enum GryoVersion {
                     "org.apache.tinkerpop.gremlin.driver.ser.RequestMessageGryoSerializer", 167);
             tryAddDynamicType(this, "org.apache.tinkerpop.gremlin.driver.message.ResponseMessage",
                     "org.apache.tinkerpop.gremlin.driver.ser.ResponseMessageGryoSerializer", 169);
+
+            tryAddDynamicType(this, "org.apache.tinkerpop.gremlin.sparql.process.traversal.strategy.SparqlStrategy",
+                    null, 184);
         }};
     }
 
@@ -431,6 +444,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Collections.singleton(null).getClass(), 54));
             add(GryoTypeReg.of(Collections.singletonList(null).getClass(), 24));
             add(GryoTypeReg.of(Collections.singletonMap(null, null).getClass(), 23));
+            add(GryoTypeReg.of(Types.COLLECTIONS_SYNCHRONIZED_MAP, 185, new UtilSerializers.SynchronizedMapSerializer()));
             add(GryoTypeReg.of(Contains.class, 49));
             add(GryoTypeReg.of(Currency.class, 40));
             add(GryoTypeReg.of(Date.class, 38));
@@ -496,6 +510,7 @@ public enum GryoVersion {
 
             add(GryoTypeReg.of(Bytecode.class, 122, new GryoSerializersV1d0.BytecodeSerializer()));
             add(GryoTypeReg.of(P.class, 124, new GryoSerializersV1d0.PSerializer()));
+            add(GryoTypeReg.of(TextP.class, 186, new GryoSerializersV1d0.TextPSerializer())); // ***LAST ID***
             add(GryoTypeReg.of(Lambda.class, 125, new GryoSerializersV1d0.LambdaSerializer()));
             add(GryoTypeReg.of(Bytecode.Binding.class, 126, new GryoSerializersV1d0.BindingSerializer()));
             add(GryoTypeReg.of(Order.class, 127));
@@ -520,6 +535,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MapReduce.NullObject.class, 74));
             add(GryoTypeReg.of(AtomicLong.class, 79));
             add(GryoTypeReg.of(Pair.class, 88, new UtilSerializers.PairSerializer()));
+            add(GryoTypeReg.of(Triplet.class, 183, new UtilSerializers.TripletSerializer()));
             add(GryoTypeReg.of(TraversalExplanation.class, 106, new JavaSerializer()));
 
             add(GryoTypeReg.of(Duration.class, 93, new JavaTimeSerializers.DurationSerializer()));
@@ -563,6 +579,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LazyBarrierStrategy.class, 150));
             add(GryoTypeReg.of(MatchPredicateStrategy.class, 151));
             add(GryoTypeReg.of(OrderLimitStrategy.class, 152));
+            add(GryoTypeReg.of(OptionsStrategy.class, 187, new JavaSerializer()));
             add(GryoTypeReg.of(PathProcessorStrategy.class, 153));
             add(GryoTypeReg.of(PathRetractionStrategy.class, 154));
             add(GryoTypeReg.of(CountStrategy.class, 155));
@@ -570,8 +587,10 @@ public enum GryoVersion {
             add(GryoTypeReg.of(GraphFilterStrategy.class, 157));
             add(GryoTypeReg.of(LambdaRestrictionStrategy.class, 158));
             add(GryoTypeReg.of(ReadOnlyStrategy.class, 159));
+            add(GryoTypeReg.of(EarlyLimitStrategy.class, 188));
             add(GryoTypeReg.of(MatchStep.CountMatchAlgorithm.class, 160));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 167));
+            add(GryoTypeReg.of(EdgeLabelVerificationStrategy.class, 189));   // ***LAST ID***
             // skip 171, 172 to sync with tp33
             add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));
 
@@ -583,7 +602,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LP_NL_O_OB_P_S_SE_SL_Traverser.class, 179));
             add(GryoTypeReg.of(LabelledCounter.class, 180));
             add(GryoTypeReg.of(Stack.class, 181));
-            add(GryoTypeReg.of(ReferenceMap.class, 182));                        // ***LAST ID***
+            add(GryoTypeReg.of(ReferenceMap.class, 182));
         }};
     }
 
@@ -591,7 +610,7 @@ public enum GryoVersion {
                                             final String serializer, final int registrationId) {
         try {
             final Class typeClass = Class.forName(type);
-            final Optional<SerializerShim<?>> serializerInstance = Optional.of(serializer)
+            final Optional<SerializerShim<?>> serializerInstance = Optional.ofNullable(serializer)
                     .map(FunctionUtils.wrapFunction(Class::forName))
                     .map(FunctionUtils.wrapFunction(c -> (SerializerShim<?>) c.getConstructor().newInstance()));
             if (serializerInstance.isPresent()) {
@@ -624,6 +643,8 @@ public enum GryoVersion {
 
         private static final Class HASH_MAP_TREE_NODE;
 
+        private static final Class COLLECTIONS_SYNCHRONIZED_MAP;
+
         static {
             // have to instantiate this via reflection because it is a private inner class of HashMap
             String className = HashMap.class.getName() + "$Node";
@@ -636,6 +657,13 @@ public enum GryoVersion {
             className = HashMap.class.getName() + "$TreeNode";
             try {
                 HASH_MAP_TREE_NODE = Class.forName(className);
+            } catch (Exception ex) {
+                throw new RuntimeException("Could not access " + className, ex);
+            }
+
+            className = Collections.class.getName() + "$SynchronizedMap";
+            try {
+                COLLECTIONS_SYNCHRONIZED_MAP = Class.forName(className);
             } catch (Exception ex) {
                 throw new RuntimeException("Could not access " + className, ex);
             }

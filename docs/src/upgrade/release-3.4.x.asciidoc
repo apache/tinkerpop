@@ -21,13 +21,388 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Avant-Gremlin Construction #3 for Theremin and Flowers*
 
+== TinkerPop 3.4.3
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.4.3/CHANGELOG.asciidoc#release-3-4-3[changelog] for a complete list of all the modifications that are part of this release.
+
+
+== TinkerPop 3.4.2
+
+*Release Date: May 28, 2019*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.4.2/CHANGELOG.asciidoc#release-3-4-2[changelog] for a complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+==== Per Request Options
+
+In 3.4.0, the notion of `RequestOptions` were added so that users could have an easier way to configure settings on
+individual requests made through the Java driver. While that change provided a way to set those configurations for
+script based requests, it didn't include options to make those settings in a `Traversal` submitted via `Bytecode`. In
+this release those settings become available via `with()` step on the `TraversalSource` as follows:
+
+[source,java]
+----
+GraphTraversalSource g = traversal().withRemote(conf);
+List<Vertex> vertices = g.with(RemoteConnection.PER_REQUEST_TIMEOUT, 500).V().out("knows").toList()
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2211[TINKERPOP-2211]
+
+==== Gremlin Console Timeout
+
+The Gremlin Console timeout that is set by `:remote config timeout x` was client-side only in prior versions, which
+meant that if the console timeout was less than the server timeout the client would timeout but the server might still
+be processing the request. Similarly, a longer timeout on the console would not change the server and the timeout
+would occur sooner than expected. These discrepancies often led to confusion.
+
+As of 3.4.0, the Java Driver API allowed for timeout settings to be more easily passed per request, so the console
+was modified for this current version to pass the console timeout for each remote submission thus yielding more
+consistent and intuitive behavior.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2203[TINKERPOP-2203]
+
+=== Upgrading for Providers
+
+==== Graph System Providers
+
+===== Warnings
+
+It is now possible to pass warnings over the Gremlin Server protocol using a `warnings` status attribute. The warnings
+are expected to be a string value or a `List` of string values which can be consumed by the user or tools that check
+for that status attribute. Note that Gremlin Console is one such tool that will respond to this status attribute - it
+will print the messages to the console as they are detected when doing remote script submissions.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2216[TINKERPOP-2216]
+
+==== Graph Driver Providers
+
+===== GraphBinary API Change
+
+In GraphBinary serialization, Java `write()` and `writeValue()` from `TypeSerializer<T>` interface now take a Netty's
+`ByteBuf` instance instead of an `ByteBufAllocator`, that way the same buffer instance gets reused during the write
+of a message. Additionally, we took the opportunity to remove the unused parameter from `ResponseMessageSerializer`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2161[TINKERPOP-2161]
+
+== TinkerPop 3.4.1
+
+*Release Date: March 18, 2019*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.4.1/CHANGELOG.asciidoc#release-3-4-1[changelog] for a complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+==== Mix SPARQL and Gremlin
+
+In the initial release of `sparql-gremlin` it was only possible to execute a SPARQL query and have it translate to
+Gremlin. Therefore, it was only possible to write a query like this:
+
+[source,text]
+----
+gremlin> g.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age }")
+==>[name:marko,age:29]
+==>[name:vadas,age:27]
+==>[name:josh,age:32]
+==>[name:peter,age:35]
+gremlin> g.sparql("SELECT * WHERE { }")
+==>v[1]
+==>v[2]
+==>v[3]
+==>v[4]
+==>v[5]
+==>v[6]
+----
+
+In this release, however, it is now possible to further process that result with Gremlin steps:
+
+[source,text]
+----
+gremlin> g.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age }").select("name")
+==>marko
+==>vadas
+==>josh
+==>peter
+gremlin> g.sparql("SELECT * WHERE { }").out("knows").values("name")
+==>vadas
+==>josh
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2171[TINKERPOP-2171],
+link:http://tinkerpop.apache.org/docs/3.4.1/reference/#sparql-with-gremlin[Reference Documentation]
+
+=== Upgrading for Providers
+
+==== Graph Database Providers
+
+===== GraphBinary Serializer Changes
+
+In GraphBinary serialization, Java `write()` and `writeValue()` from `TypeSerializer<T>` interface now take a Netty's
+`ByteBuf` instance instead of an `ByteBufAllocator`, that way the same buffer instance gets reused during the write
+of a message. Additionally, we took the opportunity to remove the unused parameter from `ResponseMessageSerializer`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2161[TINKERPOP-2161]
+
 == TinkerPop 3.4.0
 
-*NOT OFFICIALLY RELEASED YET*
+*Release Date: January 2, 2019*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.0/CHANGELOG.asciidoc#release-3-4-0[changelog] for a complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
+
+==== sparql-gremlin
+
+The `sparql-gremlin` module is a link:https://en.wikipedia.org/wiki/SPARQL[SPARQL] to Gremlin compiler, which allows
+SPARQL to be executed over any TinkerPop-enabled graph system.
+
+[source,groovy]
+----
+graph = TinkerFactory.createModern()
+g = graph.traversal(SparqlTraversalSource)
+g.sparql("""SELECT ?name ?age
+            WHERE { ?person v:name ?name . ?person v:age ?age }
+            ORDER BY ASC(?age)""")
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1878[TINKERPOP-1878],
+link:http://tinkerpop.apache.org/docs/3.4.0/reference/#sparql-gremlin[Reference Documentation]
+
+==== Gremlin.NET Driver Improvements
+
+The Gremlin.NET driver now uses request pipelining. This allows connections to be reused for different requests in
+parallel which should lead to better utilization of connections. The `ConnectionPool` now also has a fixed size
+whereas it could previously create an unlimited number of connections. Each `Connection` can handle up to
+`MaxInProcessPerConnection` requests in parallel. If this limit is reached for all connections, then a
+`NoConnectionAvailableException` is thrown which makes this a breaking change.
+
+These settings can be set as properties on the `ConnectionPoolSettings` instance that can be passed to the `GremlinClient`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1774[TINKERPOP-1774],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1775[TINKERPOP-1775],
+link:http://tinkerpop.apache.org/docs/3.4.0/reference/#_connection_pool[Reference Documentation]
+
+==== Indexing of Collections
+
+TinkerPop 3.4.0 adds a new `index()`-step, which allows users to transform simple collections into index collections or maps.
+
+```
+gremlin> g.V().hasLabel("software").values("name").fold().
+......1>   order(local).
+......2>   index().unfold()
+==>[lop,0]
+==>[ripple,1]
+gremlin> g.V().hasLabel("person").values("name").fold().
+......1>   order(local).by(decr).
+......2>   index().
+......3>     with(WithOptions.indexer, WithOptions.map)
+==>[0:vadas,1:peter,2:marko,3:josh]
+```
+
+==== Modulation of valueMap()
+
+The `valueMap()` step now supports `by` and `with` modulation, which also led to the deprecation of `valueMap(true)` overloads.
+
+===== by() Modulation
+
+With the help of the `by()` modulator `valueMap()` result values can now be adjusted, which is particularly useful to turn multi-/list-values into single values.
+
+```
+gremlin> g.V().hasLabel("person").valueMap()
+==>[name:[marko],age:[29]]
+==>[name:[vadas],age:[27]]
+==>[name:[josh],age:[32]]
+==>[name:[peter],age:[35]]
+gremlin> g.V().hasLabel("person").valueMap().by(unfold())
+==>[name:marko,age:29]
+==>[name:vadas,age:27]
+==>[name:josh,age:32]
+==>[name:peter,age:35]
+```
+===== with() Modulation
+
+The `with()` modulator can be used to include certain tokens (`id`, `label`, `key` and/or `value`).
+
+The old way (still valid, but deprecated):
+
+```
+gremlin> g.V().hasLabel("software").valueMap(true)
+==>[id:10,label:software,name:[gremlin]]
+==>[id:11,label:software,name:[tinkergraph]]
+gremlin> g.V().has("person","name","marko").properties("location").valueMap(true)
+==>[id:6,key:location,value:san diego,startTime:1997,endTime:2001]
+==>[id:7,key:location,value:santa cruz,startTime:2001,endTime:2004]
+==>[id:8,key:location,value:brussels,startTime:2004,endTime:2005]
+==>[id:9,key:location,value:santa fe,startTime:2005]
+```
+
+The new way:
+
+```
+gremlin> g.V().hasLabel("software").valueMap().with(WithOptions.tokens)
+==>[id:10,label:software,name:[gremlin]]
+==>[id:11,label:software,name:[tinkergraph]]
+gremlin> g.V().has("person","name","marko").properties("location").valueMap().with(WithOptions.tokens)
+==>[id:6,key:location,value:san diego,startTime:1997,endTime:2001]
+==>[id:7,key:location,value:santa cruz,startTime:2001,endTime:2004]
+==>[id:8,key:location,value:brussels,startTime:2004,endTime:2005]
+==>[id:9,key:location,value:santa fe,startTime:2005]
+```
+
+Furthermore, now there's a finer control over which of the tokens should be included:
+
+```
+gremlin> g.V().hasLabel("software").valueMap().with(WithOptions.tokens, WithOptions.labels)
+==>[label:software,name:[gremlin]]
+==>[label:software,name:[tinkergraph]]
+gremlin> g.V().has("person","name","marko").properties("location").valueMap().with(WithOptions.tokens, WithOptions.values)
+==>[value:san diego,startTime:1997,endTime:2001]
+==>[value:santa cruz,startTime:2001,endTime:2004]
+==>[value:brussels,startTime:2004,endTime:2005]
+==>[value:santa fe,startTime:2005]
+```
+
+As shown above, the support of the `with()` modulator for `valueMap()` makes the `valueMap(boolean)` overload
+superfluous, hence this overload is now deprecated. This is a breaking API change, since `valueMap()` will now always
+yield instances of type `Map<Object, Object>`. Prior this change only the `valueMap(boolean)` overload yielded
+`Map<Object, Object>` objects, `valueMap()` without the boolean parameter used to yield instances of type
+`Map<String, Object>`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2059[TINKERPOP-2059]
+
+==== Predicate Number Comparison
+
+In previous versions `within()` and `without()` performed strict number comparisons; that means these predicates did
+not only compare number values, but also the type. This was inconsistent with how other predicates (like `eq`, `gt`,
+etc.) work. All predicates will now ignore the number type and instead compare numbers only based on their value.
+
+Old behavior:
+
+```
+gremlin> g.V().has("age", eq(32L))
+==>v[4]
+gremlin> g.V().has("age", within(32L, 35L))
+gremlin>
+```
+
+New behavior:
+
+```
+gremlin> g.V().has("age", eq(32L))
+==>v[4]
+gremlin> g.V().has("age", within(32L, 35L))
+==>v[4]
+==>v[6]
+```
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2058[TINKERPOP-2058]
+
+==== ReferenceElementStrategy
+
+Gremlin Server has had some inconsistent behavior in the serialization of the results it returns. Remote traversals
+based on Gremlin bytecode always detach returned graph elements to "reference" (i.e. removes properties and only
+include the `id` and `label`), but scripts would detach graph elements and include the properties. For 3.4.0,
+TinkerPop introduces the `ReferenceElementStrategy` which can be configured on a `GraphTraversalSource` to always
+detach to "reference".
+
+[source,text]
+----
+gremlin> graph = TinkerFactory.createModern()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> g = graph.traversal().withStrategies(ReferenceElementStrategy.instance())
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+gremlin> v = g.V().has('person','name','marko').next()
+==>v[1]
+gremlin> v.class
+==>class org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex
+gremlin> v.properties()
+gremlin>
+----
+
+The packaged initialization scripts that come with Gremlin Server now pre-configure the sample graphs with this
+strategy to ensure that both scripts and bytecode based requests over any protocol (HTTP, websocket, etc) and
+serialization format all return a "reference". To revert to the old form, simply remove the strategy in the
+initialization script.
+
+It is recommended that users choose to configure their `GraphTraversalSource` instances with `ReferenceElementStrategy`
+as working with "references" only is the recommended method for developing applications with TinkerPop. In the future,
+it is possible that `ReferenceElementStrategy` will be configured by default for all graphs on or off Gremlin Server,
+so it would be best to start utilizing it now and grooming existing Gremlin and related application code to account
+for it.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2075[TINKERPOP-2075]
+
+==== Text Predicates
+
+Gremlin now supports simple text predicates on top of the existing `P` predicates. Both, the new `TextP` text
+predicates and the old `P` predicates, can be chained using `and()` and `or()`.
+
+[source,groovy]
+----
+gremlin> g.V().has("person","name", containing("o")).valueMap()
+==>[name:[marko],age:[29]]
+==>[name:[josh],age:[32]]
+gremlin> g.V().has("person","name", containing("o").and(gte("j").and(endingWith("ko")))).valueMap()
+==>[name:[marko],age:[29]]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2041[TINKERPOP-2041]
+
+==== Changed Infix Behavior
+
+The infix notation of `and()` and `or()` now supports an arbitrary number of traversals and `ConnectiveStrategy`
+produces a traversal with proper AND and OR semantics.
+
+```
+Input: a.or.b.and.c.or.d.and.e.or.f.and.g.and.h.or.i
+
+*BEFORE*
+Output: or(a, or(and(b, c), or(and(d, e), or(and(and(f, g), h), i))))
+
+*NOW*
+Output: or(a, and(b, c), and(d, e), and(f, g, h), i)
+```
+
+Furthermore, previous versions failed to apply 3 or more `and()` steps using the infix notation, this is now fixed.
+
+[source,groovy]
+----
+gremlin> g.V().has("name","marko").and().has("age", lt(30)).or().has("name","josh").and().has("age", gt(30)).and().out("created")
+==>v[1]
+==>v[4]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2029[TINKERPOP-2029]
+
+==== GraphBinary
+
+GraphBinary is a new language agnostic, network serialization format designed to replace Gryo and GraphSON. At this
+time it is only available on the JVM, but support will be added for other languages in upcoming releases. The
+serializer has been configured in Gremlin Server's packaged configuration files. The serializer can be configured
+using the Java driver as follows:
+
+[source,java]
+----
+Cluster cluster = Cluster.build("localhost").port(8182).
+                          serializer(Serializers.GRAPHBINARY_V1D0).create();
+Client client = cluster.connect();
+List<Result> r = client.submit("g.V().has('person','name','marko')").all().join();
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1942[TINKERPOP-1942],
+link:http://tinkerpop.apache.org/docs/3.4.0/dev/io/#graphbinary[IO Documentation]
+
+==== Status Attributes
+
+The Gremlin Server protocol allows for status attributes to be returned in responses. These attributes were typically
+for internal use, but were designed with extensibility in mind so that providers could place return their own
+attributes to calling clients. Unfortunately, unless the client was being used with protocol level requests (which
+wasn't convenient) those attributes were essentially hidden from view. As of this version however, status attributes
+are fully retrievable for both successful requests and exceptions.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1913[TINKERPOP-1913]
 
 ==== with() Step
 
@@ -36,7 +411,7 @@ modulator. This modulator allows the step it is modifying to accept configuratio
 behavior of the step itself. A good example of its usage is shown with the revised syntax of the `pageRank()`-step
 which now uses `with()` to replace the old `by()` options:
 
-[groovy]
+[source,groovy]
 ----
 g.V().hasLabel('person').
   pageRank().
@@ -49,7 +424,7 @@ g.V().hasLabel('person').
 
 A similar change was made for `peerPressure()`-step:
 
-[groovy]
+[source,groovy]
 ----
 g.V().hasLabel('person').
   peerPressure().
@@ -65,25 +440,102 @@ release where breaking changes are allowed.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1975[TINKERPOP-1975],
 link:http://tinkerpop.apache.org/docs/3.4.0/reference/#with-step[Reference Documentation]
 
-==== Removal of Giraph Support
+==== shortestPath() Step
 
-Support for Giraph has been removed as of this version. There were a number of reasons for this decision which were
-discussed in the community prior to taking this step. Users should switch to Spark for their OLAP based graph-computing
-needs.
+Calculating the link:https://en.wikipedia.org/wiki/Shortest_path_problem[shortest path] between vertices is a common
+graph use case. While the traversal to determine a shortest path can be expressed in Gremlin, this particular problem
+is common enough that the feature has been encapsulated into its own step, demonstrated as follows:
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1930[TINKERPOP-1930]
+[source,text]
+----
+gremlin> g.withComputer().V().has('name','marko').
+......1>   shortestPath().with(ShortestPath.target, has('name','peter'))
+==>[v[1],v[3],v[6]]
+----
 
-==== Removal of Rebindings Options
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1990[TINKERPOP-1990],
+link:http://tinkerpop.apache.org/docs/3.4.0/reference/#shortestpath-step[Reference Documentation]
 
-The "rebindings" option is no longer supported for clients. It was deprecated long ago at 3.1.0. The server will not
-respond to them on any channel - websockets, nio or HTTP. Use the "aliases" option instead.
+==== connectedComponent() Step
 
-link:https://issues.apache.org/jira/browse/TINKERPOP-1705[TINKERPOP-1705]
+In prior version of TinkerPop, it was recommended that the identification of
+link:https://en.wikipedia.org/wiki/Connected_component_(graph_theory)[Connected Component] instances in a graph be
+computed by way of a reasonably complex bit of Gremlin that looked something like this:
 
-==== Improvements in `min()` and `max()`
+[source,groovy]
+----
+g.V().emit(cyclicPath().or().not(both())).repeat(both()).until(cyclicPath()).
+  path().aggregate("p").
+  unfold().dedup().
+  map(__.as("v").select("p").unfold().
+         filter(unfold().where(eq("v"))).
+         unfold().dedup().order().by(id).fold()).
+  dedup()
+----
 
-Previously `min()` and `max()` were only working for numeric values. This has been changed and these steps can now operate over any `Comparable` value. The common workaround was the combination
-of `order().by()` and `limit()` as shown here:
+The above approach had a number of drawbacks that included a large execution cost as well as incompatibilities in OLAP.
+To simplify usage of this commonly use graph algorithm, TinkerPop 3.4.0 introduces the `connectedComponent()` step
+which reduces the above operation to:
+
+[source,groovy]
+----
+g.withComputer().V().connectedComponent()
+----
+
+It is important to note that this step does require the use of a `GraphComputer` to work, as it utilizes a
+`VertexProgram` behind the scenes.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1967[TINKERPOP-1967],
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connectedcomponent-step[Reference Documentation]
+
+==== io() Step
+
+There have been some important changes to IO operations for reading and writing graph data. The use of `Graph.io()`
+has been deprecated to further remove dependence on the Graph (Structure) API for users and to extend these basic
+operations to GLV users by making these features available as part of the Gremlin language.
+
+It is now possible to simply use Gremlin:
+
+[source,groovy]
+----
+graph = ...
+g = graph.traversal()
+g.io(someInputFile).read().iterate()
+g.io(someOutputFile).write().iterate()
+----
+
+While `io()`-step is still single-threaded for OLTP style loading, it can be utilized in conjunction with OLAP which
+internally uses `CloneVertexProgram` and therefore any graph `InputFormat` or `OutputFormat` can be configured in
+conjunction with this step for parallel loads of large datasets.
+
+It is also worth noting that the `io()`-step may be overridden by graph providers to utilize their native bulk-loading
+features, so consult the documentation of the implementation being used to determine if there are any improved
+efficiencies there.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1996[TINKERPOP-1996],
+link:http://tinkerpop.apache.org/docs/3.4.0/reference/#io-step[Reference Documentation]
+
+==== Per Request Options
+
+The Java driver now allows for various options to be set on a per-request basis via new overloads to `submit()` that
+accept `RequestOption` instances. A good use-case for this feature is to set a per-request override to the
+`scriptEvaluationTimeout` so that it only applies to the current request.
+
+[source,java]
+----
+Cluster cluster = Cluster.open();
+Client client = cluster.connect();
+RequestOptions options = RequestOptions.build().timeout(500).create();
+List<Result> result = client.submit("g.V()", options).all().get();
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1342[TINKERPOP-1342]
+
+==== min() max() and Comparable
+
+Previously `min()` and `max()` were only working for numeric values. This has been changed and these steps can now
+operate over any `Comparable` value. The common workaround was the combination of `order().by()` and `limit()` as
+shown here:
 
 [source,groovy]
 ----
@@ -113,11 +565,12 @@ gremlin> g.V().values('name').max()
 ==>vadas
 ----
 
-==== Nested loop support
+==== Nested Loop Support
 
 Traversals now support nesting of `repeat()` loops.
 
-These can now be used to repeat another traversal while in a looped context, either inside the body of a `repeat()` or in its step modifiers (`until()` or `emit()`).
+These can now be used to repeat another traversal while in a looped context, either inside the body of a `repeat()` or
+in its step modifiers (`until()` or `emit()`).
 
 [source,groovy]
 ----
@@ -150,12 +603,167 @@ when dealing with that event. To make this easier, the event now raises with a `
 
 link:https://issues.apache.org/jira/browse/TINKERPOP-1831[TINKERPOP-1831]
 
-==== Deprecation Removal
+==== Reducing Barrier Steps
+
+The behavior of `min()`, `max()`, `mean()` and `sum()` has been modified to return no result if there's no input.
+Previously these steps yielded the internal seed value:
+
+[source,groovy]
+----
+gremlin> g.V().values('foo').min()
+==>NaN
+gremlin> g.V().values('foo').max()
+==>NaN
+gremlin> g.V().values('foo').mean()
+==>NaN
+gremlin> g.V().values('foo').sum()
+==>0
+----
+
+These traversals will no longer emit a result. Note, that this also affects more complex scenarios, e.g. if these
+steps are used in `by()` modulators:
+
+[source,groovy]
+----
+gremlin> g.V().group().
+......1>   by(label).
+......2>   by(outE().values("weight").sum())
+==>[software:0,person:3.5]
+----
+
+Since software vertices have no outgoing edges and thus no weight values to sum, `software` will no longer show up in
+the result. In order to get the same result as before, one would have to add a `coalesce()`-step:
+
+[source,groovy]
+----
+gremlin> g.V().group().
+......1>   by(label).
+......2>   by(outE().values("weight").sum())
+==>[person:3.5]
+gremlin> g.V().group().
+......1>   by(label).
+......2>   by(coalesce(outE().values("weight"), constant(0)).sum())
+==>[software:0,person:3.5]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1777[TINKERPOP-1777]
+
+==== Order of select() Scopes
+
+The order of select scopes has been changed to: maps, side-effects, paths. Previously the order was: side-effects,
+maps, paths - which made it almost impossible to select a specific map entry if a side-effect with the same name
+existed.
+
+The following snippets illustrate the changed behavior:
+
+[source,groovy]
+----
+gremlin> g.V(1).
+......1>   group("a").
+......2>     by(__.constant("a")).
+......3>     by(__.values("name")).
+......4>   select("a")
+==>[a:marko]
+gremlin> g.V(1).
+......1>   group("a").
+......2>     by(__.constant("a")).
+......3>     by(__.values("name")).
+......4>   select("a").select("a")
+==>[a:marko]
+----
+
+Above is the old behavior; the second `select("a")` has no effect, it selects the side-effect `a` again, although one
+would expect to get the map entry `a`. What follows is the new behavior:
+
+[source,groovy]
+----
+gremlin> g.V(1).
+......1>   group("a").
+......2>     by(__.constant("a")).
+......3>     by(__.values("name")).
+......4>   select("a")
+==>[a:marko]
+gremlin> g.V(1).
+......1>   group("a").
+......2>     by(__.constant("a")).
+......3>     by(__.values("name")).
+......4>   select("a").select("a")
+==>marko
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1522[TINKERPOP-1522]
+
+==== GraphSON BulkSet
+
+In earlier versions of TinkerPop, `BulkSet` was coerced to a `List` for GraphSON which was convenient in that it
+didn't add a new data type to support, but inconvenient in that it meant that certain process tests were not consistent
+in terms of how they ran and the benefits of the `BulkSet` were "lost" in that the "bulk" was being resolved server
+side. With the addition of `BulkSet` as a GraphSON type the "bulk" is now resolved on the client side by the language
+variant. How that resolution occurs depends upon the language variant. For Java, there is a `BulkSet` object which
+maintains that structure sent from the server. For the other variants, the `BulkSet` is deserialized to a `List` form
+which results in a much larger memory footprint than what is contained the `BulkSet`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2111[TINKERPOP-2111]
+
+==== Python Bindings
+
+Bindings were formerly created using a Python 2-tuple as a bit of syntactic sugar, but all other language variants
+used an explicit `Bindings` object which `gremlin-python` already had in place. To make all work variants behave
+consistently, the 2-tuple syntax has been removed in favor of the explicit `Bindings.of()` option.
+
+[source,python]
+----
+g.V(Bindings.of('id',1)).out('created').map(lambda: ("it.get().value('name').length()", "gremlin-groovy")).sum()
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2116[TINKERPOP-2116]
+
+==== Deprecation and Removal
+
+This section describes newly deprecated classes, methods, components and patterns of usage as well as which previously
+deprecated features have been officially removed or repurposed.
+
+===== Moving of RemoteGraph
+
+`RemoteGraph` was long ago deprecated in favor of `withRemote()`. It became even less useful with the introduction of
+the `AnonymousTraversalSource` concept in 3.3.5. It's only real use was for testing remote bytecode based traversals
+in the test suite as the test suite requires an actual `Graph` object to function properly. As such, `RemoteGraph` has
+been moved to `gremlin-test`. It should no longer be used in any capacity besides that.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2079[TINKERPOP-2079]
+
+===== Removal of Giraph Support
+
+Support for Giraph has been removed as of this version. There were a number of reasons for this decision which were
+discussed in the community prior to taking this step. Users should switch to Spark for their OLAP based graph-computing
+needs.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1930[TINKERPOP-1930]
+
+===== Removal of Rebindings Options
+
+The "rebindings" option is no longer supported for clients. It was deprecated long ago at 3.1.0. The server will not
+respond to them on any channel - websockets, nio or HTTP. Use the "aliases" option instead.
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-1705[TINKERPOP-1705]
+
+===== gremlin-server.sh -i Removal
+
+The `-i` option for installing dependencies in Gremlin Server was long ago deprecated and has now been removed. Please
+use `install` as its replacement going forward.
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-2031[TINKERPOP-2031]
+
+===== Deprecation Removal
 
 The following deprecated classes, methods or fields have been removed in this version:
 
 * `gremlin-core`
 ** `org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer#GREMLIN_CORE`
+** `org.apache.tinkerpop.gremlin.process.remote.RemoteGraph` - moved to `gremlin-test`
+** `org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.submit(Traversal)`
+** `org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.submit(Bytecode)`
+** `org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy#identity()`
 ** `org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine`
 ** `org.apache.tinkerpop.gremlin.process.traversal.engine.*`
 ** `org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy.Builder#addReadPartition(String)`
@@ -192,97 +800,66 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-1296[TINKERPOP-1296],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1705[TINKERPOP-1705],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1707[TINKERPOP-1707],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1954[TINKERPOP-1954],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1986[TINKERPOP-1986]
+link:https://issues.apache.org/jira/browse/TINKERPOP-1986[TINKERPOP-1986],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2079[TINKERPOP-2079],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2103[TINKERPOP-2103]
 
-==== Modifications to reducing barrier steps
+===== Deprecated GraphSONMessageSerializerGremlinV2d0
 
-The behavior of `min()`, `max()`, `mean()` and `sum()` has been modified to return no result if there's no input. Previously these steps yielded the internal seed value:
+The `GraphSONMessageSerializerGremlinV2d0` serializer is now analogous to `GraphSONMessageSerializerV2d0` and therefore
+redundant. It has technically always been equivalent in terms of functionality as both serialized to the same format
+(i.e. GraphSON 2.0 with embedded types). It is no longer clear why these two classes were established this way, but
+it does carry the negative effect where multiple serializer versions could not be bound to Gremlin Server's HTTP
+endpoint as the MIME types conflicted on `application/json`. By simply making both message serializers support
+`application/json` and `application/vnd.gremlin-v2.0+json`, it then became possible to overcome that limitation. In
+short, prefer use of `GraphSONMessageSerializerV2d0` when possible.
 
-[source,groovy]
-----
-gremlin> g.V().values('foo').min()
-==>NaN
-gremlin> g.V().values('foo').max()
-==>NaN
-gremlin> g.V().values('foo').mean()
-==>NaN
-gremlin> g.V().values('foo').sum()
-==>0
-----
+Note that this is a breaking change in the sense that `GraphSONMessageSerializerV2d0` will no longer set the header of
+requests messages to `application/json`. As a result, older versions of Gremlin Server not configured with
+`GraphSONMessageSerializerGremlinV2d0` will not find a deserializer to match the request.
 
-These traversals will no longer emit a result. Note, that this also affects more complex scenarios, e.g. if these steps are used in `by()` modulators:
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1984[TINKERPOP-1984]
 
-[source,groovy]
-----
-gremlin> g.V().group().
-......1>   by(label).
-......2>   by(outE().values("weight").sum())
-==>[software:0,person:3.5]
-----
+===== Removed groovy-sql Dependency
 
-Since software vertices have no outgoing edges and thus no weight values to sum, `software` will no longer show up in the result. In order to get the same result as before, one would
-have to add a `coalesce()`-step:
+Gremlin Console and Gremlin Server no longer include groovy-sql.  If you depend on groovy-sql,
+you can install it in Gremlin Console or Gremlin Server using the plugin system.
 
-[source,groovy]
-----
-gremlin> g.V().group().
-......1>   by(label).
-......2>   by(outE().values("weight").sum())
-==>[person:3.5]
-gremlin> g.V().group().
-......1>   by(label).
-......2>   by(coalesce(outE().values("weight"), constant(0)).sum())
-==>[software:0,person:3.5]
-----
+Console:
+```
+:install org.codehaus.groovy groovy-sql 2.5.2
+```
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1777[TINKERPOP-1777]
+Server:
+```
+bin/gremlin-server.sh install org.codehaus.groovy groovy-sql 2.5.2
+```
 
-==== Change in order of select() scopes
+If your project depended on groovy-sql transitively, simply include it in your project's build file (e.g. maven: pom.xml).
 
-The order of select scopes has been changed to: maps, side-effects, paths
-Previously the order was: side-effects, maps, paths - which made it almost impossible to select a specific map entry if a side-effect with the same name existed.
-
-The following snippets illustrate the changed behavior:
-
-[source,groovy]
-----
-gremlin> g.V(1).
-......1>   group("a").
-......2>     by(__.constant("a")).
-......3>     by(__.values("name")).
-......4>   select("a")
-==>[a:marko]
-gremlin> g.V(1).
-......1>   group("a").
-......2>     by(__.constant("a")).
-......3>     by(__.values("name")).
-......4>   select("a").select("a")
-==>[a:marko]
-----
-
-Above is the old behavior; the second `select("a")` has no effect, it selects the side-effect `a` again, although one would expect to get the map entry `a`. What follows is the new behavior:
-
-[source,groovy]
-----
-gremlin> g.V(1).
-......1>   group("a").
-......2>     by(__.constant("a")).
-......3>     by(__.values("name")).
-......4>   select("a")
-==>[a:marko]
-gremlin> g.V(1).
-......1>   group("a").
-......2>     by(__.constant("a")).
-......3>     by(__.values("name")).
-......4>   select("a").select("a")
-==>marko
-----
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1522[TINKERPOP-1522]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2037[TINKERPOP-2037]
 
 === Upgrading for Providers
 
 ==== Graph Database Providers
+
+===== io() Step
+
+The new `io()`-step that was introduced provides some new changes to consider. Note that `Graph.io()` has been
+deprecated and users are no longer instructed to utilize that method. It is not yet decided when that method will be
+removed completely, but given the public nature of it and the high chance of common usage, it should be hanging around
+for some time.
+
+As with any step in Gremlin, it is possible to replace it with a more provider specific implementation that could be
+more efficient. Developing a `TraversalStrategy` to do this is encouraged, especially for those graph providers who
+might have special bulk loaders that could be abstracted by this step. Examples of this are already shown with
+`HadoopGraph` which replaces the simple single-threaded loader with `CloneVertexProgram`. Graph providers are
+encouraged to use the `with()` step to capture any necessary configurations required for their underlying loader to
+work. Graph providers should not feel restricted to `graphson`, `gryo` and `graphml` formats either. If a graph
+supports CSV or some custom graph specific format, it shouldn't be difficult to gather the configurations necessary to
+make that available to users.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1996[TINKERPOP-1996]
 
 ===== Caching Graph Features
 
@@ -315,6 +892,35 @@ All of the changes above basically mean, that if the `Mutating` interface was be
 `addPropertyMutations()` method simply needs to be changed to `configure()`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1975[TINKERPOP-1975]
+
+===== OptionsStrategy
+
+`OptionsStrategy` is a `TraversalStrategy` that makes it possible for users to set arbitrary configurations on a
+`Traversal`. These configurations can be used by graph providers to allow for traversal-level configurations to be
+accessible to their custom steps. A user would write something like:
+
+[source,java]
+----
+g.withStrategies(OptionsStrategy.build().with("specialLimit", 10000).create()).V();
+----
+
+The `OptionsStrategy` is really only the carrier for the configurations and while users can choose to utilize that
+more verbose method for constructing it shown above, it is more elegantly constructed as follows using `with()`-step:
+
+[source,java]
+----
+g.with("specialLimit", 10000)).V();
+----
+
+The graph provider could then access that value of "specialLimit" in their custom step (or elsewhere) as follows:
+
+[source,java]
+----
+OptionsStrategy strategy = this.getTraversal().asAdmin().getStrategies().getStrategy(OptionsStrategy.class).get();
+int specialLimit = (int) strategy.getOptions().get("specialLimit");
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2053[TINKERPOP-2053]
 
 ===== Removed hadoop-gremlin Test Artifact
 
@@ -349,7 +955,7 @@ long ago moved to the `Computer` infrastructure as methods for constructing a `T
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1143[TINKERPOP-1143]
 
-==== Upsert Graph Feature
+===== Upsert Graph Feature
 
 Some `Graph` implementations may be able to offer upsert functionality for vertices and edges, which can help improve
 usability and performance. To help make it clear to users that a graph operates in this fashion, the `supportsUpsert()`
@@ -367,3 +973,29 @@ The extent to which TinkerPop tests "upsert" is fairly narrow. Graph providers t
 should consider their own test suites carefully to ensure appropriate coverage.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1685[TINKERPOP-1685]
+
+===== TypeTranslator Changes
+
+The `TypeTranslator` experienced a change in its API and `GroovyTranslator` a change in expectations.
+
+`TypeTranslator` now implements `BiFunction` and takes the graph traversal source name as an argument along with the
+object to translate. This interface is implemented by default for Groovy with `GroovyTranslator.DefaultTypeTranslator`
+which encapsulates all the functionality of what `GroovyTranslator` formerly did by default. To provide customize
+translation, simply extend the `DefaultTypeTranslator` and override the methods.
+
+`GroovyTranslator` now expects that the `TypeTranslator` provide to it as part of its `of()` static method overload
+is "complete" - i.e. that it provides all the functionality to translate the types passed to it. Thus, a "complete"
+`TypeTranslator` is one that does everything that `DefaultTypeTranslator` does as a minimum requirement. Therefore,
+the extension model described above is the easiest way to get going with a custom `TypeTranslator` approach.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2072[TINKERPOP-2072]
+
+==== Graph Driver Providers
+
+===== Deprecation Removal in RemoteConnection
+
+The two deprecated synchronous `submit()` methods on the `RemoteConnection` interface have been removed, which means
+that `RemoteConnection` implementations will need to implement `submitAsync(Bytecode)` if they have not already done
+so.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2103[TINKERPOP-2103]

@@ -60,14 +60,17 @@ public class GroovyCompilerGremlinPlugin extends AbstractGremlinPlugin {
         private Compilation compilation = Compilation.NONE;
         private String extensions = null;
         private int expectedCompilationTime = 5000;
+        private String cacheSpec = "softValues";
+        private boolean globalFunctionCacheEnabled = true;
 
         private Map<String,Object> keyValues = Collections.emptyMap();
 
         /**
          * If the time it takes to compile a script exceeds the specified time then a warning is written to the logs.
-         * Defaults to 5000ms.
+         * Defaults to 5000ms and must be greater than zero.
          */
         public Builder expectedCompilationTime(final int timeInMillis) {
+            if (expectedCompilationTime <= 0) throw new IllegalArgumentException("expectedCompilationTime must be greater than zero");
             this.expectedCompilationTime = timeInMillis;
             return this;
         }
@@ -113,6 +116,42 @@ public class GroovyCompilerGremlinPlugin extends AbstractGremlinPlugin {
             return this;
         }
 
+        /**
+         * Sets the cache specification for the class map which holds compiled scripts and uses the comma separated
+         * syntax of the caffeine cache for configuration.
+         * <ul>
+         *   <li>{@code initialCapacity=[integer]}: sets {@code Caffeine.initialCapacity}.
+         *   <li>{@code maximumSize=[long]}: sets {@code Caffeine.maximumSize}.
+         *   <li>{@code maximumWeight=[long]}: sets {@code Caffeine.maximumWeight}.
+         *   <li>{@code expireAfterAccess=[duration]}: sets {@code Caffeine.expireAfterAccess}.
+         *   <li>{@code expireAfterWrite=[duration]}: sets {@code Caffeine.expireAfterWrite}.
+         *   <li>{@code refreshAfterWrite=[duration]}: sets {@code Caffeine.refreshAfterWrite}.
+         *   <li>{@code weakKeys}: sets {@code Caffeine.weakKeys}.
+         *   <li>{@code weakValues}: sets {@code Caffeine.weakValues}.
+         *   <li>{@code softValues}: sets {@code Caffeine.softValues}.
+         *   <li>{@code recordStats}: sets {@code Caffeine.recordStats}.
+         * </ul>
+         * Durations are represented by an integer, followed by one of "d", "h", "m", or "s", representing
+         * days, hours, minutes, or seconds respectively. Whitespace before and after commas and equal signs is
+         * ignored. Keys may not be repeated; it is also illegal to use the following pairs of keys in a single value:
+         * <ul>
+         *   <li>{@code maximumSize} and {@code maximumWeight}
+         *   <li>{@code weakValues} and {@code softValues}
+         * </ul>
+         */
+        public Builder classMapCacheSpecification(final String cacheSpec) {
+            this.cacheSpec = cacheSpec;
+            return this;
+        }
+
+        /**
+         * Determines if the global function cache in the script engine is enabled or not. It is enabled by default.
+         */
+        public Builder globalFunctionCacheEnabled(final boolean enabled) {
+            this.globalFunctionCacheEnabled = enabled;
+            return this;
+        }
+
         Customizer[] asCustomizers() {
             final List<Customizer> list = new ArrayList<>();
 
@@ -128,8 +167,10 @@ public class GroovyCompilerGremlinPlugin extends AbstractGremlinPlugin {
             if (timeInMillis > 0)
                 list.add(new TimedInterruptGroovyCustomizer(timeInMillis));
 
-            if (expectedCompilationTime > 0)
-                list.add(new CompilationOptionsCustomizer(expectedCompilationTime));
+            list.add(CompilationOptionsCustomizer.build().
+                    enableGlobalFunctionCache(globalFunctionCacheEnabled).
+                    setExpectedCompilationTime(expectedCompilationTime > 0 ? expectedCompilationTime : 5000).
+                    setClassMapCacheSpecification(cacheSpec).create());
 
             if (compilation == Compilation.COMPILE_STATIC)
                 list.add(new CompileStaticGroovyCustomizer(extensions));
@@ -137,8 +178,6 @@ public class GroovyCompilerGremlinPlugin extends AbstractGremlinPlugin {
                 list.add(new TypeCheckedGroovyCustomizer(extensions));
             else if (compilation != Compilation.NONE)
                 throw new IllegalStateException("Use of unknown compilation type: " + compilation);
-
-            if (list.isEmpty()) throw new IllegalStateException("No customizer options have been selected for this plugin");
 
             final Customizer[] customizers = new Customizer[list.size()];
             list.toArray(customizers);

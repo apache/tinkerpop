@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
+using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.IntegrationTest.Util;
 using Xunit;
 
@@ -39,52 +40,52 @@ namespace Gremlin.Net.IntegrationTest.Driver
         private async Task ExecuteMultipleLongRunningRequestsInParallel(IGremlinClient gremlinClient, int nrRequests,
             int requestRunningTimeInMs)
         {
-            var longRunningRequestMsg = _requestMessageProvider.GetSleepMessage(requestRunningTimeInMs);
             var tasks = new List<Task>(nrRequests);
             for (var i = 0; i < nrRequests; i++)
-                tasks.Add(gremlinClient.SubmitAsync(longRunningRequestMsg));
+            {
+                tasks.Add(gremlinClient.SubmitAsync(_requestMessageProvider.GetSleepMessage(requestRunningTimeInMs)));
+            }
+                
             await Task.WhenAll(tasks);
         }
 
-        [Fact]
-        public async Task ShouldReuseConnectionForSequentialRequests()
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(8)]
+        public void ShouldCreateConfiguredNrConnections(int connectionPoolSize)
         {
-            var gremlinServer = new GremlinServer(TestHost, TestPort);
-            using (var gremlinClient = new GremlinClient(gremlinServer))
+            using (var gremlinClient = CreateGremlinClient(connectionPoolSize))
             {
-                await gremlinClient.SubmitAsync("");
-                await gremlinClient.SubmitAsync("");
-
                 var nrConnections = gremlinClient.NrConnections;
-                Assert.Equal(1, nrConnections);
+                Assert.Equal(connectionPoolSize, nrConnections);
             }
         }
 
         [Fact]
-        public void ShouldOnlyCreateConnectionWhenNecessary()
+        public async Task ShouldThrowConnectionPoolBusyExceptionWhenPoolIsBusy()
         {
-            var gremlinServer = new GremlinServer(TestHost, TestPort);
-            using (var gremlinClient = new GremlinClient(gremlinServer))
+            const int nrParallelRequests = 2;
+            using (var gremlinClient = CreateGremlinClient(connectionPoolSize: 1, maxInProcessPerConnection: 1))
             {
-                var nrConnections = gremlinClient.NrConnections;
-                Assert.Equal(0, nrConnections);
+                const int sleepTime = 100;
+
+                var thrownException = await Assert.ThrowsAsync<ConnectionPoolBusyException>(() =>
+                    ExecuteMultipleLongRunningRequestsInParallel(gremlinClient, nrParallelRequests, sleepTime));
+                Assert.Contains(nameof(ConnectionPoolSettings.MaxInProcessPerConnection), thrownException.Message);
+                Assert.Contains(nameof(ConnectionPoolSettings.PoolSize), thrownException.Message);
             }
         }
 
-        [Fact]
-        public async Task ShouldExecuteParallelRequestsOnDifferentConnections()
+        private static GremlinClient CreateGremlinClient(int connectionPoolSize = 2, int maxInProcessPerConnection = 4)
         {
             var gremlinServer = new GremlinServer(TestHost, TestPort);
-            using (var gremlinClient = new GremlinClient(gremlinServer))
-            {
-                var sleepTime = 50;
-                var nrParallelRequests = 5;
-
-                await ExecuteMultipleLongRunningRequestsInParallel(gremlinClient, nrParallelRequests, sleepTime);
-
-                var nrConnections = gremlinClient.NrConnections;
-                Assert.Equal(nrParallelRequests, nrConnections);
-            }
+            return new GremlinClient(gremlinServer,
+                connectionPoolSettings: new ConnectionPoolSettings
+                {
+                    PoolSize = connectionPoolSize,
+                    MaxInProcessPerConnection = maxInProcessPerConnection
+                });
         }
     }
 }

@@ -256,13 +256,16 @@ public class __ {
     /**
      * @see GraphTraversal#valueMap(String...)
      */
-    public static <A extends Element, B> GraphTraversal<A, Map<String, B>> valueMap(final String... propertyKeys) {
+    public static <A extends Element, B> GraphTraversal<A, Map<Object, B>> valueMap(final String... propertyKeys) {
         return __.<A>start().valueMap(propertyKeys);
     }
 
     /**
      * @see GraphTraversal#valueMap(boolean, String...)
+     * @deprecated As of release 3.4.0, deprecated in favor of {@link __#valueMap(String...)} in conjunction with
+     *             {@link GraphTraversal#with(String, Object)}.
      */
+    @Deprecated
     public static <A extends Element, B> GraphTraversal<A, Map<Object, B>> valueMap(final boolean includeTokens, final String... propertyKeys) {
         return __.<A>start().valueMap(includeTokens, propertyKeys);
     }
@@ -1122,4 +1125,10 @@ public class __ {
         return __.<A>start().barrier(barrierConsumer);
     }
 
+    /**
+     * @see GraphTraversal#index()
+     */
+    public static <A, B> GraphTraversal<A, B> index() {
+        return __.<A>start().index();
+    }
 }
