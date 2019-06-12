@@ -417,6 +417,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added test infrastructure to check for storage iterator leak.
 * Fixed multiple iterator leaks in query processor.
 * Fixed bug in `MatchStep` where the correct was not properly determined.
+* Fixed bug where client/server exception mismatch when server throw StackOverflowError
 
 [[release-3-3-7]]
 === TinkerPop 3.3.7 (Release Date: May 28, 2019)
