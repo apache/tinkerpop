@@ -295,9 +295,10 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                                 .statusMessage(errorMessage)
                                 .statusAttributeException(t).create());
                     } else {
+                        final String errorMessage =  (t.getMessage() == null) ? t.toString() : t.getMessage();
                         logger.warn(String.format("Exception processing a script on request [%s].", msg), t);
                         ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION)
-                                .statusMessage(t.getMessage())
+                                .statusMessage(errorMessage)
                                 .statusAttributeException(t).create());
                     }
                 }
