@@ -58,7 +58,7 @@ met (e.g. a number of iterations have occurred, no more data is changing in the 
 `VertexProgram` is copied to all the workers in the graph. A worker is not an explicit concept in the API, but is
 assumed of all `GraphComputer` implementations. At minimum each vertex is a worker (though this would be inefficient
 due to the fact that each vertex would maintain a VertexProgram). In practice, the workers partition the vertex set
-and and are responsible for the execution of the VertexProgram over all the vertices within their sphere of influence.
+and are responsible for the execution of the VertexProgram over all the vertices within their sphere of influence.
 The workers orchestrate the execution of the `VertexProgram.execute()` method on all their vertices in an
 link:http://en.wikipedia.org/wiki/Bulk_synchronous_parallel[bulk synchronous parallel] (BSP) fashion. The vertices
 are able to communicate with one another via messages. There are two kinds of messages in Gremlin OLAP:
