@@ -535,10 +535,12 @@ limitations under the License.
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>3.0.2</version>
                 </plugin>
+                <!-- can't upgrade past 1.4.6 until we enforce maven 3.5.2 or better
+                     https://github.com/spotify/dockerfile-maven/issues/252 -->
                 <plugin>
                     <groupId>com.spotify</groupId>
                     <artifactId>dockerfile-maven-plugin</artifactId>
-                    <version>1.4.10</version>
+                    <version>1.4.6</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
