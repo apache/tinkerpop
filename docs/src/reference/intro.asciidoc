@@ -416,7 +416,7 @@ conceptually the same irrespective of programming language.
 ==== Limitations
 
 The previous section on the embedded model outlined a number of areas where it has some advantages that it gains due to
-the fact that the full GTM is available to the user in the language of it's origin, i.e. Java. Some of those items
+the fact that the full GTM is available to the user in the language of its origin, i.e. Java. Some of those items
 touch upon important concepts to focus on here.
 
 The first of these points is serialization. When Gremlin Server receives a request, the results must be serialized to
