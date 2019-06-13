@@ -312,18 +312,36 @@ opaque when dealing with test failures and largely unhelpful for debugging. This
 developers doing work on Gremlin Language Variants (e.g. Python). To help alleviate this problem, developers can
 start a standalone Gremlin Server with its standard test configuration that is used in the standard Maven build.
 
-First, the local Gremlin Server distribution needs to be built:
+Generally speaking, most developers will want to test their code against the latest build of Gremlin Server in the
+TinkerPop repository. To do that, first be sure to build a Docker image of the current code:
 
 [source,bash]
 mvn clean install -DskipTests
 
-and then start the server with:
+Next, generate the a Docker image for Gremlin Server with:
+
+[source,bash]
+mvn clean install -pl :gremlin-server -DdockerImages -DskipTests
+
+IMPORTANT: If changes are made to the repository that need to be reflected in the Gremlin Server Docker image then
+the old image should be removed and then the above commands re-executed.
+
+Finally, start the server with:
 
 [source,bash]
 docker/gremlin-server.sh
 
 Starting Gremlin Server this way makes it possible to run Gremlin Language Variant tests without Maven (for example,
 directly from a debugger) which should greatly reduce development friction for these environments.
+
+It is also possible to specify the exact version of Gremlin Server to run with the test configuration. This version
+should be an existing Docker image version and must be an explicit version that maps to an actual TinkerPop artifact:
+
+[source,bash]
+docker/gremlin-server.sh 3.4.2
+
+To be a bit more clear, the version can not be a Docker tag like "latest" because there is no such TinkerPop artifact
+that has been published with that version number.
 
 == IDE Setup with Intellij
 

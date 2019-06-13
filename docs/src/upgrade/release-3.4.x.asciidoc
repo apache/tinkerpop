@@ -48,6 +48,8 @@ docker/gremlin-server.sh
 Once started, it is then possible to run GLV tests directly from a debugger against this instance which should
 hopefully reduce development friction.
 
+see: link:http://tinkerpop.apache.org/docs/3.4.3/dev/developer/#docker-integration[Developer Documentation]
+
 == TinkerPop 3.4.2
 
 *Release Date: May 28, 2019*
