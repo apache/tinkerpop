@@ -359,7 +359,7 @@ methods by end-users.
 [[connecting-gremlin-server]]
 === Gremlin Server
 
-image:rexster-character-3.png[width=125,float=left] A JVM-based graph maybe be hosted in TinkerPop's
+image:rexster-character-3.png[width=125,float=left] A JVM-based graph may be hosted in TinkerPop's
 <<gremlin-server,Gremlin Server>>. Gremlin Server exposes the graph as an endpoint to which different clients can
 connect, essentially providing a remote GTM. Gremlin Server supports multiple methods for clients to interface with it:
 
