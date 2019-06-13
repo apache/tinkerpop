@@ -525,7 +525,7 @@ That file tells Gremlin Server many things such as:
 
 The log messages that printed above show a number of things, but most importantly, there is a `Graph` instance named
 `graph` that is exposed in Gremlin Server.  This graph is an in-memory TinkerGraph and was empty at the start of the
-server.  An initialization script at `scripts/generate-modern.groovy` was executed during startup.  It's contents are
+server.  An initialization script at `scripts/generate-modern.groovy` was executed during startup.  Its contents are
 as follows:
 
 [source,groovy]
