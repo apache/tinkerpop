@@ -1481,7 +1481,7 @@ sandboxing implementations can be developed by using this white listing model an
 `AbstractSandboxExtension`.
 
 A final thought on the topic of `GroovyCompilerGremlinPlugin` implementation is that it is not just for
-"security" (though is is demonstrated in that capacity here).  It can be used for a variety of features that
+"security" (though it is demonstrated in that capacity here).  It can be used for a variety of features that
 can fine tune the Groovy compilation process.  Read more about compilation customization in the
 link:http://docs.groovy-lang.org/latest/html/documentation/#compilation-customizers[Groovy Documentation].
 
