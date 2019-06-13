@@ -144,12 +144,12 @@ limitations under the License.
       <p><img src="img/graph-globe.png" style="float:left;width:15%;padding:10px;"> A <strong>graph</strong> is a structure composed of <strong>vertices</strong> and <strong>edges</strong>.
          Both vertices and edges can have an arbitrary number of key/value-pairs called <strong>properties</strong>.
          Vertices denote discrete objects such as a person, a place, or an event. Edges denote relationships between vertices. For instance, a person may know
-         another person, have been involved in an event, and/or was recently at a particular place. Properties express non-relational information about the
-         vertices and edges. Example properties include a vertex having a name, an age and an edge having a timestamp and/or a weight. Together, the aforementioned
+         another person, have been involved in an event, and/or have recently been at a particular place. Properties express non-relational information about the
+         vertices and edges. Example properties include a vertex having a name and an age, and an edge having a timestamp and/or a weight. Together, the aforementioned
          graph is known as a <strong>property graph</strong> and it is the foundational data structure of Apache TinkerPop.
       </p>
       <br/>
-      <p><img src="img/graph-vs-table.png" style="float:right;width:22%;padding:10px;">If a user's domain is composed of a heterogenous set of objects (vertices) that can be related to one another in a multitude of ways (edges),
+      <p><img src="img/graph-vs-table.png" style="float:right;width:22%;padding:10px;">If a user's domain is composed of a heterogeneous set of objects (vertices) that can be related to one another in a multitude of ways (edges),
          then a graph may be the right representation to use. In a graph, each vertex is seen as an atomic entity (not simply a "row in a table") that
          can be linked to any other vertex or have properties added or removed at will. This empowers the data modeler to think in terms of actors within
          a world of complex relations as opposed to, in relational databases, statically-typed tables joined in aggregate. Once a domain is modeled, that
@@ -207,7 +207,7 @@ limitations under the License.
          </div>
          <h3>Community Contributions</h3>
          TinkerPop is at the center of a larger development ecosystem that extends on its core interfaces, integration points, and ideas.  The graph systems and libraries below represent both
-         TinkerPop-maintained reference implementations as well as third-party managed projects. The TinkerPop community is always interested in hearing about projects like these and aiding
+         TinkerPop-maintained reference implementations and third-party managed projects. The TinkerPop community is always interested in hearing about projects like these and aiding
          in their support. Please read our <a href="policy.html">provider listing policy</a> and feel free to promote such projects on the user and developer mailing lists. Information on
          how to build implementations of the various interfaces that TinkerPop exposes can be found in the <a href="http://tinkerpop.apache.org/docs/current/dev/provider/">Provider Documentation</a>.
          <p/>
@@ -246,7 +246,7 @@ limitations under the License.
          <h4 id="language-variants-compilers">Query Languages</h4>
          <small>[<a href="providers.html#query-language-providers">learn more</a>]</small>
          <ul>
-            <li><a href="https://github.com/opencypher/cypher-for-gremlin">cypher-for-gremlin</a> - A Cypher to Gremlin traversal transpiler.</li>
+            <li><a href="https://github.com/opencypher/cypher-for-gremlin">cypher-for-gremlin</a> - A Cypher-to-Gremlin traversal transpiler.</li>
             <li><a href="http://syncleus.com/Ferma/">Ferma</a> (java/dsl) - An ORM / OGM for Apache TinkerPop.</li>
             <li><a href="https://github.com/davebshow/goblin">Goblin</a> (python/dsl) - Goblin OGM for the TinkerPop 3 Gremlin Server.</li>
             <li><a href="http://tinkerpop.apache.org/docs/current/reference/#gremlin-DotNet">Gremlin.Net</a> (.NET - C#/variant) - Gremlin hosted in C# for use with any .NET-based VM.</li>
