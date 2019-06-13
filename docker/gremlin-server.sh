@@ -44,7 +44,7 @@ pushd ${PROJECT_HOME} > /dev/null
 GREMLIN_SERVER_VERSION="$1"
 shift
 if [[ -z "$GREMLIN_SERVER_VERSION" ]]; then
-GREMLIN_SERVER_VERSION=latest
+GREMLIN_SERVER_VERSION=$(grep tinkerpop -A2 pom.xml | grep -Po '(?<=<version>)([0-9]+\.?){3}(-SNAPSHOT)?(?=<)')
 fi
 
 echo "Using Gremlin Server $GREMLIN_SERVER_VERSION"

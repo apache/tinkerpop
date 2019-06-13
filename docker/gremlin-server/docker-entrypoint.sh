@@ -31,6 +31,6 @@ cp *.yaml ${TINKERPOP_HOME}/conf/
 
 java -version
 
-/opt/gremlin-server/bin/gremlin-server.sh install org.apache.tinkerpop gremlin-python 3.4.1
+/opt/gremlin-server/bin/gremlin-server.sh install org.apache.tinkerpop gremlin-python ${GREMLIN_SERVER_VERSION}
 /opt/gremlin-server/bin/gremlin-server.sh conf/gremlin-server-integration.yaml &
 exec /opt/gremlin-server/bin/gremlin-server.sh conf/gremlin-server-integration-secure.yaml
