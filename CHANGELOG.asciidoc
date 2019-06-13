@@ -41,6 +41,7 @@ This release also includes changes from <<release-3-3-8, 3.3.8>>.
 
 * Improved error messaging on timeouts returned to the console from `:>`.
 * Modified `NumberHelper` to better ignore `Double.NaN` in `min()` and `max()` comparisons.
+* Bump to Netty 4.1.36.
 * Bump to Groovy 2.5.7.
 
 [[release-3-4-2]]
