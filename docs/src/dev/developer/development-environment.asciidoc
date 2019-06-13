@@ -307,13 +307,20 @@ is used to host the HTML docs.
 
 After finishing all tasks, the script will immediately destroy the container.
 
-Docker based builds can be helpful to developers who do not want to setup a full Maven environment, which may be the
-case for developers doing work on Gremlin Language Variants (e.g. Python). It allows them a way to do a full build of
-the entire project to be sure that their changes are valid. Developers can also start Gremlin Server with its standard
-test configuration:
+Docker can also be helpful to developers who do not want to run tests from a Maven environment, which may be a bit
+opaque when dealing with test failures and largely unhelpful for debugging. This situation is typically case for
+developers doing work on Gremlin Language Variants (e.g. Python). To help alleviate this problem, developers can
+start a standalone Gremlin Server with its standard test configuration that is used in the standard Maven build.
+
+First, the local Gremlin Server distribution needs to be built:
 
 [source,bash]
-docker/build.sh -t
+mvn clean install -DskipTests
+
+and then start the server with:
+
+[source,bash]
+docker/gremlin-server.sh
 
 Starting Gremlin Server this way makes it possible to run Gremlin Language Variant tests without Maven (for example,
 directly from a debugger) which should greatly reduce development friction for these environments.
