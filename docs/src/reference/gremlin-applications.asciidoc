@@ -89,7 +89,7 @@ an issue when working with SNAPSHOT dependencies.
 
 image:gremlin-console.png[width=325,float=right] The Gremlin Console is an interactive terminal or
 link:http://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop[REPL] that can be used to traverse graphs
-and interact with the data that they contain.  It represents the most common method for performing ad-hoc graph
+and interact with the data that they contain.  It represents the most common method for performing ad hoc graph
 analysis, small to medium sized data loading projects and other exploratory functions.  The Gremlin Console is
 highly extensible, featuring a rich plugin system that allows new tools, commands,
 link:http://en.wikipedia.org/wiki/Domain-specific_language[DSLs], etc. to be exposed to users.
@@ -154,15 +154,15 @@ some other useful operations.  The following table outlines the most commonly us
 |import |:i |Import a class into the Console session.
 |:clear |:c |Sometimes the Console can get into a state where the command buffer no longer understands input (e.g. a misplaced `(` or `}`).  Use this command to clear that buffer.
 |:load |:l |Load a file or URL into the command buffer for execution.
-|:install |:+ |Imports a maven library and its dependencies into the Console.
-|:uninstall |:- |Removes a maven library and its dependencies. A restart of the console is required for removal to fully take effect.
+|:install |:+ |Imports a Maven library and its dependencies into the Console.
+|:uninstall |:- |Removes a Maven library and its dependencies. A restart of the console is required for removal to fully take effect.
 |:plugin |:pin |Plugin management functions to list, activate and deactivate available plugins.
 |:remote |:rem |Configures a "remote" context where Gremlin or results of Gremlin will be processed via usage of `:submit`.
 |:submit |:> |Submit Gremlin to the currently active context defined by `:remote`.
 |:bytecode |:bc |Provides options for translating and evaluating `Bytecode` for debugging purposes.
 |=========================================================
 
-Many of the above commands are described elsewhere or are generally self explanatory, but the `:bytecode` command
+Many of the above commands are described elsewhere or are generally self-explanatory, but the `:bytecode` command
 could use some additional explanation. The following code shows example usage:
 
 [source,text]
@@ -303,7 +303,7 @@ the Console classpath.  Plugins need to be "active" for their features to be ava
 
 WARNING: Plugins must be compatible with the version of the Gremlin Console (or Gremlin Server) being used.  Attempts
 to use incompatible versions cannot be guaranteed to work.  Moreover, be prepared for dependency conflicts in
-third-party plugins, that may only be resolved via manual jar removal from the `ext/{plugin}` directory.
+third-party plugins that may only be resolved via manual jar removal from the `ext/{plugin}` directory.
 
 TIP: It is possible to manage plugin activation and deactivation by manually editing the `ext/plugins.txt` file which
 contains the class names of the "active" plugins.  It is also possible to clear dependencies added by `:install` by
@@ -359,8 +359,8 @@ v[2]
 ----
 
 It is also possible to pass multiple scripts by specifying multiple `-e` options. The scripts will execute in the order
-that they are specified. Note that only the arguments from the last script executed will be preserved in the console.
-Finally, if the arguments conflict with the reserved flags that `gremlin.sh` responds double quotes can be used to
+in which they are specified. Note that only the arguments from the last script executed will be preserved in the console.
+Finally, if the arguments conflict with the reserved flags to which `gremlin.sh` responds, double quotes can be used to
 wrap all the arguments to the option:
 
 [source,bash]
@@ -373,8 +373,8 @@ $ bin/gremlin.sh -e "gremlin.groovy -e -i --color"
 
 The Gremlin Console can be started in an "interactive" mode. Interactive mode is like <<execution-mode, execution mode>>
 but the console will not exit at the completion of the script, even if the script completes unsuccessfully. In such a
-case, it will simply stop processing on the line that of the script that failed. In this way the state of the console
-is such that a user could examine the state of things up to the point of failure which might make the script easier to
+case, it will simply stop processing on the line of the script that failed. In this way, the state of the console
+is such that a user could examine the state of things up to the point of failure, which might make the script easier to
 debug.
 
 In addition to debugging, interactive mode is a helpful way for users to initialize their console environment to
@@ -411,7 +411,7 @@ gremlin> g.V()
 Note that the user can now reference `g` (and `graph` for that matter) at startup without having to directly type that
 variable initialization code into the console.
 
-Like, execution mode, it is also possible to pass multiple scripts by specifying multiple `-i` options. See the
+As in execution mode, it is also possible to pass multiple scripts by specifying multiple `-i` options. See the
 <<execution-mode, Execution Mode Section>> for more information on the specifics of that capability.
 
 [[gremlin-console-docker-image]]
@@ -455,7 +455,7 @@ or more `Graph` instances hosted within it.  The benefits of using Gremlin Serve
 
 * Allows any Gremlin Structure-enabled graph (i.e. implements the `Graph` API on the JVM) to exist as a standalone
 server, which in turn enables the ability for multiple clients to communicate with the same graph database.
-* Enables execution of ad-hoc queries through remotely submitted Gremlin.
+* Enables execution of ad hoc queries through remotely submitted Gremlin.
 * Provides a method for non-JVM languages which may not have a Gremlin Traversal Machine (e.g. Python, Javascript, etc.)
 to communicate with the TinkerPop stack on the JVM.
 * Exposes numerous methods for extension and customization to include serialization options, remote commands, etc.
