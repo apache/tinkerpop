@@ -98,6 +98,9 @@ integration tests and therefore must be actively switched on with `-DskipIntegra
 [source,text]
 mvn clean install -pl gremlin-console -DskipIntegrationTests=false
 
+TIP: For those who do not have a full Maven environment, please see <<docker-integration,this section>> for how Docker
+can be used to help run tests.
+
 See the <<release-environment,Release Environment>> section for more information on release manager configurations.
 
 [[dotnet-environment]]
@@ -125,6 +128,9 @@ the `nuget` property has to be set:
 [source,text]
 mvn clean install -Dnuget
 
+TIP: For those who do not have a full Maven environment, please see <<docker-integration,this section>> for how Docker
+can be used to help run tests.
+
 See the <<release-environment,Release Environment>> section for more information on release manager configurations.
 
 [[nodejs-environment]]
@@ -133,6 +139,9 @@ See the <<release-environment,Release Environment>> section for more information
 When building `gremlin-javascript`, mvn command will include a local copy of Node.js runtime and npm inside your project
 using `com.github.eirslett:frontend-maven-plugin` plugin. This copy of the Node.js runtime will not affect any
 other existing Node.js runtime instances in your machine.
+
+TIP: For those who do not have a full Maven environment, please see <<docker-integration,this section>> for how Docker
+can be used to help run tests.
 
 See the <<release-environment,Release Environment>> section for more information on release manager configurations.
 
@@ -231,6 +240,7 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 ** The test suite for `neo4j-gremlin` is disabled by default - to turn it on: `mvn clean install -DincludeNeo4j`
 * Regenerate test data (only necessary given changes to IO classes): `mvn clean install -Dio` from `tinkergraph-gremlin` directory
 ** If there are changes to the Gryo format, it may be necessary to generate the Grateful Dead dataset from GraphSON (see `IoDataGenerationTest.shouldWriteGratefulDead`)
+* Start Gremlin Server with Docker using the standard test configuration: `docker/gremlin-server.sh`
 * Check license headers are present: `mvn apache-rat:check`
 * Build AsciiDocs (see <<documentation-environment,Documentation Environment>>): `bin/process-docs.sh`
 ** Build AsciiDocs (but don't evaluate code blocks): `bin/process-docs.sh --dryRun`
@@ -297,6 +307,16 @@ is used to host the HTML docs.
 
 After finishing all tasks, the script will immediately destroy the container.
 
+Docker based builds can be helpful to developers who do not want to setup a full Maven environment, which may be the
+case for developers doing work on Gremlin Language Variants (e.g. Python). It allows them a way to do a full build of
+the entire project to be sure that their changes are valid. Developers can also start Gremlin Server with its standard
+test configuration:
+
+[source,bash]
+docker/build.sh -t
+
+Starting Gremlin Server this way makes it possible to run Gremlin Language Variant tests without Maven (for example,
+directly from a debugger) which should greatly reduce development friction for these environments.
 
 == IDE Setup with Intellij
 
