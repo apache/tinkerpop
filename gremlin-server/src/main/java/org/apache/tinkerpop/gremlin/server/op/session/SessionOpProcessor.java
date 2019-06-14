@@ -122,11 +122,11 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
     }
 
     /**
-     * Session based requests accept a "close" operator in addition to "eval".  A close will trigger the session to be
+     * Session based requests accept a "close" operator in addition to "eval". A close will trigger the session to be
      * killed and any uncommitted transaction to be rolled-back.
      */
     @Override
-    public Optional<ThrowingConsumer<Context>> selectOther(final RequestMessage requestMessage)  throws OpProcessorException {
+    public Optional<ThrowingConsumer<Context>> selectOther(final RequestMessage requestMessage) throws OpProcessorException {
         if (requestMessage.getOp().equals(Tokens.OPS_CLOSE)) {
             // this must be an in-session request
             if (!requestMessage.optionalArgs(Tokens.ARGS_SESSION).isPresent()) {
@@ -137,14 +137,10 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
             final boolean force = requestMessage.<Boolean>optionalArgs(Tokens.ARGS_FORCE).orElse(false);
 
             return Optional.of(ctx -> {
-                // validate the session is present and then remove it if it is.
                 final Session sessionToClose = sessions.get(requestMessage.getArgs().get(Tokens.ARGS_SESSION).toString());
-                if (null == sessionToClose) {
-                    final String msg = String.format("There was no session named %s to close", requestMessage.getArgs().get(Tokens.ARGS_SESSION).toString());
-                    throw new OpProcessorException(msg, ResponseMessage.build(requestMessage).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+                if (null != sessionToClose) {
+                    sessionToClose.manualKill(force);
                 }
-
-                sessionToClose.manualKill(force);
 
                 // send back a confirmation of the close
                 ctx.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(requestMessage)
