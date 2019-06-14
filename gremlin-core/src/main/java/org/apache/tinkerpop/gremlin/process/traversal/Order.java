@@ -105,7 +105,7 @@ public enum Order implements Comparator<Object> {
 
         @Override
         public Order reversed() {
-            return decr;
+            return desc;
         }
     },
 
@@ -124,7 +124,7 @@ public enum Order implements Comparator<Object> {
 
         @Override
         public Order reversed() {
-            return incr;
+            return asc;
         }
     };
 
