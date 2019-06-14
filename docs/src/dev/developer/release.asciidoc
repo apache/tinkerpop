@@ -336,7 +336,7 @@ Thank you very much,
 <TinkerPop Committer Name>
 ----
 
-=== Dev Release RESULT VOTE
+=== Release RESULT VOTE
 
 [source,text]
 ----
