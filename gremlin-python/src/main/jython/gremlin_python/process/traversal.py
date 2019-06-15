@@ -167,10 +167,8 @@ statics.add_static('or_', Operator.or_)
 statics.add_static('addAll', Operator.addAll)
 statics.add_static('sumLong', Operator.sumLong)
 
-Order = Enum('Order', ' asc decr desc incr shuffle')
+Order = Enum('Order', ' asc desc shuffle')
 
-statics.add_static('incr', Order.incr)
-statics.add_static('decr', Order.decr)
 statics.add_static('shuffle', Order.shuffle)
 statics.add_static('asc', Order.asc)
 statics.add_static('desc', Order.desc)

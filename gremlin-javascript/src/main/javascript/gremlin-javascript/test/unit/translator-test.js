@@ -53,9 +53,9 @@ describe('Translator', function () {
 
     it('should produce valid script representation from bytecode glv steps containing enum', function () {
       const g = new graph.Graph().traversal();
-      const script = new Translator('g').translate(g.V().order().by('age', t.order.decr).getBytecode());
+      const script = new Translator('g').translate(g.V().order().by('age', t.order.shuffle).getBytecode());
       assert.ok(script);
-      assert.strictEqual(script, 'g.V().order().by(\'age\', decr)');
+      assert.strictEqual(script, 'g.V().order().by(\'age\', shuffle)');
     });
 
     it('should produce valid script representation from bytecode glv steps containing a predicate', function () {

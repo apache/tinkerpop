@@ -51,22 +51,6 @@ Feature: Step - order()
       | josh   |
       | lop    |
 
-  Scenario: g_V_order_byXname_incrX_name
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().order().by("name", Order.incr).values("name")
-      """
-    When iterated to list
-    Then the result should be ordered
-      | result |
-      | josh |
-      | lop  |
-      | marko |
-      | peter |
-      | ripple |
-      | vadas  |
-
   Scenario: g_V_order_byXname_ascX_name
     Given the modern graph
     And the traversal of
@@ -98,22 +82,6 @@ Feature: Step - order()
       | peter |
       | ripple |
       | vadas  |
-
-  Scenario: g_V_outE_order_byXweight_decrX_weight
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().outE().order().by("weight", Order.decr).values("weight")
-      """
-    When iterated to list
-    Then the result should be ordered
-      | result |
-      | d[1.0].d |
-      | d[1.0].d |
-      | d[0.5].d |
-      | d[0.4].d |
-      | d[0.4].d |
-      | d[0.2].d |
 
   Scenario: g_V_outE_order_byXweight_descX_weight
     Given the modern graph

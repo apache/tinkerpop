@@ -60,13 +60,9 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_name_order_byXa1_b1X_byXb2_a2X();
 
-    public abstract Traversal<Vertex, String> get_g_V_order_byXname_incrX_name();
-
     public abstract Traversal<Vertex, String> get_g_V_order_byXname_ascX_name();
 
     public abstract Traversal<Vertex, String> get_g_V_order_byXnameX_name();
-
-    public abstract Traversal<Vertex, Double> get_g_V_outE_order_byXweight_decrX_weight();
 
     public abstract Traversal<Vertex, Double> get_g_V_outE_order_byXweight_descX_weight();
 
@@ -122,14 +118,6 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_order_byXname_incrX_name() {
-        final Traversal<Vertex, String> traversal = get_g_V_order_byXname_incrX_name();
-        printTraversalForm(traversal);
-        checkOrderedResults(Arrays.asList("josh", "lop", "marko", "peter", "ripple", "vadas"), traversal);
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
     public void g_V_order_byXname_ascX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_order_byXname_ascX_name();
         printTraversalForm(traversal);
@@ -142,14 +130,6 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, String> traversal = get_g_V_order_byXnameX_name();
         printTraversalForm(traversal);
         checkOrderedResults(Arrays.asList("josh", "lop", "marko", "peter", "ripple", "vadas"), traversal);
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_V_outE_order_byXweight_decrX_weight() {
-        final Traversal<Vertex, Double> traversal = get_g_V_outE_order_byXweight_decrX_weight();
-        printTraversalForm(traversal);
-        checkOrderedResults(Arrays.asList(1.0d, 1.0d, 0.5d, 0.4d, 0.4d, 0.2d), traversal);
     }
 
     @Test
@@ -455,11 +435,6 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_order_byXname_incrX_name() {
-            return g.V().order().by("name", Order.incr).values("name");
-        }
-
-        @Override
         public Traversal<Vertex, String> get_g_V_order_byXname_ascX_name() {
             return g.V().order().by("name", Order.asc).values("name");
         }
@@ -467,11 +442,6 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_order_byXnameX_name() {
             return g.V().order().by("name").values("name");
-        }
-
-        @Override
-        public Traversal<Vertex, Double> get_g_V_outE_order_byXweight_decrX_weight() {
-            return g.V().outE().order().by("weight", Order.decr).values("weight");
         }
 
         @Override
