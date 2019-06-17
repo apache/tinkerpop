@@ -47,12 +47,10 @@ import static org.junit.Assert.*;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(Enclosed.class)
-@IgnoreIteratorLeak
 public class CommunityGeneratorTest {
     private static final Logger logger = LoggerFactory.getLogger(CommunityGeneratorTest.class);
 
     @RunWith(Parameterized.class)
-    @IgnoreIteratorLeak
     public static class DifferentDistributionsTest extends AbstractGeneratorTest {
 
         @Parameterized.Parameters(name = "test({0},{1},{2})")
