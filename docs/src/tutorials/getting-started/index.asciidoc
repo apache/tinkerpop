@@ -128,7 +128,7 @@ provides him guidance on how to execute his trip around the `Graph`.
 
 There are several ways to create a `TraversalSource`. The example above uses the
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-embedded[embedded] style and is an approach
-restricted to languages using the Java Virtual Machine. Other methods are similar in form, but are not the focus of
+restricted to languages using the Java Virtual Machine (JVM). Other methods are similar in form, but are not the focus of
 this tutorial. See the Reference Documentation for more information on the different ways of
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-gremlin[connecting with Gremlin].
 
@@ -169,16 +169,16 @@ more detailed sections to come.
 
 == The Next Fifteen Minutes
 
-In the first five minutes of _The TinkerPop Workout - by Gremlin_, you learned some basics for traversing graphs. Of
-course, there wasn't much discussion about what a graph is. A graph is a collection of vertices (i.e. nodes, dots)
-and edges (i.e. relationships, lines), where a vertex is an entity which represents some domain object (e.g. a person,
-a place, etc.) and an edge represents the relationship between two vertices.
+In the first five minutes of _The TinkerPop Workout — by Gremlin_, you learned some basics for traversing graphs. Of
+course, there wasn't much discussion about what a graph is. A graph is a collection of vertices (i.e., nodes, dots)
+and edges (i.e., relationships, lines), where a vertex is an entity which represents some domain object (e.g., a person or
+a place) and an edge represents the relationship between two vertices.
 
 image:modern-edge-1-to-3-1.png[width=300]
 
 The diagram above shows a graph with two vertices, one with a unique identifier of "1" and another with a unique
 identifier of "3". There is an edge connecting the two with a unique identifier of "9". It is important to consider
-that the edge has a direction which goes _out_ from vertex "1" and _in_ to vertex "3".
+that the edge has a direction, which goes _out_ from vertex "1" and _in_ to vertex "3".
 
 IMPORTANT: Most TinkerPop implementations do not allow for identifier assignment. They will rather assign
 their own identifiers and ignore assigned identifiers that you attempt to assign to them.
@@ -188,7 +188,7 @@ this basic structure, vertices and edges can each be given labels to categorize 
 
 image:modern-edge-1-to-3-2.png[width=300]
 
-You can now see that a vertex "1" is a "person" and vertex "3" is a "software" vertex. They are joined by a "created"
+You can now see that vertex "1" is a "person" and vertex "3" is a "software" vertex. They are joined by a "created"
 edge which allows you to see that a "person created software". The "label" and the "id" are reserved attributes of
 vertices and edges, but you can add your own arbitrary properties as well:
 
@@ -202,7 +202,7 @@ data.
 As intuitive as it is to you, it is perhaps more intuitive to Gremlin himself, as vertices, edges and properties make
 up the very elements of his existence. It is indeed helpful to think of our friend, Gremlin, moving about a graph when
 developing traversals, as picturing his position as the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_the_traverser[traverser]
-helps orient where you need him to go next. Let's use the two vertex, one edge graph we've been discussing above
+helps orient where you need him to go next. Let's use the two-vertex, one-edge graph we've been discussing above
 as an example. First, you need to create this graph:
 
 [gremlin-groovy]
@@ -215,7 +215,7 @@ g.addE("created").from(v1).to(v2).property(id, 9).property("weight", 0.4)
 ----
 
 There are a number of important things to consider in the above code. First, recall that `id` is
-"reserved" for special usage in TinkerPop and is a member of the enum, `T`. Those "keys" supplied to the creation
+"reserved" for special usage in TinkerPop. It is a member of the enum, `T`. Those "keys" supplied to the creation
 method are link:https://docs.oracle.com/javase/8/docs/technotes/guides/language/static-import.html[statically imported]
 to the console, which allows you to access them without having to specify their owning enum. Think of `id` as a
 shorthand form that enables a more fluid code style. You would normally refer to it as `T.id`, so without
@@ -231,13 +231,13 @@ g.addE("created").from(v1).to(v2).property(T.id, 9).property("weight", 0.4)
 ----
 
 NOTE: On the JVM, the fully qualified name for `T` is `org.apache.tinkerpop.gremlin.structure.T`. Another important
-static import that is often seen in Gremlin comes from `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__`,
+static import that is often seen in Gremlin comes from `+org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__+`,
 which allows for the creation of link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graph-traversal-steps[anonymous traversals].
-You can find the analogous variations of `T` and `__` for other Gremlin languages by viewing the "Common Imports"
+You can find the analogous variations of `T` and `+__+` for other Gremlin languages by viewing the "Common Imports"
 sections for the programming language you are interested in in the
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Reference Documentation].
 
-Second, don't forget that you are working with TinkerGraph which allows for identifier assignment. That is _not_ the
+Second, don't forget that you are working with TinkerGraph, which allows for identifier assignment. That is _not_ the
 case with most graph databases.
 
 Finally, the label for an `Edge` is required and is thus part of the method signature of `addEdge()`. This usage of `addEdge` is
@@ -288,13 +288,13 @@ image:modern-edge-1-to-3-1-gremlin.png[width=325]
 
 When Gremlin is on a vertex or an edge, he has access to all the properties that are available to that element.
 
-IMPORTANT: The above query iterates all the vertices in the graph to get its answer. That's fine for our little example,
-but for multi-million or billion edge graphs that is a big problem. To solve this problem, you should look to use
+IMPORTANT: The above query iterates *all* the vertices in the graph to get its answer. That's fine for our little example,
+but for multi-million- or billion-edge graphs that is a big problem. To solve this problem, you should look to use
 indices. TinkerPop does not provide an abstraction for index management. You should consult the documentation of the
 graph you have chosen and utilize its native API to create indices which will then speed up these types of lookups. Your
-traversals will remain unchanged however, as the indices will be used transparently at execution time.
+traversals will remain unchanged, however, as the indices will be used transparently at execution time.
 
-Now that Gremlin has found "marko", he can now consider the next step in the traversal where we ask him to "walk"
+Now that Gremlin has found "marko", he can consider the next step in the traversal where we ask him to "walk"
 along "created" edges to "software" vertices. As described earlier, edges have direction, so we have to tell Gremlin
 what direction to follow. In this case, we want him to traverse on outgoing edges from the "marko" vertex. For this,
 we use the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-steps[outE] step.
@@ -339,14 +339,14 @@ g.V().has('person','name','marko').out('created').values('name')
 ----
 
 You should now be able to see the connection Gremlin has to the structure of the graph and how Gremlin maneuvers from
-vertices to edges and so on. Your ability to string together steps to ask Gremlin to do more complex things, depends
+vertices to edges and so on. Your ability to string together steps to ask Gremlin to do more complex things depends
 on your understanding of these basic concepts.
 
 === Graph Traversal - Increasing Complexity
 
 Armed with the knowledge from the previous section, let's ask Gremlin to perform some more difficult traversal tasks.
 There's not much more that can be done with the "baby" graph we had, so let's return to the "modern" toy graph from
-the "five minutes section". Recall that you can create this `Graph` and establish a `TraversalSource` with:
+the "First Five Minutes" section. Recall that you can create this `Graph` and establish a `TraversalSource` with:
 
 [gremlin-groovy]
 ----
@@ -394,7 +394,7 @@ have Gremlin traverse back _in_ along the "created" edges to find the "person" v
 
 TIP: The nature of Gremlin leads to long lines of code. Readability can be greatly improved by using line spacing and
 indentation. See the link:http://tinkerpop.apache.org/docs/x.y.z/recipes/#style-guide[Style Guide] for recommendations
-on what well formatted Gremlin should look like.
+on what well-formatted Gremlin should look like.
 
 [gremlin-groovy,modern]
 ----
@@ -421,10 +421,10 @@ but a "step modulator" - something that adds features to a step or the traversal
 the `has()`-step with the name "exclude" and all values that pass through that step are held in that label for later
 use. In this case, the "marko" vertex is the only vertex to pass through that point, so it is held in "exclude".
 
-The other addition that was made was the `where()`-step which is a filter step like `has()`. The `where()` is
+The other addition that was made was the `where()`-step, which is a filter step like `has()`. The `where()` is
 positioned after the `in()`-step that has "person" vertices, which means that the `where()` filter is occurring
 on the list of "marko" collaborators. The `where()` specifies that the "person" vertices passing through it should
-not equal (i.e. `neq()`) the contents of the "exclude" label. As it just contains the "marko" vertex, the `where()`
+not equal (i.e., `neq()`) the contents of the "exclude" label. As it just contains the "marko" vertex, the `where()`
 filters out the "marko" that we get when we traverse back _in_ on the "created" edges.
 
 You will find many uses of `as()`. Here it is in combination with link:http://tinkerpop.apache.org/docs/x.y.z/reference/#select-step[select]:
@@ -466,7 +466,7 @@ graph computing.
 
 == The Final Ten Minutes
 
-In these final ten minutes of _The TinkerPop Workout - by Gremlin_ we'll look at TinkerPop from a higher level and
+In these final ten minutes of _The TinkerPop Workout — by Gremlin_, we'll look at TinkerPop from a higher level and
 introduce different features of the stack in order to orient you with what it offers. In this way, you can
 identify areas of interest and dig into the details from there.
 
@@ -480,31 +480,31 @@ to avoid vendor lock-in to a specific database or processor. This capability pro
 are thus afforded options in their architecture and development because:
 
 * They can try different implementations using the same code to decide which is best for their environment.
-* They can grow into a particular implementation if they so desire - start with a graph that is designed to scale
+* They can grow into a particular implementation if they so desire; e.g., start with a graph that is designed to scale
 within a single machine and then later switch to a graph that is designed to scale horizontally.
 * They can feel more confident in graph technology choices, as advances in the state of different provider
 implementations are behind TinkerPop APIs, which open the possibility to switch providers with limited impact.
 
 TinkerPop has always had the vision of being an abstraction over different graph databases. That much
-is not new and dates back to TinkerPop 1.x. It is in TinkerPop 3.x however that we see the introduction of the notion
+is not new and dates back to TinkerPop 1.x. It is in TinkerPop 3.x, however, that we see the introduction of the notion
 that TinkerPop is also an abstraction over different graph processors like link:http://spark.apache.org[Spark]. The
 scope of this tutorial does not permit it to delve into "graph processors", but the short story is that the same
 Gremlin statement we wrote in the examples above can be executed to run in distributed fashion over Spark or Hadoop.
 The changes required to the code to do this are not in the traversal itself, but in the definition of the
-`TraversalSource`. You can again see why we encourage, graph operations to be executed through that class as opposed
+`TraversalSource`. You can again see why we encourage graph operations to be executed through that class as opposed
 to just using `Graph`. You can read more about these features in this section on
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#hadoop-gremlin[hadoop-gremlin].
 
-TIP: To maintain an abstraction over `Graph` creation use `GraphFactory.open()` to construct new instances. See
+TIP: To maintain an abstraction over `Graph` creation, use `GraphFactory.open()` to construct new instances. See
 the documentation for individual `Graph` implementations to learn about the configuration options to provide.
 
 === Loading Data
 
 image:gremlin-to-the-7.png[width=100,float=left] There are many strategies for getting data into your graph. As you are
-just getting started, let's look at the more simple methods aimed at "smaller" graphs. A "small" graph, in this
+just getting started, let's look at the simpler methods aimed at "smaller" graphs. A "small" graph, in this
 context, is one that has fewer than ten million edges. The most direct way to load this data is to write a Groovy script
 that can be executed in the Gremlin Console, a tool that you should be well familiar with at this point. For our
-example, let's use the link:http://snap.stanford.edu/data/wiki-Vote.html[Wikipedia Vote Network] data set which
+example, let's use the link:http://snap.stanford.edu/data/wiki-Vote.html[Wikipedia Vote Network] data set, which
 contains 7,115 vertices and 103,689 edges.
 
 [source,text]
@@ -513,7 +513,7 @@ $ curl -L -O http://snap.stanford.edu/data/wiki-Vote.txt.gz
 $ gunzip wiki-Vote.txt.gz
 ----
 
-The data is contained in a tab-delimited structure where vertices are Wikipedia users and edges from one user to
+The data is contained in a tab-delimited structure in which vertices are Wikipedia users and edges from one user to
 another imply a "vote" relationship. Here is the script to parse the file and generate the `Graph` instance using
 TinkerGraph:
 
@@ -541,13 +541,13 @@ new File('wiki-Vote.txt').eachLine {
 
 <1> To ensure fast lookups of vertices, we need an index. The `createIndex()` method is a method native to
 TinkerGraph. Please consult your graph databases' documentation for their index creation approaches.
-<2> This "get or create" traversal gets a a vertex if it already exists; otherwise, it creates it. It uses `coalesce()` in
-a clever way by first determining if the list of vertices produced by the previous `fold()` has anything in it by
+<2> This "get or create" traversal gets a vertex if it already exists; otherwise, it creates it. It uses `coalesce()` in
+a clever way by first determining whether the list of vertices produced by the previous `fold()` has anything in it by
 testing the result of `unfold()`. If `unfold()` returns nothing then that vertex doesn't exist and the subsequent
 `addV()` inner traversal can be called to create it.
 <3> We are iterating each line of the `wiki-Vote.txt` file and this line splits the line on the delimiter, then
 uses some neat Groovy syntax to apply the `getOrCreate()` function to each of the two `userId` fields encountered in
-the line and stores those vertices in the `fromVertex` and `toVertex` variables respectively.
+the line and stores those vertices in the `fromVertex` and `toVertex` variables, respectively.
 
 NOTE: While this is a tab-delimited structure, this same pattern can be applied
 to any data source you require and Groovy tends to have nice libraries that can help make working with data
@@ -555,7 +555,7 @@ link:https://thinkaurelius.wordpress.com/2013/02/04/polyglot-persistence-and-que
 
 WARNING: Take care if using a `Graph` implementation that supports
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#transactions[transactions]. As TinkerGraph does not, there is
-no need to `commit()`.  If your `Graph` does support transactions, intermediate commits during load will need to be
+no need to `commit()`. If your `Graph` does support transactions, intermediate commits during load will need to be
 applied.
 
 To load larger data sets you should read about the
@@ -606,6 +606,6 @@ g.V(v1).addE('knows').to(v2).property('weight',0.75).iterate()
 
 === Conclusion
 
-...and that is the end of _The TinkerPop Workout - by Gremlin_. You are hopefully feeling more confident in your
+...and that is the end of _The TinkerPop Workout — by Gremlin_. You are hopefully feeling more confident in your
 TinkerPop skills and have a good overview of what the stack has to offer, as well as some entry points to further
 research within the reference documentation. Welcome to The TinkerPop!
