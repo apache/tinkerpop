@@ -380,9 +380,10 @@ g.V().has('name','marko').
   values('name')
 ----
 
-So that's nice, we can see that "peter", "josh" and "marko" are all responsible for creating "lop". Of course, we already
-know about the involvement of "marko" and it seems strange to say that "marko" collaborates with himself, so excluding
-"marko" from the results seems logical. The following traversal handles that exclusion:
+So that's nice, we can see that "peter", "josh" and "marko" are all responsible for creating "v[3]", which is the
+"software" vertex named "lop". Of course, we already know about the involvement of "marko" and it seems strange to say that
+"marko" collaborates with himself, so excluding "marko" from the results seems logical. The following traversal
+handles that exclusion:
 
 [gremlin-groovy,modern]
 ----
@@ -444,8 +445,8 @@ graph computing.
 == The Final Ten Minutes
 
 In these final ten minutes of _The TinkerPop Workout - by Gremlin_ we'll look at TinkerPop from a higher level and
-introduce different features of the stack in order to orient you with what it offers. In this way, you can
-identify areas of interest and dig into the details from there.
+introduce different features it provides to help orient you to some of the project's technology ecosystem. In this
+way, you can identify areas of interest and dig into the details from there.
 
 === Why TinkerPop?
 
