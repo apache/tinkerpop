@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.computer.bulkloading;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.IgnoreIteratorLeak;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
@@ -33,6 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.After;
@@ -52,7 +52,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-@IgnoreIteratorLeak
 public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
 
     final static String TINKERGRAPH_LOCATION = TestHelper.makeTestDataDirectory(BulkLoaderVertexProgramTest.class) + "tinkertest.kryo";
@@ -176,7 +175,7 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
     private static void assertGraphEquality(final Graph source, final Graph target, final Function<Vertex, Object> idAccessor) {
         final GraphTraversalSource tg = target.traversal();
         assertEquals(IteratorUtils.count(source.vertices()), IteratorUtils.count(target.vertices()));
-        assertEquals(IteratorUtils.count(target.edges()), IteratorUtils.count(target.edges()));
+        assertEquals(IteratorUtils.count(source.edges()), IteratorUtils.count(target.edges()));
         source.vertices().forEachRemaining(originalVertex -> {
             Vertex tmpVertex = null;
             final Iterator<Vertex> vertexIterator = target.vertices();
@@ -187,6 +186,9 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
                     break;
                 }
             }
+
+            CloseableIterator.closeIterator(vertexIterator);
+
             assertNotNull(tmpVertex);
             final Vertex clonedVertex = tmpVertex;
             assertEquals(IteratorUtils.count(originalVertex.edges(Direction.IN)), IteratorUtils.count(clonedVertex.edges(Direction.IN)));
@@ -210,6 +212,7 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
                 GraphTraversal t = tg.V(clonedVertex).outE(originalEdge.label());
                 originalEdge.properties().forEachRemaining(p -> t.has(p.key(), p.value()));
                 assertTrue(t.hasNext());
+                CloseableIterator.closeIterator(t);
             });
         });
     }
