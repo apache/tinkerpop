@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.IgnoreIteratorLeak;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
@@ -38,6 +37,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,7 +62,6 @@ import static org.junit.Assume.assumeThat;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(GremlinProcessRunner.class)
-@IgnoreIteratorLeak
 public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
 
     @Test
@@ -164,6 +163,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
         final Traversal t = sg.V();
         t.hasNext();
         printTraversalForm(t);
+        CloseableIterator.closeIterator(t);
         assertEquals(6, sg.V().count().next().longValue());
 
         // only the given edges are included
