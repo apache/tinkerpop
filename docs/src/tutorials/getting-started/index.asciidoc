@@ -24,13 +24,13 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 link:http://tinkerpop.apache.org[Apache TinkerPop™] is an open source Graph Computing Framework. Within itself, TinkerPop
 represents a large collection of capabilities and technologies and, in its wider ecosystem, an additionally extended
 world of link:http://tinkerpop.apache.org/#graph-systems[third-party contributed] graph libraries and
-systems. TinkerPop's ecosystem can appear complex to newcomers of all experience, especially when glancing at the
+systems. TinkerPop's ecosystem can appear complex to newcomers of all experience levels, especially when glancing at the
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/[reference documentation] for the first time.
 
-So, where do you get started with TinkerPop? How do you dive in quickly and get productive? Well - Gremlin, the
-most recognizable citizen of The TinkerPop, is here to help with this thirty minute tutorial. That's right - in just
+So, where do you get started with TinkerPop? How do you dive in quickly and get productive? Well ... Gremlin, the
+most recognizable citizen of The TinkerPop, is here to help with this thirty-minute tutorial. That's right: in just
 thirty short minutes, you too can be fit to start building graph applications with TinkerPop. Welcome to _The
-TinkerPop Workout - by Gremlin_!
+TinkerPop Workout — by Gremlin_!
 
 image::gremlin-gym.png[width=1024]
 
@@ -43,8 +43,8 @@ image:gremlin-standing.png[width=125]
 
 Gremlin helps you navigate the vertices and edges of a graph. He is essentially your query language to graph
 databases, as link:http://sql2gremlin.com/[SQL] is the query language to relational databases. To tell Gremlin how
-he should "traverse" the graph (i.e. what you want your query to do) you need a way to provide him commands in the
-language he understands - and, of course, that language is called "Gremlin". For this task, you need one of
+he should "traverse" the graph (i.e., what you want your query to do) you need a way to provide him commands in the
+language he understands — and, of course, that language is called "Gremlin". For this task, you need one of
 TinkerPop's most important tools: link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-console[The Gremlin Console].
 
 NOTE: Are you unsure of what a vertex or edge is? That topic is covered in the <<_the_next_fifteen_minutes, next section>>,
@@ -73,16 +73,16 @@ TIP: Windows users may use the included `bin/gremlin.bat` file to start the Grem
 
 The Gremlin Console is a link:http://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop[REPL environment],
 which provides a nice way to learn Gremlin as you get immediate feedback for the code that you enter. This eliminates
-the more complex need to "create a project" to try things out. The console is not just for "getting started" however.
+the more complex need to "create a project" to try things out. The console is not just for "getting started", however.
 You will find yourself using it for a variety of TinkerPop-related activities, such as loading data, administering
-graphs, working out complex traversals, etc.
+graphs and working out complex traversals.
 
-To get Gremlin to traverse a graph, you need a `TraversalSource` instance, which holds a reference to the a
-`Graph` instance which in turn holds the
+To get Gremlin to traverse a graph, you need a `TraversalSource` instance, which holds a reference to a
+`Graph` instance, which in turn holds the
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graph-structure[structure] and data of the
 graph. TinkerPop is a graph abstraction layer over different graph databases and different graph processors, so there
 are many `Graph` instances link:http://tinkerpop.apache.org/#graph-systems[you can choose from] to instantiate a
-connection to in the console. The best `Graph` instance to start with however is
+connection to in the console. The best `Graph` instance to start with, however, is
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#tinkergraph-gremlin[TinkerGraph]. TinkerGraph is a fast,
 in-memory graph database with a small handful of configuration options, making it a good choice for beginners.
 
@@ -101,13 +101,13 @@ documentation is based on them and when you need help and have to come to the
 link:http://groups.google.com/group/gremlin-users[mailing list], a failing example put in the context of the toy graphs
 can usually get you a fast answer to your problem.
 
-TIP: When asking questions on the mailing list or StackOverflow about Gremlin, it's is always helpful to
+TIP: When asking questions on the mailing list or StackOverflow about Gremlin, it's always helpful to
 link:https://stackoverflow.com/questions/51388315/gremlin-choose-one-item-at-random[include a sample graph] so that
 those attempting to answer your question understand exactly what kind of graph you have and can focus their energies
-on a good, tested answer rather than trying to build sample data themselves. The sample graph should just be a simple
-Gremlin script that can be cut and paste into a Gremlin Console session.
+on providing a good, tested answer rather than trying to build sample data themselves. The sample graph should just be a simple
+Gremlin script that can be copied and pasted into a Gremlin Console session.
 
-For your first graph, use the "Modern" graph which looks like this:
+For your first graph, use the "Modern" graph, which looks like this:
 
 image:tinkerpop-modern.png[width=500]
 
@@ -146,10 +146,10 @@ g.V(1).out('knows').has('age', gt(30)).values('name')    <7>
 ----
 
 <1> Get all the vertices in the `Graph`.
-<2> Get a vertex with the unique identifier of "1".
-<3> Get the value of the `name` property on vertex with the unique identifier of "1".
+<2> Get the vertex with the unique identifier of "1".
+<3> Get the value of the `name` property on the vertex with the unique identifier of "1".
 <4> Get the edges with the label "knows" for the vertex with the unique identifier of "1".
-<5> Get the names of the people that the vertex with the unique identifier of "1" "knows".
+<5> Get the names of the people whom the vertex with the unique identifier of "1" "knows".
 <6> Note that when one uses `outE().inV()` as shown in the previous command, this can be shortened to just `out()`
 (similar to `inE().outV()` and `in()` for incoming edges).
 <7> Get the names of the people vertex "1" knows who are over the age of 30.
@@ -163,7 +163,7 @@ always remember that you must iterate your `Traversal` manually in some way for 
 "iterating your traversal" is described further in link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[The Gremlin Console Tutorial].
 
 In this first five minutes with Gremlin, you've gotten the Gremlin Console installed, instantiated a `Graph` and
-`TraversalSource`, wrote some traversals and hopefully learned something about TinkerPop in general. You've only
+`TraversalSource`, written some traversals and hopefully learned something about TinkerPop in general. You've only
 scratched the surface of what there is to know, but those accomplishments will help enable your understanding of the
 more detailed sections to come.
 
