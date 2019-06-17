@@ -178,7 +178,7 @@ image:modern-edge-1-to-3-1.png[width=300]
 
 The diagram above shows a graph with two vertices, one with a unique identifier of "1" and another with a unique
 identifier of "3". There is an edge connecting the two with a unique identifier of "9". It is important to consider
-that the edge has a direction which goes _out_ from vertex "1" and _in_ to vertex "3'.
+that the edge has a direction which goes _out_ from vertex "1" and _in_ to vertex "3".
 
 IMPORTANT: Most TinkerPop implementations do not allow for identifier assignment. They will rather assign
 their own identifiers and ignore assigned identifiers that you attempt to assign to them.
@@ -217,8 +217,8 @@ g.addE("created").from(v1).to(v2).property(id, 9).property("weight", 0.4)
 There are a number of important things to consider in the above code. First, recall that `id` is
 "reserved" for special usage in TinkerPop and is a member of the enum, `T`. Those "keys" supplied to the creation
 method are link:https://docs.oracle.com/javase/8/docs/technotes/guides/language/static-import.html[statically imported]
-to the console, which allows you to access them without having to specify their owning enum. Think of it as a
-shorthand form that enables a more fluid code style. You would normally refer to it as `T.id`. Without
+to the console, which allows you to access them without having to specify their owning enum. Think of `id` as a
+shorthand form that enables a more fluid code style. You would normally refer to it as `T.id`, so without
 that static importing you would instead have to write:
 
 [gremlin-groovy]
@@ -240,8 +240,7 @@ link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[
 Second, don't forget that you are working with TinkerGraph which allows for identifier assignment. That is _not_ the
 case with most graph databases.
 
-Finally, the label for an `Edge` is required and is thus part of the method signature of `addEdge()`. It is the first
-parameter supplied, followed by the `Vertex` to which `v1` should be connected. Therefore, this usage of `addEdge` is
+Finally, the label for an `Edge` is required and is thus part of the method signature of `addEdge()`. This usage of `addEdge` is
 creating an edge that goes _out_ of `v1` and into `v2` with a label of "created".
 
 === Graph Traversal - Staying Simple
@@ -404,7 +403,7 @@ g.V().has('person','name','marko').
   values('name')
 ----
 
-So that's nice, we can see that "peter", "josh" and "marko" are both responsible for creating "lop". Of course, we already
+So that's nice, we can see that "peter", "josh" and "marko" are all responsible for creating "lop". Of course, we already
 know about the involvement of "marko" and it seems strange to say that "marko" collaborates with himself, so excluding
 "marko" from the results seems logical. The following traversal handles that exclusion:
 
@@ -503,7 +502,7 @@ the documentation for individual `Graph` implementations to learn about the conf
 
 image:gremlin-to-the-7.png[width=100,float=left] There are many strategies for getting data into your graph. As you are
 just getting started, let's look at the more simple methods aimed at "smaller" graphs. A "small" graph, in this
-context, is one that has less than ten million edges. The most direct way to load this data is to write a Groovy script
+context, is one that has fewer than ten million edges. The most direct way to load this data is to write a Groovy script
 that can be executed in the Gremlin Console, a tool that you should be well familiar with at this point. For our
 example, let's use the link:http://snap.stanford.edu/data/wiki-Vote.html[Wikipedia Vote Network] data set which
 contains 7,115 vertices and 103,689 edges.
@@ -515,7 +514,7 @@ $ gunzip wiki-Vote.txt.gz
 ----
 
 The data is contained in a tab-delimited structure where vertices are Wikipedia users and edges from one user to
-another implies a "vote" relationship. Here is the script to parse the file and generate the `Graph` instance using
+another imply a "vote" relationship. Here is the script to parse the file and generate the `Graph` instance using
 TinkerGraph:
 
 [source,groovy]
@@ -541,8 +540,8 @@ new File('wiki-Vote.txt').eachLine {
 ----
 
 <1> To ensure fast lookups of vertices, we need an index. The `createIndex()` method is a method native to
-TinkerGraph. Please consult your graph databases documentation for their index creation approaches.
-<2> This "get or create" traversal gets a a vertex if it already exists and if not creates it. It uses `coalesce()` in
+TinkerGraph. Please consult your graph databases' documentation for their index creation approaches.
+<2> This "get or create" traversal gets a a vertex if it already exists; otherwise, it creates it. It uses `coalesce()` in
 a clever way by first determining if the list of vertices produced by the previous `fold()` has anything in it by
 testing the result of `unfold()`. If `unfold()` returns nothing then that vertex doesn't exist and the subsequent
 `addV()` inner traversal can be called to create it.
@@ -551,7 +550,7 @@ uses some neat Groovy syntax to apply the `getOrCreate()` function to each of th
 the line and stores those vertices in the `fromVertex` and `toVertex` variables respectively.
 
 NOTE: While this is a tab-delimited structure, this same pattern can be applied
-to any data source you require and Groovy tends to have nice libraries that can help making working with data
+to any data source you require and Groovy tends to have nice libraries that can help make working with data
 link:https://thinkaurelius.wordpress.com/2013/02/04/polyglot-persistence-and-query-with-gremlin/[quite enjoyable].
 
 WARNING: Take care if using a `Graph` implementation that supports
