@@ -27,8 +27,10 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
+import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
 import org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer;
@@ -49,6 +51,8 @@ import org.hamcrest.core.IsInstanceOf;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,6 +93,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.StringStartsWith.startsWith;
+import static org.mockito.Mockito.verify;
 
 /**
  * Integration tests for gremlin-driver configurations and settings.
@@ -1594,6 +1599,18 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         sessionlessTwo.close();
 
         cluster.close();
+    }
+
+    @Test
+    public void shouldSendUserAgent() throws Exception {
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3D0).create();
+        final Client client = Mockito.spy(cluster.connect().alias("g"));
+        client.submit("", RequestOptions.build().userAgent("test").create()).all().get();
+        cluster.close();
+        ArgumentCaptor<RequestMessage> requestMessageCaptor = ArgumentCaptor.forClass(RequestMessage.class);
+        verify(client).submitAsync(requestMessageCaptor.capture());
+        RequestMessage requestMessage = requestMessageCaptor.getValue();
+        assertEquals("test", requestMessage.getArgs().get(Tokens.ARGS_USER_AGENT));
     }
 
     private void assertFutureTimeout(final CompletableFuture<List<Result>> futureFirst) {
