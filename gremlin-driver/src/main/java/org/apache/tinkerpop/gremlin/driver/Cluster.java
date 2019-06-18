@@ -18,19 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -257,7 +257,7 @@ public final class Cluster {
     }
 
     public CompletableFuture<Void> closeAsync() {
-        return manager.close();
+        return manager.close().thenRun(() -> logger.info("Closed Cluster for hosts [{}]", this));
     }
 
     /**
@@ -278,7 +278,7 @@ public final class Cluster {
 
     /**
      * Gets the list of hosts that the {@code Cluster} was able to connect to.  A {@link Host} is assumed unavailable
-     * until a connection to it is proven to be present.  This will not happen until the {@link Client} submits
+     * until a connectionPool to it is proven to be present.  This will not happen until the {@link Client} submits
      * requests that succeed in reaching a server at the {@link Host} or {@link Client#init()} is called which
      * initializes the {@link ConnectionPool} for the {@link Client} itself.  The number of available hosts returned
      * from this method will change as different servers come on and offline.
@@ -540,18 +540,18 @@ public final class Cluster {
         private MessageSerializer serializer = Serializers.GRAPHBINARY_V1D0.simpleInstance();
         private int nioPoolSize = Runtime.getRuntime().availableProcessors();
         private int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
-        private int minConnectionPoolSize = ConnectionPool.MIN_POOL_SIZE;
-        private int maxConnectionPoolSize = ConnectionPool.MAX_POOL_SIZE;
-        private int minSimultaneousUsagePerConnection = ConnectionPool.MIN_SIMULTANEOUS_USAGE_PER_CONNECTION;
-        private int maxSimultaneousUsagePerConnection = ConnectionPool.MAX_SIMULTANEOUS_USAGE_PER_CONNECTION;
-        private int maxInProcessPerConnection = Connection.MAX_IN_PROCESS;
-        private int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
-        private int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
-        private int maxWaitForSessionClose = Connection.MAX_WAIT_FOR_SESSION_CLOSE;
-        private int maxContentLength = Connection.MAX_CONTENT_LENGTH;
-        private int reconnectInterval = Connection.RECONNECT_INTERVAL;
-        private int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
-        private long keepAliveInterval = Connection.KEEP_ALIVE_INTERVAL;
+        private int minConnectionPoolSize = ConnectionPool.DEFAULT_MIN_POOL_SIZE;
+        private int maxConnectionPoolSize = ConnectionPool.DEFAULT_MAX_POOL_SIZE;
+        private int minSimultaneousUsagePerConnection = ConnectionPool.DEFAULT_MIN_SIMULTANEOUS_USAGE_PER_CONNECTION;
+        private int maxSimultaneousUsagePerConnection = ConnectionPool.DEFAULT_MAX_SIMULTANEOUS_USAGE_PER_CONNECTION;
+        private int maxInProcessPerConnection = Connection.DEFAULT_MAX_IN_PROCESS;
+        private int minInProcessPerConnection = Connection.DEFAULT_MIN_IN_PROCESS;
+        private int maxWaitForConnection = Connection.DEFAULT_MAX_WAIT_FOR_CONNECTION;
+        private int maxWaitForSessionClose = Connection.DEFAULT_MAX_WAIT_FOR_SESSION_CLOSE;
+        private int maxContentLength = Connection.DEFAULT_MAX_CONTENT_LENGTH;
+        private int reconnectInterval = Connection.DEFAULT_RECONNECT_INTERVAL;
+        private int resultIterationBatchSize = Connection.DEFAULT_RESULT_ITERATION_BATCH_SIZE;
+        private long keepAliveInterval = Connection.DEFAULT_KEEP_ALIVE_INTERVAL;
         private String channelizer = Channelizer.WebSocketChannelizer.class.getName();
         private boolean enableSsl = false;
         private String keyStore = null;
@@ -729,7 +729,11 @@ public final class Cluster {
         /**
          * The minimum number of in-flight requests that can occur on a {@link Connection} before it is considered
          * for closing on return to the {@link ConnectionPool}.
+         *
+         * @deprecated As of release 3.4.3, not replaced, this parameter is ignored.
+         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
          */
+        @Deprecated
         public Builder minInProcessPerConnection(final int minInProcessPerConnection) {
             this.minInProcessPerConnection = minInProcessPerConnection;
             return this;
@@ -742,7 +746,17 @@ public final class Cluster {
          * the total number of requests on a {@link Connection}.  In other words, a {@link Connection} might
          * be borrowed once to have multiple requests executed against it.  This number controls the maximum
          * number of requests whereas {@link #maxInProcessPerConnection} controls the times borrowed.
+         *
+         * @deprecated As of release 3.4.3, replaced by {@link #maxConnectionPoolSize}. For backward
+         * compatibility it is still used to approximate the amount of parallelism required. In future versions, the
+         * approximation logic will be removed and dependency on this parameter will be completely eliminated.
+         * To disable the dependency on this parameter right now, explicitly set the value of
+         * {@link #maxInProcessPerConnection} and {@link #maxSimultaneousUsagePerConnection} to zero.
+         *
+         * @see ConnectionPoolImpl#calculateMaxPoolSize(Settings.ConnectionPoolSettings) for approximation logic.
+         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
          */
+        @Deprecated
         public Builder maxInProcessPerConnection(final int maxInProcessPerConnection) {
             this.maxInProcessPerConnection = maxInProcessPerConnection;
             return this;
@@ -754,7 +768,17 @@ public final class Cluster {
          * {@link Connection} may queue requests too quickly, rather than wait for an available {@link Connection}
          * or create a fresh one.  If set too small, the {@link Connection} will show as busy very quickly thus
          * forcing waits for available {@link Connection} instances in the pool when there is more capacity available.
+         *
+         * @deprecated As of release 3.4.3, replaced by {@link #maxConnectionPoolSize}. For backward
+         * compatibility it is still used to approximate the amount of parallelism required. In future versions, the
+         * approximation logic will be removed and dependency on this parameter will be completely eliminated.
+         * To disable the dependency on this parameter right now, explicitly set the value of
+         * {@link #maxInProcessPerConnection} and {@link #maxSimultaneousUsagePerConnection} to zero.
+         *
+         * @see ConnectionPoolImpl#calculateMaxPoolSize(Settings.ConnectionPoolSettings) for approximation logic.
+         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
          */
+        @Deprecated
         public Builder maxSimultaneousUsagePerConnection(final int maxSimultaneousUsagePerConnection) {
             this.maxSimultaneousUsagePerConnection = maxSimultaneousUsagePerConnection;
             return this;
@@ -767,7 +791,11 @@ public final class Cluster {
          * too large and {@link Connection} that isn't busy will continue to consume resources when it is not being
          * used.  Set too small and {@link Connection} instances will be destroyed when the driver might still be
          * busy.
+         *
+         * @deprecated As of release 3.4.3, not replaced, this parameter is ignored.
+         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
          */
+        @Deprecated
         public Builder minSimultaneousUsagePerConnection(final int minSimultaneousUsagePerConnection) {
             this.minSimultaneousUsagePerConnection = minSimultaneousUsagePerConnection;
             return this;
@@ -784,7 +812,11 @@ public final class Cluster {
         /**
          * The minimum size of the {@link ConnectionPool}.  When the {@link Client} is started, {@link Connection}
          * objects will be initially constructed to this size.
+         *
+         * @deprecated As of release 3.4.3, not replaced, this parameter is ignored.
+         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
          */
+        @Deprecated
         public Builder minConnectionPoolSize(final int minSize) {
             this.minConnectionPoolSize = minSize;
             return this;
@@ -950,6 +982,7 @@ public final class Cluster {
 
         public Factory(final int nioPoolSize) {
             final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-driver-loop-%d").build();
+            // TODO: Enable epoll if available.
             group = new NioEventLoopGroup(nioPoolSize, threadFactory);
         }
 
@@ -1037,32 +1070,14 @@ public final class Cluster {
         }
 
         private void validateBuilder(final Builder builder) {
-            if (builder.minInProcessPerConnection < 0)
-                throw new IllegalArgumentException("minInProcessPerConnection must be greater than or equal to zero");
+            if (builder.maxInProcessPerConnection < 0)
+                throw new IllegalArgumentException("maxInProcessPerConnection must be greater than equal to zero");
 
-            if (builder.maxInProcessPerConnection < 1)
-                throw new IllegalArgumentException("maxInProcessPerConnection must be greater than zero");
-
-            if (builder.minInProcessPerConnection > builder.maxInProcessPerConnection)
-                throw new IllegalArgumentException("maxInProcessPerConnection cannot be less than minInProcessPerConnection");
-
-            if (builder.minSimultaneousUsagePerConnection < 0)
-                throw new IllegalArgumentException("minSimultaneousUsagePerConnection must be greater than or equal to zero");
-
-            if (builder.maxSimultaneousUsagePerConnection < 1)
-                throw new IllegalArgumentException("maxSimultaneousUsagePerConnection must be greater than zero");
-
-            if (builder.minSimultaneousUsagePerConnection > builder.maxSimultaneousUsagePerConnection)
-                throw new IllegalArgumentException("maxSimultaneousUsagePerConnection cannot be less than minSimultaneousUsagePerConnection");
-
-            if (builder.minConnectionPoolSize < 0)
-                throw new IllegalArgumentException("minConnectionPoolSize must be greater than or equal to zero");
+            if (builder.maxSimultaneousUsagePerConnection < 0)
+                throw new IllegalArgumentException("maxSimultaneousUsagePerConnection must be greater than equal to zero");
 
             if (builder.maxConnectionPoolSize < 1)
                 throw new IllegalArgumentException("maxConnectionPoolSize must be greater than zero");
-
-            if (builder.minConnectionPoolSize > builder.maxConnectionPoolSize)
-                throw new IllegalArgumentException("maxConnectionPoolSize cannot be less than minConnectionPoolSize");
 
             if (builder.maxWaitForConnection < 1)
                 throw new IllegalArgumentException("maxWaitForConnection must be greater than zero");
@@ -1133,7 +1148,7 @@ public final class Cluster {
                 closeIt.complete(null);
             });
 
-            // Prevent the executor from accepting new tasks while still allowing enqueued tasks to complete
+            // Prevent the executor from accepting new tasks while still allowing enqueued tasks to complete	            // executor may be required for proper closing. after completion of close, close the executor
             executor.shutdown();
 
             return closeIt;
@@ -1145,7 +1160,7 @@ public final class Cluster {
 
         @Override
         public String toString() {
-            return String.join(", ", contactPoints.stream().map(InetSocketAddress::toString).collect(Collectors.<String>toList()));
+            return contactPoints.stream().map(InetSocketAddress::toString).collect(Collectors.joining(","));
         }
     }
 }

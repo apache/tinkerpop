@@ -18,31 +18,23 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.util.Attribute;
+import io.netty.util.AttributeKey;
 import io.netty.util.AttributeMap;
+import io.netty.util.ReferenceCountUtil;
+
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.util.Attribute;
-import io.netty.util.AttributeKey;
-import io.netty.util.ReferenceCountUtil;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.InetSocketAddress;
-import java.security.PrivilegedExceptionAction;
-import java.security.PrivilegedActionException;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentMap;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -54,6 +46,17 @@ import javax.security.auth.login.LoginException;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslClient;
 import javax.security.sasl.SaslException;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 /**
  * Holder for internal handler classes used in constructing the channel pipeline.
@@ -69,7 +72,9 @@ final class Handler {
         private static final Logger logger = LoggerFactory.getLogger(GremlinSaslAuthenticationHandler.class);
         private static final AttributeKey<Subject> subjectKey = AttributeKey.valueOf("subject");
         private static final AttributeKey<SaslClient> saslClientKey = AttributeKey.valueOf("saslclient");
-        private static final Map<String, String> SASL_PROPERTIES = new HashMap<String, String>() {{ put(Sasl.SERVER_AUTH, "true"); }};
+        private static final Map<String, String> SASL_PROPERTIES = new HashMap<String, String>() {{
+            put(Sasl.SERVER_AUTH, "true");
+        }};
         private static final byte[] NULL_CHALLENGE = new byte[0];
 
         private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder();
@@ -192,36 +197,29 @@ final class Handler {
     }
 
     /**
-     * Takes a map of requests pending responses and writes responses to the {@link ResultQueue} of a request
-     * as the {@link ResponseMessage} objects are deserialized.
+     * Handles all responses from the server (including channel exceptions) and writes responses to
+     * the {@link ResultQueue} of a request as the {@link ResponseMessage} objects are deserialized.
      */
+    @ChannelHandler.Sharable
     static class GremlinResponseHandler extends SimpleChannelInboundHandler<ResponseMessage> {
         private static final Logger logger = LoggerFactory.getLogger(GremlinResponseHandler.class);
-        private final ConcurrentMap<UUID, ResultQueue> pending;
-
-        public GremlinResponseHandler(final ConcurrentMap<UUID, ResultQueue> pending) {
-            this.pending = pending;
-        }
 
         @Override
-        public void channelInactive(final ChannelHandlerContext ctx) throws Exception {
-            // occurs when the server shuts down in a disorderly fashion, otherwise in an orderly shutdown the server
-            // should fire off a close message which will properly release the driver.
-            super.channelInactive(ctx);
-
+        public void channelInactive(final ChannelHandlerContext ctx) {
             // the channel isn't going to get anymore results as it is closed so release all pending requests
-            pending.values().forEach(val -> val.markError(new IllegalStateException("Connection to server is no longer active")));
-            pending.clear();
+            getResultQueueAttachedToChannel(ctx)
+                    .filter(isResultQueueActive)
+                    .ifPresent((rq) -> rq.markError(new IOException("Connection" + ctx.channel() + " to server is no longer active")));
         }
 
         @Override
-        protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessage response) throws Exception {
+        protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessage response) {
             try {
-                final ResponseStatusCode statusCode = response.getStatus().getCode();
-                final ResultQueue queue = pending.get(response.getRequestId());
-                if (statusCode == ResponseStatusCode.SUCCESS || statusCode == ResponseStatusCode.PARTIAL_CONTENT) {
-                    final Object data = response.getResult().getData();
-                    final Map<String,Object> meta = response.getResult().getMeta();
+                this.getResultQueueAttachedToChannel(channelHandlerContext).ifPresent(queue -> {
+                    final ResponseStatusCode statusCode = response.getStatus().getCode();
+                    if (statusCode == ResponseStatusCode.SUCCESS || statusCode == ResponseStatusCode.PARTIAL_CONTENT) {
+                        final Object data = response.getResult().getData();
+                        final Map<String, Object> meta = response.getResult().getMeta();
 
                     // this is a "result" from the server which is either the result of a script or a
                     // serialized traversal
@@ -246,10 +244,11 @@ final class Handler {
                     }
                 }
 
-                // as this is a non-PARTIAL_CONTENT code - the stream is done.
-                if (statusCode != ResponseStatusCode.PARTIAL_CONTENT) {
-                    pending.remove(response.getRequestId()).markComplete(response.getStatus().getAttributes());
-                }
+                    // as this is a non-PARTIAL_CONTENT code - the stream is done.
+                    if (statusCode != ResponseStatusCode.PARTIAL_CONTENT) {
+                        queue.markComplete(response.getStatus().getAttributes());
+                    }
+                });
             } finally {
                 // in the event of an exception above the exception is tossed and handled by whatever channelpipeline
                 // error handling is at play.
@@ -258,29 +257,37 @@ final class Handler {
         }
 
         @Override
-        public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) throws Exception {
-            // if this happens enough times (like the client is unable to deserialize a response) the pending
-            // messages queue will not clear.  wonder if there is some way to cope with that.  of course, if
-            // there are that many failures someone would take notice and hopefully stop the client.
-            logger.error("Could not process the response", cause);
+        public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
+            if (logger.isDebugEnabled())
+                logger.debug("Could not process the response for channel {}", ctx.channel(), cause);
 
             // the channel took an error because of something pretty bad so release all the futures out there
-            pending.values().forEach(val -> val.markError(cause));
-            pending.clear();
+            getResultQueueAttachedToChannel(ctx).filter(isResultQueueActive).ifPresent((rq) -> rq.markError(cause));
 
             // serialization exceptions should not close the channel - that's worth a retry
             if (!IteratorUtils.anyMatch(ExceptionUtils.getThrowableList(cause).iterator(), t -> t instanceof SerializationException))
                 if (ctx.channel().isActive()) ctx.close();
         }
 
-        private Map<String,Object> cleanStatusAttributes(final Map<String,Object> statusAttributes) {
-            final Map<String,Object> m = new HashMap<>();
-            statusAttributes.forEach((k,v) -> {
+        private Map<String, Object> cleanStatusAttributes(final Map<String, Object> statusAttributes) {
+            final Map<String, Object> m = new HashMap<>();
+            statusAttributes.forEach((k, v) -> {
                 if (!k.equals(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS) && !k.equals(Tokens.STATUS_ATTRIBUTE_STACK_TRACE))
-                    m.put(k,v);
+                    m.put(k, v);
             });
             return m;
         }
+
+        private Optional<ResultQueue> getResultQueueAttachedToChannel(final ChannelHandlerContext ctx) {
+            if (!ctx.channel().hasAttr(SingleRequestConnection.RESULT_QUEUE_ATTRIBUTE_KEY) ||
+                    (ctx.channel().attr(SingleRequestConnection.RESULT_QUEUE_ATTRIBUTE_KEY).get() == null)) {
+                return Optional.empty();
+            }
+
+            return Optional.of(ctx.channel().attr(SingleRequestConnection.RESULT_QUEUE_ATTRIBUTE_KEY).get());
+        }
+
+        private Predicate<ResultQueue> isResultQueueActive = rq -> !rq.isComplete();
     }
 
 }

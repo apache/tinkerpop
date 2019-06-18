@@ -46,7 +46,6 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
-import org.apache.tinkerpop.gremlin.structure.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -54,6 +53,7 @@ import org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler;
 import org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.RemoteGraph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
@@ -64,6 +64,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.lang.reflect.Field;
+import java.net.ConnectException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -579,7 +581,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw exception because ssl is enabled on the server but not on client");
         } catch(Exception x) {
             final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
+            assertThat(root, instanceOf(ConnectException.class));
         } finally {
             cluster.close();
         }
@@ -622,7 +624,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw exception because ssl client auth is enabled on the server but client does not have a cert");
         } catch (Exception x) {
             final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
+            assertThat(root, instanceOf(ConnectException.class));
         } finally {
             cluster.close();
         }
@@ -639,7 +641,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw exception because ssl client auth is enabled on the server but does not trust client's cert");
         } catch (Exception x) {
             final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
+            assertThat(root, instanceOf(ConnectException.class));
         } finally {
             cluster.close();
         }
@@ -656,7 +658,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw exception because ssl client requires TLSv1.2 whereas server supports only TLSv1.1");
         } catch (Exception x) {
             final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
+            assertThat(root, instanceOf(ConnectException.class));
         } finally {
             cluster.close();
         }
@@ -673,7 +675,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw exception because ssl client requires TLSv1.2 whereas server supports only TLSv1.1");
         } catch (Exception x) {
             final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
+            assertThat(root, instanceOf(ConnectException.class));
         } finally {
             cluster.close();
         }
@@ -1041,14 +1043,14 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             resultSet.all().get(10000, TimeUnit.MILLISECONDS);
             fail("Should throw an exception.");
         } catch (TimeoutException te) {
-            // the request should not have timed-out - the connection should have been reset, but it seems that
+            // the request should not have timed-out - the connectionPool should have been reset, but it seems that
             // timeout seems to occur as well on some systems (it's not clear why).  however, the nature of this
             // test is to ensure that the script isn't processed if it exceeds a certain size, so in this sense
             // it seems ok to pass in this case.
         } catch (Exception re) {
             final Throwable root = ExceptionUtils.getRootCause(re);
             // Netty closes the channel to the server on a non-recoverable error such as CorruptedFrameException
-            // and the connection is subsequently destroyed. Each of the pending requests are given an error with
+            // and the connectionPool is subsequently destroyed. Each of the pending requests are given an error with
             // the following error message.
             //
             // went with two possible error messages here as i think that there is some either non-deterministic
@@ -1067,7 +1069,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect();
 
-        // ensure that connection to server is good
+        // ensure that connectionPool to server is good
         assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
 
         // kill the server which will make the client mark the host as unavailable
@@ -1079,8 +1081,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
             // Client would have no active connections to the host, hence it would encounter a timeout
-            // trying to find an alive connection to the host.
-            assertThat(re.getCause().getCause() instanceof TimeoutException, is(true));
+            // trying to find an alive connectionPool to the host.
+            assertThat(re.getCause().getCause() instanceof ConnectException, is(true));
 
             //
             // should recover when the server comes back

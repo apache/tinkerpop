@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import groovy.json.JsonBuilder;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.log4j.Level;
 import org.apache.tinkerpop.gremlin.TestHelper;
@@ -34,9 +35,9 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
+import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
 import org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer;
-import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
@@ -49,7 +50,6 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
-import groovy.json.JsonBuilder;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.hamcrest.core.IsInstanceOf;
@@ -63,6 +63,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.io.File;
+import java.net.ConnectException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,7 +78,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -86,9 +86,11 @@ import java.util.stream.IntStream;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.core.AllOf.allOf;
+import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.hamcrest.number.OrderingComparison.lessThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
@@ -257,9 +259,10 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         // keep the connection pool size at 1 to remove the possibility of lots of connections trying to ping which will
         // complicate the assertion logic
         final Cluster cluster = TestClientFactory.build().
-                minConnectionPoolSize(1).
                 maxConnectionPoolSize(1).
-                keepAliveInterval(1000).create();
+                maxSimultaneousUsagePerConnection(0).
+                maxInProcessPerConnection(0).
+                keepAliveInterval(1002).create();
         final Client client = cluster.connect();
 
         // fire up lots of requests so as to schedule/deschedule lots of ping jobs
@@ -335,7 +338,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should not have gone through because the server is not running");
         } catch (Exception i) {
             final Throwable root = ExceptionUtils.getRootCause(i);
-            assertThat(root, instanceOf(TimeoutException.class));
+            assertThat(root, instanceOf(ConnectException.class));
         }
 
         startServer();
@@ -369,7 +372,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should not have gone through because the server is not running");
         } catch (Exception i) {
             final Throwable root = ExceptionUtils.getRootCause(i);
-            assertThat(root, instanceOf(TimeoutException.class));
+            assertThat(root, instanceOf(ConnectException.class));
         }
 
         startServer();
@@ -500,59 +503,67 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldProcessRequestsOutOfOrder() throws Exception {
         final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect();
+        try {
+            final Client client = cluster.connect();
 
-        final ResultSet rsFive = client.submit("Thread.sleep(5000);'five'");
-        final ResultSet rsZero = client.submit("'zero'");
+            final ResultSet rsFive = client.submit("Thread.sleep(5000);'five'");
+            final ResultSet rsZero = client.submit("'zero'");
 
-        final CompletableFuture<List<Result>> futureFive = rsFive.all();
-        final CompletableFuture<List<Result>> futureZero = rsZero.all();
+            final CompletableFuture<List<Result>> futureFive = rsFive.all();
+            final CompletableFuture<List<Result>> futureZero = rsZero.all();
 
-        final long start = System.nanoTime();
-        assertFalse(futureFive.isDone());
-        assertEquals("zero", futureZero.get().get(0).getString());
+            final long start = System.nanoTime();
+            assertFalse(futureFive.isDone());
+            assertEquals("zero", futureZero.get().get(0).getString());
 
-        logger.info("Eval of 'zero' complete: " + TimeUtil.millisSince(start));
+            logger.info("Eval of 'zero' complete: " + TimeUtil.millisSince(start));
 
-        assertFalse(futureFive.isDone());
-        assertEquals("five", futureFive.get(10, TimeUnit.SECONDS).get(0).getString());
+            assertFalse(futureFive.isDone());
+            assertEquals("five", futureFive.get(10, TimeUnit.SECONDS).get(0).getString());
 
-        logger.info("Eval of 'five' complete: " + TimeUtil.millisSince(start));
+            logger.info("Eval of 'five' complete: " + TimeUtil.millisSince(start));
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
     public void shouldProcessSessionRequestsInOrder() throws Exception {
         final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect(name.getMethodName());
+        try {
+            final Client client = cluster.connect(name.getMethodName());
 
-        final ResultSet rsFive = client.submit("Thread.sleep(5000);'five'");
-        final ResultSet rsZero = client.submit("'zero'");
+            final ResultSet rsFive = client.submit("Thread.sleep(5000);'five'");
+            final ResultSet rsZero = client.submit("'zero'");
 
-        final CompletableFuture<List<Result>> futureFive = rsFive.all();
-        final CompletableFuture<List<Result>> futureZero = rsZero.all();
+            final CompletableFuture<List<Result>> futureFive = rsFive.all();
+            final CompletableFuture<List<Result>> futureZero = rsZero.all();
 
-        final CountDownLatch latch = new CountDownLatch(2);
-        final List<String> order = new ArrayList<>();
-        final ExecutorService executor = Executors.newSingleThreadExecutor();
+            final CountDownLatch latch = new CountDownLatch(2);
+            final List<String> order = new ArrayList<>();
+            final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-        futureFive.thenAcceptAsync(r -> {
-            order.add(r.get(0).getString());
-            latch.countDown();
-        }, executor);
+            futureFive.thenAcceptAsync(r -> {
+                order.add(r.get(0).getString());
+                latch.countDown();
+            }, executor);
 
-        futureZero.thenAcceptAsync(r -> {
-            order.add(r.get(0).getString());
-            latch.countDown();
-        }, executor);
+            futureZero.thenAcceptAsync(r -> {
+                order.add(r.get(0).getString());
+                latch.countDown();
+            }, executor);
 
-        // wait for both results
-        latch.await(30000, TimeUnit.MILLISECONDS);
+            // wait for both results
+            latch.await(30000, TimeUnit.MILLISECONDS);
 
-        // should be two results
-        assertEquals(2, order.size());
+            // should be two results
+            assertEquals(2, order.size());
 
-        // ensure that "five" is first then "zero"
-        assertThat(order, contains("five", "zero"));
+            // ensure that "five" is first then "zero"
+            assertThat(order, contains("five", "zero"));
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
@@ -736,21 +747,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         cluster.connect().init();
 
         stopServer();
-
-        cluster.close();
-    }
-
-    @Test
-    public void shouldMarkHostDeadSinceServerIsDown() throws Exception {
-        final Cluster cluster = TestClientFactory.open();
-        assertEquals(0, cluster.availableHosts().size());
-        cluster.connect().init();
-        assertEquals(1, cluster.availableHosts().size());
-
-        stopServer();
-
-        cluster.connect().init();
-        assertEquals(0, cluster.availableHosts().size());
 
         cluster.close();
     }
@@ -1219,25 +1215,27 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldExecuteScriptsInMultipleSession() throws Exception {
         final Cluster cluster = TestClientFactory.open();
-        final Client client1 = cluster.connect(name.getMethodName() + "1");
-        final Client client2 = cluster.connect(name.getMethodName() + "2");
-        final Client client3 = cluster.connect(name.getMethodName() + "3");
+        try {
+            final Client client1 = cluster.connect(name.getMethodName() + "1");
+            final Client client2 = cluster.connect(name.getMethodName() + "2");
+            final Client client3 = cluster.connect(name.getMethodName() + "3");
 
-        final ResultSet results11 = client1.submit("x = 1");
-        final ResultSet results21 = client2.submit("x = 2");
-        final ResultSet results31 = client3.submit("x = 3");
-        assertEquals(1, results11.all().get().get(0).getInt());
-        assertEquals(2, results21.all().get().get(0).getInt());
-        assertEquals(3, results31.all().get().get(0).getInt());
+            final ResultSet results11 = client1.submit("x = 1");
+            final ResultSet results21 = client2.submit("x = 2");
+            final ResultSet results31 = client3.submit("x = 3");
+            assertEquals(1, results11.all().get().get(0).getInt());
+            assertEquals(2, results21.all().get().get(0).getInt());
+            assertEquals(3, results31.all().get().get(0).getInt());
 
-        final ResultSet results12 = client1.submit("x + 100");
-        final ResultSet results22 = client2.submit("x * 2");
-        final ResultSet results32 = client3.submit("x * 10");
-        assertEquals(101, results12.all().get().get(0).getInt());
-        assertEquals(4, results22.all().get().get(0).getInt());
-        assertEquals(30, results32.all().get().get(0).getInt());
-
-        cluster.close();
+            final ResultSet results12 = client1.submit("x + 100");
+            final ResultSet results22 = client2.submit("x * 2");
+            final ResultSet results32 = client3.submit("x * 10");
+            assertEquals(101, results12.all().get().get(0).getInt());
+            assertEquals(4, results22.all().get().get(0).getInt());
+            assertEquals(30, results32.all().get().get(0).getInt());
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
