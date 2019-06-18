@@ -189,4 +189,11 @@ public final class ResultSet implements Iterable<Result> {
             }
         };
     }
+
+    /*
+     * Only used for testing.
+     */
+    String getChannelId() {
+        return resultQueue.getChannelId();
+    }
 }

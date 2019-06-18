@@ -59,6 +59,11 @@ final class ResultQueue {
 
     private Map<String,Object> statusAttributes = null;
 
+    /**
+     * Channel processing this result queue.
+     */
+    private String channelId;
+
     public ResultQueue(final LinkedBlockingQueue<Result> resultLinkedBlockingQueue, final CompletableFuture<Void> readComplete) {
         this.resultLinkedBlockingQueue = resultLinkedBlockingQueue;
         this.readComplete = readComplete;
@@ -187,6 +192,14 @@ final class ResultQueue {
 
     Map<String,Object> getStatusAttributes() {
         return statusAttributes;
+    }
+
+    void setChannelId(final String channelId) {
+        this.channelId = channelId;
+    }
+
+    String getChannelId() {
+        return this.channelId;
     }
 
     /**

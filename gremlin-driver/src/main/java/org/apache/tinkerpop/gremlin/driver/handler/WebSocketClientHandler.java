@@ -58,7 +58,12 @@ public final class WebSocketClientHandler extends SimpleChannelInboundHandler<Ob
 
     @Override
     public void channelActive(final ChannelHandlerContext ctx) throws Exception {
-        handshaker.handshake(ctx.channel());
+        handshaker.handshake(ctx.channel()).addListener(f -> {
+                if (!f.isSuccess()) {
+                    if (!handshakeFuture.isDone()) handshakeFuture.setFailure(f.cause());
+                    ctx.fireExceptionCaught(f.cause());
+                }
+        });
     }
 
     @Override

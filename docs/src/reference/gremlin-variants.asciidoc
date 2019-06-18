@@ -242,14 +242,11 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.keyStorePassword |The password of the `keyStore` if it is password-protected. |_none_
 |connectionPool.keyStoreType |`JKS` (Java 8 default) or `PKCS12` (Java 9+ default)|_none_
 |connectionPool.maxContentLength |The maximum length in bytes that a message can be sent to the server. This number can be no greater than the setting of the same name in the server configuration. |65536
-|connectionPool.maxInProcessPerConnection |The maximum number of in-flight requests that can occur on a connection. |4
-|connectionPool.maxSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |16
-|connectionPool.maxSize |The maximum size of a connection pool for a host. |8
+|connectionPool.maxInProcessPerConnection |The maximum number of in-flight requests that can occur on a connection. This setting is deprecated as of 3.4.3 and it's functionality has been rolled into maxSize. For backward compatibility it is still used to approximate the amount of parallelism required. In future versions, the approximation logic will be removed and dependency on this parameter will be completely eliminated. To disable the dependency on this parameter right now, set to 0.|4
+|connectionPool.maxSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. This setting is deprecated as of 3.4.3 and it's functionality has been rolled into maxSize. For backward compatibility it is still used to approximate the amount of parallelism required. In future versions, the approximation logic will be removed and dependency on this parameter will be completely eliminated. To disable the dependency on this parameter right now, set to 0. |16
+|connectionPool.maxSize |The maximum number of parallel requests that can be made to the server. This is the only configuration required to control the number of concurrent requests that can be made to the server. |8
 |connectionPool.maxWaitForConnection |The amount of time in milliseconds to wait for a new connection before timing out. |3000
 |connectionPool.maxWaitForSessionClose |The amount of time in milliseconds to wait for a session to close before timing out (does not apply to sessionless connections). |3000
-|connectionPool.minInProcessPerConnection |The minimum number of in-flight requests that can occur on a connection. |1
-|connectionPool.minSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |8
-|connectionPool.minSize |The minimum size of a connection pool for a host. |2
 |connectionPool.reconnectInterval |The amount of time in milliseconds to wait before trying to reconnect to a dead host. |1000
 |connectionPool.resultIterationBatchSize |The override value for the size of the result batches to be returned from the server. |64
 |connectionPool.sslCipherSuites |The list of JSSE ciphers to support for SSL connections. If specified, only the ciphers that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
@@ -273,6 +270,11 @@ The following table describes the various configuration options for the Gremlin 
 
 Please see the link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/driver/Cluster.Builder.html[Cluster.Builder javadoc] to get more information on these settings.
 
+==== Choosing a value for ConnectionPool.maxSize
+
+`ConnectionPool.maxSize` represents the maximum number of concurrent requests that the client can make to the server. Each request is made using its own websocket connection, hence, this parameter also controls the maximum number of WebSocket connections that can be concurrently opened to the server.
+
+While choosing a value for this parameter, determine how many requests you anticipate to run in parallel from your client. Beyond this number you would start getting timeout exceptions and should handle those timeouts at the application layer.
 === Serialization
 
 Remote systems like Gremlin Server and Remote Gremlin Providers respond to requests made in a particular serialization
@@ -1060,7 +1062,7 @@ g.V().Out().Map<int>(Lambda.Groovy("it.get().value('name').length()")).Sum<int>(
 g.V().Out().Map<int>(Lambda.Python("lambda x: len(x.get().value('name'))")).Sum<int>().ToList(); <2>
 ----
 
-<1> `Lambda.Groovy()` can be used to create a Groovy lambda. 
+<1> `Lambda.Groovy()` can be used to create a Groovy lambda.
 <2> `Lambda.Python()` can be used to create a Python lambda.
 
 The `ILambda` interface returned by these two methods inherits interfaces like `IFunction` and `IPredicate` that mirror
