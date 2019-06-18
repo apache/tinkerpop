@@ -20,8 +20,6 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.EmptyHttpHeaders;
-import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinRequestEncoder;
@@ -35,11 +33,17 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.ssl.SslContext;
+import io.netty.handler.timeout.IdleStateHandler;
+
+import org.apache.tinkerpop.gremlin.driver.handler.WebSocketIdleEventHandler;
+import org.apache.tinkerpop.gremlin.driver.handler.WebsocketCloseHandler;
 
 import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import static java.lang.Math.toIntExact;
 
 /**
  * Client-side channel initializer interface.  It is responsible for constructing the Netty {@code ChannelPipeline}
@@ -51,8 +55,14 @@ public interface Channelizer extends ChannelHandler {
 
     /**
      * Initializes the {@code Channelizer}. Called just after construction.
+     * @param connection
+     *
+     * @deprecated As of release 3.4.3, replaced by {@link #init(ConnectionPool)}.
      */
+    @Deprecated
     public void init(final Connection connection);
+
+    public default void init(final ConnectionPool connectionPool) { throw new UnsupportedOperationException(); }
 
     /**
      * Called on {@link Connection#close()} to perform an {@code Channelizer} specific functions.  Note that the
@@ -63,7 +73,7 @@ public interface Channelizer extends ChannelHandler {
     public void close(final Channel channel);
 
     /**
-     * Create a message for the driver to use as a "keep-alive" for the connection. This method will only be used if
+     * Create a message for the driver to use as a "keep-alive" for the connectionPool. This method will only be used if
      * {@link #supportsKeepAlive()} is {@code true}.
      */
     public default Object createKeepAliveMessage() {
@@ -71,7 +81,7 @@ public interface Channelizer extends ChannelHandler {
     }
 
     /**
-     * Determines if the channelizer supports a method for keeping the connection to the server alive.
+     * Determines if the channelizer supports a method for keeping the connectionPool to the server alive.
      */
     public default boolean supportsKeepAlive() {
         return false;
@@ -80,17 +90,23 @@ public interface Channelizer extends ChannelHandler {
     /**
      * Called after the channel connects. The {@code Channelizer} may need to perform some functions, such as a
      * handshake.
+     *
+     * @deprecated As of release 3.4.3, replaced by {@link #connected(Channel)}.
      */
+    @Deprecated
     public default void connected() {
+    }
+
+    public default void connected(final Channel ch) {
     }
 
     /**
      * Base implementation of the client side {@link Channelizer}.
      */
     abstract class AbstractChannelizer extends ChannelInitializer<SocketChannel> implements Channelizer {
-        protected Connection connection;
+        protected ConnectionPool connectionPool;
         protected Cluster cluster;
-        private ConcurrentMap<UUID, ResultQueue> pending;
+        protected Handler.GremlinResponseHandler gremlinResponseHandler;
 
         protected static final String PIPELINE_GREMLIN_SASL_HANDLER = "gremlin-sasl-handler";
         protected static final String PIPELINE_GREMLIN_HANDLER = "gremlin-handler";
@@ -112,32 +128,39 @@ public interface Channelizer extends ChannelHandler {
 
         @Override
         public void init(final Connection connection) {
-            this.connection = connection;
-            this.cluster = connection.getCluster();
-            this.pending = connection.getPending();
+            // do nothing
         }
 
         @Override
-        protected void initChannel(final SocketChannel socketChannel) throws Exception {
+        public void init(final ConnectionPool connPool) {
+            this.connectionPool = connPool;
+            this.cluster = connPool.getCluster();
+            this.gremlinResponseHandler = new Handler.GremlinResponseHandler();
+        }
+
+        @Override
+        protected void initChannel(final SocketChannel socketChannel) {
             final ChannelPipeline pipeline = socketChannel.pipeline();
-            final Optional<SslContext> sslCtx;
+            final Optional<SslContext> sslCtxOpt;
             if (supportsSsl()) {
                 try {
-                    sslCtx = Optional.of(cluster.createSSLContext());
+                    sslCtxOpt = Optional.of(cluster.createSSLContext());
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
             } else {
-                sslCtx = Optional.empty();
+                sslCtxOpt = Optional.empty();
             }
 
-            if (sslCtx.isPresent()) {
-                pipeline.addLast(sslCtx.get().newHandler(socketChannel.alloc(), connection.getUri().getHost(), connection.getUri().getPort()));
-            }
+            sslCtxOpt.ifPresent((sslCtx) -> {
+                pipeline.addLast(sslCtx.newHandler(socketChannel.alloc(),
+                                                   connectionPool.getHost().getHostUri().getHost(),
+                                                   connectionPool.getHost().getHostUri().getPort()));
+            });
 
             configure(pipeline);
             pipeline.addLast(PIPELINE_GREMLIN_SASL_HANDLER, new Handler.GremlinSaslAuthenticationHandler(cluster.authProperties()));
-            pipeline.addLast(PIPELINE_GREMLIN_HANDLER, new Handler.GremlinResponseHandler(pending));
+            pipeline.addLast(PIPELINE_GREMLIN_HANDLER, gremlinResponseHandler);
         }
     }
 
@@ -145,16 +168,22 @@ public interface Channelizer extends ChannelHandler {
      * WebSocket {@link Channelizer} implementation.
      */
     public final class WebSocketChannelizer extends AbstractChannelizer {
-        private WebSocketClientHandler handler;
 
         private WebSocketGremlinRequestEncoder webSocketGremlinRequestEncoder;
         private WebSocketGremlinResponseDecoder webSocketGremlinResponseDecoder;
+        private WebSocketIdleEventHandler webSocketIdleEventHandler;
 
         @Override
-        public void init(final Connection connection) {
-            super.init(connection);
+        public void init(Connection connection) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void init(final ConnectionPool connpool) {
+            super.init(connpool);
             webSocketGremlinRequestEncoder = new WebSocketGremlinRequestEncoder(true, cluster.getSerializer());
             webSocketGremlinResponseDecoder = new WebSocketGremlinResponseDecoder(cluster.getSerializer());
+            webSocketIdleEventHandler = new WebSocketIdleEventHandler(connpool.getActiveChannels());
         }
 
         /**
@@ -168,27 +197,14 @@ public interface Channelizer extends ChannelHandler {
         }
 
         @Override
-        public Object createKeepAliveMessage() {
-            return new PingWebSocketFrame();
-        }
-
-        /**
-         * Sends a {@code CloseWebSocketFrame} to the server for the specified channel.
-         */
-        @Override
-        public void close(final Channel channel) {
-            if (channel.isOpen()) channel.writeAndFlush(new CloseWebSocketFrame());
-        }
-
-        @Override
         public boolean supportsSsl() {
-            final String scheme = connection.getUri().getScheme();
+            final String scheme = connectionPool.getHost().getHostUri().getScheme();
             return "wss".equalsIgnoreCase(scheme);
         }
 
         @Override
         public void configure(final ChannelPipeline pipeline) {
-            final String scheme = connection.getUri().getScheme();
+            final String scheme = connectionPool.getHost().getHostUri().getScheme();
             if (!"ws".equalsIgnoreCase(scheme) && !"wss".equalsIgnoreCase(scheme))
                 throw new IllegalStateException("Unsupported scheme (only ws: or wss: supported): " + scheme);
 
@@ -196,27 +212,41 @@ public interface Channelizer extends ChannelHandler {
                 throw new IllegalStateException("To use wss scheme ensure that enableSsl is set to true in configuration");
 
             final int maxContentLength = cluster.connectionPoolSettings().maxContentLength;
-            handler = new WebSocketClientHandler(
+            // TODO: Replace WebSocketClientHandler with Netty's WebSocketClientProtocolHandler
+            final WebSocketClientHandler handler = new WebSocketClientHandler(
                     WebSocketClientHandshakerFactory.newHandshaker(
-                            connection.getUri(), WebSocketVersion.V13, null, false, EmptyHttpHeaders.INSTANCE, maxContentLength));
+                            connectionPool.getHost().getHostUri(), WebSocketVersion.V13, null, false, EmptyHttpHeaders.INSTANCE, maxContentLength));
 
+            int keepAliveInterval = toIntExact(TimeUnit.SECONDS.convert(cluster.connectionPoolSettings().keepAliveInterval, TimeUnit.MILLISECONDS));
             pipeline.addLast("http-codec", new HttpClientCodec());
             pipeline.addLast("aggregator", new HttpObjectAggregator(maxContentLength));
-            pipeline.addLast("ws-handler", handler);
+            pipeline.addLast("netty-idle-state-Handler", new IdleStateHandler(0, keepAliveInterval, 0));
+            pipeline.addLast("ws-idle-handler", webSocketIdleEventHandler);
+            pipeline.addLast("ws-client-handler", handler);
+            pipeline.addLast("ws-close-handler", new WebsocketCloseHandler());
             pipeline.addLast("gremlin-encoder", webSocketGremlinRequestEncoder);
             pipeline.addLast("gremlin-decoder", webSocketGremlinResponseDecoder);
         }
 
+
         @Override
-        public void connected() {
+        public void connected(final Channel ch) {
             try {
                 // block for a few seconds - if the handshake takes longer than there's gotta be issues with that
                 // server. more than likely, SSL is enabled on the server, but the client forgot to enable it or
                 // perhaps the server is not configured for websockets.
-                handler.handshakeFuture().get(15000, TimeUnit.MILLISECONDS);
-            } catch (Exception ex) {
-                throw new RuntimeException(new ConnectionException(connection.getUri(),
-                        "Could not complete websocket handshake - ensure that client protocol matches server", ex));
+                ((WebSocketClientHandler)(ch.pipeline().get("ws-client-handler"))).handshakeFuture().addListener( f -> {
+                    if (!f.isSuccess()) {
+                        throw new ConnectionException(connectionPool.getHost().getHostUri(),
+                                                                           "Could not complete websocket handshake - ensure that client protocol matches server", f.cause());
+                    }
+                }).get(1500, TimeUnit.MILLISECONDS);
+            } catch (ExecutionException ex) {
+                throw new RuntimeException(ex.getCause());
+            } catch (InterruptedException | TimeoutException ex) {
+                // catching the InterruptedException will reset the interrupted flag. This is intentional.
+                throw new RuntimeException(new ConnectionException(connectionPool.getHost().getHostUri(),
+                                                                   "Timed out while performing websocket handshake - ensure that client protocol matches server", ex.getCause()));
             }
         }
     }

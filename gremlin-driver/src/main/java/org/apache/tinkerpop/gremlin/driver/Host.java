@@ -108,6 +108,10 @@ public final class Host {
         return hostLabel;
     }
 
+    public Cluster getCluster() {
+        return this.cluster;
+    }
+
     public static interface Listener {
         public void onAvailable(final Host host);
 

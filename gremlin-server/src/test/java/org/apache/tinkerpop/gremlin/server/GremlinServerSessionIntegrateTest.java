@@ -310,7 +310,7 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
             client.submit("x[1]+2").all().get();
             fail("Session should be dead");
         } catch (Exception ex) {
-            final Throwable cause = ExceptionUtils.getCause(ex);
+            final Throwable cause = ex.getCause();
             assertThat(cause, instanceOf(ResponseException.class));
             assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, ((ResponseException) cause).getResponseStatusCode());
 
@@ -320,20 +320,25 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
             cluster.close();
         }
 
-        // there will be on for the timeout and a second for closing the cluster
+        // there will be one for the timeout and a second for closing the cluster
         assertEquals(2, recordingAppender.getMessages().stream()
-                .filter(msg -> msg.equals("INFO - Session shouldHaveTheSessionTimeout closed\n")).count());
+                .filter(msg -> msg.contains("Session shouldHaveTheSessionTimeout closed")).count());
     }
 
     @Test
     public void shouldEnsureSessionBindingsAreThreadSafe() throws Exception {
-        final Cluster cluster = TestClientFactory.build().
-                minInProcessPerConnection(16).maxInProcessPerConnection(64).create();
-        final Client client = cluster.connect(name.getMethodName());
-
+        final Cluster cluster = TestClientFactory.build()
+                                                 .maxConnectionPoolSize(1000)
+                                                 .maxInProcessPerConnection(0) // disable these deprecated parameters
+                                                 .maxSimultaneousUsagePerConnection(0) // disable these deprecated parameters
+                                                 .create();
         try {
-            client.submit("a=100;b=1000;c=10000;null").all().get();
-            final int requests = 10000;
+            final Client client = cluster.connect(name.getMethodName());
+
+            // It is important for this query to be synchronously executed to set the values
+            // of a,b,c on the server before other queries start to execute.
+            client.submit("a=100;b=1000;c=10000;null").all().join();
+            final int requests = 1000;
             final List<CompletableFuture<ResultSet>> futures = new ArrayList<>(requests);
             IntStream.range(0, requests).forEach(i -> {
                 try {
@@ -353,12 +358,9 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
             }
 
             assertEquals(requests, counter);
-        } catch (Exception ex) {
-            fail(ex.getMessage());
         } finally {
             cluster.close();
         }
-
     }
 
     @Test

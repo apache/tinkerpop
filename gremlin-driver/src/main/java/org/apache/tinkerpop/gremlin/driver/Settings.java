@@ -299,76 +299,103 @@ final class Settings {
 
         /**
          * The minimum size of a connection pool for a {@link Host}. By default this is set to 2.
+         * @deprecated As of release 3.4.3, value is ignore
          */
-        public int minSize = ConnectionPool.MIN_POOL_SIZE;
+        @Deprecated
+        public int minSize = ConnectionPool.DEFAULT_MIN_POOL_SIZE;
 
         /**
          * The maximum size of a connection pool for a {@link Host}. By default this is set to 8.
          */
-        public int maxSize = ConnectionPool.MAX_POOL_SIZE;
+        public int maxSize = ConnectionPool.DEFAULT_MAX_POOL_SIZE;
 
         /**
          * Length of time in milliseconds to wait on an idle connection before sending a keep-alive request. This
          * setting is only relevant to {@link Channelizer} implementations that return {@code true} for
          * {@link Channelizer#supportsKeepAlive()}. Set to zero to disable this feature.
          */
-        public long keepAliveInterval = Connection.KEEP_ALIVE_INTERVAL;
+        public long keepAliveInterval = Connection.DEFAULT_KEEP_ALIVE_INTERVAL;
 
         /**
          * A connection under low use can be destroyed. This setting determines the threshold for determining when
          * that connection can be released and is defaulted to 8.
+         *
+         * @deprecated As of release 3.4.3, not replaced, this parameter is ignored.
+         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
          */
-        public int minSimultaneousUsagePerConnection = ConnectionPool.MIN_SIMULTANEOUS_USAGE_PER_CONNECTION;
+        @Deprecated
+        public int minSimultaneousUsagePerConnection = ConnectionPool.DEFAULT_MIN_SIMULTANEOUS_USAGE_PER_CONNECTION;
 
         /**
          * If a connection is over used, then it might mean that is necessary to expand the pool by adding a new
-         * connection.  This setting determines the threshold for a connections over use and is defaulted to 16
+         * connection.  This setting determines the threshold for a connections over use and is defaulted to 16. Set
+         * the value to 0 to disable the use of this parameter.
+         *
+         * @deprecated As of release 3.4.3, replaced by {@link ConnectionPool#DEFAULT_MAX_POOL_SIZE}.
+         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
          */
-        public int maxSimultaneousUsagePerConnection = ConnectionPool.MAX_SIMULTANEOUS_USAGE_PER_CONNECTION;
+        @Deprecated
+        public int maxSimultaneousUsagePerConnection = ConnectionPool.DEFAULT_MAX_SIMULTANEOUS_USAGE_PER_CONNECTION;
 
         /**
-         * The maximum number of requests in flight on a connection where the default is 4.
+         * The maximum number of requests in flight on a connection where the default is 4. Set the value to 0 to disable
+         * the use of this parameter.
+         *
+         * @deprecated As of release 3.4.3, replaced by {@link ConnectionPool#DEFAULT_MAX_POOL_SIZE}. For backward
+         * compatibility it is still used to approximate the amount of parallelism required. In future versions, the
+         * approximation logic will be removed and dependency on this parameter will be completely eliminated.
+         * To disable the dependency on this parameter right now, explicitly set the value of
+         * {@link Settings.ConnectionPoolSettings#maxInProcessPerConnection} and {@link Settings.ConnectionPoolSettings#maxSimultaneousUsagePerConnection}
+         * to 0.
+         *
+         * @see ConnectionPoolImpl#calculateMaxPoolSize(Settings.ConnectionPoolSettings) for approximation logic.
+         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
          */
-        public int maxInProcessPerConnection = Connection.MAX_IN_PROCESS;
+        @Deprecated
+        public int maxInProcessPerConnection = Connection.DEFAULT_MAX_IN_PROCESS;
 
         /**
          * A connection has available in-process requests which is calculated by subtracting the number of current
          * in-flight requests on a connection and subtracting that from the {@link #maxInProcessPerConnection}. When
          * that number drops below this configuration setting, the connection is recommended for replacement. The
          * default for this setting is 1.
+         *
+         * @deprecated As of release 3.4.3, not replaced, this parameter is ignored.
+         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
          */
-        public int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
+        @Deprecated
+        public int minInProcessPerConnection = Connection.DEFAULT_MIN_IN_PROCESS;
 
         /**
          * The amount of time in milliseconds to wait for a new connection before timing out where the default value
          * is 3000.
          */
-        public int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
+        public int maxWaitForConnection = Connection.DEFAULT_MAX_WAIT_FOR_CONNECTION;
 
         /**
          * If the connection is using a "session" this setting represents the amount of time in milliseconds to wait
          * for that session to close before timing out where the default value is 3000. Note that the server will
          * eventually clean up dead sessions itself on expiration of the session or during shutdown.
          */
-        public int maxWaitForSessionClose = Connection.MAX_WAIT_FOR_SESSION_CLOSE;
+        public int maxWaitForSessionClose = Connection.DEFAULT_MAX_WAIT_FOR_SESSION_CLOSE;
 
         /**
          * The maximum length in bytes that a message can be sent to the server. This number can be no greater than
          * the setting of the same name in the server configuration. The default value is 65536.
          */
-        public int maxContentLength = Connection.MAX_CONTENT_LENGTH;
+        public int maxContentLength = Connection.DEFAULT_MAX_CONTENT_LENGTH;
 
         /**
          * The amount of time in milliseconds to wait before trying to reconnect to a dead host. The default value is
          * 1000.
          */
-        public int reconnectInterval = Connection.RECONNECT_INTERVAL;
+        public int reconnectInterval = Connection.DEFAULT_RECONNECT_INTERVAL;
 
         /**
          * The override value for the size of the result batches to be returned from the server. This value is set to
          * 64 by default.
          */
-        public int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
+        public int resultIterationBatchSize = Connection.DEFAULT_RESULT_ITERATION_BATCH_SIZE;
 
         /**
          * The constructor for the channel that connects to the server. This value should be the fully qualified
