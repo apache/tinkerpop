@@ -43,9 +43,11 @@ public class DriverRemoteConnectionTest {
                         with(Tokens.ARGS_BATCH_SIZE, 1000).
                         with(Tokens.REQUEST_ID, requestId).
                         with(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT, 100000L).
+                        with(Tokens.ARGS_USER_AGENT, "test").
                         V().asAdmin().getBytecode());
         assertEquals(requestId, options.getOverrideRequestId().get());
         assertEquals(1000, options.getBatchSize().get().intValue());
         assertEquals(100000L, options.getTimeout().get().longValue());
+        assertEquals("test", options.getUserAgent().get());
     }
 }

@@ -32,11 +32,15 @@ import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
 import org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
+import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
@@ -1611,6 +1615,20 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         verify(client).submitAsync(requestMessageCaptor.capture());
         RequestMessage requestMessage = requestMessageCaptor.getValue();
         assertEquals("test", requestMessage.getArgs().get(Tokens.ARGS_USER_AGENT));
+    }
+
+    @Test
+    public void shouldSendUserAgentBytecode() {
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3D0).create();
+        final Client client = Mockito.spy(cluster.connect().alias("g"));
+        Mockito.when(client.alias("g")).thenReturn(client);
+        GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(DriverRemoteConnection.using(client));
+        g.with(Tokens.ARGS_USER_AGENT, "test").V().iterate();
+        cluster.close();
+        ArgumentCaptor<RequestOptions> requestOptionsCaptor = ArgumentCaptor.forClass(RequestOptions.class);
+        verify(client).submitAsync(Mockito.any(Bytecode.class), requestOptionsCaptor.capture());
+        RequestOptions requestOptions = requestOptionsCaptor.getValue();
+        assertEquals("test", requestOptions.getUserAgent().get());
     }
 
     private void assertFutureTimeout(final CompletableFuture<List<Result>> futureFirst) {
