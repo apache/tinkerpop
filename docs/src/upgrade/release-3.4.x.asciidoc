@@ -27,6 +27,28 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.3/CHANGELOG.asciidoc#release-3-4-3[changelog] for a complete list of all the modifications that are part of this release.
 
+=== Upgrading for Providers
+
+==== Graph Driver Providers
+
+===== Gremlin Server Test Configuration
+
+Gremlin Server has a test configuration built into its Maven build process which all integration tests and Gremlin
+Language Variants use to validate their operations. While this approach has worked really well for test automation
+within Maven, there are often times where it would be helpful to simply have Gremlin Server running with that
+configuration. This need is especially true when developing Gremlin Language Variants which is something that is done
+outside of the JVM.
+
+This release introduces a Docker script that will start Gremlin Server with this test configuration. It can be started
+with:
+
+[source,text]
+docker/gremlin-server.sh
+
+Once started, it is then possible to run GLV tests directly from a debugger against this instance which should
+hopefully reduce development friction.
+
+see: link:http://tinkerpop.apache.org/docs/3.4.3/dev/developer/#docker-integration[Developer Documentation]
 
 == TinkerPop 3.4.2
 

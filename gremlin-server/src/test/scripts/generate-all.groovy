@@ -50,12 +50,12 @@ globals << [hook : [
       allowSetOfIdManager(it, "edgeIdManager")
       allowSetOfIdManager(it, "vertexPropertyIdManager")
     }
-
     TinkerFactory.generateClassic(classic)
     TinkerFactory.generateModern(modern)
     TinkerFactory.generateTheCrew(crew)
     TinkerFactory.generateGratefulDead(grateful)
     TinkerFactory.generateKitchenSink(sink)
+
   }
 ] as LifeCycleHook]
 
