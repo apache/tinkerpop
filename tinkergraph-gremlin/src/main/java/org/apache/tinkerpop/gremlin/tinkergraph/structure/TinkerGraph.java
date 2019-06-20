@@ -581,10 +581,15 @@ public final class TinkerGraph implements Graph {
                     return id;
                 else if (id instanceof Number)
                     return ((Number) id).longValue();
-                else if (id instanceof String)
-                    return Long.parseLong((String) id);
+                else if (id instanceof String) {
+                    try {
+                        return Long.parseLong((String) id);
+                    } catch (NumberFormatException nfe) {
+                        throw new IllegalArgumentException(createErrorMessage(Long.class, id));
+                    }
+                }
                 else
-                    throw new IllegalArgumentException(String.format("Expected an id that is convertible to Long but received %s", id.getClass()));
+                    throw new IllegalArgumentException(createErrorMessage(Long.class, id));
             }
 
             @Override
@@ -611,10 +616,15 @@ public final class TinkerGraph implements Graph {
                     return id;
                 else if (id instanceof Number)
                     return ((Number) id).intValue();
-                else if (id instanceof String)
-                    return Integer.parseInt((String) id);
+                else if (id instanceof String) {
+                    try {
+                        return Integer.parseInt((String) id);
+                    } catch (NumberFormatException nfe) {
+                        throw new IllegalArgumentException(createErrorMessage(Integer.class, id));
+                    }
+                }
                 else
-                    throw new IllegalArgumentException(String.format("Expected an id that is convertible to Integer but received %s", id.getClass()));
+                    throw new IllegalArgumentException(createErrorMessage(Integer.class, id));
             }
 
             @Override
@@ -639,10 +649,14 @@ public final class TinkerGraph implements Graph {
                     return null;
                 else if (id instanceof java.util.UUID)
                     return id;
-                else if (id instanceof String)
-                    return java.util.UUID.fromString((String) id);
-                else
-                    throw new IllegalArgumentException(String.format("Expected an id that is convertible to UUID but received %s", id.getClass()));
+                else  if (id instanceof String) {
+                    try {
+                        return java.util.UUID.fromString((String) id);
+                    } catch (IllegalArgumentException iae) {
+                        throw new IllegalArgumentException(createErrorMessage(java.util.UUID.class, id));
+                    }
+                } else
+                    throw new IllegalArgumentException(createErrorMessage(java.util.UUID.class, id));
             }
 
             @Override
@@ -672,6 +686,10 @@ public final class TinkerGraph implements Graph {
             public boolean allow(final Object id) {
                 return true;
             }
+        };
+
+        private static String createErrorMessage(final Class<?> expectedType, final Object id) {
+            return String.format("Expected an id that is convertible to %s but received %s - [%s]", expectedType, id.getClass(), id);
         }
     }
 }
