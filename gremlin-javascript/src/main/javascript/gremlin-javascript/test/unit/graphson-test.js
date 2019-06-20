@@ -121,6 +121,58 @@ describe('GraphSONReader', function () {
     assert.strictEqual(result.objects[0].label, 'person');
     assert.strictEqual(result.objects[1].label, 'software');
   });
+  it('should parse paths from GraphSON3', function () {
+    const obj = {
+      "@type" : "g:Path",
+      "@value" : {
+        "labels" : {
+          "@type" : "g:List",
+          "@value" : [ {
+            "@type" : "g:Set",
+            "@value" : [ ]
+          }, {
+            "@type" : "g:Set",
+            "@value" : [ ]
+          }, {
+            "@type" : "g:Set",
+            "@value" : [ ]
+          } ]
+        },
+        "objects" : {
+          "@type" : "g:List",
+          "@value" : [ {
+            "@type" : "g:Vertex",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
+              "label" : "person"
+            }
+          }, {
+            "@type" : "g:Vertex",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int32",
+                "@value" : 10
+              },
+              "label" : "software"
+            }
+          }, "lop" ]
+        }
+      }
+    };
+    const reader = new GraphSONReader(obj);
+    const result = reader.read(obj);
+    assert.ok(result);
+    assert.ok(result.objects);
+    assert.ok(result.labels);
+    assert.strictEqual(result.objects[2], 'lop');
+    assert.ok(result.objects[0] instanceof graph.Vertex);
+    assert.ok(result.objects[1] instanceof graph.Vertex);
+    assert.strictEqual(result.objects[0].label, 'person');
+    assert.strictEqual(result.objects[1].label, 'software');
+  });
 });
 describe('GraphSONWriter', function () {
   it('should write numbers', function () {
