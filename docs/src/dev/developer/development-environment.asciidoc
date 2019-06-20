@@ -98,6 +98,9 @@ integration tests and therefore must be actively switched on with `-DskipIntegra
 [source,text]
 mvn clean install -pl gremlin-console -DskipIntegrationTests=false
 
+TIP: For those who do not have a full Maven environment, please see <<docker-integration,this section>> for how Docker
+can be used to help run tests.
+
 See the <<release-environment,Release Environment>> section for more information on release manager configurations.
 
 [[dotnet-environment]]
@@ -125,6 +128,9 @@ the `nuget` property has to be set:
 [source,text]
 mvn clean install -Dnuget
 
+TIP: For those who do not have a full Maven environment, please see <<docker-integration,this section>> for how Docker
+can be used to help run tests.
+
 See the <<release-environment,Release Environment>> section for more information on release manager configurations.
 
 [[nodejs-environment]]
@@ -133,6 +139,9 @@ See the <<release-environment,Release Environment>> section for more information
 When building `gremlin-javascript`, mvn command will include a local copy of Node.js runtime and npm inside your project
 using `com.github.eirslett:frontend-maven-plugin` plugin. This copy of the Node.js runtime will not affect any
 other existing Node.js runtime instances in your machine.
+
+TIP: For those who do not have a full Maven environment, please see <<docker-integration,this section>> for how Docker
+can be used to help run tests.
 
 See the <<release-environment,Release Environment>> section for more information on release manager configurations.
 
@@ -231,6 +240,7 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 ** The test suite for `neo4j-gremlin` is disabled by default - to turn it on: `mvn clean install -DincludeNeo4j`
 * Regenerate test data (only necessary given changes to IO classes): `mvn clean install -Dio` from `tinkergraph-gremlin` directory
 ** If there are changes to the Gryo format, it may be necessary to generate the Grateful Dead dataset from GraphSON (see `IoDataGenerationTest.shouldWriteGratefulDead`)
+* Start Gremlin Server with Docker using the standard test configuration: `docker/gremlin-server.sh`
 * Check license headers are present: `mvn apache-rat:check`
 * Build AsciiDocs (see <<documentation-environment,Documentation Environment>>): `bin/process-docs.sh`
 ** Build AsciiDocs (but don't evaluate code blocks): `bin/process-docs.sh --dryRun`
@@ -297,6 +307,41 @@ is used to host the HTML docs.
 
 After finishing all tasks, the script will immediately destroy the container.
 
+Docker can also be helpful to developers who do not want to run tests from a Maven environment, which may be a bit
+opaque when dealing with test failures and largely unhelpful for debugging. This situation is typically case for
+developers doing work on Gremlin Language Variants (e.g. Python). To help alleviate this problem, developers can
+start a standalone Gremlin Server with its standard test configuration that is used in the standard Maven build.
+
+Generally speaking, most developers will want to test their code against the latest build of Gremlin Server in the
+TinkerPop repository. To do that, first be sure to build a Docker image of the current code:
+
+[source,bash]
+mvn clean install -DskipTests
+
+Next, generate the a Docker image for Gremlin Server with:
+
+[source,bash]
+mvn clean install -pl :gremlin-server -DdockerImages -DskipTests
+
+IMPORTANT: If changes are made to the repository that need to be reflected in the Gremlin Server Docker image then
+the old image should be removed and then the above commands re-executed.
+
+Finally, start the server with:
+
+[source,bash]
+docker/gremlin-server.sh
+
+Starting Gremlin Server this way makes it possible to run Gremlin Language Variant tests without Maven (for example,
+directly from a debugger) which should greatly reduce development friction for these environments.
+
+It is also possible to specify the exact version of Gremlin Server to run with the test configuration. This version
+should be an existing Docker image version and must be an explicit version that maps to an actual TinkerPop artifact:
+
+[source,bash]
+docker/gremlin-server.sh 3.4.2
+
+To be a bit more clear, the version can not be a Docker tag like "latest" because there is no such TinkerPop artifact
+that has been published with that version number.
 
 == IDE Setup with Intellij
 

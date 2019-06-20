@@ -19,7 +19,18 @@
 
 import org.apache.tinkerpop.gremlin.server.GremlinServer
 import org.apache.tinkerpop.gremlin.server.Settings
-import org.apache.tinkerpop.gremlin.server.Settings.SerializerSettings
+
+////////////////////////////////////////////////////////////////////////////////
+// IMPORTANT
+////////////////////////////////////////////////////////////////////////////////
+// Changes to this file need to be appropriately replicated to
+//
+// - docker/gremlin-server/gremlin-server-integration.yaml
+// - docker/gremlin-server/gremlin-server-integration-secure.yaml
+//
+// Without such changes, the test docker server can't be started for independent
+// testing with Gremlin Language Variants.
+////////////////////////////////////////////////////////////////////////////////
 
 if (Boolean.parseBoolean(skipTests)) return
 
