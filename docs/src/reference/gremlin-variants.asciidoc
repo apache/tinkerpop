@@ -1205,6 +1205,7 @@ provide most of the typical functionality required to use Gremlin:
 ----
 const gremlin = require('gremlin');
 const traversal = gremlin.process.AnonymousTraversalSource.traversal;
+const __ = gremlin.process.statics;
 const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
 const column = gremlin.process.traversal.column
 const direction = gremlin.process.traversal.direction
