@@ -42,8 +42,10 @@ import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.SINK;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -60,6 +62,8 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V();
 
+    public abstract Traversal<Vertex, Vertex> get_g_VXv1X_out(final Vertex v1);
+
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_out(final Object v1Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_VX2X_in(final Object v2Id);
@@ -68,7 +72,13 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Edge, Edge> get_g_E();
 
+    public abstract Traversal<Edge, Edge> get_g_EXe11X(final Edge e11);
+
     public abstract Traversal<Edge, Edge> get_g_EX11X(final Object e11Id);
+
+    public abstract Traversal<Edge, Edge> get_g_EXlistXe7_e11XX(final Edge e7, final Edge e11);
+
+    public abstract Traversal<Edge, Edge> get_g_EXe7_e11X(final Edge e7, final Edge e11);
 
     public abstract Traversal<Vertex, Edge> get_g_VX1X_outE(final Object v1Id);
 
@@ -160,6 +170,13 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         assert_g_v1_out(traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VXv1X_out() {
+        final Traversal<Vertex, Vertex> traversal = get_g_VXv1X_out(convertToVertex(graph, "marko"));
+        assert_g_v1_out(traversal);
+    }
+
     private void assert_g_v1_out(final Traversal<Vertex, Vertex> traversal) {
         printTraversalForm(traversal);
         int counter = 0;
@@ -235,6 +252,40 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         final Object edgeId = convertToEdgeId("josh", "created", "lop");
         final Traversal<Edge, Edge> traversal = get_g_EX11X(edgeId);
         assert_g_EX11X(edgeId, traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_EXe11X() {
+        final Edge edge = convertToEdge(graph, "josh", "created", "lop");
+        final Traversal<Edge, Edge> traversal = get_g_EXe11X(edge);
+        assert_g_EX11X(edge.id(), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_EXe7_e11X() {
+        final Edge e7 = convertToEdge(graph, "marko", "knows", "vadas");
+        final Edge e11 = convertToEdge(graph, "josh", "created", "lop");
+        final Traversal<Edge, Edge> traversal = get_g_EXe7_e11X(e7,e11);
+
+        printTraversalForm(traversal);
+        final List<Edge> list = traversal.toList();
+        assertEquals(2, list.size());
+        assertThat(list, containsInAnyOrder(e7, e11));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_EXlistXe7_e11XX() {
+        final Edge e7 = convertToEdge(graph, "marko", "knows", "vadas");
+        final Edge e11 = convertToEdge(graph, "josh", "created", "lop");
+        final Traversal<Edge, Edge> traversal = get_g_EXlistXe7_e11XX(e7,e11);
+
+        printTraversalForm(traversal);
+        final List<Edge> list = traversal.toList();
+        assertEquals(2, list.size());
+        assertThat(list, containsInAnyOrder(e7, e11));
     }
 
     @Test
@@ -615,6 +666,11 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         }
 
         @Override
+        public Traversal<Vertex, Vertex> get_g_VXv1X_out(final Vertex v1) {
+            return g.V(v1).out();
+        }
+
+        @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out(final Object v1Id) {
             return g.V(v1Id).out();
         }
@@ -742,6 +798,21 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Edge, Edge> get_g_EX11X(final Object e11Id) {
             return g.E(e11Id);
+        }
+
+        @Override
+        public Traversal<Edge, Edge> get_g_EXe11X(final Edge e11) {
+            return g.E(e11);
+        }
+
+        @Override
+        public Traversal<Edge, Edge> get_g_EXlistXe7_e11XX(final Edge e7, final Edge e11) {
+            return g.E(Arrays.asList(e7, e11));
+        }
+
+        @Override
+        public Traversal<Edge, Edge> get_g_EXe7_e11X(final Edge e7, final Edge e11) {
+            return g.E(e7, e11);
         }
 
         @Override

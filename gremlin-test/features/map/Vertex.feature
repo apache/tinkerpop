@@ -61,6 +61,20 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
       | v[ripple] |
       | v[peter] |
 
+  Scenario: g_VXv1X_out
+    Given the modern graph
+    And using the parameter v1 defined as "v[marko]"
+    And the traversal of
+      """
+      g.V(v1).out()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[vadas] |
+      | v[lop] |
+      | v[josh] |
+
   Scenario: g_VX1X_out
     Given the modern graph
     And using the parameter v1Id defined as "v[marko].id"
@@ -139,6 +153,45 @@ Feature: Step - V(), E(), out(), in(), both(), inE(), outE(), bothE()
     When iterated to list
     Then the result should be unordered
       | result |
+      | e[josh-created->lop] |
+
+  Scenario: g_EXe11X
+    Given the modern graph
+    And using the parameter e11 defined as "e[josh-created->lop]"
+    And the traversal of
+    """
+      g.E(e11)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | e[josh-created->lop] |
+
+  Scenario: g_EXe7_e11X
+    Given the modern graph
+    And using the parameter e7 defined as "e[marko-knows->vadas]"
+    And using the parameter e11 defined as "e[josh-created->lop]"
+    And the traversal of
+    """
+      g.E(e7,e11)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | e[marko-knows->vadas] |
+      | e[josh-created->lop] |
+
+  Scenario: g_EXlistXe7_e11XX
+    Given the modern graph
+    And using the parameter l defined as "l[e[marko-knows->vadas],e[josh-created->lop]]"
+    And the traversal of
+    """
+      g.E(l)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | e[marko-knows->vadas] |
       | e[josh-created->lop] |
 
   Scenario: g_VX1X_outE
