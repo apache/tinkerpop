@@ -27,7 +27,14 @@ import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.apache.tinkerpop.gremlin.util.NumberHelper.*;
+import static org.apache.tinkerpop.gremlin.util.NumberHelper.add;
+import static org.apache.tinkerpop.gremlin.util.NumberHelper.compare;
+import static org.apache.tinkerpop.gremlin.util.NumberHelper.div;
+import static org.apache.tinkerpop.gremlin.util.NumberHelper.getHighestCommonNumberClass;
+import static org.apache.tinkerpop.gremlin.util.NumberHelper.max;
+import static org.apache.tinkerpop.gremlin.util.NumberHelper.min;
+import static org.apache.tinkerpop.gremlin.util.NumberHelper.mul;
+import static org.apache.tinkerpop.gremlin.util.NumberHelper.sub;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

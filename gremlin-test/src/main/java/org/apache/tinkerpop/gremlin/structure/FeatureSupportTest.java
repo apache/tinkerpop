@@ -39,8 +39,13 @@ import org.slf4j.LoggerFactory;
 import java.util.Date;
 import java.util.UUID;
 
-import static org.apache.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.*;
-import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.*;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.FEATURE_ANY_IDS;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.FEATURE_NUMERIC_IDS;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.FEATURE_STRING_IDS;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.FEATURE_UUID_IDS;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_THREADED_TRANSACTIONS;
+import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.hamcrest.CoreMatchers.is;
@@ -983,13 +988,13 @@ public class FeatureSupportTest {
         }
 
         @Test
-        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = VertexFeatures.FEATURE_ANY_IDS)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ANY_IDS)
         public void shouldNotSupportAnyIdsUnlessUserSuppliedIdsIsSupportedOnVertex() {
             assertTrue(vertexFeatures.supportsUserSuppliedIds());
         }
 
         @Test
-        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = EdgeFeatures.FEATURE_ANY_IDS)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = FEATURE_ANY_IDS)
         public void shouldNotSupportAnyIdsUnlessUserSuppliedIdsIsSupportedOnEdge() {
             assertTrue(edgeFeatures.supportsUserSuppliedIds());
         }
