@@ -25,7 +25,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
 import static org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent.Pick.none;
 
 /**

@@ -22,11 +22,11 @@ import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
-import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Ignore;
@@ -41,8 +41,17 @@ import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.Operator.sum;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
-import static org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.choose;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.constant;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.sack;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.union;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.valueMap;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -55,7 +64,7 @@ public class TinkerGraphPlayTest {
     public void testPlay8() throws Exception {
         Graph graph = TinkerFactory.createModern();
         GraphTraversalSource g = graph.traversal();
-        System.out.println(g.withSack(1).inject(1).repeat(__.sack((BiFunction)sum).by(__.constant(1))).times(10).emit().math("sin _").by(sack()).toList());
+        System.out.println(g.withSack(1).inject(1).repeat(sack((BiFunction)sum).by(constant(1))).times(10).emit().math("sin _").by(sack()).toList());
     }
 
     @Test
@@ -138,8 +147,8 @@ public class TinkerGraphPlayTest {
         GraphTraversalSource g = graph.traversal();
         final List<Supplier<GraphTraversal<?, ?>>> traversals = Arrays.asList(
                 () -> g.V().out().as("v").match(
-                        __.as("v").outE().count().as("outDegree"),
-                        __.as("v").inE().count().as("inDegree")).select("v", "outDegree", "inDegree").by(valueMap()).by().by().local(union(select("v"), select("inDegree", "outDegree")).unfold().fold())
+                        as("v").outE().count().as("outDegree"),
+                        as("v").inE().count().as("inDegree")).select("v", "outDegree", "inDegree").by(valueMap()).by().by().local(union(select("v"), select("inDegree", "outDegree")).unfold().fold())
         );
 
         traversals.forEach(traversal -> {
@@ -182,12 +191,12 @@ public class TinkerGraphPlayTest {
         GraphTraversalSource g = graph.traversal().withComputer(Computer.compute().workers(1));
 
         System.out.println(g.V().match(
-                __.as("a").in("sungBy").as("b"),
-                __.as("a").in("sungBy").as("c"),
-                __.as("b").out("writtenBy").as("d"),
-                __.as("c").out("writtenBy").as("e"),
-                __.as("d").has("name", "George_Harrison"),
-                __.as("e").has("name", "Bob_Marley")).select("a").count().next());
+                as("a").in("sungBy").as("b"),
+                as("a").in("sungBy").as("c"),
+                as("b").out("writtenBy").as("d"),
+                as("c").out("writtenBy").as("e"),
+                as("d").has("name", "George_Harrison"),
+                as("e").has("name", "Bob_Marley")).select("a").count().next());
 
 //        System.out.println(g.V().out("created").
 //                project("a","b").
@@ -215,12 +224,12 @@ public class TinkerGraphPlayTest {
 
         for (final GraphTraversalSource source : Arrays.asList(g, h)) {
             System.out.println(source.V().match(
-                    __.as("a").in("sungBy").as("b"),
-                    __.as("a").in("sungBy").as("c"),
-                    __.as("b").out("writtenBy").as("d"),
-                    __.as("c").out("writtenBy").as("e"),
-                    __.as("d").has("name", "George_Harrison"),
-                    __.as("e").has("name", "Bob_Marley")).select("a").count().profile().next());
+                    as("a").in("sungBy").as("b"),
+                    as("a").in("sungBy").as("c"),
+                    as("b").out("writtenBy").as("d"),
+                    as("c").out("writtenBy").as("e"),
+                    as("d").has("name", "George_Harrison"),
+                    as("e").has("name", "Bob_Marley")).select("a").count().profile().next());
         }
     }
 
