@@ -26,9 +26,10 @@ const assert = require('assert');
 const { Vertex } = require('../../lib/structure/graph');
 const { traversal } = require('../../lib/process/anonymous-traversal');
 const { GraphTraversalSource } = require('../../lib/process/graph-traversal');
-const { GraphTraversal } = require('../../lib/process/graph-traversal');
+const { GraphTraversal, statics } = require('../../lib/process/graph-traversal');
 const Bytecode = require('../../lib/process/bytecode');
 const helper = require('../helper');
+const __ = statics;
 
 let connection;
 
@@ -111,6 +112,18 @@ describe('Traversal', function () {
         assert.ok(list);
         assert.strictEqual(list.length, 1);
         assert.strictEqual(list[0], 'marko');
+      });
+    });
+  });
+  describe("more complex traversals", function() {
+    it('should return paths of value maps', function() {
+      var g = traversal().withRemote(connection);
+      return g.V(1).out().in_().limit(1).path().by(__.valueMap('name')).toList().then(function (list) {
+        assert.ok(list);
+        assert.strictEqual(list.length, 1);
+        assert.strictEqual(list[0].objects[0].get('name')[0], "marko");
+        assert.strictEqual(list[0].objects[1].get('name')[0], "lop");
+        assert.strictEqual(list[0].objects[2].get('name')[0], "marko");
       });
     });
   });
