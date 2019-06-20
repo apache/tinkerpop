@@ -55,7 +55,7 @@ import java.util.stream.Stream;
  */
 public class DriverRemoteAcceptor implements RemoteAcceptor {
     public static final int NO_TIMEOUT = 0;
-    public static final String USER_AGENT_PREFIX = "Gremlin Console/";
+    public static final String USER_AGENT = "Gremlin Console/" + Gremlin.version();
 
     private Cluster currentCluster;
     private Client currentClient;
@@ -211,7 +211,7 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
             if (timeout > NO_TIMEOUT)
                 options.timeout(timeout);
 
-            options.userAgent(USER_AGENT_PREFIX + Gremlin.version());
+            options.userAgent(USER_AGENT);
 
             final ResultSet rs = this.currentClient.submit(gremlin, options.create());
             final List<Result> results = rs.all().get();
