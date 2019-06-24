@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.junit.Test;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -155,6 +156,22 @@ public class GraphBinaryMessageSerializerV1Test {
         config.put(GraphBinaryMessageSerializerV1.TOKEN_BUILDER, "org.apache.tinkerpop.gremlin.driver.ser.binary.NonExistentClass");
 
         serializer.configure(config, null);
+    }
+
+    @Test
+    public void shouldToStringSerialize() throws SerializationException {
+        final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1();
+        final Map<String,Object> conf = new HashMap<String,Object>() {{
+            put(GraphBinaryMessageSerializerV1.TOKEN_SERIALIZE_RESULT_TO_STRING, true);
+        }};
+        serializer.configure(conf, Collections.emptyMap());
+
+        final ResponseMessage messageWithUnexpectedType = ResponseMessage.build(UUID.randomUUID()).
+                result(java.awt.Color.RED).create();
+        final ByteBuf buffer = serializer.serializeResponseAsBinary(messageWithUnexpectedType, allocator);
+        final ResponseMessage deserialized = serializer.deserializeResponse(buffer);
+
+        assertEquals(java.awt.Color.RED.toString(), deserialized.getResult().getData());
     }
 
     private static void assertResponseEquals(ResponseMessage expected, ResponseMessage actual) {
