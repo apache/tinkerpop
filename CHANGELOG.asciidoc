@@ -44,6 +44,8 @@ This release also includes changes from <<release-3-3-8, 3.3.8>>.
 * Modified `NumberHelper` to better ignore `Double.NaN` in `min()` and `max()` comparisons.
 * Bump to Netty 4.1.36.
 * Bump to Groovy 2.5.7.
+* Added `userAgent` to RequestOptions. Gremlin Console sends `Gremlin Console/<version>` as the `userAgent`.
+* Fixed DriverRemoteConnection ignoring `with` `Token` options when multiple were set.
 
 [[release-3-4-2]]
 === TinkerPop 3.4.2 (Release Date: May 28, 2019)
