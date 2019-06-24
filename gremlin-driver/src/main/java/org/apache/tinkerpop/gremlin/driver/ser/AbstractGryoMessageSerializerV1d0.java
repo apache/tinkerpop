@@ -47,7 +47,9 @@ import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.4.3, replaced by {@link GraphBinaryMessageSerializerV1}.
  */
+@Deprecated
 public abstract class AbstractGryoMessageSerializerV1d0 extends AbstractMessageSerializer {
     private GryoMapper gryoMapper;
     private ThreadLocal<Kryo> kryoThreadLocal = new ThreadLocal<Kryo>() {
