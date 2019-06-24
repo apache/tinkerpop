@@ -29,12 +29,6 @@ def globals = [:]
 // Note that the name of the key in the "global" map is unimportant.
 globals << [hook : [
   onStartUp: { ctx ->
-    TinkerFactory.generateClassic(classic)
-    TinkerFactory.generateModern(modern)
-    TinkerFactory.generateTheCrew(crew)
-    TinkerFactory.generateGratefulDead(grateful)
-    TinkerFactory.generateKitchenSink(sink)
-
     // a wild bit of trickery here. the process tests use an INTEGER id manager when LoadGraphWith is used. this
     // closure provides a way to to manually override the various id managers for TinkerGraph - the graph on which
     // all of these remote tests are executed - so that the tests will pass nicely. an alternative might have been
@@ -56,6 +50,12 @@ globals << [hook : [
       allowSetOfIdManager(it, "edgeIdManager")
       allowSetOfIdManager(it, "vertexPropertyIdManager")
     }
+    TinkerFactory.generateClassic(classic)
+    TinkerFactory.generateModern(modern)
+    TinkerFactory.generateTheCrew(crew)
+    TinkerFactory.generateGratefulDead(grateful)
+    TinkerFactory.generateKitchenSink(sink)
+
   }
 ] as LifeCycleHook]
 

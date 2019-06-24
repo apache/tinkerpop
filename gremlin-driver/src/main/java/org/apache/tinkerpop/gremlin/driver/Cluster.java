@@ -180,11 +180,7 @@ public final class Cluster {
                 .port(settings.port)
                 .path(settings.path)
                 .enableSsl(settings.connectionPool.enableSsl)
-                .trustCertificateChainFile(settings.connectionPool.trustCertChainFile)
                 .keepAliveInterval(settings.connectionPool.keepAliveInterval)
-                .keyCertChainFile(settings.connectionPool.keyCertChainFile)
-                .keyFile(settings.connectionPool.keyFile)
-                .keyPassword(settings.connectionPool.keyPassword)
                 .keyStore(settings.connectionPool.keyStore)
                 .keyStorePassword(settings.connectionPool.keyStorePassword)
                 .keyStoreType(settings.connectionPool.keyStoreType)
@@ -480,21 +476,6 @@ public final class Cluster {
         final Settings.ConnectionPoolSettings connectionPoolSettings = connectionPoolSettings();
         final SslContextBuilder builder = SslContextBuilder.forClient();
 
-        if (connectionPoolSettings.trustCertChainFile != null) {
-            logger.warn("Using deprecated SSL trustCertChainFile support");
-            builder.trustManager(new File(connectionPoolSettings.trustCertChainFile));
-        }
-
-        if (null != connectionPoolSettings.keyCertChainFile && null != connectionPoolSettings.keyFile) {
-            logger.warn("Using deprecated SSL keyFile support");
-            final File keyCertChainFile = new File(connectionPoolSettings.keyCertChainFile);
-            final File keyFile = new File(connectionPoolSettings.keyFile);
-
-            // note that keyPassword may be null here if the keyFile is not
-            // password-protected.
-            builder.keyManager(keyCertChainFile, keyFile, connectionPoolSettings.keyPassword);
-        }
-
         // Build JSSE SSLContext
         try {
 
@@ -572,10 +553,6 @@ public final class Cluster {
         private long keepAliveInterval = Connection.KEEP_ALIVE_INTERVAL;
         private String channelizer = Channelizer.WebSocketChannelizer.class.getName();
         private boolean enableSsl = false;
-        private String trustCertChainFile = null;
-        private String keyCertChainFile = null;
-        private String keyFile = null;
-        private String keyPassword = null;
         private String keyStore = null;
         private String keyStorePassword = null;
         private String trustStore = null;
@@ -670,53 +647,12 @@ public final class Cluster {
         }
 
         /**
-         * File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and
-         * SSL is enabled, the default {@link TrustManager} will be used.
-         * @deprecated As of release 3.2.10, replaced by {@link #trustStore}
-         */
-        @Deprecated
-        public Builder trustCertificateChainFile(final String certificateChainFile) {
-            this.trustCertChainFile = certificateChainFile;
-            return this;
-        }
-
-        /**
          * Length of time in milliseconds to wait on an idle connection before sending a keep-alive request. This
          * setting is only relevant to {@link Channelizer} implementations that return {@code true} for
          * {@link Channelizer#supportsKeepAlive()}.  Set to zero to disable this feature.
          */
         public Builder keepAliveInterval(final long keepAliveInterval) {
             this.keepAliveInterval = keepAliveInterval;
-            return this;
-        }
-
-        /**
-         * The X.509 certificate chain file in PEM format.
-         * @deprecated As of release 3.2.10, replaced by {@link #keyStore}
-         */
-        @Deprecated
-        public Builder keyCertChainFile(final String keyCertChainFile) {
-            this.keyCertChainFile = keyCertChainFile;
-            return this;
-        }
-
-        /**
-         * The PKCS#8 private key file in PEM format.
-         * @deprecated As of release 3.2.10, replaced by {@link #keyStore}
-         */
-        @Deprecated
-        public Builder keyFile(final String keyFile) {
-            this.keyFile = keyFile;
-            return this;
-        }
-
-        /**
-         * The password of the {@link #keyFile}, or {@code null} if it's not password-protected.
-         * @deprecated As of release 3.2.10, replaced by {@link #keyStorePassword}
-         */
-        @Deprecated
-        public Builder keyPassword(final String keyPassword) {
-            this.keyPassword = keyPassword;
             return this;
         }
 
@@ -1068,10 +1004,6 @@ public final class Cluster {
             connectionPoolSettings.reconnectInterval = builder.reconnectInterval;
             connectionPoolSettings.resultIterationBatchSize = builder.resultIterationBatchSize;
             connectionPoolSettings.enableSsl = builder.enableSsl;
-            connectionPoolSettings.trustCertChainFile = builder.trustCertChainFile;
-            connectionPoolSettings.keyCertChainFile = builder.keyCertChainFile;
-            connectionPoolSettings.keyFile = builder.keyFile;
-            connectionPoolSettings.keyPassword = builder.keyPassword;
             connectionPoolSettings.keyStore = builder.keyStore;
             connectionPoolSettings.keyStorePassword = builder.keyStorePassword;
             connectionPoolSettings.trustStore = builder.trustStore;

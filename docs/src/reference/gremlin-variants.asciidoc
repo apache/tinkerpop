@@ -297,7 +297,7 @@ GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cli
 ----
 
 The `IoRegistry` tells the serializer what classes from the graph provider to auto-register during serialization.
-Gremlin Server roughly uses this same approach when it configures it's serializers, so using this same model will
+Gremlin Server roughly uses this same approach when it configures its serializers, so using this same model will
 ensure compatibility when making requests. Obviously, it is possible to switch to GraphSON or GraphBinary by building
 the appropriate `MessageSerializer` (`GraphSONMessageSerializerV3d0` or `GraphBinaryMessageSerializerV1` respectively)
 in the same way and building that into the `Cluster` object.
@@ -862,6 +862,7 @@ returns a `concurrent.futures.Future` that resolves to a list when it is complet
 <9> Verify that the all results have been read and stream is closed.
 <10> Close client and underlying pool connections.
 
+[[gremlin-python-dsl]]
 === Domain Specific Languages
 
 Writing a Gremlin <<dsl,Domain Specific Language>> (DSL) in Python simply requires direct extension of several classes:
@@ -1085,6 +1086,7 @@ If the remote system has authentication and SSL enabled, then the `GremlinServer
 include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=submittingScriptsWithAuthentication]
 ----
 
+[[gremlin-net-dsl]]
 === Domain Specific Languages
 
 Developing a <<dsl,Domain Specific Language>> (DSL) for .Net is most easily implemented using
@@ -1203,6 +1205,7 @@ provide most of the typical functionality required to use Gremlin:
 ----
 const gremlin = require('gremlin');
 const traversal = gremlin.process.AnonymousTraversalSource.traversal;
+const __ = gremlin.process.statics;
 const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
 const column = gremlin.process.traversal.column
 const direction = gremlin.process.traversal.direction
@@ -1236,4 +1239,64 @@ const result2 = await client.submit('g.V().hasLabel(label).tail(n)', { label: 'p
 for (const vertex of result2) {
   console.log(vertex.id);
 }
+----
+
+[[gremlin-javascript-dsl]]
+=== Domain Specific Languages
+
+Developing Gremlin DSLs in JavaScript largely requires extension of existing core classes with use of standalone
+functions for anonymous traversal spawning. The pattern is demonstrated in the following example:
+
+[source,javascript]
+----
+class SocialTraversal extends GraphTraversal {
+  constructor(graph, traversalStrategies, bytecode) {
+    super(graph, traversalStrategies, bytecode);
+  }
+
+  aged(age) {
+    return this.has('person', 'age', age);
+  }
+}
+
+class SocialTraversalSource extends GraphTraversalSource {
+  constructor(graph, traversalStrategies, bytecode) {
+    super(graph, traversalStrategies, bytecode, SocialTraversalSource, SocialTraversal);
+  }
+
+  person(name) {
+    return this.V().has('person', 'name', name);
+  }
+}
+
+function anonymous() {
+  return new SocialTraversal(null, null, new Bytecode());
+}
+
+function aged(age) {
+  return anonymous().aged(age);
+}
+----
+
+`SocialTraversal` extends the core `GraphTraversal` class and has a three argument constructor which is immediately
+proxied to the `GraphTraversal` constructor. New DSL steps are then added to this class using available steps to
+construct the underlying traversal to execute as demonstrated in the `aged()` step.
+
+The `SocialTraversal` is spawned from a `SocialTraversalSource` which is extended from `GraphTraversalSource`. Steps
+added here are meant to be start steps. In the above case, the `person()` start step find a "person" vertex to begin
+the traversal from.
+
+Typically, steps that are made available on a `GraphTraversal` (i.e. SocialTraversal in this example) should also be
+made available as spawns for anonymous traversals. The recommendation is that these steps be exposed in the module
+as standalone functions. In the example above, the standalone `aged()` step creates an anonymous traversal through
+an `anonymous()` utility function. The method for creating these standalone functions can be handled in other ways if
+desired.
+
+To use the DSL, simply initialize the `g` as follows:
+
+[source,javascript]
+----
+const g = traversal(SocialTraversalSource).withRemote(connection);
+g.person('marko').aged(29).values('name').toList().
+  then(names => console.log(names));
 ----

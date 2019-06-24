@@ -413,7 +413,7 @@ determine how to read and write data to and from Hadoop. For instance, `gremlin.
 
 ===== GraphFilterAware Interface
 
-<<graph-filter,Graph filters>> by OLAP processors to only pull a subgraph of the full graph from the graph data source. For instance, the
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graph-filter[Graph filters] by OLAP processors to only pull a subgraph of the full graph from the graph data source. For instance, the
 example below constructs a `GraphFilter` that will only pull the "knows"-graph amongst people into the `GraphComputer`
 for processing.
 
@@ -436,8 +436,8 @@ if (configuration.containsKey(Constants.GREMLIN_HADOOP_GRAPH_FILTER))
 
 A graph system provider's `OutputFormat` should implement the `PersistResultGraphAware` interface which
 determines which persistence options are available to the user. For the standard file-based `OutputFormats` provided
-by Hadoop-Gremlin (e.g. <<gryo-io-format,`GryoOutputFormat`>>, <<graphson-io-format,`GraphSONOutputFormat`>>,
-and <<script-io-format,`ScriptInputOutputFormat`>>) `ResultGraph.ORIGINAL` is not supported as the original graph
+by Hadoop-Gremlin (e.g. link:++http://tinkerpop.apache.org/docs/x.y.z/reference/#gryo-io-format++[`GryoOutputFormat`], link:++http://tinkerpop.apache.org/docs/x.y.z/reference/#graphson-io-format++[`GraphSONOutputFormat`],
+and link:++http://tinkerpop.apache.org/docs/x.y.z/reference/#script-io-format++[`ScriptInputOutputFormat`]) `ResultGraph.ORIGINAL` is not supported as the original graph
 data files are not random access and are, in essence, immutable. Thus, these file-based `OutputFormats` only support
 `ResultGraph.NEW` which creates a copy of the data specified by the `Persist` enum.
 
@@ -765,6 +765,16 @@ TIP: When running the `gremlin-test` suite against your implementation, you may 
 environment variable, depending on your project layout. Some tests require this to find a writable directory for
 creating temporary files. The value is typically set to the project build directory. For example using the Maven
 SureFire Plugin, this is done via the configuration argLine with `-Dbuild.dir=${project.build.directory}`.
+
+==== Checking resource leak
+TinkerPop query engine retrieves data by interfacing with the provider using iterators. These iterators (depending
+on the provider) may hold up resources in the underlying storage layer and hence, it is critical to close them after
+the query is finished.
+
+TinkerPop provides you with the ability to test for such resource leaks by checking for leaks when you run the
+Gremlin-Test suites against your implementation. To enable this leak detection, providers should increment the
+`StoreIteratorCounter` whenever a reource is opened and decrement it when it is closed. A reference implementation
+is provided with TinkerGraph as `TinkerGraphIterator.java`.
 
 === Accessibility via GremlinPlugin
 
@@ -1098,7 +1108,7 @@ request would have sent back thirty traversers.
 
 The full iteration of a `Traversal` is thus left to the client. It must interpret the bulk on the `Traverser` and
 unroll it to represent the actual number of times it exists when iterated. The unrolling is typically handled
-directly within TinkerPop's `RemoteGraph` implementations.
+directly within TinkerPop's remote traversal implementations.
 
 One of the important aspects of the Traversal OpProcessor is that it enables the user to not only get the results of
 the `Traversal` but also the side-effects that it produces. When the `Traversal` is submitted with the "bytecode"

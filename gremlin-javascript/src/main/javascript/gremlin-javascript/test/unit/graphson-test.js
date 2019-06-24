@@ -26,6 +26,7 @@ const assert = require('assert');
 const graph = require('../../lib/structure/graph');
 const t = require('../../lib/process/traversal.js');
 const gs = require('../../lib/structure/io/graph-serializer.js');
+const utils = require('../../lib/utils');
 const GraphSONReader = gs.GraphSONReader;
 const GraphSONWriter = gs.GraphSONWriter;
 const P = t.P;
@@ -127,6 +128,58 @@ describe('GraphSONReader', function () {
     assert.strictEqual(result.objects[0].label, 'person');
     assert.strictEqual(result.objects[1].label, 'software');
   });
+  it('should parse paths from GraphSON3', function () {
+    const obj = {
+      "@type" : "g:Path",
+      "@value" : {
+        "labels" : {
+          "@type" : "g:List",
+          "@value" : [ {
+            "@type" : "g:Set",
+            "@value" : [ ]
+          }, {
+            "@type" : "g:Set",
+            "@value" : [ ]
+          }, {
+            "@type" : "g:Set",
+            "@value" : [ ]
+          } ]
+        },
+        "objects" : {
+          "@type" : "g:List",
+          "@value" : [ {
+            "@type" : "g:Vertex",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int32",
+                "@value" : 1
+              },
+              "label" : "person"
+            }
+          }, {
+            "@type" : "g:Vertex",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int32",
+                "@value" : 10
+              },
+              "label" : "software"
+            }
+          }, "lop" ]
+        }
+      }
+    };
+    const reader = new GraphSONReader(obj);
+    const result = reader.read(obj);
+    assert.ok(result);
+    assert.ok(result.objects);
+    assert.ok(result.labels);
+    assert.strictEqual(result.objects[2], 'lop');
+    assert.ok(result.objects[0] instanceof graph.Vertex);
+    assert.ok(result.objects[1] instanceof graph.Vertex);
+    assert.strictEqual(result.objects[0].label, 'person');
+    assert.strictEqual(result.objects[1].label, 'software');
+  });
 });
 describe('GraphSONWriter', function () {
   it('should write numbers', function () {
@@ -158,6 +211,11 @@ describe('GraphSONWriter', function () {
     assert.strictEqual(writer.write(true), 'true');
     assert.strictEqual(writer.write(false), 'false');
   });
+  it('should write list values', function () {
+    const writer = new GraphSONWriter();
+    const expected = JSON.stringify({"@type": "g:List", "@value": ["marko"]});
+    assert.strictEqual(writer.write(["marko"]), expected);
+  });
   it('should write enum values', function () {
     const writer = new GraphSONWriter();
     assert.strictEqual(writer.write(t.cardinality.set), '{"@type":"g:Cardinality","@value":"set"}');
@@ -169,5 +227,17 @@ describe('GraphSONWriter', function () {
         {"@type":"g:P","@value":{"predicate":"gt","value":"c"}}]}},
       {"@type":"g:P","@value":{"predicate":"neq","value":"d"}}]}});
     assert.strictEqual(writer.write(P.lt("b").or(P.gt("c")).and(P.neq("d"))), expected);
+  });
+  it('should write P.within single', function () {
+    const writer = new GraphSONWriter();
+    const expected = JSON.stringify({"@type": "g:P", "@value": {"predicate": "within", "value": {"@type": "g:List", "@value": [ "marko" ]}}});
+    assert.strictEqual(writer.write(P.within(["marko"])), expected);
+    assert.strictEqual(writer.write(P.within("marko")), expected);
+  });
+  it('should write P.within multiple', function () {
+    const writer = new GraphSONWriter();
+    const expected = JSON.stringify({"@type": "g:P", "@value": {"predicate": "within", "value": {"@type": "g:List", "@value": [ "marko", "josh"]}}});
+    assert.strictEqual(writer.write(P.within(["marko","josh"])), expected);
+    assert.strictEqual(writer.write(P.within("marko","josh")), expected);
   });
 });

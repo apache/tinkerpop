@@ -29,7 +29,9 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.gremlin.util.iterator.StoreIteratorCounter;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
@@ -66,6 +68,7 @@ public abstract class AbstractGremlinTest {
     protected GraphTraversalSource g;
     protected Configuration config;
     protected GraphProvider graphProvider;
+    protected boolean shouldTestIteratorLeak;
 
     @Rule
     public TestName name = new TestName();
@@ -78,6 +81,8 @@ public abstract class AbstractGremlinTest {
         final LoadGraphWith.GraphData loadGraphWithData = null == loadGraphWith ? null : loadGraphWith.value();
         final Set<FeatureRequirement> featureRequirementSet = getFeatureRequirementsForTest(testMethod, loadGraphWiths);
 
+        this.shouldTestIteratorLeak =  !this.getClass().isAnnotationPresent(IgnoreIteratorLeak.class);
+
         graphProvider = GraphManager.getGraphProvider();
 
         // pre-check if available from graph provider to avoid graph creation
@@ -87,6 +92,10 @@ public abstract class AbstractGremlinTest {
         }
 
         graphProvider.getTestListener().ifPresent(l -> l.onTestStart(this.getClass(), name.getMethodName()));
+
+        // Reset the counter for open iterators by this test
+        StoreIteratorCounter.INSTANCE.reset();
+
         config = graphProvider.standardGraphConfiguration(this.getClass(), name.getMethodName(), loadGraphWithData);
 
         // this should clear state from a previously unfinished test. since the graph does not yet exist,
@@ -139,6 +148,11 @@ public abstract class AbstractGremlinTest {
     @After
     public void tearDown() throws Exception {
         if (null != graphProvider) {
+            if (shouldTestIteratorLeak) {
+                long openItrCount = StoreIteratorCounter.INSTANCE.getOpenIteratorCount();
+                Assert.assertEquals("Iterator leak detected. Open iterator count=" + openItrCount, 0, openItrCount);
+            }
+
             graphProvider.getTestListener().ifPresent(l -> l.onTestEnd(this.getClass(), name.getMethodName()));
 
             // GraphProvider that has implemented the clear method must check null for graph and config.
@@ -187,7 +201,7 @@ public abstract class AbstractGremlinTest {
 
     public Vertex convertToVertex(final Graph graph, final String vertexName) {
         // all test graphs have "name" as a unique id which makes it easy to hardcode this...works for now
-        return graphProvider.traversal(graph).V().has("name", vertexName).next();
+        return graphProvider.traversal(graph).V().has("name", vertexName).toList().get(0);
     }
 
     public GraphTraversal<Vertex, Object> convertToVertexPropertyId(final String vertexName, final String vertexPropertyKey) {
@@ -203,12 +217,16 @@ public abstract class AbstractGremlinTest {
         return (GraphTraversal<Vertex, VertexProperty<Object>>) graphProvider.traversal(graph).V().has("name", vertexName).properties(vertexPropertyKey);
     }
 
+    public Edge convertToEdge(final Graph graph, final String outVertexName, String edgeLabel, final String inVertexName) {
+        return graphProvider.traversal(graph).V().has("name", outVertexName).outE(edgeLabel).as("e").inV().has("name", inVertexName).<Edge>select("e").toList().get(0);
+    }
+
     public Object convertToEdgeId(final String outVertexName, String edgeLabel, final String inVertexName) {
         return convertToEdgeId(graph, outVertexName, edgeLabel, inVertexName);
     }
 
     public Object convertToEdgeId(final Graph graph, final String outVertexName, String edgeLabel, final String inVertexName) {
-        return graphProvider.traversal(graph).V().has("name", outVertexName).outE(edgeLabel).as("e").inV().has("name", inVertexName).<Edge>select("e").next().id();
+        return convertToEdge(graph, outVertexName, edgeLabel, inVertexName).id();
     }
 
     /**
@@ -274,7 +292,7 @@ public abstract class AbstractGremlinTest {
         assertThat(actual, instanceOf(expected.getClass()));
     }
 
-    public static void verifyUniqueStepIds(final Traversal.Admin<?, ?> traversal) {
+    private static void verifyUniqueStepIds(final Traversal.Admin<?, ?> traversal) {
         AbstractGremlinTest.verifyUniqueStepIds(traversal, 0, new HashSet<>());
     }
 

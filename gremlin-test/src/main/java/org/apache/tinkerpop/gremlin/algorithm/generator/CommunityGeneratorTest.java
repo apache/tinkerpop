@@ -22,6 +22,8 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
+import org.apache.tinkerpop.gremlin.IgnoreIteratorLeak;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -39,16 +41,20 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(Enclosed.class)
+@IgnoreIteratorLeak
 public class CommunityGeneratorTest {
     private static final Logger logger = LoggerFactory.getLogger(CommunityGeneratorTest.class);
 
     @RunWith(Parameterized.class)
+    @IgnoreIteratorLeak
     public static class DifferentDistributionsTest extends AbstractGeneratorTest {
 
         @Parameterized.Parameters(name = "test({0},{1},{2})")
@@ -96,10 +102,13 @@ public class CommunityGeneratorTest {
                 afterLoadGraphWith(graph1);
                 communityGeneratorTest(graph1, () -> 987654321l);
 
-                assertTrue(IteratorUtils.count(graph.edges()) > 0);
-                assertTrue(IteratorUtils.count(graph.vertices()) > 0);
-                assertTrue(IteratorUtils.count(graph1.edges()) > 0);
-                assertTrue(IteratorUtils.count(graph1.vertices()) > 0);
+                final GraphTraversalSource g = graph.traversal();
+                final GraphTraversalSource g1 = graph1.traversal();
+
+                assertTrue(g.E().count().next() > 0);
+                assertTrue(g.V().count().next() > 0);
+                assertTrue(g1.E().count().next() > 0);
+                assertTrue(g1.V().count().next() > 0);
 
                 // don't assert counts of edges...those may be the same, just ensure that not every vertex has the
                 // same number of edges between graphs.  that should make it harder for the test to fail.
@@ -126,11 +135,14 @@ public class CommunityGeneratorTest {
                 afterLoadGraphWith(graph1);
                 communityGeneratorTest(graph1, () -> 123456789l);
 
-                assertTrue(IteratorUtils.count(graph.edges()) > 0);
-                assertTrue(IteratorUtils.count(graph.vertices()) > 0);
-                assertTrue(IteratorUtils.count(graph1.edges()) > 0);
-                assertTrue(IteratorUtils.count(graph1.vertices()) > 0);
-                assertEquals(IteratorUtils.count(graph.edges()), IteratorUtils.count(graph1.edges()));
+                final GraphTraversalSource g = graph.traversal();
+                final GraphTraversalSource g1 = graph1.traversal();
+
+                assertTrue(g.E().count().next() > 0);
+                assertTrue(g.V().count().next() > 0);
+                assertTrue(g1.E().count().next() > 0);
+                assertTrue(g1.V().count().next() > 0);
+                assertEquals(g.E().count().next(), g.E().count().next());
 
                 // ensure that every vertex has the same number of edges between graphs.
                 assertTrue(same(graph, graph1));
@@ -160,6 +172,7 @@ public class CommunityGeneratorTest {
         private void communityGeneratorTest(final Graph graph, final Supplier<Long> seedGenerator) throws Exception {
             boolean generated = false;
             double localCrossPcent = crossPcent;
+            GraphTraversalSource g = graph.traversal();
             while (!generated) {
                 try {
                     final CommunityGenerator generator = CommunityGenerator.build(graph)
@@ -174,13 +187,13 @@ public class CommunityGeneratorTest {
                             .create();
                     final int numEdges = generator.generate();
                     assertTrue(numEdges > 0);
-                    tryCommit(graph, g -> assertEquals(new Long(numEdges), new Long(IteratorUtils.count(g.edges()))));
+                    tryCommit(graph, graphVar -> assertEquals(new Long(numEdges), graphVar.traversal().E().count().next()));
                     generated = true;
                 } catch (IllegalArgumentException iae) {
                     localCrossPcent = localCrossPcent - 0.005d;
                     generated = localCrossPcent < 0d;
 
-                    graph.vertices().forEachRemaining(Vertex::remove);
+                    g.V().drop().iterate();
                     tryCommit(graph);
                     afterLoadGraphWith(graph);
 

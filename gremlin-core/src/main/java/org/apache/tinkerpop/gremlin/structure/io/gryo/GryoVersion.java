@@ -343,7 +343,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LazyBarrierStrategy.class, 150));
             add(GryoTypeReg.of(MatchPredicateStrategy.class, 151));
             add(GryoTypeReg.of(OrderLimitStrategy.class, 152));
-            add(GryoTypeReg.of(OptionsStrategy.class, 187));
+            add(GryoTypeReg.of(OptionsStrategy.class, 187, new JavaSerializer()));
             add(GryoTypeReg.of(PathProcessorStrategy.class, 153));
             add(GryoTypeReg.of(PathRetractionStrategy.class, 154));
             add(GryoTypeReg.of(CountStrategy.class, 155));
@@ -579,7 +579,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LazyBarrierStrategy.class, 150));
             add(GryoTypeReg.of(MatchPredicateStrategy.class, 151));
             add(GryoTypeReg.of(OrderLimitStrategy.class, 152));
-            add(GryoTypeReg.of(OptionsStrategy.class, 187));
+            add(GryoTypeReg.of(OptionsStrategy.class, 187, new JavaSerializer()));
             add(GryoTypeReg.of(PathProcessorStrategy.class, 153));
             add(GryoTypeReg.of(PathRetractionStrategy.class, 154));
             add(GryoTypeReg.of(CountStrategy.class, 155));

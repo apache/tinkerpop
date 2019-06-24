@@ -15,6 +15,19 @@
 # specific language governing permissions and limitations
 # under the License.
 
+###############################################################################
+# IMPORTANT
+###############################################################################
+# Changes to this file need to be appropriately replicated to
+#
+# - docker/gremlin-server/gremlin-server-integration.yaml
+# - docker/gremlin-server/gremlin-server-integration-secure.yaml
+#
+# Without such changes, the test docker server can't be started for independent
+# testing with Gremlin Language Variants. Note this file's relation to
+# gremlin-server/src/test/resources/scripts/test-server-start.groovy
+###############################################################################
+
 host: localhost
 port: 45940
 scriptEvaluationTimeout: 30000

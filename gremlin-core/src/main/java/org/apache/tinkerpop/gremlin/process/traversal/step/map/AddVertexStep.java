@@ -48,7 +48,7 @@ public class AddVertexStep<S> extends MapStep<S, Vertex>
 
     public AddVertexStep(final Traversal.Admin traversal, final String label) {
         super(traversal);
-        this.parameters.set(this, T.label, label);
+        this.parameters.set(this, T.label, null == label ? Vertex.DEFAULT_LABEL : label);
     }
 
     public AddVertexStep(final Traversal.Admin traversal, final Traversal.Admin<S,String> vertexLabelTraversal) {

@@ -78,6 +78,19 @@ Feature: Step - match()
       | m[{"a":"v[marko]","b":"v[josh]", "c":"v[ripple]"}] |
       | m[{"a":"v[marko]","b":"v[josh]", "c":"v[lop]"}] |
 
+  Scenario: g_V_matchXb_created_c__a_knows_bX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().match(__.as("b").out("created").as("c"),
+                  __.as("a").out("knows").as("b"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"v[marko]","b":"v[josh]", "c":"v[ripple]"}] |
+      | m[{"a":"v[marko]","b":"v[josh]", "c":"v[lop]"}] |
+
   Scenario: g_V_matchXa_created_b__b_0created_cX_whereXa_neq_cX_selectXa_cX
     Given the modern graph
     And the traversal of

@@ -69,9 +69,11 @@ public final class Host {
     }
 
     void makeUnavailable(final Function<Host, Boolean> reconnect) {
-        isAvailable = false;
 
-        logger.warn("Marking {} as unavailable. Trying to reconnect.", this);
+        if (isAvailable)
+            logger.warn("Marking {} as unavailable. Trying to reconnect.", this);
+
+        isAvailable = false;
 
         // only do a connection re-attempt if one is not already in progress
         if (retryInProgress.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {

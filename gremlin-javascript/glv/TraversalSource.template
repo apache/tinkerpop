@@ -158,7 +158,24 @@ class P {
   or(arg) {
     return new P('or', this, arg);
   }
-<% pmethods.each{ method -> %>
+
+  static within(...args) {
+    if (args.length === 1 && Array.isArray(args[0])) {
+      return new P("within", args[0], null);
+    } else {
+      return new P("within", args, null);
+    }
+  }
+
+  static without(...args) {
+    if (args.length === 1 && Array.isArray(args[0])) {
+      return new P("without", args[0], null);
+    } else {
+      return new P("without", args, null);
+    }
+  }
+
+<% pmethods.findAll{!(it in ["within","without"])}.each{ method -> %>
   /** @param {...Object} args */
   static <%= toJs.call(method) %>(...args) {
     return createP('<%= method %>', args);

@@ -33,5 +33,9 @@ public interface GremlinShellEnvironment {
 
     public void println(final String line);
 
+    public default void errPrintln(final String line) {
+        println(line);
+    }
+
     public <T> T execute(final String line);
 }

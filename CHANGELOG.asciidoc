@@ -16,15 +16,80 @@ limitations under the License.
 ////
 = TinkerPop3 CHANGELOG
 
+== TinkerPop 3.5.0 (The Sleeping Gremlin: No. 18 Entr'acte symphonique)
+
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-sleeping-beauty.png[width=185]
+
+[[release-3-5-0]]
+=== TinkerPop 3.5.0 (Release Date: NOT OFFICIALLY RELEASED YET)
+
+This release also includes changes from <<release-3-4-3, 3.4.3>>.
+
+* Modified `null` handling in mutations to be consistent for a new `Vertex` as well as update to an existing one.
+* Removed previously deprecated `TraversalSource.withRemote()`.
+* Removed previously deprecated SSL settings: `keyCertChainFile`, `keyFile`, `keyPassword` and `trustCertChainFile` and related infrastructure.
+* Removed previously deprecated `BulkDumperVertexProgram` and `BulkLoaderVertexProgram`.
+
 == TinkerPop 3.4.0 (Avant-Gremlin Construction #3 for Theremin and Flowers)
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
+[[release-3-4-3]]
+=== TinkerPop 3.4.3 (Release Date: NOT OFFICIALLY RELEASED YET)
+
+This release also includes changes from <<release-3-3-8, 3.3.8>>.
+
+* Improved error messaging on timeouts returned to the console from `:>`.
+* Added a Docker command to start Gremlin Server with the standard GLV test configurations.
+* Modified `NumberHelper` to better ignore `Double.NaN` in `min()` and `max()` comparisons.
+* Bump to Netty 4.1.36.
+* Bump to Groovy 2.5.7.
+
 [[release-3-4-2]]
-=== TinkerPop 3.4.2 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.4.2 (Release Date: May 28, 2019)
 
 This release also includes changes from <<release-3-3-7, 3.3.7>>.
 
+* Allow a `Traversal` to know what `TraversalSource` it spawned from.
+* Fixed problem with connection pool sizing and retry.
+* Added status attribute for warnings to be returned to the client.
+* Modified Gremlin Console to report warning status attributes.
+* Changed `:>` in Gremlin Console to submit the client-side timeout on each request.
+* Provided method to override the request identifier with `RequestOptions`.
+* Added option to set per-request settings on a `Traversal` submitted via `Bytecode`.
+* Fixed the Gryo registration for `OptionsStrategy` as it was not serializing state properly.
+
+==== Bugs
+
+* TINKERPOP-2090 After running backend for a day or so System.IO.IOException keep throwing
+* TINKERPOP-2112 Folding in property() step is not being optimally performed
+* TINKERPOP-2180 gremlin.sh doesn't work when directories contain spaces
+* TINKERPOP-2183 InterpreterModeASTTransformation needs to be more specific about what it transforms
+* TINKERPOP-2189 ConnectedComponent test assumes fixed order of vertices
+* TINKERPOP-2194 Enforcing an order on properties in one test method of ChooseTest
+* TINKERPOP-2196 PartitionStrategy with includeMetaProperties(true) can't add labeled vertex
+* TINKERPOP-2198 Documentation for Store contradicts itself
+* TINKERPOP-2199 within step does not work with more than two parameters with python
+* TINKERPOP-2200 AddEdgeStartStep used DetachedFactory.detach instead of EventStrategy.detach
+* TINKERPOP-2204 Client receives no response on failed request
+* TINKERPOP-2206 Certain types in javascript don't appear to serialize with a GraphSON type
+* TINKERPOP-2212 Path is not detaching properly under certain conditions
+* TINKERPOP-2217 Race condition in Gremlin.net driver connection
+
+==== Improvements
+
+* TINKERPOP-2089 Javascript DSL support
+* TINKERPOP-2179 Have o.a.t.g.driver.ser.SerializationException extend IOException
+* TINKERPOP-2181 Allow ctrl+c to break out of a long running process in Gremlin Console
+* TINKERPOP-2182 Remove gperfutils from Gremlin Console *(breaking)*
+* TINKERPOP-2190 Document Gremlin sanitization best practices
+* TINKERPOP-2191 Implement EdgeLabelVerificationStrategy
+* TINKERPOP-2193 Allow a Traversal to know what TraversalSource it spawned from
+* TINKERPOP-2203 Bind the console timeout to the request timeout
+* TINKERPOP-2208 Include inject() in DSLs generated with Java annotation processor
+* TINKERPOP-2211 Provide API to add per request option for a bytecode
+* TINKERPOP-2216 Consider adding conventional status attribute key for warnings
+* TINKERPOP-2219 Upgrade Netty version
 
 [[release-3-4-1]]
 === TinkerPop 3.4.1 (Release Date: March 18, 2019)
@@ -344,12 +409,67 @@ This release also includes changes from <<release-3-3-4, 3.3.4>> and <<release-3
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-mozart.png[width=185]
 
-[[release-3-3-7]]
-=== TinkerPop 3.3.7 (Release Date: NOT OFFICIALLY RELEASED YET)
+[[release-3-3-8]]
+=== TinkerPop 3.3.8 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-* Ensure `gremlin.sh` works when directories contain spaces
+* Bump to Groovy 2.4.17.
+* Bump to Jackson 2.9.9.
+* Improved error messaging when an attempt is made to serialize multi-properties to GraphML.
+* Improved exception and messaging for gt/gte/lt/lte when one of the object isn't a `Comparable`.
+* Added test infrastructure to check for storage iterator leak.
+* Fixed multiple iterator leaks in query processor.
+* Improved error messaging for invalid inputs to the TinkerGraph `IdManager` instances.
+* Changed the `reverse()` of `desc` and `asc` on `Order` to not use the deprecated `decr` and `incr`.
+* Fixed bug in `MatchStep` where the correct was not properly determined.
+* Fixed bug where client/server exception mismatch when server throw StackOverflowError
+* Prevent exception when closing a session that doesn't exist
+
+[[release-3-3-7]]
+=== TinkerPop 3.3.7 (Release Date: May 28, 2019)
+
+* Developed DSL pattern for gremlin-javascript.
+* Generated uberjar artifact for Gremlin Console.
+* Improved folding of `property()` step into related mutating steps.
+* Added `inject()` to steps generated on the DSL `TraversalSource`.
+* Removed `gperfutils` dependencies from Gremlin Console.
+* Fixed `PartitionStrategy` when setting vertex label and having `includeMetaProperties` configured to `true`.
+* Ensure `gremlin.sh` works when directories contain spaces.
+* Prevented client-side hangs if metadata generation fails on the server.
+* Fixed bug with `EventStrategy` in relation to `addE()` where detachment was not happening properly.
+* Ensured that `gremlin.sh` works when directories contain spaces.
+* Fixed bug in detachment of `Path` where embedded collection objects would prevent that process.
 * Enabled `ctrl+c` to interrupt long running processes in Gremlin Console.
-* Implemented `EdgeLabelVerificationStrategy`
+* Quieted "host unavailable" warnings for both the driver and Gremlin Console.
+* Fixed construction of `g:List` from arrays in gremlin-javascript.
+* Fixed bug in `GremlinGroovyScriptEngine` interpreter mode around class definitions.
+* Implemented `EdgeLabelVerificationStrategy`.
+* Fixed behavior of `P` for `within()` and `without()` in GLVs to be consistent with Java when using varargs.
+* Cleared the input buffer after exceptions in Gremlin Console.
+* Added parameter to configure the `processor` in the gremlin-javascript `client` constructor.
+* Bumped `Netty` to 4.1.32.
+
+==== Bugs
+
+* TINKERPOP-2112 Folding in property() step is not being optimally performed
+* TINKERPOP-2180 gremlin.sh doesn't work when directories contain spaces
+* TINKERPOP-2183 InterpreterModeASTTransformation needs to be more specific about what it transforms
+* TINKERPOP-2194 Enforcing an order on properties in one test method of ChooseTest
+* TINKERPOP-2196 PartitionStrategy with includeMetaProperties(true) can't add labeled vertex
+* TINKERPOP-2198 Documentation for Store contradicts itself
+* TINKERPOP-2199 within step does not work with more than two parameters with python
+* TINKERPOP-2200 AddEdgeStartStep used DetachedFactory.detach instead of EventStrategy.detach
+* TINKERPOP-2204 Client receives no response on failed request
+* TINKERPOP-2206 Certain types in javascript don't appear to serialize with a GraphSON type
+* TINKERPOP-2212 Path is not detaching properly under certain conditions
+
+==== Improvements
+
+* TINKERPOP-2089 Javascript DSL support
+* TINKERPOP-2179 Have o.a.t.g.driver.ser.SerializationException extend IOException
+* TINKERPOP-2181 Allow ctrl+c to break out of a long running process in Gremlin Console
+* TINKERPOP-2182 Remove gperfutils from Gremlin Console *(breaking)*
+* TINKERPOP-2191 Implement EdgeLabelVerificationStrategy
+* TINKERPOP-2211 Provide API to add per request option for a bytecode
 
 [[release-3-3-6]]
 === TinkerPop 3.3.6 (Release Date: March 18, 2019)

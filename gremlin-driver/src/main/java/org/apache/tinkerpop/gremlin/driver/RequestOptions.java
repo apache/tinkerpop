@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Options that can be supplied on a per request basis.
@@ -37,12 +38,18 @@ public final class RequestOptions {
     private final Map<String, Object> parameters;
     private final Integer batchSize;
     private final Long timeout;
+    private final UUID overrideRequestId;
 
     private RequestOptions(final Builder builder) {
         this.aliases = builder.aliases;
         this.parameters = builder.parameters;
         this.batchSize = builder.batchSize;
         this.timeout = builder.timeout;
+        this.overrideRequestId = builder.overrideRequestId;
+    }
+
+    public Optional<UUID> getOverrideRequestId() {
+        return Optional.ofNullable(overrideRequestId);
     }
 
     public Optional<Map<String, String>> getAliases() {
@@ -70,6 +77,7 @@ public final class RequestOptions {
         private Map<String, Object> parameters = null;
         private Integer batchSize = null;
         private Long timeout = null;
+        private UUID overrideRequestId = null;
 
         /**
          * The aliases to set on the request.
@@ -90,6 +98,14 @@ public final class RequestOptions {
                 parameters = new HashMap<>();
 
             parameters.put(name, value);
+            return this;
+        }
+
+        /**
+         * Overrides the identifier to be sent on the request.
+         */
+        public Builder overrideRequestId(final UUID overrideRequestId) {
+            this.overrideRequestId = overrideRequestId;
             return this;
         }
 

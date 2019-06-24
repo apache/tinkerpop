@@ -23,6 +23,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationUtils;
 import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.IgnoreIteratorLeak;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
@@ -110,6 +111,7 @@ import static org.junit.Assume.assumeNoException;
         "graphDoesNotSupportProvidedGraphComputer"
 })
 @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
+@IgnoreIteratorLeak
 public class GraphComputerTest extends AbstractGremlinProcessTest {
 
     @Test

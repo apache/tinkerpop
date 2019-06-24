@@ -82,6 +82,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static org.apache.tinkerpop.gremlin.driver.Tokens.ARGS_SCRIPT_EVAL_TIMEOUT;
 import static org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin.Compilation.COMPILE_STATIC;
 import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE;
 import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE_CONNECTION_CLASS;
@@ -96,16 +98,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 /**
  * Integration tests for server-side settings and processing.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegrationTest {
-    private static final String PEM_SERVER_KEY = "src/test/resources/server.key.pk8";
-    private static final String PEM_SERVER_CRT = "src/test/resources/server.crt";
-    private static final String PEM_CLIENT_KEY = "src/test/resources/client.key.pk8";
-    private static final String PEM_CLIENT_CRT = "src/test/resources/client.crt";
+
     private Level previousLogLevel;
 
     private Log4jRecordingAppender recordingAppender = null;
@@ -189,36 +189,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.ssl = new Settings.SslSettings();
                 settings.ssl.enabled = true;
                 settings.ssl.overrideSslContext(createServerSslContext());
-                break;
-            case "shouldEnableSslAndClientCertificateAuthWithLegacyPem":
-                settings.ssl = new Settings.SslSettings();
-                settings.ssl.enabled = true;
-                settings.ssl.needClientAuth = ClientAuth.REQUIRE;
-                settings.ssl.keyCertChainFile = PEM_SERVER_CRT;
-                settings.ssl.keyFile = PEM_SERVER_KEY;
-                settings.ssl.keyPassword = KEY_PASS;
-                // Trust the client
-                settings.ssl.trustCertChainFile = PEM_CLIENT_CRT;
-                break;
-            case "shouldEnableSslAndClientCertificateAuthAndFailWithoutCertWithLegacyPem":
-                settings.ssl = new Settings.SslSettings();
-                settings.ssl.enabled = true;
-                settings.ssl.needClientAuth = ClientAuth.REQUIRE;
-                settings.ssl.keyCertChainFile = PEM_SERVER_CRT;
-                settings.ssl.keyFile = PEM_SERVER_KEY;
-                settings.ssl.keyPassword = KEY_PASS;
-                // Trust the client
-                settings.ssl.trustCertChainFile = PEM_CLIENT_CRT;
-                break;
-            case "shouldEnableSslAndClientCertificateAuthAndFailWithoutTrustedClientCertWithLegacyPem":
-                settings.ssl = new Settings.SslSettings();
-                settings.ssl.enabled = true;
-                settings.ssl.needClientAuth = ClientAuth.REQUIRE;
-                settings.ssl.keyCertChainFile = PEM_SERVER_CRT;
-                settings.ssl.keyFile = PEM_SERVER_KEY;
-                settings.ssl.keyPassword = KEY_PASS;
-                // Trust ONLY the server cert
-                settings.ssl.trustCertChainFile = PEM_SERVER_CRT;
                 break;
             case "shouldEnableSslAndClientCertificateAuthWithPkcs12":
                 settings.ssl = new Settings.SslSettings();
@@ -412,6 +382,34 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    public void shouldTimeOutRemoteTraversalWithPerRequestOption() {
+        final GraphTraversalSource g = traversal().withRemote(conf);
+
+        try {
+            // tests sleeping thread
+            g.with(ARGS_SCRIPT_EVAL_TIMEOUT, 500L).inject(1).sideEffect(Lambda.consumer("Thread.sleep(10000)")).iterate();
+            fail("This traversal should have timed out");
+        } catch (Exception ex) {
+            final Throwable t = ex.getCause();
+            assertThat(t, instanceOf(ResponseException.class));
+            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+        }
+
+        // make a graph with a cycle in it to force a long run traversal
+        graphGetter.get().traversal().addV("person").as("p").addE("self").to("p").iterate();
+
+        try {
+            // tests an "unending" traversal
+            g.with(ARGS_SCRIPT_EVAL_TIMEOUT, 500L).V().repeat(__.out()).until(__.outE().count().is(0)).iterate();
+            fail("This traversal should have timed out");
+        } catch (Exception ex) {
+            final Throwable t = ex.getCause();
+            assertThat(t, instanceOf(ResponseException.class));
+            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+        }
+    }
+
+    @Test
     public void shouldProduceProperExceptionOnTimeout() throws Exception {
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect(name.getMethodName());
@@ -556,54 +554,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try {
             client.submit("'test'").one();
             fail("Should throw exception because ssl is enabled on the server but not on client");
-        } catch(Exception x) {
-            final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldEnableSslAndClientCertificateAuthWithLegacyPem() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(true)
-                .keyCertChainFile(PEM_CLIENT_CRT).keyFile(PEM_CLIENT_KEY)
-                .keyPassword(KEY_PASS).trustCertificateChainFile(PEM_SERVER_CRT).create();
-        final Client client = cluster.connect();
-
-        try {
-            assertEquals("test", client.submit("'test'").one().getString());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldEnableSslAndClientCertificateAuthAndFailWithoutCertWithLegacyPem() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_SERVER_KEY).keyStorePassword(KEY_PASS).sslSkipCertValidation(true).create();
-        final Client client = cluster.connect();
-
-        try {
-            client.submit("'test'").one();
-            fail("Should throw exception because ssl client auth is enabled on the server but client does not have a cert");
-        } catch(Exception x) {
-            final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldEnableSslAndClientCertificateAuthAndFailWithoutTrustedClientCertWithLegacyPem() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(true)
-                .keyCertChainFile(PEM_CLIENT_CRT).keyFile(PEM_CLIENT_KEY)
-                .keyPassword(KEY_PASS).trustCertificateChainFile(PEM_SERVER_CRT).create();
-        final Client client = cluster.connect();
-
-        try {
-            client.submit("'test'").one();
-            fail("Should throw exception because ssl client auth is enabled on the server but does not trust client's cert");
         } catch(Exception x) {
             final Throwable root = ExceptionUtils.getRootCause(x);
             assertThat(root, instanceOf(TimeoutException.class));
@@ -962,7 +912,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldReceiveFailureTimeOutOnScriptEvalUsingOverride() throws Exception {
         try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
             final RequestMessage msg = RequestMessage.build("eval")
-                    .addArg(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT, 100L)
+                    .addArg(ARGS_SCRIPT_EVAL_TIMEOUT, 100L)
                     .addArg(Tokens.ARGS_GREMLIN, "Thread.sleep(3000);'some-stuff-that-should not return'")
                     .create();
             final List<ResponseMessage> responses = client.submit(msg);

@@ -21,6 +21,30 @@ package org.apache.tinkerpop.gremlin.driver.ser.binary;
 import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 
+/**
+ * Reads a value from a buffer using the {@link TypeSerializer} instances configured in the
+ * {@link TypeSerializerRegistry}.
+ *
+ * <p>
+ *     This class exposes two different methods to read a value from a buffer: {@link GraphBinaryReader#read(ByteBuf)}
+ *     and {@link GraphBinaryReader#readValue(ByteBuf, Class, boolean)}:
+ *     <ul>
+ *         <li>{@code read()} method expects a value in fully-qualified format, composed of
+ *         <code>{type_code}{type_info}{value_flag}{value}</code>.</li>
+ *         <li>{@code readValue()} method expects a <code>{value_flag}{value}</code> when a value is nullable and
+ *         only <code>{value}</code> when a value is not nullable.
+ *         </li>
+ *     </ul>
+ * </p>
+ *
+ * <p>
+ *     The {@link GraphBinaryReader} should be used to read a nested known type from a {@link TypeSerializer}.
+ *     For example, if a POINT type is composed by two doubles representing the position in the x and y axes, a
+ *     {@link TypeSerializer} for POINT type should use the provided {@link GraphBinaryReader} instance to read those
+ *     two double values. As x and y values are expected to be provided as non-nullable doubles, the method
+ *     {@code readValue()} should be used: {@code readValue(buffer, Double.class, false)}
+ * </p>
+ */
 public class GraphBinaryReader {
     private final TypeSerializerRegistry registry;
 
@@ -34,6 +58,12 @@ public class GraphBinaryReader {
 
     /**
      * Reads a value for an specific type.
+     *
+     * <p>When the value is nullable, the reader expects the <code>{value_flag}{value}</code> to be contained in the
+     * buffer.</p>
+     *
+     * <p>When the value is not nullable, the reader expects only the <code>{value}</code> to be contained in the
+     * buffer.</p>
      */
     public <T> T readValue(final ByteBuf buffer, final Class<T> type, final boolean nullable) throws SerializationException {
         if (buffer == null) {

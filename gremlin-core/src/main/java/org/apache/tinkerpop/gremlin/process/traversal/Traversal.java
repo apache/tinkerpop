@@ -50,6 +50,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 
 /**
  * A {@link Traversal} represents a directed walk over a {@link Graph}.
@@ -180,6 +181,8 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
                 TraversalHelper.addToCollection(collection, traverser.get(), traverser.bulk());
             }
         } catch (final NoSuchElementException ignored) {
+        } finally {
+            CloseableIterator.closeIterator(this);
         }
         return collection;
     }
@@ -203,6 +206,8 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
                 endStep.next();
             }
         } catch (final NoSuchElementException ignored) {
+        } finally {
+            CloseableIterator.closeIterator(this);
         }
         return (Traversal<A, B>) this;
     }
@@ -255,6 +260,8 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
             }
         } catch (final NoSuchElementException ignore) {
 
+        }  finally {
+            CloseableIterator.closeIterator(this);
         }
     }
 
@@ -266,6 +273,8 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
             }
         } catch (final NoSuchElementException ignore) {
 
+        }  finally {
+            CloseableIterator.closeIterator(this);
         }
     }
 
@@ -491,7 +500,19 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
          */
         public boolean isLocked();
 
+        /**
+         * Gets the {@link Graph} instance associated to this {@link Traversal}.
+         */
         public Optional<Graph> getGraph();
+
+        /**
+         * Gets the {@link TraversalSource} that spawned the {@link Traversal} instance initially if present. This
+         * {@link TraversalSource} should have spawned from the associated {@link Graph} returned from
+         * {@link #getGraph()}.
+         */
+        public default Optional<TraversalSource> getTraversalSource() {
+            return Optional.empty();
+        }
 
         public void setGraph(final Graph graph);
 

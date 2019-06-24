@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.4.2-SNAPSHOT</version>
+        <version>3.5.0-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-dotnet</artifactId>
     <name>Apache TinkerPop :: Gremlin.Net</name>
@@ -124,7 +124,7 @@ limitations under the License.
                     <groupId>org.eobjects.build</groupId>
                     <artifactId>dotnet-maven-plugin</artifactId>
                     <extensions>true</extensions>
-                    <version>0.23</version>
+                    <version>0.24</version>
                 </plugin>
             </plugins>
         </pluginManagement>

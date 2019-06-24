@@ -339,7 +339,12 @@ class TestGraphSONWriter(object):
             self.graphson_writer.writeObject(P.lt("b").or_(P.gt("c")).and_(P.neq("d"))))
 
         result = {'@type': 'g:P', '@value': {'predicate':'within','value': [{"@type": "g:Int32", "@value": 1},{"@type": "g:Int32", "@value": 2}]}}
-        assert result == json.loads(self.graphson_writer.writeObject(P.within([1,2])))
+        assert result == json.loads(self.graphson_writer.writeObject(P.within([1, 2])))
+        assert result == json.loads(self.graphson_writer.writeObject(P.within(1, 2)))
+
+        result = {'@type': 'g:P', '@value': {'predicate':'within','value': [{"@type": "g:Int32", "@value": 1}]}}
+        assert result == json.loads(self.graphson_writer.writeObject(P.within([1])))
+        assert result == json.loads(self.graphson_writer.writeObject(P.within(1)))
 
     def test_strategies(self):
         # we have a proxy model for now given that we don't want to have to have g:XXX all registered on the Gremlin traversal machine (yet)

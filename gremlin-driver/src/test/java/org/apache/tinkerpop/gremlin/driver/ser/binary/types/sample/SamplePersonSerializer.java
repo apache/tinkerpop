@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.CustomTypeSerializer;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 /**
@@ -51,13 +52,29 @@ public final class SamplePersonSerializer implements CustomTypeSerializer<Sample
             throw new SerializationException("{custom_type_info} should not be provided for this custom type");
         }
 
-        final byte valueFlag = buffer.readByte();
-        if ((valueFlag & 1) == 1) {
-            return null;
+        return readValue(buffer, context, true);
+    }
+
+    @Override
+    public SamplePerson readValue(final ByteBuf buffer, final GraphBinaryReader context, final boolean nullable) throws SerializationException {
+        if (nullable) {
+            final byte valueFlag = buffer.readByte();
+            if ((valueFlag & 1) == 1) {
+                return null;
+            }
         }
 
-        // Read the buffer int, no necessary in this case
-        buffer.readInt();
+        // Read the byte length of the value bytes
+        final int valueLength = buffer.readInt();
+
+        if (valueLength <= 0) {
+            throw new SerializationException(String.format("Unexpected value length: %d", valueLength));
+        }
+
+        if (valueLength > buffer.readableBytes()) {
+            throw new SerializationException(
+                String.format("Not enough readable bytes: %d (expected %d)", valueLength, buffer.readableBytes()));
+        }
 
         final String name = context.readValue(buffer, String.class, false);
         final Date birthDate = context.readValue(buffer, Date.class, false);
@@ -66,35 +83,34 @@ public final class SamplePersonSerializer implements CustomTypeSerializer<Sample
     }
 
     @Override
-    public SamplePerson readValue(final ByteBuf buffer, final GraphBinaryReader context, final boolean nullable) throws SerializationException {
-        throw new SerializationException("SamplePersonSerializer can not read a value without type information");
-    }
-
-    @Override
     public void write(final SamplePerson value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
-        if (value == null) {
-            buffer.writeBytes(typeInfoBuffer);
-            context.writeValueFlagNull(buffer);
-            return;
-        }
-
+        // Write {custom type info}, {value_flag} and {value}
         buffer.writeBytes(typeInfoBuffer);
-        context.writeValueFlagNone(buffer);
 
-        final ByteBuf valueBuffer = buffer.alloc().buffer();
-        try {
-            context.writeValue(value.getName(), valueBuffer, false);
-            context.writeValue(value.getBirthDate(), valueBuffer, false);
-
-            buffer.writeInt(valueBuffer.readableBytes());
-            buffer.writeBytes(valueBuffer);
-        } finally {
-            valueBuffer.release();
-        }
+        writeValue(value, buffer, context, true);
     }
 
     @Override
     public void writeValue(final SamplePerson value, final ByteBuf buffer, final GraphBinaryWriter context, final boolean nullable) throws SerializationException {
-        throw new SerializationException("SamplePersonSerializer can not write a value without type information");
+        if (value == null) {
+            if (!nullable) {
+                throw new SerializationException("Unexpected null value when nullable is false");
+            }
+
+            context.writeValueFlagNull(buffer);
+            return;
+        }
+
+        if (nullable) {
+            context.writeValueFlagNone(buffer);
+        }
+
+        final String name = value.getName();
+
+        // value_length = name_byte_length + name_bytes + long
+        buffer.writeInt(4 + name.getBytes(StandardCharsets.UTF_8).length + 8);
+
+        context.writeValue(name, buffer, false);
+        context.writeValue(value.getBirthDate(), buffer, false);
     }
 }

@@ -216,20 +216,24 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                     final Parameters parameters = ((Parameterizing) step).getParameters();
                     final Map<Object, List<Object>> params = parameters.getRaw();
                     params.forEach((k, v) -> {
-                        final List<Step> addPropertyStepsToAppend = new ArrayList<>(v.size());
-                        final VertexProperty.Cardinality cardinality = vertexFeatures.getCardinality((String) k);
-                        v.forEach(o -> {
-                            final AddPropertyStep addPropertyStep = new AddPropertyStep(traversal, cardinality, k, o);
-                            addPropertyStep.configure(partitionKey, writePartition);
-                            addPropertyStepsToAppend.add(addPropertyStep);
 
-                            // need to remove the parameter from the AddVertex/StartStep because it's now being added
-                            // via the AddPropertyStep
-                            parameters.remove(k);
-                        });
+                        // need to filter out T based keys
+                        if (k instanceof String) {
+                            final List<Step> addPropertyStepsToAppend = new ArrayList<>(v.size());
+                            final VertexProperty.Cardinality cardinality = vertexFeatures.getCardinality((String) k);
+                            v.forEach(o -> {
+                                final AddPropertyStep addPropertyStep = new AddPropertyStep(traversal, cardinality, k, o);
+                                addPropertyStep.configure(partitionKey, writePartition);
+                                addPropertyStepsToAppend.add(addPropertyStep);
 
-                        Collections.reverse(addPropertyStepsToAppend);
-                        addPropertyStepsToAppend.forEach(s -> TraversalHelper.insertAfterStep(s, step, traversal));
+                                // need to remove the parameter from the AddVertex/StartStep because it's now being added
+                                // via the AddPropertyStep
+                                parameters.remove(k);
+                            });
+
+                            Collections.reverse(addPropertyStepsToAppend);
+                            addPropertyStepsToAppend.forEach(s -> TraversalHelper.insertAfterStep(s, step, traversal));
+                        }
                     });
                 }
             }

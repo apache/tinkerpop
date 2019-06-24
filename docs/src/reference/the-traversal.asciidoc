@@ -1722,8 +1722,8 @@ g.withSideEffect('x',10).V().values('age').math('_ / x')
 g.withSack(1).V(1).repeat(sack(sum).by(constant(1))).times(10).emit().sack().math('sin _')
 ----
 
-The operators supported by the calculator include: `*`, `+`, `\`, `^`, and `%`.
-Furthermore, the following built in functions are provided:
+The operators supported by the calculator include: `*`, `+`, `/`, `^`, and `%`. Furthermore, the following built in
+functions are provided:
 
 * `abs`: absolute value
 * `acos`: arc cosine
@@ -2910,11 +2910,13 @@ stores objects in its side-effect collection as they pass through.
 
 [gremlin-groovy,modern]
 ----
-g.V().aggregate('x').limit(1).cap('x')
+g.V().aggregate('x').limit(1).cap('x')                               
 g.V().store('x').limit(1).cap('x')
+g.withoutStrategies(EarlyLimitStrategy).V().store('x').limit(1).cap('x')
 ----
 
-It is interesting to note that there are two results in the `store()` side-effect even though the interval
+It is important to note that `EarlyLimitStrategy` introduced in 3.3.5 alters the behavior of `store()`. Without that
+strategy (which is installed by default), there are two results in the `store()` side-effect even though the interval
 selection is for 1 object. Realize that when the second object is on its way to the `range()` filter (i.e. `[0..1]`),
 it passes through `store()` and thus, stored before filtered.
 
@@ -4018,5 +4020,5 @@ g.V().hasLabel('person').has('name','marko').
 social.persons("marko").youngestFriendsAge()
 ----
 
-Learn more about hwo to implement these DSLs in the <<gremlin-drivers-variants,Gremlin Language Variants>> section
+Learn more about how to implement these DSLs in the <<gremlin-drivers-variants,Gremlin Language Variants>> section
 specific to the programming language of interest.

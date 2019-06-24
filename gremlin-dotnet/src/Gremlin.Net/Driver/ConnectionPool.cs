@@ -62,7 +62,7 @@ namespace Gremlin.Net.Driver
         private async Task EnsurePoolIsPopulatedAsync()
         {
             // The pool could have been (partially) empty because of connection problems. So, we need to populate it again.
-            if (_poolSize >= NrConnections) return;
+            if (_poolSize <= NrConnections) return;
             var poolState = Interlocked.CompareExchange(ref _poolState, PoolPopulationInProgress, PoolIdle);
             if (poolState == PoolPopulationInProgress) return;
             try

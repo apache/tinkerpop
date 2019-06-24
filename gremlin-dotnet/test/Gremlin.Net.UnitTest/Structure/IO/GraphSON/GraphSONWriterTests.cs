@@ -52,6 +52,14 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             new object[] { 3 }
         };
 
+        /// <summary>
+        /// Parameters for each collections test supporting multiple versions of GraphSON
+        /// </summary>
+        public static IEnumerable<object[]> VersionsNotSupportingCollections => new []
+        {
+            new object[] { 2 }
+        };
+
         private GraphSONWriter CreateGraphSONWriter(int version)
         {
             if (version == 3)
@@ -308,9 +316,9 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
                                    "{\"@type\":\"g:Int64\",\"@value\":200},\"b\"]}";
             Assert.Equal(expectedGraphSON, serializedGraphSON);
         }
-
-        [Theory, MemberData(nameof(Versions))]
-        public void ShouldSerializePredicateWithTwoValues(int version)
+        
+        [Theory, MemberData(nameof(VersionsNotSupportingCollections))]
+        public void ShouldSerializePredicateWithMultipleValuesAsJSONArray(int version)
         {
             var writer = CreateGraphSONWriter(version);
             var predicate = new P("within", new List<int> {1, 2});
@@ -320,6 +328,32 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var expectedGraphSON =
                 "{\"@type\":\"g:P\",\"@value\":{\"predicate\":\"within\",\"value\":[{\"@type\":\"g:Int32\",\"@value\":1},{\"@type\":\"g:Int32\",\"@value\":2}]}}";
             Assert.Equal(expectedGraphSON, serializedPredicate);
+            
+            predicate = P.Within(1, 2);
+
+            serializedPredicate = writer.WriteObject(predicate);
+
+            Assert.Equal(expectedGraphSON, serializedPredicate);
+        }
+
+        [Theory, MemberData(nameof(VersionsSupportingCollections))]
+        public void ShouldSerializePredicateWithMultipleValues(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+            var predicate = P.Within(new List<int> {1, 2});
+
+            var serializedPredicate = writer.WriteObject(predicate);
+
+            var expectedGraphSON =
+                "{\"@type\":\"g:P\",\"@value\":{\"predicate\":\"within\",\"value\":{\"@type\":\"g:List\",\"@value\":[{\"@type\":\"g:Int32\",\"@value\":1},{\"@type\":\"g:Int32\",\"@value\":2}]}}}";
+            Assert.Equal(expectedGraphSON, serializedPredicate);
+
+            predicate = P.Within(1, 2);
+
+            serializedPredicate = writer.WriteObject(predicate);
+
+            Assert.Equal(expectedGraphSON, serializedPredicate);
+
         }
 
         [Theory, MemberData(nameof(Versions))]

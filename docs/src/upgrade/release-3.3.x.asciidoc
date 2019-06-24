@@ -21,13 +21,29 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Gremlin Symphony #40 in G Minor*
 
-== TinkerPop 3.3.7
+== TinkerPop 3.3.8
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.3.8/CHANGELOG.asciidoc#release-3-3-8[changelog] for a complete list of all the modifications that are part of this release.
+
+
+== TinkerPop 3.3.7
+
+*Release Date: May 28, 2019*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.3.7/CHANGELOG.asciidoc#release-3-3-7[changelog] for a complete list of all the modifications that are part of this release.
 
 == Upgrading for Users
+
+==== JavaScript DSL Pattern
+
+Gremlin DSL developers had to rely on monkey patching to build a Domain Specific Language in JavaScript. With this
+latest version, the process is a bit more elegant and largely handled by extending existing core classes of
+`Gremlin-JavaScript` which is a bit more in-line with other language variant patterns for DSL development.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2089[TINKERPOP-2089],
+link:http://tinkerpop.apache.org/docs/3.3.7/reference/#gremlin-javascript-dsl[Reference Documentation]
 
 ==== Gremlin Console Interrupt
 
@@ -43,6 +59,37 @@ In earlier versions, the only option was to kill the Gremlin Console (typically 
 `ctrl+c` will be intercepted and attempt to interrupt whatever process is currently executing.
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP-2181[TINKERPOP-2181]
+
+==== Removed gperfutils Dependency
+
+Gremlin Console included references to:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.gperfutils</groupId>
+    <artifactId>gbench</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.gperfutils</groupId>
+    <artifactId>gprof</artifactId>
+</dependency
+----
+
+to provide some benchmarking and profiling tools for the Utilities Plugin. Neither project is well maintained at this
+point and given that TinkerPop has moved past the versions of Groovy that are supported by these tools it doesn't
+make sense to retain the dependencies. Users who wish to continue to use these tools can obviously do so still by
+manually adding the dependencies to the Gremlin Console or with the following command:
+
+[source,text]
+----
+gremlin> :install org.gperfutils gbench <version>
+gremlin> :install org.gperfutils gprof <version>
+----
+
+and then import the appropriate classes and methods to use.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2182[TINKERPOP-2182]
 
 === Upgrading for Providers
 

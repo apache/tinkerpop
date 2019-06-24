@@ -18,7 +18,41 @@ limitations under the License.
 
 image::business-gremlin.png[width=400]
 
-The guidelines that follow apply to those with commit access to the main repository:
+The guidelines that follow generally apply to those with commit access to the main repository, but those seeking to
+contribute will also find helpful information here on the development style and process for the project.
+
+[[initial-setup]]
+== Initial Setup
+
+Once the Apache TinkerPop PMC has sent an invitation to a contributor to become a new committer and that contributor
+has accepted that invitation and provided their iCLA to Apache, then there are some administrative steps that the
+new committer can expect to go through to complete the process so that they have access to Apache resources like the
+Git repository. While the information for completing the process can be found in a multitude of places the following
+listing provides a summary of what to do next:
+
+* Look for a welcome email from root_at_apache.org. This will contain your Apache user name
+** e.g. "Welcome to the Apache Software Foundation (ASF)!"
+* Visit https://id.apache.org/reset/enter and enter your user name
+* Look for a password reset email from root_at_apache.org. This will have been sent after you confirmed your user name, above.
+** e.g. "Password reset request for [username] from Apache ID"
+* Visit the link provided in the password reset email, and choose a new password. ASF asks you to choose a strong one. You will see a "Password change successful" page when this is done.
+* You will now have SVN access
+** link:https://svn.apache.org/[svn.apache.org]
+* Try sending yourself an email at your new [username]@apache.org email address. It should forward to your primary address.
+* Check your account details at https://id.apache.org/details/[username]
+* Link your accounts using gitbox (https://gitbox.apache.org/setup/)
+** Link your Apache account
+** Link your GitHub account
+*** You will be asked to "Authorize Apache M.A.T.T."
+** Obtain MFA status
+*** Visit link:https://id.apache.org[id.apache.org] and set your GitHub ID to be invited to the org
+*** Wait for an email to arrive from "support_at_github.com", and click "Join @apache". Accept the invitation on github.com. Your new MFA status will not immediately be reflected on github, but you will get a confirmation email from noreply_at_github.com. Later, the status will read "MFA ENABLED"
+**** e.g. "[GitHub] @asf-gitbox has invited you to join the @apache organization"
+*** You can find yourself by searching in the link:https://github.com/orgs/apache/teams/apache-committers[Apache Committers listing]
+* Read the link:https://www.apache.org/dev/new-committers-guide.html[Apache Committer Guide] and link:http://www.apache.org/dev/committers.html[Apache Committer FAQ]
+* Read through the other sections of this document - the Developer Documentation - for more details on project procedures and other administrative items.
+** In particular, see <<rtc,Review then Commit>>
+* If you have trouble committing, email dev@tinkerpop.apache.org
 
 == Communication
 
@@ -60,9 +94,10 @@ TinkerPop has several release branches:
 
 * `tp30` - 3.0.x (no longer maintained)
 * `tp31` - 3.1.x (no longer maintained)
-* `tp32` - 3.2.x (major bug fixes only)
+* `tp32` - 3.2.x (no longer maintained)
 * `tp33` - 3.3.x (current development)
-* `master` - 3.4.x (current development)
+* `tp34` - 3.4.x (current development)
+* `master` - 3.5.x (future development)
 
 Changes to `tp32` should merge to `tp33` and then `tp33` to `master`. Please read more about this process in the
 <<pull-requests, Pull Requests>> section.
@@ -620,15 +655,18 @@ that LICENSE in the root `/licenses` directory of the code repository.
 === Binary LICENSE and NOTICE
 
 The binary LICENSE/NOTICE is perhaps most impacted by changes to the various `pom.xml` files. After altering the
-`pom.xml` file of any module, build both Gremlin Console and Gremlin Server and examine the contents of both binary
-distributions, either:
+`pom.xml` file of any module, build both Gremlin Console and Gremlin Server and examine the contents of the binary
+distributions:
 
+* target/gremlin-console-x.y.z-uber.jar
 * target/apache-tinkerpop-gremlin-console-x.y.z-distribution.zip
 * target/apache-tinkerpop-gremlin-server-x.y.z-distribution.zip
 
 Apache licensed software does not need to be included in LICENSE, but if the new dependency is an Apache-approved
 license (e.g. BSD, MIT) then it should be added in the pattern already defined. A copy of the LICENSE should be
-added to the `<project>/src/main/static/licenses` directory of the code repository.
+added to the `<project>/src/main/static/licenses` directory of the code repository and the `maven-shade-plugin` section
+of the `gremlin-console` `pom.xml` should be updated to reference this new license file so that it is included in the
+uber jar.
 
 To determine if changes are required to the NOTICE, first check if the bundled jar has a NOTICE file in it (typically
 found in `/META-INF` directory of the jar).
@@ -663,6 +701,33 @@ uploaded to the server and should preserve the directory structure in git as ref
 
 Please see the <<building-testing,Building and Testing>> section for more information on how to generate the
 documentation.
+
+=== Asciidoc Formatting Tips
+
+*Use Asciidoctor*
+
+Asciidoc may render differently with different tools. What may look proper and correct with an IDE may be different
+than what is ultimately generated during the official build of the documentation which uses Asciidoctor. As a result
+it's best to not rely on any other view of changes besides one generated by Asciidoctor.
+
+*Anonymous Traversal Formatting*
+
+The double underscore (i.e. `+__+`) does not typically render right and requires such code to be wrapped with
+`pass:[`pass:[__]`]` or `pass:[`+__+`]`.
+
+Cause: link:https://github.com/asciidoctor/asciidoctor/issues/1717[#1717],
+link:https://github.com/asciidoctor/asciidoctor/issues/1066[#1066]
+
+*Non-whitespace After Backtick*
+
+Use double backtick if there is non-whitespace immediately following the trailing backtick. So rather than:
+pass:[`ScriptInputFormat`'s], prefer pass:[``ScriptInputFormat``'s].
+
+Original: [...] globally available for `ScriptInputFormat`'s `parse()` method
+
+Fixed: [...] globally available for ``ScriptInputFormat``'s `parse()` method
+
+Cause: link:https://github.com/asciidoctor/asciidoctor/issues/1514[#1514]
 
 [[site]]
 == Site

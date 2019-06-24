@@ -144,7 +144,7 @@ class BytecodeSerializer extends TypeSerializer {
     const result = new Array(instructions.length);
     result[0] = instructions[0];
     for (let i = 0; i < instructions.length; i++) {
-      result[i] = this.writer.adaptObject(instructions[i]);
+      result[i] = instructions[i].map(item => this.writer.adaptObject(item));
     }
     return result;
   }

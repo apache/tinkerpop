@@ -89,7 +89,7 @@ an issue when working with SNAPSHOT dependencies.
 
 image:gremlin-console.png[width=325,float=right] The Gremlin Console is an interactive terminal or
 link:http://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop[REPL] that can be used to traverse graphs
-and interact with the data that they contain.  It represents the most common method for performing ad-hoc graph
+and interact with the data that they contain.  It represents the most common method for performing ad hoc graph
 analysis, small to medium sized data loading projects and other exploratory functions.  The Gremlin Console is
 highly extensible, featuring a rich plugin system that allows new tools, commands,
 link:http://en.wikipedia.org/wiki/Domain-specific_language[DSLs], etc. to be exposed to users.
@@ -154,15 +154,15 @@ some other useful operations.  The following table outlines the most commonly us
 |import |:i |Import a class into the Console session.
 |:clear |:c |Sometimes the Console can get into a state where the command buffer no longer understands input (e.g. a misplaced `(` or `}`).  Use this command to clear that buffer.
 |:load |:l |Load a file or URL into the command buffer for execution.
-|:install |:+ |Imports a maven library and its dependencies into the Console.
-|:uninstall |:- |Removes a maven library and its dependencies. A restart of the console is required for removal to fully take effect.
+|:install |:+ |Imports a Maven library and its dependencies into the Console.
+|:uninstall |:- |Removes a Maven library and its dependencies. A restart of the console is required for removal to fully take effect.
 |:plugin |:pin |Plugin management functions to list, activate and deactivate available plugins.
 |:remote |:rem |Configures a "remote" context where Gremlin or results of Gremlin will be processed via usage of `:submit`.
 |:submit |:> |Submit Gremlin to the currently active context defined by `:remote`.
 |:bytecode |:bc |Provides options for translating and evaluating `Bytecode` for debugging purposes.
 |=========================================================
 
-Many of the above commands are described elsewhere or are generally self explanatory, but the `:bytecode` command
+Many of the above commands are described elsewhere or are generally self-explanatory, but the `:bytecode` command
 could use some additional explanation. The following code shows example usage:
 
 [source,text]
@@ -303,7 +303,7 @@ the Console classpath.  Plugins need to be "active" for their features to be ava
 
 WARNING: Plugins must be compatible with the version of the Gremlin Console (or Gremlin Server) being used.  Attempts
 to use incompatible versions cannot be guaranteed to work.  Moreover, be prepared for dependency conflicts in
-third-party plugins, that may only be resolved via manual jar removal from the `ext/{plugin}` directory.
+third-party plugins that may only be resolved via manual jar removal from the `ext/{plugin}` directory.
 
 TIP: It is possible to manage plugin activation and deactivation by manually editing the `ext/plugins.txt` file which
 contains the class names of the "active" plugins.  It is also possible to clear dependencies added by `:install` by
@@ -359,8 +359,8 @@ v[2]
 ----
 
 It is also possible to pass multiple scripts by specifying multiple `-e` options. The scripts will execute in the order
-that they are specified. Note that only the arguments from the last script executed will be preserved in the console.
-Finally, if the arguments conflict with the reserved flags that `gremlin.sh` responds double quotes can be used to
+in which they are specified. Note that only the arguments from the last script executed will be preserved in the console.
+Finally, if the arguments conflict with the reserved flags to which `gremlin.sh` responds, double quotes can be used to
 wrap all the arguments to the option:
 
 [source,bash]
@@ -373,8 +373,8 @@ $ bin/gremlin.sh -e "gremlin.groovy -e -i --color"
 
 The Gremlin Console can be started in an "interactive" mode. Interactive mode is like <<execution-mode, execution mode>>
 but the console will not exit at the completion of the script, even if the script completes unsuccessfully. In such a
-case, it will simply stop processing on the line that of the script that failed. In this way the state of the console
-is such that a user could examine the state of things up to the point of failure which might make the script easier to
+case, it will simply stop processing on the line of the script that failed. In this way, the state of the console
+is such that a user could examine the state of things up to the point of failure, which might make the script easier to
 debug.
 
 In addition to debugging, interactive mode is a helpful way for users to initialize their console environment to
@@ -411,7 +411,7 @@ gremlin> g.V()
 Note that the user can now reference `g` (and `graph` for that matter) at startup without having to directly type that
 variable initialization code into the console.
 
-Like, execution mode, it is also possible to pass multiple scripts by specifying multiple `-i` options. See the
+As in execution mode, it is also possible to pass multiple scripts by specifying multiple `-i` options. See the
 <<execution-mode, Execution Mode Section>> for more information on the specifics of that capability.
 
 [[gremlin-console-docker-image]]
@@ -455,7 +455,7 @@ or more `Graph` instances hosted within it.  The benefits of using Gremlin Serve
 
 * Allows any Gremlin Structure-enabled graph (i.e. implements the `Graph` API on the JVM) to exist as a standalone
 server, which in turn enables the ability for multiple clients to communicate with the same graph database.
-* Enables execution of ad-hoc queries through remotely submitted Gremlin.
+* Enables execution of ad hoc queries through remotely submitted Gremlin.
 * Provides a method for non-JVM languages which may not have a Gremlin Traversal Machine (e.g. Python, Javascript, etc.)
 to communicate with the TinkerPop stack on the JVM.
 * Exposes numerous methods for extension and customization to include serialization options, remote commands, etc.
@@ -523,7 +523,7 @@ That file tells Gremlin Server many things such as:
 
 The log messages that printed above show a number of things, but most importantly, there is a `Graph` instance named
 `graph` that is exposed in Gremlin Server.  This graph is an in-memory TinkerGraph and was empty at the start of the
-server.  An initialization script at `scripts/generate-modern.groovy` was executed during startup.  It's contents are
+server.  An initialization script at `scripts/generate-modern.groovy` was executed during startup.  Its contents are
 as follows:
 
 [source,groovy]
@@ -1074,7 +1074,7 @@ method for processing script evaluation requests.
 [[traversalopprocessor]]
 ===== TraversalOpProcessor
 
-The `TraversalOpProcessor` provides a way to use <<connecting-via-drivers,RemoteGraph>>.
+The `TraversalOpProcessor` provides a way to accept traversals configured via <<connecting-via-drivers,withRemote()>>.
 
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
@@ -1082,6 +1082,9 @@ The `TraversalOpProcessor` provides a way to use <<connecting-via-drivers,Remote
 |cacheExpirationTime |Time in milliseconds before side-effects from a `Traversal` will be evicted. |60000
 |cacheMaxSize |The maximum number of entries in the side-effect cache. |1000
 |=========================================================
+
+If there is no intention to gather side-effects from traversals, the `cacheMaxSize` can be set to zero to disable the
+cache.
 
 [[security]]
 ==== Security
@@ -1478,7 +1481,7 @@ sandboxing implementations can be developed by using this white listing model an
 `AbstractSandboxExtension`.
 
 A final thought on the topic of `GroovyCompilerGremlinPlugin` implementation is that it is not just for
-"security" (though is is demonstrated in that capacity here).  It can be used for a variety of features that
+"security" (though it is demonstrated in that capacity here).  It can be used for a variety of features that
 can fine tune the Groovy compilation process.  Read more about compilation customization in the
 link:http://docs.groovy-lang.org/latest/html/documentation/#compilation-customizers[Groovy Documentation].
 
@@ -1721,11 +1724,15 @@ without all the associated structure which can slow the response.
 [[parameterized-scripts]]
 ==== Parameterized Scripts
 
-image:gremlin-parameterized.png[width=150,float=left] Use script parameterization.  Period.  Gremlin Server caches
-all scripts that are passed to it.  The cache is keyed based on the a hash of the script.  Therefore `g.V(1)` and
-`g.V(2)` will be recognized as two separate scripts in the cache.  If that script is parameterized to `g.V(x)`
-where `x` is passed as a parameter from the client, there will be no additional compilation cost for future requests
-on that script.  Compilation of a script should be considered "expensive" and avoided when possible.
+image:gremlin-parameterized.png[width=150,float=left] Use script parameterization. Period. There are at least two good
+reasons for doing so: script caching and protection from "Gremlin injection" (conceptually the same as the notion of
+SQL injection).
+
+With respect to caching, Gremlin Server caches all scripts that are passed to it.  The cache is keyed based on the a
+hash of the script.  Therefore `g.V(1)` and `g.V(2)` will be recognized as two separate scripts in the cache.  If that
+script is parameterized to `g.V(x)` where `x` is passed as a parameter from the client, there will be no additional
+compilation cost for future requests on that script.  Compilation of a script should be considered "expensive" and
+avoided when possible.
 
 [source,java]
 ----
@@ -1742,6 +1749,41 @@ The more parameters that are used in a script the more expensive the compilation
 section. It controls the maximum number of parameters that can be passed to the server for script evaluation purposes.
 Use of this setting can prevent accidental long run compilations, which individually are not terribly oppressive to
 the server, but taken as a group under high concurrency would be considered detrimental.
+
+On the topic of Gremlin injection, note that it is possible to take advantage of Gremlin scripts in the same fashion
+as SQL scripts that are submitted as strings. When using string building patterns for queries without proper input
+scrubbing, it would be quite simple to do:
+
+[source,java]
+----
+String lbl = "person"
+String nodeId = "mary').next();g.V().drop().iterate();g.V().has('id', 'thomas";
+String query = "g.addV('" + lbl + "').property('identifier','" + nodeId + "')";
+client.submit(query);
+----
+
+The above case would `drop()` all vertices in the graph. By using script parameterization, there is a different outcome
+in that the `nodeId` string is not treated as something executable, but rather as a literal string that just becomes
+part of the "identifier" for the vertex on insertion:
+
+[source,java]
+----
+String lbl = "person"
+String nodeId = "mary').next();g.V().drop().iterate();g.V().has('id', 'thomas";
+String query = "g.addV(lbl).property('identifier',nodeId)";
+
+Map<String,Object> params = new HashMap<>();
+params.put("lbl",lbl);
+params.put("nodeId",nodeId);
+client.submit(query, params);
+----
+
+Gremlin injection should not be possible with `Bytecode` based traversals - only scripts - because `Bytecode`
+traversals will treat all arguments as literal values. There is potential for concern if lambda based steps are
+utilized as they execute arbitrary code, which is string based, but configuring `TraversalSource` instances with
+`LambdaRestrictionStrategy`, which prevents lambdas all together, using a graph that does not allow lambdas at all, or
+configuring appropriate <<script-execution,sandbox options>> in Gremlin Server (or such options available to the graph
+database in use) should each help mitigate problems related to this issue.
 
 ==== Properties of Elements
 
@@ -2347,37 +2389,18 @@ g.V.map{it.name}  // sugar
 [[utilities-plugin]]
 === Utilities Plugin
 
-The Utilities Plugin provides various functions, helper methods and imports of external classes that are useful in the console.
+The Utilities Plugin provides various functions, helper methods and imports of external classes that are useful in
+the console.
 
 NOTE: The Utilities Plugin is enabled in the Gremlin Console by default.
-
-[[benchmarking-and-profiling]]
-==== Benchmarking and Profiling
-
-The link:https://code.google.com/p/gperfutils/[GPerfUtils] library provides a number of performance utilities for
-Groovy.  Specifically, these tools cover benchmarking and profiling.
-
-Benchmarking allows execution time comparisons of different pieces of code. While such a feature is generally useful,
-in the context of Gremlin, benchmarking can help compare traversal performance times to determine the optimal
-approach.  Profiling helps determine the parts of a program which are taking the most execution time, yielding
-low-level insight into the code being examined.
-
-[gremlin-groovy,modern]
-----
-:plugin use tinkerpop.sugar // Activate sugar plugin for use in benchmark
-benchmark{
- 'sugar' {g.V(1).name.next()}
- 'nosugar' {g.V(1).values('name').next()}
-}.prettyPrint()
-profile { g.V().iterate() }.prettyPrint()
-----
 
 [[describe-graph]]
 ==== Describe Graph
 
-A good implementation of the Gremlin APIs will validate their features against the link:../dev/provider/#validating-with-gremlin-test[Gremlin test suite].
-To learn more about a specific implementation's compliance with the test suite, use the `describeGraph` function.
-The following shows the output for `HadoopGraph`:
+A good implementation of the Gremlin APIs will validate their features against the
+link:../dev/provider/#validating-with-gremlin-test[Gremlin test suite]. To learn more about a specific
+implementation's compliance with the test suite, use the `describeGraph` function. The following shows the output
+for `HadoopGraph`:
 
 [gremlin-groovy,modern]
 ----

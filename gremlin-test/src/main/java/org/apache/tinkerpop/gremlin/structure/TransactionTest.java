@@ -598,6 +598,7 @@ public class TransactionTest extends AbstractGremlinTest {
         threadedG.tx().commit();
 
         // there should be one vertex for each thread
+        graph.tx().rollback();
         assertVertexEdgeCounts(graph, numberOfThreads, 0);
     }
 
@@ -638,6 +639,7 @@ public class TransactionTest extends AbstractGremlinTest {
         threadedG.tx().commit();
 
         // there should be one vertex for each thread
+        graph.tx().rollback();
         assertVertexEdgeCounts(graph, numberOfThreads, 0);
 
         try {

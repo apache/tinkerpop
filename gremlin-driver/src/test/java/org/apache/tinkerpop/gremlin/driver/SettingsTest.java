@@ -47,10 +47,6 @@ public class SettingsTest {
         conf.setProperty("serializer.className", "my.serializers.MySerializer");
         conf.setProperty("serializer.config.any", "thing");
         conf.setProperty("connectionPool.enableSsl", true);
-        conf.setProperty("connectionPool.keyCertChainFile", "X.509");
-        conf.setProperty("connectionPool.keyFile", "PKCS#8");
-        conf.setProperty("connectionPool.keyPassword", "password1");
-        conf.setProperty("connectionPool.trustCertChainFile", "pem");
         conf.setProperty("connectionPool.keyStore", "server.jks");
         conf.setProperty("connectionPool.keyStorePassword", "password2");
         conf.setProperty("connectionPool.keyStoreType", "pkcs12");
@@ -85,10 +81,6 @@ public class SettingsTest {
         assertEquals("my.serializers.MySerializer", settings.serializer.className);
         assertEquals("thing", settings.serializer.config.get("any"));
         assertThat(settings.connectionPool.enableSsl, is(true));
-        assertEquals("X.509", settings.connectionPool.keyCertChainFile);
-        assertEquals("PKCS#8", settings.connectionPool.keyFile);
-        assertEquals("password1", settings.connectionPool.keyPassword);
-        assertEquals("pem", settings.connectionPool.trustCertChainFile);
         assertEquals("server.jks", settings.connectionPool.keyStore);
         assertEquals("password2", settings.connectionPool.keyStorePassword);
         assertEquals("pkcs12", settings.connectionPool.keyStoreType);
