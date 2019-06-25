@@ -421,6 +421,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added test infrastructure to check for storage iterator leak.
 * Fixed multiple iterator leaks in query processor.
 * Improved error messaging for invalid inputs to the TinkerGraph `IdManager` instances.
+* Forced replacement of connections in Java driver for certain exception types that seem to ultimately kill the connection.
 * Changed the `reverse()` of `desc` and `asc` on `Order` to not use the deprecated `decr` and `incr`.
 * Fixed bug in `MatchStep` where the correct was not properly determined.
 * Fixed bug where client/server exception mismatch when server throw StackOverflowError
