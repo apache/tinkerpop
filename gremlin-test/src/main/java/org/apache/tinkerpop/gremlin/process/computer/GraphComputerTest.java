@@ -23,7 +23,6 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationUtils;
 import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.IgnoreIteratorLeak;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
@@ -47,6 +46,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
@@ -111,7 +111,6 @@ import static org.junit.Assume.assumeNoException;
         "graphDoesNotSupportProvidedGraphComputer"
 })
 @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
-@IgnoreIteratorLeak
 public class GraphComputerTest extends AbstractGremlinProcessTest {
 
     @Test
@@ -2224,7 +2223,11 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         assertEquals(6l, result.graph().traversal().V().properties("v3").count().next().longValue());
         assertEquals(6l, result.graph().traversal().V().<String>values("name").dedup().count().next().longValue());
         assertEquals(1l, result.graph().traversal().V().<String>values("v3").dedup().count().next().longValue());
-        assertEquals("shouldExist", result.graph().traversal().V().<String>values("v3").dedup().next());
+
+        final Traversal<Vertex,String> t = result.graph().traversal().V().<String>values("v3").dedup();
+        assertEquals("shouldExist", t.next());
+        CloseableIterator.closeIterator(t);
+
         ///
         assertFalse(result.memory().exists("m1"));
         assertFalse(result.memory().exists("m2"));

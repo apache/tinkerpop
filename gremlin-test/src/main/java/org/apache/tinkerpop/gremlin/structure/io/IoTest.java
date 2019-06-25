@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.structure.io;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
-import org.apache.tinkerpop.gremlin.IgnoreIteratorLeak;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -107,7 +106,6 @@ import static org.junit.Assume.assumeThat;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(Enclosed.class)
-@IgnoreIteratorLeak
 public class IoTest {
     private static final Logger logger = LoggerFactory.getLogger(IoTest.class);
 
@@ -191,7 +189,6 @@ public class IoTest {
             "    </graph>\n" +
             "</graphml>";
 
-    @IgnoreIteratorLeak
     public static class GraphMLTest extends AbstractGremlinTest {
 
         @Test

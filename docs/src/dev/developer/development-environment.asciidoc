@@ -228,6 +228,7 @@ The following commands are a mix of Maven flags and shell scripts that handle di
 
 * Build project: `mvn clean install`
 ** Build a specific module (e.g. `gremlin-server`) within the project: `mvn clean install -pl gremlin-server`
+** Build without assertions for "iterator leaks" which are enabled by default: `mvn clean install -DtestIteratorLeaks=false`
 ** Specify specific tests in a TinkerPop Suite to run with the `GREMLIN_TESTS` environment variable, along with the
 Maven project list argument, e.g.:
 +

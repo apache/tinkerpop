@@ -43,6 +43,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.structure.util.Comparators;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -220,8 +221,8 @@ public final class GraphMLWriter implements GraphWriter {
             final Map<String, String> identifiedEdgeKeyTypes,
             final XMLStreamWriter writer) throws XMLStreamException {
         // <key id="weight" for="edge" attr.name="weight" attr.type="float"/>
-        final Collection<String> vertexKeySet = getVertexKeysAndNormalizeIfRequired(identifiedVertexKeyTypes);
-        final Collection<String> edgeKeySet = getEdgeKeysAndNormalizeIfRequired(identifiedEdgeKeyTypes);
+        final Collection<String> vertexKeySet = getKeysAndNormalizeIfRequired(identifiedVertexKeyTypes);
+        final Collection<String> edgeKeySet = getKeysAndNormalizeIfRequired(identifiedEdgeKeyTypes);
         // in case vertex and edge may have the same attribute name, the key id in graphml have to be different
         intersection = CollectionUtils.intersection(vertexKeySet, edgeKeySet);
 
@@ -252,66 +253,70 @@ public final class GraphMLWriter implements GraphWriter {
     }
 
     private void writeEdges(final XMLStreamWriter writer, final Graph graph) throws XMLStreamException {
-        if (normalize) {
-            final List<Edge> edges = IteratorUtils.list(graph.edges());
-            Collections.sort(edges, Comparators.ELEMENT_COMPARATOR);
+        final Iterator<Edge> iterator = graph.edges();
+        try {
+            if (normalize) {
+                final List<Edge> edges = IteratorUtils.list(iterator);
+                Collections.sort(edges, Comparators.ELEMENT_COMPARATOR);
 
-            for (Edge edge : edges) {
-                writer.writeStartElement(GraphMLTokens.EDGE);
-                writer.writeAttribute(GraphMLTokens.ID, edge.id().toString());
-                writer.writeAttribute(GraphMLTokens.SOURCE, edge.outVertex().id().toString());
-                writer.writeAttribute(GraphMLTokens.TARGET, edge.inVertex().id().toString());
+                for (Edge edge : edges) {
+                    writer.writeStartElement(GraphMLTokens.EDGE);
+                    writer.writeAttribute(GraphMLTokens.ID, edge.id().toString());
+                    writer.writeAttribute(GraphMLTokens.SOURCE, edge.outVertex().id().toString());
+                    writer.writeAttribute(GraphMLTokens.TARGET, edge.inVertex().id().toString());
 
-                writer.writeStartElement(GraphMLTokens.DATA);
-                writer.writeAttribute(GraphMLTokens.KEY, this.edgeLabelKey);
-                writer.writeCharacters(edge.label());
-                writer.writeEndElement();
-
-                final List<String> keys = new ArrayList<>(edge.keys());
-                Collections.sort(keys);
-
-                for (String key : keys) {
                     writer.writeStartElement(GraphMLTokens.DATA);
-                    if (intersection != null && intersection.contains(key)) {
-                        writer.writeAttribute(GraphMLTokens.KEY, key + GraphMLTokens.EDGE_SUFFIX);
-                    } else {
-                        writer.writeAttribute(GraphMLTokens.KEY, key);
+                    writer.writeAttribute(GraphMLTokens.KEY, this.edgeLabelKey);
+                    writer.writeCharacters(edge.label());
+                    writer.writeEndElement();
+
+                    final List<String> keys = new ArrayList<>(edge.keys());
+                    Collections.sort(keys);
+
+                    for (String key : keys) {
+                        writer.writeStartElement(GraphMLTokens.DATA);
+                        if (intersection != null && intersection.contains(key)) {
+                            writer.writeAttribute(GraphMLTokens.KEY, key + GraphMLTokens.EDGE_SUFFIX);
+                        } else {
+                            writer.writeAttribute(GraphMLTokens.KEY, key);
+                        }
+                        // technically there can't be a null here as gremlin structure forbids that occurrence even if Graph
+                        // implementations support it, but out to empty string just in case.
+                        writer.writeCharacters(edge.property(key).orElse("").toString());
+                        writer.writeEndElement();
                     }
-                    // technically there can't be a null here as gremlin structure forbids that occurrence even if Graph
-                    // implementations support it, but out to empty string just in case.
-                    writer.writeCharacters(edge.property(key).orElse("").toString());
                     writer.writeEndElement();
                 }
-                writer.writeEndElement();
-            }
-        } else {
-            final Iterator<Edge> iterator = graph.edges();
-            while (iterator.hasNext()) {
-                final Edge edge = iterator.next();
-                writer.writeStartElement(GraphMLTokens.EDGE);
-                writer.writeAttribute(GraphMLTokens.ID, edge.id().toString());
-                writer.writeAttribute(GraphMLTokens.SOURCE, edge.outVertex().id().toString());
-                writer.writeAttribute(GraphMLTokens.TARGET, edge.inVertex().id().toString());
+            } else {
+                while (iterator.hasNext()) {
+                    final Edge edge = iterator.next();
+                    writer.writeStartElement(GraphMLTokens.EDGE);
+                    writer.writeAttribute(GraphMLTokens.ID, edge.id().toString());
+                    writer.writeAttribute(GraphMLTokens.SOURCE, edge.outVertex().id().toString());
+                    writer.writeAttribute(GraphMLTokens.TARGET, edge.inVertex().id().toString());
 
-                writer.writeStartElement(GraphMLTokens.DATA);
-                writer.writeAttribute(GraphMLTokens.KEY, this.edgeLabelKey);
-                writer.writeCharacters(edge.label());
-                writer.writeEndElement();
-
-                for (String key : edge.keys()) {
                     writer.writeStartElement(GraphMLTokens.DATA);
-                    if (intersection != null && intersection.contains(key)) {
-                        writer.writeAttribute(GraphMLTokens.KEY, key + GraphMLTokens.EDGE_SUFFIX);
-                    } else {
-                        writer.writeAttribute(GraphMLTokens.KEY, key);
+                    writer.writeAttribute(GraphMLTokens.KEY, this.edgeLabelKey);
+                    writer.writeCharacters(edge.label());
+                    writer.writeEndElement();
+
+                    for (String key : edge.keys()) {
+                        writer.writeStartElement(GraphMLTokens.DATA);
+                        if (intersection != null && intersection.contains(key)) {
+                            writer.writeAttribute(GraphMLTokens.KEY, key + GraphMLTokens.EDGE_SUFFIX);
+                        } else {
+                            writer.writeAttribute(GraphMLTokens.KEY, key);
+                        }
+                        // technically there can't be a null here as gremlin structure forbids that occurrence even if Graph
+                        // implementations support it, but out to empty string just in case.
+                        writer.writeCharacters(edge.property(key).orElse("").toString());
+                        writer.writeEndElement();
                     }
-                    // technically there can't be a null here as gremlin structure forbids that occurrence even if Graph
-                    // implementations support it, but out to empty string just in case.
-                    writer.writeCharacters(edge.property(key).orElse("").toString());
                     writer.writeEndElement();
                 }
-                writer.writeEndElement();
             }
+        } finally {
+            CloseableIterator.closeIterator(iterator);
         }
     }
 
@@ -359,40 +364,34 @@ public final class GraphMLWriter implements GraphWriter {
     }
 
     private Iterable<Vertex> getVerticesAndNormalizeIfRequired(final Graph graph) {
-        final Iterable<Vertex> vertices;
-        if (normalize) {
-            vertices = new ArrayList<>();
-            final Iterator<Vertex> vertexIterator = graph.vertices();
-            while (vertexIterator.hasNext()) {
-                ((Collection<Vertex>) vertices).add(vertexIterator.next());
+        final Iterator<Vertex> iterator = graph.vertices();
+
+        try {
+            final Iterable<Vertex> vertices;
+            if (normalize) {
+                vertices = new ArrayList<>();
+                while (iterator.hasNext()) {
+                    ((Collection<Vertex>) vertices).add(iterator.next());
+                }
+                Collections.sort((List<Vertex>) vertices, Comparators.ELEMENT_COMPARATOR);
+            } else {
+                vertices = IteratorUtils.list(iterator);
             }
-            Collections.sort((List<Vertex>) vertices, Comparators.ELEMENT_COMPARATOR);
-        } else
-            vertices = IteratorUtils.list(graph.vertices());
 
-        return vertices;
+            return vertices;
+        } finally {
+            CloseableIterator.closeIterator(iterator);
+        }
     }
 
-    private Collection<String> getEdgeKeysAndNormalizeIfRequired(final Map<String, String> identifiedEdgeKeyTypes) {
-        final Collection<String> edgeKeySet;
-        if (normalize) {
-            edgeKeySet = new ArrayList<>();
-            edgeKeySet.addAll(identifiedEdgeKeyTypes.keySet());
-            Collections.sort((List<String>) edgeKeySet);
-        } else
-            edgeKeySet = identifiedEdgeKeyTypes.keySet();
-
-        return edgeKeySet;
-    }
-
-    private Collection<String> getVertexKeysAndNormalizeIfRequired(final Map<String, String> identifiedVertexKeyTypes) {
+    private Collection<String> getKeysAndNormalizeIfRequired(final Map<String, String> identifiedKeyTypes) {
         final Collection<String> keyset;
         if (normalize) {
             keyset = new ArrayList<>();
-            keyset.addAll(identifiedVertexKeyTypes.keySet());
+            keyset.addAll(identifiedKeyTypes.keySet());
             Collections.sort((List<String>) keyset);
         } else
-            keyset = identifiedVertexKeyTypes.keySet();
+            keyset = identifiedKeyTypes.keySet();
 
         return keyset;
     }
@@ -411,15 +410,19 @@ public final class GraphMLWriter implements GraphWriter {
     private static Map<String, String> determineVertexTypes(final Graph graph) {
         final Map<String, String> vertexKeyTypes = new HashMap<>();
         final Iterator<Vertex> vertices = graph.vertices();
-        while (vertices.hasNext()) {
-            final Vertex vertex = vertices.next();
-            for (String key : vertex.keys()) {
-                if (!vertexKeyTypes.containsKey(key)) {
-                    final VertexProperty<Object> currentValue = getCheckedVertexProperty(vertex, key);
+        try {
+            while (vertices.hasNext()) {
+                final Vertex vertex = vertices.next();
+                for (String key : vertex.keys()) {
+                    if (!vertexKeyTypes.containsKey(key)) {
+                        final VertexProperty<Object> currentValue = getCheckedVertexProperty(vertex, key);
 
-                    vertexKeyTypes.put(key, GraphMLWriter.getStringType(currentValue.value()));
+                        vertexKeyTypes.put(key, GraphMLWriter.getStringType(currentValue.value()));
+                    }
                 }
             }
+        } finally {
+            CloseableIterator.closeIterator(vertices);
         }
 
         return vertexKeyTypes;
@@ -437,13 +440,17 @@ public final class GraphMLWriter implements GraphWriter {
     private static Map<String, String> determineEdgeTypes(final Graph graph) {
         final Map<String, String> edgeKeyTypes = new HashMap<>();
         final Iterator<Edge> edges = graph.edges();
-        while (edges.hasNext()) {
-            final Edge edge = edges.next();
-            for (String key : edge.keys()) {
-                if (!edgeKeyTypes.containsKey(key))
-                    edgeKeyTypes.put(key, GraphMLWriter.getStringType(edge.property(key).value()));
+        try {
+            while (edges.hasNext()) {
+                final Edge edge = edges.next();
+                for (String key : edge.keys()) {
+                    if (!edgeKeyTypes.containsKey(key))
+                        edgeKeyTypes.put(key, GraphMLWriter.getStringType(edge.property(key).value()));
                 }
             }
+        } finally {
+            CloseableIterator.closeIterator(edges);
+        }
 
         return edgeKeyTypes;
     }
