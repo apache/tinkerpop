@@ -403,7 +403,7 @@ final class ConnectionPool {
      * as part of a schedule in {@link Host} to periodically try to create working connections.
      */
     private boolean tryReconnect(final Host h) {
-        logger.debug("Trying to re-establish connection on {}", host);
+        logger.debug("Trying to re-establish connection on {}", h);
 
         Connection connection = null;
         try {
@@ -414,10 +414,10 @@ final class ConnectionPool {
             f.get().all().get();
 
             // host is reconnected and a connection is now available
-            this.cluster.loadBalancingStrategy().onAvailable(host);
+            this.cluster.loadBalancingStrategy().onAvailable(h);
             return true;
         } catch (Exception ex) {
-            logger.debug("Failed reconnect attempt on {}", host);
+            logger.debug("Failed reconnect attempt on {}", h);
             if (connection != null) definitelyDestroyConnection(connection);
             return false;
         }
@@ -441,7 +441,7 @@ final class ConnectionPool {
         int minInFlight = Integer.MAX_VALUE;
         Connection leastBusy = null;
         for (Connection connection : connections) {
-            int inFlight = connection.borrowed.get();
+            final int inFlight = connection.borrowed.get();
             if (!connection.isDead() && inFlight < minInFlight) {
                 minInFlight = inFlight;
                 leastBusy = connection;
