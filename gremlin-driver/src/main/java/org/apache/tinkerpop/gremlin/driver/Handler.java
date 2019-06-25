@@ -204,7 +204,7 @@ final class Handler {
 
         @Override
         public void channelInactive(final ChannelHandlerContext ctx) throws Exception {
-            // occurs when the server shutsdown in a disorderly fashion, otherwise in an orderly shutdown the server
+            // occurs when the server shuts down in a disorderly fashion, otherwise in an orderly shutdown the server
             // should fire off a close message which will properly release the driver.
             super.channelInactive(ctx);
 
