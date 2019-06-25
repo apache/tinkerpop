@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.server.OpProcessor;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.OpProcessorException;
-import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.slf4j.Logger;
@@ -106,7 +105,7 @@ public class StandardOpProcessor extends AbstractEvalOpProcessor {
     /**
      * A useful method for those extending this class, where the means for binding construction can be supplied
      * to this class.  This function is used in {@link #evalOp(Context)} to create the final argument to
-     * {@link AbstractEvalOpProcessor#evalOpInternal(Context, Supplier, org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor.BindingSupplier)}.
+     * {@link AbstractEvalOpProcessor#evalOpInternal(Context, Supplier, BindingSupplier)}.
      * In this way an extending class can use the default {@link org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor.BindingSupplier}
      * which carries a lot of re-usable functionality or provide a new one to override the existing approach.
      */

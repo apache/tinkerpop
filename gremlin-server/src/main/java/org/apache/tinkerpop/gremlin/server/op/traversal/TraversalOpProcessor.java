@@ -149,14 +149,14 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
     }
 
     @Override
-    public ThrowingConsumer<Context> select(final Context ctx) throws OpProcessorException {
-        final RequestMessage message = ctx.getRequestMessage();
+    public ThrowingConsumer<Context> select(final Context context) throws OpProcessorException {
+        final RequestMessage message = context.getRequestMessage();
         logger.debug("Selecting processor for RequestMessage {}", message);
 
         final ThrowingConsumer<Context> op;
         switch (message.getOp()) {
             case Tokens.OPS_BYTECODE:
-                validateTraversalSourceAlias(ctx, message, validateTraversalRequest(message));
+                validateTraversalSourceAlias(context, message, validateTraversalRequest(message));
                 op = this::iterateBytecodeTraversal;
                 break;
             case Tokens.OPS_GATHER:
@@ -172,7 +172,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
                 }
 
-                validateTraversalSourceAlias(ctx, message, validatedAliases(message).get());
+                validateTraversalSourceAlias(context, message, validatedAliases(message).get());
 
                 op = this::gatherSideEffect;
 
@@ -184,7 +184,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
                 }
 
-                op = context -> {
+                op = varRhc -> {
                     final RequestMessage msg = context.getRequestMessage();
                     final Optional<UUID> sideEffect = msg.optionalArgs(Tokens.ARGS_SIDE_EFFECT);
                     final TraversalSideEffects sideEffects = cache.getIfPresent(sideEffect.get());
@@ -192,7 +192,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     if (null == sideEffects)
                         logger.warn("Request for side-effect keys on {} returned no side-effects in the cache", sideEffect.get());
 
-                    handleIterator(context, null == sideEffects ? Collections.emptyIterator() : sideEffects.keys().iterator());
+                    handleIterator(varRhc, null == sideEffects ? Collections.emptyIterator() : sideEffects.keys().iterator());
                 };
 
                 break;
@@ -203,7 +203,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
                 }
 
-                op = context -> {
+                op = varRhc -> {
                     final RequestMessage msg = context.getRequestMessage();
                     logger.debug("Close request {} for in thread {}", msg.getRequestId(), Thread.currentThread().getName());
 
@@ -211,7 +211,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     cache.invalidate(sideEffect.get());
 
                     final String successMessage = String.format("Successfully cleared side effect cache for [%s].", Tokens.ARGS_SIDE_EFFECT);
-                    ctx.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(message).code(ResponseStatusCode.NO_CONTENT).statusMessage(successMessage).create());
+                    varRhc.writeAndFlush(ResponseMessage.build(message).code(ResponseStatusCode.NO_CONTENT).statusMessage(successMessage).create());
                 };
 
                 break;
@@ -287,7 +287,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                         if (null == sideEffects) {
                             final String errorMessage = String.format("Could not find side-effects for %s.", sideEffect.get());
                             logger.warn(errorMessage);
-                            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(errorMessage).create());
+                            context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(errorMessage).create());
                             onError(graph, context);
                             return;
                         }
@@ -295,7 +295,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                         if (!sideEffects.exists(sideEffectKey.get())) {
                             final String errorMessage = String.format("Could not find side-effect key for %s in %s.", sideEffectKey.get(), sideEffect.get());
                             logger.warn(errorMessage);
-                            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(errorMessage).create());
+                            context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(errorMessage).create());
                             onError(graph, context);
                             return;
                         }
@@ -304,16 +304,16 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     } catch (TimeoutException ex) {
                         final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg.getRequestId(), ex.getMessage());
                         logger.warn(errorMessage);
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
-                                .statusMessage(errorMessage)
-                                .statusAttributeException(ex).create());
+                        context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
+                                                             .statusMessage(errorMessage)
+                                                             .statusAttributeException(ex).create());
                         onError(graph, context);
                         return;
                     } catch (Exception ex) {
                         logger.warn(String.format("Exception processing a side-effect on iteration for request [%s].", msg.getRequestId()), ex);
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
-                                .statusMessage(ex.getMessage())
-                                .statusAttributeException(ex).create());
+                        context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
+                                                             .statusMessage(ex.getMessage())
+                                                             .statusAttributeException(ex).create());
                         onError(graph, context);
                         return;
                     }
@@ -321,9 +321,9 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     onSideEffectSuccess(graph, context);
                 } catch (Exception ex) {
                     logger.warn(String.format("Exception processing a side-effect on request [%s].", msg.getRequestId()), ex);
-                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
-                            .statusMessage(ex.getMessage())
-                            .statusAttributeException(ex).create());
+                    context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
+                                                         .statusMessage(ex.getMessage())
+                                                         .statusAttributeException(ex).create());
                     onError(graph, context);
                 } finally {
                     timerContext.stop();
@@ -379,7 +379,6 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
         final Timer.Context timerContext = traversalOpTimer.time();
         final FutureTask<Void> evalFuture = new FutureTask<>(() -> {
-            final ChannelHandlerContext ctx = context.getChannelHandlerContext();
             final Graph graph = g.getGraph();
 
             try {
@@ -397,23 +396,23 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     if (t instanceof InterruptedException || t instanceof TraversalInterruptedException) {
                         final String errorMessage = String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to scriptEvaluationTimeout", msg);
                         logger.warn(errorMessage);
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
-                                .statusMessage(errorMessage)
-                                .statusAttributeException(ex).create());
+                        context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
+                                                             .statusMessage(errorMessage)
+                                                             .statusAttributeException(ex).create());
                         onError(graph, context);
                     } else {
                         logger.warn(String.format("Exception processing a Traversal on iteration for request [%s].", msg.getRequestId()), ex);
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
-                                .statusMessage(ex.getMessage())
-                                .statusAttributeException(ex).create());
+                        context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
+                                                             .statusMessage(ex.getMessage())
+                                                             .statusAttributeException(ex).create());
                         onError(graph, context);
                     }
                 }
             } catch (Exception ex) {
                 logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), ex);
-                ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
-                        .statusMessage(ex.getMessage())
-                        .statusAttributeException(ex).create());
+                context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
+                                                     .statusMessage(ex.getMessage())
+                                                     .statusAttributeException(ex).create());
                 onError(graph, context);
             } finally {
                 timerContext.stop();
@@ -475,11 +474,11 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
     }
 
     protected void handleIterator(final Context context, final Iterator itty, final Graph graph) throws InterruptedException {
-        final ChannelHandlerContext ctx = context.getChannelHandlerContext();
+        final ChannelHandlerContext nettyContext = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
         final Settings settings = context.getSettings();
-        final MessageSerializer serializer = ctx.channel().attr(StateKey.SERIALIZER).get();
-        final boolean useBinary = ctx.channel().attr(StateKey.USE_BINARY).get();
+        final MessageSerializer serializer = nettyContext.channel().attr(StateKey.SERIALIZER).get();
+        final boolean useBinary = nettyContext.channel().attr(StateKey.USE_BINARY).get();
         boolean warnOnce = false;
 
         // we have an empty iterator - happens on stuff like: g.V().iterate()
@@ -492,9 +491,9 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     !((TraverserIterator)itty).getTraversal().getSideEffects().isEmpty()) {
                 cache.put(msg.getRequestId(), ((TraverserIterator)itty).getTraversal().getSideEffects());
             }
-            ctx.writeAndFlush(ResponseMessage.build(msg)
-                    .code(ResponseStatusCode.NO_CONTENT)
-                    .create());
+            context.writeAndFlush(ResponseMessage.build(msg)
+                                                 .code(ResponseStatusCode.NO_CONTENT)
+                                                 .create());
             return;
         }
 
@@ -513,7 +512,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
             // check if an implementation needs to force flush the aggregated results before the iteration batch
             // size is reached.
-            final boolean forceFlush = isForceFlushed(ctx, msg, itty);
+            final boolean forceFlush = isForceFlushed(nettyContext, msg, itty);
 
             // have to check the aggregate size because it is possible that the channel is not writeable (below)
             // so iterating next() if the message is not written and flushed would bump the aggregate size beyond
@@ -532,17 +531,17 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
             // send back a page of results if batch size is met or if it's the end of the results being iterated.
             // also check writeability of the channel to prevent OOME for slow clients.
-            if (ctx.channel().isWritable()) {
+            if (nettyContext.channel().isWritable()) {
                 if (forceFlush || aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
                     final ResponseStatusCode code = itty.hasNext() ? ResponseStatusCode.PARTIAL_CONTENT : ResponseStatusCode.SUCCESS;
 
                     // serialize here because in sessionless requests the serialization must occur in the same
                     // thread as the eval.  as eval occurs in the GremlinExecutor there's no way to get back to the
                     // thread that processed the eval of the script so, we have to push serialization down into that
-                    final Map<String, Object> metadata = generateMetaData(ctx, msg, code, itty);
+                    final Map<String, Object> metadata = generateMetaData(nettyContext, msg, code, itty);
                     Frame frame = null;
                     try {
-                        frame = makeFrame(ctx, msg, serializer, useBinary, aggregate, code, metadata);
+                        frame = makeFrame(context, msg, serializer, useBinary, aggregate, code, metadata);
                     } catch (Exception ex) {
                         // a frame may use a Bytebuf which is a countable release - if it does not get written
                         // downstream it needs to be released here
@@ -578,13 +577,13 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                         throw ex;
                     }
 
-                    if (!itty.hasNext()) iterateComplete(ctx, msg, itty);
+                    if (!itty.hasNext()) iterateComplete(nettyContext, msg, itty);
 
                     // the flush is called after the commit has potentially occurred.  in this way, if a commit was
                     // required then it will be 100% complete before the client receives it. the "frame" at this point
                     // should have completely detached objects from the transaction (i.e. serialization has occurred)
                     // so a new one should not be opened on the flush down the netty pipeline
-                    ctx.writeAndFlush(frame);
+                    context.writeAndFlush(code, frame);
                 }
             } else {
                 // don't keep triggering this warning over and over again for the same request

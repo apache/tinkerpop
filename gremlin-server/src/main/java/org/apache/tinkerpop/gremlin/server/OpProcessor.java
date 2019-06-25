@@ -21,8 +21,6 @@ package org.apache.tinkerpop.gremlin.server;
 import org.apache.tinkerpop.gremlin.server.op.OpProcessorException;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 
-import java.io.Closeable;
-
 /**
  * Interface for providing commands that websocket requests will respond to.
  *
@@ -47,6 +45,8 @@ public interface OpProcessor extends AutoCloseable {
      * Given the context (which contains the RequestMessage), return back a Consumer function that will be
      * executed with the context.  A typical implementation will simply check the "op" field on the RequestMessage
      * and return the Consumer function for that particular operation.
+     * @param ctx
+     * @return
      */
     public ThrowingConsumer<Context> select(final Context ctx) throws OpProcessorException;
 }
