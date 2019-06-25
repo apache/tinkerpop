@@ -22,7 +22,6 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
-import org.apache.tinkerpop.gremlin.IgnoreIteratorLeak;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -49,12 +48,10 @@ import static org.junit.Assert.assertTrue;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(Enclosed.class)
-@IgnoreIteratorLeak
 public class CommunityGeneratorTest {
     private static final Logger logger = LoggerFactory.getLogger(CommunityGeneratorTest.class);
 
     @RunWith(Parameterized.class)
-    @IgnoreIteratorLeak
     public static class DifferentDistributionsTest extends AbstractGeneratorTest {
 
         @Parameterized.Parameters(name = "test({0},{1},{2})")

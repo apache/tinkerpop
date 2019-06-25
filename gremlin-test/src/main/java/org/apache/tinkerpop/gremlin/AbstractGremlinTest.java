@@ -38,13 +38,11 @@ import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -63,11 +61,11 @@ import static org.junit.Assume.assumeThat;
  */
 public abstract class AbstractGremlinTest {
     private static final Logger logger = LoggerFactory.getLogger(AbstractGremlinTest.class);
+    protected static final boolean shouldTestIteratorLeak = Boolean.valueOf(System.getProperty("testIteratorLeaks", "true"));
     protected Graph graph;
     protected GraphTraversalSource g;
     protected Configuration config;
     protected GraphProvider graphProvider;
-    protected boolean shouldTestIteratorLeak;
 
     @Rule
     public TestName name = new TestName();
@@ -78,8 +76,6 @@ public abstract class AbstractGremlinTest {
         final LoadGraphWith[] loadGraphWiths = testMethod.getAnnotationsByType(LoadGraphWith.class);
         final LoadGraphWith loadGraphWith = loadGraphWiths.length == 0 ? null : loadGraphWiths[0];
         final LoadGraphWith.GraphData loadGraphWithData = null == loadGraphWith ? null : loadGraphWith.value();
-
-        this.shouldTestIteratorLeak =  !this.getClass().isAnnotationPresent(IgnoreIteratorLeak.class);
 
         graphProvider = GraphManager.getGraphProvider();
         graphProvider.getTestListener().ifPresent(l -> l.onTestStart(this.getClass(), name.getMethodName()));
@@ -143,7 +139,7 @@ public abstract class AbstractGremlinTest {
         if (null != graphProvider) {
             if (shouldTestIteratorLeak) {
                 long openItrCount = StoreIteratorCounter.INSTANCE.getOpenIteratorCount();
-                Assert.assertEquals("Iterator leak detected. Open iterator count=" + openItrCount, 0, openItrCount);
+                assertEquals("Iterator leak detected. Open iterator count=" + openItrCount, 0, openItrCount);
             }
 
             graphProvider.getTestListener().ifPresent(l -> l.onTestEnd(this.getClass(), name.getMethodName()));

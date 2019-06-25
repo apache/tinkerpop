@@ -42,6 +42,12 @@ public class TinkerGraphIterator<E> implements Iterator<E>, AutoCloseable {
      */
     private boolean finished;
 
+    public TinkerGraphIterator(final Iterator<E> orig) {
+        this.orig = orig;
+        StoreIteratorCounter.INSTANCE.increment();
+        finished = false;
+    }
+
     @Override
     public boolean hasNext() {
         if (next != null) return true;
@@ -75,12 +81,6 @@ public class TinkerGraphIterator<E> implements Iterator<E>, AutoCloseable {
             next = null;
             return false;
         }
-    }
-
-    public TinkerGraphIterator(final Iterator<E> orig) {
-        this.orig = orig;
-        StoreIteratorCounter.INSTANCE.increment();
-        finished = false;
     }
 
     @Override

@@ -107,11 +107,9 @@ import static org.junit.Assume.assumeThat;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(Enclosed.class)
-@IgnoreIteratorLeak
 public class IoTest {
     private static final Logger logger = LoggerFactory.getLogger(IoTest.class);
 
-    @IgnoreIteratorLeak
     public static class GraphMLTest extends AbstractGremlinTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)

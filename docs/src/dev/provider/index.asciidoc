@@ -806,14 +806,18 @@ creating temporary files. The value is typically set to the project build direct
 SureFire Plugin, this is done via the configuration argLine with `-Dbuild.dir=${project.build.directory}`.
 
 ==== Checking resource leak
-TinkerPop query engine retrieves data by interfacing with the provider using iterators. These iterators (depending
+
+The TinkerPop query engine retrieves data by interfacing with the provider using iterators. These iterators (depending
 on the provider) may hold up resources in the underlying storage layer and hence, it is critical to close them after
 the query is finished.
 
 TinkerPop provides you with the ability to test for such resource leaks by checking for leaks when you run the
 Gremlin-Test suites against your implementation. To enable this leak detection, providers should increment the
-`StoreIteratorCounter` whenever a reource is opened and decrement it when it is closed. A reference implementation
+`StoreIteratorCounter` whenever a resource is opened and decrement it when it is closed. A reference implementation
 is provided with TinkerGraph as `TinkerGraphIterator.java`.
+
+Assertions for leak detection are enabled by default when running the test suite. They can be temporarily disabled
+by way of a system property - simply set `-DtestIteratorLeaks=false".
 
 === Accessibility via GremlinPlugin
 
