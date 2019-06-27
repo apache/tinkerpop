@@ -157,6 +157,7 @@ class GraphSONReader {
 
 const deserializers = {
   'g:Traverser': typeSerializers.TraverserSerializer,
+  'g:TraversalStrategy': typeSerializers.TraversalStrategySerializer,
   'g:Int32':  typeSerializers.NumberSerializer,
   'g:Int64':  typeSerializers.NumberSerializer,
   'g:Float':  typeSerializers.NumberSerializer,
@@ -178,6 +179,7 @@ const serializers = [
   typeSerializers.DateSerializer,
   typeSerializers.BytecodeSerializer,
   typeSerializers.TraverserSerializer,
+  typeSerializers.TraversalStrategySerializer,
   typeSerializers.PSerializer,
   typeSerializers.LambdaSerializer,
   typeSerializers.EnumSerializer,
