@@ -186,5 +186,5 @@ link:http://tinkerpop.apache.org/docs/x.y.z/reference/#pagerank-step[pageRank()]
 [gremlin-groovy,modern]
 ----
 g = graph.traversal().withComputer()
-g.V().pageRank().by('pageRank').values('pageRank')
+g.V().pageRank().with(PageRank.propertyName,'pageRank').values('pageRank')
 ----

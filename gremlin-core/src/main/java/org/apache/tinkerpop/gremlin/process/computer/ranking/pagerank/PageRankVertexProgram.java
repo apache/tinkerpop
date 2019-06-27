@@ -257,31 +257,6 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
             PureTraversal.storeState(this.configuration, INITIAL_RANK_TRAVERSAL, initialRankTraversal);
             return this;
         }
-
-        /**
-         * @deprecated As of release 3.2.0, replaced by {@link org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram.Builder#initialRank(Traversal.Admin)}
-         */
-        @Deprecated
-        public Builder vertexCount(final long vertexCount) {
-            this.configuration.setProperty(VERTEX_COUNT, (double) vertexCount);
-            return this;
-        }
-
-        /**
-         * @deprecated As of release 3.2.0, replaced by {@link org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram.Builder#edges(Traversal.Admin)}
-         */
-        @Deprecated
-        public Builder traversal(final TraversalSource traversalSource, final String scriptEngine, final String traversalScript, final Object... bindings) {
-            return this.edges(new ScriptTraversal<>(traversalSource, scriptEngine, traversalScript, bindings));
-        }
-
-        /**
-         * @deprecated As of release 3.2.0, replaced by {@link org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram.Builder#edges(Traversal.Admin)}
-         */
-        @Deprecated
-        public Builder traversal(final Traversal.Admin<Vertex, Edge> traversal) {
-            return this.edges(traversal);
-        }
     }
 
     ////////////////////////////

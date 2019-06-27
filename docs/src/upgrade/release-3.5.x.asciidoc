@@ -68,11 +68,18 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2099[TINKERPOP-2099]
 The following deprecated classes, methods or fields have been removed in this version:
 
 * `gremlin-core`
-** `org.apache.tinkerpop.gremlin.process.traversal.computer.bulkdumping.BulkDumperVertexProgram`
-** `org.apache.tinkerpop.gremlin.process.traversal.computer.bulkloading.BulkLoader`
-** `org.apache.tinkerpop.gremlin.process.traversal.computer.bulkloading.BulkLoaderVertexProgram`
-** `org.apache.tinkerpop.gremlin.process.traversal.computer.bulkloading.IncrementalBulkLoader`
-** `org.apache.tinkerpop.gremlin.process.traversal.computer.bulkloading.OneTimeBulkLoader`
+** `org.apache.tinkerpop.gremlin.process.computer.bulkdumping.BulkDumperVertexProgram`
+** `org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoader`
+** `org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVertexProgram`
+** `org.apache.tinkerpop.gremlin.process.computer.bulkloading.IncrementalBulkLoader`
+** `org.apache.tinkerpop.gremlin.process.computer.bulkloading.OneTimeBulkLoader`
+** `org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram.Builder#traversal(*)`
+** `org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram.Builder#traversal(*)`
+** `org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram.Builder#vertexCount()`
+** `org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRankVertexProgramStep.modulateBy(*)`
+** `org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRankVertexProgramStep.modulateTimes()`
+** `org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressureVertexProgramStep.modulateBy(*)`
+** `org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressureVertexProgramStep.modulateTimes()`
 ** `org.apache.tinkerpop.gremlin.process.traversal.TraversalSource#withRemote(*)`
 ** `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource#withRemote(*)`
 * `gremlin-driver`

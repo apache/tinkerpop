@@ -26,9 +26,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.lambda.HaltedTrav
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TimesModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -46,8 +44,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class PeerPressureVertexProgramStep extends VertexProgramStep
-        implements TraversalParent, ByModulating, TimesModulating, Configuring {
+public final class PeerPressureVertexProgramStep extends VertexProgramStep implements TraversalParent, Configuring {
 
     private Parameters parameters = new Parameters();
     private PureTraversal<Vertex, Edge> edgeTraversal;
@@ -87,33 +84,6 @@ public final class PeerPressureVertexProgramStep extends VertexProgramStep
     @Override
     public int hashCode() {
         return super.hashCode() ^ this.edgeTraversal.hashCode() ^ this.clusterProperty.hashCode() ^ this.times;
-    }
-
-    /**
-     * @deprecated As of release 3.4.0, replaced by {@link #configure(Object...)}
-     */
-    @Deprecated
-    @Override
-    public void modulateBy(final Traversal.Admin<?, ?> edgeTraversal) {
-        configure(PeerPressure.edges, edgeTraversal);
-    }
-
-    /**
-     * @deprecated As of release 3.4.0, replaced by {@link #configure(Object...)}
-     */
-    @Deprecated
-    @Override
-    public void modulateBy(final String clusterProperty) {
-        configure(PeerPressure.propertyName, clusterProperty);
-    }
-
-    /**
-     * @deprecated As of release 3.4.0, replaced by {@link #configure(Object...)}
-     */
-    @Deprecated
-    @Override
-    public void modulateTimes(int times) {
-        configure(PeerPressure.times, times);
     }
 
     @Override

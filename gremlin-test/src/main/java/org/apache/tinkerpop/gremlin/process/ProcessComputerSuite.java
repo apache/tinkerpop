@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest;
 import org.apache.tinkerpop.gremlin.process.computer.clone.CloneVertexProgramTest;
-import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgramTest;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgramTest;
 import org.apache.tinkerpop.gremlin.process.computer.search.path.ShortestPathVertexProgramTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
@@ -197,7 +196,6 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
 
             // algorithms
             PageRankVertexProgramTest.class,
-            PeerPressureVertexProgramTest.class,
             ShortestPathVertexProgramTest.class,
             CloneVertexProgramTest.class,
 

@@ -34,34 +34,18 @@ Feature: Step - peerPressure()
       | v[peter] |
     And the graph should return 6 for count of "g.withComputer().V().peerPressure().has(\"gremlin.peerPressureVertexProgram.cluster\")"
 
-  Scenario: g_V_peerPressure_byXclusterX_byXoutEXknowsXX_pageRankX1X_byXrankX_byXoutEXknowsXX_timesX2X_group_byXclusterX_byXrank_sumX_limitX100X
+  Scenario: g_V_peerPressure_withXpropertyName_clusterX_withXedges_outEXknowsXX_pageRankX1X_byXrankX_withXedges_outEXknowsX_withXtimes_2X_group_byXclusterX_byXrank_sumX_limitX100X
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().peerPressure().by("cluster").by(__.outE("knows")).pageRank(1.0).by("rank").by(__.outE("knows")).times(1).group().by("cluster").by(__.values("rank").sum()).limit(100)
+      g.withComputer().V().peerPressure().with("~tinkerpop.peerPressure.propertyName","cluster").with("~tinkerpop.peerPressure.edges",__.outE("knows")).pageRank(1.0).with("~tinkerpop.pageRank.propertyName", "rank").with("~tinkerpop.pageRank.edges", __.outE("knows")).with("~tinkerpop.pageRank.times", 1).group().by("cluster").by(__.values("rank").sum()).limit(100)
       """
     When iterated to list
     Then the result should be unordered
       | result |
       | m[{"d[1].l":"d[0.5833333333333333].d","d[3].l":"d[0.1388888888888889].d","d[5].l":"d[0.1388888888888889].d","d[6].l":"d[0.1388888888888889].d"}] |
 
-  Scenario: g_V_hasXname_rippleX_inXcreatedX_peerPressure_byXoutEX_byXclusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX
-    Given the modern graph
-    And the traversal of
-      """
-      g.withComputer().V().has("name", "ripple").in("created").peerPressure().by(__.outE()).by("cluster").repeat(__.union(__.identity(), __.both())).times(2).dedup().valueMap("name", "cluster")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | m[{"name": ["marko"], "cluster": [1]}] |
-      | m[{"name": ["vadas"], "cluster": [2]}] |
-      | m[{"name": ["lop"], "cluster": [4]}] |
-      | m[{"name": ["josh"], "cluster": [4]}] |
-      | m[{"name": ["ripple"], "cluster": [4]}] |
-      | m[{"name": ["peter"], "cluster": [6]}] |
-
-  Scenario: g_V_hasXname_rippleX_inXcreatedX_peerPressure_withXEDGES_outEX_withXPROPERTY_NAME_clusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX
+  Scenario: g_V_hasXname_rippleX_inXcreatedX_peerPressure_withXedges_outEX_withyXpropertyName_clusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX
     Given the modern graph
     And the traversal of
       """
