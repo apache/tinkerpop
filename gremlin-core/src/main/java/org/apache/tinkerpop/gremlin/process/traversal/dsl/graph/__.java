@@ -898,6 +898,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#aggregate(Scope, String)
+     */
+    public static <A> GraphTraversal<A, A> aggregate(final Scope scope, final String sideEffectKey) {
+        return __.<A>start().aggregate(scope, sideEffectKey);
+    }
+
+    /**
      * @see GraphTraversal#group(String)
      */
     public static <A> GraphTraversal<A, A> group(final String sideEffectKey) {
@@ -934,7 +941,9 @@ public class __ {
 
     /**
      * @see GraphTraversal#store(String)
+     * @deprecated As of release 3.4.3, replaced by {@link #aggregate(Scope, String)} using {@link Scope#local}.
      */
+    @Deprecated
     public static <A> GraphTraversal<A, A> store(final String sideEffectKey) {
         return __.<A>start().store(sideEffectKey);
     }

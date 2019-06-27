@@ -1972,7 +1972,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Eagerly collects objects up to this step into a side-effect.
+     * Eagerly collects objects up to this step into a side-effect. Same as calling {@link #aggregate(Scope, String)}
+     * with a {@link Scope#local}.
      *
      * @param sideEffectKey the name of the side-effect key that will hold the aggregated objects
      * @return the traversal with an appended {@link AggregateStep}
@@ -1982,6 +1983,21 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, E> aggregate(final String sideEffectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.aggregate, sideEffectKey);
         return this.asAdmin().addStep(new AggregateStep<>(this.asAdmin(), sideEffectKey));
+    }
+
+    /**
+     * Collects objects in a list using the {@link Scope} argument to determine whether it should be lazy
+     * {@link Scope#local} or eager ({@link Scope#global} while gathering those objects.
+     *
+     * @param sideEffectKey the name of the side-effect key that will hold the aggregated objects
+     * @return the traversal with an appended {@link AggregateStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#aggregate-step" target="_blank">Reference Documentation - Aggregate Step</a>
+     * @since 3.4.3
+     */
+    public default GraphTraversal<S, E> aggregate(final Scope scope, final String sideEffectKey) {
+        this.asAdmin().getBytecode().addStep(Symbols.aggregate, scope, sideEffectKey);
+        return this.asAdmin().addStep(scope == Scope.global ?
+                new AggregateStep<>(this.asAdmin(), sideEffectKey) : new StoreStep<>(this.asAdmin(), sideEffectKey));
     }
 
     /**
@@ -2045,6 +2061,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link StoreStep}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#store-step" target="_blank">Reference Documentation - Store Step</a>
      * @since 3.0.0-incubating
+     * @deprecated As of release 3.4.3, replaced by {@link #aggregate(Scope, String)} using {@link Scope#local}.
      */
     public default GraphTraversal<S, E> store(final String sideEffectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.store, sideEffectKey);
@@ -2984,6 +3001,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String sideEffect = "sideEffect";
         public static final String cap = "cap";
         public static final String property = "property";
+
+        /**
+         * @deprecated As of release 3.4.3, replaced by {@link Symbols#aggregate} with a {@link Scope#local}.
+         */
+        @Deprecated
         public static final String store = "store";
         public static final String aggregate = "aggregate";
         public static final String subgraph = "subgraph";

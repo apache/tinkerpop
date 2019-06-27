@@ -33,6 +33,22 @@ Feature: Step - aggregate()
       | vadas |
       | ripple |
 
+  Scenario: g_V_valueXnameX_aggregateXglobal_xX_capXxX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("name").aggregate(Scope.global,"x").cap("x")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | marko |
+      | josh |
+      | peter |
+      | lop |
+      | vadas |
+      | ripple |
+
   Scenario: g_V_aggregateXxX_byXnameX_capXxX
     Given the modern graph
     And the traversal of
@@ -78,3 +94,73 @@ Feature: Step - aggregate()
       | d[27].i |
       | d[32].i |
       | d[35].i |
+
+  Scenario: g_V_aggregateXlocal_a_nameX_out_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().aggregate(Scope.local,"a").by("name").out().cap("a")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter  |
+
+  Scenario: g_VX1X_aggregateXlocal_aX_byXnameX_out_aggregateXlocal_aX_byXnameX_name_capXaX
+    Given the modern graph
+    And using the parameter v1Id defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(v1Id).aggregate(Scope.local,"a").by("name").out().aggregate(Scope.local,"a").by("name").values("name").cap("a")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+
+  Scenario: g_withSideEffectXa_setX_V_both_name_aggregateXlocal_aX_capXaX
+    Given the modern graph
+    And using the parameter initial defined as "s[]"
+    And the traversal of
+      """
+      g.withSideEffect("a", initial).V().both().values("name").aggregate(Scope.local,"a").cap("a")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter  |
+
+  Scenario: g_V_aggregateXlocal_aX_byXoutEXcreatedX_countX_out_out_aggregateXlocal_aX_byXinEXcreatedX_weight_sumX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().aggregate(Scope.local,"a").
+             by(__.outE("created").count()).
+        out().out().aggregate(Scope.local,"a").
+                      by(__.inE("created").values("weight").sum()).
+        cap("a")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | d[1].l |
+      | d[1].l |
+      | d[0].l |
+      | d[0].l |
+      | d[0].l |
+      | d[2].l |
+      | d[1.0].d |
+      | d[1.0].d |

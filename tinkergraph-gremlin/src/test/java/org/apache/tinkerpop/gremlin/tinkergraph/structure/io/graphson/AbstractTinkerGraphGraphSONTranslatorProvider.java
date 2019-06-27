@@ -228,6 +228,10 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StoreTest",
         method = "g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX",
         reason = "This test returns BulkSet which isn't supported in GraphSON 3.0 until 3.4.0.")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateTest",
+        method = "g_withSideEffectXa_setX_V_both_name_aggregateXlocal_aX_capXaX",
+        reason = "This test returns BulkSet which isn't supported in GraphSON 3.0 until 3.4.0.")
 public abstract class AbstractTinkerGraphGraphSONTranslatorProvider extends TinkerGraphProvider {
 
     private final GraphSONVersion version;
