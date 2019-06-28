@@ -537,8 +537,9 @@ no need to `commit()`.  If your `Graph` does support transactions, intermediate 
 applied.
 
 To load larger data sets you should read about the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#clonevertexprogram[BulkLoaderVertexProgram] (BLVP), which
-provides a generalized method for loading graphs of virtually any size.
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#clonevertexprogram[CloneVertexProgram], which provides a
+generalized method for loading graphs of virtually any size and consider the native bulk loading features of the
+underlying graph database that you've chosen.
 
 === Gremlin Server
 
