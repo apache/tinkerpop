@@ -47,6 +47,6 @@ public final class UnionStep<S, E> extends BranchStep<S, E, TraversalOptionParen
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.traversalOptions.getOrDefault(Pick.any, Collections.emptyList()));
+        return StringFactory.stepString(this, this.traversalPickOptions.getOrDefault(Pick.any, Collections.emptyList()));
     }
 }

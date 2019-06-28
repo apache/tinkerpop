@@ -27,6 +27,36 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.3.8/CHANGELOG.asciidoc#release-3-3-8[changelog] for a complete list of all the modifications that are part of this release.
 
+== Upgrading for Users
+
+==== Branch Steps accept Predicates and Traversals
+
+Prior to this version, branch steps (in particular `BranchStep` and `ChooseStep`) could only handle constant values and `Pick` tokens. Starting in this version, these steps will also accept
+predicates and traversals as show in the example below.
+
+[source,text]
+----
+gremlin> g = TinkerFactory.createModern().traversal()
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+gremlin> g.V().hasLabel("person").
+......1>   group().
+......2>     by("name").
+......3>     by(branch(values("age")).
+......4>          option(29, constant("almost old")).
+......5>          option(__.is(32), constant("looks like josh")).
+......6>          option(lt(29), constant("pretty young")).
+......7>          option(lt(35), constant("younger than peter")).
+......8>          option(gte(30), constant("pretty old")).
+......9>          option(none, constant("mysterious")).fold()).
+.....10>   unfold()
+==>peter=[pretty old]
+==>vadas=[pretty young, younger than peter]
+==>josh=[looks like josh, younger than peter, pretty old]
+==>marko=[almost old, younger than peter]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1084[TINKERPOP-1084]
+
 
 == TinkerPop 3.3.7
 
