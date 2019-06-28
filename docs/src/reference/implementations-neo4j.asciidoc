@@ -225,36 +225,6 @@ IMPORTANT: `LabelP.of()` is only required if multi-labels are leveraged. `LabelP
 filtering/looking-up vertices by their label(s) as the standard `P.eq()` does a direct match on the `::`-representation
 of `vertex.label()`
 
-=== Loading with BulkLoaderVertexProgram
-
-The <<clonevertexprogram, CloneVertexProgram>> is a generalized bulk loader that can be used to load
-large amounts of data to and from Neo4j. The following code demonstrates how to load the modern graph from TinkerGraph
-into Neo4j:
-
-[gremlin-groovy]
-----
-wgConf = 'conf/neo4j-standalone.properties'
-modern = TinkerFactory.createModern()
-blvp = BulkLoaderVertexProgram.build().
-           keepOriginalIds(false).
-           writeGraph(wgConf).create(modern)
-modern.compute().workers(1).program(blvp).submit().get()
-graph = GraphFactory.open(wgConf)
-g = graph.traversal()
-g.V().valueMap()
-graph.close()
-----
-
-[source,properties]
-----
-# neo4j-standalone.properties
-
-gremlin.graph=org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph
-gremlin.neo4j.directory=/tmp/neo4j
-gremlin.neo4j.conf.dbms.auto_index.nodes.enabled=true
-gremlin.neo4j.conf.dbms.auto_index.relationships.enabled=true
-----
-
 === High Availability Configuration
 
 image:neo4j-ha.png[width=400,float=right] TinkerPop supports running Neo4j with its fault tolerant master-slave replication configuration, referred to as its
