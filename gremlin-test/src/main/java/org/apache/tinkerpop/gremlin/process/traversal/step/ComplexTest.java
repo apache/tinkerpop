@@ -44,6 +44,7 @@ import java.util.Map;
 import static java.util.Collections.emptyList;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.gte;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.lt;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.Pop.all;
@@ -51,6 +52,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.Pop.first;
 import static org.apache.tinkerpop.gremlin.process.traversal.Pop.last;
 import static org.apache.tinkerpop.gremlin.process.traversal.Scope.local;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.branch;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.constant;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.count;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.group;
@@ -85,6 +87,8 @@ public abstract class ComplexTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, List<Object>> getAllShortestPaths();
 
     public abstract Traversal<Vertex, Map<String, List<String>>> getPlaylistPaths();
+
+    public abstract Traversal<Vertex, Map<String, List<String>>> getAgeComments();
 
     /**
      * Checks the result of both coworkerSummary tests, which is expected to look as follows:
@@ -243,6 +247,32 @@ public abstract class ComplexTest extends AbstractGremlinProcessTest {
         assertTrue(map.get("artists").contains("Grateful_Dead"));
     }
 
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void ageComments() {
+        final Traversal<Vertex, Map<String, List<String>>> traversal = getAgeComments();
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        Map<String, List<String>> map = traversal.next();
+        assertEquals(4, map.size());
+        assertTrue(map.containsKey("marko"));
+        assertEquals(2, map.get("marko").size());
+        assertTrue(map.get("marko").contains("almost old"));
+        assertTrue(map.get("marko").contains("younger than peter"));
+        assertTrue(map.containsKey("vadas"));
+        assertEquals(2, map.get("vadas").size());
+        assertTrue(map.get("vadas").contains("pretty young"));
+        assertTrue(map.get("vadas").contains("younger than peter"));
+        assertTrue(map.containsKey("josh"));
+        assertEquals(3, map.get("josh").size());
+        assertTrue(map.get("josh").contains("younger than peter"));
+        assertTrue(map.get("josh").contains("pretty old"));
+        assertTrue(map.get("josh").contains("looks like josh"));
+        assertTrue(map.containsKey("peter"));
+        assertEquals(1, map.get("peter").size());
+        assertTrue(map.get("peter").contains("pretty old"));
+    }
+
     public static class Traversals extends ComplexTest {
 
         @Override
@@ -323,6 +353,18 @@ public abstract class ComplexTest extends AbstractGremlinProcessTest {
                     by("name").
                     by(__.coalesce(out("sungBy", "writtenBy").dedup().values("name"), constant("Unknown")).fold());
         }
+
+        @Override
+        public Traversal<Vertex, Map<String, List<String>>> getAgeComments() {
+            return g.V().hasLabel("person")
+                    .<String, List<String>> group()
+                        .by("name")
+                        .by(branch(values("age"))
+                                .option(29, constant("almost old"))
+                                .option(__.is(32), constant("looks like josh"))
+                                .option(lt(29), constant("pretty young"))
+                                .option(lt(35), constant("younger than peter"))
+                                .option(gte(30), constant("pretty old")).fold());
+        }
     }
 }
-
