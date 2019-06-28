@@ -40,9 +40,14 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.Operator.sum;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.between;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.gt;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.gte;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.lt;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.branch;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.choose;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.constant;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
@@ -52,6 +57,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.sack;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.union;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.valueMap;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
