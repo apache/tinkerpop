@@ -3332,7 +3332,7 @@ to in Gremlin with the double underscore `__.in()`.
 
 [NOTE, caption=Javascript]
 ====
-The term `in` is a reserved word in Python, and therefore must be referred to in Gremlin with `in_()`.
+The term `in` is a reserved word in Javascript, and therefore must be referred to in Gremlin with `in_()`.
 ====
 
 [NOTE, caption=Python]
@@ -3446,6 +3446,16 @@ link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/grem
 The `with()`-step is not an actual step, but is instead a "step modulator" which modifies the behavior of the step
 prior to it. The `with()`-step provides additional "configuration" information to steps that implement the `Configuring`
 interface. Steps that allow for this type of modulation will explicitly state so in their documentation.
+
+[NOTE, caption=Javascript]
+====
+The term `with` is a reserved word in Javascript, and therefore must be referred to in Gremlin with `with_()`.
+====
+
+[NOTE, caption=Python]
+====
+The term `with` is a reserved word in Python, and therefore must be referred to in Gremlin with `with_()`.
+====
 
 [[a-note-on-predicates]]
 == A Note on Predicates
