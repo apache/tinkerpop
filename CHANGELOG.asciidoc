@@ -29,6 +29,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Improved exception and messaging for gt/gte/lt/lte when one of the object isn't a `Comparable`.
 * Added test infrastructure to check for storage iterator leak.
 * Fixed multiple iterator leaks in query processor.
+* Fixed `optional()` so that the child traversal is treated as local.
 * Improved error messaging for invalid inputs to the TinkerGraph `IdManager` instances.
 * Forced replacement of connections in Java driver for certain exception types that seem to ultimately kill the connection.
 * Changed the `reverse()` of `desc` and `asc` on `Order` to not use the deprecated `decr` and `incr`.
