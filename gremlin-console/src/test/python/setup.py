@@ -29,7 +29,7 @@ setup(
         'pytest-runner',
     ],
     tests_require=[
-        'pytest',
+        'pytest==4.6.4',
         'mock',
         'pexpect'
     ]
