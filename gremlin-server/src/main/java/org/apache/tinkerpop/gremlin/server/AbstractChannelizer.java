@@ -84,7 +84,10 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
                 put(AbstractGryoMessageSerializerV1d0.TOKEN_SERIALIZE_RESULT_TO_STRING, true);
             }}),
             new Settings.SerializerSettings(GraphSONMessageSerializerV2d0.class.getName(), Collections.emptyMap()),
-            new Settings.SerializerSettings(GraphBinaryMessageSerializerV1.class.getName(), Collections.emptyMap())
+            new Settings.SerializerSettings(GraphBinaryMessageSerializerV1.class.getName(), Collections.emptyMap()),
+            new Settings.SerializerSettings(GraphBinaryMessageSerializerV1.class.getName(), new HashMap<String,Object>(){{
+                put(GraphBinaryMessageSerializerV1.TOKEN_SERIALIZE_RESULT_TO_STRING, true);
+            }})
     );
 
     protected Settings settings;
@@ -108,15 +111,14 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
     protected final Map<String, MessageSerializer> serializers = new HashMap<>();
 
-    private IdleStateHandler idleStateHandler;
     private OpSelectorHandler opSelectorHandler;
     private OpExecutorHandler opExecutorHandler;
 
     protected Authenticator authenticator;
 
     /**
-     * This method is called from within {@link #initChannel(io.netty.channel.socket.SocketChannel)} just after
-     * the SSL handler is put in the pipeline.  Modify the pipeline as needed here.
+     * This method is called from within {@code SocketChannel} just after the SSL handler is put in the pipeline.
+     * Modify the pipeline as needed here.
      */
     public abstract void configure(final ChannelPipeline pipeline);
 

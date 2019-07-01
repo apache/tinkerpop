@@ -27,6 +27,16 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.3/CHANGELOG.asciidoc#release-3-4-3[changelog] for a complete list of all the modifications that are part of this release.
 
+=== Upgrading for Users
+
+==== Deprecate Gryo in Gremlin Server
+
+Gryo is now deprecated as a serialization format for Gremlin Server, however, it is still configured as a default
+option in the sample configuration files packaged with the server. The preferred serialization option should now be
+GraphBinary. Note that Gremlin Console is now configured to use GraphBinary by default.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2250[TINKERPOP-2250]
+
 === Upgrading for Providers
 
 ==== Graph Driver Providers
