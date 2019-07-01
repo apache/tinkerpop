@@ -52,7 +52,7 @@ echo "Using Gremlin Server $GREMLIN_SERVER_VERSION"
 sed -e "s/GREMLIN_SERVER_VERSION\$/${GREMLIN_SERVER_VERSION}/" docker/gremlin-server/Dockerfile.template > Dockerfile
 
 docker build -t tinkerpop:${BUILD_TAG} .
-docker run ${TINKERPOP_TEST_DOCKER_OPTS} ${REMOVE_CONTAINER} -ti tinkerpop:${BUILD_TAG} ${@}
+docker run ${TINKERPOP_TEST_DOCKER_OPTS} ${REMOVE_CONTAINER} -ti tinkerpop:${BUILD_TAG} "$GREMLIN_SERVER_VERSION" ${@}
 
 status=$?
 popd > /dev/null
