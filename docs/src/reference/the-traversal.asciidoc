@@ -2987,7 +2987,7 @@ to in Gremlin with the double underscore `__.in()`.
 
 [NOTE, caption=Javascript]
 ====
-The term `in` is a reserved word in Python, and therefore must be referred to in Gremlin with `in_()`.
+The term `in` is a reserved word in Javascript, and therefore must be referred to in Gremlin with `in_()`.
 ====
 
 [NOTE, caption=Python]
