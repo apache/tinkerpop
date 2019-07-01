@@ -482,15 +482,12 @@ on Windows):
 [source,text]
 ----
 $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
-[INFO] GremlinServer -
+[INFO] GremlinServer
          \,,,/
          (o o)
 -----oOOo-(3)-oOOo-----
 
-[INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server.yaml
-[INFO] MetricManager - Configured Metrics ConsoleReporter configured with report interval=180000ms
-[INFO] MetricManager - Configured Metrics CsvReporter configured with report interval=180000ms to fileName=/tmp/gremlin-server-metrics.csv
-[INFO] MetricManager - Configured Metrics JmxReporter configured with domain= and agentId=
+[INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-modern.yaml
 [INFO] MetricManager - Configured Metrics Slf4jReporter configured with interval=180000ms and loggerName=org.apache.tinkerpop.gremlin.server.Settings$Slf4jReporterMetrics
 [INFO] DefaultGraphManager - Graph [graph] was successfully configured via [conf/tinkergraph-empty.properties].
 [INFO] ServerGremlinExecutor - Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*
@@ -503,11 +500,17 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 [INFO] TraversalOpProcessor - Initialized cache for TraversalOpProcessor with size 1000 and expiration time of 600000 ms
 [INFO] GremlinServer - Executing start up LifeCycleHook
 [INFO] Logger$info - Loading 'modern' graph data.
+[INFO] GremlinServer - idleConnectionTimeout was set to 0 which resolves to 0 seconds when configuring this value - this feature will be disabled
+[INFO] GremlinServer - keepAliveInterval was set to 0 which resolves to 0 seconds when configuring this value - this feature will be disabled
+[WARN] AbstractChannelizer - The org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0 serialization class is deprecated.
 [INFO] AbstractChannelizer - Configured application/vnd.gremlin-v3.0+gryo with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0
+[WARN] AbstractChannelizer - The org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0 serialization class is deprecated.
 [INFO] AbstractChannelizer - Configured application/vnd.gremlin-v3.0+gryo-stringd with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0
 [INFO] AbstractChannelizer - Configured application/vnd.gremlin-v3.0+json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0
 [INFO] AbstractChannelizer - Configured application/json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0
-[INFO] GremlinServer$1 - Gremlin Server configured with worker thread pool of 1, gremlin pool of 8 and boss thread pool of 1.
+[INFO] AbstractChannelizer - Configured application/vnd.graphbinary-v1.0 with org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1
+[INFO] AbstractChannelizer - Configured application/vnd.graphbinary-v1.0-stringd with org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1
+[INFO] GremlinServer$1 - Gremlin Server configured with worker thread pool of 1, gremlin pool of 4 and boss thread pool of 1.
 [INFO] GremlinServer$1 - Channel started at port 8182.
 ----
 

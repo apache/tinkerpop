@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
 import org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator;
@@ -197,21 +198,22 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
     }
 
     @Test
-    public void shouldAuthenticateWithSerializeResultToStringV1() throws Exception {
-        final MessageSerializer serializer = new GryoMessageSerializerV1d0();
-        final Map<String,Object> config = new HashMap<>();
-        config.put("serializeResultToString", true);
-        serializer.configure(config, null);
-        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).serializer(serializer).create();
-        final Client client = cluster.connect();
-        assertConnection(cluster, client);
+    public void shouldAuthenticateWithSerializeResultToStringGryoV1() throws Exception {
+        assertAuthViaToStringWithSpecifiedSerializer(new GryoMessageSerializerV1d0());
     }
 
     @Test
-    public void shouldAuthenticateWithSerializeResultToStringV3() throws Exception {
-        final MessageSerializer serializer = new GryoMessageSerializerV3d0();
-        final Map<String, Object> config = new HashMap<>();
+    public void shouldAuthenticateWithSerializeResultToStringGryoV3() throws Exception {
+        assertAuthViaToStringWithSpecifiedSerializer(new GryoMessageSerializerV3d0());
+    }
+
+    @Test
+    public void shouldAuthenticateWithSerializeResultToStringGraphBinaryV1() throws Exception {
+        assertAuthViaToStringWithSpecifiedSerializer(new GraphBinaryMessageSerializerV1());
+    }
+
+    public void assertAuthViaToStringWithSpecifiedSerializer(final MessageSerializer serializer) throws InterruptedException, ExecutionException {
+        final Map<String,Object> config = new HashMap<>();
         config.put("serializeResultToString", true);
         serializer.configure(config, null);
         final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)

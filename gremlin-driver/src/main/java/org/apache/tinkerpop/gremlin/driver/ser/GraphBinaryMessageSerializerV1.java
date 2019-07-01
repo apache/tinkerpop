@@ -35,17 +35,24 @@ import org.javatuples.Pair;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
+
     public static final String TOKEN_CUSTOM = "custom";
     public static final String TOKEN_BUILDER = "builder";
-    private static final String MIME_TYPE = SerTokens.MIME_GRAPHBINARY_V1D0;
-    private static final byte[] HEADER = MIME_TYPE.getBytes(UTF_8);
+    public static final String TOKEN_SERIALIZE_RESULT_TO_STRING = "serializeResultToString";
 
+    private static final String MIME_TYPE = SerTokens.MIME_GRAPHBINARY_V1D0;
+    private static final String MIME_TYPE_STRINGD = SerTokens.MIME_GRAPHBINARY_V1D0 + "-stringd";
+
+    private byte[] header = MIME_TYPE.getBytes(UTF_8);
+    private boolean serializeToString = false;
     private GraphBinaryReader reader;
     private GraphBinaryWriter writer;
     private RequestMessageSerializer requestSerializer;
@@ -109,6 +116,9 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
 
         addCustomClasses(config, builder);
 
+        this.serializeToString = Boolean.parseBoolean(config.getOrDefault(TOKEN_SERIALIZE_RESULT_TO_STRING, "false").toString());
+        this.header = this.serializeToString ? MIME_TYPE_STRINGD.getBytes(UTF_8) : MIME_TYPE.getBytes(UTF_8);
+
         final TypeSerializerRegistry registry = builder.create();
         reader = new GraphBinaryReader(registry);
         writer = new GraphBinaryWriter(registry);
@@ -122,7 +132,15 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
         final ByteBuf buffer = allocator.buffer();
 
         try {
-            responseSerializer.writeValue(responseMessage, buffer, writer);
+            final ResponseMessage msgToWrite = !serializeToString ? responseMessage :
+                    ResponseMessage.build(responseMessage.getRequestId())
+                            .code(responseMessage.getStatus().getCode())
+                            .statusAttributes(responseMessage.getStatus().getAttributes())
+                            .responseMetaData(responseMessage.getResult().getMeta())
+                            .result(serializeResultToString(responseMessage))
+                            .statusMessage(responseMessage.getStatus().getMessage()).create();
+
+            responseSerializer.writeValue(msgToWrite, buffer, writer);
         } catch (Exception ex) {
             buffer.release();
             throw ex;
@@ -133,7 +151,7 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
 
     @Override
     public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator) throws SerializationException {
-        final ByteBuf buffer = allocator.buffer().writeByte(HEADER.length).writeBytes(HEADER);
+        final ByteBuf buffer = allocator.buffer().writeByte(header.length).writeBytes(header);
 
         try {
             requestSerializer.writeValue(requestMessage, buffer, writer);
@@ -157,7 +175,7 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
 
     @Override
     public String[] mimeTypesSupported() {
-        return new String[] { MIME_TYPE };
+        return new String[]{serializeToString ? MIME_TYPE_STRINGD : MIME_TYPE};
     }
 
     private void addCustomClasses(final Map<String, Object> config, final TypeSerializerRegistry.Builder builder) {
@@ -186,5 +204,18 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
                 throw new IllegalStateException("CustomTypeSerializer could not be instantiated", ex);
             }
         });
+    }
+
+    private Object serializeResultToString(final ResponseMessage msg) {
+        if (msg.getResult() == null) return "null";
+        if (msg.getResult().getData() == null) return "null";
+
+        // the IteratorHandler should return a collection so keep it as such
+        final Object o = msg.getResult().getData();
+        if (o instanceof Collection) {
+            return ((Collection) o).stream().map(d -> null == d ? "null" : d.toString()).collect(Collectors.toList());
+        } else {
+            return o.toString();
+        }
     }
 }

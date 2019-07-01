@@ -29,8 +29,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -39,7 +37,6 @@ import java.util.List;
  */
 @ChannelHandler.Sharable
 public final class WebSocketGremlinRequestEncoder extends MessageToMessageEncoder<RequestMessage> {
-    private static final Logger logger = LoggerFactory.getLogger(WebSocketGremlinRequestEncoder.class);
     private final boolean binaryEncoding;
 
     private final MessageSerializer serializer;

@@ -83,7 +83,10 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
                 put(AbstractGryoMessageSerializerV1d0.TOKEN_SERIALIZE_RESULT_TO_STRING, true);
             }}),
             new Settings.SerializerSettings(GraphSONMessageSerializerV2d0.class.getName(), Collections.emptyMap()),
-            new Settings.SerializerSettings(GraphBinaryMessageSerializerV1.class.getName(), Collections.emptyMap())
+            new Settings.SerializerSettings(GraphBinaryMessageSerializerV1.class.getName(), Collections.emptyMap()),
+            new Settings.SerializerSettings(GraphBinaryMessageSerializerV1.class.getName(), new HashMap<String,Object>(){{
+                put(GraphBinaryMessageSerializerV1.TOKEN_SERIALIZE_RESULT_TO_STRING, true);
+            }})
     );
 
     protected Settings settings;
