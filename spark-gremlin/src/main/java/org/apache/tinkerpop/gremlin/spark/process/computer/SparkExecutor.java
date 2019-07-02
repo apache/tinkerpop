@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.spark.process.computer;
 
 import org.apache.spark.api.java.Optional;
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFlatMapFunction;

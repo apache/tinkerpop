@@ -29,6 +29,33 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.5.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Configuration Upgrade
+
+There is a major breaking change in the use of `Configuration` objects. Prior to 3.5.0, `Configuration` objects were
+from the Apache Commons `commons-configuration` library, but in this version, they are of `commons-configuration2`.
+While this is a breaking change, the fix for most implementations will be quite simple, Simply, change the import
+statements from:
+
+[source,text]
+----
+org.apache.commons.configuration.*
+----
+
+to
+
+
+[source,text]
+----
+org.apache.commons.configuration2.*
+----
+
+It is also worth noting that default list handling in configurations is treated differently. TinkerPop largely
+disabled the default list handling approach in `Configuration` 1.x, but if that functionality is still needed, it can
+be reclaimed by setting the `LegacyListDelimiterHandler` - details for doing taking this step and other relevant
+upgrade information can be found in the link:https://commons.apache.org/proper/commons-configuration/userguide/upgradeto2_0.html[2.x Upgrade Documentation].
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2185[TINKERPOP-2185]
+
 ==== addV() and null
 
 There was a bit of inconsistency in the handling of `null` in calls to `property()` depending on the type of mutation

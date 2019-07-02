@@ -20,7 +20,7 @@
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import groovy.json.StringEscapeUtils;
-import org.apache.commons.configuration.ConfigurationConverter;
+import org.apache.commons.configuration2.ConfigurationConverter;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
@@ -205,7 +205,7 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
                 if (proxy.getConfiguration().isEmpty())
                     return proxy.getStrategyClass().getCanonicalName() + ".instance()";
                 else
-                    return proxy.getStrategyClass().getCanonicalName() + ".create(new org.apache.commons.configuration.MapConfiguration(" + convertToString(ConfigurationConverter.getMap(proxy.getConfiguration())) + "))";
+                    return proxy.getStrategyClass().getCanonicalName() + ".create(new org.apache.commons.configuration2.MapConfiguration(" + convertToString(ConfigurationConverter.getMap(proxy.getConfiguration())) + "))";
             } else if (object instanceof TraversalStrategy) {
                 return convertToString(new TraversalStrategyProxy(((TraversalStrategy) object)));
             } else

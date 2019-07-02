@@ -18,9 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.spark.process.computer;
 
-import org.apache.commons.configuration.ConfigurationUtils;
-import org.apache.commons.configuration.FileConfiguration;
-import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration2.ConfigurationUtils;
+import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -102,7 +101,7 @@ import static org.apache.tinkerpop.gremlin.hadoop.Constants.SPARK_SERIALIZER;
  */
 public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
 
-    private final org.apache.commons.configuration.Configuration sparkConfiguration;
+    private final org.apache.commons.configuration2.Configuration sparkConfiguration;
     private boolean workersSet = false;
     private final ThreadFactory threadFactoryBoss = new BasicThreadFactory.Builder().namingPattern(SparkGraphComputer.class.getSimpleName() + "-boss").build();
 
@@ -251,7 +250,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
             //////////////////////////////////////////////////
             //////////////////////////////////////////////////
             // apache and hadoop configurations that are used throughout the graph computer computation
-            final org.apache.commons.configuration.Configuration graphComputerConfiguration = new HadoopConfiguration(this.sparkConfiguration);
+            final org.apache.commons.configuration2.Configuration graphComputerConfiguration = new HadoopConfiguration(this.sparkConfiguration);
             if (!graphComputerConfiguration.containsKey(Constants.SPARK_SERIALIZER)) {
                 graphComputerConfiguration.setProperty(Constants.SPARK_SERIALIZER, KryoSerializer.class.getCanonicalName());
                 if (!graphComputerConfiguration.containsKey(Constants.SPARK_KRYO_REGISTRATOR))
@@ -541,7 +540,8 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
     }
 
     public static void main(final String[] args) throws Exception {
-        final FileConfiguration configuration = new PropertiesConfiguration(args[0]);
+        final Configurations configs = new Configurations();
+        final org.apache.commons.configuration2.Configuration configuration = configs.properties(args[0]);
         new SparkGraphComputer(HadoopGraph.open(configuration)).program(VertexProgram.createVertexProgram(HadoopGraph.open(configuration), configuration)).submit().get();
     }
 }

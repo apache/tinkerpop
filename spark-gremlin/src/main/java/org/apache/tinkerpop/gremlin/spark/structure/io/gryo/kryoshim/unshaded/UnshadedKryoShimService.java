@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.spark.structure.io.gryo.kryoshim.unshaded;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.spark.SparkConf;
 import org.apache.spark.serializer.KryoSerializer;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;

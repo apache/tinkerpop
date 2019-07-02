@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.computer.util;
 
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.Configuration;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

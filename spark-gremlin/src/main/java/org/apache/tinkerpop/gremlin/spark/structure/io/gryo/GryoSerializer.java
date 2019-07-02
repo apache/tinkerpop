@@ -20,8 +20,8 @@
 package org.apache.tinkerpop.gremlin.spark.structure.io.gryo;
 
 
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.python.PythonBroadcast;
 import org.apache.spark.broadcast.TorrentBroadcast;
@@ -115,7 +115,6 @@ public final class GryoSerializer extends Serializer implements Serializable {
 
     private static Configuration makeApacheConfiguration(final SparkConf sparkConfiguration) {
         final BaseConfiguration apacheConfiguration = new BaseConfiguration();
-        apacheConfiguration.setDelimiterParsingDisabled(true);
         for (final Tuple2<String, String> tuple : sparkConfiguration.getAll()) {
             apacheConfiguration.setProperty(tuple._1(), tuple._2());
         }

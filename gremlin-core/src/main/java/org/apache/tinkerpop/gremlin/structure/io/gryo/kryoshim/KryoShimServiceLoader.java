@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;
 
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationUtils;
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.ConfigurationUtils;
 import org.apache.tinkerpop.gremlin.util.SystemUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

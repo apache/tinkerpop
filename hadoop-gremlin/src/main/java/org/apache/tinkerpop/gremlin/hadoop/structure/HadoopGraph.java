@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure;
 
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.builder.fluent.Configurations;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.AbstractHadoopGraphComputer;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.traversal.strategy.HadoopIoStrategy;
@@ -188,7 +188,8 @@ public final class HadoopGraph implements Graph {
 
     public static HadoopGraph open(final String configurationFile) throws ConfigurationException {
         if (null == configurationFile) throw Graph.Exceptions.argumentCanNotBeNull("configurationFile");
-        return open(new PropertiesConfiguration(configurationFile));
+        final Configurations configs = new Configurations();
+        return open(configs.properties(configurationFile));
     }
 
     @Override

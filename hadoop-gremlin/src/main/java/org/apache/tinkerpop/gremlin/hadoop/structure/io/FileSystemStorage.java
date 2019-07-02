@@ -19,7 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
-import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -164,7 +164,7 @@ public final class FileSystemStorage implements Storage {
 
     @Override
     public Iterator<Vertex> head(final String location, final Class readerClass, final int totalLines) {
-        final org.apache.commons.configuration.Configuration configuration = new BaseConfiguration();
+        final org.apache.commons.configuration2.Configuration configuration = new BaseConfiguration();
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, Constants.getSearchGraphLocation(location, this).get());
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, readerClass.getCanonicalName());
         try {

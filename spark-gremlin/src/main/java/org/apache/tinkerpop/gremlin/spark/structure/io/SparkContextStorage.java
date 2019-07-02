@@ -19,8 +19,8 @@
 
 package org.apache.tinkerpop.gremlin.spark.structure.io;
 
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;

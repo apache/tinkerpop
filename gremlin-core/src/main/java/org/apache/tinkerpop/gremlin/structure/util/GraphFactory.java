@@ -18,13 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
+import org.apache.commons.configuration2.ConfigurationUtils;
+import org.apache.commons.configuration2.FileBasedConfiguration;
+import org.apache.commons.configuration2.YAMLConfiguration;
+import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.fluent.Configurations;
+import org.apache.commons.configuration2.builder.fluent.Parameters;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.util.config.YamlConfiguration;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.MapConfiguration;
-import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.MapConfiguration;
 
 import java.io.File;
 import java.util.Map;
@@ -107,8 +110,9 @@ public final class GraphFactory {
     /**
      * Open a graph. See each {@link org.apache.tinkerpop.gremlin.structure.Graph} instance for its configuration options.
      *
-     * @param configuration A {@link java.util.Map} based configuration that will be converted to an {@link org.apache.commons.configuration.Configuration} object
-     *                      via {@link org.apache.commons.configuration.MapConfiguration} and passed to the appropriate overload.
+     * @param configuration A {@link java.util.Map} based configuration that will be converted to an
+     *                      {@code Configuration} object via {@code MapConfiguration} and passed to the appropriate
+     *                      overload.
      * @return A Graph instance.
      */
     public static Graph open(final Map configuration) {
@@ -116,7 +120,7 @@ public final class GraphFactory {
         return open(new MapConfiguration(configuration));
     }
 
-    private static Configuration getConfiguration(final File configurationFile) {
+    private static org.apache.commons.configuration2.Configuration getConfiguration(final File configurationFile) {
         if (!configurationFile.isFile())
             throw new IllegalArgumentException(String.format("The location configuration must resolve to a file and [%s] does not", configurationFile));
 
@@ -124,18 +128,29 @@ public final class GraphFactory {
             final String fileName = configurationFile.getName();
             final String fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1);
 
+            final Configuration conf;
+            final Configurations configs = new Configurations();
+
             switch (fileExtension) {
                 case "yml":
                 case "yaml":
-                    final YamlConfiguration config = new YamlConfiguration();
-                    config.load(configurationFile);
-                    return config;
+                    final Parameters params = new Parameters();
+                    final FileBasedConfigurationBuilder<FileBasedConfiguration> builder =
+                            new FileBasedConfigurationBuilder<FileBasedConfiguration>(YAMLConfiguration.class).
+                                    configure(params.fileBased().setFile(configurationFile));
+
+                    final org.apache.commons.configuration2.Configuration copy = new org.apache.commons.configuration2.BaseConfiguration();
+                    ConfigurationUtils.copy(builder.configure(params.fileBased().setFile(configurationFile)).getConfiguration(), copy);
+                    conf = copy;
+                    break;
                 case "xml":
-                    return new XMLConfiguration(configurationFile);
+                    conf = configs.xml(configurationFile);
+                    break;
                 default:
-                    return new PropertiesConfiguration(configurationFile);
+                    conf = configs.properties(configurationFile);
             }
-        } catch (final ConfigurationException e) {
+            return conf;
+        } catch (ConfigurationException e) {
             throw new IllegalArgumentException(String.format("Could not load configuration at: %s", configurationFile), e);
         }
     }
