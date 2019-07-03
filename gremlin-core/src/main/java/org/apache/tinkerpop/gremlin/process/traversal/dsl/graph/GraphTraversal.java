@@ -123,7 +123,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
@@ -134,7 +134,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSid
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackValueStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StoreStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TraversalSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
@@ -153,7 +153,6 @@ import org.apache.tinkerpop.gremlin.structure.PropertyType;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.util.ArrayList;
@@ -1976,13 +1975,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * with a {@link Scope#local}.
      *
      * @param sideEffectKey the name of the side-effect key that will hold the aggregated objects
-     * @return the traversal with an appended {@link AggregateStep}
+     * @return the traversal with an appended {@link AggregateGlobalStep}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#aggregate-step" target="_blank">Reference Documentation - Aggregate Step</a>
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> aggregate(final String sideEffectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.aggregate, sideEffectKey);
-        return this.asAdmin().addStep(new AggregateStep<>(this.asAdmin(), sideEffectKey));
+        return this.asAdmin().addStep(new AggregateGlobalStep<>(this.asAdmin(), sideEffectKey));
     }
 
     /**
@@ -1990,14 +1989,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * {@link Scope#local} or eager ({@link Scope#global} while gathering those objects.
      *
      * @param sideEffectKey the name of the side-effect key that will hold the aggregated objects
-     * @return the traversal with an appended {@link AggregateStep}
+     * @return the traversal with an appended {@link AggregateGlobalStep}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#aggregate-step" target="_blank">Reference Documentation - Aggregate Step</a>
      * @since 3.4.3
      */
     public default GraphTraversal<S, E> aggregate(final Scope scope, final String sideEffectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.aggregate, scope, sideEffectKey);
         return this.asAdmin().addStep(scope == Scope.global ?
-                new AggregateStep<>(this.asAdmin(), sideEffectKey) : new StoreStep<>(this.asAdmin(), sideEffectKey));
+                new AggregateGlobalStep<>(this.asAdmin(), sideEffectKey) : new AggregateLocalStep<>(this.asAdmin(), sideEffectKey));
     }
 
     /**
@@ -2058,14 +2057,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Lazily aggregates objects in the stream into a side-effect collection.
      *
      * @param sideEffectKey the name of the side-effect key that will hold the aggregate
-     * @return the traversal with an appended {@link StoreStep}
+     * @return the traversal with an appended {@link AggregateLocalStep}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#store-step" target="_blank">Reference Documentation - Store Step</a>
      * @since 3.0.0-incubating
      * @deprecated As of release 3.4.3, replaced by {@link #aggregate(Scope, String)} using {@link Scope#local}.
      */
     public default GraphTraversal<S, E> store(final String sideEffectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.store, sideEffectKey);
-        return this.asAdmin().addStep(new StoreStep<>(this.asAdmin(), sideEffectKey));
+        return this.asAdmin().addStep(new AggregateLocalStep<>(this.asAdmin(), sideEffectKey));
     }
 
     /**

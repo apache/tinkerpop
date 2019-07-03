@@ -28,13 +28,13 @@ import java.util.List;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class AggregateStepTest extends StepTest {
+public class AggregateLocalStepTest extends StepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
-                __.aggregate("x"),
-                __.aggregate("x").by("name"),
-                __.aggregate("x").by("age"));
+                __.store("x"),
+                __.store("x").by("name"),
+                __.store("x").by("age"));
     }
 }

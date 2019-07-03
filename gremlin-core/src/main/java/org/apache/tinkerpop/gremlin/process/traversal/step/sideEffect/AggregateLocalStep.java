@@ -39,12 +39,12 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable<Collection, Collection>, TraversalParent, ByModulating {
+public final class AggregateLocalStep<S> extends SideEffectStep<S> implements SideEffectCapable<Collection, Collection>, TraversalParent, ByModulating {
 
     private Traversal.Admin<S, Object> storeTraversal = null;
     private String sideEffectKey;
 
-    public StoreStep(final Traversal.Admin traversal, final String sideEffectKey) {
+    public AggregateLocalStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
         this.getTraversal().getSideEffects().registerIfAbsent(this.sideEffectKey, (Supplier) BulkSetSupplier.instance(), Operator.addAll);
@@ -83,8 +83,8 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     }
 
     @Override
-    public StoreStep<S> clone() {
-        final StoreStep<S> clone = (StoreStep<S>) super.clone();
+    public AggregateLocalStep<S> clone() {
+        final AggregateLocalStep<S> clone = (AggregateLocalStep<S>) super.clone();
         if (null != this.storeTraversal)
             clone.storeTraversal = this.storeTraversal.clone();
         return clone;

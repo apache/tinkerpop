@@ -28,7 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexSt
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateStep
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateGlobalStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.LambdaSideEffectStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy
@@ -91,7 +91,7 @@ class GephiTraversalVisualizationStrategy extends AbstractTraversalStrategy<Trav
                         Thread.sleep(acceptor.vizStepDelay)
                     }
                 }), s, traversal)
-                TraversalHelper.insertAfterStep(new AggregateStep(traversal, sideEffectKey), s, traversal)
+                TraversalHelper.insertAfterStep(new AggregateGlobalStep(traversal, sideEffectKey), s, traversal)
             }
 
             // decay all vertices except those that made it through the filter - "this way you can watch
@@ -109,7 +109,7 @@ class GephiTraversalVisualizationStrategy extends AbstractTraversalStrategy<Trav
                         Thread.sleep(acceptor.vizStepDelay)
                     }
                 }), s, traversal)
-                TraversalHelper.insertAfterStep(new AggregateStep(traversal, sideEffectKey), s, traversal)
+                TraversalHelper.insertAfterStep(new AggregateGlobalStep(traversal, sideEffectKey), s, traversal)
             }
         }
     }
