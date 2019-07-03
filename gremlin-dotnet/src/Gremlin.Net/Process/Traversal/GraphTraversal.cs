@@ -122,6 +122,15 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the aggregate step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
+        public GraphTraversal<S, E> Aggregate (Scope scope, string sideEffectKey)
+        {
+            Bytecode.AddStep("aggregate", scope, sideEffectKey);
+            return Wrap<S, E>(this);
+        }
+
+        /// <summary>
+        ///     Adds the aggregate step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
         public GraphTraversal<S, E> Aggregate (string sideEffectKey)
         {
             Bytecode.AddStep("aggregate", sideEffectKey);
