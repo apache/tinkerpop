@@ -29,6 +29,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Removed previously deprecated `TraversalSource.withRemote()`.
 * Removed previously deprecated SSL settings: `keyCertChainFile`, `keyFile`, `keyPassword` and `trustCertChainFile` and related infrastructure.
 * Removed previously deprecated `BulkDumperVertexProgram` and `BulkLoaderVertexProgram`.
+* Upgrade to Neo4j 3.4.11
 
 == TinkerPop 3.4.0 (Avant-Gremlin Construction #3 for Theremin and Flowers)
 

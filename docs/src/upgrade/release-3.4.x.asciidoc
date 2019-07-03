@@ -15,6 +15,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 
+== TinkerPop 3.5.0
+
+=== Upgrading for Users
+
+==== Upgrade Neo4j
+
+Refer to Neo4j link:https://neo4j.com/guides/upgrade-archive/[3.4 Upgrade FAQ] for guide on how to upgrade from the previous 3.2.3 version.
+For example, configuration setting `dbms.allow_format_migration` is now `dbms.allow_upgrade`.
+
 = TinkerPop 3.4.0
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=225]
