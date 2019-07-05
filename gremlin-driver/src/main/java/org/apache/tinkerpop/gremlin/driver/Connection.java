@@ -67,7 +67,7 @@ final class Connection {
 
     public static final int RECONNECT_INTERVAL = 1000;
     public static final int RESULT_ITERATION_BATCH_SIZE = 64;
-    public static final long KEEP_ALIVE_INTERVAL = 1800000;
+    public static final long KEEP_ALIVE_INTERVAL = 180000;
 
     /**
      * When a {@code Connection} is borrowed from the pool, this number is incremented to indicate the number of
