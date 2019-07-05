@@ -104,7 +104,7 @@ public class OpSelectorHandler extends MessageToMessageDecoder<RequestMessage> {
             if (e.state() == IdleState.READER_IDLE) {
                 logger.info("Closing channel - client is disconnected after idle period of " + settings.idleConnectionTimeout + " " + ctx.channel());
                 ctx.close();
-            } else if (e.state() == IdleState.WRITER_IDLE) {
+            } else if (e.state() == IdleState.WRITER_IDLE && settings.keepAliveInterval > 0) {
                 logger.info("Checking channel - sending ping to client after idle period of " + settings.keepAliveInterval + " " + ctx.channel());
                 ctx.writeAndFlush(channelizer.createIdleDetectionMessage());
             }
