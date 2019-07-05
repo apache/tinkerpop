@@ -29,7 +29,7 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.3.8/CHANGELOG.asc
 
 == Upgrading for Users
 
-==== Branch Steps accept Predicates and Traversals
+==== Branch Steps Accept Predicates and Traversals
 
 Prior to this version, branch steps (in particular `BranchStep` and `ChooseStep`) could only handle constant values and `Pick` tokens. Starting in this version, these steps will also accept
 predicates and traversals as show in the example below.
@@ -57,6 +57,12 @@ gremlin> g.V().hasLabel("person").
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1084[TINKERPOP-1084]
 
+==== JavaScript withComputer()
+
+Gremlin-Javascript now supports `withComputer()` syntax, which means that it is now possible in Javascript to utilize
+Gremlin steps that require a `GraphComputer` to execute (e.g. `pageRank()` and `peerPressure()`).
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2251[TINKERPOP-2251]
 
 == TinkerPop 3.3.7
 

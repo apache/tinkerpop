@@ -26,7 +26,7 @@ const { Traversal } = require('./traversal');
 const remote = require('../driver/remote-connection');
 const utils = require('../utils');
 const Bytecode = require('./bytecode');
-const { TraversalStrategies } = require('./traversal-strategy');
+const { TraversalStrategies, VertexProgramStrategy } = require('./traversal-strategy');
 
 
 /**
@@ -58,6 +58,20 @@ class GraphTraversalSource {
     const traversalStrategy = new TraversalStrategies(this.traversalStrategies);
     traversalStrategy.addStrategy(new remote.RemoteStrategy(remoteConnection));
     return new this.graphTraversalSourceClass(this.graph, traversalStrategy, new Bytecode(this.bytecode), this.graphTraversalSourceClass, this.graphTraversalClass);
+  }
+
+  /**
+   * @param graphComputer
+   * @param workers
+   * @param result
+   * @param persist
+   * @param vertices
+   * @param edges
+   * @param configuration
+   * @returns {GraphTraversalSource}
+   */
+  withComputer(graphComputer, workers, result, persist, vertices, edges, configuration) {
+    return this.withStrategies(new VertexProgramStrategy(graphComputer, workers, result, persist, vertices, edges, configuration));
   }
 
   /**
