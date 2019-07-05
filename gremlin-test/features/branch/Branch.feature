@@ -90,3 +90,38 @@ Feature: Step - branch()
       | person |
       | software |
       | software |
+
+  Scenario: g_V_branchXageX_optionXltX30X__youngX_optionXgtX30X__oldX_optionXnone__on_the_edgeX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").
+        branch(__.values("age")).
+          option(P.lt(30), __.constant("young")).
+          option(P.gt(30), __.constant("old")).
+          option(Pick.none, __.constant("on the edge"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | young |
+      | young |
+      | old |
+      | old |
+
+  Scenario: g_V_branchXidentityX_optionXhasLabelXsoftwareX__inXcreatedX_name_order_foldX_optionXhasXname_vadasX__ageX_optionXneqX123X__bothE_countX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().
+        branch(__.identity()).
+          option(__.hasLabel("software"), __.in("created").values("name").order().fold()).
+          option(__.has("name","vadas"), __.values("age")).
+          option(P.neq(123), __.bothE().count())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[josh,josh,marko,peter] |
+      | d[27].i |
+      | d[12].l |

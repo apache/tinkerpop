@@ -17,7 +17,7 @@
 
 ##############################################################
 # This configuration is meant to have Gremlin Server return
-# Gryo serialized objects. The TinkerGraph IoRegistry is
+# GraphBinary serialized objects. The TinkerGraph IoRegistry is
 # assigned as this is the configuration defined in the
 # pre-packaged Gremlin Server configuration files.  The
 # client configuration for serializers should match server.
@@ -26,11 +26,12 @@
 # - gremlin-server.yaml
 # - gremlin-server-classic.yaml
 # - gremlin-server-modern.yaml
+# - gremlin-server-modern-py.yaml
 # - gremlin-server-modern-readonly.yaml
-# - gremlin-server-secure.yaml
+# - gremlin-server-neo4j.yaml
+# - gremlin-server-spark.yaml
 ##############################################################
 
 hosts: [localhost]
 port: 8182
-serializer: { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0,
-              config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3d0] }}
+serializer: { className: org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1 }

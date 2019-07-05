@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.iterator.StoreIteratorCounter;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
@@ -63,12 +62,11 @@ import static org.junit.Assume.assumeThat;
  */
 public abstract class AbstractGremlinTest {
     private static final Logger logger = LoggerFactory.getLogger(AbstractGremlinTest.class);
-
+    protected static final boolean shouldTestIteratorLeak = Boolean.valueOf(System.getProperty("testIteratorLeaks", "true"));
     protected Graph graph;
     protected GraphTraversalSource g;
     protected Configuration config;
     protected GraphProvider graphProvider;
-    protected boolean shouldTestIteratorLeak;
 
     @Rule
     public TestName name = new TestName();
@@ -80,8 +78,6 @@ public abstract class AbstractGremlinTest {
         final LoadGraphWith loadGraphWith = loadGraphWiths.length == 0 ? null : loadGraphWiths[0];
         final LoadGraphWith.GraphData loadGraphWithData = null == loadGraphWith ? null : loadGraphWith.value();
         final Set<FeatureRequirement> featureRequirementSet = getFeatureRequirementsForTest(testMethod, loadGraphWiths);
-
-        this.shouldTestIteratorLeak =  !this.getClass().isAnnotationPresent(IgnoreIteratorLeak.class);
 
         graphProvider = GraphManager.getGraphProvider();
 
@@ -150,7 +146,7 @@ public abstract class AbstractGremlinTest {
         if (null != graphProvider) {
             if (shouldTestIteratorLeak) {
                 long openItrCount = StoreIteratorCounter.INSTANCE.getOpenIteratorCount();
-                Assert.assertEquals("Iterator leak detected. Open iterator count=" + openItrCount, 0, openItrCount);
+                assertEquals("Iterator leak detected. Open iterator count=" + openItrCount, 0, openItrCount);
             }
 
             graphProvider.getTestListener().ifPresent(l -> l.onTestEnd(this.getClass(), name.getMethodName()));

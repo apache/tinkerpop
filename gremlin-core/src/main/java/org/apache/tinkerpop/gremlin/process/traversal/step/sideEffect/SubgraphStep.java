@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -111,7 +112,13 @@ public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffe
 
     private Vertex getOrCreate(final Vertex vertex) {
         final Iterator<Vertex> vertexIterator = subgraph.vertices(vertex.id());
-        if (vertexIterator.hasNext()) return vertexIterator.next();
+
+        try {
+            if (vertexIterator.hasNext()) return vertexIterator.next();
+        } finally {
+            CloseableIterator.closeIterator(vertexIterator);
+        }
+
         final Vertex subgraphVertex = subgraph.addVertex(T.id, vertex.id(), T.label, vertex.label());
 
         vertex.properties().forEachRemaining(vertexProperty -> {
@@ -130,7 +137,13 @@ public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffe
 
     private void addEdgeToSubgraph(final Edge edge) {
         final Iterator<Edge> edgeIterator = subgraph.edges(edge.id());
-        if (edgeIterator.hasNext()) return;
+
+        try {
+            if (edgeIterator.hasNext()) return;
+        } finally {
+            CloseableIterator.closeIterator(edgeIterator);
+        }
+
         final Iterator<Vertex> vertexIterator = edge.vertices(Direction.BOTH);
         final Vertex subGraphOutVertex = getOrCreate(vertexIterator.next());
         final Vertex subGraphInVertex = getOrCreate(vertexIterator.next());

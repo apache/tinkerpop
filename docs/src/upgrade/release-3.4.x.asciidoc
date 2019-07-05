@@ -15,6 +15,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 
+== TinkerPop 3.5.0
+
+=== Upgrading for Users
+
+==== Upgrade Neo4j
+
+Refer to Neo4j link:https://neo4j.com/guides/upgrade-archive/[3.4 Upgrade FAQ] for guide on how to upgrade from the previous 3.2.3 version.
+For example, configuration setting `dbms.allow_format_migration` is now `dbms.allow_upgrade`.
+
 = TinkerPop 3.4.0
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=225]
@@ -26,6 +35,29 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 *Release Date: NOT OFFICIALLY RELEASED YET*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.3/CHANGELOG.asciidoc#release-3-4-3[changelog] for a complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+==== Deprecated store()
+
+The `store()`-step and `aggregate()`-step do the same thing in different ways, where the former is lazy and the latter
+is eager in the side-effect collection of objects from the traversal. The different behaviors can be thought of as
+differing applications of `Scope` where `global` is eager and `local` is lazy. As a result, there is no need for both
+steps when one will do.
+
+As of 3.4.3, `store(String)` is now deprecated in favor of `aggregate(Scope, String)` where the `Scope` should be set
+to `local` to ensure the same functionality as `store()`. Note that `aggregate('x')` is the same as
+`aggregate(global,'x')`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1553[TINKERPOP-1553]
+
+==== Deprecate Gryo in Gremlin Server
+
+Gryo is now deprecated as a serialization format for Gremlin Server, however, it is still configured as a default
+option in the sample configuration files packaged with the server. The preferred serialization option should now be
+GraphBinary. Note that Gremlin Console is now configured to use GraphBinary by default.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2250[TINKERPOP-2250]
 
 === Upgrading for Providers
 

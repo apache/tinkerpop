@@ -44,7 +44,12 @@ pushd ${PROJECT_HOME} > /dev/null
 GREMLIN_SERVER_VERSION="$1"
 shift
 if [[ -z "$GREMLIN_SERVER_VERSION" ]]; then
-GREMLIN_SERVER_VERSION=$(grep tinkerpop -A2 pom.xml | grep -Po '(?<=<version>)([0-9]+\.?){3}(-SNAPSHOT)?(?=<)')
+  GREMLIN_SERVER_VERSION=$(grep tinkerpop -A2 pom.xml | grep -Po '(?<=<version>)([0-9]+\.?){3}(-SNAPSHOT)?(?=<)')
+  if [[ $(docker images | awk "{if (\$1 == \"tinkerpop/gremlin-server\" && \$2 == \"${GREMLIN_SERVER_VERSION}\") print}" | wc -l) -eq 0 ]]; then
+    pushd "${PROJECT_HOME}" > /dev/null
+    mvn -q clean install -pl :gremlin-server -am -DskipTests && mvn -q install -Pdocker-images -pl :gremlin-server -DskipTests
+    popd > /dev/null
+  fi
 fi
 
 echo "Using Gremlin Server $GREMLIN_SERVER_VERSION"
@@ -52,7 +57,7 @@ echo "Using Gremlin Server $GREMLIN_SERVER_VERSION"
 sed -e "s/GREMLIN_SERVER_VERSION\$/${GREMLIN_SERVER_VERSION}/" docker/gremlin-server/Dockerfile.template > Dockerfile
 
 docker build -t tinkerpop:${BUILD_TAG} .
-docker run ${TINKERPOP_TEST_DOCKER_OPTS} ${REMOVE_CONTAINER} -ti tinkerpop:${BUILD_TAG} ${@}
+docker run ${TINKERPOP_TEST_DOCKER_OPTS} ${REMOVE_CONTAINER} -ti -v "${HOME}"/.groovy:/root/.groovy -v "${HOME}"/.m2:/root/.m2 tinkerpop:${BUILD_TAG} ${@}
 
 status=$?
 popd > /dev/null

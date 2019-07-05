@@ -28,7 +28,9 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
  * network serialization purposes.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.4.3, replaced by {@link GraphBinaryMessageSerializerV1}.
  */
+@Deprecated
 public final class GryoMessageSerializerV1d0 extends AbstractGryoMessageSerializerV1d0 {
 
     private static final String MIME_TYPE = SerTokens.MIME_GRYO_V1D0;

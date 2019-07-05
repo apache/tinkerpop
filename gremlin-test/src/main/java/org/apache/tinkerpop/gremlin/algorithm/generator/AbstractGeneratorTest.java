@@ -22,9 +22,11 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Triplet;
 
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -39,12 +41,19 @@ public class AbstractGeneratorTest extends AbstractGremlinTest {
      * attach to the same IN/OUT vertices given their "oid" properties.
      */
     protected boolean same(final Graph g1, final Graph g2) {
-        return IteratorUtils.stream(g1.vertices())
-                .map(v -> Triplet.<Integer, List<Vertex>, List<Vertex>>with(v.value("oid"), IteratorUtils.list(v.vertices(Direction.IN)), IteratorUtils.list(v.vertices(Direction.OUT))))
-                .allMatch(p -> {
-                    final Vertex v = IteratorUtils.filter(g2.vertices(), vx -> vx.value("oid").equals(p.getValue0())).next();
-                    return sameInVertices(v, p.getValue1()) && sameOutVertices(v, p.getValue2());
-                });
+        final Iterator<Vertex> itty = g1.vertices();
+        try {
+            return IteratorUtils.stream(itty)
+                    .map(v -> Triplet.<Integer, List<Vertex>, List<Vertex>>with(v.value("oid"), IteratorUtils.list(v.vertices(Direction.IN)), IteratorUtils.list(v.vertices(Direction.OUT))))
+                    .allMatch(p -> {
+                        final Iterator<Vertex> innerItty = g2.vertices();
+                        final Vertex v = IteratorUtils.filter(innerItty, vx -> vx.value("oid").equals(p.getValue0())).next();
+                        CloseableIterator.closeIterator(innerItty);
+                        return sameInVertices(v, p.getValue1()) && sameOutVertices(v, p.getValue2());
+                    });
+        } finally {
+            CloseableIterator.closeIterator(itty);
+        }
     }
 
     private boolean sameInVertices(final Vertex v, final List<Vertex> inVertices) {

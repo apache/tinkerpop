@@ -22,11 +22,10 @@ RUN mkdir -p /opt
 WORKDIR /opt
 COPY gremlin-server/src/test /opt/test/
 COPY docker/gremlin-server/docker-entrypoint.sh docker/gremlin-server/*.yaml /opt/
-RUN chown -R gremlin:gremlin /opt
 RUN chmod 755 /opt/docker-entrypoint.sh
-USER gremlin
+ENV GREMLIN_SERVER_VERSION=GREMLIN_SERVER_VERSION
 
 EXPOSE 45940
 
 ENTRYPOINT ["/opt/docker-entrypoint.sh"]
-CMD ["conf/gremlin-server-integration.yaml"]
+CMD []

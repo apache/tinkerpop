@@ -34,7 +34,7 @@ limitations under the License.
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-tinkerpop-api</artifactId>
-            <version>0.1</version>
+            <version>0.1.1</version>
         </dependency>
         <!-- TESTING -->
         <dependency>
@@ -89,7 +89,7 @@ limitations under the License.
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Gremlin-Plugin-Dependencies>org.neo4j:neo4j-tinkerpop-api-impl:0.7-3.2.3
+                            <Gremlin-Plugin-Dependencies>org.neo4j:neo4j-tinkerpop-api-impl:0.9-3.4.0
                             </Gremlin-Plugin-Dependencies>
                         </manifestEntries>
                     </archive>
@@ -117,7 +117,7 @@ limitations under the License.
                 <dependency>
                     <groupId>org.neo4j</groupId>
                     <artifactId>neo4j-tinkerpop-api-impl</artifactId>
-                    <version>0.7-3.2.3</version>
+                    <version>0.9-3.4.0</version>
                     <scope>test</scope>
                     <exclusions>
                         <exclusion>
@@ -148,6 +148,14 @@ limitations under the License.
                             <groupId>org.slf4j</groupId>
                             <artifactId>slf4j-nop</artifactId>
                         </exclusion>
+                        <exclusion>
+                            <groupId>org.apache.lucene</groupId>
+                            <artifactId>lucene-core</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>io.dropwizard.metrics</groupId>
+                            <artifactId>metrics-core</artifactId>
+                        </exclusion>
                     </exclusions>
                 </dependency>
                 <dependency>
@@ -168,11 +176,22 @@ limitations under the License.
                     <version>2.3.1</version>
                     <scope>test</scope>
                 </dependency>
-                <!-- self-conflict with neo4j-graph-matching -->
+                <dependency>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-core</artifactId>
+                    <version>5.5.0</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>io.dropwizard.metrics</groupId>
+                    <artifactId>metrics-core</artifactId>
+                    <version>4.0.2</version>
+                    <scope>test</scope>
+                </dependency>
                 <dependency>
                     <groupId>org.neo4j</groupId>
                     <artifactId>neo4j-kernel</artifactId>
-                    <version>3.2.3</version>
+                    <version>3.4.11</version>
                     <scope>test</scope>
                 </dependency>
                 <!-- *** WARNING *** -->

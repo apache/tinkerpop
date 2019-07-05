@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import io.netty.handler.codec.CodecException;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import io.netty.bootstrap.Bootstrap;
@@ -26,6 +27,8 @@ import io.netty.channel.ChannelPromise;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 import java.net.URI;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -283,7 +286,7 @@ final class Connection {
      * on the client and allows a new one to be reconstructed.
      */
     private void handleConnectionCleanupOnError(final Connection thisConnection, final Throwable t) {
-        if (thisConnection.isDead()) {
+        if (thisConnection.isDead() || t instanceof IOException || t instanceof CodecException) {
             if (pool != null) pool.replaceConnection(thisConnection);
         } else {
             thisConnection.returnToPool();

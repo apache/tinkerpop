@@ -29,6 +29,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Removed previously deprecated `TraversalSource.withRemote()`.
 * Removed previously deprecated SSL settings: `keyCertChainFile`, `keyFile`, `keyPassword` and `trustCertChainFile` and related infrastructure.
 * Removed previously deprecated `BulkDumperVertexProgram` and `BulkLoaderVertexProgram`.
+* Upgrade to Neo4j 3.4.11
 
 == TinkerPop 3.4.0 (Avant-Gremlin Construction #3 for Theremin and Flowers)
 
@@ -40,10 +41,16 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 This release also includes changes from <<release-3-3-8, 3.3.8>>.
 
 * Improved error messaging on timeouts returned to the console from `:>`.
+* Added a `toString()` serializer for GraphBinary.
+* Configured the Gremlin Console to use GraphBinary by default.
+* Deprecated `MessageSerializer` implementations for Gryo in Gremlin Server.
 * Added a Docker command to start Gremlin Server with the standard GLV test configurations.
+* Added `aggregate(Scope,String)` and deprecated `store()` in favor of `aggregate(local)`.
 * Modified `NumberHelper` to better ignore `Double.NaN` in `min()` and `max()` comparisons.
 * Bump to Netty 4.1.36.
 * Bump to Groovy 2.5.7.
+* Added `userAgent` to RequestOptions. Gremlin Console sends `Gremlin Console/<version>` as the `userAgent`.
+* Fixed DriverRemoteConnection ignoring `with` `Token` options when multiple were set.
 
 [[release-3-4-2]]
 === TinkerPop 3.4.2 (Release Date: May 28, 2019)
@@ -419,10 +426,12 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added test infrastructure to check for storage iterator leak.
 * Fixed multiple iterator leaks in query processor.
 * Improved error messaging for invalid inputs to the TinkerGraph `IdManager` instances.
+* Forced replacement of connections in Java driver for certain exception types that seem to ultimately kill the connection.
 * Changed the `reverse()` of `desc` and `asc` on `Order` to not use the deprecated `decr` and `incr`.
 * Fixed bug in `MatchStep` where the correct was not properly determined.
 * Fixed bug where client/server exception mismatch when server throw StackOverflowError
 * Prevent exception when closing a session that doesn't exist
+* Allow predicates and traversals to be used as options in `BranchStep`.
 
 [[release-3-3-7]]
 === TinkerPop 3.3.7 (Release Date: May 28, 2019)

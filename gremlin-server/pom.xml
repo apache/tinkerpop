@@ -206,28 +206,84 @@ limitations under the License.
                 <dependency>
                     <groupId>org.neo4j</groupId>
                     <artifactId>neo4j-tinkerpop-api-impl</artifactId>
-                    <version>0.3-2.3.3</version>
+                    <version>0.9-3.4.0</version>
                     <scope>test</scope>
                     <exclusions>
+                        <exclusion>
+                            <groupId>org.neo4j</groupId>
+                            <artifactId>neo4j-kernel</artifactId>
+                        </exclusion>
                         <exclusion>
                             <groupId>org.apache.commons</groupId>
                             <artifactId>commons-lang3</artifactId>
                         </exclusion>
                         <exclusion>
-                            <groupId>com.googlecode.concurrentlinkedhashmap</groupId>
-                            <artifactId>concurrentlinkedhashmap-lru</artifactId>
+                            <groupId>com.github.ben-manes.caffeine</groupId>
+                            <artifactId>caffeine</artifactId>
                         </exclusion>
                         <exclusion>
                             <groupId>org.scala-lang</groupId>
                             <artifactId>scala-library</artifactId>
                         </exclusion>
                         <exclusion>
+                            <groupId>org.scala-lang</groupId>
+                            <artifactId>scala-reflect</artifactId>
+                        </exclusion>
+                        <exclusion>
                             <groupId>org.slf4j</groupId>
                             <artifactId>slf4j-api</artifactId>
                         </exclusion>
                         <exclusion>
-                            <groupId>info.ganglia.gmetric4j</groupId>
-                            <artifactId>gmetric4j</artifactId>
+                            <groupId>org.slf4j</groupId>
+                            <artifactId>slf4j-nop</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.apache.lucene</groupId>
+                            <artifactId>lucene-core</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>io.dropwizard.metrics</groupId>
+                            <artifactId>metrics-core</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>io.netty</groupId>
+                            <artifactId>netty-all</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+                <dependency>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                    <version>2.11.8</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-reflect</artifactId>
+                    <version>2.11.8</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-core</artifactId>
+                    <version>5.5.0</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>io.dropwizard.metrics</groupId>
+                    <artifactId>metrics-core</artifactId>
+                    <version>4.0.2</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.neo4j</groupId>
+                    <artifactId>neo4j-kernel</artifactId>
+                    <version>3.4.11</version>
+                    <scope>test</scope>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>io.netty</groupId>
+                            <artifactId>netty-all</artifactId>
                         </exclusion>
                     </exclusions>
                 </dependency>
@@ -340,7 +396,7 @@ limitations under the License.
                             <repository>tinkerpop/gremlin-server</repository>
                         </configuration>
                     </plugin>
-                </plugins>                
+                </plugins>
             </build>
         </profile>
     </profiles>

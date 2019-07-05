@@ -24,9 +24,11 @@
 # - gremlin-server.yaml
 # - gremlin-server-classic.yaml
 # - gremlin-server-modern.yaml
+# - gremlin-server-modern-py.yaml
 # - gremlin-server-modern-readonly.yaml
+# - gremlin-server-spark.yaml
 ##############################################################
 
 hosts: [localhost]
 port: 8182
-serializer: { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0, config: { serializeResultToString: true }}
+serializer: { className: org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1, config: { serializeResultToString: true }}

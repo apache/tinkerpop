@@ -39,6 +39,7 @@ public final class RequestOptions {
     private final Integer batchSize;
     private final Long timeout;
     private final UUID overrideRequestId;
+    private final String userAgent;
 
     private RequestOptions(final Builder builder) {
         this.aliases = builder.aliases;
@@ -46,6 +47,7 @@ public final class RequestOptions {
         this.batchSize = builder.batchSize;
         this.timeout = builder.timeout;
         this.overrideRequestId = builder.overrideRequestId;
+        this.userAgent = builder.userAgent;
     }
 
     public Optional<UUID> getOverrideRequestId() {
@@ -68,6 +70,10 @@ public final class RequestOptions {
         return Optional.ofNullable(timeout);
     }
 
+    public Optional<String> getUserAgent() {
+        return Optional.ofNullable(userAgent);
+    }
+
     public static Builder build() {
         return new Builder();
     }
@@ -78,6 +84,7 @@ public final class RequestOptions {
         private Integer batchSize = null;
         private Long timeout = null;
         private UUID overrideRequestId = null;
+        private String userAgent = null;
 
         /**
          * The aliases to set on the request.
@@ -125,6 +132,14 @@ public final class RequestOptions {
          */
         public Builder timeout(final long timeout) {
             this.timeout = timeout;
+            return this;
+        }
+
+        /**
+         * Sets the userAgent identifier to be sent on the request.
+         */
+        public Builder userAgent(final String userAgent) {
+            this.userAgent = userAgent;
             return this;
         }
 

@@ -50,6 +50,7 @@ public final class Tokens {
     public static final String ARGS_SIDE_EFFECT = "sideEffect";
     public static final String ARGS_AGGREGATE_TO = "aggregateTo";
     public static final String ARGS_SIDE_EFFECT_KEY = "sideEffectKey";
+    public static final String ARGS_USER_AGENT = "userAgent";
 
     public static final String VAL_AGGREGATE_TO_BULKSET = "bulkset";
     public static final String VAL_AGGREGATE_TO_LIST = "list";
