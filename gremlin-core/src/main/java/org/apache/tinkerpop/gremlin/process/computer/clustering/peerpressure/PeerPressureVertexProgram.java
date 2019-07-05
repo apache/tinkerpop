@@ -243,23 +243,6 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
             PureTraversal.storeState(this.configuration, INITIAL_VOTE_STRENGTH_TRAVERSAL, initialVoteStrengthTraversal);
             return this;
         }
-
-        /**
-         * @deprecated As of release 3.2.0, replaced by {@link PeerPressureVertexProgram.Builder#edges(Traversal.Admin)}
-         */
-        @Deprecated
-        public Builder traversal(final TraversalSource traversalSource, final String scriptEngine, final String traversalScript, final Object... bindings) {
-            return this.edges(new ScriptTraversal<>(traversalSource, scriptEngine, traversalScript, bindings));
-        }
-
-        /**
-         * @deprecated As of release 3.2.0, replaced by {@link PeerPressureVertexProgram.Builder#edges(Traversal.Admin)}
-         */
-        @Deprecated
-        public Builder traversal(final Traversal.Admin<Vertex, Edge> edgeTraversal) {
-            return this.edges(edgeTraversal);
-        }
-
     }
 
     ////////////////////////////

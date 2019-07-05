@@ -377,7 +377,12 @@ Note that `GraphTraversal` provides a <<pagerank-step,`pageRank()`>>-step.
 ----
 g = graph.traversal().withComputer()
 g.V().pageRank().valueMap()
-g.V().pageRank().by('pageRank').times(5).order().by('pageRank').valueMap()
+g.V().pageRank().
+        with(PageRank.propertyName, 'pageRank').
+        with(PageRank.times, 5).
+  order().
+    by('pageRank').
+  valueMap()
 ----
 
 [[peerpressurevertexprogram]]
@@ -399,8 +404,11 @@ Note that `GraphTraversal` provides a <<peerpressure-step,`peerPressure()`>>-ste
 [gremlin-groovy,modern]
 ----
 g = graph.traversal().withComputer()
-g.V().peerPressure().by('cluster').valueMap()
-g.V().peerPressure().by(outE('knows')).by('cluster').valueMap()
+g.V().peerPressure().with(PeerPressure.propertyName, 'cluster').valueMap()
+g.V().peerPressure().
+        with(PeerPressure.edges,outE('knows')).
+        with(PeerPressure.propertyName, 'cluster').
+  valueMap()
 ----
 
 [[connectedcomponentvertexprogram]]

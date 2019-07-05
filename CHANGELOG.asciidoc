@@ -27,6 +27,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 
 * Modified `null` handling in mutations to be consistent for a new `Vertex` as well as update to an existing one.
 * Removed previously deprecated `TraversalSource.withRemote()`.
+* Removed previously deprecated `VertexProgram` related infrastructure.
 * Removed previously deprecated SSL settings: `keyCertChainFile`, `keyFile`, `keyPassword` and `trustCertChainFile` and related infrastructure.
 * Removed previously deprecated `BulkDumperVertexProgram` and `BulkLoaderVertexProgram`.
 * Upgrade to Neo4j 3.4.11

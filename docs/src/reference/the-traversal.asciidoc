@@ -2032,14 +2032,16 @@ link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/grem
 [[pagerank-step]]
 === PageRank Step
 
-The `pageRank()`-step (*map*/*sideEffect*) calculates link:http://en.wikipedia.org/wiki/PageRank[PageRank] using <<pagerankvertexprogram,`PageRankVertexProgram`>>.
+The `pageRank()`-step (*map*/*sideEffect*) calculates link:http://en.wikipedia.org/wiki/PageRank[PageRank] using
+<<pagerankvertexprogram,`PageRankVertexProgram`>>.
 
-IMPORTANT: The `pageRank()`-step is a `VertexComputing`-step and as such, can only be used against a graph that supports `GraphComputer` (OLAP).
+IMPORTANT: The `pageRank()`-step is a `VertexComputing`-step and as such, can only be used against a graph that
+supports `GraphComputer` (OLAP).
 
 [gremlin-groovy,modern]
 ----
 g = graph.traversal().withComputer()
-g.V().pageRank().by('pageRank').values('pageRank')
+g.V().pageRank().with(PageRank.propertyName, 'friendRank').values('pageRank')
 g.V().hasLabel('person').
   pageRank().
     with(PageRank.edges, __.outE('knows')).
@@ -2050,7 +2052,8 @@ g.V().hasLabel('person').
 Note the use of the `with()` modulating step which provides configuration options to the algorithm. It takes
 configuration keys from the `PageRank` and is automatically imported to the Gremlin Console.
 
-The <<explain-step,`explain()`>>-step can be used to understand how the traversal is compiled into multiple `GraphComputer` jobs.
+The <<explain-step,`explain()`>>-step can be used to understand how the traversal is compiled into multiple
+`GraphComputer` jobs.
 
 [gremlin-groovy,modern]
 ----
@@ -2150,7 +2153,7 @@ IMPORTANT: The `peerPressure()`-step is a `VertexComputing`-step and as such, ca
 [gremlin-groovy,modern]
 ----
 g = graph.traversal().withComputer()
-g.V().peerPressure().by('cluster').values('cluster')
+g.V().peerPressure().with(PeerPressure.propertyName, 'cluster').values('cluster')
 g.V().hasLabel('person').
   peerPressure().
     with(PeerPressure.propertyName, 'cluster').

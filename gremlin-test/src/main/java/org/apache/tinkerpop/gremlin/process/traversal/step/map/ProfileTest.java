@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRank;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
@@ -90,7 +91,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_profileXmetricsX();
 
-    public abstract Traversal<Vertex, TraversalMetrics> get_g_V_hasLabelXpersonX_pageRank_byXrankX_byXbothEX_rank_profile();
+    public abstract Traversal<Vertex, TraversalMetrics> get_g_V_hasLabelXpersonX_pageRank_withXpropertyName_rankX_withXedges_bothEX_rank_profile();
 
     public abstract Traversal<Vertex, TraversalMetrics> get_g_V_groupXmX_profile();
 
@@ -427,8 +428,8 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     @IgnoreEngine(TraversalEngine.Type.STANDARD)
-    public void g_V_hasLabelXpersonX_pageRank_byXrankX_byXbothEX_rank_profile() {
-        final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_hasLabelXpersonX_pageRank_byXrankX_byXbothEX_rank_profile();
+    public void g_V_hasLabelXpersonX_pageRank_withXpropertyName_rankX_withXedges_bothEX_rank_profile() {
+        final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_hasLabelXpersonX_pageRank_withXpropertyName_rankX_withXedges_bothEX_rank_profile();
         //printTraversalForm(traversal);
         try {
             traversal.iterate();
@@ -531,8 +532,8 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, TraversalMetrics> get_g_V_hasLabelXpersonX_pageRank_byXrankX_byXbothEX_rank_profile() {
-            return g.V().hasLabel("person").pageRank().by("rank").by(__.bothE()).values("rank").profile();
+        public Traversal<Vertex, TraversalMetrics> get_g_V_hasLabelXpersonX_pageRank_withXpropertyName_rankX_withXedges_bothEX_rank_profile() {
+            return g.V().hasLabel("person").pageRank().with(PageRank.propertyName, "rank").with(PageRank.edges, __.bothE()).values("rank").profile();
         }
 
         @Override

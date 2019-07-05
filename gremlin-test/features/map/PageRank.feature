@@ -34,11 +34,11 @@ Feature: Step - pageRank()
       | v[peter] |
     And the graph should return 6 for count of "g.withComputer().V().pageRank().has(\"gremlin.pageRankVertexProgram.pageRank\")"
 
-  Scenario: g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX
+  Scenario: g_V_outXcreatedX_pageRank_withXedges_bothEX_withXpropertyName_projectRankX_withXtimes_0X_valueMapXname_projectRankX
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().out("created").pageRank().by(__.bothE()).by("projectRank").times(0).valueMap("name", "projectRank")
+      g.withComputer().V().out("created").pageRank().with("~tinkerpop.pageRank.edges",__.bothE()).with("~tinkerpop.pageRank.propertyName","projectRank").with("~tinkerpop.pageRank.times",0).valueMap("name", "projectRank")
       """
     When iterated to list
     Then the result should be unordered
@@ -76,11 +76,11 @@ Feature: Step - pageRank()
       | lop    |
       | ripple |
 
-  Scenario: g_V_pageRank_byXoutEXknowsXX_byXfriendRankX_project_byXnameX_byXvaluesXfriendRankX_mathX
+  Scenario: g_V_pageRank_withXedges_outEXknowsXX_withXpropertyName_friendRankX_project_byXnameX_byXvaluesXfriendRankX_mathX
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().pageRank().by(__.outE("knows")).by("friendRank").project("name", "friendRank").by("name").by(__.values("friendRank").math("ceil(_ * 100)"))
+      g.withComputer().V().pageRank().with("~tinkerpop.pageRank.edges",__.outE("knows")).with("~tinkerpop.pageRank.propertyName","friendRank").project("name", "friendRank").by("name").by(__.values("friendRank").math("ceil(_ * 100)"))
       """
     When iterated to list
     Then the result should be unordered
@@ -92,11 +92,11 @@ Feature: Step - pageRank()
       | m[{"name": "ripple", "friendRank": 15.0}] |
       | m[{"name": "peter", "friendRank": 15.0}] |
 
-  Scenario: g_V_hasLabelXpersonX_pageRank_byXpageRankX_project_byXnameX_byXvaluesXpageRankX_mathX
+  Scenario: g_V_hasLabelXpersonX_pageRank_withXpropertyName_kpageRankX_project_byXnameX_byXvaluesXpageRankX_mathX
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().hasLabel("person").pageRank().by("pageRank").project("name", "pageRank").by("name").by(__.values("pageRank").math("ceil(_ * 100)"))
+      g.withComputer().V().hasLabel("person").pageRank().with("~tinkerpop.pageRank.propertyName","pageRank").project("name", "pageRank").by("name").by(__.values("pageRank").math("ceil(_ * 100)"))
       """
     When iterated to list
     Then the result should be unordered
@@ -106,11 +106,11 @@ Feature: Step - pageRank()
       | m[{"name": "josh", "pageRank": 59.0}] |
       | m[{"name": "peter", "pageRank": 46.0}] |
 
-  Scenario: g_V_pageRank_byXpageRankX_asXaX_outXknowsX_pageRank_asXbX_selectXa_bX_by_byXmathX
+  Scenario: g_V_pageRank_withXpropertyName_pageRankX_asXaX_outXknowsX_pageRank_asXbX_selectXa_bX_by_byXmathX
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().pageRank().by("pageRank").as("a").out("knows").values("pageRank").as("b").select("a", "b").by().by(__.math("ceil(_ * 100)"))
+      g.withComputer().V().pageRank().with("~tinkerpop.pageRank.propertyName","pageRank").as("a").out("knows").values("pageRank").as("b").select("a", "b").by().by(__.math("ceil(_ * 100)"))
       """
     When iterated to list
     Then the result should be unordered
@@ -118,11 +118,11 @@ Feature: Step - pageRank()
       | m[{"a": "v[marko]", "b": 15.0}] |
       | m[{"a": "v[marko]", "b": 15.0}] |
 
-  Scenario: g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_byXinEXcreatedXX_timesX1X_byXpriorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX
+  Scenario: g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_withXedges_inEXcreatedX_withXtimes_1X_withXpropertyName_priorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().hasLabel("software").has("name", "ripple").pageRank(1.0).by(__.inE("created")).times(1).by("priors").in("created").union(__.both(), __.identity()).valueMap("name", "priors")
+      g.withComputer().V().hasLabel("software").has("name", "ripple").pageRank(1.0).with("~tinkerpop.pageRank.edges",__.inE("created")).with("~tinkerpop.pageRank.times",1).with("~tinkerpop.pageRank.propertyName","priors").in("created").union(__.both(), __.identity()).valueMap("name", "priors")
       """
     When iterated to list
     Then the result should be unordered
@@ -132,17 +132,11 @@ Feature: Step - pageRank()
       | m[{"name": ["lop"], "priors": [0.0]}] |
       | m[{"name": ["ripple"], "priors": [0.0]}] |
 
-  Scenario: g_V_outXcreatedX_groupXmX_byXlabelX_pageRankX1X_byXpageRankX_byXinEX_timesX1X_inXcreatedX_groupXmX_byXpageRankX_capXmX
+  Scenario: g_V_outXcreatedX_groupXmX_byXlabelX_pageRankX1X_withXpropertyName_pageRankX_withXedges_inEX_withXtimes_1X_inXcreatedX_groupXmX_byXpageRankX_capXmX
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().out("created").group("m").by(T.label).pageRank(1.0).by("pageRank").by(__.inE()).times(1).in("created").group("m").by("pageRank").cap("m")
+      g.withComputer().V().out("created").group("m").by(T.label).pageRank(1.0).with("~tinkerpop.pageRank.propertyName", "pageRank").with("~tinkerpop.pageRank.edges",__.inE()).with("~tinkerpop.pageRank.times", 1).in("created").group("m").by("pageRank").cap("m")
       """
     When iterated next
     Then the result should have a count of 3
-
-    # TODO: would really like to have a full assertion here, but withComputer() makes stuff not always return in order.
-    # order could be forced, but that just bulks up the test. we could write better assertion logic but that makes it
-    # harder for GLVs to be tested.  
-    #  | result |
-    #  | m[{"d[1.0].d":"l[v[marko],v[marko],v[marko],v[peter],v[peter],v[peter]]","d[2.0].d":"l[v[josh],v[josh],v[josh],v[josh]]","software":"l[v[lop],v[lop],v[lop],v[ripple]]"}] |
