@@ -23,6 +23,7 @@
 'use strict';
 
 const t = require('../../process/traversal');
+const ts = require('../../process/traversal-strategy');
 const Bytecode = require('../../process/bytecode');
 const g = require('../graph');
 const utils = require('../../utils');
@@ -252,6 +253,20 @@ class TraverserSerializer extends TypeSerializer {
   }
 }
 
+class TraversalStrategySerializer extends TypeSerializer {
+  /** @param {TraversalStrategy} item */
+  serialize(item) {
+    return {
+      [typeKey]: 'g:' + item.constructor.name,
+      [valueKey]: item.configuration
+    };
+  }
+
+  canBeUsedFor(value) {
+    return (value instanceof ts.TraversalStrategy);
+  }
+}
+
 class VertexSerializer extends TypeSerializer {
   deserialize(obj) {
     const value = obj[valueKey];
@@ -458,6 +473,7 @@ module.exports = {
   SetSerializer,
   TSerializer,
   TraverserSerializer,
+  TraversalStrategySerializer,
   typeKey,
   valueKey,
   VertexPropertySerializer,

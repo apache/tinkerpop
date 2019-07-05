@@ -57,44 +57,12 @@ const parsers = [
 
 const ignoreReason = {
   lambdaNotSupported: 'Lambdas are not supported on gremlin-javascript',
-  computerNotSupported: "withComputer() is not supported on gremlin-javascript",
   setNotSupported: "There is no Set support in gremlin-javascript",
   needsFurtherInvestigation: '',
 };
 
 const ignoredScenarios = {
   // An associative array containing the scenario name as key, for example:
-  'g_V_connectedComponent_hasXcomponentX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_dedup_connectedComponent_hasXcomponentX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_hasLabelXsoftwareX_connectedComponent_project_byXnameX_byXcomponentX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_connectedComponent_withXEDGES_bothEXknowsXX_withXPROPERTY_NAME_clusterX_project_byXnameX_byXclusterX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_pageRank_hasXpageRankX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_outXcreatedX_pageRank_withXedges_bothEX_withXpropertyName_projectRankX_withXtimes_0X_valueMapXname_projectRankX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_pageRank_order_byXpageRank_decrX_byXnameX_name': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_pageRank_order_byXpageRank_decrX_name_limitX2X': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_pageRank_withXedges_outEXknowsXX_withXpropertyName_friendRankX_project_byXnameX_byXvaluesXfriendRankX_mathX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_hasLabelXpersonX_pageRank_withXpropertyName_kpageRankX_project_byXnameX_byXvaluesXpageRankX_mathX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_pageRank_withXpropertyName_pageRankX_asXaX_outXknowsX_pageRank_asXbX_selectXa_bX_by_byXmathX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_withXedges_inEXcreatedX_withXtimes_1X_withXpropertyName_priorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_outXcreatedX_groupXmX_byXlabelX_pageRankX1X_withXpropertyName_pageRankX_withXedges_inEX_withXtimes_1X_inXcreatedX_groupXmX_byXpageRankX_capXmX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_peerPressure_hasXclusterX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_peerPressure_withXpropertyName_clusterX_withXedges_outEXknowsXX_pageRankX1X_byXrankX_withXedges_outEXknowsX_withXtimes_2X_group_byXclusterX_byXrank_sumX_limitX100X': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_hasXname_rippleX_inXcreatedX_peerPressure_withXedges_outEX_withyXpropertyName_clusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_shortestPath': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_both_dedup_shortestPath': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_shortestPath_edgesIncluded': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_shortestPath_directionXINX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_shortestPath_edgesXoutEX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_shortestPath_edgesIncluded_edgesXoutEX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_hasXname_markoX_shortestPath': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_shortestPath_targetXhasXname_markoXX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_shortestPath_targetXvaluesXnameX_isXmarkoXX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_hasXname_markoX_shortestPath_targetXhasLabelXsoftwareXX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_hasXname_markoX_shortestPath_targetXhasXname_joshXX_distanceXweightX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_hasXname_danielX_shortestPath_targetXhasXname_stephenXX_edgesXbothEXusesXX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_hasXsong_name_MIGHT_AS_WELLX_shortestPath_targetXhasXsong_name_MAYBE_YOU_KNOW_HOW_I_FEELXX_edgesXoutEXfollowedByXX_distanceXweightX': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_hasXname_markoX_shortestPath_maxDistanceX1X': new IgnoreError(ignoreReason.computerNotSupported),
-  'g_V_hasXname_vadasX_shortestPath_distanceXweightX_maxDistanceX1_3X': new IgnoreError(ignoreReason.computerNotSupported),
   'g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX': new IgnoreError(ignoreReason.setNotSupported),
   'g_withSideEffectXa_setX_V_both_name_aggregateXlocal_aX_capXaX': new IgnoreError(ignoreReason.setNotSupported),
   'g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
@@ -238,6 +206,8 @@ function getSandbox(g, parameters) {
 }
 
 function translate(traversalText) {
+  // clean up trailing period/spaces so that it's easier to match newline with() to convert to with_() below
+  traversalText = traversalText.replace(/\)\.\s*/g, ').');
   // Remove escaped chars
   traversalText = traversalText.replace(/\\"/g, '"');
   // Replace long suffix with Long instance
