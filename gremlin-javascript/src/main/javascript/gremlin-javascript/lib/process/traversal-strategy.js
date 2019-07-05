@@ -59,6 +59,7 @@ class TraversalStrategies {
 
 /** @abstract */
 class TraversalStrategy {
+
   /**
    * @abstract
    * @param {Traversal} traversal
@@ -69,7 +70,32 @@ class TraversalStrategy {
   }
 }
 
+class VertexProgramStrategy extends TraversalStrategy {
+
+  constructor(graphComputer, workers, persist, result, vertices, edges, configuration) {
+    super();
+    this.configuration = new Map();
+    if (graphComputer !== undefined)
+      this.configuration.set("graphComputer", graphComputer);
+    if (workers !== undefined)
+      this.configuration.set("workers", workers);
+    if (persist !== undefined)
+      this.configuration.set("persist", persist);
+    if (result !== undefined)
+      this.configuration.set("result", result);
+    if (vertices !== undefined)
+      this.configuration.set("vertices", vertices);
+    if (edges !== undefined)
+      this.configuration.set("edges", edges);
+    if (configuration !== undefined)
+      configuration.forEach(function(k,v) {
+        this.configuration.set(k, v);
+      });
+  }
+}
+
 module.exports = {
   TraversalStrategies: TraversalStrategies,
-  TraversalStrategy: TraversalStrategy
+  TraversalStrategy: TraversalStrategy,
+  VertexProgramStrategy: VertexProgramStrategy
 };
