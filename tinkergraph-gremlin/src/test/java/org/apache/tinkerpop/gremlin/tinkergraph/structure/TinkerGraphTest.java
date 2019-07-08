@@ -22,6 +22,7 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.GraphHelper;
 import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -45,6 +46,7 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoClassResolverV1d0;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.kryo.ClassResolver;
@@ -79,6 +81,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeThat;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -666,6 +669,20 @@ public class TinkerGraphTest {
                 property("y", "z").iterate();
 
         assertThat(g.V("id").hasNext(), is(true));
+    }
+
+    @Test
+    public void shouldOptionalUsingWithComputer() {
+        // not all systems will have 3+ available processors (e.g. travis)
+        assumeThat(Runtime.getRuntime().availableProcessors(), greaterThan(2));
+
+        // didn't add this as a general test as it basically was only failing under a specific condition for
+        // TinkerGraphComputer - see more here: https://issues.apache.org/jira/browse/TINKERPOP-1619
+        final GraphTraversalSource g = TinkerFactory.createModern().traversal();
+
+        final List<Edge> expected = g.E(7, 7, 8, 9).order().by(T.id).toList();
+        assertEquals(expected, g.withComputer(Computer.compute().workers(3)).V(1, 2).optional(__.bothE().dedup()).order().by(T.id).toList());
+        assertEquals(expected, g.withComputer(Computer.compute().workers(4)).V(1, 2).optional(__.bothE().dedup()).order().by(T.id).toList());
     }
 
     /**
