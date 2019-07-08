@@ -49,6 +49,7 @@ public final class OptionalStep<S> extends AbstractStep<S, S> implements Travers
             return this.optionalTraversal.nextTraverser();
         else {
             final Traverser.Admin<S> traverser = this.starts.next();
+            this.optionalTraversal.reset();
             this.optionalTraversal.addStart(traverser.split());
             if (this.optionalTraversal.hasNext())
                 return this.optionalTraversal.nextTraverser();
