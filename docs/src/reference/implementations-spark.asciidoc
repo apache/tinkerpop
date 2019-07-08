@@ -122,7 +122,7 @@ references to that Spark Context. The exception to this rule are those propertie
 
 Finally, there is a `spark` object that can be used to manage persisted RDDs (see <<interacting-with-spark, Interacting with Spark>>).
 
-anchor:bulkdumpervertexprogramusingspark[]
+anchor:clonevertexprogramusingspark[]
 [[clonevertexprogramusingspark]]
 ===== Using CloneVertexProgram
 
