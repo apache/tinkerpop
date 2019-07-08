@@ -460,7 +460,7 @@ custom distance properties or traversals can lead to much longer runtimes and a 
 
 Note that `GraphTraversal` provides a <<shortestpath-step,`shortestPath()`>>-step.
 
-anchor:bulkdumpervertexprogram[]
+anchor:clonevertexprogram[]
 [[clonevertexprogram]]
 === CloneVertexProgram
 

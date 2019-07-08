@@ -122,7 +122,7 @@ references to that Spark Context. The exception to this rule are those propertie
 
 Finally, there is a `spark` object that can be used to manage persisted RDDs (see <<interacting-with-spark, Interacting with Spark>>).
 
-anchor:bulkdumpervertexprogramusingspark[]
+anchor:clonevertexprogramusingspark[]
 [[clonevertexprogramusingspark]]
 ===== Using CloneVertexProgram
 
@@ -136,7 +136,7 @@ The example below takes a Hadoop graph as the input (in `GryoInputFormat`) and e
 hdfs.copyFromLocal('data/tinkerpop-modern.kryo', 'tinkerpop-modern.kryo')
 graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
 graph.configuration().setProperty('gremlin.hadoop.graphWriter', 'org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONOutputFormat')
-graph.compute(SparkGraphComputer).program(BulkDumperVertexProgram.build().create()).submit().get()
+graph.compute(SparkGraphComputer).program(CloneVertexProgram.build().create()).submit().get()
 hdfs.ls('output')
 hdfs.head('output/~g')
 ----
