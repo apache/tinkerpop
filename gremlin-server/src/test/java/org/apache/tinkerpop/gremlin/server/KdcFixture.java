@@ -93,7 +93,7 @@ public class KdcFixture {
     private File createTestDir() {
         final String basedir = System.getProperty("basedir");
         final File targetdir = new File(basedir, "target");
-        final File testDir = new File(targetdir, "tmp");
+        final File testDir = new File(targetdir, "kdc");
         testDir.mkdirs();
         return testDir;
     }
