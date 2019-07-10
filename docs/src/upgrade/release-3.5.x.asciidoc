@@ -124,3 +124,15 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2080[TINKERPOP-2080],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2231[TINKERPOP-2231],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2239[TINKERPOP-2239],
 link:http://tinkerpop.apache.org/docs/3.5.0/upgrade/#_ssl_security[3.2.10 Upgrade Documentation for SSL]
+
+=== Upgrading for Provider
+
+==== Graph System Providers
+
+===== StoreStep and AggregateStep
+
+Note that `StoreStep` has been renamed to `AggregateLocalStep` and `AggregateStep` has been renamed to
+`AggregateGlobalStep`. The renaming is important to consider if any custom `TraversalStrategies` have been written
+that rely on the old step names.
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-2254[TINKERPOP-2254]

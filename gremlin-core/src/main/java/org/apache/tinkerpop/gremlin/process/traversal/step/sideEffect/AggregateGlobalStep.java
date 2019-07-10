@@ -44,13 +44,13 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCapable<Collection, Collection>, TraversalParent, ByModulating, LocalBarrier<S> {
+public final class AggregateGlobalStep<S> extends AbstractStep<S, S> implements SideEffectCapable<Collection, Collection>, TraversalParent, ByModulating, LocalBarrier<S> {
 
     private Traversal.Admin<S, Object> aggregateTraversal = null;
     private String sideEffectKey;
     private TraverserSet<S> barrier = new TraverserSet<>();
 
-    public AggregateStep(final Traversal.Admin traversal, final String sideEffectKey) {
+    public AggregateGlobalStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
         this.getTraversal().getSideEffects().registerIfAbsent(this.sideEffectKey, (Supplier) BulkSetSupplier.instance(), Operator.addAll);
@@ -82,8 +82,8 @@ public final class AggregateStep<S> extends AbstractStep<S, S> implements SideEf
     }
 
     @Override
-    public AggregateStep<S> clone() {
-        final AggregateStep<S> clone = (AggregateStep<S>) super.clone();
+    public AggregateGlobalStep<S> clone() {
+        final AggregateGlobalStep<S> clone = (AggregateGlobalStep<S>) super.clone();
         clone.barrier = new TraverserSet<>();
         if (null != this.aggregateTraversal)
             clone.aggregateTraversal = this.aggregateTraversal.clone();
