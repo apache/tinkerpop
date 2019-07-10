@@ -29,6 +29,10 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Upgraded to Apache Commons Configuration2.
 * Renamed `StoreStep` to `AggregateLocalStep`.
 * Renamed `AggregateStep` to `AggregateGlobalStep`.
+* Configured GraphBinary as the default binary serialization format for the Java Driver.
+* Configured GraphSON 3.0 as the default text serialization format when no serializer can be determined.
+* Removed Gryo serialization configurations from Gremlin Server sample configurations and default configurations.
+* Removed previously deprecated `Serializers.DEFAULT_RESULT_SERIALIZER` and `Serializers.DEFAULT_REQUEST_SERIALIZER`.
 * Removed previously deprecated `TraversalSource.withRemote()`.
 * Removed previously deprecated `VertexProgram` related infrastructure.
 * Removed previously deprecated SSL settings: `keyCertChainFile`, `keyFile`, `keyPassword` and `trustCertChainFile` and related infrastructure.

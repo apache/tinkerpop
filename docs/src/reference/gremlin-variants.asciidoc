@@ -277,18 +277,17 @@ Please see the link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/t
 
 Remote systems like Gremlin Server and Remote Gremlin Providers respond to requests made in a particular serialization
 format and respond by serializing results to some format to be interpreted by the client. For JVM-based languages,
-there are three options for serialization: Gryo, GraphSON and GraphBinary. When using Gryo serialization (the default
-serializer for the Java driver), it is important that the client and server have the same serializers configured or
-else one or the other will experience serialization exceptions and fail to always communicate. Discrepancy in
-serializer registration between client and server can happen fairly easily as graphs will automatically include
-serializers on the server-side, thus leaving the client to be configured manually. This can be done manually as
-follows:
+there are three options for serialization: Gryo, GraphSON and GraphBinary. It is important that the client and server
+have the same serializers configured in the same way or else one or the other will experience serialization exceptions
+and fail to always communicate. Discrepancy in serializer registration between client and server can happen fairly
+easily as different graph systems may automatically include serializers on the server-side, thus leaving the client
+to be configured manually. As an example:
 
 [source,java]
 ----
 IoRegistry registry = ...; // an IoRegistry instance exposed by a specific graph provider
-GryoMapper kryo = GryoMapper.build().addRegistry(registry).create();
-MessageSerializer serializer = new GryoMessageSerializerV3d0(kryo);
+TypeSerializerRegistry typeSerializerRegistry = TypeSerializerRegistry.build().addRegistry(registry).create();
+MessageSerializer serializer = new GraphBinaryMessageSerializerV1(typeSerializerRegistry);
 Cluster cluster = Cluster.build().
                           serializer(serializer).
                           create();
@@ -298,9 +297,11 @@ GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cli
 
 The `IoRegistry` tells the serializer what classes from the graph provider to auto-register during serialization.
 Gremlin Server roughly uses this same approach when it configures its serializers, so using this same model will
-ensure compatibility when making requests. Obviously, it is possible to switch to GraphSON or GraphBinary by building
-the appropriate `MessageSerializer` (`GraphSONMessageSerializerV3d0` or `GraphBinaryMessageSerializerV1` respectively)
+ensure compatibility when making requests. Obviously, it is possible to switch to GraphSON or Gryo by using
+the appropriate `MessageSerializer` (e.g. `GraphSONMessageSerializerV3d0` or `GryoMessageSerializerV3d0` respectively)
 in the same way and building that into the `Cluster` object.
+
+NOTE: Gryo is no longer the preferred binary serialization format for Gremlin Server - please prefer GraphBinary.
 
 === The Lambda Solution
 
@@ -795,10 +796,6 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern-py.yaml
 [INFO] TraversalOpProcessor - Initialized cache for TraversalOpProcessor with size 1000 and expiration time of 600000 ms
 [INFO] GremlinServer - Executing start up LifeCycleHook
 [INFO] Logger$info - Loading 'modern' graph data.
-[WARN] AbstractChannelizer - The org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0 serialization class is deprecated.
-[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v3.0+gryo with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0
-[WARN] AbstractChannelizer - The org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0 serialization class is deprecated.
-[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v3.0+gryo-stringd with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0
 [INFO] AbstractChannelizer - Configured application/vnd.gremlin-v3.0+json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0
 [INFO] AbstractChannelizer - Configured application/json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0
 [INFO] AbstractChannelizer - Configured application/vnd.graphbinary-v1.0 with org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1

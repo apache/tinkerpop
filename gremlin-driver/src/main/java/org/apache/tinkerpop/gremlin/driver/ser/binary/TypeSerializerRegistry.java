@@ -47,7 +47,9 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
+import org.javatuples.Pair;
 
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
@@ -220,8 +222,23 @@ public class TypeSerializerRegistry {
         /**
          * Provides a way to resolve the type serializer to use when there isn't any direct match.
          */
-        public Builder withFallbackResolver(Function<Class<?>, TypeSerializer<?>> fallbackResolver) {
+        public Builder withFallbackResolver(final Function<Class<?>, TypeSerializer<?>> fallbackResolver) {
             this.fallbackResolver = fallbackResolver;
+            return this;
+        }
+
+        /**
+         * Add {@link CustomTypeSerializer} by way of an {@link IoRegistry}. The registry entries should be bound to
+         * {@link GraphBinaryIo}.
+         */
+        public Builder addRegistry(final IoRegistry registry) {
+            if (null == registry) throw new IllegalArgumentException("The registry cannot be null");
+
+            final List<Pair<Class, CustomTypeSerializer>> classSerializers = registry.find(GraphBinaryIo.class, CustomTypeSerializer.class);
+            for (Pair<Class,CustomTypeSerializer> cs : classSerializers) {
+                addCustomType(cs.getValue0(), cs.getValue1());
+            }
+
             return this;
         }
 

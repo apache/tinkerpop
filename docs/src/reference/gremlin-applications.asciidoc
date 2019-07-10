@@ -502,10 +502,6 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 [INFO] Logger$info - Loading 'modern' graph data.
 [INFO] GremlinServer - idleConnectionTimeout was set to 0 which resolves to 0 seconds when configuring this value - this feature will be disabled
 [INFO] GremlinServer - keepAliveInterval was set to 0 which resolves to 0 seconds when configuring this value - this feature will be disabled
-[WARN] AbstractChannelizer - The org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0 serialization class is deprecated.
-[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v3.0+gryo with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0
-[WARN] AbstractChannelizer - The org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0 serialization class is deprecated.
-[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v3.0+gryo-stringd with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0
 [INFO] AbstractChannelizer - Configured application/vnd.gremlin-v3.0+json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0
 [INFO] AbstractChannelizer - Configured application/json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0
 [INFO] AbstractChannelizer - Configured application/vnd.graphbinary-v1.0 with org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1
@@ -1011,7 +1007,7 @@ The following table describes the various YAML configuration options that Gremli
 |scriptEngines.<name>.scripts |A comma separated list of script files to execute on `ScriptEngine` initialization. `Graph` and `TraversalSource` instance references produced from scripts will be stored globally in Gremlin Server, therefore it is possible to use initialization scripts to add Traversal Strategies or create entirely new `Graph` instances all together. Instantiating a `LifeCycleHook` in a script provides a way to execute scripts when Gremlin Server starts and stops.|_none_
 |scriptEngines.<name>.config |A `Map` of configuration settings for the `ScriptEngine`.  These settings are dependent on the `ScriptEngine` implementation being used. |_none_
 |scriptEvaluationTimeout |The amount of time in milliseconds before a script evaluation and iteration of result times out. This feature can be turned off by setting the value to `0`. |30000
-|serializers |A `List` of `Map` settings, where each `Map` represents a `MessageSerializer` implementation to use along with its configuration. If this value is not set, then Gremlin Server will configure with GraphSON and Gryo but will not register any `ioRegistries` for configured graphs. |_empty_
+|serializers |A `List` of `Map` settings, where each `Map` represents a `MessageSerializer` implementation to use along with its configuration. If this value is not set, then Gremlin Server will configure with GraphSON and GraphBinary but will not register any `ioRegistries` for configured graphs. |_empty_
 |serializers[X].className |The full class name of the `MessageSerializer` implementation. |_none_
 |serializers[X].config |A `Map` containing `MessageSerializer` specific configurations. |_none_
 |ssl.enabled |Determines if SSL is turned on or not. |false
@@ -1501,7 +1497,8 @@ The format of the serialization is configured by the `serializers` setting descr
 some serializers have additional configuration options as defined by the `serializers[X].config` setting.  The
 `config` setting is a `Map` where the keys and values get passed to the serializer at its initialization.  The
 available and/or expected keys are dependent on the serializer being used.  Gremlin Server comes packaged with three
-different serializers: GraphSON, Gryo, and GraphBinary.
+different serializers: GraphSON, Gryo, and GraphBinary (however, GraphSON and GraphBinary are the only two configured
+by default).
 
 ===== GraphSON
 
@@ -1541,14 +1538,17 @@ type names, so interpretation from non-JVM languages will be required.  It has t
 
 ===== Gryo
 
+WARNING: Gryo is no longer the recommended serialization format for Gremlin Server. Consider using
+<<server-graphbinary, GraphBinary>> instead.
+
 The Gryo serializer utilizes Kryo-based serialization which produces a binary output.  This format is best consumed
 by JVM-based languages. The format itself is described in the
 link:http://tinkerpop.apache.org/docs/current/dev/io/#gryo[IO Documentation].
 
 [source,yaml]
-  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerGremlinV1d0 }
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerGremlinV3d0 }
 
-It has the MIME type of `application/vnd.gremlin-v1.0+gryo` and the following configuration options:
+It has the MIME type of `application/vnd.gremlin-v3.0+gryo` and the following configuration options:
 
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
@@ -1568,6 +1568,7 @@ important to use cases where server types need to be coerced to client types (i.
 but not on the client).  Implementations should typically instantiate `ClassResolver` implementations that are
 extensions of the `GryoClassResolver` as this class is important to most serialization tasks in TinkerPop.
 
+[[server-graphbinary]]
 ===== GraphBinary
 
 GraphBinary is a binary serialization format suitable for object trees, designed to reduce serialization overhead on
@@ -1813,10 +1814,6 @@ as "detached elements" and depending on the serializer being used those detached
 properties carried with them. Gryo and GraphSON serializers will write all properties in the return payload in this
 case but GraphBinary will not. Therefore, script-based requests that use Gryo or GraphSON should definitely follow the
 best practice of only returning the data required by the application.
-
-NOTE: Gryo does have the exception for the `GryoMessageSerializerGremlinV1d0` with the `serializeResultToString`
-option enabled, which will simply convert all results using the Java `toString()` method prior to serialization and
-is typically only use by the Gremlin Console for remote sessions where the actual object from the server is not of use.
 
 For bytecode-based requests, graph elements have reference detachment and thus only return the `id` and `label` of
 the elements. While this approach alleviates a potential performance problem that the script approach exposes, it is

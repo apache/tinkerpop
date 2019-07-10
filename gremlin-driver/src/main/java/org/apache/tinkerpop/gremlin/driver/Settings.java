@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.commons.configuration2.Configuration;
-import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
+import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
@@ -373,7 +373,7 @@ final class Settings {
         /**
          * The constructor for the channel that connects to the server. This value should be the fully qualified
          * class name of a Gremlin Driver {@link Channelizer} implementation.  By default this value is set to
-         * {@link org.apache.tinkerpop.gremlin.driver.Channelizer.WebSocketChannelizer}.
+         * {@link Channelizer.WebSocketChannelizer}.
          */
         public String channelizer = Channelizer.WebSocketChannelizer.class.getName();
 
@@ -387,8 +387,9 @@ final class Settings {
         /**
          * The fully qualified class name of the {@link MessageSerializer} that will be used to communicate with the
          * server. Note that the serializer configured on the client should be supported by the server configuration.
+         * By default the setting is configured to {@link GraphBinaryMessageSerializerV1}.
          */
-        public String className = GryoMessageSerializerV3d0.class.getCanonicalName();
+        public String className = GraphBinaryMessageSerializerV1.class.getCanonicalName();
 
         /**
          * The configuration for the specified serializer with the {@link #className}.

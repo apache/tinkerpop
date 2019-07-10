@@ -19,8 +19,8 @@
 package org.apache.tinkerpop.gremlin.server.handler;
 
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
-import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0;
-import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
+import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
+import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -30,10 +30,15 @@ final class ServerSerializers {
     private ServerSerializers() {}
 
     /**
-     * Default serializer used by the server when the serializer requested does not match what is on the server.
-     * Using GraphSON 1.0 on 3.3.5 because that's what it has long been set to in previous versions on
-     * {@link Serializers#DEFAULT_RESULT_SERIALIZER} which is now deprecated.
+     * Default binary serializer used by the server when the serializer requested does not match what is on the server.
+     * This defaults to GraphBinary 1.0.
      */
-    static final MessageSerializer DEFAULT_SERIALIZER = new GraphSONMessageSerializerV1d0();
+    static final MessageSerializer DEFAULT_BINARY_SERIALIZER = new GraphBinaryMessageSerializerV1();
+
+    /**
+     * Default binary serializer used by the server when the serializer requested does not match what is on the server.
+     * This defaults to GraphSON 3.0.
+     */
+    static final MessageSerializer DEFAULT_TEXT_SERIALIZER = new GraphSONMessageSerializerV3d0();
 
 }

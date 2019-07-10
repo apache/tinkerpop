@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.driver.simple;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.codec.http.EmptyHttpHeaders;
-import io.netty.handler.codec.http.HttpHeaders;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinRequestEncoder;
@@ -37,7 +36,7 @@ import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
-import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
+import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
 
 import java.io.IOException;
 import java.net.URI;
@@ -69,7 +68,7 @@ public class WebSocketClient extends AbstractClient {
                     new WebSocketClientHandler(
                             WebSocketClientHandshakerFactory.newHandshaker(
                                     uri, WebSocketVersion.V13, null, false, EmptyHttpHeaders.INSTANCE, 65536));
-            final MessageSerializer serializer = new GryoMessageSerializerV3d0();
+            final MessageSerializer serializer = new GraphBinaryMessageSerializerV1();
             b.channel(NioSocketChannel.class)
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
