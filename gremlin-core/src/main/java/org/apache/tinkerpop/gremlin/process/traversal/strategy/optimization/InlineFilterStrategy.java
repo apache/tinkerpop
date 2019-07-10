@@ -54,10 +54,11 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * InlineFilterStrategy analyzes filter-steps with child traversals that themselves are pure filters.
- * If the child traversals are pure filters then the wrapping parent filter is not needed and thus, the
- * children can be "inlined."
- * <p/>
+ * This strategy analyzes filter-steps with child traversals that themselves are pure filters. If the child traversals
+ * are pure filters then the wrapping parent filter is not needed and thus, the children can be "inlined." Normalizing
+ * pure filters with inlining reduces the number of variations of a filter that a graph provider may need to reason
+ * about when writing their own strategies. As a result, this strategy helps increase the likelihood that a provider's
+ * filtering optimization will succeed at re-writing the traversal.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @example <pre>
