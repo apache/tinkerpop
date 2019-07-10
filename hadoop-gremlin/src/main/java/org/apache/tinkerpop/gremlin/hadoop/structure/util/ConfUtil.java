@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.util;
 
-import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -33,14 +33,13 @@ public final class ConfUtil {
     private ConfUtil() {
     }
 
-    public static org.apache.commons.configuration.Configuration makeApacheConfiguration(final Configuration hadoopConfiguration) {
+    public static org.apache.commons.configuration2.Configuration makeApacheConfiguration(final Configuration hadoopConfiguration) {
         final BaseConfiguration apacheConfiguration = new BaseConfiguration();
-        apacheConfiguration.setDelimiterParsingDisabled(true);
         hadoopConfiguration.iterator().forEachRemaining(e -> apacheConfiguration.setProperty(e.getKey(), e.getValue()));
         return apacheConfiguration;
     }
 
-    public static Configuration makeHadoopConfiguration(final org.apache.commons.configuration.Configuration apacheConfiguration) {
+    public static Configuration makeHadoopConfiguration(final org.apache.commons.configuration2.Configuration apacheConfiguration) {
         final Configuration hadoopConfiguration = new Configuration();
         apacheConfiguration.getKeys().forEachRemaining(key -> {
             final Object object = apacheConfiguration.getProperty(key);
@@ -49,7 +48,7 @@ public final class ConfUtil {
         return hadoopConfiguration;
     }
 
-    public static void mergeApacheIntoHadoopConfiguration(final org.apache.commons.configuration.Configuration apacheConfiguration, final Configuration hadoopConfiguration) {
+    public static void mergeApacheIntoHadoopConfiguration(final org.apache.commons.configuration2.Configuration apacheConfiguration, final Configuration hadoopConfiguration) {
         apacheConfiguration.getKeys().forEachRemaining(key -> {
             final Object object = apacheConfiguration.getProperty(key);
             hadoopConfiguration.set(key, object.toString());

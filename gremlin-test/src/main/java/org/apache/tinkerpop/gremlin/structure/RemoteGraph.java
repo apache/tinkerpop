@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.tinkerpop.gremlin.GraphProvider;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
@@ -128,7 +128,8 @@ public class RemoteGraph implements Graph {
     }
 
     public static RemoteGraph open(final String configFile) throws Exception {
-        return open(new PropertiesConfiguration(configFile));
+        final Configurations configs = new Configurations();
+        return open(configs.properties((configFile)));
     }
 
     /**

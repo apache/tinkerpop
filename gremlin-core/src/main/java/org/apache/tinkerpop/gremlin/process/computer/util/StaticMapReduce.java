@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.util;
 
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 

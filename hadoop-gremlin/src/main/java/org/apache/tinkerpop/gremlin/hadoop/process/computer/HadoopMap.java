@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer;
 
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;

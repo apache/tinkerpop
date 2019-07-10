@@ -64,7 +64,7 @@ public abstract class ObjectWritableComparator implements RawComparator<ObjectWr
         @Override
         public void setConf(final Configuration configuration) {
             super.setConf(configuration);
-            final org.apache.commons.configuration.Configuration apacheConfiguration = ConfUtil.makeApacheConfiguration(configuration);
+            final org.apache.commons.configuration2.Configuration apacheConfiguration = ConfUtil.makeApacheConfiguration(configuration);
             this.comparator = MapReduce.<MapReduce<?,?,?,?,?>>createMapReduce(HadoopGraph.open(apacheConfiguration),apacheConfiguration).getMapKeySort().get();
         }
     }
@@ -73,7 +73,7 @@ public abstract class ObjectWritableComparator implements RawComparator<ObjectWr
         @Override
         public void setConf(final Configuration configuration) {
             super.setConf(configuration);
-            final org.apache.commons.configuration.Configuration apacheConfiguration = ConfUtil.makeApacheConfiguration(configuration);
+            final org.apache.commons.configuration2.Configuration apacheConfiguration = ConfUtil.makeApacheConfiguration(configuration);
             this.comparator = MapReduce.<MapReduce<?,?,?,?,?>>createMapReduce(HadoopGraph.open(apacheConfiguration),apacheConfiguration).getReduceKeySort().get();
         }
     }

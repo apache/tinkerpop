@@ -19,8 +19,8 @@
 
 package org.apache.tinkerpop.gremlin.util;
 
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.commons.configuration2.Configuration;
 
 import java.util.Map;
 
@@ -43,7 +43,6 @@ public final class SystemUtil {
      */
     public static Configuration getSystemPropertiesConfiguration(final String prefix, final boolean trimPrefix) {
         final BaseConfiguration apacheConfiguration = new BaseConfiguration();
-        apacheConfiguration.setDelimiterParsingDisabled(true);
         for (final Map.Entry<Object, Object> entry : System.getProperties().entrySet()) {
             final String key = entry.getKey().toString();
             final Object value = entry.getValue();

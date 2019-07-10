@@ -18,8 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.convert.LegacyListDelimiterHandler;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.IoX;
 import org.apache.tinkerpop.gremlin.structure.io.IoXIoRegistry;
@@ -103,6 +104,7 @@ public class GryoPoolTest {
     @Test
     public void shouldConfigPoolOnConstructionWithMultipleCustomIoRegistries() throws Exception {
         final Configuration conf = new BaseConfiguration();
+        ((BaseConfiguration) conf).setListDelimiterHandler(new LegacyListDelimiterHandler(','));
         conf.setProperty(IoRegistry.IO_REGISTRY,
                 IoXIoRegistry.InstanceBased.class.getName() + "," + IoYIoRegistry.InstanceBased.class.getName());
         final GryoPool pool = GryoPool.build().ioRegistries(conf.getList(IoRegistry.IO_REGISTRY, Collections.emptyList())).create();

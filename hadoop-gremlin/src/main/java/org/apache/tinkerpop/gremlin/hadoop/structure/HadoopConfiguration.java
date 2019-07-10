@@ -18,13 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure;
 
-import org.apache.commons.configuration.AbstractConfiguration;
-import org.apache.commons.configuration.Configuration;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapreduce.InputFormat;
-import org.apache.hadoop.mapreduce.OutputFormat;
+import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
 
@@ -42,12 +38,31 @@ public final class HadoopConfiguration extends AbstractConfiguration implements 
 
     public HadoopConfiguration() {
         super();
-        super.setDelimiterParsingDisabled(true);
     }
 
     public HadoopConfiguration(final Configuration configuration) {
         this();
         this.copy(configuration);
+    }
+
+    @Override
+    protected Iterator<String> getKeysInternal() {
+        return properties.keySet().iterator();
+    }
+
+    @Override
+    protected Object getPropertyInternal(final String s) {
+        return properties.get(s);
+    }
+
+    @Override
+    protected boolean isEmptyInternal() {
+        return properties.isEmpty();
+    }
+
+    @Override
+    protected boolean containsKeyInternal(String s) {
+        return properties.containsKey(s);
     }
 
     @Override
@@ -58,26 +73,6 @@ public final class HadoopConfiguration extends AbstractConfiguration implements 
     @Override
     protected void clearPropertyDirect(final String key) {
         this.properties.remove(key);
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return this.properties.isEmpty();
-    }
-
-    @Override
-    public boolean containsKey(final String key) {
-        return this.properties.containsKey(key);
-    }
-
-    @Override
-    public Object getProperty(final String key) {
-        return this.properties.get(key);
-    }
-
-    @Override
-    public Iterator<String> getKeys() {
-        return this.properties.keySet().iterator();
     }
 
     ///////

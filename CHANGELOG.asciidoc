@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 This release also includes changes from <<release-3-4-3, 3.4.3>>.
 
 * Modified `null` handling in mutations to be consistent for a new `Vertex` as well as update to an existing one.
+* Upgraded to Apache Commons Configuration2.
 * Removed previously deprecated `TraversalSource.withRemote()`.
 * Removed previously deprecated `VertexProgram` related infrastructure.
 * Removed previously deprecated SSL settings: `keyCertChainFile`, `keyFile`, `keyPassword` and `trustCertChainFile` and related infrastructure.

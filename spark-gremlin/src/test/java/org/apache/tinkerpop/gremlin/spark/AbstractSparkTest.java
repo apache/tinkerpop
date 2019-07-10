@@ -19,8 +19,8 @@
 
 package org.apache.tinkerpop.gremlin.spark;
 
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.spark.launcher.SparkLauncher;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
@@ -51,7 +51,6 @@ public abstract class AbstractSparkTest {
 
     protected Configuration getBaseConfiguration() {
         final BaseConfiguration configuration = new BaseConfiguration();
-        configuration.setDelimiterParsingDisabled(true);
         configuration.setProperty(SparkLauncher.SPARK_MASTER, "local[4]");
         configuration.setProperty(Constants.SPARK_SERIALIZER, GryoSerializer.class.getCanonicalName());
         configuration.setProperty(Constants.SPARK_KRYO_REGISTRATION_REQUIRED, true);

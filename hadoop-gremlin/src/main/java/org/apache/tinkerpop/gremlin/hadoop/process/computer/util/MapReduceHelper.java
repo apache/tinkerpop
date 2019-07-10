@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.util;
 
-import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -65,7 +65,6 @@ public final class MapReduceHelper {
             newConfiguration.unset(Constants.GREMLIN_HADOOP_GRAPH_FILTER);
         }
         final BaseConfiguration apacheConfiguration = new BaseConfiguration();
-        apacheConfiguration.setDelimiterParsingDisabled(true);
         mapReduce.storeState(apacheConfiguration);
         ConfUtil.mergeApacheIntoHadoopConfiguration(apacheConfiguration, newConfiguration);
 

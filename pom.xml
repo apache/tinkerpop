@@ -149,7 +149,7 @@ limitations under the License.
         <url>https://github.com/apache/tinkerpop</url>
     </scm>
     <properties>
-        <commons.configuration.version>1.10</commons.configuration.version>
+        <commons.configuration.version>2.5</commons.configuration.version>
         <commons.lang.version>2.6</commons.lang.version>
         <commons.lang3.version>3.8.1</commons.lang3.version>
         <groovy.version>2.5.7</groovy.version>
@@ -572,18 +572,16 @@ limitations under the License.
 
     <dependencyManagement>
         <dependencies>
-            <!-- commons-configuration drags in the old commons-lang. need to update someday -->
             <dependency>
-                <groupId>commons-configuration</groupId>
-                <artifactId>commons-configuration</artifactId>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-configuration2</artifactId>
                 <version>${commons.configuration.version}</version>
-                <exclusions>
-                    <!-- self-conflict -->
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                </exclusions>
+            </dependency>
+            <!-- commons-configuration2 requires beanutils because we rely on file loaders -->
+            <dependency>
+                <groupId>commons-beanutils</groupId>
+                <artifactId>commons-beanutils</artifactId>
+                <version>1.9.3</version>
             </dependency>
             <dependency>
                 <groupId>commons-collections</groupId>

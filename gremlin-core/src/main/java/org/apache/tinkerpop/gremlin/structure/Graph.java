@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure;
 
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -319,9 +319,8 @@ public interface Graph extends AutoCloseable, Host {
     public Variables variables();
 
     /**
-     * Get the {@link org.apache.commons.configuration.Configuration} associated with the construction of this graph.
-     * Whatever configuration was passed to {@link GraphFactory#open(org.apache.commons.configuration.Configuration)}
-     * is what should be returned by this method.
+     * Get the {@code Configuration} associated with the construction of this graph. Whatever configuration was passed
+     * to {@link GraphFactory#open(Configuration)} is what should be returned by this method.
      *
      * @return the configuration used during graph construction.
      */

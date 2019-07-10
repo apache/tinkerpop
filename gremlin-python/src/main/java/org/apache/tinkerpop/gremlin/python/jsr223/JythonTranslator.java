@@ -19,7 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.python.jsr223;
 
-import org.apache.commons.configuration.ConfigurationConverter;
+import org.apache.commons.configuration2.ConfigurationConverter;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
@@ -73,6 +73,6 @@ public final class JythonTranslator extends PythonTranslator {
         if (proxy.getConfiguration().isEmpty())
             return proxy.getStrategyClass().getCanonicalName() + ".instance()";
         else
-            return proxy.getStrategyClass().getCanonicalName() + ".create(org.apache.commons.configuration.MapConfiguration(" + convertToString(ConfigurationConverter.getMap(proxy.getConfiguration())) + "))";
+            return proxy.getStrategyClass().getCanonicalName() + ".create(org.apache.commons.configuration2.MapConfiguration(" + convertToString(ConfigurationConverter.getMap(proxy.getConfiguration())) + "))";
     }
 }

@@ -18,15 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-
-import java.lang.reflect.Constructor;
-
-import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE_CONNECTION_CLASS;
 
 /**
  * Provides a unified way to construct a {@link TraversalSource} from the perspective of the traversal. In this syntax
@@ -64,7 +60,8 @@ public class AnonymousTraversalSource<T extends TraversalSource> {
      * traversals spawned from it will execute over that reference.
      */
     public T withRemote(final String configFile) throws Exception {
-        return withRemote(new PropertiesConfiguration(configFile));
+        final Configurations configs = new Configurations();
+        return withRemote(configs.properties((configFile)));
     }
 
     /**

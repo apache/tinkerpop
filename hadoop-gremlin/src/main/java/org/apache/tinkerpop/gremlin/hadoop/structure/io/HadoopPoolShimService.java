@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimService;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;

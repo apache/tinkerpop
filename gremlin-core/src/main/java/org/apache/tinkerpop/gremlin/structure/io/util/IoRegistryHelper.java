@@ -19,7 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.structure.io.util;
 
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 
 import java.lang.reflect.Method;

@@ -19,7 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.spark.structure;
 
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.rdd.RDD;

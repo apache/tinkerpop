@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.util;
 
-import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
@@ -29,20 +29,9 @@ public abstract class AbstractVertexProgramBuilder<B extends VertexProgram.Build
 
     protected final BaseConfiguration configuration = new BaseConfiguration();
 
-    public AbstractVertexProgramBuilder() {
-        this.configuration.setDelimiterParsingDisabled(true);
-    }
-
     public AbstractVertexProgramBuilder(final Class<? extends VertexProgram> vertexProgramClass) {
-        this();
         this.configuration.setProperty(VertexProgram.VERTEX_PROGRAM, vertexProgramClass.getName());
     }
-
-    /*@Override
-    public B graph(final Graph graph) {
-        this.configuration.setProperty(Graph.GRAPH, graph.getClass().getName());
-        return (B) this;
-    }*/
 
     /**
      * {@inheritDoc}

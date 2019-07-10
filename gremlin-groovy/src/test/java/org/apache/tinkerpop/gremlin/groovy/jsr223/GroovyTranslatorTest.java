@@ -19,7 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import org.apache.commons.configuration.MapConfiguration;
+import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.tinkerpop.gremlin.jsr223.TranslatorCustomizer;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;

@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin;
 
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -117,15 +117,14 @@ public interface GraphProvider {
 
     /**
      * Creates a new {@link org.apache.tinkerpop.gremlin.structure.Graph} instance using the default
-     * {@code org.apache.commons.configuration.Configuration} from
-     * {@link #standardGraphConfiguration(Class, String, LoadGraphWith.GraphData)}.
+     * {@code Configuration} from {@link #standardGraphConfiguration(Class, String, LoadGraphWith.GraphData)}.
      */
     default public Graph standardTestGraph(final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
         return GraphFactory.open(standardGraphConfiguration(test, testMethodName, loadGraphWith));
     }
 
     /**
-     * Creates a new {@link Graph} instance from the {@link org.apache.commons.configuration.Configuration} object using {@link GraphFactory}.
+     * Creates a new {@link Graph} instance from the {@code Configuration} object using {@link GraphFactory}.
      * The assumption here is that the {@code Configuration} has been created by one of the
      * {@link #newGraphConfiguration(String, Class, String, LoadGraphWith.GraphData)} methods and has therefore
      * already been modified by the implementation as necessary for {@link Graph} creation.
@@ -147,11 +146,11 @@ public interface GraphProvider {
     /**
      * If possible (usually with persisted graph) clear the space on disk given the configuration that would be used
      * to construct the graph.  The default implementation simply calls
-     * {@link #clear(Graph, org.apache.commons.configuration.Configuration)} with
+     * {@link #clear(Graph, Configuration)} with
      * a null graph argument.
      * <p/>
-     * Implementations should be able to accept an argument of null for the {@code org.apache.commons.configuration.Configuration}
-     * as well, and a proper handling is needed. Otherwise, a NullPointerException may be thrown.
+     * Implementations should be able to accept an argument of null for the {@code Configuration} as well, and a
+     * proper handling is needed. Otherwise, a NullPointerException may be thrown.
      */
     public default void clear(final Configuration configuration) throws Exception {
         clear(null, configuration);
@@ -167,8 +166,8 @@ public interface GraphProvider {
      * that can be performed is a clear given the configuration.  The method will typically be called this way
      * as clean up task on setup to ensure that a persisted graph has a clear space to create a test graph.
      * <p/>
-     * Implementations should be able to accept an argument of null for the {@code org.apache.commons.configuration.Configuration}
-     * as well, and a proper handling is needed. Otherwise, a NullPointerException may be thrown.
+     * Implementations should be able to accept an argument of null for the {@code Configuration} as well, and a
+     * proper handling is needed. Otherwise, a NullPointerException may be thrown.
      * <p/>
      * Calls to this method may occur multiple times for a specific test. Develop this method to be idempotent.
      */

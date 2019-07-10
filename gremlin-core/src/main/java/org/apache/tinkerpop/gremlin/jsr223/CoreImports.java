@@ -19,18 +19,16 @@
 
 package org.apache.tinkerpop.gremlin.jsr223;
 
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.CombinedConfiguration;
-import org.apache.commons.configuration.CompositeConfiguration;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationBuilder;
-import org.apache.commons.configuration.ConfigurationUtils;
-import org.apache.commons.configuration.FileConfiguration;
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.MapConfiguration;
-import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.commons.configuration.SubsetConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.commons.configuration2.CombinedConfiguration;
+import org.apache.commons.configuration2.CompositeConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.ConfigurationUtils;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.MapConfiguration;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.SubsetConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -219,9 +217,7 @@ public final class CoreImports {
         CLASS_IMPORTS.add(CombinedConfiguration.class);
         CLASS_IMPORTS.add(CompositeConfiguration.class);
         CLASS_IMPORTS.add(Configuration.class);
-        CLASS_IMPORTS.add(ConfigurationBuilder.class);
         CLASS_IMPORTS.add(ConfigurationUtils.class);
-        CLASS_IMPORTS.add(FileConfiguration.class);
         CLASS_IMPORTS.add(HierarchicalConfiguration.class);
         CLASS_IMPORTS.add(MapConfiguration.class);
         CLASS_IMPORTS.add(PropertiesConfiguration.class);

@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.util;
 
-import org.apache.commons.configuration.AbstractConfiguration;
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.VertexComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -61,8 +61,6 @@ public final class VertexProgramHelper {
     }
 
     public static void serialize(final Object object, final Configuration configuration, final String key) {
-        if (configuration instanceof AbstractConfiguration)
-            ((AbstractConfiguration) configuration).setDelimiterParsingDisabled(true);
         try {
             configuration.setProperty(key, Base64.getEncoder().encodeToString(Serializer.serializeObject(object)));
         } catch (final IOException e) {

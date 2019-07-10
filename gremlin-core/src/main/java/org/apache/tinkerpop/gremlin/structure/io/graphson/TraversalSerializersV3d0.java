@@ -19,8 +19,8 @@
 
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
-import org.apache.commons.configuration.ConfigurationConverter;
-import org.apache.commons.configuration.MapConfiguration;
+import org.apache.commons.configuration2.ConfigurationConverter;
+import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
