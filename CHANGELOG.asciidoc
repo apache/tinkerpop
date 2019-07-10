@@ -45,6 +45,8 @@ This release also includes changes from <<release-3-3-8, 3.3.8>>.
 * Added a `toString()` serializer for GraphBinary.
 * Configured the Gremlin Console to use GraphBinary by default.
 * Deprecated `MessageSerializer` implementations for Gryo in Gremlin Server.
+* Deprecated `Serializers` enum values of `GRYO_V1D0` and `GRYO_V3D0`.
+* Deprecated `SerTokens` values of `MIME_GRYO_V1D0` and `MIME_GRYO_V3D0`.
 * Added a Docker command to start Gremlin Server with the standard GLV test configurations.
 * Added `aggregate(Scope,String)` and deprecated `store()` in favor of `aggregate(local)`.
 * Modified `NumberHelper` to better ignore `Double.NaN` in `min()` and `max()` comparisons.
