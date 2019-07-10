@@ -55,7 +55,7 @@ import java.util.Set;
  * <li>the traversal contains a {@code path} step</li>
  * <li>the traversal contains a lambda step</li>
  * </ul>
- * <p/>
+ * By re-writing the traversal in this fashion, the traversal eliminates unnecessary steps and becomes more normalized.
  *
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @example <pre>

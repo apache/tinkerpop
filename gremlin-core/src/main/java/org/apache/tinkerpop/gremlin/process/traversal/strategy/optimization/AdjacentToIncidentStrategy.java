@@ -42,10 +42,12 @@ import java.util.Set;
 
 /**
  * This strategy looks for vertex- and value-emitting steps followed by a {@link CountGlobalStep} and replaces the
- * pattern with an edge- or property-emitting step followed by a {@code CountGlobalStep}. Furthermore, if a vertex-
+ * pattern with an edge- or property-emitting step followed by a {@link CountGlobalStep}. Furthermore, if a vertex-
  * or value-emitting step is the last step in a {@code .has(traversal)}, {@code .and(traversal, ...)} or
  * {@code .or(traversal, ...)} child traversal, it is replaced by an appropriate edge- or property-emitting step.
- * <p/>
+ * Performing this replacement removes situations where the more expensive trip to an adjacent graph element (e.g.
+ * the vertex on the other side of an edge) can be satisfied by trips to incident graph elements (e.g. just the edge
+ * itself).
  *
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @example <pre>
