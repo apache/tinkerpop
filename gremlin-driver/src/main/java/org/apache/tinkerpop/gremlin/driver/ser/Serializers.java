@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver.ser;
 
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 
 /**
  * An enum of the default serializers.
@@ -34,8 +35,23 @@ public enum Serializers {
     GRAPHSON_V2D0(SerTokens.MIME_GRAPHSON_V2D0),
     GRAPHSON_V3D0(SerTokens.MIME_GRAPHSON_V3D0),
     GRAPHBINARY_V1D0(SerTokens.MIME_GRAPHBINARY_V1D0),
+
+    /**
+     * @deprecated As of release 3.4.3, replaced by {@link #GRAPHBINARY_V1D0}.
+     */
+    @Deprecated
     GRYO_V1D0(SerTokens.MIME_GRYO_V1D0),
+
+    /**
+     * @deprecated As of release 3.4.3, replaced by {@link #GRAPHBINARY_V1D0}.
+     */
+    @Deprecated
     GRYO_V3D0(SerTokens.MIME_GRYO_V3D0),
+
+    /**
+     * @deprecated As of release 3.2.6, not directly replaced - supported through {@link HaltedTraverserStrategy}.
+     */
+    @Deprecated
     GRYO_LITE_V1D0(SerTokens.MIME_GRYO_LITE_V1D0);
 
     private String value;
