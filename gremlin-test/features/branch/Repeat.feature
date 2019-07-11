@@ -170,7 +170,7 @@ Feature: Step - repeat()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"d[0].l":"d[1].l","d[1].l":"d[3].l","d[2].l":"d[2].l"}] |
+      | m[{"d[0].i":"d[1].l","d[1].i":"d[3].l","d[2].i":"d[2].l"}] |
 
   Scenario: g_V_repeatXbothX_timesX10X_asXaX_out_asXbX_selectXa_bX
     Given the modern graph
