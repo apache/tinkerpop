@@ -56,7 +56,6 @@ const parsers = [
 ].map(x => [ new RegExp('^' + x[0] + '$'), x[1] ]);
 
 const ignoreReason = {
-  lambdaNotSupported: 'Lambdas are not supported on gremlin-javascript',
   setNotSupported: "There is no Set support in gremlin-javascript",
   needsFurtherInvestigation: '',
 };
@@ -65,8 +64,6 @@ const ignoredScenarios = {
   // An associative array containing the scenario name as key, for example:
   'g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX': new IgnoreError(ignoreReason.setNotSupported),
   'g_withSideEffectXa_setX_V_both_name_aggregateXlocal_aX_capXaX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_V_group_byXoutE_countX_byXnameX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
 };
 
 defineSupportCode(function(methods) {
