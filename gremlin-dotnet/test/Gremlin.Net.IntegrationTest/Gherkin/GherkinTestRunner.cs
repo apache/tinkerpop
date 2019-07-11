@@ -40,12 +40,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private static readonly IDictionary<string, IgnoreReason> IgnoredScenarios =
             new Dictionary<string, IgnoreReason>
             {
-                // Add here the name of scenarios to ignore and the reason, e.g.
-                { "g_VX1X_outEXcreatedX_inV_inE_outV_path", IgnoreReason.NoReason },
-                { "g_V_peerPressure_withXpropertyName_clusterX_withXedges_outEXknowsXX_pageRankX1X_byXrankX_withXedges_outEXknowsX_withXtimes_2X_group_byXclusterX_byXrank_sumX_limitX100X", IgnoreReason.NoReason },
-                { "g_V_group_byXoutE_countX_byXnameX", IgnoreReason.NoReason },
-                { "g_VX1X_repeatXgroupCountXmX_byXloopsX_outX_timesX3X_capXmX", IgnoreReason.NoReason },
-                { "g_V_outXcreatedX_groupXmX_byXlabelX_pageRankX1X_byXpageRankX_byXinEX_timesX1X_inXcreatedX_groupXmX_byXpageRankX_capXmX", IgnoreReason.NoReason }
+                // Add here the name of scenarios to ignore and the reason, e.g.:
+                // { "g_V_peerPressure_withXpropertyName_clusterX_withXedges_outEXknowsXX_pageRankX1X_byXrankX_withXedges_outEXknowsX_withXtimes_2X_group_byXclusterX_byXrank_sumX_limitX100X", IgnoreReason.NoReason },
             };
         
         private static class Keywords

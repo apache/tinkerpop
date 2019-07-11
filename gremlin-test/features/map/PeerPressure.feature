@@ -43,7 +43,7 @@ Feature: Step - peerPressure()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"d[1].l":"d[0.5833333333333333].d","d[3].l":"d[0.1388888888888889].d","d[5].l":"d[0.1388888888888889].d","d[6].l":"d[0.1388888888888889].d"}] |
+      | m[{"d[1].i":"d[0.5833333333333333].d","d[3].i":"d[0.1388888888888889].d","d[5].i":"d[0.1388888888888889].d","d[6].i":"d[0.1388888888888889].d"}] |
 
   Scenario: g_V_hasXname_rippleX_inXcreatedX_peerPressure_withXedges_outEX_withyXpropertyName_clusterX_repeatXunionXidentity__bothX_timesX2X_dedup_valueMapXname_clusterX
     Given the modern graph

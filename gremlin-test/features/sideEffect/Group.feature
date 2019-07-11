@@ -92,7 +92,7 @@ Feature: Step - group()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"d[0].i":["vadas","lop","ripple"],"d[1].i":["peter"],"d[2].i":["josh"],"d[3].i":["marko"]}] |
+      | m[{"d[0].l":["vadas","lop","ripple"],"d[1].l":["peter"],"d[2].l":["josh"],"d[3].l":["marko"]}] |
 
   Scenario: g_V_groupXaX_byXlabelX_byXoutE_weight_sumX_capXaX
     Given the modern graph
