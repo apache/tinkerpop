@@ -27,7 +27,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.3.8/CHANGELOG.asciidoc#release-3-3-8[changelog] for a complete list of all the modifications that are part of this release.
 
-== Upgrading for Users
+=== Upgrading for Users
 
 ==== Branch Steps Accept Predicates and Traversals
 
@@ -70,7 +70,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2251[TINKERPOP-2251]
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.3.7/CHANGELOG.asciidoc#release-3-3-7[changelog] for a complete list of all the modifications that are part of this release.
 
-== Upgrading for Users
+=== Upgrading for Users
 
 ==== JavaScript DSL Pattern
 
@@ -129,7 +129,9 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2182[TINKERPOP-2182]
 
 === Upgrading for Providers
 
-==== Detection of Anti-Patterns
+==== Graph Database Providers
+
+===== Detection of Anti-Patterns
 
 This release adds a strategy named `EdgeLabelVerificationStrategy`. The strategy will not be added by default to the traversal source, however, providers can add it explicitly to encourage (or enforce)
 users to always specify at least one edge label. `EdgeLabelVerificationStrategy` can be configured to either throw an exception if no edge label was specified, log a warning or do both.
