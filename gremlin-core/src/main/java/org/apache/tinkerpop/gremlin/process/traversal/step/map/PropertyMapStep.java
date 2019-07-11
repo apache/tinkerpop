@@ -61,21 +61,17 @@ public class PropertyMapStep<K,E> extends MapStep<Element, Map<K, E>>
     private Parameters parameters = new Parameters();
     private TraversalRing<K, E> traversalRing;
 
-    /**
-     * @deprecated As of release 3.4.0, replaced by {@link #PropertyMapStep(Traversal.Admin, PropertyType, String...)}.
-     */
-    @Deprecated
-    public PropertyMapStep(final Traversal.Admin traversal, final boolean includeTokens, final PropertyType propertyType, final String... propertyKeys) {
-        this(traversal, propertyType, propertyKeys);
-        this.configure(WithOptions.tokens, includeTokens ? WithOptions.all : WithOptions.none);
-    }
-
     public PropertyMapStep(final Traversal.Admin traversal, final PropertyType propertyType, final String... propertyKeys) {
         super(traversal);
         this.propertyKeys = propertyKeys;
         this.returnType = propertyType;
         this.propertyTraversal = null;
         this.traversalRing = new TraversalRing<>();
+    }
+
+    public PropertyMapStep(final Traversal.Admin traversal, final int options, final PropertyType propertyType, final String... propertyKeys) {
+        this(traversal, propertyType, propertyKeys);
+        this.configure(WithOptions.tokens, options);
     }
 
     @Override
@@ -165,14 +161,6 @@ public class PropertyMapStep<K,E> extends MapStep<Element, Map<K, E>>
 
     public String[] getPropertyKeys() {
         return propertyKeys;
-    }
-
-    /**
-     * @deprecated As of release 3.4.0, replaced by {@link #getIncludedTokens()}.
-     */
-    @Deprecated
-    public boolean isIncludeTokens() {
-        return this.tokens != WithOptions.none;
     }
 
     public String toString() {

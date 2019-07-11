@@ -109,6 +109,10 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressureVertexProgramStep.modulateTimes()`
 ** `org.apache.tinkerpop.gremlin.process.traversal.TraversalSource#withRemote(*)`
 ** `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource#withRemote(*)`
+** `org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep(Traversal.Admin, boolean, PropertyType, String...)`
+** `org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep#isIncludeTokens()`
+** `org.apache.tinkerpop.gremlin.structure.util.star.StarGraph#builder()`
+** `org.apache.tinkerpop.gremlin.structure.util.star.StarGraph.Builder.create()`
 * `gremlin-driver`
 ** `org.apache.tinkerpop.gremlin.driver.Cluster.Builder#keyCertChainFile(String)`
 ** `org.apache.tinkerpop.gremlin.driver.Cluster.Builder#keyFile(String)`
@@ -119,6 +123,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.server.Settings.SslSettings.keyFile`
 ** `org.apache.tinkerpop.gremlin.server.Settings.SslSettings.keyPassword`
 ** `org.apache.tinkerpop.gremlin.server.Settings.SslSettings.trustCertificateChainFile`
+** `org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor.generateMetaData(ChannelHandlerContext, RequestMessage, ResponseStatusCode, Iterator)`
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2080[TINKERPOP-2080],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2231[TINKERPOP-2231],
@@ -128,6 +133,13 @@ link:http://tinkerpop.apache.org/docs/3.5.0/upgrade/#_ssl_security[3.2.10 Upgrad
 === Upgrading for Provider
 
 ==== Graph System Providers
+
+===== AbstractOpProcessor API Change
+
+The `generateMetaData()` method was removed as it was deprecated in a previous version. There already was a preferred
+method called `generateResultMetaData()` that took an extra `Settings` parameter. To fix compilation issues simply
+replace implementations of the `generateMetaData()` method with `generateResultMetaData()`. Gremlin Server has
+only been calling `generateResultMetaData()` since the deprecation, so this correction should be straightforward.
 
 ===== StoreStep and AggregateStep
 

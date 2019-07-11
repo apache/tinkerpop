@@ -224,14 +224,6 @@ public final class StarGraph implements Graph, Serializable {
         return starGraph;
     }
 
-    /**
-     * @deprecated As of release 3.3.5, replaced by {@link #build()}.
-     */
-    @Deprecated
-    public static StarGraph.Builder builder() {
-        return build();
-    }
-
     public static StarGraph.Builder build() {
         return new Builder();
     }
@@ -244,7 +236,7 @@ public final class StarGraph implements Graph, Serializable {
         private boolean compareIdsUsingStrings = true;
 
         /**
-         * Call {@link #builder()} to instantiate
+         * Call {@link #build()} to instantiate
          */
         private Builder() { }
 
@@ -270,22 +262,10 @@ public final class StarGraph implements Graph, Serializable {
          * However, if this builder method is never invoked, then the builder is guaranteed to use
          * whatever default value StarGraph's other public constructors or factory methods would use.
          * This option exists solely for performance tuning in specialized use-cases.
-         *
-         * @param b
-         * @return
          */
         public Builder compareIdsUsingStrings(final boolean b) {
             this.compareIdsUsingStrings = b;
             return this;
-        }
-
-        /**
-         * @return a new StarGraph
-         * @deprecated As of release 3.3.5, replaced by {@link #create()}.
-         */
-        @Deprecated
-        public StarGraph build() {
-            return create();
         }
 
         /**

@@ -238,24 +238,11 @@ public abstract class AbstractOpProcessor implements OpProcessor {
      *
      * @param itty a reference to the current {@link Iterator} of results - it is not meant to be forwarded in
      *             this method
-     * @deprecated As of release 3.4.0, replaced by {@link #generateResultMetaData(ChannelHandlerContext, RequestMessage, ResponseStatusCode, Iterator, Settings)}
-     */
-    @Deprecated
-    protected Map<String, Object> generateMetaData(final ChannelHandlerContext ctx, final RequestMessage msg,
-                                                   final ResponseStatusCode code, final Iterator itty) {
-        return Collections.emptyMap();
-    }
-
-    /**
-     * Generates response result meta-data to put on a {@link ResponseMessage}.
-     *
-     * @param itty a reference to the current {@link Iterator} of results - it is not meant to be forwarded in
-     *             this method
      */
     protected Map<String, Object> generateResultMetaData(final ChannelHandlerContext ctx, final RequestMessage msg,
                                                          final ResponseStatusCode code, final Iterator itty,
                                                          final Settings settings) {
-        return generateMetaData(ctx, msg, code, itty);
+        return Collections.emptyMap();
     }
 
     /**

@@ -449,8 +449,9 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
     }
 
     @Override
-    protected Map<String, Object> generateMetaData(final ChannelHandlerContext ctx, final RequestMessage msg,
-                                                   final ResponseStatusCode code, final Iterator itty) {
+    protected Map<String, Object> generateResultMetaData(final ChannelHandlerContext ctx, final RequestMessage msg,
+                                                         final ResponseStatusCode code, final Iterator itty,
+                                                         final Settings settings) {
         // leaving this overriding the deprecated version of this method because it provides a decent test to those
         // who might have their own OpProcessor implementations that apply meta-data. leaving this alone helps validate
         // that the upgrade path is clean.  it can be removed at the next breaking change 3.5.0
@@ -465,7 +466,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             }
         } else {
             // this is a standard traversal iterator
-            metaData = super.generateMetaData(ctx, msg, code, itty);
+            metaData = super.generateResultMetaData(ctx, msg, code, itty, settings);
         }
 
         return metaData;
