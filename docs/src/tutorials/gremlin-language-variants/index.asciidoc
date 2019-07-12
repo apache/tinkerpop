@@ -179,7 +179,7 @@ parent step. For example, in `+repeat(__.out())+`, `+__.out()+` is an anonymous 
 language agnostic representation called Gremlin bytecode. This representation is a nested list of the form
 `[step,[args*]]*`.
 
-Both `GraphTraversal` and `__` define the structure of the Gremlin language. Gremlin is a _two-dimensional language_
+Both `GraphTraversal` and `+__+` define the structure of the Gremlin language. Gremlin is a _two-dimensional language_
 supporting linear, nested step sequences. Historically, many Gremlin language variants have failed to make the
 distinctions above clear and in doing so, either complicate their implementations or yield variants that are not in
 1-to-1 correspondence with Gremlin-Java. By keeping these concepts clear when designing a language variant, the

@@ -244,7 +244,7 @@ g.V().
 ----
 
 <1> For each vertex, create a "pair" (i.e. a `List` of two objects) of the vertex itself and its edge count.
-<2> For each vertex, create a "triple" (i.e. a `List`of three objects) of the index of the vertex (starting at zero),
+<2> For each vertex, create a "triple" (i.e. a `List` of three objects) of the index of the vertex (starting at zero),
 the vertex itself and its edge count.
 
 The pattern here is to use `union()` in conjunction with `fold()`. As explained earlier, the `fold()` operation reduces
