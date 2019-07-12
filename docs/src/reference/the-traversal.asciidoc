@@ -42,7 +42,7 @@ traversal strategies may not function properly.
 image::step-types.png[width=650]
 
 A `GraphTraversal<S,E>` is spawned from a `GraphTraversalSource`. It can also be spawned anonymously (i.e. empty)
-via `__`. A graph traversal is composed of an ordered list of steps. All the steps provided by `GraphTraversal`
+via `+__+`. A graph traversal is composed of an ordered list of steps. All the steps provided by `GraphTraversal`
 inherit from the more general forms diagrammed above. A list of all the steps (and their descriptions) are provided
 in the TinkerPop3 link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html[GraphTraversal JavaDoc].
 The following subsections will demonstrate the GraphTraversal steps using the <<gremlin-console,Gremlin Console>>.
@@ -361,7 +361,7 @@ that make use of such labels -- e.g., <<select-step,`select()`>>, <<match-step,`
 [NOTE, caption=Groovy]
 ====
 The term `as` is a reserved word in Groovy, and when therefore used as part of an anonymous traversal must be referred
-to in Gremlin with the double underscore `__.as()`.
+to in Gremlin with the double underscore `+__.as()+`.
 ====
 
 [NOTE, caption=Python]
@@ -1587,7 +1587,7 @@ returns an object.
 [NOTE, caption=Groovy]
 ====
 The term `not` is a reserved word in Groovy, and when therefore used as part of an anonymous traversal must be referred
-to in Gremlin with the double underscore `__.not()`.
+to in Gremlin with the double underscore `+__.not()+`.
 ====
 
 [NOTE, caption=Python]
@@ -2045,7 +2045,7 @@ g.V().hasLabel('person').
   valueMap('name', 'rank')
 ----
 
-[properties-step]]
+[[properties-step]]
 === Properties Step
 
 The `properties()`-step (*map*) extracts properties from an `Element` in the traversal stream.
@@ -2944,7 +2944,7 @@ g.V().hasLabel('person').properties('location').valueMap(true)
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#valueMap-boolean-java.lang.String...-++[`valueMap(boolean,String...)`],
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#valueMap-java.lang.String...-++[`valueMap(String...)`]
 
-[values-step]]
+[[values-step]]
 === Values Step
 
 The `values()`-step (*map*) extracts the values of properties from an `Element` in the traversal stream.
@@ -2982,7 +2982,7 @@ graph -- i.e. traverse.
 [NOTE, caption=Groovy]
 ====
 The term `in` is a reserved word in Groovy, and when therefore used as part of an anonymous traversal must be referred
-to in Gremlin with the double underscore `__.in()`.
+to in Gremlin with the double underscore `+__.in()+`.
 ====
 
 [NOTE, caption=Javascript]
@@ -3723,7 +3723,7 @@ The annotation processor will generate several classes for the DSL:
 interfaces (such as `GraphTraversal`) to instead return a `SocialTraversal`
 * `DefaultSocialTraversal` - A default implementation of `SocialTraversal` (typically not used directly by the user)
 * `SocialTraversalSource` - Spawns `DefaultSocialTraversal` instances.
-* `__` - Spawns anonymous `DefaultSocialTraversal` instances.
+* `+__+` - Spawns anonymous `DefaultSocialTraversal` instances.
 
 Using the DSL then just involves telling the `Graph` to use it:
 
@@ -3794,7 +3794,7 @@ straightforward in that it sets up appropriate paths to the generated code autom
 Writing a Gremlin DSL in Python simply requires direct extension of several classes:
 
 * `GraphTraversal` - which exposes the various steps used in traversal writing
-* `__` - which spawns anonymous traversals from steps
+* `+__+` - which spawns anonymous traversals from steps
 * `GraphTraversalSource` - which spawns `GraphTraversal` instances
 
 The Social DSL based on the link:http://tinkerpop.apache.org/docs/current/images/tinkerpop-modern.png["modern" toy graph]
@@ -3847,8 +3847,8 @@ class SocialTraversalSource(GraphTraversalSource):
         return traversal
 ----
 
-NOTE: The `AnonymousTraversal` class above is just an alias for `__` as in
-`from gremlin_python.process.graph_traversal import __ as AnonymousTraversal`
+NOTE: The `AnonymousTraversal` class above is just an alias for `+__+` as in
+`+from gremlin_python.process.graph_traversal import __ as AnonymousTraversal+`
 
 Using the DSL is straightforward and just requires that the graph instance know the `SocialTraversalSource` should
 be used:
@@ -3867,11 +3867,11 @@ social.persons().filter(__.createdAtLeast(2)).count()
 Developing DSLs for .Net is most easily implemented using link:https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/extension-methods[Extension Methods]
 as they don't require direct extension of classes in the TinkerPop hierarchy. Extension Method classes simply need to
 be constructed for the `GraphTraversal` and the `GraphTraversalSource`. Unfortunately, anonymous traversals (spawned
-from `__`) can't use the Extension Method approach as they do not work for static classes and static classes can't be
-extended. The only option is to re-implement the methods of `__` as a wrapper in the anonymous traversal for the DSL
+from `+__+`) can't use the Extension Method approach as they do not work for static classes and static classes can't be
+extended. The only option is to re-implement the methods of `+__+` as a wrapper in the anonymous traversal for the DSL
 or to simply create a static class for the DSL and use the two anonymous traversals creators independently. The
 following example uses the latter approach as it saves a lot of boilerplate code with the minor annoyance of having a
-second static class to deal with when writing traversals rather than just calling `__` for everything.
+second static class to deal with when writing traversals rather than just calling `+__+` for everything.
 
 [source,csharp]
 ----
@@ -3931,7 +3931,7 @@ namespace Dsl
 }
 ----
 
-Note the creation of `__Social` as the Social DSL's "extension" to the available ways in which to spawn anonymous
+Note the creation of `+__Social+` as the Social DSL's "extension" to the available ways in which to spawn anonymous
 traversals. The use of the double underscore prefix in the name is just a convention to consider using and is not a
 requirement. To use the DSL, bring it into scope with the `using` directive:
 

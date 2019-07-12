@@ -140,7 +140,7 @@ and "josh" edges to be grouped by?
 
 In this case, the answer to that question is provided by the anonymous traversal `label()` as the argument to the step
 modulator `by()`. An anonymous traversal is a traversal that is not bound to a `GraphTraversalSource`. It is
-constructed from the double underscore class (i.e. `__`), which exposes static functions to spawn the anonymous
+constructed from the double underscore class (i.e. `+__+`), which exposes static functions to spawn the anonymous
 traversals. Typically, the double underscore is not visible in examples and code as by convention, TinkerPop typically
 recommends that the functions of that class be exposed in a standalone fashion. In Java, that would mean
 link:https://docs.oracle.com/javase/7/docs/technotes/guides/language/static-import.html[statically importing] the

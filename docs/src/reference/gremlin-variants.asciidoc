@@ -75,7 +75,7 @@ Gremlin-Java constructs. Moreover, given its scripting nature, Gremlin-Groovy se
 <<gremlin-console,Gremlin Console>>.
 
 WARNING: In Groovy, `as`, `in`, and `not` are reserved words. Gremlin-Groovy does not allow these steps to be called
-statically from the anonymous traversal `__` and therefore, must always be prefixed with `__.` For instance:
+statically from the anonymous traversal `+__+` and therefore, must always be prefixed with `+__+`. For instance:
 `+g.V().as('a').in().as('b').where(__.not(__.as('a').out().as('b')))+`
 
 [[gremlin-python]]
@@ -89,7 +89,7 @@ namespaces (`a(b())` vs `a(__.b())`). As such, anyone familiar with Gremlin-Java
 with Gremlin-Python. Moreover, there are a few added constructs to Gremlin-Python that make traversals a bit more succinct.
 
 WARNING: In Python, `and`, `as`, `from`, `global`, `in`, `is`, `not`, and `or` are reserved words. Gremlin-Python simply
-postfixes `_` to the end of these terms for their use with graph traversal. For instance: `g.V().as_('a').in_().as_('b').select('a','b')`.
+postfixes `+_+` to the end of these terms for their use with graph traversal. For instance: `g.V().as_('a').in_().as_('b').select('a','b')`.
 
 To install Gremlin-Python, use Python's link:https://en.wikipedia.org/wiki/Pip_(package_manager)[pip] package manager.
 
@@ -229,8 +229,8 @@ With statics loaded its possible to represent the above traversal as below.
 g.V().hasLabel('person').has('age',gt(30)).order().by('age',desc).toList()
 ----
 
-Finally, statics includes all the ``+__+``-methods and thus, anonymous traversals like `+__.out()+` can be expressed as below.
-That is, without the ``__.``-prefix.
+Finally, statics includes all the `+__+`-methods and thus, anonymous traversals like `+__.out()+` can be expressed as below.
+That is, without the `+__+`-prefix.
 
 [gremlin-python,modern]
 ----
@@ -541,7 +541,7 @@ traversal source.
 Since Gremlin-JavaScript currently doesn't support lambda expressions, all traversals can be translated to
 Gremlin-Java on the remote location (e.g. Gremlin Server).
 
-WARNING: In Javascript, `from` and `in` are reserved words. Gremlin-Javascript simply postfixes `_` to the end of
+WARNING: In Javascript, `from` and `in` are reserved words. Gremlin-Javascript simply postfixes `+_+` to the end of
 these terms for their use with graph traversal. For instance: `g.V().in_().out()`
 
 IMPORTANT: Gremlin-JavaScript’s `Traversal` base class supports the standard Gremlin methods such as `next()` and
