@@ -230,7 +230,7 @@ framework modules that will potentially be needed. In 3.x, we found situation wh
 
 == Elements and IDs
 
-In link:https://issues.apache.org/jira/browse/TINKERPOP-2051[TINKERPOP-2051] we tried to make vertex property ids local to their vertex. Several approaches were leading nowhere, in most cases we just broke the Gryo compatibility test suite. The basic idea was to remember the parent element (at least its id) and use it in property equality comparisons. This way, the property `[name->marko]` would only match another `[name->marko]` property if the parent elements were the same. In the end it was questioned if that's even the right approach / what users expect. From a user perspective it would probably make more sense if two properties would match if the keys and values match. That said, we should question whether we actually need ids on properties and thus whether properties are actually `Element`s.
+In link:https://issues.apache.org/jira/browse/TINKERPOP-2051[TINKERPOP-2051] we tried to make vertex property ids local to their vertex. Several approaches were leading nowhere, in most cases we just broke the Gryo compatibility test suite. The basic idea was to remember the parent element (at least its id) and use it in property equality comparisons. This way, the property `[name->marko]` would only match another `[name->marko]` property if the parent elements were the same. In the end it was questioned if that's even the right approach / what users expect. From a user perspective it would probably make more sense if two properties would match if the keys and values match. That said, we should question whether we actually need ids on properties and thus whether properties are actually ``Element``s.
 
 === Comments [dk]
 
