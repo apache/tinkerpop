@@ -44,10 +44,10 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * FilterRankingStrategy reorders filter- and order-steps according to their rank. Step ranks are defined within the
- * strategy and indicate when it is reasonable for a step to move in front of another. It will also do its best to push
- * step labels as far "right" as possible in order to keep traversers as small and bulkable as possible prior to the
- * absolute need for path-labeling.
+ * {@code FilterRankingStrategy} reorders filter- and order-steps according to their rank. Step ranks are defined within
+ * the strategy and indicate when it is reasonable for a step to move in front of another. It will also do its best to
+ * push step labels as far "right" as possible in order to keep traversers as small and bulkable as possible prior to
+ * the absolute need for path-labeling.
  *
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @author Marko A. Rodriguez (http://markorodriguez.com)

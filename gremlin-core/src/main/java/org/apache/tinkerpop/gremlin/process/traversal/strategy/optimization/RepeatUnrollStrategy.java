@@ -37,7 +37,20 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * {@code RepeatUnrollStrategy} is an OLTP-only strategy that unrolls any {@link RepeatStep} if it uses a constant
+ * number of loops ({@code times(x)}) and doesn't emit intermittent elements. If any of the following 3 steps appears
+ * within the repeat-traversal, the strategy will not be applied:
+ * <p/>
+ * <ul>
+ *     <li>{@link DedupGlobalStep}</li>
+ *     <li>{@link LoopsStep}</li>
+ *     <li>{@link LambdaHolder}</li>
+ * </ul>
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @example <pre>
+ *     __.repeat(out()).times(2)   // is replaced by __.out().barrier(2500).out().barrier(2500)
+ * </pre>
  */
 public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 

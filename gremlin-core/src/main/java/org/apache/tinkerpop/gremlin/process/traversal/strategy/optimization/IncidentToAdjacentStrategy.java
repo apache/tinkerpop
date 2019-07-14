@@ -50,11 +50,14 @@ import java.util.Set;
  * This strategy looks for {@code .outE().inV()}, {@code .inE().outV()} and {@code .bothE().otherV()}
  * and replaces these step sequences with {@code .out()}, {@code .in()} or {@code .both()} respectively.
  * The strategy won't modify the traversal if:
+ * <p/>
  * <ul>
- * <li>the edge step is labeled</li>
- * <li>the traversal contains a {@code path} step</li>
- * <li>the traversal contains a lambda step</li>
+ *     <li>the edge step is labeled</li>
+ *     <li>the traversal contains a {@code path} step</li>
+ *     <li>the traversal contains a lambda step</li>
  * </ul>
+ * <p/>
+ *
  * By re-writing the traversal in this fashion, the traversal eliminates unnecessary steps and becomes more normalized.
  *
  * @author Daniel Kuppitz (http://gremlin.guru)

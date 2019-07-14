@@ -41,7 +41,16 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * {@code LazyBarrierStrategy} is an OLTP-only strategy that automatically inserts a {@link NoOpBarrierStep} after every
+ * {@link FlatMapStep} if neither path-tracking nor partial path-tracking is required, and the next step is not the
+ * traversal's last step or a {@link Barrier}. {@link NoOpBarrierStep}s allow traversers to be bulked, thus this strategy
+ * is meant to reduce memory requirements and improve the overall query performance.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @example <pre>
+ * __.out().bothE().count()      // is replaced by __.out().barrier(2500).bothE().count()
+ * __.both().both().valueMap()   // is replaced by __.both().barrier(2500).both().barrier(2500).valueMap()
+ * </pre>
  */
 public final class LazyBarrierStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 

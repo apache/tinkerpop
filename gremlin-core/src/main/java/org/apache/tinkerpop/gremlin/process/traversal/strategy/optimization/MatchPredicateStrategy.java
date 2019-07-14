@@ -39,16 +39,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * MatchWhereStrategy will fold any post-{@code where()} step that maintains a traversal constraint into
+ * {@code MatchWhereStrategy} will fold any post-{@code where()} step that maintains a traversal constraint into
  * {@code match()}. {@link MatchStep} is intelligent with traversal constraint applications and thus, can more
  * efficiently use the constraint of {@link WhereTraversalStep} or {@link WherePredicateStep}.
- * <p/>
- * <p/>
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @example <pre>
  * __.match(a,b).where(c)            // is replaced by __.match(a,b,c)
- * __.match(a,b).select().where(c)  // is replaced by __.match(a,b,c).select()
+ * __.match(a,b).select().where(c)   // is replaced by __.match(a,b,c).select()
  * </pre>
  */
 public final class MatchPredicateStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {

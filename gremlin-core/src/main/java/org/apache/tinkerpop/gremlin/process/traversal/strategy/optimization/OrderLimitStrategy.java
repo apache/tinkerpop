@@ -40,6 +40,25 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * {@code OrderLimitStrategy} is an OLAP strategy that folds a {@link RangeGlobalStep} into a preceding
+ * {@link OrderGlobalStep}. This helps to eliminate traversers early in the traversal and can
+ * significantly reduce the amount of memory required by the OLAP execution engine.
+ *
+ * It's worth noting that certain steps are allowed between {@link OrderGlobalStep} and {@link RangeGlobalStep}:
+ * <p/>
+ * <ul>
+ *     <li>{@link IdStep}</li>
+ *     <li>{@link LabelStep}</li>
+ *     <li>{@link SackStep}</li>
+ *     <li>{@link SelectOneStep}</li>
+ *     <li>{@link SelectStep}</li>
+ *     <li>{@link PathStep}</li>
+ *     <li>{@link TreeStep}</li>
+ * </ul>
+ * <p/>
+ *
+ * These steps will be ignored by the {@code OrderLimitStrategy} and thus not affect its behavior.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class OrderLimitStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
