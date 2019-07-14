@@ -47,9 +47,10 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * PathProcessStrategy is an OLAP strategy that does its best to turn non-local children in {@code where()} and {@code select()}
- * into local children by inlining components of the non-local child. In this way, PathProcessStrategy helps to ensure
- * that more traversals meet the local child constraint imposed on OLAP traversals.
+ * {@code PathProcessStrategy} is an OLAP strategy that does its best to turn non-local children in {@code where()}
+ * and {@code select()} into local children by inlining components of the non-local child. In this way,
+ * {@code PathProcessStrategy} helps to ensure that more traversals meet the local child constraint imposed on OLAP
+ * traversals.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @example <pre>

@@ -28,8 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 /**
  * {@code IdentityRemovalStrategy} looks for {@link IdentityStep} instances and removes them.
  * If the identity step is labeled, its labels are added to the previous step.
- * If the identity step is labeled and its the first step in the traversal, it stays.
- * <p/>
+ * If the identity step is labeled and it's the first step in the traversal, it stays.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @example <pre>

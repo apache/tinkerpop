@@ -35,9 +35,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import java.util.List;
 
 /**
- * This strategy looks for {@link RangeGlobalStep}'s that can be moved further left in the traversal and thus be applied
- * applied earlier. It will also try to merge multiple {@link RangeGlobalStep}'s into one.
- * If the logical consequence of one or multiple {@link RangeGlobalStep}'s is an empty result, the strategy will remove
+ * This strategy looks for {@link RangeGlobalStep}s that can be moved further left in the traversal and thus be applied
+ * earlier. It will also try to merge multiple {@link RangeGlobalStep}s into one.
+ * If the logical consequence of one or multiple {@link RangeGlobalStep}s is an empty result, the strategy will remove
  * as many steps as possible and add a {@link NoneStep} instead.
  *
  * @author Daniel Kuppitz (http://gremlin.guru)

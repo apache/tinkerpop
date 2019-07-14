@@ -124,7 +124,7 @@ elif [ ! -z "${BUILD_JAVA_DOCS}" ]; then
 
   IP=$(ifconfig | grep -o 'inet addr:[0-9.]*' | cut -f2 -d ':' | head -n1)
   echo -e "\nJava Docs can be viewed under http://${IP}/\n"
-  cd target/docs/htmlsingle/
+  cd target/site/apidocs/full/
   python -m SimpleHTTPServer 80
 
 fi
