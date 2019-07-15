@@ -68,6 +68,12 @@ namespace Gremlin.Net.Process.Traversal
         E Next();
 
         /// <summary>
+        ///     Determines if the traversal contains any additional results for iteration.
+        /// </summary>
+        /// <returns>True if there are more results and false otherwise.</returns>
+        bool HasNext();
+
+        /// <summary>
         ///     Gets the next n-number of results from the traversal.
         /// </summary>
         /// <param name="amount">The number of results to get.</param>
