@@ -94,7 +94,7 @@ hadoopConfDir = System.getenv('HADOOP_CONF_DIR')
 archive = 'spark-gremlin.zip'
 archivePath = "/tmp/$archive"
 ['bash', '-c', "rm -f $archivePath; cd ext/spark-gremlin/lib && zip $archivePath *.jar"].execute().waitFor()
-conf = new PropertiesConfiguration('conf/hadoop/hadoop-gryo.properties')
+conf = new Configurations().properties(new File('conf/hadoop/hadoop-gryo.properties'))
 conf.setProperty('spark.master', 'yarn')
 conf.setProperty('spark.submit.deployMode', 'client')
 conf.setProperty('spark.yarn.archive', "$archivePath")

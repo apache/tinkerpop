@@ -564,9 +564,9 @@ This is most easily accomplished by copying the required jar files to the `GREML
 gremlin> :install com.datastax.cassandra cassandra-driver-core 2.1.9
 ==>Loaded: [com.datastax.cassandra, cassandra-driver-core, 2.1.9]
 gremlin> import com.datastax.driver.core.*
-==>groovy.grape.Grape, org.apache.commons.configuration.*, ..., com.datastax.driver.core.*
+==>groovy.grape.Grape, org.apache.commons.configuration2.*, ..., com.datastax.driver.core.*
 gremlin> import static com.datastax.driver.core.querybuilder.QueryBuilder.*
-==>groovy.grape.Grape, org.apache.commons.configuration.*, ..., static com.datastax.driver.core.querybuilder.QueryBuilder.*
+==>groovy.grape.Grape, org.apache.commons.configuration2.*, ..., static com.datastax.driver.core.querybuilder.QueryBuilder.*
 gremlin> cluster = com.datastax.driver.core.Cluster.builder().addContactPoint("localhost").build()
 ==>com.datastax.driver.core.Cluster@3e1624c7
 gremlin> session = cluster.connect()

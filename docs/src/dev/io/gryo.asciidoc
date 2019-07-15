@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.*
 import org.apache.tinkerpop.gremlin.structure.*
 import org.apache.tinkerpop.gremlin.structure.io.gryo.*
 import org.apache.tinkerpop.gremlin.structure.io.*
-import org.apache.commons.configuration.BaseConfiguration
+import org.apache.commons.configuration2.BaseConfiguration
 import java.time.*
 
 new File("io-output/dev-docs/").mkdirs()
