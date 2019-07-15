@@ -44,6 +44,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Gets or sets the <see cref="ITraversalSideEffects" /> of this traversal.
         /// </summary>
+        [Obsolete("As of release 3.3.8, not replaced, prefer use of cap()-step to retrieve side-effects as part of traversal iteration", false)]
         public ITraversalSideEffects SideEffects { get; set; }
 
         /// <summary>
@@ -239,7 +240,9 @@ namespace Gremlin.Net.Process.Traversal
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
+                #pragma warning disable 612,618
                 SideEffects?.Dispose();
+                #pragma warning disable 612,618
         }
 
         /// <summary>

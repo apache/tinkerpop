@@ -78,7 +78,10 @@ final class ResultQueue {
      *
      * @param aggregateTo the value of the {@link ResponseMessage} metadata for {@link Tokens#ARGS_AGGREGATE_TO}.
      * @param sideEffectValue the value of the side-effect itself
+     * @deprecated As of release 3.3.8, not directly replaced in the protocol as side-effect retrieval after
+     * traversal iteration is not being promoted anymore as a feature.
      */
+    @Deprecated
     public void addSideEffect(final String aggregateTo, final Object sideEffectValue) {
         switch (aggregateTo) {
             case Tokens.VAL_AGGREGATE_TO_BULKSET:

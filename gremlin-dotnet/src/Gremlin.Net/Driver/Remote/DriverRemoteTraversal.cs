@@ -33,7 +33,10 @@ namespace Gremlin.Net.Driver.Remote
             IEnumerable<Traverser> traversers)
         {
             Traversers = traversers;
+
+            #pragma warning disable 612,618
             SideEffects = new DriverRemoteTraversalSideEffects(gremlinClient, requestId);
+            #pragma warning disable 612,618
         }
     }
 }

@@ -87,22 +87,38 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
     /**
      * Configuration setting for how long a cached side-effect will be available before it is evicted from the cache.
+     *
+     * @deprecated As of release 3.3.8, not directly replaced in the protocol as side-effect retrieval after
+     * traversal iteration is not being promoted anymore as a feature.
      */
+    @Deprecated
     public static final String CONFIG_CACHE_EXPIRATION_TIME = "cacheExpirationTime";
 
     /**
      * Default timeout for a cached side-effect is ten minutes.
+     *
+     * @deprecated As of release 3.3.8, not directly replaced in the protocol as side-effect retrieval after
+     * traversal iteration is not being promoted anymore as a feature.
      */
+    @Deprecated
     public static final long DEFAULT_CACHE_EXPIRATION_TIME = 600000;
 
     /**
      * Configuration setting for the maximum number of entries the cache will have.
+     *
+     * @deprecated As of release 3.3.8, not directly replaced in the protocol as side-effect retrieval after
+     * traversal iteration is not being promoted anymore as a feature.
      */
+    @Deprecated
     public static final String CONFIG_CACHE_MAX_SIZE = "cacheMaxSize";
 
     /**
      * Default size of the max size of the cache.
+     *
+     * @deprecated As of release 3.3.8, not directly replaced in the protocol as side-effect retrieval after
+     * traversal iteration is not being promoted anymore as a feature.
      */
+    @Deprecated
     public static final long DEFAULT_CACHE_MAX_SIZE = 1000;
 
     static {
@@ -113,6 +129,10 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         }};
     }
 
+    /**
+     * @deprecated As of release 3.3.8, not directly replaced in the protocol as side-effect retrieval after
+     * traversal iteration is not being promoted anymore as a feature.
+     */
     protected static Cache<UUID, TraversalSideEffects> cache = null;
 
     private static final Bindings EMPTY_BINDINGS = new SimpleBindings();

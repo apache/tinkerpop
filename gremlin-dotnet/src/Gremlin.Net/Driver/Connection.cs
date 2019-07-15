@@ -105,6 +105,7 @@ namespace Gremlin.Net.Driver
                         : _graphSONReader.ToObject(receivedMsg.Result.Data);
 
                     foreach (var d in receivedData)
+                        #pragma warning disable 612,618
                         if (receivedMsg.Result.Meta.ContainsKey(Tokens.ArgsSideEffectKey))
                         {
                             if (aggregator == null)
@@ -118,6 +119,7 @@ namespace Gremlin.Net.Driver
                         {
                             result.Add(d);
                         }
+                        #pragma warning disable 612,618
                 }
             } while (status.Code == ResponseStatusCode.PartialContent || status.Code == ResponseStatusCode.Authenticate);
 
