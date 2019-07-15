@@ -24,11 +24,15 @@ import org.apache.commons.configuration2.CombinedConfiguration;
 import org.apache.commons.configuration2.CompositeConfiguration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.ConfigurationUtils;
+import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.SubsetConfiguration;
 import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.builder.BasicConfigurationBuilder;
+import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -223,6 +227,7 @@ public final class CoreImports {
         CLASS_IMPORTS.add(PropertiesConfiguration.class);
         CLASS_IMPORTS.add(SubsetConfiguration.class);
         CLASS_IMPORTS.add(XMLConfiguration.class);
+        CLASS_IMPORTS.add(Configurations.class);
         // strategies
         CLASS_IMPORTS.add(ConnectiveStrategy.class);
         CLASS_IMPORTS.add(ElementIdStrategy.class);
