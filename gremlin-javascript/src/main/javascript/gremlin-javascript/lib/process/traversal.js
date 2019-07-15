@@ -66,6 +66,18 @@ class Traversal {
   };
 
   /**
+   * Determines if there are any more items to iterate from the traversal.
+   * @returns {Promise.<boolean>}
+   */
+   hasNext() {
+     return this._applyStrategies().then(() => {
+       return this.traversers && this.traversers.length > 0 &&
+              this._traversersIteratorIndex < this.traversers.length &&
+              this.traversers[this._traversersIteratorIndex].bulk > 0;
+     });
+   }
+
+  /**
    * Iterates all Traverser instances in the traversal.
    * @returns {Promise}
    */

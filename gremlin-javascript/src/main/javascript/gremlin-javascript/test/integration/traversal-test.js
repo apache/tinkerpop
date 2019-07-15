@@ -83,9 +83,12 @@ describe('Traversal', function () {
     it('should submit the traversal and return an iterator', function () {
       var g = traversal().withRemote(connection);
       var t = g.V().count();
-      return t.next()
-        .then(function (item) {
-          assert.ok(item);
+      return t.hasNext()
+        .then(function (more) {
+          assert.ok(more);
+          assert.strictEqual(more, true);
+          return t.next();
+        }).then(function (item) {
           assert.strictEqual(item.done, false);
           assert.strictEqual(typeof item.value, 'number');
           return t.next();
