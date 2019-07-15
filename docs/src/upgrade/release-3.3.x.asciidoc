@@ -64,6 +64,14 @@ Gremlin steps that require a `GraphComputer` to execute (e.g. `pageRank()` and `
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2251[TINKERPOP-2251]
 
+==== JavaScript and .NET hasNext()
+
+There is now greater consistency across Gremlin Language Variants with `hasNext()` support added to both JavaScript
+and .NET. Note that in .NET, the proper method name follows C# capitalization semantics and is referred to as
+`HasNext()`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1921[TINKERPOP-1921]
+
 == TinkerPop 3.3.7
 
 *Release Date: May 28, 2019*
