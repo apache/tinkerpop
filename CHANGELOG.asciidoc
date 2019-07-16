@@ -50,6 +50,7 @@ This release also includes changes from <<release-3-3-8, 3.3.8>>.
 * Improved error messaging on timeouts returned to the console from `:>`.
 * Added a `toString()` serializer for GraphBinary.
 * Configured the Gremlin Console to use GraphBinary by default.
+* Fixed transaction management for empty iterators in Gremlin Server.
 * Deprecated `MessageSerializer` implementations for Gryo in Gremlin Server.
 * Deprecated `Serializers` enum values of `GRYO_V1D0` and `GRYO_V3D0`.
 * Deprecated `SerTokens` values of `MIME_GRYO_V1D0` and `MIME_GRYO_V3D0`.
