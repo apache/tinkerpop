@@ -39,10 +39,11 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Removed previously deprecated `VertexProgram` related infrastructure.
 * Removed previously deprecated SSL settings: `keyCertChainFile`, `keyFile`, `keyPassword` and `trustCertChainFile` and related infrastructure.
 * Removed previously deprecated `PropertyMapStep` constructor and `isIncludeTokens`.
-* Removed previously dperecated `StarGraph.builder()` and `StarGraph.Builder.create()`.
+* Removed previously deprecated `StarGraph.builder()` and `StarGraph.Builder.create()`.
 * Removed previously deprecated `AbstractOpProcessor.generateMetaData(ChannelHandlerContext, RequestMessage, ResponseStatusCode, Iterator)`
 * Removed previously deprecated `BulkDumperVertexProgram` and `BulkLoaderVertexProgram`.
-* Upgrade to Neo4j 3.4.11
+* Added support for `TextP` in Neo4j using its string search functions.
+* Upgrade to Neo4j 3.4.11.
 
 == TinkerPop 3.4.0 (Avant-Gremlin Construction #3 for Theremin and Flowers)
 
