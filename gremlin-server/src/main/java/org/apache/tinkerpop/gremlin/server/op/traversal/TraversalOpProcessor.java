@@ -481,17 +481,18 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
         // we have an empty iterator - happens on stuff like: g.V().iterate()
         if (!itty.hasNext()) {
-            // as there is nothing left to iterate if we are transaction managed then we should execute a
-            // commit here before we send back a NO_CONTENT which implies success
-            onTraversalSuccess(graph, context);
+            final Map<String, Object> attributes = generateStatusAttributes(ctx, msg, ResponseStatusCode.NO_CONTENT, itty, settings);
             // if it was a g.V().iterate(), then be sure to add the side-effects to the cache
             if (itty instanceof TraverserIterator &&
                     !((TraverserIterator)itty).getTraversal().getSideEffects().isEmpty()) {
                 cache.put(msg.getRequestId(), ((TraverserIterator)itty).getTraversal().getSideEffects());
             }
+            // as there is nothing left to iterate if we are transaction managed then we should execute a
+            // commit here before we send back a NO_CONTENT which implies success
+            onTraversalSuccess(graph, context);
             ctx.writeAndFlush(ResponseMessage.build(msg)
                     .code(ResponseStatusCode.NO_CONTENT)
-                    .statusAttributes(generateStatusAttributes(ctx, msg, ResponseStatusCode.NO_CONTENT, itty, settings))
+                    .statusAttributes(attributes)
                     .create());
             return;
         }
