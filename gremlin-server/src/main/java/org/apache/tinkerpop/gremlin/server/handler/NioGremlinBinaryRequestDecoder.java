@@ -56,10 +56,7 @@ public class NioGremlinBinaryRequestDecoder extends ReplayingDecoder<NioGremlinB
                     final int contentTypeLength = messageFrame.readByte();
                     final ByteBuf contentTypeFrame = messageFrame.readBytes(contentTypeLength);
                     final String contentType = contentTypeFrame.toString(CharsetUtil.UTF_8);
-
-                    // the default serializer to use has been GraphSON 1.0 to this point (which was probably bad),
-                    // so maintain that for 3.3.x
-                    final MessageSerializer serializer = select(contentType, ServerSerializers.DEFAULT_SERIALIZER);
+                    final MessageSerializer serializer = select(contentType, ServerSerializers.DEFAULT_BINARY_SERIALIZER);
 
                     // it's important to re-initialize these channel attributes as they apply globally to the channel. in
                     // other words, the next request to this channel might not come with the same configuration and mixed

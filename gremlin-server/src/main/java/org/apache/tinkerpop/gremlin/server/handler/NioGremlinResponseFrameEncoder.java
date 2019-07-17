@@ -35,7 +35,7 @@ public class NioGremlinResponseFrameEncoder extends MessageToByteEncoder<Frame> 
     protected void encode(final ChannelHandlerContext ctx, final Frame frame, final ByteBuf byteBuf) throws Exception {
         if (frame.getMsg() instanceof ByteBuf) {
             final ByteBuf bytes = (ByteBuf) frame.getMsg();
-            byteBuf.writeInt(bytes.capacity());
+            byteBuf.writeInt(bytes.readableBytes());
             byteBuf.writeBytes(bytes);
             bytes.release();
         } else if (frame.getMsg() instanceof String) {

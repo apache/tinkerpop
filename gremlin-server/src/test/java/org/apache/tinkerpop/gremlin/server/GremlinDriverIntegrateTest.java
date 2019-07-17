@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
+import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
 import org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
@@ -798,6 +799,24 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    public void shouldSerializeToStringWhenRequestedGraphBinaryV1() throws Exception {
+        final Map<String, Object> m = new HashMap<>();
+        m.put("serializeResultToString", true);
+        final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1();
+        serializer.configure(m, null);
+
+        final Cluster cluster = TestClientFactory.build().serializer(serializer).create();
+        final Client client = cluster.connect();
+
+        final ResultSet resultSet = client.submit("TinkerFactory.createClassic()");
+        final List<Result> results = resultSet.all().join();
+        assertEquals(1, results.size());
+        assertEquals("tinkergraph[vertices:6 edges:6]", results.get(0).getString());
+
+        cluster.close();
+    }
+
+    @Test
     public void shouldSerializeToStringWhenRequestedGryoV1() throws Exception {
         final Map<String, Object> m = new HashMap<>();
         m.put("serializeResultToString", true);
@@ -1368,7 +1387,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            client.submit("g.addVertex('name','stephen');").all().get().get(0).getVertex();
+            client.submit("g.addVertex(label,'person','name','stephen');").all().get().get(0).getVertex();
             fail("Should have tossed an exception because \"g\" does not have the addVertex method under default config");
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
@@ -1378,15 +1397,15 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         final Client rebound = cluster.connect().alias("graph");
-        final Vertex v = rebound.submit("g.addVertex('name','jason')").all().get().get(0).getVertex();
-        assertEquals("jason", v.value("name"));
+        final Vertex v = rebound.submit("g.addVertex(label,'person','name','jason')").all().get().get(0).getVertex();
+        assertEquals("person", v.label());
 
         cluster.close();
     }
 
     @Test
     public void shouldAliasTraversalSourceVariables() throws Exception {
-        final Cluster cluster = TestClientFactory.open();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRYO_V3D0).create();
         final Client client = cluster.connect();
 
         try {
@@ -1408,7 +1427,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldAliasGraphVariablesInSession() throws Exception {
-        final Cluster cluster = TestClientFactory.open();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRYO_V3D0).create();
         final Client client = cluster.connect(name.getMethodName());
 
         try {
@@ -1431,7 +1450,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldAliasTraversalSourceVariablesInSession() throws Exception {
-        final Cluster cluster = TestClientFactory.open();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRYO_V3D0).create();
         final Client client = cluster.connect(name.getMethodName());
 
         try {

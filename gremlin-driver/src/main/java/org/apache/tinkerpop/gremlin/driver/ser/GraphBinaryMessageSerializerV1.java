@@ -84,13 +84,12 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer {
 
         if (builderClassName != null) {
             try {
-                Class<?> clazz = Class.forName(builderClassName);
-                Constructor<?> ctor = clazz.getConstructor();
+                final Class<?> clazz = Class.forName(builderClassName);
+                final Constructor<?> ctor = clazz.getConstructor();
                 builder = (TypeSerializerRegistry.Builder) ctor.newInstance();
             } catch (Exception ex) {
                 throw new IllegalStateException(ex);
             }
-
         } else {
             builder = TypeSerializerRegistry.build();
         }

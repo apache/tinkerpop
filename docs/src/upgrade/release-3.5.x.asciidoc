@@ -29,6 +29,23 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.5.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Gryo Usage
+
+Since the first release of TinkerPop 3.x, Gryo has been the default serialization format for Gremlin Server and
+Java Driver. It was also used as the default serialization format for Gremlin Console remote connectivity to Gremlin
+Server. As of this release, Gryo has been replaced as the default by GraphBinary. All packaged configuration files
+and programmatic defaults have been modified as such.
+
+It is still possible to utilize Gryo as a message serialization format by modifying Gremlin Server configuration files
+to include the appropriate Gryo configurations. If using Gryo, do not user earlier versions of the driver and server
+with 3.5.0. Use a 3.5.0 client to connect to a 3.5.0 server. Generally speaking, mixed version combinations will
+appear to work properly, but problems will likely occur during general course of usage and it is therefore not
+advisable to take this approach.
+
+For best compatibility between 3.4.x and 3.5.x, please use GraphBinary.
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-2259[TINKERPOP-2259]
+
 ==== Configuration Upgrade
 
 There is a major breaking change in the use of `Configuration` objects. Prior to 3.5.0, `Configuration` objects were

@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.driver;
 import io.netty.handler.codec.CorruptedFrameException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.server.AbstractGremlinServerIntegrationTest;
 import org.apache.tinkerpop.gremlin.server.TestClientFactory;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
@@ -71,6 +72,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
     public void shouldCloseConnectionDeadDueToUnRecoverableError() throws Exception {
         // Set a low value of maxContentLength to intentionally trigger CorruptedFrameException
         final Cluster cluster = TestClientFactory.build()
+                                                 .serializer(Serializers.GRYO_V3D0)
                                                  .maxContentLength(64)
                                                  .minConnectionPoolSize(1)
                                                  .maxConnectionPoolSize(2)

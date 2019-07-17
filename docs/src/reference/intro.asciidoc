@@ -421,11 +421,13 @@ touch upon important concepts to focus on here.
 
 The first of these points is serialization. When Gremlin Server receives a request, the results must be serialized to
 the form requested by the client and then the client deserializes those into objects native to the language. TinkerPop
-has two such formats that it uses with link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#gryo[Gryo] and
-link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[GraphSON]. Gryo is a JVM-only format and thus carries the
-advantage that serializing and deserializing occurs on the classes native to the JVM on both the client and server side.
-As the client has full access to the same classes that the server does it basically has a full GTM on its own and
-therefore has the ability to do some slightly more advanced things.
+has three such formats that it uses with link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphbinary[GraphBinary],
+link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#gryo[Gryo] and
+link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[GraphSON]. Among these serialization formats, users
+should prefer GraphBinary as it combines the best features of both GraphSON and Gryo and it provides the most even
+user experience across different programming languages. There are areas however where this is not quite true, as
+Gremlin Language Variants don't have full GTMs present and therefore don't have the complete means to accomplish what
+a pure JVM solution would.
 
 A good example is the `subgraph()`-step which returns a `Graph` instance as its result. The subgraph returned from
 the server can be deserialized into an actual `Graph` instance on the client, which then means it is possible to

@@ -30,7 +30,7 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
+import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
 
 import java.io.IOException;
 import java.net.URI;
@@ -53,7 +53,7 @@ public class NioClient extends AbstractClient {
         b.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
         try {
-            final MessageSerializer serializer = new GryoMessageSerializerV3d0();
+            final MessageSerializer serializer = new GraphBinaryMessageSerializerV1();
             b.channel(NioSocketChannel.class)
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override

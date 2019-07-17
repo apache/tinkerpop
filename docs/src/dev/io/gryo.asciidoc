@@ -157,7 +157,8 @@ produced Gryo files will not be compatible with newer TinkerPop releases if the 
 side, newer release of TinkerPop are fully backward compatible with Gryo produced on older versions of TinkerPop.
 
 As of TinkerPop 3.3.0, there is now a new version of Gryo in 3.0 that is only partially compatible with 1.0. Attempts
-to use 3.0 serializers with 1.0 serializers will likely lead to failure.
+to use 3.0 serializers with 1.0 serializers will likely lead to failure. For best results, users should always
+utilize the same version of TinkerPop on the client as on the server.
 
 Both versions of Gryo support all the types defined by GraphSON as well as others that are bound more specifically
 to the JVM. The link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/structure/io/gryo/GryoVersion.java[GryoVersion]

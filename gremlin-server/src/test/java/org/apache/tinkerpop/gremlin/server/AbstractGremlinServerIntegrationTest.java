@@ -157,7 +157,7 @@ public abstract class AbstractGremlinServerIntegrationTest {
         try {
             Class.forName("org.neo4j.tinkerpop.api.impl.Neo4jGraphAPIImpl");
             neo4jIncludedForTesting = true;
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             neo4jIncludedForTesting = false;
         }
         assumeThat("Neo4j implementation was not included for testing - run with -DincludeNeo4j", neo4jIncludedForTesting, is(true));

@@ -64,7 +64,7 @@ public class WsGremlinBinaryRequestDecoder extends MessageToMessageDecoder<Binar
         try {
             messageBytes.readBytes(contentTypeBytes);
             final String contentType = contentTypeBytes.toString(UTF8);
-            final MessageSerializer serializer = select(contentType, ServerSerializers.DEFAULT_SERIALIZER);
+            final MessageSerializer serializer = select(contentType, ServerSerializers.DEFAULT_BINARY_SERIALIZER);
 
             // it's important to re-initialize these channel attributes as they apply globally to the channel. in
             // other words, the next request to this channel might not come with the same configuration and mixed

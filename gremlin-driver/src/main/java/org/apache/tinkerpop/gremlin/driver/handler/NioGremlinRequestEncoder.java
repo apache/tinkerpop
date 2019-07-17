@@ -24,19 +24,15 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.util.CharsetUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class NioGremlinRequestEncoder extends MessageToByteEncoder<Object> {
-    private static final Logger logger = LoggerFactory.getLogger(WebSocketGremlinRequestEncoder.class);
-    private boolean binaryEncoding = false;
+    private boolean binaryEncoding;
 
     private final MessageSerializer serializer;
 
@@ -56,7 +52,7 @@ public final class NioGremlinRequestEncoder extends MessageToByteEncoder<Object>
                 // is not the optimal way to deal with this really, but it does prevent a protocol change in this
                 // immediate moment trying to get the NioChannelizer working.
                 final ByteBuf bytes = serializer.serializeRequestAsBinary(requestMessage, channelHandlerContext.alloc());
-                byteBuf.writeInt(bytes.capacity());
+                byteBuf.writeInt(bytes.readableBytes());
                 byteBuf.writeBytes(bytes);
             } else {
                 final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
