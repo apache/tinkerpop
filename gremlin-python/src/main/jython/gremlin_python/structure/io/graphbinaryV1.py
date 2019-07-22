@@ -49,6 +49,7 @@ _deserializers = {}
 
 class DataType(Enum):
     int = 0x01
+    long = 0x02
     string = 0x03
     list = 0x09
 
@@ -146,18 +147,33 @@ class _GraphBinaryTypeIO(object):
         raise NotImplementedError()
 
 
-class IntIO(_GraphBinaryTypeIO):
+class LongIO(_GraphBinaryTypeIO):
 
-    python_type = IntType
-    graphbinary_type = DataType.int
+    python_type = LongType
+    graphbinary_type = DataType.long
+    byte_format = ">q"
 
     @classmethod
     def dictify(cls, n, writer):
-        return cls.as_bytes(cls.graphbinary_type, None, struct.pack(">i", n))
+        if n < -9223372036854775808 or n > 9223372036854775807:
+            raise Exception("TODO: don't forget bigint")
+        else:
+            return cls.as_bytes(cls.graphbinary_type, None, struct.pack(cls.byte_format, n))
 
     @classmethod
-    def objectify(cls, b, reader):
-        return cls.read_int(b)
+    def objectify(cls, buff, reader):
+        return struct.unpack(">q", buff.read(8))[0]
+
+
+class IntIO(LongIO):
+
+    python_type = IntType
+    graphbinary_type = DataType.int
+    byte_format = ">i"
+
+    @classmethod
+    def objectify(cls, buff, reader):
+        return cls.read_int(buff)
 
 
 class StringIO(_GraphBinaryTypeIO):
@@ -171,7 +187,7 @@ class StringIO(_GraphBinaryTypeIO):
 
     @classmethod
     def objectify(cls, b, reader):
-        return b.read(cls.read_int(b))
+        return b.read(cls.read_int(b)).decode("utf-8")
 
 
 class ListIO(_GraphBinaryTypeIO):
