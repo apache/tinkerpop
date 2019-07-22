@@ -22,6 +22,7 @@ import time
 import uuid
 import math
 import base64
+import io
 import numbers
 from collections import OrderedDict
 from decimal import *
@@ -48,6 +49,7 @@ _deserializers = {}
 
 class DataType(Enum):
     string = 0x03
+    list = 0x09
 
 
 class GraphBinaryTypeType(type):
@@ -95,11 +97,15 @@ class GraphBinaryReader(object):
             self.deserializers.update(deserializer_map)
 
     def readObject(self, b):
-        return self.toObject(b)
+        if isinstance(b, bytearray):
+            return self.toObject(io.BytesIO(b))
+        elif isinstance(b, io.BufferedIOBase):
+            return self.toObject(b)
 
-    def toObject(self, obj):
-        binary_type, rest = DataType(obj[0]), obj[1:]
-        return self.deserializers[binary_type].objectify(rest, self)
+    def toObject(self, buff):
+        bt = buff.read(1)
+        bt_value = struct.unpack('>b', bt)[0]
+        return self.deserializers[DataType(bt_value)].objectify(buff, self)
 
 
 @six.add_metaclass(GraphBinaryTypeType)
@@ -112,13 +118,14 @@ class _GraphBinaryTypeIO(object):
                  "set_": "set", "list_": "list", "all_": "all", "with_": "with"}
 
     @classmethod
-    def as_bytes(cls, graphbin_type, *args):
+    def as_bytes(cls, graphbin_type, size=None, *args):
         ba = bytearray([graphbin_type.value])
+        if size is not None:
+            ba.extend(struct.pack(">i", size))
+
         for arg in args:
             if isinstance(arg, str):
                 ba.extend(arg.encode("utf-8"))
-            elif isinstance(arg, numbers.Number):
-                ba.extend(bytes([arg]))
             elif isinstance(arg, (bytes, bytearray)):
                 ba.extend(arg)
         return ba
@@ -145,7 +152,30 @@ class StringIO(_GraphBinaryTypeIO):
 
     @classmethod
     def objectify(cls, b, reader):
-        len_block, rest = b[0:4], b[4:]
-        size = struct.unpack("<L", len_block)[0]
-        string_block, b = rest[0:size], rest[size:]
-        return string_block
+        size = struct.unpack(">i", b.read(4))[0]
+        return b.read(size)
+
+
+class ListIO(_GraphBinaryTypeIO):
+
+    python_type = list
+    graphbinary_type = DataType.list
+
+    @classmethod
+    def dictify(cls, n, writer):
+        list_data = bytearray()
+        for item in n:
+            list_data.extend(writer.writeObject(item))
+
+        return cls.as_bytes(cls.graphbinary_type, len(n), list_data)
+
+    @classmethod
+    def objectify(cls, buff, reader):
+        x = buff.read(4)
+        size = struct.unpack(">i", x)[0]
+        the_list = []
+        while size > 0:
+            the_list.append(reader.readObject(buff))
+            size = size - 1
+
+        return the_list

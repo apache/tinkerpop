@@ -47,3 +47,8 @@ class TestGraphSONWriter(object):
         x = "serialize this!"
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
         assert x == output
+
+    def test_homogeneous_list(self):
+        x = ["serialize this!", "serialize that!", "stop telling me what to serialize"]
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output
