@@ -27,7 +27,7 @@ from mock import Mock
 
 import six
 
-from gremlin_python.statics import *
+from gremlin_python.statics import timestamp, long
 from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Graph, Path
 from gremlin_python.structure.io.graphbinaryV1 import GraphBinaryWriter, GraphBinaryReader, DataType
 from gremlin_python.process.traversal import P
@@ -55,6 +55,11 @@ class TestGraphSONWriter(object):
 
     def test_date(self):
         x = datetime.datetime(2016, 12, 14, 16, 14, 36, 295000)
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output
+
+    def test_timestamp(self):
+        x = timestamp(1481750076295 / 1000)
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
         assert x == output
 

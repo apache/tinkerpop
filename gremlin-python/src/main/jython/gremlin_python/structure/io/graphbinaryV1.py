@@ -52,6 +52,7 @@ class DataType(Enum):
     long = 0x02
     string = 0x03
     date = 0x04
+    timestamp = 0x05
     list = 0x09
 
 
@@ -198,6 +199,24 @@ class DateIO(_GraphBinaryTypeIO):
     @classmethod
     def objectify(cls, buff, reader):
         return datetime.datetime.utcfromtimestamp(struct.unpack(">q", buff.read(8))[0] / 1000.0)
+
+
+# Based on current implementation, this class must always be declared before FloatIO.
+# Seems pretty fragile for future maintainers. Maybe look into this.
+class TimestampIO(_GraphBinaryTypeIO):
+    python_type = statics.timestamp
+    graphbinary_type = DataType.timestamp
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        # Java timestamp expects milliseconds integer - Have to use int because of legacy Python
+        ts = int(round(obj * 1000))
+        return cls.as_bytes(cls.graphbinary_type, None, struct.pack(">q", ts))
+
+    @classmethod
+    def objectify(cls, buff, reader):
+        # Python timestamp expects seconds
+        return statics.timestamp(struct.unpack(">q", buff.read(8))[0] / 1000.0)
 
 
 class StringIO(_GraphBinaryTypeIO):
