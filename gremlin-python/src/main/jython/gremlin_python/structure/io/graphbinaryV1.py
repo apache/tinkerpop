@@ -51,6 +51,7 @@ class DataType(Enum):
     int = 0x01
     long = 0x02
     string = 0x03
+    date = 0x04
     list = 0x09
 
 
@@ -126,10 +127,10 @@ class _GraphBinaryTypeIO(object):
             ba.extend(struct.pack(">i", size))
 
         for arg in args:
-            if isinstance(arg, str):
-                ba.extend(arg.encode("utf-8"))
-            elif isinstance(arg, (bytes, bytearray)):
+            if isinstance(arg, (bytes, bytearray)):
                 ba.extend(arg)
+            else:
+                raise Exception("MISSING")
         return ba
 
     @classmethod
@@ -154,15 +155,15 @@ class LongIO(_GraphBinaryTypeIO):
     byte_format = ">q"
 
     @classmethod
-    def dictify(cls, n, writer):
-        if n < -9223372036854775808 or n > 9223372036854775807:
+    def dictify(cls, obj, writer):
+        if obj < -9223372036854775808 or obj > 9223372036854775807:
             raise Exception("TODO: don't forget bigint")
         else:
-            return cls.as_bytes(cls.graphbinary_type, None, struct.pack(cls.byte_format, n))
+            return cls.as_bytes(cls.graphbinary_type, None, struct.pack(cls.byte_format, obj))
 
     @classmethod
     def objectify(cls, buff, reader):
-        return struct.unpack(">q", buff.read(8))[0]
+        return struct.unpack(cls.byte_format, buff.read(8))[0]
 
 
 class IntIO(LongIO):
@@ -176,14 +177,37 @@ class IntIO(LongIO):
         return cls.read_int(buff)
 
 
+class DateIO(_GraphBinaryTypeIO):
+
+    python_type = datetime.datetime
+    graphbinary_type = DataType.date
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        if six.PY3:
+            pts = (obj - datetime.datetime(1970, 1, 1)) / datetime.timedelta(seconds=1)
+        else:
+            # Hack for legacy Python - timestamp() in Python 3.3
+            pts = (time.mktime(obj.timetuple()) + obj.microsecond / 1e6) - \
+                  (time.mktime(datetime.datetime(1970, 1, 1).timetuple()))
+
+        # Java timestamp expects milliseconds - have to use int because of legacy Python
+        ts = int(round(pts * 1000))
+        return cls.as_bytes(cls.graphbinary_type, None, struct.pack(">q", ts))
+
+    @classmethod
+    def objectify(cls, buff, reader):
+        return datetime.datetime.utcfromtimestamp(struct.unpack(">q", buff.read(8))[0] / 1000.0)
+
+
 class StringIO(_GraphBinaryTypeIO):
 
     python_type = str
     graphbinary_type = DataType.string
 
     @classmethod
-    def dictify(cls, n, writer):
-        return cls.as_bytes(cls.graphbinary_type, len(n), n)
+    def dictify(cls, obj, writer):
+        return cls.as_bytes(cls.graphbinary_type, len(obj), obj.encode("utf-8"))
 
     @classmethod
     def objectify(cls, b, reader):
@@ -196,12 +220,12 @@ class ListIO(_GraphBinaryTypeIO):
     graphbinary_type = DataType.list
 
     @classmethod
-    def dictify(cls, n, writer):
+    def dictify(cls, obj, writer):
         list_data = bytearray()
-        for item in n:
+        for item in obj:
             list_data.extend(writer.writeObject(item))
 
-        return cls.as_bytes(cls.graphbinary_type, len(n), list_data)
+        return cls.as_bytes(cls.graphbinary_type, len(obj), list_data)
 
     @classmethod
     def objectify(cls, buff, reader):

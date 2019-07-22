@@ -53,6 +53,11 @@ class TestGraphSONWriter(object):
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
         assert x == output
 
+    def test_date(self):
+        x = datetime.datetime(2016, 12, 14, 16, 14, 36, 295000)
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output
+
     def test_string(self):
         x = "serialize this!"
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
