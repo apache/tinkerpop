@@ -43,6 +43,11 @@ class TestGraphSONWriter(object):
     graphbinary_writer = GraphBinaryWriter()
     graphbinary_reader = GraphBinaryReader()
 
+    def test_int(self):
+        x = 100
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output
+
     def test_string(self):
         x = "serialize this!"
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
@@ -50,5 +55,10 @@ class TestGraphSONWriter(object):
 
     def test_homogeneous_list(self):
         x = ["serialize this!", "serialize that!", "stop telling me what to serialize"]
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output
+
+    def test_heterogeneous_list(self):
+        x = ["serialize this!", 0, "serialize that!", 1, "stop telling me what to serialize", 2]
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
         assert x == output

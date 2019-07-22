@@ -48,6 +48,7 @@ _deserializers = {}
 
 
 class DataType(Enum):
+    int = 0x01
     string = 0x03
     list = 0x09
 
@@ -131,6 +132,10 @@ class _GraphBinaryTypeIO(object):
         return ba
 
     @classmethod
+    def read_int(cls, buff):
+        return struct.unpack(">i", buff.read(4))[0]
+
+    @classmethod
     def unmangleKeyword(cls, symbol):
         return cls.symbolMap.get(symbol, symbol)
 
@@ -139,6 +144,20 @@ class _GraphBinaryTypeIO(object):
 
     def objectify(self, d, reader):
         raise NotImplementedError()
+
+
+class IntIO(_GraphBinaryTypeIO):
+
+    python_type = IntType
+    graphbinary_type = DataType.int
+
+    @classmethod
+    def dictify(cls, n, writer):
+        return cls.as_bytes(cls.graphbinary_type, None, struct.pack(">i", n))
+
+    @classmethod
+    def objectify(cls, b, reader):
+        return cls.read_int(b)
 
 
 class StringIO(_GraphBinaryTypeIO):
@@ -152,8 +171,7 @@ class StringIO(_GraphBinaryTypeIO):
 
     @classmethod
     def objectify(cls, b, reader):
-        size = struct.unpack(">i", b.read(4))[0]
-        return b.read(size)
+        return b.read(cls.read_int(b))
 
 
 class ListIO(_GraphBinaryTypeIO):
@@ -171,8 +189,7 @@ class ListIO(_GraphBinaryTypeIO):
 
     @classmethod
     def objectify(cls, buff, reader):
-        x = buff.read(4)
-        size = struct.unpack(">i", x)[0]
+        size = cls.read_int(buff)
         the_list = []
         while size > 0:
             the_list.append(reader.readObject(buff))
