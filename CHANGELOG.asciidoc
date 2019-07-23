@@ -416,6 +416,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed `optional()` so that the child traversal is treated as local.
 * Changed default keep-alive time for driver to 3 minutes.
 * Fixed bug where server-side keep-alive was not always disabled when its setting was zero.
+* Added support for `hasNext()` in Javascript and .NET.
 * Improved error messaging for invalid inputs to the TinkerGraph `IdManager` instances.
 * Forced replacement of connections in Java driver for certain exception types that seem to ultimately kill the connection.
 * Changed the `reverse()` of `desc` and `asc` on `Order` to not use the deprecated `decr` and `incr`.
