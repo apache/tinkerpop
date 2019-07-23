@@ -26,6 +26,7 @@ from ..driver.remote_connection import RemoteStrategy
 from .. import statics
 from ..statics import long
 
+
 class GraphTraversalSource(object):
     def __init__(self, graph, traversal_strategies, bytecode=None):
         self.graph = graph
@@ -34,13 +35,15 @@ class GraphTraversalSource(object):
           bytecode = Bytecode()
         self.bytecode = bytecode
         self.graph_traversal = GraphTraversal
+
     def __repr__(self):
         return "graphtraversalsource[" + str(self.graph) + "]"
+
     def get_graph_traversal_source(self):
         return self.__class__(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
+
     def get_graph_traversal(self):
         return self.graph_traversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
-
 
     def withBulk(self, *args):
         source = self.get_graph_traversal_source()
@@ -72,14 +75,15 @@ class GraphTraversalSource(object):
         source.bytecode.add_source("withoutStrategies", *args)
         return source
 
-
     def withRemote(self, remote_connection):
         source = self.get_graph_traversal_source()
         source.traversal_strategies.add_strategies([RemoteStrategy(remote_connection)])
         return source
 
-    def withComputer(self,graph_computer=None, workers=None, result=None, persist=None, vertices=None, edges=None, configuration=None):
-        return self.withStrategies(VertexProgramStrategy(graph_computer,workers,result,persist,vertices,edges,configuration))
+    def withComputer(self, graph_computer=None, workers=None, result=None, persist=None, vertices=None,
+                     edges=None, configuration=None):
+        return self.withStrategies(VertexProgramStrategy(graph_computer, workers, result, persist, vertices,
+                                   edges, configuration))
 
     def E(self, *args):
         traversal = self.get_graph_traversal()
@@ -110,6 +114,7 @@ class GraphTraversalSource(object):
 class GraphTraversal(Traversal):
     def __init__(self, graph, traversal_strategies, bytecode):
         super(GraphTraversal, self).__init__(graph, traversal_strategies, bytecode)
+
     def __getitem__(self, index):
         if isinstance(index, int):
             return self.range(long(index), long(index + 1))
@@ -122,6 +127,7 @@ class GraphTraversal(Traversal):
                 return self.range(low,high)
         else:
             raise TypeError("Index must be int or slice")
+
     def __getattr__(self, key):
         return self.values(key)
 
@@ -508,13 +514,14 @@ class GraphTraversal(Traversal):
 
 class __(object):
     graph_traversal = GraphTraversal
+
     @classmethod
     def start(cls):
         return GraphTraversal(None, None, Bytecode())
+
     @classmethod
     def __(cls, *args):
         return __.inject(*args)
-
 
     @classmethod
     def V(cls, *args):
@@ -869,355 +876,531 @@ class __(object):
         return cls.graph_traversal(None, None, Bytecode()).where(*args)
 
 
-
 def V(*args):
     return __.V(*args)
-statics.add_static('V', V)
+
 
 def addE(*args):
     return __.addE(*args)
-statics.add_static('addE', addE)
+
 
 def addV(*args):
     return __.addV(*args)
-statics.add_static('addV', addV)
+
 
 def aggregate(*args):
     return __.aggregate(*args)
-statics.add_static('aggregate', aggregate)
+
 
 def and_(*args):
     return __.and_(*args)
-statics.add_static('and_', and_)
+
 
 def as_(*args):
     return __.as_(*args)
-statics.add_static('as_', as_)
+
 
 def barrier(*args):
     return __.barrier(*args)
-statics.add_static('barrier', barrier)
+
 
 def both(*args):
     return __.both(*args)
-statics.add_static('both', both)
+
 
 def bothE(*args):
     return __.bothE(*args)
-statics.add_static('bothE', bothE)
+
 
 def bothV(*args):
     return __.bothV(*args)
-statics.add_static('bothV', bothV)
+
 
 def branch(*args):
     return __.branch(*args)
-statics.add_static('branch', branch)
+
 
 def cap(*args):
     return __.cap(*args)
-statics.add_static('cap', cap)
+
 
 def choose(*args):
     return __.choose(*args)
-statics.add_static('choose', choose)
+
 
 def coalesce(*args):
     return __.coalesce(*args)
-statics.add_static('coalesce', coalesce)
+
 
 def coin(*args):
     return __.coin(*args)
-statics.add_static('coin', coin)
+
 
 def constant(*args):
     return __.constant(*args)
-statics.add_static('constant', constant)
+
 
 def count(*args):
     return __.count(*args)
-statics.add_static('count', count)
+
 
 def cyclicPath(*args):
     return __.cyclicPath(*args)
-statics.add_static('cyclicPath', cyclicPath)
+
 
 def dedup(*args):
     return __.dedup(*args)
-statics.add_static('dedup', dedup)
+
 
 def drop(*args):
     return __.drop(*args)
-statics.add_static('drop', drop)
+
 
 def emit(*args):
     return __.emit(*args)
-statics.add_static('emit', emit)
+
 
 def filter(*args):
     return __.filter(*args)
-statics.add_static('filter', filter)
+
 
 def flatMap(*args):
     return __.flatMap(*args)
-statics.add_static('flatMap', flatMap)
+
 
 def fold(*args):
     return __.fold(*args)
-statics.add_static('fold', fold)
+
 
 def group(*args):
     return __.group(*args)
-statics.add_static('group', group)
+
 
 def groupCount(*args):
     return __.groupCount(*args)
-statics.add_static('groupCount', groupCount)
+
 
 def has(*args):
     return __.has(*args)
-statics.add_static('has', has)
+
 
 def hasId(*args):
     return __.hasId(*args)
-statics.add_static('hasId', hasId)
+
 
 def hasKey(*args):
     return __.hasKey(*args)
-statics.add_static('hasKey', hasKey)
+
 
 def hasLabel(*args):
     return __.hasLabel(*args)
-statics.add_static('hasLabel', hasLabel)
+
 
 def hasNot(*args):
     return __.hasNot(*args)
-statics.add_static('hasNot', hasNot)
+
 
 def hasValue(*args):
     return __.hasValue(*args)
-statics.add_static('hasValue', hasValue)
+
 
 def id(*args):
     return __.id(*args)
-statics.add_static('id', id)
+
 
 def identity(*args):
     return __.identity(*args)
-statics.add_static('identity', identity)
+
 
 def inE(*args):
     return __.inE(*args)
-statics.add_static('inE', inE)
+
 
 def inV(*args):
     return __.inV(*args)
-statics.add_static('inV', inV)
+
 
 def in_(*args):
     return __.in_(*args)
-statics.add_static('in_', in_)
+
 
 def inject(*args):
     return __.inject(*args)
-statics.add_static('inject', inject)
+
 
 def is_(*args):
     return __.is_(*args)
-statics.add_static('is_', is_)
+
 
 def key(*args):
     return __.key(*args)
-statics.add_static('key', key)
+
 
 def label(*args):
     return __.label(*args)
-statics.add_static('label', label)
+
 
 def limit(*args):
     return __.limit(*args)
-statics.add_static('limit', limit)
+
 
 def local(*args):
     return __.local(*args)
-statics.add_static('local', local)
+
 
 def loops(*args):
     return __.loops(*args)
-statics.add_static('loops', loops)
+
 
 def map(*args):
     return __.map(*args)
-statics.add_static('map', map)
+
 
 def match(*args):
     return __.match(*args)
-statics.add_static('match', match)
+
 
 def math(*args):
     return __.math(*args)
-statics.add_static('math', math)
+
 
 def max(*args):
     return __.max(*args)
-statics.add_static('max', max)
+
 
 def mean(*args):
     return __.mean(*args)
-statics.add_static('mean', mean)
+
 
 def min(*args):
     return __.min(*args)
-statics.add_static('min', min)
+
 
 def not_(*args):
     return __.not_(*args)
-statics.add_static('not_', not_)
+
 
 def optional(*args):
     return __.optional(*args)
-statics.add_static('optional', optional)
+
 
 def or_(*args):
     return __.or_(*args)
-statics.add_static('or_', or_)
+
 
 def order(*args):
     return __.order(*args)
-statics.add_static('order', order)
+
 
 def otherV(*args):
     return __.otherV(*args)
-statics.add_static('otherV', otherV)
+
 
 def out(*args):
     return __.out(*args)
-statics.add_static('out', out)
+
 
 def outE(*args):
     return __.outE(*args)
-statics.add_static('outE', outE)
+
 
 def outV(*args):
     return __.outV(*args)
-statics.add_static('outV', outV)
+
 
 def path(*args):
     return __.path(*args)
-statics.add_static('path', path)
+
 
 def project(*args):
     return __.project(*args)
-statics.add_static('project', project)
+
 
 def properties(*args):
     return __.properties(*args)
-statics.add_static('properties', properties)
+
 
 def property(*args):
     return __.property(*args)
-statics.add_static('property', property)
+
 
 def propertyMap(*args):
     return __.propertyMap(*args)
-statics.add_static('propertyMap', propertyMap)
+
 
 def range(*args):
     return __.range(*args)
-statics.add_static('range', range)
+
 
 def repeat(*args):
     return __.repeat(*args)
-statics.add_static('repeat', repeat)
+
 
 def sack(*args):
     return __.sack(*args)
-statics.add_static('sack', sack)
+
 
 def sample(*args):
     return __.sample(*args)
-statics.add_static('sample', sample)
+
 
 def select(*args):
     return __.select(*args)
-statics.add_static('select', select)
+
 
 def sideEffect(*args):
     return __.sideEffect(*args)
-statics.add_static('sideEffect', sideEffect)
+
 
 def simplePath(*args):
     return __.simplePath(*args)
-statics.add_static('simplePath', simplePath)
+
 
 def skip(*args):
     return __.skip(*args)
-statics.add_static('skip', skip)
+
 
 def store(*args):
     return __.store(*args)
-statics.add_static('store', store)
+
 
 def subgraph(*args):
     return __.subgraph(*args)
-statics.add_static('subgraph', subgraph)
+
 
 def sum(*args):
     return __.sum(*args)
-statics.add_static('sum', sum)
+
 
 def tail(*args):
     return __.tail(*args)
-statics.add_static('tail', tail)
+
 
 def timeLimit(*args):
     return __.timeLimit(*args)
-statics.add_static('timeLimit', timeLimit)
+
 
 def times(*args):
     return __.times(*args)
-statics.add_static('times', times)
+
 
 def to(*args):
     return __.to(*args)
-statics.add_static('to', to)
+
 
 def toE(*args):
     return __.toE(*args)
-statics.add_static('toE', toE)
+
 
 def toV(*args):
     return __.toV(*args)
-statics.add_static('toV', toV)
+
 
 def tree(*args):
     return __.tree(*args)
-statics.add_static('tree', tree)
+
 
 def unfold(*args):
     return __.unfold(*args)
-statics.add_static('unfold', unfold)
+
 
 def union(*args):
     return __.union(*args)
-statics.add_static('union', union)
+
 
 def until(*args):
     return __.until(*args)
-statics.add_static('until', until)
+
 
 def value(*args):
     return __.value(*args)
-statics.add_static('value', value)
+
 
 def valueMap(*args):
     return __.valueMap(*args)
-statics.add_static('valueMap', valueMap)
+
 
 def values(*args):
     return __.values(*args)
-statics.add_static('values', values)
+
 
 def where(*args):
     return __.where(*args)
+
+
+statics.add_static('V', V)
+
+statics.add_static('addE', addE)
+
+statics.add_static('addV', addV)
+
+statics.add_static('aggregate', aggregate)
+
+statics.add_static('and_', and_)
+
+statics.add_static('as_', as_)
+
+statics.add_static('barrier', barrier)
+
+statics.add_static('both', both)
+
+statics.add_static('bothE', bothE)
+
+statics.add_static('bothV', bothV)
+
+statics.add_static('branch', branch)
+
+statics.add_static('cap', cap)
+
+statics.add_static('choose', choose)
+
+statics.add_static('coalesce', coalesce)
+
+statics.add_static('coin', coin)
+
+statics.add_static('constant', constant)
+
+statics.add_static('count', count)
+
+statics.add_static('cyclicPath', cyclicPath)
+
+statics.add_static('dedup', dedup)
+
+statics.add_static('drop', drop)
+
+statics.add_static('emit', emit)
+
+statics.add_static('filter', filter)
+
+statics.add_static('flatMap', flatMap)
+
+statics.add_static('fold', fold)
+
+statics.add_static('group', group)
+
+statics.add_static('groupCount', groupCount)
+
+statics.add_static('has', has)
+
+statics.add_static('hasId', hasId)
+
+statics.add_static('hasKey', hasKey)
+
+statics.add_static('hasLabel', hasLabel)
+
+statics.add_static('hasNot', hasNot)
+
+statics.add_static('hasValue', hasValue)
+
+statics.add_static('id', id)
+
+statics.add_static('identity', identity)
+
+statics.add_static('inE', inE)
+
+statics.add_static('inV', inV)
+
+statics.add_static('in_', in_)
+
+statics.add_static('inject', inject)
+
+statics.add_static('is_', is_)
+
+statics.add_static('key', key)
+
+statics.add_static('label', label)
+
+statics.add_static('limit', limit)
+
+statics.add_static('local', local)
+
+statics.add_static('loops', loops)
+
+statics.add_static('map', map)
+
+statics.add_static('match', match)
+
+statics.add_static('math', math)
+
+statics.add_static('max', max)
+
+statics.add_static('mean', mean)
+
+statics.add_static('min', min)
+
+statics.add_static('not_', not_)
+
+statics.add_static('optional', optional)
+
+statics.add_static('or_', or_)
+
+statics.add_static('order', order)
+
+statics.add_static('otherV', otherV)
+
+statics.add_static('out', out)
+
+statics.add_static('outE', outE)
+
+statics.add_static('outV', outV)
+
+statics.add_static('path', path)
+
+statics.add_static('project', project)
+
+statics.add_static('properties', properties)
+
+statics.add_static('property', property)
+
+statics.add_static('propertyMap', propertyMap)
+
+statics.add_static('range', range)
+
+statics.add_static('repeat', repeat)
+
+statics.add_static('sack', sack)
+
+statics.add_static('sample', sample)
+
+statics.add_static('select', select)
+
+statics.add_static('sideEffect', sideEffect)
+
+statics.add_static('simplePath', simplePath)
+
+statics.add_static('skip', skip)
+
+statics.add_static('store', store)
+
+statics.add_static('subgraph', subgraph)
+
+statics.add_static('sum', sum)
+
+statics.add_static('tail', tail)
+
+statics.add_static('timeLimit', timeLimit)
+
+statics.add_static('times', times)
+
+statics.add_static('to', to)
+
+statics.add_static('toE', toE)
+
+statics.add_static('toV', toV)
+
+statics.add_static('tree', tree)
+
+statics.add_static('unfold', unfold)
+
+statics.add_static('union', union)
+
+statics.add_static('until', until)
+
+statics.add_static('value', value)
+
+statics.add_static('valueMap', valueMap)
+
+statics.add_static('values', values)
+
 statics.add_static('where', where)
+

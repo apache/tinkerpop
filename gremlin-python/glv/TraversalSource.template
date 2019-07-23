@@ -161,15 +161,21 @@ class P(object):
 
     def __repr__(self):
         return self.operator + "(" + str(self.value) + ")" if self.other is None else self.operator + "(" + str(self.value) + "," + str(self.other) + ")"
+
 <% pmethods.findAll{!it.equals("clone")}.each { method -> %>
 def <%= method %>(*args):
     return P.<%= method %>(*args)
-statics.add_static('<%= method %>',<%= method %>)
+
+<% } %>
+
+<% pmethods.findAll{!it.equals("clone")}.each { method -> %>statics.add_static('<%= method %>',<%= method %>)
+
 <% } %>
 
 '''
 TRAVERSER
 '''
+
 
 class Traverser(object):
     def __init__(self, object, bulk=None):
@@ -188,6 +194,7 @@ class Traverser(object):
 TRAVERSAL SIDE-EFFECTS
 '''
 
+
 class TraversalSideEffects(object):
     def keys(self):
         return set()
@@ -205,10 +212,13 @@ class TraversalSideEffects(object):
 TRAVERSAL STRATEGIES
 '''
 
+
 class TraversalStrategies(object):
     global_cache = {}
+
     def __init__(self, traversal_strategies=None):
-        self.traversal_strategies = traversal_strategies.traversal_strategies if traversal_strategies is not None else []
+        self.traversal_strategies = \
+            traversal_strategies.traversal_strategies if traversal_strategies is not None else []
 
     def add_strategies(self, traversal_strategies):
         self.traversal_strategies = self.traversal_strategies + traversal_strategies
@@ -248,6 +258,7 @@ class TraversalStrategy(object):
 '''
 BYTECODE
 '''
+
 
 class Bytecode(object):
     def __init__(self, bytecode=None):
@@ -310,11 +321,13 @@ class Bytecode(object):
 BINDINGS
 '''
 
+
 class Bindings(object):
     def of(self,key,value):
         if not isinstance(key, str):
             raise TypeError("Key must be str")
         return (key,value)
+
 
 class Binding(object):
     def __init__(self,key,value):
