@@ -16,6 +16,8 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
+
+import calendar
 import datetime
 import json
 import time
@@ -339,20 +341,16 @@ class DateIO(_GraphSONTypeIO):
     python_type = datetime.datetime
     graphson_type = "g:Date"
     graphson_base_type = "Date"
-    epoch = datetime.datetime(1970, 1, 1)
 
     @classmethod
     def dictify(cls, obj, writer):
-        # Java timestamp expects milliseconds.
-        if six.PY3:
-            pts = (obj - cls.epoch) / datetime.timedelta(seconds=1)
-        else:
-            # Hack for legacy Python - timestamp() in Python 3.3
-            pts = (time.mktime(obj.timetuple()) + obj.microsecond / 1e6) - \
-                  (time.mktime(cls.epoch.timetuple()))
+        try:
+            timestamp_seconds = calendar.timegm(obj.utctimetuple())
+            pts = timestamp_seconds * 1e3 + getattr(obj, 'microsecond', 0) / 1e3
+        except AttributeError:
+            pts = calendar.timegm(obj.timetuple()) * 1e3
 
-        # Have to use int because of legacy Python
-        ts = int(round(pts * 1000))
+        ts = int(round(pts))
         return GraphSONUtil.typedValue(cls.graphson_base_type, ts)
 
     @classmethod
