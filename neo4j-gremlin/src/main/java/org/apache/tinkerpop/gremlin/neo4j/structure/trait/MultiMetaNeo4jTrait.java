@@ -49,7 +49,9 @@ import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @deprecated As of release 3.3.8, not replaced.
  */
+@Deprecated
 public final class MultiMetaNeo4jTrait implements Neo4jTrait {
 
     private static final MultiMetaNeo4jTrait INSTANCE = new MultiMetaNeo4jTrait();
