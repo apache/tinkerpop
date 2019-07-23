@@ -34,7 +34,9 @@ import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @deprecated As of release 3.3.8, not replaced.
  */
+@Deprecated
 public interface Neo4jTrait {
 
     public Predicate<Neo4jNode> getNodePredicate();
