@@ -117,7 +117,7 @@ namespace Gremlin.Net.Driver
         private void Parse(byte[] received)
         {
             var receivedMsg = _messageSerializer.DeserializeMessage<ResponseMessage<JToken>>(received);
-            
+
             try
             {
                 TryParseResponseMessage(receivedMsg);
@@ -216,7 +216,7 @@ namespace Gremlin.Net.Driver
             {
             }
         }
-        
+
         private void NotifyAboutConnectionFailure(Exception exception)
         {
             foreach (var cb in _callbackByRequestId.Values)

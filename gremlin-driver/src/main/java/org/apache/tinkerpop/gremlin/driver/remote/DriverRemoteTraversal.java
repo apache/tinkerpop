@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.RemoteStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -73,8 +74,13 @@ public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
      * Gets a side-effect from the server. Do not call this method prior to completing the iteration of the
      * {@link DriverRemoteTraversal} that spawned this as the side-effect will not be ready. Generally
      * speaking, the common user would not get side-effects this way - they would use a call to {@code cap()}.
+     *
+     * @deprecated as of release 3.3.8, not directly replaced, see {@link Admin#getSideEffects()} for more information,
+     * but further note that this method is not being removed, but will not be functional for remote execution. Prefer
+     * {@link GraphTraversal#cap(String, String...)} to get side-effects as part of traversal iteration.
      */
     @Override
+    @Deprecated
     public RemoteTraversalSideEffects getSideEffects() {
         return this.sideEffects;
     }

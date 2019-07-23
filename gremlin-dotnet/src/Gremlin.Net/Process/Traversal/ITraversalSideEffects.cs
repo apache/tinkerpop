@@ -29,6 +29,7 @@ namespace Gremlin.Net.Process.Traversal
     /// <summary>
     ///     A <see cref="ITraversal" /> can maintain global sideEffects.
     /// </summary>
+    [Obsolete("As of release 3.3.8, not replaced, prefer use of cap()-step to retrieve side-effects as part of traversal iteration", false)]
     public interface ITraversalSideEffects : IDisposable
     {
         /// <summary>

@@ -42,7 +42,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Gets or sets the <see cref="ITraversalSideEffects" /> of this traversal.
         /// </summary>
+        #pragma warning disable 612,618
         ITraversalSideEffects SideEffects { get; set; }
+        #pragma warning disable 612,618
 
         /// <summary>
         ///     Gets or sets the <see cref="Traverser" />'s of this traversal that hold the results of the traversal.

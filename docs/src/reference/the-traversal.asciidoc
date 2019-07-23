@@ -2191,21 +2191,11 @@ The `profile()`-step generates a `TraversalMetrics` sideEffect object that conta
 * `Time (ms)`: The total time the step was actively executing its behavior.
 * `% Dur`: The percentage of total time spent in the step.
 
-image:gremlin-exercise.png[width=120,float=left] It is important to understand the difference between `Count`
-and `Traversers`. Traversers can be merged and as such, when two traversers are "the same" they may be aggregated
+image:gremlin-exercise.png[width=120,float=left] It is important to understand the difference between "Count"
+and "Traversers". Traversers can be merged and as such, when two traversers are "the same" they may be aggregated
 into a single traverser. That new traverser has a `Traverser.bulk()` that is the sum of the two merged traverser
 bulks. On the other hand, the `Count` represents the sum of all `Traverser.bulk()` results and thus, expresses the
 number of "represented" (not enumerated) traversers. `Traversers` will always be less than or equal to `Count`.
-
-A side effect key can also be passed to the `profile()`-step for situations when it is important to iterate the normal
-results of the Traversal and retrieve the `TraversalMetrics` afterwards, as shown here:
-
-[gremlin-groovy,modern]
-----
-t = g.V().out('created').profile('metrics')
-t.iterate()
-metrics = t.getSideEffects().get('metrics')
-----
 
 For traversal compilation information, please see <<explain-step,`explain()`>>-step.
 

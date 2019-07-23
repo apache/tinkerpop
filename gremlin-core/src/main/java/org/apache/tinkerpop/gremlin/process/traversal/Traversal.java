@@ -449,7 +449,13 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         public void setSideEffects(final TraversalSideEffects sideEffects);
 
         /**
-         * Get the {@link TraversalSideEffects} associated with the traversal.
+         * Get the {@link TraversalSideEffects} associated with the traversal. This method should not be called
+         * externally for purposes of retrieving side-effects as traversal results. Traversal results should only be
+         * returned by way of the execution of the traversal itself. Should a side-effect of a traversal be needed it
+         * should only be obtained by using {@link GraphTraversal#cap(String, String...)} so that the side-effect can
+         * be included as part of the traversal iteration. Relying on this method to get side-effects in these
+         * situations may not result in consistent behavior across all types of executions and environments (e.g.
+         * remoting).
          *
          * @return The traversal sideEffects
          */

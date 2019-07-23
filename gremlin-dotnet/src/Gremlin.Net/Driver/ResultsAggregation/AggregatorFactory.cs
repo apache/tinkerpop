@@ -25,6 +25,7 @@ using System.Collections.Generic;
 
 namespace Gremlin.Net.Driver.ResultsAggregation
 {
+    #pragma warning disable 612,618
     internal class AggregatorFactory
     {
         private readonly Dictionary<string, IAggregator> _aggregatorByAggregateToType =
@@ -41,4 +42,5 @@ namespace Gremlin.Net.Driver.ResultsAggregation
             return new DefaultAggregator();
         }
     }
+    #pragma warning disable 612,618
 }

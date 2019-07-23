@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.AbstractRemoteTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,7 +41,10 @@ import java.util.concurrent.CompletableFuture;
  * Java driver implementation of {@link TraversalSideEffects}. This class is not thread safe.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.3.8, not directly replaced, prefer use of {@link GraphTraversal#cap(String, String...)}
+ * to return the result as part of the traversal iteration.
  */
+@Deprecated
 public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSideEffects {
 
     private final Client client;
