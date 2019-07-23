@@ -276,57 +276,86 @@ class P(object):
     def __repr__(self):
         return self.operator + "(" + str(self.value) + ")" if self.other is None else self.operator + "(" + str(self.value) + "," + str(self.other) + ")"
 
+
 def between(*args):
     return P.between(*args)
-statics.add_static('between',between)
+
 
 def eq(*args):
     return P.eq(*args)
-statics.add_static('eq',eq)
+
 
 def gt(*args):
     return P.gt(*args)
-statics.add_static('gt',gt)
+
 
 def gte(*args):
     return P.gte(*args)
-statics.add_static('gte',gte)
+
 
 def inside(*args):
     return P.inside(*args)
-statics.add_static('inside',inside)
+
 
 def lt(*args):
     return P.lt(*args)
-statics.add_static('lt',lt)
+
 
 def lte(*args):
     return P.lte(*args)
-statics.add_static('lte',lte)
+
 
 def neq(*args):
     return P.neq(*args)
-statics.add_static('neq',neq)
+
 
 def not_(*args):
     return P.not_(*args)
-statics.add_static('not_',not_)
+
 
 def outside(*args):
     return P.outside(*args)
-statics.add_static('outside',outside)
+
 
 def test(*args):
     return P.test(*args)
-statics.add_static('test',test)
+
 
 def within(*args):
     return P.within(*args)
-statics.add_static('within',within)
+
 
 def without(*args):
     return P.without(*args)
+
+
+
+statics.add_static('between',between)
+
+statics.add_static('eq',eq)
+
+statics.add_static('gt',gt)
+
+statics.add_static('gte',gte)
+
+statics.add_static('inside',inside)
+
+statics.add_static('lt',lt)
+
+statics.add_static('lte',lte)
+
+statics.add_static('neq',neq)
+
+statics.add_static('not_',not_)
+
+statics.add_static('outside',outside)
+
+statics.add_static('test',test)
+
+statics.add_static('within',within)
+
 statics.add_static('without',without)
+
 
 
 class TextP(P):
@@ -465,6 +494,7 @@ class PeerPressure(object):
 TRAVERSER
 '''
 
+
 class Traverser(object):
     def __init__(self, object, bulk=None):
         if bulk is None:
@@ -481,6 +511,7 @@ class Traverser(object):
 '''
 TRAVERSAL SIDE-EFFECTS
 '''
+
 
 class TraversalSideEffects(object):
     def keys(self):
@@ -499,10 +530,12 @@ class TraversalSideEffects(object):
 TRAVERSAL STRATEGIES
 '''
 
+
 class TraversalStrategies(object):
     global_cache = {}
+
     def __init__(self, traversal_strategies=None):
-        self.traversal_strategies = traversal_strategies.traversal_strategies if traversal_strategies is not None else []
+        self.traversal_strategies =             traversal_strategies.traversal_strategies if traversal_strategies is not None else []
 
     def add_strategies(self, traversal_strategies):
         self.traversal_strategies = self.traversal_strategies + traversal_strategies
@@ -542,6 +575,7 @@ class TraversalStrategy(object):
 '''
 BYTECODE
 '''
+
 
 class Bytecode(object):
     def __init__(self, bytecode=None):
@@ -612,6 +646,7 @@ class Bindings(object):
         if not isinstance(key, str):
             raise TypeError("Key must be str")
         return Binding(key, value)
+
 
 
 class Binding(object):
