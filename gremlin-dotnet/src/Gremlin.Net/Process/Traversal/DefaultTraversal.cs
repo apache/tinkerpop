@@ -65,6 +65,9 @@ namespace Gremlin.Net.Process.Traversal
         private IEnumerator<Traverser> TraverserEnumerator
             => _traverserEnumerator ?? (_traverserEnumerator = GetTraverserEnumerator());
 
+        private bool _nextAvailable;
+        private bool _fetchedNext;
+
         /// <inheritdoc />
         public void Dispose()
         {
@@ -74,13 +77,27 @@ namespace Gremlin.Net.Process.Traversal
         /// <inheritdoc />
         public bool MoveNext()
         {
+            var more = MoveNextInternal();            
+            _fetchedNext = false;
+            return more;
+        }
+        
+        private bool MoveNextInternal()
+        {                   
+            if (_fetchedNext) return _nextAvailable;
+            
             var currentTraverser = TraverserEnumerator.Current;
             if (currentTraverser?.Bulk > 1)
             {
                 currentTraverser.Bulk--;
-                return true;
+                _nextAvailable = true;
             }
-            return TraverserEnumerator.MoveNext();
+            else
+            {
+                _nextAvailable = TraverserEnumerator.MoveNext();
+            }
+
+            return _nextAvailable;
         }
 
         /// <summary>
@@ -166,6 +183,14 @@ namespace Gremlin.Net.Process.Traversal
         {
             foreach (var strategy in TraversalStrategies)
                 await strategy.ApplyAsync(this).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public bool HasNext()
+        {
+            var more = MoveNextInternal();            
+            _fetchedNext = true;
+            return more;
         }
 
         /// <summary>

@@ -42,6 +42,24 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             var actualObj = traversal.Next();
 
             Assert.Equal(traverserObj, actualObj);
+
+            Assert.Equal(null, traversal.Next());
+        }
+        [Theory]
+        [InlineData(1)]
+        [InlineData("test")]
+        public void ShouldCheckHasNext(object traverserObj)
+        {
+            var traversal = new TestTraversal(new List<object> {traverserObj});
+
+            Assert.Equal(true, traversal.HasNext());
+            Assert.Equal(true, traversal.HasNext());
+            
+            var actualObj = traversal.Next();
+            Assert.Equal(traverserObj, actualObj);
+            
+            Assert.Equal(false, traversal.HasNext());
+            Assert.Equal(false, traversal.HasNext());
         }
 
         [Theory]
