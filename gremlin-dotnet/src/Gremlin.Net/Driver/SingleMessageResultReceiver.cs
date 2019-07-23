@@ -53,6 +53,7 @@ namespace Gremlin.Net.Driver
             var receivedData = typeof(T) == typeof(JToken)
                 ? new[] {received.Result.Data}
                 : _graphSONReader.ToObject(received.Result.Data);
+            #pragma warning disable 612,618
             foreach (var d in receivedData)
             {
                 if (received.Result.Meta.ContainsKey(Tokens.ArgsSideEffectKey))
@@ -69,6 +70,7 @@ namespace Gremlin.Net.Driver
                     _result.Add(d);
                 }
             }
+            #pragma warning disable 612,618
         }
 
         public void Finalize(Dictionary<string, object> statusAttributes)

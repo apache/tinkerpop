@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.remote.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Optional;
@@ -28,7 +29,10 @@ import java.util.function.UnaryOperator;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.3.8, not directly replaced, prefer use of {@link GraphTraversal#cap(String, String...)}
+ * to return the result as part of the traversal iteration.
  */
+@Deprecated
 public abstract class AbstractRemoteTraversalSideEffects implements RemoteTraversalSideEffects {
 
     @Override

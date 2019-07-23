@@ -30,9 +30,21 @@ public final class Tokens {
     public static final String OPS_BYTECODE = "bytecode";
     public static final String OPS_EVAL = "eval";
     public static final String OPS_INVALID = "invalid";
-    public static final String OPS_GATHER = "gather";
-    public static final String OPS_KEYS = "keys";
     public static final String OPS_CLOSE = "close";
+
+    /**
+     * @deprecated As of release 3.3.8, not directly replaced in the protocol as side-effect retrieval after
+     * traversal iteration is not being promoted anymore as a feature.
+     */
+    @Deprecated
+    public static final String OPS_GATHER = "gather";
+
+    /**
+     * @deprecated As of release 3.3.8, not directly replaced in the protocol as side-effect retrieval after
+     * traversal iteration is not being promoted anymore as a feature.
+     */
+    @Deprecated
+    public static final String OPS_KEYS = "keys";
 
     public static final String REQUEST_ID = "requestId";
     public static final String ARGS_BATCH_SIZE = "batchSize";
@@ -47,14 +59,61 @@ public final class Tokens {
     public static final String ARGS_MANAGE_TRANSACTION = "manageTransaction";
     public static final String ARGS_SASL = "sasl";
     public static final String ARGS_SASL_MECHANISM = "saslMechanism";
+
+    /**
+     * @deprecated As of release 3.3.8, not directly replaced in the protocol as side-effect retrieval after
+     * traversal iteration is not being promoted anymore as a feature.
+     */
+    @Deprecated
     public static final String ARGS_SIDE_EFFECT = "sideEffect";
+
+    /**
+     * @deprecated As of release 3.3.8, not directly replaced in the protocol as side-effect retrieval after
+     * traversal iteration is not being promoted anymore as a feature.
+     */
+    @Deprecated
     public static final String ARGS_AGGREGATE_TO = "aggregateTo";
+
+    /**
+     * @deprecated As of release 3.3.8, not directly replaced in the protocol as side-effect retrieval after
+     * traversal iteration is not being promoted anymore as a feature.
+     */
+    @Deprecated
     public static final String ARGS_SIDE_EFFECT_KEY = "sideEffectKey";
 
+    /**
+     * @deprecated As of release 3.3.8, not directly replaced in the protocol as side-effect retrieval after
+     * traversal iteration is not being promoted anymore as a feature.
+     */
+    @Deprecated
     public static final String VAL_AGGREGATE_TO_BULKSET = "bulkset";
+
+    /**
+     * @deprecated As of release 3.3.8, not directly replaced in the protocol as side-effect retrieval after
+     * traversal iteration is not being promoted anymore as a feature.
+     */
+    @Deprecated
     public static final String VAL_AGGREGATE_TO_LIST = "list";
+
+    /**
+     * @deprecated As of release 3.3.8, not directly replaced in the protocol as side-effect retrieval after
+     * traversal iteration is not being promoted anymore as a feature.
+     */
+    @Deprecated
     public static final String VAL_AGGREGATE_TO_MAP = "map";
+
+    /**
+     * @deprecated As of release 3.3.8, not directly replaced in the protocol as side-effect retrieval after
+     * traversal iteration is not being promoted anymore as a feature.
+     */
+    @Deprecated
     public static final String VAL_AGGREGATE_TO_NONE = "none";
+
+    /**
+     * @deprecated As of release 3.3.8, not directly replaced in the protocol as side-effect retrieval after
+     * traversal iteration is not being promoted anymore as a feature.
+     */
+    @Deprecated
     public static final String VAL_AGGREGATE_TO_SET = "set";
 
     public static final String VAL_TRAVERSAL_SOURCE_ALIAS = "g";

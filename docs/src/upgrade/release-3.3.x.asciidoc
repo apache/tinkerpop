@@ -64,6 +64,38 @@ Gremlin steps that require a `GraphComputer` to execute (e.g. `pageRank()` and `
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2251[TINKERPOP-2251]
 
+==== Deprecated getSideEffects()
+
+`Traversal.getSideEffects()` has been deprecated for purposes of external calls by end-users. While the method is still
+present TinkerPop no longer guarantees its existence in future versions or consistency of its behavior, especially for
+Gremlin Language Variants and remote traversal execution. If this method is currently in use to gather side-effect
+results after traversal execution, please change such code to use `cap()`-step. For example, code like this:
+
+[source,text]
+----
+gremlin> t = g.V().hasLabel('person').aggregate('p').out('created')
+==>v[3]
+==>v[5]
+==>v[3]
+==>v[3]
+gremlin> t.getSideEffects().get('p')
+==>v[1]
+==>v[2]
+==>v[4]
+==>v[6]
+----
+
+should be converted to something like:
+
+[source,text]
+----
+gremlin> g.V().hasLabel('person').aggregate('p').out('created').union(fold(),cap('p'))
+==>[v[3],v[3],v[3],v[5]]
+==>[v[1],v[2],v[4],v[6]]
+----
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-2265[TINKERPOP-2265]
+
 == TinkerPop 3.3.7
 
 *Release Date: May 28, 2019*
