@@ -348,19 +348,18 @@ class DateIO(_GraphSONTypeIO):
     python_type = datetime.datetime
     graphson_type = "g:Date"
     graphson_base_type = "Date"
+    epoch = datetime.datetime(1970, 1, 1)
 
     @classmethod
     def dictify(cls, obj, writer):
+        # Java timestamp expects milliseconds.
         if six.PY3:
-            pts = obj.timestamp()
+            pts = (obj - cls.epoch) / datetime.timedelta(seconds=1)
         else:
-            # Hack for legacy Python
-            # timestamp() in Python 3.3
-            pts = time.mktime((obj.year, obj.month, obj.day,
-			                   obj.hour, obj.minute, obj.second,
-			                   -1, -1, -1)) + obj.microsecond / 1e6
+            # Hack for legacy Python - timestamp() in Python 3.3
+            pts = (time.mktime(obj.timetuple()) + obj.microsecond / 1e6) - \
+                  (time.mktime(cls.epoch.timetuple()))
 
-        # Java timestamp expects miliseconds
         # Have to use int because of legacy Python
         ts = int(round(pts * 1000))
         return GraphSONUtil.typedValue(cls.graphson_base_type, ts)
@@ -368,7 +367,7 @@ class DateIO(_GraphSONTypeIO):
     @classmethod
     def objectify(cls, ts, reader):
         # Python timestamp expects seconds
-        return datetime.datetime.fromtimestamp(ts / 1000.0)
+        return datetime.datetime.utcfromtimestamp(ts / 1000.0)
 
 
 # Based on current implementation, this class must always be declared before FloatIO.

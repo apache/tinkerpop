@@ -57,6 +57,15 @@ gremlin> g.V().hasLabel("person").
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1084[TINKERPOP-1084]
 
+==== Python DateTime
+
+With GraphSON, the `g:Date` is meant to represent a millisecond-precision offset from the unix epoch, but earlier
+version of Gremlin Python were using the timezone of the local system to handle serialization and deserialization,
+thus resulting in incorrect conversion. This issue is now resolved. It may be necessary to remove workarounds that have
+been introduced to combat this problem.
+
+See: https://issues.apache.org/jira/browse/TINKERPOP-2264[TINKERPOP-2264]
+
 ==== JavaScript withComputer()
 
 Gremlin-Javascript now supports `withComputer()` syntax, which means that it is now possible in Javascript to utilize
