@@ -229,6 +229,10 @@ limitations under the License.
                             <groupId>info.ganglia.gmetric4j</groupId>
                             <artifactId>gmetric4j</artifactId>
                         </exclusion>
+                        <exclusion>
+                            <groupId>org.ow2.asm</groupId>
+                            <artifactId>asm</artifactId>
+                        </exclusion>
                     </exclusions>
                 </dependency>
                 <!-- *** WARNING *** -->
