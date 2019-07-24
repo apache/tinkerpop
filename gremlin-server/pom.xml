@@ -218,6 +218,10 @@ limitations under the License.
                             <artifactId>commons-lang3</artifactId>
                         </exclusion>
                         <exclusion>
+                            <groupId>org.apache.commons</groupId>
+                            <artifactId>commons-text</artifactId>
+                        </exclusion>
+                        <exclusion>
                             <groupId>com.github.ben-manes.caffeine</groupId>
                             <artifactId>caffeine</artifactId>
                         </exclusion>
@@ -248,6 +252,10 @@ limitations under the License.
                         <exclusion>
                             <groupId>io.netty</groupId>
                             <artifactId>netty-all</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.ow2.asm</groupId>
+                            <artifactId>asm</artifactId>
                         </exclusion>
                     </exclusions>
                 </dependency>
@@ -284,10 +292,6 @@ limitations under the License.
                         <exclusion>
                             <groupId>io.netty</groupId>
                             <artifactId>netty-all</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.ow2.asm</groupId>
-                            <artifactId>asm</artifactId>
                         </exclusion>
                     </exclusions>
                 </dependency>

@@ -1107,18 +1107,18 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect(name.getMethodName());
 
-        final Vertex vertexBeforeTx = client.submit("v=graph.addVertex(\"name\",\"stephen\")").all().get().get(0).getVertex();
-        assertEquals("stephen", vertexBeforeTx.values("name").next());
+        final Vertex vertexBeforeTx = client.submit("v=g.addV(\"person\").property(\"name\",\"stephen\").next()").all().get().get(0).getVertex();
+        assertEquals("person", vertexBeforeTx.label());
 
-        final Vertex vertexFromV = client.submit("graph.vertices().next()").all().get().get(0).getVertex();
-        assertEquals("stephen", vertexFromV.values("name").next());
+        final String nameValueFromV = client.submit("g.V().values('name').next()").all().get().get(0).getString();
+        assertEquals("stephen", nameValueFromV);
 
         final Vertex vertexFromBinding = client.submit("v").all().get().get(0).getVertex();
-        assertEquals("stephen", vertexFromBinding.values("name").next());
+        assertEquals("person", vertexFromBinding.label());
 
-        final Vertex vertexAfterTx = client.submit("v.property(\"color\",\"blue\"); graph.tx().commit(); v").all().get().get(0).getVertex();
-        assertEquals("stephen", vertexAfterTx.values("name").next());
-        assertEquals("blue", vertexAfterTx.values("color").next());
+        final Map<String,Object> vertexAfterTx = client.submit("g.V(v).property(\"color\",\"blue\").iterate(); g.tx().commit(); g.V(v).valueMap().by(unfold())").all().get().get(0).get(Map.class);
+        assertEquals("stephen", vertexAfterTx.get("name"));
+        assertEquals("blue", vertexAfterTx.get("color"));
 
         cluster.close();
     }
@@ -1133,29 +1133,29 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         client.submit("graph.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);null").all().get();
         client.submit("graph.tx().open()").all().get();
 
-        final Vertex vertexBeforeTx = client.submit("v=graph.addVertex(\"name\",\"stephen\")").all().get().get(0).getVertex();
-        assertEquals("stephen", vertexBeforeTx.values("name").next());
+        final Vertex vertexBeforeTx = client.submit("v=g.addV(\"person\").property(\"name\", \"stephen\").next()").all().get().get(0).getVertex();
+        assertEquals("person", vertexBeforeTx.label());
 
-        final Vertex vertexFromV = client.submit("graph.vertices().next()").all().get().get(0).getVertex();
-        assertEquals("stephen", vertexFromV.values("name").next());
+        final String nameValueFromV = client.submit("g.V().values(\"name\").next()").all().get().get(0).getString();
+        assertEquals("stephen", nameValueFromV);
 
         final Vertex vertexFromBinding = client.submit("v").all().get().get(0).getVertex();
-        assertEquals("stephen", vertexFromBinding.values("name").next());
+        assertEquals("person", vertexFromBinding.label());
 
-        client.submit("v.property(\"color\",\"blue\")").all().get();
-        client.submit("graph.tx().commit()").all().get();
+        client.submit("g.V(v).property(\"color\",\"blue\")").all().get();
+        client.submit("g.tx().commit()").all().get();
 
         // Run a sessionless request to change transaction.readWriteConsumer back to AUTO
         // The will make the next in session request fail if consumers aren't ThreadLocal
-        sessionlessClient.submit("graph.vertices().next()").all().get();
+        sessionlessClient.submit("g.V().next()").all().get();
 
-        client.submit("graph.tx().open()").all().get();
+        client.submit("g.tx().open()").all().get();
 
-        final Vertex vertexAfterTx = client.submit("graph.vertices().next()").all().get().get(0).getVertex();
-        assertEquals("stephen", vertexAfterTx.values("name").next());
-        assertEquals("blue", vertexAfterTx.values("color").next());
+        final Map<String,Object> vertexAfterTx = client.submit("g.V().valueMap().by(unfold())").all().get().get(0).get(Map.class);
+        assertEquals("stephen", vertexAfterTx.get("name"));
+        assertEquals("blue", vertexAfterTx.get("color"));
 
-        client.submit("graph.tx().rollback()").all().get();
+        client.submit("g.tx().rollback()").all().get();
 
         cluster.close();
     }
@@ -1169,20 +1169,20 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client sessionlessClient = cluster.connect();
 
         //open transaction in session, then add vertex and commit
-        sessionClient.submit("graph.tx().open()").all().get();
-        final Vertex vertexBeforeTx = sessionClient.submit("v=graph.addVertex(\"name\",\"stephen\")").all().get().get(0).getVertex();
-        assertEquals("stephen", vertexBeforeTx.values("name").next());
-        sessionClient.submit("graph.tx().commit()").all().get();
+        sessionClient.submit("g.tx().open()").all().get();
+        final Vertex vertexBeforeTx = sessionClient.submit("v=g.addV(\"person\").property(\"name\",\"stephen\").next()").all().get().get(0).getVertex();
+        assertEquals("person", vertexBeforeTx.label());
+        sessionClient.submit("g.tx().commit()").all().get();
 
         // check that session transaction is closed
-        final boolean isOpen = sessionClient.submit("graph.tx().isOpen()").all().get().get(0).getBoolean();
+        final boolean isOpen = sessionClient.submit("g.tx().isOpen()").all().get().get(0).getBoolean();
         assertTrue("Transaction should be closed", !isOpen);
 
         //run a sessionless read
-        sessionlessClient.submit("graph.traversal().V()").all().get();
+        sessionlessClient.submit("g.V()").all().get();
 
         // check that session transaction is still closed
-        final boolean isOpenAfterSessionless = sessionClient.submit("graph.tx().isOpen()").all().get().get(0).getBoolean();
+        final boolean isOpenAfterSessionless = sessionClient.submit("g.tx().isOpen()").all().get().get(0).getBoolean();
         assertTrue("Transaction should stil be closed", !isOpenAfterSessionless);
 
     }
@@ -1375,8 +1375,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         final Client rebound = cluster.connect().alias("graph");
-        final Vertex v = rebound.submit("g.addVertex('name','jason')").all().get().get(0).getVertex();
-        assertEquals("jason", v.value("name"));
+        final Vertex v = rebound.submit("g.addVertex(T.label,'person')").all().get().get(0).getVertex();
+        assertEquals("person", v.label());
 
         cluster.close();
     }
