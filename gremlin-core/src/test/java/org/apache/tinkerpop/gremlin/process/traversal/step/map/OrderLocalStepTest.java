@@ -42,12 +42,6 @@ public class OrderLocalStepTest extends StepTest {
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
                 __.order(Scope.local),
-                __.order(Scope.local).by(Order.decr),
-                __.order(Scope.local).by("age", Order.incr),
-                __.order(Scope.local).by("age", Order.decr),
-                __.order(Scope.local).by(outE().count(), Order.incr),
-                __.order(Scope.local).by("age", Order.incr).by(outE().count(), Order.incr),
-                __.order(Scope.local).by(outE().count(), Order.incr).by("age", Order.incr),
                 __.order(Scope.local).by(Order.desc),
                 __.order(Scope.local).by("age", Order.asc),
                 __.order(Scope.local).by("age", Order.desc),

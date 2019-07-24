@@ -40,12 +40,6 @@ public class OrderGlobalStepTest extends StepTest {
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
                 __.order(),
-                __.order().by(Order.decr),
-                __.order().by("age", Order.incr),
-                __.order().by("age", Order.decr),
-                __.order().by(outE().count(), Order.incr),
-                __.order().by("age", Order.incr).by(outE().count(), Order.incr),
-                __.order().by(outE().count(), Order.incr).by("age", Order.incr),
                 __.order().by(Order.desc),
                 __.order().by("age", Order.asc),
                 __.order().by("age", Order.desc),

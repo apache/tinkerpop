@@ -56,22 +56,7 @@ public class OrderTest {
                 {Order.asc, Arrays.asList(100L, 1L, -1L, 0L), Arrays.asList(-1L, 0L, 1L, 100L)},
                 {Order.desc, Arrays.asList(100L, 1L, -1L, 0L), Arrays.asList(100L, 1L, 0L, -1L)},
                 {Order.asc, Arrays.asList(100, 1, -1, 0), Arrays.asList(-1, 0, 1, 100)},
-                {Order.desc, Arrays.asList(100, 1, -1, 0), Arrays.asList(100, 1, 0, -1)},
-                {Order.incr, Arrays.asList("b", "a", "c", "d"), Arrays.asList("a", "b", "c", "d")},
-                {Order.decr, Arrays.asList("b", "a", "c", "d"), Arrays.asList("d", "c", "b", "a")},
-                {Order.incr, Arrays.asList(formatter.parse("1-Jan-2018"), formatter.parse("1-Jan-2020"), formatter.parse("1-Jan-2008")),
-                             Arrays.asList(formatter.parse("1-Jan-2008"), formatter.parse("1-Jan-2018"), formatter.parse("1-Jan-2020"))},
-                {Order.decr, Arrays.asList(formatter.parse("1-Jan-2018"), formatter.parse("1-Jan-2020"), formatter.parse("1-Jan-2008")),
-                             Arrays.asList(formatter.parse("1-Jan-2020"), formatter.parse("1-Jan-2018"), formatter.parse("1-Jan-2008"))},
-                {Order.decr, Arrays.asList(100L, 1L, -1L, 0L), Arrays.asList(100L, 1L, 0L, -1L)},
-                {Order.incr, Arrays.asList(100.1f, 1.1f, -1.1f, 0.1f), Arrays.asList(-1.1f, 0.1f, 1.1f, 100.1f)},
-                {Order.decr, Arrays.asList(100.1f, 1.1f, -1.1f, 0.1f), Arrays.asList(100.1f, 1.1f, 0.1f, -1.1f)},
-                {Order.incr, Arrays.asList(100.1d, 1.1d, -1.1d, 0.1d), Arrays.asList(-1.1d, 0.1d, 1.1d, 100.1d)},
-                {Order.decr, Arrays.asList(100.1d, 1.1d, -1.1d, 0.1d), Arrays.asList(100.1d, 1.1d, 0.1d, -1.1d)},
-                {Order.incr, Arrays.asList(100L, 1L, -1L, 0L), Arrays.asList(-1L, 0L, 1L, 100L)},
-                {Order.decr, Arrays.asList(100L, 1L, -1L, 0L), Arrays.asList(100L, 1L, 0L, -1L)},
-                {Order.incr, Arrays.asList(100, 1, -1, 0), Arrays.asList(-1, 0, 1, 100)},
-                {Order.decr, Arrays.asList(100, 1, -1, 0), Arrays.asList(100, 1, 0, -1)}}));
+                {Order.desc, Arrays.asList(100, 1, -1, 0), Arrays.asList(100, 1, 0, -1)}}));
     }
 
     @Parameterized.Parameter(value = 0)

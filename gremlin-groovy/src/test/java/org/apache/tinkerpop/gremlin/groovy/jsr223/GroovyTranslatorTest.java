@@ -210,7 +210,7 @@ public class GroovyTranslatorTest {
 
     @Test
     public void shouldHandleOrder() {
-        assertTranslation("Order.decr", Order.decr);
+        assertTranslation("Order.shuffle", Order.shuffle);
     }
 
     @Test

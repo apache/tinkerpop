@@ -48,11 +48,11 @@ Feature: Step - pageRank()
       | m[{"name": ["lop"], "projectRank": [3.0]}] |
       | m[{"name": ["ripple"], "projectRank": [1.0]}] |
 
-  Scenario: g_V_pageRank_order_byXpageRank_decrX_byXnameX_name
+  Scenario: g_V_pageRank_order_byXpageRank_descX_byXnameX_name
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().pageRank().order().by("gremlin.pageRankVertexProgram.pageRank", Order.decr).by("name").values("name")
+      g.withComputer().V().pageRank().order().by("gremlin.pageRankVertexProgram.pageRank", Order.desc).by("name").values("name")
       """
     When iterated to list
     Then the result should be ordered
@@ -64,11 +64,11 @@ Feature: Step - pageRank()
       | marko  |
       | peter  |
 
-  Scenario: g_V_pageRank_order_byXpageRank_decrX_name_limitX2X
+  Scenario: g_V_pageRank_order_byXpageRank_descX_name_limitX2X
     Given the modern graph
     And the traversal of
       """
-      g.withComputer().V().pageRank().order().by("gremlin.pageRankVertexProgram.pageRank", Order.decr).values("name").limit(2)
+      g.withComputer().V().pageRank().order().by("gremlin.pageRankVertexProgram.pageRank", Order.desc).values("name").limit(2)
       """
     When iterated to list
     Then the result should be ordered

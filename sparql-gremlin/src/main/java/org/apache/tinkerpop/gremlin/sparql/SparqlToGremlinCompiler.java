@@ -218,7 +218,7 @@ public class SparqlToGremlinCompiler {
 
                 // by default, the sort will be ascending. getDirection() returns -2 if the DESC/ASC isn't
                 // supplied - weird
-                orderingIndex.put(expr.getVarName(), sortCondition.getDirection() == -1 ? Order.decr : Order.incr);
+                orderingIndex.put(expr.getVarName(), sortCondition.getDirection() == -1 ? Order.desc : Order.asc);
             }
         }
 

@@ -114,6 +114,12 @@ public class Model {
                 .join(Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*no-types|v1d0")
                 .join(Compatibilities.with(GraphSONCompatibility.class).beforeRelease("3.4.0"))).matchToArray();
 
+        // the inverse of this definition is basically 3.5.0 or better for both GraphSON and Gryo with no support for
+        // untyped GraphSON anywhere along the way
+        final Compatibility[] before3_5_0 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.5.0")
+                .join(Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*no-types|v1d0")
+                        .join(Compatibilities.with(GraphSONCompatibility.class).beforeRelease("3.5.0"))).matchToArray();
+
         // there is no point to testing gryo for list/map/set as they are kryo primitives essentially
         final Compatibility[] noGraphSONBeforeV3AndNoGryo = Compatibilities.with(GraphSONCompatibility.class).configuredAs(".*v2d0-partial|v1d0|v2d0-no-types").join(Compatibilities.GRYO_ONLY).matchToArray();
 
@@ -163,7 +169,7 @@ public class Model {
         addGraphProcessEntry(Column.keys, "Column", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(Direction.OUT, "Direction", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(Operator.sum, "Operator", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
-        addGraphProcessEntry(Order.shuffle, "Order", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addGraphProcessEntry(Order.shuffle, "Order", "", before3_5_0);
         addGraphProcessEntry(TraversalOptionParent.Pick.any, "Pick", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(Pop.all, "Pop", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addGraphProcessEntry(org.apache.tinkerpop.gremlin.util.function.Lambda.function("{ it.get() }"), "Lambda", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());

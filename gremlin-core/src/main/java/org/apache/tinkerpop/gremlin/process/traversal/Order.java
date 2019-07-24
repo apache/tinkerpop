@@ -32,48 +32,6 @@ import org.apache.tinkerpop.gremlin.util.NumberHelper;
 public enum Order implements Comparator<Object> {
 
     /**
-     * Order in ascending fashion
-     *
-     * @since 3.0.0-incubating
-     * @deprecated As of release 3.3.4, replaced by {@link #asc}.
-     */
-    @Deprecated
-    incr {
-        @Override
-        public int compare(final Object first, final Object second) {
-            return first instanceof Number && second instanceof Number
-                    ? NumberHelper.compare((Number) first, (Number) second)
-                    : Comparator.<Comparable>naturalOrder().compare((Comparable) first, (Comparable) second);
-        }
-
-        @Override
-        public Order reversed() {
-            return decr;
-        }
-    },
-
-    /**
-     * Order in descending fashion.
-     *
-     * @since 3.0.0-incubating
-     * @deprecated As of release 3.3.4, replaced by {@link #desc}.
-     */
-    @Deprecated
-    decr {
-        @Override
-        public int compare(final Object first, final Object second) {
-            return first instanceof Number && second instanceof Number
-                    ? NumberHelper.compare((Number) second, (Number) first)
-                    : Comparator.<Comparable>reverseOrder().compare((Comparable) first, (Comparable) second);
-        }
-
-        @Override
-        public Order reversed() {
-            return incr;
-        }
-    },
-
-    /**
      * Order in a random fashion.
      *
      * @since 3.0.0-incubating
@@ -91,7 +49,7 @@ public enum Order implements Comparator<Object> {
     },
 
     /**
-     * Order in ascending fashion
+     * Order in ascending fashion.
      *
      * @since 3.3.4
      */
