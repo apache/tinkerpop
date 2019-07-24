@@ -285,6 +285,10 @@ limitations under the License.
                             <groupId>io.netty</groupId>
                             <artifactId>netty-all</artifactId>
                         </exclusion>
+                        <exclusion>
+                            <groupId>org.ow2.asm</groupId>
+                            <artifactId>asm</artifactId>
+                        </exclusion>
                     </exclusions>
                 </dependency>
                 <!-- *** WARNING *** -->
