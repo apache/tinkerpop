@@ -598,9 +598,12 @@ Gremlin-Java constructs. Moreover, given its scripting nature, Gremlin-Groovy se
 ----
 compile group: 'org.apache.tinkerpop', name: 'gremlin-core', version: '3.3.4'
 compile group: 'org.apache.tinkerpop', name: 'gremlin-driver', version: '3.3.4'
-----
+---- 
 
-WARNING: In Groovy, `as`, `in`, and `not` are reserved words. Gremlin-Groovy does not allow these steps to be called
+[[gremlin-groovy-differences]
+=== Differences
+
+In Groovy, `as`, `in`, and `not` are reserved words. Gremlin-Groovy does not allow these steps to be called
 statically from the anonymous traversal `+__+` and therefore, must always be prefixed with `+__.+` For instance:
 `+g.V().as('a').in().as('b').where(__.not(__.as('a').out().as('b')))+`
 
@@ -950,6 +953,17 @@ g.V().both()[1:3].toList()
 g.V().both()[1].toList()
 g.V().both().name.toList()
 ----
+
+[[gremlin-python-differences]
+=== Differences
+
+In situations where Python reserved words and global functions overlap with standard Gremlin steps and tokens, those
+bits of conflicting Gremlin get an underscore appended as a suffix:
+
+*Steps* - <<and-step,and_()>>, <<as-step,as_()>>, <<from-step,from_()>>, <<is-step,is_()>>, <<in-step,in_()>>,
+<<not-step,not_()>>, <<or-step,or_()>>, <<with-step,with_()>>
+
+*Tokens* - <<a-note-on-scopes,Scope.global_>>
 
 === Limitations
 
@@ -1304,3 +1318,11 @@ const g = traversal(SocialTraversalSource).withRemote(connection);
 g.person('marko').aged(29).values('name').toList().
   then(names => console.log(names));
 ----
+
+[[gremlin-javascript-differences]
+=== Differences
+
+In situations where Javascript reserved words and global functions overlap with standard Gremlin steps and tokens, those
+bits of conflicting Gremlin get an underscore appended as a suffix:
+
+*Steps* - <<from-step,from_()>>, <<in-step,in_()>>, <<with-step,with_()>>
