@@ -21,6 +21,7 @@ from aenum import Enum
 from .. import statics
 from ..statics import long
 
+
 class Traversal(object):
     def __init__(self, graph, traversal_strategies, bytecode):
         self.graph = graph
@@ -329,33 +330,31 @@ def without(*args):
     return P.without(*args)
 
 
+statics.add_static('between', between)
 
-statics.add_static('between',between)
+statics.add_static('eq', eq)
 
-statics.add_static('eq',eq)
+statics.add_static('gt', gt)
 
-statics.add_static('gt',gt)
+statics.add_static('gte', gte)
 
-statics.add_static('gte',gte)
+statics.add_static('inside', inside)
 
-statics.add_static('inside',inside)
+statics.add_static('lt', lt)
 
-statics.add_static('lt',lt)
+statics.add_static('lte', lte)
 
-statics.add_static('lte',lte)
+statics.add_static('neq', neq)
 
-statics.add_static('neq',neq)
+statics.add_static('not_', not_)
 
-statics.add_static('not_',not_)
+statics.add_static('outside', outside)
 
-statics.add_static('outside',outside)
+statics.add_static('test', test)
 
-statics.add_static('test',test)
+statics.add_static('within', within)
 
-statics.add_static('within',within)
-
-statics.add_static('without',without)
-
+statics.add_static('without', without)
 
 
 class TextP(P):
@@ -392,35 +391,50 @@ class TextP(P):
     def __repr__(self):
         return self.operator + "(" + str(self.value) + ")" if self.other is None else self.operator + "(" + str(self.value) + "," + str(self.other) + ")"
 
+
 def containing(*args):
     return TextP.containing(*args)
-statics.add_static('containing',containing)
+
 
 def endingWith(*args):
     return TextP.endingWith(*args)
-statics.add_static('endingWith',endingWith)
+
 
 def notContaining(*args):
     return TextP.notContaining(*args)
-statics.add_static('notContaining',notContaining)
+
 
 def notEndingWith(*args):
     return TextP.notEndingWith(*args)
-statics.add_static('notEndingWith',notEndingWith)
+
 
 def notStartingWith(*args):
     return TextP.notStartingWith(*args)
-statics.add_static('notStartingWith',notStartingWith)
+
 
 def startingWith(*args):
     return TextP.startingWith(*args)
-statics.add_static('startingWith',startingWith)
+
+
+statics.add_static('containing', containing)
+
+statics.add_static('endingWith', endingWith)
+
+statics.add_static('notContaining', notContaining)
+
+statics.add_static('notEndingWith', notEndingWith)
+
+statics.add_static('notStartingWith', notStartingWith)
+
+statics.add_static('startingWith', startingWith)
+
 
 
 
 '''
 IO
 '''
+
 
 class IO(object):
 
@@ -436,9 +450,11 @@ class IO(object):
 
     writer = "~tinkerpop.io.writer"
 
+
 '''
 ConnectedComponent
 '''
+
 
 class ConnectedComponent(object):
 
@@ -448,9 +464,11 @@ class ConnectedComponent(object):
 
     propertyName = "~tinkerpop.connectedComponent.propertyName"
 
+
 '''
 ShortestPath
 '''
+
 
 class ShortestPath(object):
 
@@ -464,9 +482,11 @@ class ShortestPath(object):
 
     target = "~tinkerpop.shortestPath.target"
 
+
 '''
 PageRank
 '''
+
 
 class PageRank(object):
 
@@ -476,9 +496,11 @@ class PageRank(object):
 
     times = "~tinkerpop.pageRank.times"
 
+
 '''
 PeerPressure
 '''
+
 
 class PeerPressure(object):
 
@@ -487,7 +509,6 @@ class PeerPressure(object):
     propertyName = "~tinkerpop.peerPressure.propertyName"
 
     times = "~tinkerpop.peerPressure.times"
-
 
 
 '''
@@ -508,6 +529,7 @@ class Traverser(object):
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.object == other.object
 
+
 '''
 TRAVERSAL SIDE-EFFECTS
 '''
@@ -525,6 +547,7 @@ class TraversalSideEffects(object):
 
     def __repr__(self):
         return "sideEffects[size:" + str(len(self.keys())) + "]"
+
 
 '''
 TRAVERSAL STRATEGIES
@@ -571,6 +594,7 @@ class TraversalStrategy(object):
 
     def __repr__(self):
         return self.strategy_name
+
 
 '''
 BYTECODE
@@ -648,7 +672,6 @@ class Bindings(object):
         return Binding(key, value)
 
 
-
 class Binding(object):
     def __init__(self,key,value):
         self.key = key
@@ -663,9 +686,12 @@ class Binding(object):
     def __repr__(self):
         return "binding[" + self.key + "=" + str(self.value) + "]"
 
+
 '''
 WITH OPTIONS
 '''
+
+
 class WithOptions(object):
 
     tokens = "~tinkerpop.valueMap.tokens"

@@ -21,6 +21,7 @@ from aenum import Enum
 from .. import statics
 from ..statics import long
 
+
 class Traversal(object):
     def __init__(self, graph, traversal_strategies, bytecode):
         self.graph = graph
@@ -167,11 +168,9 @@ def <%= method %>(*args):
     return P.<%= method %>(*args)
 
 <% } %>
-
-<% pmethods.findAll{!it.equals("clone")}.each { method -> %>statics.add_static('<%= method %>',<%= method %>)
+<% pmethods.findAll{!it.equals("clone")}.each { method -> %>statics.add_static('<%= method %>', <%= method %>)
 
 <% } %>
-
 class TextP(P):
     def __init__(self, operator, value, other=None):
         P.__init__(self, operator, value, other)
@@ -185,22 +184,26 @@ class TextP(P):
 
     def __repr__(self):
         return self.operator + "(" + str(self.value) + ")" if self.other is None else self.operator + "(" + str(self.value) + "," + str(self.other) + ")"
+
 <% tpmethods.findAll{!it.equals("clone")}.each { method -> %>
 def <%= method %>(*args):
     return TextP.<%= method %>(*args)
-statics.add_static('<%= method %>',<%= method %>)
-<% } %>
 
+<% } %>
+<% tpmethods.findAll{!it.equals("clone")}.each { method -> %>statics.add_static('<%= method %>', <%= method %>)
+
+<% } %>
 <% tokens.each { k,v -> %>
+
 '''
 <%= k %>
 '''
+
 
 class <%= k %>(object):
 <% v.each {a,b -> %>
     <%= a %> = "<%= b %>"
 <% }} %>
-
 
 '''
 TRAVERSER
@@ -220,6 +223,7 @@ class Traverser(object):
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.object == other.object
 
+
 '''
 TRAVERSAL SIDE-EFFECTS
 '''
@@ -237,6 +241,7 @@ class TraversalSideEffects(object):
 
     def __repr__(self):
         return "sideEffects[size:" + str(len(self.keys())) + "]"
+
 
 '''
 TRAVERSAL STRATEGIES
@@ -284,6 +289,7 @@ class TraversalStrategy(object):
 
     def __repr__(self):
         return self.strategy_name
+
 
 '''
 BYTECODE
@@ -361,7 +367,6 @@ class Bindings(object):
         return Binding(key, value)
 
 
-
 class Binding(object):
     def __init__(self,key,value):
         self.key = key
@@ -376,9 +381,12 @@ class Binding(object):
     def __repr__(self):
         return "binding[" + self.key + "=" + str(self.value) + "]"
 
+
 '''
 WITH OPTIONS
 '''
+
+
 class WithOptions(object):
 <% withOptions.each { %>
     <%= it.name %> = <%= it.value %>
