@@ -106,7 +106,9 @@ public final class AggregateGlobalStep<S> extends AbstractStep<S, S> implements 
 
     @Override
     protected Traverser.Admin<S> processNextStart() {
-        this.processAllStarts();
+        if (this.barrier.isEmpty()) {
+            this.processAllStarts();
+        }
         return this.barrier.remove();
     }
 
@@ -126,13 +128,17 @@ public final class AggregateGlobalStep<S> extends AbstractStep<S, S> implements 
 
     @Override
     public boolean hasNextBarrier() {
-        this.processAllStarts();
+        if (this.barrier.isEmpty()) {
+            this.processAllStarts();
+        }
         return !this.barrier.isEmpty();
     }
 
     @Override
     public TraverserSet<S> nextBarrier() throws NoSuchElementException {
-        this.processAllStarts();
+        if (this.barrier.isEmpty()) {
+            this.processAllStarts();
+        }
         if (this.barrier.isEmpty())
             throw FastNoSuchElementException.instance();
         else {
