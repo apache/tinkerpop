@@ -21,6 +21,7 @@ from aenum import Enum
 from .. import statics
 from ..statics import long
 
+
 class Traversal(object):
     def __init__(self, graph, traversal_strategies, bytecode):
         self.graph = graph
@@ -329,7 +330,6 @@ def without(*args):
     return P.without(*args)
 
 
-
 statics.add_static('between',between)
 
 statics.add_static('eq',eq)
@@ -357,7 +357,6 @@ statics.add_static('within',within)
 statics.add_static('without',without)
 
 
-
 '''
 TRAVERSER
 '''
@@ -376,6 +375,7 @@ class Traverser(object):
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.object == other.object
 
+
 '''
 TRAVERSAL SIDE-EFFECTS
 '''
@@ -393,6 +393,7 @@ class TraversalSideEffects(object):
 
     def __repr__(self):
         return "sideEffects[size:" + str(len(self.keys())) + "]"
+
 
 '''
 TRAVERSAL STRATEGIES
@@ -439,6 +440,7 @@ class TraversalStrategy(object):
 
     def __repr__(self):
         return self.strategy_name
+
 
 '''
 BYTECODE
@@ -511,7 +513,7 @@ class Bindings(object):
     def of(self,key,value):
         if not isinstance(key, str):
             raise TypeError("Key must be str")
-        return (key,value)
+        return (key, value)
 
 
 class Binding(object):
