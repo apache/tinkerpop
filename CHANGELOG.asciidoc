@@ -40,7 +40,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Changed the `reverse()` of `desc` and `asc` on `Order` to not use the deprecated `decr` and `incr`.
 * Fixed bug in `MatchStep` where the correct was not properly determined.
 * Fixed bug where client/server exception mismatch when server throw StackOverflowError
-* Prevent exception when closing a session that doesn't exist
+* Added underscore suffixed steps and tokens in Gremlin-Python that conflict with global function names.
+* Prevent exception when closing a session that doesn't exist.
 * Allow predicates and traversals to be used as options in `BranchStep`.
 * Improved performance of `aggregate()` by avoiding excessive calls to `hasNext()` when the barrier is empty.
 

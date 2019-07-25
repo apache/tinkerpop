@@ -22,26 +22,38 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.P
+import org.apache.tinkerpop.gremlin.process.traversal.Operator
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
+import org.apache.tinkerpop.gremlin.structure.T
 import java.lang.reflect.Modifier
 // this is a bit of a copy of what's in SymbolHelper - no way around it because this code generation task occurs
 // before the SymbolHelper is available to the plugin.
-def toPythonMap = ["global": "global_",
+def toPythonMap = ["and": "and_",
+                   "all": "all_",
                    "as": "as_",
-                   "in": "in_",
-                   "and": "and_",
-                   "or": "or_",
-                   "is": "is_",
-                   "not": "not_",
+                   "filter": "filter_",
                    "from": "from_",
+                   "global": "global_",
+                   "id": "id_",
+                   "in": "in_",
+                   "is": "is_",
                    "list": "list_",
+                   "max": "max_",
+                   "min": "min_",
+                   "not": "not_",
+                   "range": "range_",
+                   "or": "or_",
                    "set": "set_",
-                   "all": "all_"]
+                   "sum": "sum_"]
+
 def toJavaMap = toPythonMap.collectEntries{k,v -> [(v):k]}
 def toPython = { symbol -> toPythonMap.getOrDefault(symbol, symbol) }
 def toJava = { symbol -> toJavaMap.getOrDefault(symbol, symbol) }
+
+// for enums we ignore T and handle it manually because of conflict with T.id which is trickier to deal with
+// in the templating language
 def binding = ["enums": CoreImports.getClassImports()
-        .findAll { Enum.class.isAssignableFrom(it) }
+        .findAll { Enum.class.isAssignableFrom(it) && !(it in [T, Operator]) }
         .sort { a, b -> a.getSimpleName() <=> b.getSimpleName() },
                "pmethods": P.class.getMethods().
                        findAll { Modifier.isStatic(it.getModifiers()) }.
