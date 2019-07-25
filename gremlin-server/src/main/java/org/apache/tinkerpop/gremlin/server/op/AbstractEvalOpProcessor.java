@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
+import org.apache.tinkerpop.gremlin.server.ResponseHandlerContext;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.Context;
@@ -190,12 +191,21 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
     }
 
     /**
+     * @deprecated As of release 3.3.8, replaced by {@link #evalOpInternal(Context, Supplier, BindingSupplier)}.
+     */
+    @Deprecated
+    protected void evalOpInternal(final ResponseHandlerContext ctx, final Supplier<GremlinExecutor> gremlinExecutorSupplier,
+                                  final BindingSupplier bindingsSupplier) throws OpProcessorException {
+        evalOpInternal(ctx.getContext(), gremlinExecutorSupplier, bindingsSupplier);
+    }
+
+    /**
      * A generalized implementation of the "eval" operation.  It handles script evaluation and iteration of results
      * so as to write {@link ResponseMessage} objects down the Netty pipeline.  It also handles script timeouts,
      * iteration timeouts, metrics and building bindings.  Note that result iteration is delegated to the
      * {@link #handleIterator(Context, Iterator)} method, so those extending this class could override that method for
      * better control over result iteration.
-     *  @param ctx The current Gremlin Server {@link Context}. This handler ensures that only a single final
+     * @param ctx The current Gremlin Server {@link Context}. This handler ensures that only a single final
      *            response is sent to the client.
      * @param gremlinExecutorSupplier A function that returns the {@link GremlinExecutor} to use in executing the
      *                                script evaluation.
