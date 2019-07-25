@@ -63,19 +63,18 @@ public class OpExecutorHandler extends SimpleChannelInboundHandler<Pair<RequestM
         final ThrowingConsumer<Context> op = objects.getValue1();
         final Context gremlinServerContext = new Context(msg, ctx,
                 settings, graphManager, gremlinExecutor, scheduledExecutorService);
-
         try {
             op.accept(gremlinServerContext);
         } catch (OpProcessorException ope) {
             // Ops may choose to throw OpProcessorException or write the error ResponseMessage down the line
             // themselves
             logger.warn(ope.getMessage(), ope);
-            ctx.writeAndFlush(ope.getResponseMessage());
+            gremlinServerContext.writeAndFlush(ope.getResponseMessage());
         } catch (Exception ex) {
             // It is possible that an unplanned exception might raise out of an OpProcessor execution. Build a general
             // error to send back to the client
             logger.warn(ex.getMessage(), ex);
-            ctx.writeAndFlush(ResponseMessage.build(msg)
+            gremlinServerContext.writeAndFlush(ResponseMessage.build(msg)
                     .code(ResponseStatusCode.SERVER_ERROR)
                     .statusAttributeException(ex)
                     .statusMessage(ex.getMessage()).create());

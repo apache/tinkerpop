@@ -95,7 +95,7 @@ public class OpSelectorHandler extends MessageToMessageDecoder<RequestMessage> {
             }
         } catch (OpProcessorException ope) {
             logger.warn(ope.getMessage(), ope);
-            ctx.writeAndFlush(ope.getResponseMessage());
+            gremlinServerContext.writeAndFlush(ope.getResponseMessage());
         }
     }
 

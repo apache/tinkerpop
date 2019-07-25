@@ -40,15 +40,14 @@ import java.util.function.BiFunction;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
-public class ResponseHandlerContextTest {
+public class ContextTest {
 
     @Parameterized.Parameter(value = 0)
-    public BiFunction<ResponseHandlerContext, ResponseStatusCode, Void> writeInvoker;
+    public BiFunction<Context, ResponseStatusCode, Void> writeInvoker;
 
     private final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
     private final RequestMessage request = RequestMessage.build("test").create();
     private final Context context = new Context(request, ctx, null, null, null, null);
-    private final ResponseHandlerContext rhc = new ResponseHandlerContext(context);
     private final Log4jRecordingAppender recordingAppender = new Log4jRecordingAppender();
 
     private Level originalLogLevel;
@@ -57,9 +56,9 @@ public class ResponseHandlerContextTest {
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 {
-                    new BiFunction<ResponseHandlerContext, ResponseStatusCode, Void>() {
+                    new BiFunction<Context, ResponseStatusCode, Void>() {
                         @Override
-                        public Void apply(final ResponseHandlerContext context, final ResponseStatusCode code) {
+                        public Void apply(final Context context, final ResponseStatusCode code) {
                             context.writeAndFlush(code, "testMessage");
                             return null;
                         }
@@ -70,9 +69,9 @@ public class ResponseHandlerContextTest {
                         }
                     }
                 }, {
-                    new BiFunction<ResponseHandlerContext, ResponseStatusCode, Void>() {
+                    new BiFunction<Context, ResponseStatusCode, Void>() {
                         @Override
-                        public Void apply(final ResponseHandlerContext context, final ResponseStatusCode code) {
+                        public Void apply(final Context context, final ResponseStatusCode code) {
                             context.writeAndFlush(ResponseMessage.build(UUID.randomUUID()).code(code).create());
                             return null;
                         }
@@ -103,25 +102,25 @@ public class ResponseHandlerContextTest {
 
     @Test
     public void shouldAllowMultipleNonFinalResponses() {
-        writeInvoker.apply(rhc, ResponseStatusCode.AUTHENTICATE);
+        writeInvoker.apply(context, ResponseStatusCode.AUTHENTICATE);
         Mockito.verify(ctx, Mockito.times(1)).writeAndFlush(Mockito.any());
 
-        writeInvoker.apply(rhc, ResponseStatusCode.PARTIAL_CONTENT);
+        writeInvoker.apply(context, ResponseStatusCode.PARTIAL_CONTENT);
         Mockito.verify(ctx, Mockito.times(2)).writeAndFlush(Mockito.any());
 
-        writeInvoker.apply(rhc, ResponseStatusCode.PARTIAL_CONTENT);
+        writeInvoker.apply(context, ResponseStatusCode.PARTIAL_CONTENT);
         Mockito.verify(ctx, Mockito.times(3)).writeAndFlush(Mockito.any());
     }
 
     @Test
     public void shouldAllowAtMostOneFinalResponse() {
-        writeInvoker.apply(rhc, ResponseStatusCode.AUTHENTICATE);
+        writeInvoker.apply(context, ResponseStatusCode.AUTHENTICATE);
         Mockito.verify(ctx, Mockito.times(1)).writeAndFlush(Mockito.any());
 
-        writeInvoker.apply(rhc, ResponseStatusCode.SUCCESS);
+        writeInvoker.apply(context, ResponseStatusCode.SUCCESS);
         Mockito.verify(ctx, Mockito.times(2)).writeAndFlush(Mockito.any());
 
-        writeInvoker.apply(rhc, ResponseStatusCode.SERVER_ERROR_TIMEOUT);
+        writeInvoker.apply(context, ResponseStatusCode.SERVER_ERROR_TIMEOUT);
         assertTrue(recordingAppender.logContainsAny(".*" + request.getRequestId() + ".*"));
         assertTrue(recordingAppender.logContainsAny(".*" + ResponseStatusCode.SERVER_ERROR_TIMEOUT + "$"));
 
@@ -131,10 +130,10 @@ public class ResponseHandlerContextTest {
 
     @Test
     public void shouldNotAllowNonFinalMessagesAfterFinalResponse() {
-        writeInvoker.apply(rhc, ResponseStatusCode.SERVER_ERROR_TIMEOUT);
+        writeInvoker.apply(context, ResponseStatusCode.SERVER_ERROR_TIMEOUT);
         Mockito.verify(ctx, Mockito.times(1)).writeAndFlush(Mockito.any());
 
-        writeInvoker.apply(rhc, ResponseStatusCode.PARTIAL_CONTENT);
+        writeInvoker.apply(context, ResponseStatusCode.PARTIAL_CONTENT);
         assertTrue(recordingAppender.logContainsAny(".*" + request.getRequestId() + ".*"));
         assertTrue(recordingAppender.logContainsAny(".*" + ResponseStatusCode.PARTIAL_CONTENT + "$"));
 
@@ -144,11 +143,11 @@ public class ResponseHandlerContextTest {
 
     @Test
     public void shouldReleaseIgnoredFrames() {
-        writeInvoker.apply(rhc, ResponseStatusCode.SERVER_ERROR_TIMEOUT);
+        writeInvoker.apply(context, ResponseStatusCode.SERVER_ERROR_TIMEOUT);
         Mockito.verify(ctx, Mockito.times(1)).writeAndFlush(Mockito.any());
 
         Frame frame = Mockito.mock(Frame.class);
-        rhc.writeAndFlush(ResponseStatusCode.SUCCESS, frame);
+        context.writeAndFlush(ResponseStatusCode.SUCCESS, frame);
 
         assertTrue(recordingAppender.logContainsAny(".*" + request.getRequestId() + ".*"));
         assertTrue(recordingAppender.logContainsAny(".*" + ResponseStatusCode.SUCCESS + "$"));
