@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment;
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor;
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteException;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
+import org.apache.tinkerpop.gremlin.util.Gremlin;
 
 import javax.security.sasl.SaslException;
 import java.io.File;
@@ -54,6 +55,7 @@ import java.util.stream.Stream;
  */
 public class DriverRemoteAcceptor implements RemoteAcceptor {
     public static final int NO_TIMEOUT = 0;
+    public static final String USER_AGENT = "Gremlin Console/" + Gremlin.version();
 
     private Cluster currentCluster;
     private Client currentClient;
@@ -208,6 +210,8 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
             aliases.forEach(options::addAlias);
             if (timeout > NO_TIMEOUT)
                 options.timeout(timeout);
+
+            options.userAgent(USER_AGENT);
 
             final ResultSet rs = this.currentClient.submit(gremlin, options.create());
             final List<Result> results = rs.all().get();

@@ -80,6 +80,7 @@ public final class Tokens {
      */
     @Deprecated
     public static final String ARGS_SIDE_EFFECT_KEY = "sideEffectKey";
+    public static final String ARGS_USER_AGENT = "userAgent";
 
     /**
      * @deprecated As of release 3.3.8, not directly replaced in the protocol as side-effect retrieval after
