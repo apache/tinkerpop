@@ -453,6 +453,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug where client/server exception mismatch when server throw StackOverflowError
 * Prevent exception when closing a session that doesn't exist
 * Allow predicates and traversals to be used as options in `BranchStep`.
+* Ensure only a single final response is sent to the client with Gremlin Server.
+* Deprecated `ResponseHandlerContext` with related infrastructure and folded its functionality into `Context` in Gremlin Server.
 * Improved performance of `aggregate()` by avoiding excessive calls to `hasNext()` when the barrier is empty.
 
 [[release-3-3-7]]
