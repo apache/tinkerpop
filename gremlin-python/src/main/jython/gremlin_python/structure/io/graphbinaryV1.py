@@ -58,6 +58,8 @@ class DataType(Enum):
     double = 0x07
     float = 0x08
     list = 0x09
+    map = 0x0a
+    set = 0x0b
 
 
 class GraphBinaryTypeType(type):
@@ -311,3 +313,40 @@ class ListIO(_GraphBinaryTypeIO):
             size = size - 1
 
         return the_list
+
+
+class SetIO(ListIO):
+
+    python_type = SetType
+    graphbinary_type = DataType.set
+
+    @classmethod
+    def objectify(cls, buff, reader):
+        return set(ListIO.objectify(buff, reader))
+
+
+class MapIO(_GraphBinaryTypeIO):
+
+    python_type = dict
+    graphbinary_type = DataType.map
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        map_data = bytearray()
+        for k, v in obj.items():
+            map_data.extend(writer.writeObject(k))
+            map_data.extend(writer.writeObject(v))
+
+        return cls.as_bytes(cls.graphbinary_type, len(obj), map_data)
+
+    @classmethod
+    def objectify(cls, buff, reader):
+        size = cls.read_int(buff)
+        the_dict = {}
+        while size > 0:
+            k = reader.readObject(buff)
+            v = reader.readObject(buff)
+            the_dict[k] = v
+            size = size - 1
+
+        return the_dict

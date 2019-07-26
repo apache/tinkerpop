@@ -92,11 +92,30 @@ class TestGraphSONWriter(object):
         assert x == output
 
     def test_homogeneous_list(self):
-        x = ["serialize this!", "serialize that!", "stop telling me what to serialize"]
+        x = ["serialize this!", "serialize that!", "serialize that!","stop telling me what to serialize"]
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
         assert x == output
 
     def test_heterogeneous_list(self):
-        x = ["serialize this!", 0, "serialize that!", 1, "stop telling me what to serialize", 2]
+        x = ["serialize this!", 0, "serialize that!", "serialize that!", 1, "stop telling me what to serialize", 2]
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output
+
+    def test_homogeneous_set(self):
+        x = {"serialize this!", "serialize that!", "stop telling me what to serialize"}
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output
+
+    def test_heterogeneous_set(self):
+        x = {"serialize this!", 0, "serialize that!", 1, "stop telling me what to serialize", 2}
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output
+
+    def test_dict(self):
+        x = {"yo": "what?",
+             "go": "no!",
+             "number": 123,
+             321: "crazy with the number for a key",
+             987: ["go", "deep", {"here": "!"}]}
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
         assert x == output
