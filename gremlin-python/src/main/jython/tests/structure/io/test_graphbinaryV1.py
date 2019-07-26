@@ -54,6 +54,28 @@ class TestGraphSONWriter(object):
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
         assert x == output
 
+    def test_float(self):
+        x = float(100.001)
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output
+
+        x = float('nan')
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert math.isnan(output)
+
+        x = float('-inf')
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert math.isinf(output) and output < 0
+
+        x = float('inf')
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert math.isinf(output) and output > 0
+
+    def test_double(self):
+        x = 100.001
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output
+
     def test_date(self):
         x = calendar.timegm(datetime.datetime(2016, 12, 14, 16, 14, 36, 295000).utctimetuple())
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))

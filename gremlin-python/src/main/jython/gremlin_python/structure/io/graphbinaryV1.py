@@ -54,6 +54,9 @@ class DataType(Enum):
     string = 0x03
     date = 0x04
     timestamp = 0x05
+    clazz = 0x06
+    double = 0x07
+    float = 0x08
     list = 0x09
 
 
@@ -123,8 +126,8 @@ class _GraphBinaryTypeIO(object):
                  "set_": "set", "list_": "list", "all_": "all", "with_": "with"}
 
     @classmethod
-    def as_bytes(cls, graphbin_type, size=None, *args):
-        ba = bytearray([graphbin_type.value])
+    def as_bytes(cls, graphbin_type=None, size=None, *args):
+        ba = bytearray() if graphbin_type is None else bytearray([graphbin_type.value])
         if size is not None:
             ba.extend(struct.pack(">i", size))
 
@@ -216,6 +219,60 @@ class TimestampIO(_GraphBinaryTypeIO):
     def objectify(cls, buff, reader):
         # Python timestamp expects seconds
         return statics.timestamp(struct.unpack(">q", buff.read(8))[0] / 1000.0)
+
+
+def _long_bits_to_double(bits):
+    return struct.unpack('d', struct.pack('Q', bits))[0]
+
+
+NAN = _long_bits_to_double(0x7ff8000000000000)
+POSITIVE_INFINITY = _long_bits_to_double(0x7ff0000000000000)
+NEGATIVE_INFINITY = _long_bits_to_double(0xFff0000000000000)
+
+
+class FloatIO(LongIO):
+
+    python_type = FloatType
+    graphbinary_type = DataType.float
+    graphbinary_base_type = DataType.float
+    byte_format = ">f"
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        if math.isnan(obj):
+            return cls.as_bytes(cls.graphbinary_base_type, None, struct.pack(cls.byte_format, NAN))
+        elif math.isinf(obj) and obj > 0:
+            return cls.as_bytes(cls.graphbinary_base_type, None, struct.pack(cls.byte_format, POSITIVE_INFINITY))
+        elif math.isinf(obj) and obj < 0:
+            return cls.as_bytes(cls.graphbinary_base_type, None, struct.pack(cls.byte_format, NEGATIVE_INFINITY))
+        else:
+            return cls.as_bytes(cls.graphbinary_base_type, None, struct.pack(cls.byte_format, obj))
+
+    @classmethod
+    def objectify(cls, buff, reader):
+        return struct.unpack(cls.byte_format, buff.read(4))[0]
+
+
+class DoubleIO(FloatIO):
+    """
+    Floats basically just fall through to double serialization.
+    """
+    
+    graphbinary_type = DataType.double
+    graphbinary_base_type = DataType.double
+    byte_format = ">d"
+
+    @classmethod
+    def objectify(cls, buff, reader):
+        return struct.unpack(cls.byte_format, buff.read(8))[0]
+
+
+class TypeSerializer(_GraphBinaryTypeIO):
+    python_type = TypeType
+
+    @classmethod
+    def dictify(cls, typ, writer):
+        return writer.toDict(typ())
 
 
 class StringIO(_GraphBinaryTypeIO):
