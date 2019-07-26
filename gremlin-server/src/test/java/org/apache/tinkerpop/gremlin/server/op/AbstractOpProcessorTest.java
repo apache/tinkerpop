@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.server.op;
 
-import io.netty.channel.ChannelHandlerContext;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.server.Context;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -30,31 +30,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 public class AbstractOpProcessorTest {
-
     @Test
-    public void deprecatedMakeFrameMethodShouldRedirectCorrectly() throws Exception {
-        final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
+    public void makeFrameMethodTest() throws Exception {
         final RequestMessage request = RequestMessage.build("test").create();
-        final ArgumentCaptor<ResponseMessage> responseCaptor = ArgumentCaptor.forClass(ResponseMessage.class);
+        final Context ctx = Mockito.mock(Context.class);
 
-        try {
-            // Induce a NullPointerException to validate error response message writing
-            //noinspection deprecation
-            AbstractOpProcessor.makeFrame(ctx, request, null, true, null, ResponseStatusCode.PARTIAL_CONTENT);
-            fail("Expected a NullPointerException");
-        } catch (NullPointerException expected) {
-            // nop
-        }
-
-        Mockito.verify(ctx, Mockito.times(1)).writeAndFlush(responseCaptor.capture());
-        assertEquals(ResponseStatusCode.SERVER_ERROR_SERIALIZATION, responseCaptor.getValue().getStatus().getCode());
-        assertEquals(request.getRequestId(), responseCaptor.getValue().getRequestId());
-    }
-
-    @Test
-    public void alternativeMakeFrameMethodShouldRedirectCorrectly() throws Exception {
-        final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
-        final RequestMessage request = RequestMessage.build("test").create();
         final ArgumentCaptor<ResponseMessage> responseCaptor = ArgumentCaptor.forClass(ResponseMessage.class);
 
         try {

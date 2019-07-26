@@ -36,7 +36,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * {@link ResponseHandlerContext} is used by all threads writing response messages for the same request.</p>
  *
  * @author Dmitri Bourlatchkov
+ * @deprecated As of release 3.3.8, replaced by {@link Context}.
  */
+@Deprecated
 public class ResponseHandlerContext {
     private static final Logger logger = LoggerFactory.getLogger(ResponseHandlerContext.class);
 

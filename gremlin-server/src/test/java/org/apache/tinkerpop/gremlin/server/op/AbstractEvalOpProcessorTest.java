@@ -33,6 +33,8 @@ import org.mockito.Mockito;
 
 import javax.script.SimpleBindings;
 
+import java.util.concurrent.CompletableFuture;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyString;
@@ -48,14 +50,17 @@ public class AbstractEvalOpProcessorTest {
         final ArgumentCaptor<ResponseMessage> responseCaptor = ArgumentCaptor.forClass(ResponseMessage.class);
 
         final GremlinExecutor gremlinExecutor = Mockito.mock(GremlinExecutor.class);
+        final CompletableFuture<Object> exFut = new CompletableFuture<>();
         Mockito.when(gremlinExecutor.eval(anyString(), anyString(), Mockito.any(), Mockito.<GremlinExecutor.LifeCycle>any()))
-                .thenThrow(new IllegalStateException("test-exception"));
+                .thenReturn(exFut);
+        exFut.completeExceptionally(new IllegalStateException("test-exception"));
 
-        final Context context = new Context(request, ctx, settings, null, gremlinExecutor, null);
-        processor.evalOpInternal(context, context::getGremlinExecutor, SimpleBindings::new);
+        final Context contextspy = Mockito.spy(new Context(request, ctx, settings, null, gremlinExecutor, null));
 
-        Mockito.verify(ctx, Mockito.times(1)).writeAndFlush(responseCaptor.capture());
-        assertEquals(ResponseStatusCode.SERVER_ERROR, responseCaptor.getValue().getStatus().getCode());
+        processor.evalOpInternal(contextspy, contextspy::getGremlinExecutor, SimpleBindings::new);
+
+        Mockito.verify(contextspy, Mockito.times(1)).writeAndFlush(responseCaptor.capture());
+        assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, responseCaptor.getValue().getStatus().getCode());
         assertEquals(request.getRequestId(), responseCaptor.getValue().getRequestId());
         assertThat(responseCaptor.getValue().getStatus().getMessage(), CoreMatchers.containsString("test-exception"));
     }
