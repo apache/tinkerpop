@@ -124,6 +124,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
     /**
      * Session based requests accept a "close" operator in addition to "eval". A close will trigger the session to be
      * killed and any uncommitted transaction to be rolled-back.
+     * @return
      */
     @Override
     public Optional<ThrowingConsumer<Context>> selectOther(final RequestMessage requestMessage) throws OpProcessorException {
@@ -136,14 +137,14 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
 
             final boolean force = requestMessage.<Boolean>optionalArgs(Tokens.ARGS_FORCE).orElse(false);
 
-            return Optional.of(ctx -> {
+            return Optional.of(rhc -> {
                 final Session sessionToClose = sessions.get(requestMessage.getArgs().get(Tokens.ARGS_SESSION).toString());
                 if (null != sessionToClose) {
                     sessionToClose.manualKill(force);
                 }
 
                 // send back a confirmation of the close
-                ctx.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(requestMessage)
+                rhc.writeAndFlush(ResponseMessage.build(requestMessage)
                         .code(ResponseStatusCode.NO_CONTENT)
                         .create());
             });
@@ -213,8 +214,8 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
     /**
      * A useful method for those extending this class, where the means for binding construction can be supplied
      * to this class.  This function is used in {@link #evalOp(Context)} to create the final argument to
-     * {@link AbstractEvalOpProcessor#evalOpInternal(Context, Supplier, org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor.BindingSupplier)}.
-     * In this way an extending class can use the default {@link org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor.BindingSupplier}
+     * {@link AbstractEvalOpProcessor#evalOpInternal(Context, Supplier, BindingSupplier)}.
+     * In this way an extending class can use the default {@link AbstractEvalOpProcessor.BindingSupplier}
      * which carries a lot of re-usable functionality or provide a new one to override the existing approach.
      */
     protected Function<Context, BindingSupplier> getBindingMaker(final Session session) {

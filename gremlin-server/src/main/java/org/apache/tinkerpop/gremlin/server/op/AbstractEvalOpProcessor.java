@@ -29,11 +29,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.server.OpProcessor;
+import org.apache.tinkerpop.gremlin.server.ResponseHandlerContext;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
-import org.apache.tinkerpop.gremlin.server.ResponseHandlerContext;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
@@ -125,12 +126,14 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
 
     /**
      * Provides an operation for evaluating a Gremlin script.
+     * @return
      */
     public abstract ThrowingConsumer<Context> getEvalOp();
 
     /**
-     * A sub-class may have additional "ops" that it will service.  Calls to {@link #select(Context)} that are not
+     * A sub-class may have additional "ops" that it will service.  Calls to {@link OpProcessor#select(Context)} that are not
      * handled will be passed to this method to see if the sub-class can service the requested op code.
+     * @return
      */
     public abstract Optional<ThrowingConsumer<Context>> selectOther(final RequestMessage requestMessage) throws OpProcessorException;
 
@@ -188,48 +191,33 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
     }
 
     /**
-     * A generalized implementation of the "eval" operation.  It handles script evaluation and iteration of results
-     * so as to write {@link ResponseMessage} objects down the Netty pipeline.  It also handles script timeouts,
-     * iteration timeouts, metrics and building bindings.  Note that result iteration is delegated to the
-     * {@link #handleIterator} method, so those extending this class could override that method for better control
-     * over result iteration.
-     *
-     * @param context The current Gremlin Server {@link Context}
-     * @param gremlinExecutorSupplier A function that returns the {@link GremlinExecutor} to use in executing the
-     *                                script evaluation.
-     * @param bindingsSupplier A function that returns the {@link Bindings} to provide to the
-     *                         {@link GremlinExecutor#eval} method.
-     * @see #evalOpInternal(ResponseHandlerContext, Supplier, BindingSupplier)
+     * @deprecated As of release 3.3.8, replaced by {@link #evalOpInternal(Context, Supplier, BindingSupplier)}.
      */
-    protected void evalOpInternal(final Context context, final Supplier<GremlinExecutor> gremlinExecutorSupplier,
+    @Deprecated
+    protected void evalOpInternal(final ResponseHandlerContext ctx, final Supplier<GremlinExecutor> gremlinExecutorSupplier,
                                   final BindingSupplier bindingsSupplier) throws OpProcessorException {
-        final ResponseHandlerContext rhc = new ResponseHandlerContext(context);
-        try {
-            evalOpInternal(rhc, gremlinExecutorSupplier, bindingsSupplier);
-        } catch (Exception ex) {
-            // Exceptions may occur on after the script started executing, therefore corresponding errors must be
-            // reported via the ResponseHandlerContext.
-            logger.warn("Unable to process script evaluation request: " + ex, ex);
-            rhc.writeAndFlush(ResponseMessage.build(context.getRequestMessage())
-                    .code(ResponseStatusCode.SERVER_ERROR)
-                    .statusAttributeException(ex)
-                    .statusMessage(ex.getMessage()).create());
-        }
+        evalOpInternal(ctx.getContext(), gremlinExecutorSupplier, bindingsSupplier);
     }
 
     /**
-     * A variant of {@link #evalOpInternal(Context, Supplier, BindingSupplier)} that is suitable for use in situations
-     * when multiple threads may produce {@link ResponseStatusCode#isFinalResponse() final} response messages
-     * concurrently.
-     * @see #evalOpInternal(Context, Supplier, BindingSupplier)
+     * A generalized implementation of the "eval" operation.  It handles script evaluation and iteration of results
+     * so as to write {@link ResponseMessage} objects down the Netty pipeline.  It also handles script timeouts,
+     * iteration timeouts, metrics and building bindings.  Note that result iteration is delegated to the
+     * {@link #handleIterator(Context, Iterator)} method, so those extending this class could override that method for
+     * better control over result iteration.
+     * @param ctx The current Gremlin Server {@link Context}. This handler ensures that only a single final
+     *            response is sent to the client.
+     * @param gremlinExecutorSupplier A function that returns the {@link GremlinExecutor} to use in executing the
+     *                                script evaluation.
+     * @param bindingsSupplier A function that returns the {@link Bindings} to provide to the
+ *                         {@link GremlinExecutor#eval} method.
      */
-    protected void evalOpInternal(final ResponseHandlerContext rhc, final Supplier<GremlinExecutor> gremlinExecutorSupplier,
+    protected void evalOpInternal(final Context ctx, final Supplier<GremlinExecutor> gremlinExecutorSupplier,
                                   final BindingSupplier bindingsSupplier) throws OpProcessorException {
-        final Context context = rhc.getContext();
         final Timer.Context timerContext = evalOpTimer.time();
-        final RequestMessage msg = context.getRequestMessage();
+        final RequestMessage msg = ctx.getRequestMessage();
         final GremlinExecutor gremlinExecutor = gremlinExecutorSupplier.get();
-        final Settings settings = context.getSettings();
+        final Settings settings = ctx.getSettings();
 
         final Map<String, Object> args = msg.getArgs();
 
@@ -250,7 +238,7 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
         final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build()
                 .scriptEvaluationTimeoutOverride(seto)
                 .afterFailure((b,t) -> {
-                    if (managedTransactionsForRequest) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
+                    if (managedTransactionsForRequest) attemptRollback(msg, ctx.getGraphManager(), settings.strictTransactionManagement);
                 })
                 .beforeEval(b -> {
                     try {
@@ -266,15 +254,15 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
 
                     logger.debug("Preparing to iterate results from - {} - in thread [{}]", msg, Thread.currentThread().getName());
                     if (settings.authentication.enableAuditLog) {
-                        String address = context.getChannelHandlerContext().channel().remoteAddress().toString();
+                        String address = ctx.getChannelHandlerContext().channel().remoteAddress().toString();
                         if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
                         auditLogger.info("User with address {} requested: {}", address, script);
                     }
 
                     try {
-                        handleIterator(rhc, itty);
+                        handleIterator(ctx, itty);
                     } catch (Exception ex) {
-                        if (managedTransactionsForRequest) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
+                        if (managedTransactionsForRequest) attemptRollback(msg, ctx.getGraphManager(), settings.strictTransactionManagement);
 
                         // wrap up the exception and rethrow. the error will be written to the client by the evalFuture
                         // as it will completeExceptionally in the GremlinExecutor
@@ -289,20 +277,20 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
 
             if (t != null) {
                 if (t instanceof OpProcessorException) {
-                    rhc.writeAndFlush(((OpProcessorException) t).getResponseMessage());
+                    ctx.writeAndFlush(((OpProcessorException) t).getResponseMessage());
                 } else if (t instanceof TimedInterruptTimeoutException) {
                     // occurs when the TimedInterruptCustomizerProvider is in play
                     final String errorMessage = String.format("A timeout occurred within the script during evaluation of [%s] - consider increasing the limit given to TimedInterruptCustomizerProvider", msg);
                     logger.warn(errorMessage);
-                    rhc.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
-                            .statusMessage("Timeout during script evaluation triggered by TimedInterruptCustomizerProvider")
-                            .statusAttributeException(t).create());
+                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
+                                                     .statusMessage("Timeout during script evaluation triggered by TimedInterruptCustomizerProvider")
+                                                     .statusAttributeException(t).create());
                 } else if (t instanceof TimeoutException) {
                     final String errorMessage = String.format("Script evaluation exceeded the configured threshold for request [%s]", msg);
                     logger.warn(errorMessage, t);
-                    rhc.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
-                            .statusMessage(t.getMessage())
-                            .statusAttributeException(t).create());
+                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
+                                                     .statusMessage(t.getMessage())
+                                                     .statusAttributeException(t).create());
                 } else {
                     // try to trap the specific jvm error of "Method code too large!" to re-write it as something nicer,
                     // but only re-write if it's the only error because otherwise we might lose some other important
@@ -314,15 +302,15 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                             ((MultipleCompilationErrorsException) t).getErrorCollector().getErrorCount() == 1) {
                         final String errorMessage = String.format("The Gremlin statement that was submitted exceeds the maximum compilation size allowed by the JVM, please split it into multiple smaller statements - %s", trimMessage(msg));
                         logger.warn(errorMessage);
-                        rhc.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION)
-                                .statusMessage(errorMessage)
-                                .statusAttributeException(t).create());
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION)
+                                                         .statusMessage(errorMessage)
+                                                         .statusAttributeException(t).create());
                     } else {
                         final String errorMessage =  (t.getMessage() == null) ? t.toString() : t.getMessage();
                         logger.warn(String.format("Exception processing a script on request [%s].", msg), t);
-                        rhc.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION)
-                                .statusMessage(errorMessage)
-                                .statusAttributeException(t).create());
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION)
+                                                         .statusMessage(errorMessage)
+                                                         .statusAttributeException(t).create());
                     }
                 }
             }

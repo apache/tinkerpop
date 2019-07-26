@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.server.op;
 
-import io.netty.channel.ChannelHandlerContext;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.server.Context;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -32,9 +32,10 @@ import static org.junit.Assert.fail;
 public class AbstractOpProcessorTest {
 
     @Test
-    public void alternativeMakeFrameMethodShouldRedirectCorrectly() throws Exception {
-        final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
+    public void makeFrameMethodTest() throws Exception {
         final RequestMessage request = RequestMessage.build("test").create();
+        final Context ctx = Mockito.mock(Context.class);
+
         final ArgumentCaptor<ResponseMessage> responseCaptor = ArgumentCaptor.forClass(ResponseMessage.class);
 
         try {

@@ -40,7 +40,7 @@ import java.util.function.BiFunction;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
-public class ResponseHandlerContextTest {
+public class ContextTest {
 
     @Parameterized.Parameter(value = 0)
     public BiFunction<Context, ResponseStatusCode, Void> writeInvoker;
@@ -55,33 +55,33 @@ public class ResponseHandlerContextTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][] {
-            {
-                new BiFunction<Context, ResponseStatusCode, Void>() {
-                    @Override
-                    public Void apply(final Context context, final ResponseStatusCode code) {
-                        context.writeAndFlush(code, "testMessage");
-                        return null;
-                    }
+                {
+                    new BiFunction<Context, ResponseStatusCode, Void>() {
+                        @Override
+                        public Void apply(final Context context, final ResponseStatusCode code) {
+                            context.writeAndFlush(code, "testMessage");
+                            return null;
+                        }
 
-                    @Override
-                    public String toString() {
-                        return "writeAndFlush(ResponseStatusCode, Object)";
+                        @Override
+                        public String toString() {
+                            return "writeAndFlush(ResponseStatusCode, Object)";
+                        }
                     }
-                }
-            }, {
-                new BiFunction<Context, ResponseStatusCode, Void>() {
-                    @Override
-                    public Void apply(final Context context, final ResponseStatusCode code) {
-                        context.writeAndFlush(ResponseMessage.build(UUID.randomUUID()).code(code).create());
-                        return null;
-                    }
+                }, {
+                    new BiFunction<Context, ResponseStatusCode, Void>() {
+                        @Override
+                        public Void apply(final Context context, final ResponseStatusCode code) {
+                            context.writeAndFlush(ResponseMessage.build(UUID.randomUUID()).code(code).create());
+                            return null;
+                        }
 
-                    @Override
-                    public String toString() {
-                        return "writeAndFlush(ResponseMessage)";
+                        @Override
+                        public String toString() {
+                            return "writeAndFlush(ResponseMessage)";
+                        }
                     }
-                }
-            },
+                },
         });
     }
 
