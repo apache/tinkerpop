@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 """
 import datetime
+import calendar
 import struct
 import time
 import uuid
@@ -185,15 +186,13 @@ class DateIO(_GraphBinaryTypeIO):
 
     @classmethod
     def dictify(cls, obj, writer):
-        if six.PY3:
-            pts = (obj - datetime.datetime(1970, 1, 1)) / datetime.timedelta(seconds=1)
-        else:
-            # Hack for legacy Python - timestamp() in Python 3.3
-            pts = (time.mktime(obj.timetuple()) + obj.microsecond / 1e6) - \
-                  (time.mktime(datetime.datetime(1970, 1, 1).timetuple()))
-
-        # Java timestamp expects milliseconds - have to use int because of legacy Python
-        ts = int(round(pts * 1000))
+        try:
+            timestamp_seconds = calendar.timegm(obj.utctimetuple())
+            pts = timestamp_seconds * 1e3 + getattr(obj, 'microsecond', 0) / 1e3
+        except AttributeError:
+            pts = calendar.timegm(obj.timetuple()) * 1e3
+            
+        ts = int(round(pts * 100))
         return cls.as_bytes(cls.graphbinary_type, None, struct.pack(">q", ts))
 
     @classmethod
