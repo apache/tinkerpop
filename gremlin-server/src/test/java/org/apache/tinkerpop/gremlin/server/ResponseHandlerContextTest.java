@@ -55,20 +55,20 @@ public class ResponseHandlerContextTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                {
-                        new BiFunction<Context, ResponseStatusCode, Void>() {
-                            @Override
-                            public Void apply(final Context context, final ResponseStatusCode code) {
-                                context.writeAndFlush(code, "testMessage");
-                                return null;
-                            }
+            {
+                new BiFunction<Context, ResponseStatusCode, Void>() {
+                    @Override
+                    public Void apply(final Context context, final ResponseStatusCode code) {
+                        context.writeAndFlush(code, "testMessage");
+                        return null;
+                    }
 
-                            @Override
-                            public String toString() {
-                                return "writeAndFlush(ResponseStatusCode, Object)";
-                            }
-                        }
-                }, {
+                    @Override
+                    public String toString() {
+                        return "writeAndFlush(ResponseStatusCode, Object)";
+                    }
+                }
+            }, {
                 new BiFunction<Context, ResponseStatusCode, Void>() {
                     @Override
                     public Void apply(final Context context, final ResponseStatusCode code) {
@@ -81,7 +81,7 @@ public class ResponseHandlerContextTest {
                         return "writeAndFlush(ResponseMessage)";
                     }
                 }
-        },
+            },
         });
     }
 
