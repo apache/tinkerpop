@@ -35,6 +35,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Removed previously deprecated `Serializers.DEFAULT_RESULT_SERIALIZER` and `Serializers.DEFAULT_REQUEST_SERIALIZER`.
 * Removed previously deprecated `decr` and `incr` from `Order`.
 * Removed previously deprecated `TraversalSource.withRemote()`.
+* Removed previously deprecated `ResponseHandlerContext` infrastructure.
 * Removed previously deprecated `VertexProgram` related infrastructure.
 * Removed previously deprecated SSL settings: `keyCertChainFile`, `keyFile`, `keyPassword` and `trustCertChainFile` and related infrastructure.
 * Removed previously deprecated `PropertyMapStep` constructor and `isIncludeTokens`.

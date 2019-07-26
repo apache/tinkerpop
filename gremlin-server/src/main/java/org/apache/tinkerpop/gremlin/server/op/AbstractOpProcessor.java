@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
-import org.apache.tinkerpop.gremlin.server.ResponseHandlerContext;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.handler.Frame;
 import org.apache.tinkerpop.gremlin.server.handler.StateKey;
@@ -61,14 +60,6 @@ public abstract class AbstractOpProcessor implements OpProcessor {
 
     protected AbstractOpProcessor(final boolean manageTransactions) {
         this.manageTransactions = manageTransactions;
-    }
-
-    /**
-     * @deprecated As of release 3.3.8, not replaced.
-     */
-    @Deprecated
-    protected void handleIterator(final ResponseHandlerContext rhc, final Iterator itty) throws InterruptedException {
-        handleIterator(rhc.getContext(), itty);
     }
 
     /**
@@ -259,50 +250,6 @@ public abstract class AbstractOpProcessor implements OpProcessor {
         metaData.put(Tokens.ARGS_HOST, ctx.channel().remoteAddress().toString());
 
         return metaData;
-    }
-
-    /**
-     * @deprecated As of release 3.3.8, replaced by {@link #makeFrame(Context, RequestMessage, MessageSerializer, boolean, List, ResponseStatusCode, Map)}.
-     */
-    @Deprecated
-    protected static Frame makeFrame(final ChannelHandlerContext ctx, final RequestMessage msg,
-                                     final MessageSerializer serializer, final boolean useBinary, final List<Object> aggregate,
-                                     final ResponseStatusCode code, final Map<String,Object> responseMetaData,
-                                     final Map<String,Object> statusAttributes) throws Exception {
-        final Context context = new Context(msg, ctx, null, null, null, null); // dummy context, good only for writing response messages to the channel
-        final ResponseHandlerContext rhc = new ResponseHandlerContext(context);
-        return makeFrame(rhc, msg, serializer, useBinary, aggregate, code, responseMetaData, statusAttributes);
-    }
-
-    /**
-     * @deprecated As of release 3.3.8, replaced by {@link #makeFrame(Context, RequestMessage, MessageSerializer, boolean, List, ResponseStatusCode, Map)}.
-     */
-    @Deprecated
-    protected static Frame makeFrame(final ResponseHandlerContext rhc, final RequestMessage msg,
-                                     final MessageSerializer serializer, final boolean useBinary, final List<Object> aggregate,
-                                     final ResponseStatusCode code, final Map<String,Object> responseMetaData) throws Exception {
-        return makeFrame(rhc.getContext(), msg, serializer, useBinary,aggregate, code, responseMetaData);
-    }
-
-    /**
-     * @deprecated As of release 3.3.8, replaced by {@link #makeFrame(Context, RequestMessage, MessageSerializer, boolean, List, ResponseStatusCode, Map)}.
-     */
-    @Deprecated
-    protected static Frame makeFrame(final ResponseHandlerContext rhc, final RequestMessage msg,
-                                     final MessageSerializer serializer, final boolean useBinary, final List<Object> aggregate,
-                                     final ResponseStatusCode code, final Map<String,Object> responseMetaData,
-                                     final Map<String,Object> statusAttributes) throws Exception {
-        return makeFrame(rhc.getContext(), msg, serializer, useBinary,aggregate, code, responseMetaData, statusAttributes);
-    }
-
-    /**
-     * @deprecated As of release 3.4.3, replaced by {@link #makeFrame(Context, RequestMessage, MessageSerializer, boolean, List, ResponseStatusCode, Map)}.
-     */
-    @Deprecated
-    protected static Frame makeFrame(final Context ctx, final RequestMessage msg,
-                                     final MessageSerializer serializer, final boolean useBinary, final List<Object> aggregate,
-                                     final ResponseStatusCode code, final Map<String,Object> responseMetaData) throws Exception {
-        return makeFrame(ctx, msg, serializer, useBinary,aggregate, code, responseMetaData, Collections.emptyMap());
     }
 
     protected static Frame makeFrame(final Context ctx, final RequestMessage msg,
