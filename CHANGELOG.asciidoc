@@ -39,6 +39,7 @@ This release also includes changes from <<release-3-3-8, 3.3.8>>.
 * Bump to Groovy 2.5.7.
 * Added `userAgent` to RequestOptions. Gremlin Console sends `Gremlin Console/<version>` as the `userAgent`.
 * Fixed DriverRemoteConnection ignoring `with` `Token` options when multiple were set.
+* Added `:set warnings <true|false>` to Gremlin Console.
 
 [[release-3-4-2]]
 === TinkerPop 3.4.2 (Release Date: May 28, 2019)

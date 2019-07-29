@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.console
 
+import org.apache.tinkerpop.gremlin.console.Preferences;
 import org.apache.tinkerpop.gremlin.jsr223.BindingsCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer
@@ -101,6 +102,9 @@ class PluggedIn {
 
         @Override
         void errPrintln(final String line) {
+            if (!Preferences.warnings) {
+                return;
+            }
             io.err.println("[warn] " + line);
         }
 
