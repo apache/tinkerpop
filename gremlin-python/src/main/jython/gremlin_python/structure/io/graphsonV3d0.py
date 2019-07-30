@@ -146,7 +146,8 @@ class _GraphSONTypeIO(object):
 
     symbolMap = {"global_": "global", "as_": "as", "in_": "in", "and_": "and",
                  "or_": "or", "is_": "is", "not_": "not", "from_": "from",
-                 "set_": "set", "list_": "list", "all_": "all"}
+                 "set_": "set", "list_": "list", "all_": "all",
+                 "filter_": "filter", "id_": "id", "max_": "max", "min_": "min", "sum_": "sum"}
 
     @classmethod
     def unmangleKeyword(cls, symbol):
