@@ -114,43 +114,6 @@ graph.close()
 <5> Find all vertices whose name is Garcia which requires a linear scan of all the data in the graph.
 <6> Drop the created index.
 
-=== Multi/Meta-Properties
-
-`Neo4jGraph` supports both multi- and meta-properties (see <<vertex-properties,vertex properties>>). These features
-are not native to Neo4j and are implemented using "hidden" Neo4j nodes. For example, when a vertex has multiple
-"name" properties, each property is a new node (multi-properties) which can have properties attached to it
-(meta-properties). As such, the native, underlying representation may become difficult to query directly using
-another graph language such as <<_cypher,Cypher>>. The default setting is to disable multi- and meta-properties.
-However, if this feature is desired, then it can be activated via `gremlin.neo4j.metaProperties` and
-`gremlin.neo4j.multiProperties` configurations being set to `true`. Once the configuration is set, it can not be
-changed for the lifetime of the graph.
-
-[gremlin-groovy]
-----
-conf = new BaseConfiguration()
-conf.setProperty('gremlin.neo4j.directory','/tmp/neo4j')
-conf.setProperty('gremlin.neo4j.multiProperties',true)
-conf.setProperty('gremlin.neo4j.metaProperties',true)
-graph = Neo4jGraph.open(conf)
-g = graph.traversal()
-g.addV().property('name','michael').property('name','michael hunger').property('name','mhunger')
-g.V().properties('name').property('acl', 'public')
-g.V(0).valueMap()
-g.V(0).properties()
-g.V(0).properties().valueMap()
-graph.close()
-----
-
-WARNING: `Neo4jGraph` without multi- and meta-properties is in 1-to-1 correspondence with the native, underlying Neo4j
-representation. It is recommended that if the user does not require multi/meta-properties, then they should not
-enable them. Without multi- and meta-properties enabled, Neo4j can be interacted with with other tools and technologies
-that do not leverage TinkerPop.
-
-IMPORTANT: When using a multi-property enabled `Neo4jGraph`, vertices may represent their properties on "hidden
-nodes" adjacent to the vertex. If a vertex property key/value is required for indexing, then two indices are
-required -- e.g. `CREATE INDEX ON :person(name)` and `CREATE INDEX ON :vertexProperty(name)`
-(see <<_indices,Neo4j indices>>).
-
 === Cypher
 
 image::gremlin-loves-cypher.png[width=400]

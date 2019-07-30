@@ -42,7 +42,9 @@ import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @deprecated As of release 3.3.8, not replaced.
  */
+@Deprecated
 public final class NoMultiNoMetaNeo4jTrait implements Neo4jTrait {
 
     private static final NoMultiNoMetaNeo4jTrait INSTANCE = new NoMultiNoMetaNeo4jTrait();
