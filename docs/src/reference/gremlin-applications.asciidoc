@@ -216,6 +216,7 @@ Preferences are set with `:set name value`.  Values can contain spaces when quot
 |Preference |Type |Description
 |max-iteration | int | Controls the maximum number of results that the Console will display. Default: 100 results.
 |colors | bool | Enable ANSI color rendering. Default: true
+|warnings | bool | Enable display of remote execution warnings. Default: true
 |gremlin.color | colors | Color of the ASCII art gremlin on startup.
 |info.color | colors | Color of "info" type messages.
 |error.color | colors | Color of "error" type messages.
