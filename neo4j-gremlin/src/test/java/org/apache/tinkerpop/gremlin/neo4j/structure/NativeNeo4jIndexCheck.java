@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.neo4j.structure;
 
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.neo4j.AbstractNeo4jGremlinTest;
-import org.apache.tinkerpop.gremlin.neo4j.structure.trait.MultiMetaNeo4jTrait;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -72,47 +71,6 @@ public class NativeNeo4jIndexCheck extends AbstractNeo4jGremlinTest {
         final double noIndexTime = TimeUtil.clock(20, traversal);
         // index time
         neo4j.cypher("CREATE INDEX ON :something(myId)").iterate();
-        this.graph.tx().commit();
-        this.graph.tx().readWrite();
-        Thread.sleep(5000); // wait for indices to be built
-        assertTrue(this.getBaseGraph().hasSchemaIndex("something", "myId"));
-        TimeUtil.clock(20, traversal);
-        final double indexTime = TimeUtil.clock(20, traversal);
-        logger.info("Query time (no-index vs. index): {}", noIndexTime + " vs. {}", indexTime);
-        assertTrue((noIndexTime / 10) > indexTime); // should be at least 10x faster
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
-    public void shouldHaveFasterRuntimeWithLabelKeyValueIndexOnMultiProperties() throws Exception {
-        final Neo4jGraph neo4j = (Neo4jGraph) this.graph;
-        int maxVertices = 10000;
-        for (int i = 0; i < maxVertices; i++) {
-            if (i % 2 == 0)
-                this.graph.addVertex(T.label, "something", "myId", i, "myId", i + maxVertices + 1);
-            else
-                this.graph.addVertex(T.label, "nothing", "myId", i, "myId", i + maxVertices + 1);
-        }
-        this.graph.tx().commit();
-
-        // traversal
-        final Runnable traversal = () -> {
-            final Traversal<Vertex, Vertex> t = g.V().hasLabel("something").has("myId", 2000 + maxVertices + 1);
-            final Vertex vertex = t.tryNext().get();
-            assertFalse(t.hasNext());
-            assertEquals(2, IteratorUtils.count(vertex.properties("myId")));
-            assertEquals("something", vertex.label());
-        };
-
-        // no index
-        this.graph.tx().readWrite();
-        assertFalse(this.getBaseGraph().hasSchemaIndex("something", "myId"));
-        TimeUtil.clock(20, traversal);
-        final double noIndexTime = TimeUtil.clock(20, traversal);
-        // index time
-        neo4j.cypher("CREATE INDEX ON :something(myId)").iterate();
-        neo4j.cypher("CREATE INDEX ON :vertexProperty(myId)").iterate();
         this.graph.tx().commit();
         this.graph.tx().readWrite();
         Thread.sleep(5000); // wait for indices to be built
@@ -286,61 +244,6 @@ public class NativeNeo4jIndexCheck extends AbstractNeo4jGremlinTest {
         assertEquals(1, this.g.V().has("Person", "name", "marko").count().next(), 0);
         assertEquals(3, this.g.V().has(T.label, "Person").count().next(), 0);
         assertEquals(1, this.g.V().has(T.label, "Person").has("name", "marko").count().next(), 0);
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
-    public void shouldSupportVertexPropertyToVertexMappingOnIndexCalls() {
-        graph.tx().readWrite();
-        this.getBaseGraph().execute("CREATE INDEX ON :person(name)", null);
-//            this.graph.getBaseGraph().execute("CREATE INDEX ON :name(" + T.value.getAccessor() + ")", null);
-        this.graph.tx().commit();
-
-        final Vertex a = graph.addVertex(T.label, "person", "name", "marko", "age", 34);
-        a.property(VertexProperty.Cardinality.list, "name", "okram");
-        a.property(VertexProperty.Cardinality.list, "name", "marko a. rodriguez");
-        final Vertex b = graph.addVertex(T.label, "person", "name", "stephen");
-        final Vertex c = graph.addVertex("name", "matthias", "name", "mbroecheler");
-
-        tryCommit(graph, graph -> {
-            assertEquals(a.id(), g.V().has("person", "name", "okram").id().next());
-            assertEquals(1, g.V().has("person", "name", "okram").count().next().intValue());
-            assertEquals(34, ((Neo4jVertex) g.V().has("person", "name", "okram").next()).getBaseVertex().getProperty("age"));
-            assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) g.V().has("person", "name", "okram").next()).getBaseVertex().getProperty("name"));
-            ///
-            assertEquals(b.id(), g.V().has("person", "name", "stephen").id().next());
-            assertEquals(1, g.V().has("person", "name", "stephen").count().next().intValue());
-            assertEquals("stephen", ((Neo4jVertex) g.V().has("person", "name", "stephen").next()).getBaseVertex().getProperty("name"));
-            ///
-            assertEquals(c.id(), g.V().has("name", "matthias").id().next());
-            assertEquals(c.id(), g.V().has("name", "mbroecheler").id().next());
-            assertEquals(1, g.V().has("name", "matthias").count().next().intValue());
-            assertEquals(1, g.V().has("name", "mbroecheler").count().next().intValue());
-            assertEquals(0, g.V().has("person", "name", "matthias").count().next().intValue());
-            assertEquals(0, g.V().has("person", "name", "mbroecheler").count().next().intValue());
-        });
-
-        final Vertex d = graph.addVertex(T.label, "person", "name", "kuppitz");
-        tryCommit(graph, graph -> {
-            assertEquals(d.id(), g.V().has("person", "name", "kuppitz").id().next());
-            assertEquals("kuppitz", ((Neo4jVertex) g.V().has("person", "name", "kuppitz").next()).getBaseVertex().getProperty("name"));
-        });
-        d.property(VertexProperty.Cardinality.list, "name", "daniel", "acl", "private");
-        tryCommit(graph, graph -> {
-            assertEquals(d.id(), g.V().has("person", "name", P.within("daniel", "kuppitz")).id().next());
-            assertEquals(d.id(), g.V().has("person", "name", "kuppitz").id().next());
-            assertEquals(d.id(), g.V().has("person", "name", "daniel").id().next());
-            assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) g.V().has("person", "name", "kuppitz").next()).getBaseVertex().getProperty("name"));
-        });
-        d.property(VertexProperty.Cardinality.list, "name", "marko", "acl", "private");
-        tryCommit(graph, graph -> {
-            assertEquals(2, g.V().has("person", "name", "marko").count().next().intValue());
-            assertEquals(1, g.V().has("person", "name", "marko").properties("name").has(T.value, "marko").has("acl", "private").count().next().intValue());
-            g.V().has("person", "name", "marko").forEachRemaining(v -> {
-                assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) v).getBaseVertex().getProperty("name"));
-            });
-
-        });
     }
 
     @Test

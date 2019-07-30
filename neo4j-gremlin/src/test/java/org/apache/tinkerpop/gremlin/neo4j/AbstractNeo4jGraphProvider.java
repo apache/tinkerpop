@@ -112,10 +112,6 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
             graph.cypher("DROP INDEX ON :vertex(age)").iterate();
             graph.cypher("DROP INDEX ON :vertex(lang)").iterate();
             graph.tx().commit();
-        } else {
-            // TODO: add CREW work here.
-            // TODO: add meta_property indices when meta_property graph is provided
-            //throw new RuntimeException("Could not load graph with " + graphData);
         }
     }
 
@@ -160,10 +156,6 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
                     graph.cypher("CREATE INDEX ON :vertex(lang)").iterate();
                 graph.tx().commit();
             } // else no indices
-        } else {
-            // TODO: add CREW work here.
-            // TODO: add meta_property indices when meta_property graph is provided
-            //throw new RuntimeException("Could not load graph with " + graphData);
         }
     }
 
