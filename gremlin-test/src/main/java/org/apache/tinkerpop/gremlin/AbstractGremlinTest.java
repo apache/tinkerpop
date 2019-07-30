@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.iterator.StoreIteratorCounter;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
@@ -137,12 +136,12 @@ public abstract class AbstractGremlinTest {
     @After
     public void tearDown() throws Exception {
         if (null != graphProvider) {
+            graphProvider.getTestListener().ifPresent(l -> l.onTestEnd(this.getClass(), name.getMethodName()));
+
             if (shouldTestIteratorLeak) {
-                long openItrCount = StoreIteratorCounter.INSTANCE.getOpenIteratorCount();
+                final long openItrCount = StoreIteratorCounter.INSTANCE.getOpenIteratorCount();
                 assertEquals("Iterator leak detected. Open iterator count=" + openItrCount, 0, openItrCount);
             }
-
-            graphProvider.getTestListener().ifPresent(l -> l.onTestEnd(this.getClass(), name.getMethodName()));
 
             // GraphProvider that has implemented the clear method must check null for graph and config.
             graphProvider.clear(graph, config);
