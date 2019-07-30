@@ -144,12 +144,12 @@ public abstract class AbstractGremlinTest {
     @After
     public void tearDown() throws Exception {
         if (null != graphProvider) {
+            graphProvider.getTestListener().ifPresent(l -> l.onTestEnd(this.getClass(), name.getMethodName()));
+
             if (shouldTestIteratorLeak) {
-                long openItrCount = StoreIteratorCounter.INSTANCE.getOpenIteratorCount();
+                final long openItrCount = StoreIteratorCounter.INSTANCE.getOpenIteratorCount();
                 assertEquals("Iterator leak detected. Open iterator count=" + openItrCount, 0, openItrCount);
             }
-
-            graphProvider.getTestListener().ifPresent(l -> l.onTestEnd(this.getClass(), name.getMethodName()));
 
             // GraphProvider that has implemented the clear method must check null for graph and config.
             // If #assumeRequirementsAreMetForTest returns false in #setup, graph and config will be null.
