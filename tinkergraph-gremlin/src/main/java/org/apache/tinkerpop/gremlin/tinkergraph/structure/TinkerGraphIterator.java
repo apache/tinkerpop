@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.StoreIteratorCounter;
 
 import java.util.Iterator;
@@ -31,7 +32,7 @@ import java.util.NoSuchElementException;
  * gremlin-test suite can be used to detect cases when the query processor does not gracefully
  * release the underlying resources.
  */
-public class TinkerGraphIterator<E> implements Iterator<E>, AutoCloseable {
+public class TinkerGraphIterator<E> implements CloseableIterator<E> {
     /**
      * Original iterator which is wrapped by this class
      */

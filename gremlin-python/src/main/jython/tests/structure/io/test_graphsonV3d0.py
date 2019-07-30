@@ -290,11 +290,10 @@ class TestGraphSONReader(object):
 
     def test_datetime(self):
         expected = datetime.datetime(2016, 12, 14, 16, 14, 36, 295000)
-        pts = time.mktime((expected.year, expected.month, expected.day,
-                                           expected.hour, expected.minute, expected.second,
-                                           -1, -1, -1)) + expected.microsecond / 1e6
-        timestamp = int(round(pts * 1000))
-        dt = self.graphson_reader.readObject(json.dumps({"@type": "g:Date", "@value": timestamp}))
+        pts = time.mktime(expected.timetuple()) + expected.microsecond / 1e6 - \
+              (time.mktime(datetime.datetime(1970, 1, 1).timetuple()))
+        ts = int(round(pts * 1000))
+        dt = self.graphson_reader.readObject(json.dumps({"@type": "g:Date", "@value": ts}))
         assert isinstance(dt, datetime.datetime)
         # TINKERPOP-1848
         assert dt == expected
@@ -502,7 +501,7 @@ class TestGraphSONWriter(object):
 
     def test_datetime(self):
         expected = json.dumps({"@type": "g:Date", "@value": 1481750076295}, separators=(',', ':'))
-        dt = datetime.datetime.fromtimestamp(1481750076295 / 1000.0)
+        dt = datetime.datetime.utcfromtimestamp(1481750076295 / 1000.0)
         output = self.graphson_writer.writeObject(dt)
         assert expected == output
 
@@ -555,7 +554,7 @@ class TestFunctionalGraphSONIO(object):
 
     def test_datetime(self, remote_connection):
         g = Graph().traversal().withRemote(remote_connection)
-        dt = datetime.datetime.fromtimestamp(1481750076295 / 1000)
+        dt = datetime.datetime.utcfromtimestamp(1481750076295 / 1000)
         resp = g.addV('test_vertex').property('dt', dt).toList()
         vid = resp[0].id
         try:
