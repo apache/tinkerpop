@@ -73,8 +73,13 @@ namespace Gremlin.Net.Driver
                     .ConfigureAwait(false);
         }
 
-        public async Task<byte[]> ReceiveMessageAsync()
+        public async Task<RecievedMessageResult> ReceiveMessageAsync()
         {
+            if (_client.State != WebSocketState.Open)
+            {
+                return RecievedMessageResult.Failed();
+            }
+
             using (var ms = new MemoryStream())
             {
                 WebSocketReceiveResult received;
@@ -85,7 +90,7 @@ namespace Gremlin.Net.Driver
                     ms.Write(receiveBuffer.Array, receiveBuffer.Offset, received.Count);
                 } while (!received.EndOfMessage);
 
-                return ms.ToArray();
+                return RecievedMessageResult.Success(ms.ToArray());
             }
         }
 

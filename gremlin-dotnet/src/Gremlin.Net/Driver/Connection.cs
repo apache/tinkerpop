@@ -103,8 +103,17 @@ namespace Gremlin.Net.Driver
             {
                 try
                 {
-                    var received = await _webSocketConnection.ReceiveMessageAsync().ConfigureAwait(false);
-                    Parse(received);
+                    var receivedMessage = await _webSocketConnection.ReceiveMessageAsync().ConfigureAwait(false);
+
+                    if (!receivedMessage.ConnectionClosed)
+                    {
+                        Parse(receivedMessage.Data);
+                    }
+                    else
+                    {
+                        await CloseAsync().ConfigureAwait(false);
+                        return;
+                    }
                 }
                 catch (Exception e)
                 {
@@ -116,6 +125,11 @@ namespace Gremlin.Net.Driver
 
         private void Parse(byte[] received)
         {
+            if (received == null || received.Length == 0)
+            {
+                return;
+            }
+
             var receivedMsg = _messageSerializer.DeserializeMessage<ResponseMessage<JToken>>(received);
 
             try
