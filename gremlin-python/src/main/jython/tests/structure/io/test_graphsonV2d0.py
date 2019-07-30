@@ -242,11 +242,10 @@ class TestGraphSONReader(object):
 
     def test_datetime(self):
         expected = datetime.datetime(2016, 12, 14, 16, 14, 36, 295000)
-        pts = time.mktime((expected.year, expected.month, expected.day,
-                                           expected.hour, expected.minute, expected.second,
-                                           -1, -1, -1)) + expected.microsecond / 1e6
-        timestamp = int(round(pts * 1000))
-        dt = self.graphson_reader.readObject(json.dumps({"@type": "g:Date", "@value": timestamp}))
+        pts = time.mktime(expected.timetuple()) + expected.microsecond / 1e6 - \
+                         (time.mktime(datetime.datetime(1970, 1, 1).timetuple()))
+        ts = int(round(pts * 1000))
+        dt = self.graphson_reader.readObject(json.dumps({"@type": "g:Date", "@value": ts}))
         assert isinstance(dt, datetime.datetime)
         # TINKERPOP-1848
         assert dt == expected
@@ -437,7 +436,7 @@ class TestGraphSONWriter(object):
 
     def test_datetime(self):
         expected = json.dumps({"@type": "g:Date", "@value": 1481750076295}, separators=(',', ':'))
-        dt = datetime.datetime.fromtimestamp(1481750076295 / 1000.0)
+        dt = datetime.datetime.utcfromtimestamp(1481750076295 / 1000.0)
         output = self.graphson_writer.writeObject(dt)
         assert expected == output
 
@@ -485,18 +484,22 @@ class TestFunctionalGraphSONIO(object):
             ts_prop = g.V(vid).properties('ts').toList()[0]
             assert isinstance(ts_prop.value, timestamp)
             assert ts_prop.value == ts
+        except OSError:
+            assert False, "Error making request"
         finally:
             g.V(vid).drop().iterate()
 
     def test_datetime(self, remote_connection_v2):
         g = Graph().traversal().withRemote(remote_connection_v2)
-        dt = datetime.datetime.fromtimestamp(1481750076295 / 1000)
+        dt = datetime.datetime.utcfromtimestamp(1481750076295 / 1000)
         resp = g.addV('test_vertex').property('dt', dt).toList()
         vid = resp[0].id
         try:
             dt_prop = g.V(vid).properties('dt').toList()[0]
             assert isinstance(dt_prop.value, datetime.datetime)
             assert dt_prop.value == dt
+        except OSError:
+            assert False, "Error making request"
         finally:
             g.V(vid).drop().iterate()
 
@@ -509,5 +512,7 @@ class TestFunctionalGraphSONIO(object):
             uid_prop = g.V(vid).properties('uuid').toList()[0]
             assert isinstance(uid_prop.value, uuid.UUID)
             assert uid_prop.value == uid
+        except OSError:
+            assert False, "Error making request"
         finally:
             g.V(vid).drop().iterate()

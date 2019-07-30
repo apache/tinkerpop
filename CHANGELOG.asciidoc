@@ -411,7 +411,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Deprecated remote traversal side-effect retrieval and related infrastructure.
 * Bump to Groovy 2.4.17.
 * Bump to Jackson Databind 2.9.9.1.
+* Fixed bug with Python in `g:Date` of GraphSON where local time zone was being used during serialization/deserialization.
 * Improved error messaging when an attempt is made to serialize multi-properties to GraphML.
+* Deprecated multi/meta-property support in `Neo4jGraph`.
 * Improved exception and messaging for gt/gte/lt/lte when one of the object isn't a `Comparable`.
 * Added test infrastructure to check for storage iterator leak.
 * Fixed multiple iterator leaks in query processor.

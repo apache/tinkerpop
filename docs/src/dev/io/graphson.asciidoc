@@ -1161,6 +1161,8 @@ types. By default, TinkerPop types will have the namespace "g" (or "gx" for "ext
 
 ==== Date
 
+Representing a millisecond-precision offset from the unix epoch. In Java, it is simply `Date.getTime()`.
+
 [source,json]
 ----
 {
@@ -3858,6 +3860,8 @@ not have `String` keys (e.g. `g.V().out().groupCount()`).
 ----
 
 ==== Date
+
+Representing a millisecond-precision offset from the unix epoch. In Java, it is simply `Date.getTime()`.
 
 [source,json]
 ----

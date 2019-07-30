@@ -85,7 +85,17 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
 
     public static final String CONFIG_DIRECTORY = "gremlin.neo4j.directory";
     public static final String CONFIG_CONF = "gremlin.neo4j.conf";
+
+    /**
+     * @deprecated As of release 3.3.8, not replaced.
+     */
+    @Deprecated
     public static final String CONFIG_META_PROPERTIES = "gremlin.neo4j.metaProperties";
+
+    /**
+     * @deprecated As of release 3.3.8, not replaced.
+     */
+    @Deprecated
     public static final String CONFIG_MULTI_PROPERTIES = "gremlin.neo4j.multiProperties";
 
     private final Neo4jTransaction neo4jTransaction = new Neo4jTransaction();
@@ -110,7 +120,7 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
             this.neo4jGraphVariables.set(Graph.Hidden.hide(CONFIG_META_PROPERTIES), supportsMetaProperties);
         this.trait = supportsMultiProperties ? MultiMetaNeo4jTrait.instance() : NoMultiNoMetaNeo4jTrait.instance();
         if (supportsMultiProperties)
-            LOGGER.warn(this.getClass().getSimpleName() + " multi/meta-properties feature is considered experimental and should not be used in a production setting until this warning is removed");
+            LOGGER.warn(this.getClass().getSimpleName() + " multi/meta-properties feature has always been considered experimental and not production ready - it is now deprecated as of 3.3.8");
         this.tx().commit();
     }
 
@@ -234,6 +244,11 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
         }
     }
 
+
+    /**
+     * @deprecated As of release 3.3.8, not replaced.
+     */
+    @Deprecated
     public Neo4jTrait getTrait() {
         return this.trait;
     }
