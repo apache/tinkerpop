@@ -89,6 +89,10 @@ public class Preferences {
     public static final Boolean PREF_COLORS_DEFAULT = true;
     public static boolean colors = PREF_COLORS_DEFAULT
 
+    public static final String PREF_WARNINGS = "warnings"
+    public static final Boolean PREF_WARNINGS_DEFAULT = true
+    public static boolean warnings = PREF_WARNINGS_DEFAULT
+
     public static void expandoMagic() {
 
         // Override all GroovySH Preference methods
@@ -236,7 +240,14 @@ public class Preferences {
                             } else {
                                 colors = Boolean.valueOf(evt.newValue)
                             }
+                        }  else if (evt.key == PREF_WARNINGS) {
+                            if (null == evt.newValue) {
+                                warnings = Boolean.valueOf(STORE.get(PREF_WARNINGS, PREF_WARNINGS_DEFAULT.toString()))
+                            } else {
+                                warnings = Boolean.valueOf(evt.newValue)
+                            }
                         }
+
                     }
                 })
 
@@ -292,5 +303,7 @@ public class Preferences {
         resultPrompt =  STORE.get(PREF_RESULT_PROMPT, PREF_RESULT_PROMPT_DEFAULT)
 
         colors =  Boolean.valueOf(STORE.get(PREF_COLORS, PREF_COLORS_DEFAULT.toString()))
+
+        warnings =  Boolean.valueOf(STORE.get(PREF_WARNINGS, PREF_WARNINGS_DEFAULT.toString()))
     }
 }
