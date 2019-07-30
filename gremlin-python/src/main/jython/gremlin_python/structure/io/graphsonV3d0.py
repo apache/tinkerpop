@@ -16,6 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 """
+import calendar
 import datetime
 import json
 import time
@@ -351,24 +352,19 @@ class DateIO(_GraphSONTypeIO):
 
     @classmethod
     def dictify(cls, obj, writer):
-        if six.PY3:
-            pts = obj.timestamp()
-        else:
-            # Hack for legacy Python
-            # timestamp() in Python 3.3
-            pts = time.mktime((obj.year, obj.month, obj.day,
-			                   obj.hour, obj.minute, obj.second,
-			                   -1, -1, -1)) + obj.microsecond / 1e6
+        try:
+            timestamp_seconds = calendar.timegm(obj.utctimetuple())
+            pts = timestamp_seconds * 1e3 + getattr(obj, 'microsecond', 0) / 1e3
+        except AttributeError:
+            pts = calendar.timegm(obj.timetuple()) * 1e3
 
-        # Java timestamp expects miliseconds
-        # Have to use int because of legacy Python
-        ts = int(round(pts * 1000))
+        ts = int(round(pts))
         return GraphSONUtil.typedValue(cls.graphson_base_type, ts)
 
     @classmethod
     def objectify(cls, ts, reader):
         # Python timestamp expects seconds
-        return datetime.datetime.fromtimestamp(ts / 1000.0)
+        return datetime.datetime.utcfromtimestamp(ts / 1000.0)
 
 
 # Based on current implementation, this class must always be declared before FloatIO.
