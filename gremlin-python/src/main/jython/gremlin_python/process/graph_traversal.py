@@ -233,7 +233,7 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("emit", *args)
         return self
 
-    def filter(self, *args):
+    def filter_(self, *args):
         self.bytecode.add_step("filter", *args)
         return self
 
@@ -281,7 +281,7 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("hasValue", *args)
         return self
 
-    def id(self, *args):
+    def id_(self, *args):
         self.bytecode.add_step("id", *args)
         return self
 
@@ -345,7 +345,7 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("math", *args)
         return self
 
-    def max(self, *args):
+    def max_(self, *args):
         self.bytecode.add_step("max", *args)
         return self
 
@@ -353,7 +353,7 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("mean", *args)
         return self
 
-    def min(self, *args):
+    def min_(self, *args):
         self.bytecode.add_step("min", *args)
         return self
 
@@ -429,7 +429,7 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("propertyMap", *args)
         return self
 
-    def range(self, *args):
+    def range_(self, *args):
         self.bytecode.add_step("range", *args)
         return self
 
@@ -477,7 +477,7 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("subgraph", *args)
         return self
 
-    def sum(self, *args):
+    def sum_(self, *args):
         self.bytecode.add_step("sum", *args)
         return self
 
@@ -543,6 +543,32 @@ class GraphTraversal(Traversal):
 
     def write(self, *args):
         self.bytecode.add_step("write", *args)
+        return self
+
+    # Deprecated - prefer the underscore suffixed versions e.g filter_()
+
+    def filter(self, *args):
+        self.bytecode.add_step("filter", *args)
+        return self
+
+    def id(self, *args):
+        self.bytecode.add_step("id", *args)
+        return self
+
+    def max(self, *args):
+        self.bytecode.add_step("max", *args)
+        return self
+
+    def min(self, *args):
+        self.bytecode.add_step("min", *args)
+        return self
+
+    def range(self, *args):
+        self.bytecode.add_step("range", *args)
+        return self
+
+    def sum(self, *args):
+        self.bytecode.add_step("sum", *args)
         return self
 
 
@@ -642,8 +668,8 @@ class __(object):
         return cls.graph_traversal(None, None, Bytecode()).emit(*args)
 
     @classmethod
-    def filter(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).filter(*args)
+    def filter_(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).filter_(*args)
 
     @classmethod
     def flatMap(cls, *args):
@@ -686,8 +712,8 @@ class __(object):
         return cls.graph_traversal(None, None, Bytecode()).hasValue(*args)
 
     @classmethod
-    def id(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).id(*args)
+    def id_(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).id_(*args)
 
     @classmethod
     def identity(cls, *args):
@@ -750,16 +776,16 @@ class __(object):
         return cls.graph_traversal(None, None, Bytecode()).math(*args)
 
     @classmethod
-    def max(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).max(*args)
+    def max_(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).max_(*args)
 
     @classmethod
     def mean(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).mean(*args)
 
     @classmethod
-    def min(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).min(*args)
+    def min_(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).min_(*args)
 
     @classmethod
     def not_(cls, *args):
@@ -814,8 +840,8 @@ class __(object):
         return cls.graph_traversal(None, None, Bytecode()).propertyMap(*args)
 
     @classmethod
-    def range(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).range(*args)
+    def range_(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).range_(*args)
 
     @classmethod
     def repeat(cls, *args):
@@ -854,8 +880,8 @@ class __(object):
         return cls.graph_traversal(None, None, Bytecode()).subgraph(*args)
 
     @classmethod
-    def sum(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).sum(*args)
+    def sum_(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).sum_(*args)
 
     @classmethod
     def tail(cls, *args):
@@ -912,6 +938,32 @@ class __(object):
     @classmethod
     def where(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).where(*args)
+
+    # Deprecated - prefer the underscore suffixed versions e.g filter_()
+
+    @classmethod
+    def filter(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).filter_(*args)
+
+    @classmethod
+    def id(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).id_(*args)
+
+    @classmethod
+    def max(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).max_(*args)
+
+    @classmethod
+    def min(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).min_(*args)
+
+    @classmethod
+    def range(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).range_(*args)
+
+    @classmethod
+    def sum(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).sum_(*args)
 
 
 def V(*args):
@@ -998,8 +1050,8 @@ def emit(*args):
     return __.emit(*args)
 
 
-def filter(*args):
-    return __.filter(*args)
+def filter_(*args):
+    return __.filter_(*args)
 
 
 def flatMap(*args):
@@ -1042,8 +1094,8 @@ def hasValue(*args):
     return __.hasValue(*args)
 
 
-def id(*args):
-    return __.id(*args)
+def id_(*args):
+    return __.id_(*args)
 
 
 def identity(*args):
@@ -1106,16 +1158,16 @@ def math(*args):
     return __.math(*args)
 
 
-def max(*args):
-    return __.max(*args)
+def max_(*args):
+    return __.max_(*args)
 
 
 def mean(*args):
     return __.mean(*args)
 
 
-def min(*args):
-    return __.min(*args)
+def min_(*args):
+    return __.min_(*args)
 
 
 def not_(*args):
@@ -1170,8 +1222,8 @@ def propertyMap(*args):
     return __.propertyMap(*args)
 
 
-def range(*args):
-    return __.range(*args)
+def range_(*args):
+    return __.range_(*args)
 
 
 def repeat(*args):
@@ -1210,8 +1262,8 @@ def subgraph(*args):
     return __.subgraph(*args)
 
 
-def sum(*args):
-    return __.sum(*args)
+def sum_(*args):
+    return __.sum_(*args)
 
 
 def tail(*args):
@@ -1270,6 +1322,32 @@ def where(*args):
     return __.where(*args)
 
 
+# Deprecated - prefer the underscore suffixed versions e.g filter_()
+
+def filter(*args):
+    return __.filter_(*args)
+
+
+def id(*args):
+    return __.id_(*args)
+
+
+def max(*args):
+    return __.max_(*args)
+
+
+def min(*args):
+    return __.min_(*args)
+
+
+def range(*args):
+    return __.range_(*args)
+
+
+def sum(*args):
+    return __.sum_(*args)
+
+
 statics.add_static('V', V)
 
 statics.add_static('addE', addE)
@@ -1312,7 +1390,7 @@ statics.add_static('drop', drop)
 
 statics.add_static('emit', emit)
 
-statics.add_static('filter', filter)
+statics.add_static('filter_', filter_)
 
 statics.add_static('flatMap', flatMap)
 
@@ -1334,7 +1412,7 @@ statics.add_static('hasNot', hasNot)
 
 statics.add_static('hasValue', hasValue)
 
-statics.add_static('id', id)
+statics.add_static('id_', id_)
 
 statics.add_static('identity', identity)
 
@@ -1366,11 +1444,11 @@ statics.add_static('match', match)
 
 statics.add_static('math', math)
 
-statics.add_static('max', max)
+statics.add_static('max_', max_)
 
 statics.add_static('mean', mean)
 
-statics.add_static('min', min)
+statics.add_static('min_', min_)
 
 statics.add_static('not_', not_)
 
@@ -1398,7 +1476,7 @@ statics.add_static('property', property)
 
 statics.add_static('propertyMap', propertyMap)
 
-statics.add_static('range', range)
+statics.add_static('range_', range_)
 
 statics.add_static('repeat', repeat)
 
@@ -1418,7 +1496,7 @@ statics.add_static('store', store)
 
 statics.add_static('subgraph', subgraph)
 
-statics.add_static('sum', sum)
+statics.add_static('sum_', sum_)
 
 statics.add_static('tail', tail)
 
@@ -1448,3 +1526,12 @@ statics.add_static('values', values)
 
 statics.add_static('where', where)
 
+
+# Deprecated - prefer the underscore suffixed versions e.g filter_()
+
+statics.add_static('filter', filter)
+statics.add_static('id', id)
+statics.add_static('max', max)
+statics.add_static('min', min)
+statics.add_static('range', range)
+statics.add_static('sum', sum)

@@ -154,20 +154,6 @@ GryoVersion = Enum('GryoVersion', ' V1_0 V3_0')
 statics.add_static('V1_0', GryoVersion.V1_0)
 statics.add_static('V3_0', GryoVersion.V3_0)
 
-Operator = Enum('Operator', ' addAll and_ assign div max min minus mult or_ sum sumLong')
-
-statics.add_static('sum', Operator.sum)
-statics.add_static('minus', Operator.minus)
-statics.add_static('mult', Operator.mult)
-statics.add_static('div', Operator.div)
-statics.add_static('min', Operator.min)
-statics.add_static('max', Operator.max)
-statics.add_static('assign', Operator.assign)
-statics.add_static('and_', Operator.and_)
-statics.add_static('or_', Operator.or_)
-statics.add_static('addAll', Operator.addAll)
-statics.add_static('sumLong', Operator.sumLong)
-
 Order = Enum('Order', ' asc decr desc incr shuffle')
 
 statics.add_static('incr', Order.incr)
@@ -193,12 +179,31 @@ Scope = Enum('Scope', ' global_ local')
 statics.add_static('global_', Scope.global_)
 statics.add_static('local', Scope.local)
 
-T = Enum('T', ' id key label value')
 
-statics.add_static('label', T.label)
+T = Enum('T', ' id id_ key label value')
+
 statics.add_static('id', T.id)
+statics.add_static('label', T.label)
+statics.add_static('id_', T.id_)
 statics.add_static('key', T.key)
 statics.add_static('value', T.value)
+
+
+Operator = Enum('Operator', ' addAll and_ assign div max max_ min min_ minus mult or_ sum sum_ sumLong')
+
+statics.add_static('sum_', Operator.sum_)
+statics.add_static('sum', Operator.sum_)
+statics.add_static('minus', Operator.minus)
+statics.add_static('mult', Operator.mult)
+statics.add_static('div', Operator.div)
+statics.add_static('min', Operator.min_)
+statics.add_static('min_', Operator.min_)
+statics.add_static('max_', Operator.max_)
+statics.add_static('assign', Operator.assign)
+statics.add_static('and_', Operator.and_)
+statics.add_static('or_', Operator.or_)
+statics.add_static('addAll', Operator.addAll)
+statics.add_static('sumLong', Operator.sumLong)
 
 
 class P(object):

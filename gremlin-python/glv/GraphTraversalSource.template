@@ -90,6 +90,32 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("<%= toJava.call(method) %>", *args)
         return self
 <% } %>
+    # Deprecated - prefer the underscore suffixed versions e.g filter_()
+
+    def filter(self, *args):
+        self.bytecode.add_step("filter", *args)
+        return self
+
+    def id(self, *args):
+        self.bytecode.add_step("id", *args)
+        return self
+
+    def max(self, *args):
+        self.bytecode.add_step("max", *args)
+        return self
+
+    def min(self, *args):
+        self.bytecode.add_step("min", *args)
+        return self
+
+    def range(self, *args):
+        self.bytecode.add_step("range", *args)
+        return self
+
+    def sum(self, *args):
+        self.bytecode.add_step("sum", *args)
+        return self
+
 
 class __(object):
     graph_traversal = GraphTraversal
@@ -106,11 +132,71 @@ class __(object):
     def <%= method %>(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).<%= method %>(*args)
 <% } %>
+    # Deprecated - prefer the underscore suffixed versions e.g filter_()
+
+    @classmethod
+    def filter(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).filter_(*args)
+
+    @classmethod
+    def id(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).id_(*args)
+
+    @classmethod
+    def max(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).max_(*args)
+
+    @classmethod
+    def min(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).min_(*args)
+
+    @classmethod
+    def range(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).range_(*args)
+
+    @classmethod
+    def sum(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).sum_(*args)
+
 <% anonStepMethods.each{ method -> %>
 def <%= method %>(*args):
     return __.<%= method %>(*args)
 
 <% } %>
+# Deprecated - prefer the underscore suffixed versions e.g filter_()
+
+def filter(*args):
+    return __.filter_(*args)
+
+
+def id(*args):
+    return __.id_(*args)
+
+
+def max(*args):
+    return __.max_(*args)
+
+
+def min(*args):
+    return __.min_(*args)
+
+
+def range(*args):
+    return __.range_(*args)
+
+
+def sum(*args):
+    return __.sum_(*args)
+
+
 <% anonStepMethods.each{ method -> %>statics.add_static('<%= method %>', <%= method %>)
 
 <% } %>
+# Deprecated - prefer the underscore suffixed versions e.g filter_()
+
+statics.add_static('filter', filter)
+statics.add_static('id', id)
+statics.add_static('max', max)
+statics.add_static('min', min)
+statics.add_static('range', range)
+statics.add_static('sum', sum)

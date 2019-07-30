@@ -85,6 +85,12 @@ class TestDriverRemoteConnection(object):
         assert 2 == len(results)
         assert 'marko' in results
         assert 'vadas' in results
+        # #
+        # this test just validates that the underscored versions of steps conflicting with Gremlin work
+        # properly and can be removed when the old steps are removed - TINKERPOP-2272
+        results = g.V().filter_(__.values('age').sum_().and_(
+            __.max_().is_(gt(0)), __.min_().is_(gt(0)))).range_(0, 1).id_().next()
+        assert 1 == results
 
     def test_iteration(self, remote_connection):
         statics.load_statics(globals())
