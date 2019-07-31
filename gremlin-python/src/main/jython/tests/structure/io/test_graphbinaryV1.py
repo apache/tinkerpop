@@ -139,3 +139,13 @@ class TestGraphSONWriter(object):
         x = Property("name", "stephen", None)
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
         assert x == output
+
+    def test_vertex(self):
+        x = Vertex(123, "person")
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output
+
+    def test_vertexproperty(self):
+        x = VertexProperty(123, "name", "stephen", None)
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output

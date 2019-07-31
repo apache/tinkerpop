@@ -37,7 +37,7 @@ from isodate import parse_duration, duration_isoformat
 from gremlin_python import statics
 from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, DictType, ListType, SetType, SingleByte, ByteBufferType, SingleChar
 from gremlin_python.process.traversal import Binding, Bytecode, P, TextP, Traversal, Traverser, TraversalStrategy, T
-from gremlin_python.structure.graph import Edge, Property, Vertex, VertexProperty, Path
+from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path
 
 log = logging.getLogger(__name__)
 
@@ -65,6 +65,9 @@ class DataType(Enum):
     edge = 0x0d
     path = 0x0e
     property = 0x0f
+    tinkergraph = 0x10
+    vertex = 0x11
+    vertexproperty = 0x12
 
 
 class GraphBinaryTypeType(type):
@@ -444,3 +447,60 @@ class PropertyIO(_GraphBinaryTypeIO):
         p = Property(cls.read_string(b), reader.readObject(b), None)
         b.read(1)
         return p
+
+
+class TinkerGraphIO(_GraphBinaryTypeIO):
+
+    python_type = Graph
+    graphbinary_type = DataType.tinkergraph
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        raise AttributeError("TinkerGraph serialization is not currently supported by gremlin-python")
+
+    @classmethod
+    def objectify(cls, b, reader):
+        raise AttributeError("TinkerGraph deserialization is not currently supported by gremlin-python")
+
+
+class VertexIO(_GraphBinaryTypeIO):
+
+    python_type = Vertex
+    graphbinary_type = DataType.vertex
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        ba = bytearray([cls.graphbinary_type.value])
+        ba.extend(writer.writeObject(obj.id))
+        ba.extend(cls.string_as_bytes(obj.label))
+        ba.extend([DataType.null.value])
+        return ba
+
+    @classmethod
+    def objectify(cls, b, reader):
+        vertex = Vertex(reader.readObject(b), cls.read_string(b))
+        b.read(1)
+        return vertex
+
+
+class VertexPropertyIO(_GraphBinaryTypeIO):
+
+    python_type = VertexProperty
+    graphbinary_type = DataType.vertexproperty
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        ba = bytearray([cls.graphbinary_type.value])
+        ba.extend(writer.writeObject(obj.id))
+        ba.extend(cls.string_as_bytes(obj.label))
+        ba.extend(writer.writeObject(obj.value))
+        ba.extend([DataType.null.value])
+        ba.extend([DataType.null.value])
+        return ba
+
+    @classmethod
+    def objectify(cls, b, reader):
+        vp = VertexProperty(reader.readObject(b), cls.read_string(b), reader.readObject(b), None)
+        b.read(1)
+        b.read(1)
+        return vp
