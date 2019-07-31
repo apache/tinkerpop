@@ -119,3 +119,13 @@ class TestGraphSONWriter(object):
              987: ["go", "deep", {"here": "!"}]}
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
         assert x == output
+        
+    def test_uuid(self):
+        x = uuid.UUID("41d2e28a-20a4-4ab0-b379-d810dede3786")
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output
+
+    def test_edge(self):
+        x = Edge(123, Vertex(1, 'person'), "developed", Vertex(10, "software"))
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output

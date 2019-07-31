@@ -60,6 +60,8 @@ class DataType(Enum):
     list = 0x09
     map = 0x0a
     set = 0x0b
+    uuid = 0x0c
+    edge = 0x0d
 
 
 class GraphBinaryTypeType(type):
@@ -141,8 +143,16 @@ class _GraphBinaryTypeIO(object):
         return ba
 
     @classmethod
+    def string_as_bytes(cls, s):
+        return cls.as_bytes(None, len(s), s.encode("utf-8"))
+
+    @classmethod
     def read_int(cls, buff):
         return struct.unpack(">i", buff.read(4))[0]
+
+    @classmethod
+    def read_string(cls, buff):
+        return buff.read(cls.read_int(buff)).decode("utf-8")
 
     @classmethod
     def unmangleKeyword(cls, symbol):
@@ -288,7 +298,7 @@ class StringIO(_GraphBinaryTypeIO):
 
     @classmethod
     def objectify(cls, b, reader):
-        return b.read(cls.read_int(b)).decode("utf-8")
+        return cls.read_string(b)
 
 
 class ListIO(_GraphBinaryTypeIO):
@@ -350,3 +360,47 @@ class MapIO(_GraphBinaryTypeIO):
             size = size - 1
 
         return the_dict
+
+
+class UuidIO(_GraphBinaryTypeIO):
+
+    python_type = uuid.UUID
+    graphbinary_type = DataType.uuid
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        ba = bytearray([cls.graphbinary_type.value])
+        ba.extend(obj.bytes)
+        return ba
+
+    @classmethod
+    def objectify(cls, b, reader):
+        return uuid.UUID(bytes=b.read(16))
+
+
+class EdgeIO(_GraphBinaryTypeIO):
+
+    python_type = Edge
+    graphbinary_type = DataType.edge
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        ba = bytearray([cls.graphbinary_type.value])
+        ba.extend(writer.writeObject(obj.id))
+        ba.extend(cls.string_as_bytes(obj.label))
+        ba.extend(writer.writeObject(obj.inV.id))
+        ba.extend(cls.string_as_bytes(obj.inV.label))
+        ba.extend(writer.writeObject(obj.outV.id))
+        ba.extend(cls.string_as_bytes(obj.outV.label))
+        ba.extend([0xfe])
+        ba.extend([0xfe])
+        return ba
+
+    @classmethod
+    def objectify(cls, b, reader):
+        edgeid = reader.readObject(b)
+        edgelbl = cls.read_string(b)
+        edge = Edge(edgeid, Vertex(reader.readObject(b), cls.read_string(b)),
+                    edgelbl, Vertex(reader.readObject(b), cls.read_string(b)))
+        b.read(2)
+        return edge
