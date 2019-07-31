@@ -138,11 +138,6 @@ public abstract class AbstractGremlinTest {
         if (null != graphProvider) {
             graphProvider.getTestListener().ifPresent(l -> l.onTestEnd(this.getClass(), name.getMethodName()));
 
-            if (shouldTestIteratorLeak) {
-                final long openItrCount = StoreIteratorCounter.INSTANCE.getOpenIteratorCount();
-                assertEquals("Iterator leak detected. Open iterator count=" + openItrCount, 0, openItrCount);
-            }
-
             // GraphProvider that has implemented the clear method must check null for graph and config.
             graphProvider.clear(graph, config);
 
@@ -153,6 +148,18 @@ public abstract class AbstractGremlinTest {
                 ((GraphManager.ManagedGraphProvider)graphProvider).tryClearGraphs();
             else
                 logger.warn("The {} is not of type ManagedGraphProvider and therefore graph instances may leak between test cases.", graphProvider.getClass());
+
+            if (shouldTestIteratorLeak) {
+                long wait = 300;
+                long[] tries = new long[] { 1, 3, 5, 7, 9, 18, 27, 36, 72, 144, 256, 512 };
+                long openItrCount = StoreIteratorCounter.INSTANCE.getOpenIteratorCount();
+                for (int ix = 0; ix < tries.length && openItrCount > 0; ix++) {
+                    Thread.sleep(wait * tries[ix]);
+                    openItrCount = StoreIteratorCounter.INSTANCE.getOpenIteratorCount();
+                }
+
+                assertEquals("Iterator leak detected. Open iterator count=" + openItrCount, 0, openItrCount);
+            }
 
             g = null;
             graph = null;
