@@ -49,6 +49,7 @@ _deserializers = {}
 
 
 class DataType(Enum):
+    null = 0xfe
     int = 0x01
     long = 0x02
     string = 0x03
@@ -62,6 +63,8 @@ class DataType(Enum):
     set = 0x0b
     uuid = 0x0c
     edge = 0x0d
+    path = 0x0e
+    property = 0x0f
 
 
 class GraphBinaryTypeType(type):
@@ -392,8 +395,8 @@ class EdgeIO(_GraphBinaryTypeIO):
         ba.extend(cls.string_as_bytes(obj.inV.label))
         ba.extend(writer.writeObject(obj.outV.id))
         ba.extend(cls.string_as_bytes(obj.outV.label))
-        ba.extend([0xfe])
-        ba.extend([0xfe])
+        ba.extend([DataType.null.value])
+        ba.extend([DataType.null.value])
         return ba
 
     @classmethod
@@ -404,3 +407,40 @@ class EdgeIO(_GraphBinaryTypeIO):
                     edgelbl, Vertex(reader.readObject(b), cls.read_string(b)))
         b.read(2)
         return edge
+
+
+class PathIO(_GraphBinaryTypeIO):
+
+    python_type = Path
+    graphbinary_type = DataType.path
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        ba = bytearray([cls.graphbinary_type.value])
+        ba.extend(writer.writeObject(obj.labels))
+        ba.extend(writer.writeObject(obj.objects))
+        return ba
+
+    @classmethod
+    def objectify(cls, b, reader):
+        return Path(reader.readObject(b), reader.readObject(b))
+
+
+class PropertyIO(_GraphBinaryTypeIO):
+
+    python_type = Property
+    graphbinary_type = DataType.property
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        ba = bytearray([cls.graphbinary_type.value])
+        ba.extend(cls.string_as_bytes(obj.key))
+        ba.extend(writer.writeObject(obj.value))
+        ba.extend([DataType.null.value])
+        return ba
+
+    @classmethod
+    def objectify(cls, b, reader):
+        p = Property(cls.read_string(b), reader.readObject(b), None)
+        b.read(1)
+        return p
