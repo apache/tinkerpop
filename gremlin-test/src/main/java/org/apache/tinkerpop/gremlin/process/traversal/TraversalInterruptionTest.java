@@ -27,6 +27,8 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
@@ -43,6 +45,7 @@ import static org.junit.Assert.assertThat;
  */
 @RunWith(Parameterized.class)
 public class TraversalInterruptionTest extends AbstractGremlinProcessTest {
+    private static final Logger logger = LoggerFactory.getLogger(TraversalInterruptionTest.class);
 
     @Parameterized.Parameters(name = "expectInterruption({0})")
     public static Iterable<Object[]> data() {
@@ -75,27 +78,34 @@ public class TraversalInterruptionTest extends AbstractGremlinProcessTest {
         final AtomicBoolean exceptionThrown = new AtomicBoolean(false);
         final CountDownLatch startedIterating = new CountDownLatch(1);
         final Thread t = new Thread(() -> {
-            try {
-                final Traversal traversal = traversalAfterPause.apply(traversalBeforePause.apply(g).sideEffect(traverser -> {
-                    // let the first iteration flow through
-                    if (startedIterating.getCount() == 0) {
-                        // ensure that the whole traversal doesn't iterate out before we get a chance to interrupt
-                        // the next iteration should stop so we can force the interrupt to be handled by VertexStep
-                        try {
-                            Thread.sleep(3000);
-                        } catch (Exception ignored) {
-                            // make sure that the interrupt propagates in case the interrupt occurs during sleep.
-                            // this should ensure VertexStep gets to try to throw the TraversalInterruptedException
-                            Thread.currentThread().interrupt();
-                        }
-                    } else {
-                        startedIterating.countDown();
+            final Traversal traversal = traversalAfterPause.apply(traversalBeforePause.apply(g).sideEffect(traverser -> {
+                // let the first iteration flow through
+                if (startedIterating.getCount() == 0) {
+                    // ensure that the whole traversal doesn't iterate out before we get a chance to interrupt
+                    // the next iteration should stop so we can force the interrupt to be handled by VertexStep
+                    try {
+                        Thread.sleep(3000);
+                    } catch (Exception ignored) {
+                        // make sure that the interrupt propagates in case the interrupt occurs during sleep.
+                        // this should ensure VertexStep gets to try to throw the TraversalInterruptedException
+                        Thread.currentThread().interrupt();
                     }
-                }));
+                } else {
+                    startedIterating.countDown();
+                }
+            }));
+            try {
                 traversal.iterate();
             } catch (Exception ex) {
                 exceptionThrown.set(ex instanceof TraversalInterruptedException);
+
+                try {
+                    traversal.close();
+                } catch (Exception iex) {
+                    logger.error("Error closing traversal after interruption", iex);
+                }
             }
+
         }, name);
 
         t.start();
