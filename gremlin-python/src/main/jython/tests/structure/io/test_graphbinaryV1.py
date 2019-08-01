@@ -31,7 +31,7 @@ import six
 from gremlin_python.statics import timestamp, long
 from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Graph, Path
 from gremlin_python.structure.io.graphbinaryV1 import GraphBinaryWriter, GraphBinaryReader, DataType
-from gremlin_python.process.traversal import P, Barrier
+from gremlin_python.process.traversal import P, Barrier, Binding
 from gremlin_python.process.strategies import SubgraphStrategy
 from gremlin_python.process.graph_traversal import __
 
@@ -152,5 +152,10 @@ class TestGraphSONWriter(object):
         
     def test_barrier(self):
         x = Barrier.normSack
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output
+
+    def test_binding(self):
+        x = Binding("name", "marko")
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
         assert x == output

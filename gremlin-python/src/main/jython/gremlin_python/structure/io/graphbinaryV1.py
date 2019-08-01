@@ -71,7 +71,7 @@ class DataType(Enum):
     vertex = 0x11
     vertexproperty = 0x12
     barrier = 0x13
-    binding = 0x14      # todo
+    binding = 0x14      
     bytecode = 0x15     # todo
     cardinality = 0x16
     column = 0x17
@@ -521,9 +521,6 @@ class VertexPropertyIO(_GraphBinaryTypeIO):
 
 class _EnumIO(_GraphBinaryTypeIO):
 
-    python_type = Enum
-    base_enum = None
-
     @classmethod
     def dictify(cls, obj, writer):
         ba = bytearray([cls.graphbinary_type.value])
@@ -532,45 +529,62 @@ class _EnumIO(_GraphBinaryTypeIO):
 
     @classmethod
     def objectify(cls, b, reader):
-        return cls.base_enum[cls.read_string(b)]
+        return cls.python_type[cls.read_string(b)]
 
 
 class BarrierIO(_EnumIO):
     graphbinary_type = DataType.barrier
-    base_enum = Barrier
+    python_type = Barrier
 
 
 class CardinalityIO(_EnumIO):
     graphbinary_type = DataType.cardinality
-    base_enum = Cardinality
+    python_type = Cardinality
 
 
 class ColumnIO(_EnumIO):
     graphbinary_type = DataType.column
-    base_enum = Column
+    python_type = Column
 
 
 class DirectionIO(_EnumIO):
     graphbinary_type = DataType.direction
-    base_enum = Direction
+    python_type = Direction
 
 
 class OperatorIO(_EnumIO):
     graphbinary_type = DataType.operator
-    base_enum = Operator
+    python_type = Operator
 
 
 class OrderIO(_EnumIO):
     graphbinary_type = DataType.order
-    base_enum = Order
+    python_type = Order
 
 
 class PickIO(_EnumIO):
     graphbinary_type = DataType.pick
-    base_enum = Pick
+    python_type = Pick
 
 
 class PopIO(_EnumIO):
     graphbinary_type = DataType.pop
-    base_enum = Pop
+    python_type = Pop
+
+
+class BindingIO(_GraphBinaryTypeIO):
+    
+    python_type = Binding
+    graphbinary_type = DataType.binding
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        ba = bytearray([cls.graphbinary_type.value])
+        ba.extend(cls.string_as_bytes(obj.key))
+        ba.extend(writer.writeObject(obj.value))
+        return ba
+    
+    @classmethod
+    def objectify(cls, b, reader):
+        return Binding(cls.read_string(b), reader.readObject(b))
 
