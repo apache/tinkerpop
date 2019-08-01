@@ -71,8 +71,8 @@ class DataType(Enum):
     vertex = 0x11
     vertexproperty = 0x12
     barrier = 0x13
-    binding = 0x14      
-    bytecode = 0x15     # todo
+    binding = 0x14
+    bytecode = 0x15
     cardinality = 0x16
     column = 0x17
     direction = 0x18
@@ -587,4 +587,60 @@ class BindingIO(_GraphBinaryTypeIO):
     @classmethod
     def objectify(cls, b, reader):
         return Binding(cls.read_string(b), reader.readObject(b))
+
+
+class BytecodeIO(_GraphBinaryTypeIO):
+    python_type = Bytecode
+    graphbinary_type = DataType.bytecode
+    
+    @classmethod
+    def dictify(cls, obj, writer):
+        ba = bytearray([cls.graphbinary_type.value])
+        ba.extend(struct.pack(">i", len(obj.step_instructions)))
+        for inst in obj.step_instructions:
+            inst_name, inst_args = inst[0], inst[1:] if len(inst) > 1 else []
+            ba.extend(cls.string_as_bytes(inst_name))
+            ba.extend(struct.pack(">i", len(inst_args)))
+            for arg in inst_args:
+                ba.extend(writer.writeObject(arg))
+
+        ba.extend(struct.pack(">i", len(obj.source_instructions)))
+        for inst in obj.source_instructions:
+            inst_name, inst_args = inst[0], inst[1:] if len(inst) > 1 else []
+            ba.extend(cls.string_as_bytes(inst_name))
+            ba.extend(struct.pack(">i", len(inst_args)))
+            for arg in inst_args:
+                ba.extend(writer.writeObject(arg))
+                
+        return ba
+    
+    @classmethod
+    def objectify(cls, b, reader):
+        bytecode = Bytecode()
+        
+        step_count = cls.read_int(b)
+        ix = 0
+        while ix < step_count:
+            inst = [cls.read_string(b)]
+            inst_ct = cls.read_int(b)
+            iy = 0
+            while iy < inst_ct:
+                inst.append(reader.readObject(b))
+                iy += 1
+            bytecode.step_instructions.append(inst)
+            ix += 1
+
+        source_count = cls.read_int(b)
+        ix = 0
+        while ix < source_count:
+            inst = [cls.read_string(b)]
+            inst_ct = cls.read_int(b)
+            iy = 0
+            while iy < inst_ct:
+                inst.append(reader.readObject(b))
+                iy += 1
+            bytecode.source_instructions.append(inst)
+            ix += 1
+
+        return bytecode
 

@@ -409,7 +409,8 @@ class TestGraphSONWriter(object):
         assert result == json.loads(self.graphson_writer.writeObject(P.within(1)))
 
     def test_strategies(self):
-        # we have a proxy model for now given that we don't want to have to have g:XXX all registered on the Gremlin traversal machine (yet)
+        # we have a proxy model for now given that we don't want to have to have g:XXX all registered on the 
+        # Gremlin traversal machine (yet)
         assert {"@type": "g:SubgraphStrategy", "@value": {}} == json.loads(
             self.graphson_writer.writeObject(SubgraphStrategy))
         assert {"@type": "g:SubgraphStrategy", "@value": {
