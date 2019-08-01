@@ -38,7 +38,8 @@ from gremlin_python import statics
 from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, DictType, ListType, SetType, \
                                    SingleByte, ByteBufferType, SingleChar
 from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Cardinality, Column, Direction, Operator, \
-                                             Order, Pick, Pop, P, TextP, Traversal, Traverser, TraversalStrategy, T
+                                             Order, Pick, Pop, P, Scope, TextP, Traversal, Traverser, \
+                                             TraversalStrategy, T
 from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path
 
 log = logging.getLogger(__name__)
@@ -80,6 +81,10 @@ class DataType(Enum):
     order = 0x1a
     pick = 0x1b
     pop = 0x1c
+    lambda_ = 0x1d
+    p = 0x1e
+    scope = 0x1f
+    t = 0x20
 
 
 class GraphBinaryTypeType(type):
@@ -644,3 +649,57 @@ class BytecodeIO(_GraphBinaryTypeIO):
 
         return bytecode
 
+
+class LambdaIO(_GraphBinaryTypeIO):
+
+    python_type = FunctionType
+    graphbinary_type = DataType.lambda_
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        ba = bytearray([cls.graphbinary_type.value])
+        lambda_result = obj()
+        script = lambda_result if isinstance(lambda_result, str) else lambda_result[0]
+        language = statics.default_lambda_language if isinstance(lambda_result, str) else lambda_result[1]
+
+        ba.extend(cls.string_as_bytes(language))
+
+        script_cleaned = script
+        script_args = -1
+
+        if language == "gremlin-jython" or language == "gremlin-python":
+            if not script.strip().startswith("lambda"):
+                script_cleaned = "lambda " + script
+            script_args = six.get_function_code(eval(script_cleaned)).co_argcount
+
+        ba.extend(cls.string_as_bytes(script_cleaned))
+        ba.extend(struct.pack(">i", script_args))
+
+        return ba
+
+
+class PIO(_GraphBinaryTypeIO):
+    graphbinary_type = DataType.p
+    python_type = P
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        ba = bytearray([cls.graphbinary_type.value])
+        ba.extend(cls.string_as_bytes(obj.operator))
+        additional = [writer.writeObject(obj.value), writer.writeObject(obj.other)] \
+            if obj.other is not None else [writer.writeObject(obj.value)]
+        ba.extend(struct.pack(">i", len(additional)))
+        for a in additional:
+            ba.extend(a)
+
+        return ba
+
+
+class ScopeIO(_EnumIO):
+    graphbinary_type = DataType.scope
+    python_type = Scope
+
+
+class TIO(_EnumIO):
+    graphbinary_type = DataType.t
+    python_type = T

@@ -423,7 +423,7 @@ Where:
 
 ==== P
 
-Format: `{predicate}{values_length}{value_0}...{value_n}`
+Format: `{name}{values_length}{value_0}...{value_n}`
 
 Where:
 
