@@ -35,8 +35,10 @@ from aenum import Enum
 from isodate import parse_duration, duration_isoformat
 
 from gremlin_python import statics
-from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, DictType, ListType, SetType, SingleByte, ByteBufferType, SingleChar
-from gremlin_python.process.traversal import Binding, Bytecode, P, TextP, Traversal, Traverser, TraversalStrategy, T
+from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, DictType, ListType, SetType, \
+                                   SingleByte, ByteBufferType, SingleChar
+from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Cardinality, Column, Direction, Operator, \
+                                             Order, Pick, Pop, P, TextP, Traversal, Traverser, TraversalStrategy, T
 from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path
 
 log = logging.getLogger(__name__)
@@ -65,9 +67,19 @@ class DataType(Enum):
     edge = 0x0d
     path = 0x0e
     property = 0x0f
-    tinkergraph = 0x10
+    graph = 0x10
     vertex = 0x11
     vertexproperty = 0x12
+    barrier = 0x13
+    binding = 0x14      # todo
+    bytecode = 0x15     # todo
+    cardinality = 0x16
+    column = 0x17
+    direction = 0x18
+    operator = 0x19
+    order = 0x1a
+    pick = 0x1b
+    pop = 0x1c
 
 
 class GraphBinaryTypeType(type):
@@ -133,7 +145,8 @@ class _GraphBinaryTypeIO(object):
 
     symbolMap = {"global_": "global", "as_": "as", "in_": "in", "and_": "and",
                  "or_": "or", "is_": "is", "not_": "not", "from_": "from",
-                 "set_": "set", "list_": "list", "all_": "all", "with_": "with"}
+                 "set_": "set", "list_": "list", "all_": "all", "with_": "with",
+                 "filter_": "filter", "id_": "id", "max_": "max", "min_": "min", "sum_": "sum"}
 
     @classmethod
     def as_bytes(cls, graphbin_type=None, size=None, *args):
@@ -452,7 +465,7 @@ class PropertyIO(_GraphBinaryTypeIO):
 class TinkerGraphIO(_GraphBinaryTypeIO):
 
     python_type = Graph
-    graphbinary_type = DataType.tinkergraph
+    graphbinary_type = DataType.graph
 
     @classmethod
     def dictify(cls, obj, writer):
@@ -504,3 +517,60 @@ class VertexPropertyIO(_GraphBinaryTypeIO):
         b.read(1)
         b.read(1)
         return vp
+
+
+class _EnumIO(_GraphBinaryTypeIO):
+
+    python_type = Enum
+    base_enum = None
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        ba = bytearray([cls.graphbinary_type.value])
+        ba.extend(cls.string_as_bytes(cls.unmangleKeyword(str(obj.name))))
+        return ba
+
+    @classmethod
+    def objectify(cls, b, reader):
+        return cls.base_enum[cls.read_string(b)]
+
+
+class BarrierIO(_EnumIO):
+    graphbinary_type = DataType.barrier
+    base_enum = Barrier
+
+
+class CardinalityIO(_EnumIO):
+    graphbinary_type = DataType.cardinality
+    base_enum = Cardinality
+
+
+class ColumnIO(_EnumIO):
+    graphbinary_type = DataType.column
+    base_enum = Column
+
+
+class DirectionIO(_EnumIO):
+    graphbinary_type = DataType.direction
+    base_enum = Direction
+
+
+class OperatorIO(_EnumIO):
+    graphbinary_type = DataType.operator
+    base_enum = Operator
+
+
+class OrderIO(_EnumIO):
+    graphbinary_type = DataType.order
+    base_enum = Order
+
+
+class PickIO(_EnumIO):
+    graphbinary_type = DataType.pick
+    base_enum = Pick
+
+
+class PopIO(_EnumIO):
+    graphbinary_type = DataType.pop
+    base_enum = Pop
+
