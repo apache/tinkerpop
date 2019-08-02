@@ -90,6 +90,15 @@ class DataType(Enum):
     biginteger = 0x23    #todo
     byte = 0x24
     bytebuffer = 0x25
+    short = 0x26         #todo?
+    boolean = 0x27
+    textp = 0x28
+    traversalstrategy = 0x29
+    bulkset = 0x2a
+    tree = 0x2b
+    metrics = 0x2c
+    traversalmetrics = 0x2d
+    custom = 0x00
 
 
 class GraphBinaryTypeType(type):
@@ -752,3 +761,33 @@ class ByteBufferIO(_GraphBinaryTypeIO):
         return ByteBufferType(b.read(size))
 
 
+class BooleanIO(_GraphBinaryTypeIO):
+    python_type = bool
+    graphbinary_type = DataType.boolean
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        ba = bytearray([cls.graphbinary_type.value])
+        ba.extend(struct.pack(">b", 0x01 if obj else 0x00))
+        return ba
+
+    @classmethod
+    def objectify(cls, b, reader):
+        return True if struct.unpack_from(">b", b.read(1))[0] == 0x01 else False
+
+
+class TextPIO(_GraphBinaryTypeIO):
+    graphbinary_type = DataType.textp
+    python_type = TextP
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        ba = bytearray([cls.graphbinary_type.value])
+        ba.extend(cls.string_as_bytes(obj.operator))
+        additional = [writer.writeObject(obj.value), writer.writeObject(obj.other)] \
+            if obj.other is not None else [writer.writeObject(obj.value)]
+        ba.extend(struct.pack(">i", len(additional)))
+        for a in additional:
+            ba.extend(a)
+
+        return ba
