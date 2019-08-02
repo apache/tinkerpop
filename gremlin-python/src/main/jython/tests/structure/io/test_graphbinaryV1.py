@@ -28,7 +28,7 @@ from mock import Mock
 
 import six
 
-from gremlin_python.statics import timestamp, long
+from gremlin_python.statics import timestamp, long, SingleByte, SingleChar, ByteBufferType
 from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Graph, Path
 from gremlin_python.structure.io.graphbinaryV1 import GraphBinaryWriter, GraphBinaryReader, DataType
 from gremlin_python.process.traversal import P, Barrier, Binding, Bytecode
@@ -165,6 +165,16 @@ class TestGraphSONWriter(object):
         x.source_instructions.append(["withStrategies", "SubgraphStrategy"])
         x.step_instructions.append(["V", 1, 2, 3])
         x.step_instructions.append(["out"])
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output
+
+    def test_byte(self):
+        x = int.__new__(SingleByte, 1)
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output
+
+    def test_bytebuffer(self):
+        x = ByteBufferType("c29tZSBieXRlcyBmb3IgeW91", "utf8")
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
         assert x == output
 

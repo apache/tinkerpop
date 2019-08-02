@@ -85,6 +85,11 @@ class DataType(Enum):
     p = 0x1e
     scope = 0x1f
     t = 0x20
+    traverser = 0x21
+    bigdecimal = 0x22    #todo
+    biginteger = 0x23    #todo
+    byte = 0x24
+    bytebuffer = 0x25
 
 
 class GraphBinaryTypeType(type):
@@ -703,3 +708,47 @@ class ScopeIO(_EnumIO):
 class TIO(_EnumIO):
     graphbinary_type = DataType.t
     python_type = T
+
+
+class TraverserIO(_GraphBinaryTypeIO):
+    graphbinary_type = DataType.traverser
+    python_type = Traverser
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        ba = bytearray([cls.graphbinary_type.value])
+        ba.extend(struct.pack(">i", obj.bulk))
+        ba.extend(writer.writeObject(obj.object))
+
+        return ba
+
+
+class ByteIO(_GraphBinaryTypeIO):
+    python_type = SingleByte
+    graphbinary_type = DataType.byte
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        ba = bytearray([cls.graphbinary_type.value])
+        ba.extend(struct.pack(">b", obj))
+        return ba
+
+    @classmethod
+    def objectify(cls, b, reader):
+        return int.__new__(SingleByte, struct.unpack_from(">b", b.read(1))[0])
+
+
+class ByteBufferIO(_GraphBinaryTypeIO):
+    python_type = ByteBufferType
+    graphbinary_type = DataType.bytebuffer
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        return cls.as_bytes(cls.graphbinary_type, len(obj), obj)
+
+    @classmethod
+    def objectify(cls, b, reader):
+        size = cls.read_int(b)
+        return ByteBufferType(b.read(size))
+
+
