@@ -375,6 +375,7 @@ limitations under the License.
                         <exclude>**/target/**</exclude>
                         <exclude>data/*.txt</exclude>
                         <exclude>**/*.kryo</exclude>
+                        <exclude>**/*.gbin</exclude>
                         <exclude>**/*.iml</exclude>
                         <exclude>**/*.json</exclude>
                         <exclude>**/*.xml</exclude>

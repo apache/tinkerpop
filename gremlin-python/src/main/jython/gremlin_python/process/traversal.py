@@ -678,7 +678,7 @@ class Bindings(object):
 
 
 class Binding(object):
-    def __init__(self,key,value):
+    def __init__(self, key, value):
         self.key = key
         self.value = value
 
