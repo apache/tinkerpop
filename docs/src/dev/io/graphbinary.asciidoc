@@ -532,8 +532,8 @@ Where:
 `{type_code}{type_info}{value_flag}{value}` followed by the "bulk" which is a `Long` value.
 
 If the implementing language does not have a `BulkSet` object to deserialize into, this format can be coerced to a
-`List` and still be considered compliant with Gremlin. Simply create "expand the bulk" by adding the item to the `List`
-the number of times specified by the bulk.
+`List` and still be considered compliant with Gremlin. Simply "expand the bulk" by adding the item to the `List` the
+number of times specified by the bulk.
 
 ==== Tree
 

@@ -58,7 +58,7 @@ class DataType(Enum):
     string = 0x03
     date = 0x04
     timestamp = 0x05
-    clazz = 0x06
+    clazz = 0x06                  #todo
     double = 0x07
     float = 0x08
     list = 0x09
@@ -86,14 +86,14 @@ class DataType(Enum):
     scope = 0x1f
     t = 0x20
     traverser = 0x21
-    bigdecimal = 0x22    #todo
-    biginteger = 0x23    #todo
+    bigdecimal = 0x22             #todo
+    biginteger = 0x23             #todo
     byte = 0x24
     bytebuffer = 0x25
-    short = 0x26         #todo?
+    short = 0x26                  #todo?
     boolean = 0x27
     textp = 0x28
-    traversalstrategy = 0x29
+    traversalstrategy = 0x29      #todo
     bulkset = 0x2a
     tree = 0x2b
     metrics = 0x2c
@@ -791,3 +791,21 @@ class TextPIO(_GraphBinaryTypeIO):
             ba.extend(a)
 
         return ba
+
+
+class BulkSetIO(_GraphBinaryTypeIO):
+
+    graphbinary_type = DataType.bulkset
+
+    @classmethod
+    def objectify(cls, buff, reader):
+        size = cls.read_int(buff)
+        the_list = []
+        while size > 0:
+            itm = reader.readObject(buff)
+            bulk = cls.read_int(buff)
+            for y in range(bulk):
+                the_list.append(itm)            
+            size = size - 1
+
+        return the_list
