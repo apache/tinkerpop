@@ -18,13 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.util;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
+
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.spi.LoggingEvent;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Provides a way to gather logging events for purpose of testing log output.
@@ -37,7 +38,7 @@ public class Log4jRecordingAppender extends AppenderSkeleton {
 
     public Log4jRecordingAppender() {
         super();
-        setLayout(new PatternLayout("%p - %m%n"));
+        setLayout(new PatternLayout("%p - %m%n")); // note the EOLN char(s) appended
     }
 
     @Override
@@ -63,9 +64,18 @@ public class Log4jRecordingAppender extends AppenderSkeleton {
         messages.clear();
     }
 
+    /**
+     * @param regex not null
+     * @return true if there is a substring of a message matching the regular expression, where:
+     *         . matches also the EOLN char(s) defined in the layout.
+     *         $ matches the end of the string
+     */
     public boolean logContainsAny(final String regex) {
-        // chop off the line feed so that the regex doesn't have to account for that
-        return messages.stream().anyMatch(m -> m.substring(0,m.length() - 1).matches(regex));
+        Pattern pattern;
+
+        pattern = Pattern.compile( regex, Pattern.DOTALL );
+
+        return messages.stream().anyMatch(m -> pattern.matcher( m ).find());
     }
 
     public boolean logContainsAny(final String loggerName, final Level level, final String fragment) {
