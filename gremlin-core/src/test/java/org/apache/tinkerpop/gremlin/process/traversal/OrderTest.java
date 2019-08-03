@@ -18,9 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import static org.junit.Assert.assertEquals;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -28,8 +26,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -37,7 +38,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class OrderTest {
 
-    private static final SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy");
+    private static final SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy", Locale.US);
 
     @Parameterized.Parameters(name = "{0}.test({1},{2})")
     public static Iterable<Object[]> data() throws ParseException {
