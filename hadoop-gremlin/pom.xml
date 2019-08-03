@@ -219,6 +219,28 @@ limitations under the License.
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>check-hadoop-installed</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireEnvironmentVariable>
+                                     <variableName>HADOOP_HOME</variableName>
+                                     <message>Please install Hadoop standalone and set HADOOP_HOME OS environment variable</message>
+                                </requireEnvironmentVariable>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
