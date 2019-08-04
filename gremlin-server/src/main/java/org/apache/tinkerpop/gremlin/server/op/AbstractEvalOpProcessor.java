@@ -30,7 +30,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
-import org.apache.tinkerpop.gremlin.server.ResponseHandlerContext;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.Context;
@@ -188,15 +187,6 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
         }
 
         return Optional.empty();
-    }
-
-    /**
-     * @deprecated As of release 3.3.8, replaced by {@link #evalOpInternal(Context, Supplier, BindingSupplier)}.
-     */
-    @Deprecated
-    protected void evalOpInternal(final ResponseHandlerContext ctx, final Supplier<GremlinExecutor> gremlinExecutorSupplier,
-                                  final BindingSupplier bindingsSupplier) throws OpProcessorException {
-        evalOpInternal(ctx.getContext(), gremlinExecutorSupplier, bindingsSupplier);
     }
 
     /**
