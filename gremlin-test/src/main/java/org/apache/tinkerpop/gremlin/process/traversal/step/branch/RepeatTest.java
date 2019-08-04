@@ -406,12 +406,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
     public void g_VX3X_repeatXbothX_createdXX_untilXloops_is_40XXemit_repeatXin_knowsXX_emit_loopsXisX1Xdedup_values() {
         final Traversal<Vertex, String> traversal = get_g_VX3X_repeatXbothX_createdXX_untilXloops_is_40XXemit_repeatXin_knowsXX_emit_loopsXisX1Xdedup_values(convertToVertexId("lop"));
         printTraversalForm(traversal);
-        for (String res :   new String[]{"josh","lop", "ripple"})
-        {
-            assertTrue(traversal.hasNext());
-            String lang = traversal.next();
-            assertEquals(lang, res);
-        }
+        checkResults(Arrays.asList("josh", "ripple", "lop"), traversal);
         assertFalse(traversal.hasNext());
     }
 
