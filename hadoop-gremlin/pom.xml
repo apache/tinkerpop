@@ -234,7 +234,11 @@ limitations under the License.
                             <rules>
                                 <requireEnvironmentVariable>
                                      <variableName>HADOOP_HOME</variableName>
-                                     <message>Please install Hadoop standalone and set HADOOP_HOME OS environment variable</message>
+                                     <message>Please install Hadoop ${hadoop.version} standalone and set HADOOP_HOME OS environment variable</message>
+                                </requireEnvironmentVariable>
+                                <requireEnvironmentVariable>
+                                     <variableName>HADOOP_GREMLIN_LIBS</variableName>
+                                     <message>Please set HADOOP_GREMLIN_LIBS OS environment variable as of http://tinkerpop.apache.org/docs/current/reference/#hadoop-gremlin</message>
                                 </requireEnvironmentVariable>
                             </rules>
                         </configuration>
