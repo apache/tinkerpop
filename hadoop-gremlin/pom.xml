@@ -237,8 +237,10 @@ limitations under the License.
                                      <message>Please install Hadoop ${hadoop.version} standalone and set HADOOP_HOME OS environment variable</message>
                                 </requireEnvironmentVariable>
                                 <requireEnvironmentVariable>
+                                     <level>WARN</level>
                                      <variableName>HADOOP_GREMLIN_LIBS</variableName>
-                                     <message>Please set HADOOP_GREMLIN_LIBS OS environment variable as of http://tinkerpop.apache.org/docs/current/reference/#hadoop-gremlin</message>
+                                     <message>Please set HADOOP_GREMLIN_LIBS OS environment variable as of http://tinkerpop.apache.org/docs/current/reference/#hadoop-gremlin&#x000A;HADOOP_GREMLIN_LIBS=&lt;hadoop installation dir&gt;/share/hadoop/common/lib seems good enough
+                                     </message>
                                 </requireEnvironmentVariable>
                             </rules>
                         </configuration>
