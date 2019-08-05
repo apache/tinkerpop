@@ -6,7 +6,7 @@
     <parent>
         <artifactId>tinkerpop</artifactId>
         <groupId>org.apache.tinkerpop</groupId>
-        <version>3.4.3-SNAPSHOT</version>
+        <version>3.4.3</version>
     </parent>
     <artifactId>sparql-gremlin</artifactId>
     <name>Apache TinkerPop :: SPARQL Gremlin</name>

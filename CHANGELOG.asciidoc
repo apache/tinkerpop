@@ -21,7 +21,7 @@ limitations under the License.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
 [[release-3-4-3]]
-=== TinkerPop 3.4.3 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.4.3 (Release Date: August 5, 2019)
 
 This release also includes changes from <<release-3-3-8, 3.3.8>>.
 
@@ -40,6 +40,39 @@ This release also includes changes from <<release-3-3-8, 3.3.8>>.
 * Added `userAgent` to RequestOptions. Gremlin Console sends `Gremlin Console/<version>` as the `userAgent`.
 * Fixed DriverRemoteConnection ignoring `with` `Token` options when multiple were set.
 * Added `:set warnings <true|false>` to Gremlin Console.
+
+==== Bugs
+
+* TINKERPOP-1619 TinkerGraphComputer worker count affects OptionalStep query results
+* TINKERPOP-2157 SparkStarBarrierInterceptor injects (Byte) 0
+* TINKERPOP-2224 Detect and fix resource leak
+* TINKERPOP-2230 match() step unexpected behaviours
+* TINKERPOP-2232 RemoteStrategy does not call parent class TraversalStrategy __init__
+* TINKERPOP-2238 Fix remaining iterator leaks marked by @IgnoreIteratorLeak
+* TINKERPOP-2241 Client exception don't match Server exception when server  throw StackOverflowError
+* TINKERPOP-2248 Instability of driver for blocked requests
+* TINKERPOP-2257 transaction itty  may still be visited after commit
+* TINKERPOP-2264 Gremlin Python should deserialize g:Date to UTC
+
+==== Improvements
+
+* TINKERPOP-1084 Branch option tokens should be allowed to be traversals.
+* TINKERPOP-1553 Deprecate store() in favor of aggregate(Scope)
+* TINKERPOP-1921 Support hasNext terminal step in GLVs
+* TINKERPOP-2020 Support withComputer() for javascript
+* TINKERPOP-2223 Update jackson databind to 2.9.9
+* TINKERPOP-2236 Improve error messaging for TinkerGraph IdManagers that fail on conversions
+* TINKERPOP-2237 Prevent error when closing sessions that don't exist *(breaking)*
+* TINKERPOP-2242 Bump to netty 4.1.36
+* TINKERPOP-2243 Add user-agent to RequestOptions
+* TINKERPOP-2246 Consolidate the error propagation to the client
+* TINKERPOP-2250 Support toString serialization in GraphBinary
+* TINKERPOP-2256 processAllStarts of AggregateStep should only be called when barrier is empty
+* TINKERPOP-2260 Update jackson databind 2.9.9.1
+* TINKERPOP-2265 Deprecate Traversal.getSideEffects() functionality for remoting purposes
+* TINKERPOP-2270 Deprecate multi/metaproperty support in Neo4j
+* TINKERPOP-2271 Add console preference to control server-originated warning display
+* TINKERPOP-2272 Rename steps and tokens that conflict with standard python functions
 
 [[release-3-4-2]]
 === TinkerPop 3.4.2 (Release Date: May 28, 2019)
