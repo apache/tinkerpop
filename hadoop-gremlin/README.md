@@ -30,6 +30,8 @@ Follow the [installation procedure](https://dev.to/awwsmm/installing-and-running
 
 Set up HADOOP_GREMLIN_LIBS OS environment variable as of [TinkerPop Documentation](http://tinkerpop.apache.org/docs/current/reference/#hadoop-gremlin).
 
+NOTE: HADOOP_GREMLIN_LIBS=*<hadoop installation dir>*/share/hadoop/common/lib seems good enough
+
 
 Environment Variables Set
 --------------------------------
