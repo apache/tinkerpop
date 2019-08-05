@@ -233,6 +233,7 @@ limitations under the License.
                         <configuration>
                             <rules>
                                 <requireEnvironmentVariable>
+                                     <level>WARN</level>
                                      <variableName>HADOOP_HOME</variableName>
                                      <message>Please install Hadoop ${hadoop.version} standalone and set HADOOP_HOME OS environment variable</message>
                                 </requireEnvironmentVariable>
