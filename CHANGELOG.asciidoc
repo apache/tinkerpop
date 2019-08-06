@@ -24,7 +24,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.3.9 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * TINKERPOP-2260 Update jackson databind 2.9.9.3
-
+* TINKERPOP-2277 Postpone the timing of transport creation to `connection.write` in Gremlin Python SDK
 
 [[release-3-3-8]]
 === TinkerPop 3.3.8 (Release Date: August 5, 2019)
