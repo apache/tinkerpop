@@ -22,7 +22,15 @@ import com.google.testing.compile.Compilation;
 import com.google.testing.compile.JavaFileObjects;
 import org.junit.Test;
 
+import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.Compiler.javac;
@@ -64,5 +72,58 @@ public class GremlinDslProcessorTest {
                 .withProcessors(new GremlinDslProcessor())
                 .compile(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialNoDefaultMethodsTraversalDsl.java")));
         assertThat(compilation).succeededWithoutWarnings();
+    }
+
+    @Test
+    public void shouldCompileRemoteDslTraversal() {
+        Compilation compilation = javac()
+                .withProcessors(new GremlinDslProcessor())
+                .compile(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialTraversalDsl.java")),
+                        JavaFileObjects.forResource(GremlinDsl.class.getResource("RemoteDslTraversal.java")));
+
+        try {
+            ClassLoader cl = new JavaFileObjectClassLoader(compilation.generatedFiles());
+            Class cls = cl.loadClass("org.apache.tinkerpop.gremlin.process.traversal.dsl.RemoteDslTraversal");
+            cls.getConstructor().newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    static class JavaFileObjectClassLoader extends ClassLoader {
+        Map<String, JavaFileObject> classFileMap;
+
+        JavaFileObjectClassLoader(List<JavaFileObject> classFiles) {
+            classFileMap = classFiles.stream().collect(Collectors.toMap(
+                    f -> f.toUri().toString()
+                            .replaceFirst(".*(?=org/apache/tinkerpop)", ""),
+                    Function.identity()));
+        }
+
+        public Class findClass(String name) {
+            try {
+                byte[] b = loadClassData(name);
+                return defineClass(name, b, 0, b.length);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        private byte[] loadClassData(String name) throws IOException {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            String classFilename = name.replaceAll("\\.", "/") + ".class";
+            InputStream in = classFileMap.get(classFilename).openInputStream();
+            try {
+                byte[] buf = new byte[1024];
+                int len = in.read(buf);
+                while (len != -1) {
+                    out.write(buf, 0, len);
+                    len = in.read(buf);
+                }
+            } finally {
+                in.close();
+            }
+            return out.toByteArray();
+        }
     }
 }

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential;
 
+import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -42,6 +43,10 @@ public class CredentialTraversalSourceDsl extends GraphTraversalSource {
 
     public CredentialTraversalSourceDsl(final Graph graph) {
         super(graph);
+    }
+
+    public CredentialTraversalSourceDsl(RemoteConnection connection) {
+        super(connection);
     }
 
     /**
