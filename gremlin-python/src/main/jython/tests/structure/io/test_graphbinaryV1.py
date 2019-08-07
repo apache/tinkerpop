@@ -77,7 +77,7 @@ class TestGraphSONWriter(object):
         assert x == output
 
     def test_date(self):
-        x = calendar.timegm(datetime.datetime(2016, 12, 14, 16, 14, 36, 295000).utctimetuple())
+        x = datetime.datetime(2016, 12, 14, 16, 14, 36, 295000)
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
         assert x == output
 

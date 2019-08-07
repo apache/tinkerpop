@@ -88,7 +88,6 @@ class TestGraphSONReader(object):
         assert x.count("marko") == 1
         assert x.count("josh") == 3
 
-
     def test_number_input(self):
         x = self.graphson_reader.readObject(json.dumps({
             "@type": "gx:Byte",
@@ -535,44 +534,3 @@ class TestGraphSONWriter(object):
         c = str.__new__(SingleChar, chr(76))
         output = self.graphson_writer.writeObject(c)
         assert expected == output
-
-
-class TestFunctionalGraphSONIO(object):
-    """Functional IO tests"""
-
-    def test_timestamp(self, remote_connection):
-        g = Graph().traversal().withRemote(remote_connection)
-        ts = timestamp(1481750076295 / 1000)
-        resp = g.addV('test_vertex').property('ts', ts)
-        resp = resp.toList()
-        vid = resp[0].id
-        try:
-            ts_prop = g.V(vid).properties('ts').toList()[0]
-            assert isinstance(ts_prop.value, timestamp)
-            assert ts_prop.value == ts
-        finally:
-            g.V(vid).drop().iterate()
-
-    def test_datetime(self, remote_connection):
-        g = Graph().traversal().withRemote(remote_connection)
-        dt = datetime.datetime.utcfromtimestamp(1481750076295 / 1000)
-        resp = g.addV('test_vertex').property('dt', dt).toList()
-        vid = resp[0].id
-        try:
-            dt_prop = g.V(vid).properties('dt').toList()[0]
-            assert isinstance(dt_prop.value, datetime.datetime)
-            assert dt_prop.value == dt
-        finally:
-            g.V(vid).drop().iterate()
-
-    def test_uuid(self, remote_connection):
-        g = Graph().traversal().withRemote(remote_connection)
-        uid = uuid.UUID("41d2e28a-20a4-4ab0-b379-d810dede3786")
-        resp = g.addV('test_vertex').property('uuid', uid).toList()
-        vid = resp[0].id
-        try:
-            uid_prop = g.V(vid).properties('uuid').toList()[0]
-            assert isinstance(uid_prop.value, uuid.UUID)
-            assert uid_prop.value == uid
-        finally:
-            g.V(vid).drop().iterate()

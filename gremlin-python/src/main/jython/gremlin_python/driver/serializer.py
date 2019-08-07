@@ -20,7 +20,11 @@ try:
     import ujson as json
 except ImportError:
     import json
+import struct
+import uuid
+import io
 
+from gremlin_python.structure.io import graphbinaryV1
 from gremlin_python.structure.io import graphsonV2d0
 from gremlin_python.structure.io import graphsonV3d0
 
@@ -31,7 +35,7 @@ class Processor:
     """Base class for OpProcessor serialization system."""
 
     def __init__(self, writer):
-        self._graphson_writer = writer
+        self._writer = writer
 
     def get_op_args(self, op, args):
         op_method = getattr(self, op, None)
@@ -56,7 +60,7 @@ class Traversal(Processor):
 
     def bytecode(self, args):
         gremlin = args['gremlin']
-        args['gremlin'] = self._graphson_writer.toDict(gremlin)
+        args['gremlin'] = self._writer.toDict(gremlin)
         aliases = args.get('aliases', '')
         if not aliases:
             aliases = {'g': 'g'}
@@ -143,7 +147,8 @@ class GraphSONMessageSerializer(object):
         return message
 
     def deserialize_message(self, message):
-        return self._graphson_reader.toObject(message)
+        msg = json.loads(message.decode('utf-8'))
+        return self._graphson_reader.toObject(msg)
 
 
 class GraphSONSerializersV2d0(GraphSONMessageSerializer):
@@ -162,3 +167,117 @@ class GraphSONSerializersV3d0(GraphSONMessageSerializer):
         writer = graphsonV3d0.GraphSONWriter()
         version = b"application/vnd.gremlin-v3.0+json"
         super(GraphSONSerializersV3d0, self).__init__(reader, writer, version)
+
+
+class GraphBinaryMessageSerializerV1(object):
+    DEFAULT_READER_CLASS = graphbinaryV1.GraphBinaryReader
+    DEFAULT_WRITER_CLASS = graphbinaryV1.GraphBinaryWriter
+    DEFAULT_VERSION = b"application/vnd.graphbinary-v1.0"
+
+    def __init__(self, reader=None, writer=None, version=None):
+        if not version:
+            version = self.DEFAULT_VERSION
+        self._version = version
+        if not reader:
+            reader = self.DEFAULT_READER_CLASS()
+        self._graphbinary_reader = reader
+        if not writer:
+            writer = self.DEFAULT_WRITER_CLASS()
+        self._graphbinary_writer = writer
+        self.standard = Standard(writer)
+        self.traversal = Traversal(writer)
+
+    @property
+    def version(self):
+        """Read only property"""
+        return self._version
+
+    def get_processor(self, processor):
+        processor = getattr(self, processor, None)
+        if not processor:
+            raise Exception("Unknown processor")
+        return processor
+
+    def serialize_message(self, request_id, request_message):
+        processor = request_message.processor
+        op = request_message.op
+        args = request_message.args
+        if not processor:
+            processor_obj = self.get_processor('standard')
+        else:
+            processor_obj = self.get_processor(processor)
+        args = processor_obj.get_op_args(op, args)
+        message = self.build_message(request_id, processor, op, args)
+        return message
+
+    def build_message(self, request_id, processor, op, args):
+        message = {
+            'requestId': request_id,
+            'processor': processor,
+            'op': op,                                               
+            'args': args
+        }
+        return self.finalize_message(message, 0x20, self.version)
+
+    def finalize_message(self, message, mime_len, mime_type):
+        ba = bytearray()
+        ba.extend(struct.pack(">b", mime_len))
+        ba.extend(mime_type)
+        ba.extend([0x81])
+        ba.extend(uuid.UUID(message['requestId']).bytes)
+
+        ba.extend(struct.pack(">i", len(message['op'])))
+        ba.extend(message['op'].encode("utf-8"))
+
+        ba.extend(struct.pack(">i", len(message['processor'])))
+        ba.extend(message['processor'].encode("utf-8"))
+
+        args = message["args"]
+        ba.extend(struct.pack(">i", len(args)))
+        for k, v in args.items():
+            ba.extend(self._graphbinary_writer.writeObject(k))
+            ba.extend(self._graphbinary_writer.writeObject(v))
+
+        return bytes(ba)
+
+    def deserialize_message(self, message):
+        b = io.BytesIO(message)
+
+        #TODO: lots of hardcode null checks need better resolution
+
+        b.read(1)  # version
+
+        b.read(1)  # requestid nullable
+        request_id = str(uuid.UUID(bytes=b.read(16))) # result queue uses string as a key
+
+        status_code = struct.unpack(">i", b.read(4))[0]
+
+        b.read(1)  # status message nullable
+        status_msg = b.read(struct.unpack(">i", b.read(4))[0]).decode("utf-8")
+
+        attr_count = struct.unpack(">i", b.read(4))[0]
+        status_attrs = {}
+        while attr_count > 0:
+            k = self._graphbinary_reader.toObject(b)
+            v = self._graphbinary_reader.toObject(b)
+            status_attrs[k] = v
+            attr_count = attr_count - 1
+
+        meta_count = struct.unpack(">i", b.read(4))[0]
+        meta_attrs = {}
+        while meta_count > 0:
+            k = self._graphbinary_reader.toObject(b)
+            v = self._graphbinary_reader.toObject(b)
+            meta_attrs[k] = v
+            meta_count = meta_count - 1
+
+        result = self._graphbinary_reader.toObject(b)
+
+        msg = {'requestId': request_id,
+               'status': {'code': status_code,
+                          'message': status_msg,
+                          'attributes': status_attrs},
+               'result': {'meta': meta_attrs,
+                          'data': result}}
+
+        return msg

@@ -76,9 +76,10 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
     def data_received(self, message, results_dict):
         # if Gremlin Server cuts off then we get a None for the message
         if message is None:
-            raise GremlinServerError({'code': 500, 'message':'Server disconnected - please try to reconnect', 'attributes': {}})
+            raise GremlinServerError({'code': 500, 
+                                      'message': 'Server disconnected - please try to reconnect', 'attributes': {}})
 
-        message = self._message_serializer.deserialize_message(json.loads(message.decode('utf-8')))
+        message = self._message_serializer.deserialize_message(message)
         request_id = message['requestId']
         result_set = results_dict[request_id]
         status_code = message['status']['code']
