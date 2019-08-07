@@ -20,7 +20,7 @@ from concurrent.futures import Future
 
 from gremlin_python.driver import client, serializer
 from gremlin_python.driver.remote_connection import (
-    RemoteConnection, RemoteTraversal, RemoteTraversalSideEffects)
+    RemoteConnection, RemoteTraversal)
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
@@ -52,9 +52,7 @@ class DriverRemoteConnection(RemoteConnection):
     def submit(self, bytecode):
         result_set = self._client.submit(bytecode)
         results = result_set.all().result()
-        side_effects = RemoteTraversalSideEffects(result_set.request_id, self._client,
-                                                  result_set.status_attributes)
-        return RemoteTraversal(iter(results), side_effects)
+        return RemoteTraversal(iter(results))
 
     def submitAsync(self, bytecode):
         future = Future()
@@ -64,9 +62,7 @@ class DriverRemoteConnection(RemoteConnection):
             try:
                 result_set = f.result()
                 results = result_set.all().result()
-                side_effects = RemoteTraversalSideEffects(result_set.request_id, self._client,
-                                                          result_set.status_attributes)
-                future.set_result(RemoteTraversal(iter(results), side_effects))
+                future.set_result(RemoteTraversal(iter(results)))
             except Exception as e:
                 future.set_exception(e)
 

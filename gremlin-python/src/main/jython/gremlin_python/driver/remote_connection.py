@@ -48,95 +48,9 @@ class RemoteConnection(object):
 
 
 class RemoteTraversal(traversal.Traversal):
-    def __init__(self, traversers, side_effects):
+    def __init__(self, traversers):
         super(RemoteTraversal, self).__init__(None, None, None)
         self.traversers = traversers
-        self._side_effects = side_effects
-
-    @property
-    def side_effects(self):
-        return self._side_effects
-
-    @side_effects.setter
-    def side_effects(self, val):
-        self._side_effects = val
-
-
-class RemoteTraversalSideEffects(traversal.TraversalSideEffects):
-    def __init__(self, side_effect, client, status_attributes):
-        self._side_effect = side_effect
-        self._client = client
-        self._keys = set()
-        self._side_effects = {}
-        self._closed = False
-        self._status_attributes = status_attributes
-
-    @property
-    def status_attributes(self):
-        return self._status_attributes
-
-    def keys(self):
-        if not self._closed:
-            message = request.RequestMessage(
-                'traversal', 'keys',
-                {'sideEffect': self._side_effect,
-                'aliases': {'g': self._client.traversal_source}})
-            self._keys = set(self._client.submit(message).all().result())
-        return self._keys
-
-    def get(self, key):
-
-        if not self._side_effects.get(key):
-            if not self._closed:
-                message = request.RequestMessage(
-                    'traversal', 'gather',
-                    {'sideEffect': self._side_effect, 'sideEffectKey': key,
-                     'aliases': {'g': self._client.traversal_source}})
-                results = self._aggregate_results(self._client.submit(message))
-                self._side_effects[key] = results
-                self._keys.add(key)
-            else:
-                return None
-        return self._side_effects[key]
-
-    def close(self):
-        if not self._closed:
-            message = request.RequestMessage(
-                'traversal', 'close',
-                {'sideEffect': self._side_effect,
-                 'aliases': {'g': self._client._traversal_source}})
-            results = self._client.submit(message).all().result()
-        self._closed = True
-        return results
-
-    def _aggregate_results(self, result_set):
-        aggregates = {'list': [], 'set': set(), 'map': {}, 'bulkset': {},
-                      'none': None}
-        results = None
-        for msg in result_set:
-            if results is None:
-                aggregate_to = result_set.aggregate_to
-                results = aggregates.get(aggregate_to, [])
-            # on first message, get the right result data structure
-            # if there is no update to a structure, then the item is the result
-            if results is None:
-                results = msg[0]
-            # updating a map is different than a list or a set
-            elif isinstance(results, dict):
-                if aggregate_to == "map":
-                    for item in msg:
-                        results.update(item)
-                else:
-                    for item in msg:
-                        results[item.object] = item.bulk
-            elif isinstance(results, set):
-                results.update(msg)
-            # flat add list to result list
-            else:
-                results += msg
-        if results is None:
-            results = []
-        return results
 
 
 class RemoteStrategy(traversal.TraversalStrategy):
@@ -148,7 +62,6 @@ class RemoteStrategy(traversal.TraversalStrategy):
         if traversal.traversers is None:
             remote_traversal = self.remote_connection.submit(traversal.bytecode)
             traversal.remote_results = remote_traversal
-            traversal.side_effects = remote_traversal.side_effects
             traversal.traversers = remote_traversal.traversers
 
     def apply_async(self, traversal):

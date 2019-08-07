@@ -1106,14 +1106,6 @@ The full iteration of a `Traversal` is thus left to the client. It must interpre
 unroll it to represent the actual number of times it exists when iterated. The unrolling is typically handled
 directly within TinkerPop's remote traversal implementations.
 
-One of the important aspects of the Traversal OpProcessor is that it enables the user to not only get the results of
-the `Traversal` but also the side-effects that it produces. When the `Traversal` is submitted with the "bytecode"
-operation, the results are iterated back as usual, but any side-effects are retained on the server in a cache keyed by
-the identifier of the request that originally submitted the `Traversal`. The client will want to retain that identifier
-if it intends to later get side-effects. The Traversal OpProcessor supplies the "keys" and "gather" operations to get
-the keys stored in the side-effect and to get the value of a specific side-effect respectively. Finally, a "close"
-operation is available to clear the cache of a specific side-effect.
-
 [width="100%",cols="3,10a",options="header"]
 |=========================================================
 |Key |Description
@@ -1124,9 +1116,6 @@ operation is available to clear the cache of a specific side-effect.
 !Key !Description
 !`authentication` !A request that contains the response to a server challenge for authentication.
 !`bytecode` !A request that contains the `Bytecode` representation of a `Traversal`.
-!`close` !Releases side-effects held in cache for a particular `Traversal`.
-!`gather` !Gets a particular side-effect as produced by a previously executed `Traversal`.
-!`keys` !Gets all the keys of all side-effects as produced by a previously executed `Traversal`.
 |=========================================================
 
 **`authentication` operation arguments**
@@ -1151,45 +1140,6 @@ to send an alias pair with key of "g" and value of "g1" and thus allow the scrip
 that unlike users of `alias` in other contexts, in this case, the key can *only* be set to "g" and there can be only
 one key value pair present (since only one `Traversal` is being submitted, there is no sense to having more than a
 single alias).
-|=========================================================
-
-**`close` operation arguments**
-
-[width="100%",cols="2,2,9",options="header"]
-|=========================================================
-|Key |Type |Description
-|sideEffect |UUID | *Required* The unique identifier for the request that original submitted the traversal (side-effects are keyed by that value)
-|=========================================================
-
-**`gather` operation arguments**
-
-[width="100%",cols="2,2,9",options="header"]
-|=========================================================
-|Key |Type |Description
-|sideEffect |UUID | *Required* The unique identifier for the request that original submitted the traversal (side-effects are keyed by that value)
-|sideEffectKey |String | *Required* The key for a specific side-effect.
-|aliases |Map | *Required* A map with a single key/value pair that refers to a globally bound `TraversalSource` object
-to be aliased to different variable names for purposes of the current request.  The value represents the name of the
-global variable and its key represents the new binding name as it will be referenced in the Gremlin query.  For
-example, if the Gremlin Server defines two `TraversalSource` instances named `g1`, it would be possible
-to send an alias pair with key of "g" and value of "g1" and thus allow the script to refer to "g1" simply as "g". Note
-that unlike users of `alias` in other contexts, in this case, the key can *only* be set to "g" and there can be only
-one key value pair present (since only one `Traversal` is being submitted, there is no sense to having more than a
-single alias).
-|=========================================================
-
-When using "gather" it is important to note the metadata that is returned on the `ResponseMessage`. It returns both the
-"sideEffectKey" that was requested as well as a value keyed as "aggregateTo". The "aggregateTo" field describes how the
-streamed side-effect data should be treated on the client. It provides a hint as to whether or not the data should be
-rolled back up into a single object or simply left as-is. There are four values for "aggregateTo": `bulkset`, `list`,
-`map`, `set` and `none`.
-
-**`keys` operation arguments**
-
-[width="100%",cols="2,2,9",options="header"]
-|=========================================================
-|Key |Type |Description
-|sideEffect |UUID | *Required* The unique identifier for the request that original submitted the traversal (side-effects are keyed by that value)
 |=========================================================
 
 === Authentication

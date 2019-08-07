@@ -25,7 +25,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
-using Gremlin.Net.Driver.ResultsAggregation;
 using Gremlin.Net.Structure.IO.GraphSON;
 using Newtonsoft.Json.Linq;
 
@@ -39,8 +38,6 @@ namespace Gremlin.Net.Driver
             new TaskCompletionSource<ResultSet<T>>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         private readonly GraphSONReader _graphSONReader;
-        private bool _isAggregatingSideEffects;
-        private IAggregator _aggregator;
         private readonly List<T> _result = new List<T>();
 
         public ResponseHandlerForSingleRequestMessage(GraphSONReader graphSonReader)
@@ -53,32 +50,16 @@ namespace Gremlin.Net.Driver
             var receivedData = typeof(T) == typeof(JToken)
                 ? new[] {received.Result.Data}
                 : _graphSONReader.ToObject(received.Result.Data);
-            #pragma warning disable 612,618
             foreach (var d in receivedData)
             {
-                if (received.Result.Meta.ContainsKey(Tokens.ArgsSideEffectKey))
-                {
-                    if (_aggregator == null)
-                        _aggregator =
-                            new AggregatorFactory().GetAggregatorFor(
-                                (string) received.Result.Meta[Tokens.ArgsAggregateTo]);
-                    _aggregator.Add(d);
-                    _isAggregatingSideEffects = true;
-                }
-                else
-                {
-                    _result.Add(d);
-                }
+                _result.Add(d);
             }
-            #pragma warning disable 612,618
         }
 
         public void Finalize(Dictionary<string, object> statusAttributes)
         {
             var resultSet =
-                new ResultSet<T>(
-                    _isAggregatingSideEffects ? new List<T> {(T) _aggregator.GetAggregatedResult()} : _result,
-                    statusAttributes);
+                new ResultSet<T>(_result, statusAttributes);
             _tcs.TrySetResult(resultSet);
         }
 

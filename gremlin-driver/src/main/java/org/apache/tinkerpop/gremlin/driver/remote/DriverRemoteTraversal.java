@@ -23,12 +23,10 @@ import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.AbstractRemoteTraversal;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.RemoteStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -53,7 +51,6 @@ public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
 
     private final Iterator<Traverser.Admin<E>> traversers;
     private Traverser.Admin<E> lastTraverser = EmptyTraverser.instance();
-    private final RemoteTraversalSideEffects sideEffects;
 
     public DriverRemoteTraversal(final ResultSet rs, final Client client, final boolean attach, final Optional<Configuration> conf) {
         // attaching is really just for testing purposes. it doesn't make sense in any real-world scenario as it would
@@ -66,23 +63,6 @@ public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
         } else {
             this.traversers = new TraverserIterator<>(rs.iterator());
         }
-
-        this.sideEffects = new DriverRemoteTraversalSideEffects(client,rs);
-    }
-
-    /**
-     * Gets a side-effect from the server. Do not call this method prior to completing the iteration of the
-     * {@link DriverRemoteTraversal} that spawned this as the side-effect will not be ready. Generally
-     * speaking, the common user would not get side-effects this way - they would use a call to {@code cap()}.
-     *
-     * @deprecated as of release 3.3.8, not directly replaced, see {@link Admin#getSideEffects()} for more information,
-     * but further note that this method is not being removed, but will not be functional for remote execution. Prefer
-     * {@link GraphTraversal#cap(String, String...)} to get side-effects as part of traversal iteration.
-     */
-    @Override
-    @Deprecated
-    public RemoteTraversalSideEffects getSideEffects() {
-        return this.sideEffects;
     }
 
     @Override
@@ -115,17 +95,6 @@ public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
             this.lastTraverser = EmptyTraverser.instance();
             return temp;
         }
-    }
-
-    /**
-     * Releases server-side resources related to this traversal (i.e. clearing the side-effect cache of data related to
-     * this traversal.
-     */
-    @Override
-    public void close() throws Exception {
-        sideEffects.close();
-
-        // leave the client open as it is owned by the DriverRemoteConnection not the traversal or side-effects
     }
 
     static class TraverserIterator<E> implements Iterator<Traverser.Admin<E>> {

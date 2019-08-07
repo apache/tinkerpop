@@ -35,7 +35,6 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseStatus;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteTraversal;
-import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV2d0;
@@ -93,8 +92,7 @@ public class DriverGremlinPlugin extends AbstractGremlinPlugin {
                     Serializers.class,
                     SerTokens.class,
                     DriverRemoteConnection.class,
-                    DriverRemoteTraversal.class,
-                    DriverRemoteTraversalSideEffects.class).create();
+                    DriverRemoteTraversal.class).create();
 
     public DriverGremlinPlugin() {
         super(NAME, imports, new DriverConsoleCustomizer());

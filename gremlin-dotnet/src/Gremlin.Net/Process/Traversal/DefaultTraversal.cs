@@ -42,12 +42,6 @@ namespace Gremlin.Net.Process.Traversal
         public Bytecode Bytecode { get; protected set; }
 
         /// <summary>
-        ///     Gets or sets the <see cref="ITraversalSideEffects" /> of this traversal.
-        /// </summary>
-        [Obsolete("As of release 3.3.8, not replaced, prefer use of cap()-step to retrieve side-effects as part of traversal iteration", false)]
-        public ITraversalSideEffects SideEffects { get; set; }
-
-        /// <summary>
         ///     Gets or sets the <see cref="Traverser" />'s of this traversal that hold the results of the traversal.
         /// </summary>
         public IEnumerable<Traverser> Traversers { get; set; }
@@ -71,7 +65,6 @@ namespace Gremlin.Net.Process.Traversal
         /// <inheritdoc />
         public void Dispose()
         {
-            Dispose(true);
         }
 
         /// <inheritdoc />
@@ -259,15 +252,6 @@ namespace Gremlin.Net.Process.Traversal
             while (MoveNext())
                 objs.Add(Current);
             return objs;
-        }
-
-        /// <inheritdoc />
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-                #pragma warning disable 612,618
-                SideEffects?.Dispose();
-                #pragma warning disable 612,618
         }
 
         /// <summary>

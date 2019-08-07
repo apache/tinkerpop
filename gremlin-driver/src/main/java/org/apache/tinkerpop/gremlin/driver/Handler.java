@@ -223,29 +223,15 @@ final class Handler {
                     final Object data = response.getResult().getData();
                     final Map<String,Object> meta = response.getResult().getMeta();
 
-                    if (!meta.containsKey(Tokens.ARGS_SIDE_EFFECT_KEY)) {
-                        // this is a "result" from the server which is either the result of a script or a
-                        // serialized traversal
-                        if (data instanceof List) {
-                            // unrolls the collection into individual results to be handled by the queue.
-                            final List<Object> listToUnroll = (List<Object>) data;
-                            listToUnroll.forEach(item -> queue.add(new Result(item)));
-                        } else {
-                            // since this is not a list it can just be added to the queue
-                            queue.add(new Result(response.getResult().getData()));
-                        }
+                    // this is a "result" from the server which is either the result of a script or a
+                    // serialized traversal
+                    if (data instanceof List) {
+                        // unrolls the collection into individual results to be handled by the queue.
+                        final List<Object> listToUnroll = (List<Object>) data;
+                        listToUnroll.forEach(item -> queue.add(new Result(item)));
                     } else {
-                        // this is the side-effect from the server which is generated from a serialized traversal
-                        final String aggregateTo = meta.getOrDefault(Tokens.ARGS_AGGREGATE_TO, Tokens.VAL_AGGREGATE_TO_NONE).toString();
-                        if (data instanceof List) {
-                            // unrolls the collection into individual results to be handled by the queue.
-                            final List<Object> listOfSideEffects = (List<Object>) data;
-                            listOfSideEffects.forEach(sideEffect -> queue.addSideEffect(aggregateTo, sideEffect));
-                        } else {
-                            // since this is not a list it can just be added to the queue. this likely shouldn't occur
-                            // however as the protocol will typically push everything to list first.
-                            queue.addSideEffect(aggregateTo, data);
-                        }
+                        // since this is not a list it can just be added to the queue
+                        queue.add(new Result(response.getResult().getData()));
                     }
                 } else {
                     // this is a "success" but represents no results otherwise it is an error

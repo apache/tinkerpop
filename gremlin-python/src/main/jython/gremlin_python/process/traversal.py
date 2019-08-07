@@ -27,7 +27,6 @@ class Traversal(object):
         self.graph = graph
         self.traversal_strategies = traversal_strategies
         self.bytecode = bytecode
-        self.side_effects = TraversalSideEffects()
         self.traversers = None
         self.last_traverser = None
 
@@ -108,7 +107,6 @@ class Traversal(object):
                 future.set_exception(e)
             else:
                 self.traversers = iter(traversal.traversers)
-                self.side_effects = traversal.side_effects
                 if cb:
                     try:
                         result = cb(self)
@@ -531,25 +529,6 @@ class Traverser(object):
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.object == other.object
-
-
-'''
-TRAVERSAL SIDE-EFFECTS
-'''
-
-
-class TraversalSideEffects(object):
-    def keys(self):
-        return set()
-
-    def get(self, key):
-        raise KeyError(key)
-
-    def __getitem__(self, key):
-        return self.get(key)
-
-    def __repr__(self):
-        return "sideEffects[size:" + str(len(self.keys())) + "]"
 
 
 '''
