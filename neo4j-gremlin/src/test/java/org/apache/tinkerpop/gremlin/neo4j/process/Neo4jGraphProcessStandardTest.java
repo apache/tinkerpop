@@ -16,20 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.neo4j.structure;
+package org.apache.tinkerpop.gremlin.neo4j.process;
 
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
-import org.apache.tinkerpop.gremlin.neo4j.MultiMetaNeo4jGraphProvider;
-import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
+import org.apache.tinkerpop.gremlin.neo4j.Neo4jGraphProvider;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
 import org.junit.runner.RunWith;
 
-
 /**
- * Executes the Standard Gremlin Structure Test Suite using Neo4j.
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(StructureStandardSuite.class)
-@GraphProviderClass(provider = MultiMetaNeo4jGraphProvider.class, graph = Neo4jGraph.class)
-public class MultiMetaNeo4jGraphStructureStandardTest {
+@RunWith(ProcessStandardSuite.class)
+@GraphProviderClass(provider = Neo4jGraphProvider.class, graph = Neo4jGraph.class)
+public class Neo4jGraphProcessStandardTest {
 }

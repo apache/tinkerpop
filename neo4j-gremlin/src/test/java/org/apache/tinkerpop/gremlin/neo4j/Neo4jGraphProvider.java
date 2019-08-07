@@ -16,18 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.neo4j.process;
+package org.apache.tinkerpop.gremlin.neo4j;
 
-import org.apache.tinkerpop.gremlin.GraphProviderClass;
-import org.apache.tinkerpop.gremlin.neo4j.NoMultiNoMetaNeo4jGraphProvider;
+import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
-import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
-import org.junit.runner.RunWith;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(ProcessStandardSuite.class)
-@GraphProviderClass(provider = NoMultiNoMetaNeo4jGraphProvider.class, graph = Neo4jGraph.class)
-public class NoMultiNoMetaNeo4jGraphProcessStandardTest {
+public class Neo4jGraphProvider extends AbstractNeo4jGraphProvider {
+    @Override
+    public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData graphData) {
+        final String directory = makeTestDirectory(graphName, test, testMethodName);
+
+        return new HashMap<String, Object>() {{
+            put(Graph.GRAPH, Neo4jGraph.class.getName());
+            put(Neo4jGraph.CONFIG_DIRECTORY, directory);
+            put(Neo4jGraph.CONFIG_CONF + ".dbms.memory.pagecache.size", "1m");
+        }};
+    }
 }

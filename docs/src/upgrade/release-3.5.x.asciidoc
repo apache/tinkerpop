@@ -150,6 +150,13 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor.makeFrame(Context, RequestMessage, MessageSerializer, boolean, List, ResponseStatusCode, Map)`
 ** `org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor.makeFrame(ResponseHandlerContext, RequestMessage, MessageSerializer, boolean, List, ResponseStatusCode, Map)`
 ** `org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor.makeFrame(ResponseHandlerContext, RequestMessage, MessageSerializer, boolean, List, ResponseStatusCode, Map, Map)`
+* `neo4j-gremlin`
+** `org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph#getTrait()`
+** `org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph#CONFIG_META_PROPERTIES`
+** `org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph#CONFIG_MULTI_PROPERTIES `
+** `org.apache.tinkerpop.gremlin.neo4j.structure.trait.MultiMetaNeo4jTrait`
+** `org.apache.tinkerpop.gremlin.neo4j.structure.trait.NoMultiNoMetaNeo4jTrait`
+** `org.apache.tinkerpop.gremlin.neo4j.structure.trait.Neo4jTrait`
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2080[TINKERPOP-2080],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2231[TINKERPOP-2231],

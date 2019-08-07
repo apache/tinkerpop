@@ -21,12 +21,14 @@ package org.apache.tinkerpop.gremlin.neo4j.structure;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.neo4j.tinkerpop.api.Neo4jDirection;
 import org.neo4j.tinkerpop.api.Neo4jNode;
 import org.neo4j.tinkerpop.api.Neo4jRelationship;
 
@@ -73,7 +75,18 @@ public final class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVe
     @Override
     public void remove() {
         this.graph.tx().readWrite();
-        this.graph.trait.removeVertex(this);
+        try {
+            final Neo4jNode node = (Neo4jNode) baseElement;
+            for (final Neo4jRelationship relationship : node.relationships(Neo4jDirection.BOTH)) {
+                relationship.delete();
+            }
+            node.delete();
+        } catch (final IllegalStateException ignored) {
+            // this one happens if the vertex is still chilling in the tx
+        } catch (final RuntimeException ex) {
+            if (!Neo4jHelper.isNotFound(ex)) throw ex;
+            // this one happens if the vertex is committed
+        }
     }
 
     @Override
@@ -82,19 +95,31 @@ public final class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVe
         if (ElementHelper.getIdValue(keyValues).isPresent())
             throw Vertex.Exceptions.userSuppliedIdsNotSupported();
         this.graph.tx().readWrite();
-        return this.graph.trait.setVertexProperty(this, cardinality, key, value, keyValues);
+
+        if (cardinality != VertexProperty.Cardinality.single)
+            throw VertexProperty.Exceptions.multiPropertiesNotSupported();
+        if (keyValues.length > 0)
+            throw VertexProperty.Exceptions.metaPropertiesNotSupported();
+        try {
+            this.baseElement.setProperty(key, value);
+            return new Neo4jVertexProperty<>(this, key, value);
+        } catch (final IllegalArgumentException iae) {
+            throw Property.Exceptions.dataTypeOfPropertyValueNotSupported(value, iae);
+        }
     }
 
     @Override
     public <V> VertexProperty<V> property(final String key) {
         this.graph.tx().readWrite();
-        return this.graph.trait.getVertexProperty(this, key);
+        return baseElement.hasProperty(key) ? new Neo4jVertexProperty<>(this, key, (V) baseElement.getProperty(key)) : VertexProperty.<V>empty();
     }
 
     @Override
     public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
         this.graph.tx().readWrite();
-        return this.graph.trait.getVertexProperties(this, propertyKeys);
+        return (Iterator) IteratorUtils.stream(this.baseElement.getKeys())
+                .filter(key -> ElementHelper.keyExists(key, propertyKeys))
+                .map(key -> new Neo4jVertexProperty<>(this, key, (V) this.baseElement.getProperty(key))).iterator();
     }
 
     @Override
@@ -112,7 +137,7 @@ public final class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVe
     public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels) {
         this.graph.tx().readWrite();
         return new Iterator<Vertex>() {
-            final Iterator<Neo4jRelationship> relationshipIterator = IteratorUtils.filter(0 == edgeLabels.length ?
+            final Iterator<Neo4jRelationship> relationshipIterator = 0 == edgeLabels.length ?
                     BOTH == direction ?
                             IteratorUtils.concat(getBaseVertex().relationships(Neo4jHelper.mapDirection(OUT)).iterator(),
                                     getBaseVertex().relationships(Neo4jHelper.mapDirection(IN)).iterator()) :
@@ -120,7 +145,7 @@ public final class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVe
                     BOTH == direction ?
                             IteratorUtils.concat(getBaseVertex().relationships(Neo4jHelper.mapDirection(OUT), (edgeLabels)).iterator(),
                                     getBaseVertex().relationships(Neo4jHelper.mapDirection(IN), (edgeLabels)).iterator()) :
-                            getBaseVertex().relationships(Neo4jHelper.mapDirection(direction), (edgeLabels)).iterator(), graph.trait.getRelationshipPredicate());
+                            getBaseVertex().relationships(Neo4jHelper.mapDirection(direction), (edgeLabels)).iterator();
 
             @Override
             public boolean hasNext() {
@@ -138,7 +163,7 @@ public final class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVe
     public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
         this.graph.tx().readWrite();
         return new Iterator<Edge>() {
-            final Iterator<Neo4jRelationship> relationshipIterator = IteratorUtils.filter(0 == edgeLabels.length ?
+            final Iterator<Neo4jRelationship> relationshipIterator = 0 == edgeLabels.length ?
                     BOTH == direction ?
                             IteratorUtils.concat(getBaseVertex().relationships(Neo4jHelper.mapDirection(OUT)).iterator(),
                                     getBaseVertex().relationships(Neo4jHelper.mapDirection(IN)).iterator()) :
@@ -146,7 +171,7 @@ public final class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVe
                     BOTH == direction ?
                             IteratorUtils.concat(getBaseVertex().relationships(Neo4jHelper.mapDirection(OUT), (edgeLabels)).iterator(),
                                     getBaseVertex().relationships(Neo4jHelper.mapDirection(IN), (edgeLabels)).iterator()) :
-                            getBaseVertex().relationships(Neo4jHelper.mapDirection(direction), (edgeLabels)).iterator(), graph.trait.getRelationshipPredicate());
+                            getBaseVertex().relationships(Neo4jHelper.mapDirection(direction), (edgeLabels)).iterator();
 
             @Override
             public boolean hasNext() {
