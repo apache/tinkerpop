@@ -151,13 +151,14 @@ class GraphBinaryReader(object):
         elif isinstance(b, io.BufferedIOBase):
             return self.toObject(b)
 
-    def toObject(self, buff):
-        bt = buff.read(1)
-        if bt[0] == DataType.null.value:
-            return None
-
-        bt_value = struct.unpack('>b', bt)[0]
-        return self.deserializers[DataType(bt_value)].objectify(buff, self)
+    def toObject(self, buff, data_type=None, nullable=True):
+        if data_type is None:
+            bt = buff.read(1)
+            if bt[0] == DataType.null.value:
+                return None
+            return self.deserializers[DataType(struct.unpack('>b', bt)[0])].objectify(buff, self, nullable)
+        else:
+            return self.deserializers[data_type].objectify(buff, self, nullable)
 
 
 @six.add_metaclass(GraphBinaryTypeType)
@@ -211,13 +212,13 @@ class _GraphBinaryTypeIO(object):
         return None if as_value else graph_binary_type
 
     @classmethod
-    def is_null(cls, buff, reader, else_opt):
-        return None if buff.read(1)[0] == 0x01 else else_opt(buff, reader)
+    def is_null(cls, buff, reader, else_opt, nullable=True):
+        return None if nullable and buff.read(1)[0] == 0x01 else else_opt(buff, reader)
 
     def dictify(self, obj, writer, as_value=False):
         raise NotImplementedError()
 
-    def objectify(self, d, reader, as_value=False):
+    def objectify(self, d, reader, nullable=True):
         raise NotImplementedError()
         
 
@@ -236,8 +237,8 @@ class LongIO(_GraphBinaryTypeIO):
                                 None, struct.pack(cls.byte_format, obj))
 
     @classmethod
-    def objectify(cls, buff, reader, as_value=False):
-        return cls.is_null(buff, reader, lambda b, r: struct.unpack(cls.byte_format, b.read(8))[0])
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, lambda b, r: struct.unpack(cls.byte_format, b.read(8))[0], nullable)
 
 
 class IntIO(LongIO):
@@ -247,8 +248,8 @@ class IntIO(LongIO):
     byte_format = ">i"
 
     @classmethod
-    def objectify(cls, buff, reader, as_value=False):
-        return cls.is_null(buff, reader, lambda b, r: cls.read_int(b))
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, lambda b, r: cls.read_int(b), nullable)
 
 
 class DateIO(_GraphBinaryTypeIO):
@@ -263,15 +264,16 @@ class DateIO(_GraphBinaryTypeIO):
             pts = timestamp_seconds * 1e3 + getattr(obj, 'microsecond', 0) / 1e3
         except AttributeError:
             pts = calendar.timegm(obj.timetuple()) * 1e3
-            
+
         ts = int(round(pts))
-        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), 
+        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value),
                             None, struct.pack(">q", ts))
 
     @classmethod
-    def objectify(cls, buff, reader, as_value=False):
+    def objectify(cls, buff, reader, nullable=True):
         return cls.is_null(buff, reader,
-                           lambda b, r: datetime.datetime.utcfromtimestamp(struct.unpack(">q", b.read(8))[0] / 1000.0))
+                           lambda b, r: datetime.datetime.utcfromtimestamp(struct.unpack(">q", b.read(8))[0] / 1000.0),
+                           nullable)
 
 
 # Based on current implementation, this class must always be declared before FloatIO.
@@ -284,13 +286,14 @@ class TimestampIO(_GraphBinaryTypeIO):
     def dictify(cls, obj, writer, as_value=False):
         # Java timestamp expects milliseconds integer - Have to use int because of legacy Python
         ts = int(round(obj * 1000))
-        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), 
+        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value),
                             None, struct.pack(">q", ts))
 
     @classmethod
-    def objectify(cls, buff, reader):
+    def objectify(cls, buff, reader, nullable=True):
         # Python timestamp expects seconds
-        return cls.is_null(buff, reader, lambda b, r: statics.timestamp(struct.unpack(">q", b.read(8))[0] / 1000.0))
+        return cls.is_null(buff, reader, lambda b, r: statics.timestamp(struct.unpack(">q", b.read(8))[0] / 1000.0),
+                           nullable)
 
 
 def _long_bits_to_double(bits):
@@ -312,35 +315,35 @@ class FloatIO(LongIO):
     @classmethod
     def dictify(cls, obj, writer, as_value=False):
         if math.isnan(obj):
-            return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), 
+            return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value),
                                 None, struct.pack(cls.byte_format, NAN))
         elif math.isinf(obj) and obj > 0:
-            return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), 
+            return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value),
                                 None, struct.pack(cls.byte_format, POSITIVE_INFINITY))
         elif math.isinf(obj) and obj < 0:
-            return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), 
+            return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value),
                                 None, struct.pack(cls.byte_format, NEGATIVE_INFINITY))
         else:
-            return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), 
+            return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value),
                                 None, struct.pack(cls.byte_format, obj))
 
     @classmethod
-    def objectify(cls, buff, reader, as_value=False):
-        return cls.is_null(buff, reader, lambda b, r: struct.unpack(cls.byte_format, b.read(4))[0])
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, lambda b, r: struct.unpack(cls.byte_format, b.read(4))[0], nullable)
 
 
 class DoubleIO(FloatIO):
     """
     Floats basically just fall through to double serialization.
     """
-    
+
     graphbinary_type = DataType.double
     graphbinary_base_type = DataType.double
     byte_format = ">d"
 
     @classmethod
-    def objectify(cls, buff, reader, as_value=False):
-        return cls.is_null(buff, reader, lambda b, r: struct.unpack(cls.byte_format, b.read(8))[0])
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, lambda b, r: struct.unpack(cls.byte_format, b.read(8))[0], nullable)
 
 
 class TypeSerializer(_GraphBinaryTypeIO):
@@ -358,12 +361,12 @@ class StringIO(_GraphBinaryTypeIO):
 
     @classmethod
     def dictify(cls, obj, writer, as_value=False):
-        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), 
+        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value),
                             len(obj), obj.encode("utf-8"))
 
     @classmethod
-    def objectify(cls, buff, reader, as_value=False):
-        return cls.is_null(buff, reader, lambda b, r: b.read(cls.read_int(b)).decode("utf-8"))
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, lambda b, r: b.read(cls.read_int(b)).decode("utf-8"), nullable)
 
 
 class ListIO(_GraphBinaryTypeIO):
@@ -377,12 +380,12 @@ class ListIO(_GraphBinaryTypeIO):
         for item in obj:
             list_data.extend(writer.writeObject(item))
 
-        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), 
+        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value),
                             len(obj), list_data)
 
     @classmethod
-    def objectify(cls, buff, reader, as_value=False):
-        return cls.is_null(buff, reader, cls._read_list)
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, cls._read_list, nullable)
 
     @classmethod
     def _read_list(cls, b, r):
@@ -401,8 +404,8 @@ class SetIO(ListIO):
     graphbinary_type = DataType.set
 
     @classmethod
-    def objectify(cls, buff, reader, as_value=False):
-        return set(ListIO.objectify(buff, reader, as_value))
+    def objectify(cls, buff, reader, nullable=True):
+        return set(ListIO.objectify(buff, reader, nullable))
 
 
 class MapIO(_GraphBinaryTypeIO):
@@ -417,12 +420,12 @@ class MapIO(_GraphBinaryTypeIO):
             map_data.extend(writer.writeObject(k))
             map_data.extend(writer.writeObject(v))
 
-        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), 
+        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value),
                             len(obj), map_data)
 
     @classmethod
-    def objectify(cls, buff, reader, as_value=False):
-        return cls.is_null(buff, reader, cls._read_map)
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, cls._read_map, nullable)
 
     @classmethod
     def _read_map(cls, b, r):
@@ -448,8 +451,8 @@ class UuidIO(_GraphBinaryTypeIO):
                             None, obj.bytes)
 
     @classmethod
-    def objectify(cls, buff, reader, as_value=False):
-        return cls.is_null(buff, reader, lambda b, r: uuid.UUID(bytes=b.read(16)))
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, lambda b, r: uuid.UUID(bytes=b.read(16)), nullable)
 
 
 class EdgeIO(_GraphBinaryTypeIO):
@@ -471,8 +474,8 @@ class EdgeIO(_GraphBinaryTypeIO):
         return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, ba)
 
     @classmethod
-    def objectify(cls, buff, reader, as_value=False):
-        return cls.is_null(buff, reader, cls._read_edge)
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, cls._read_edge, nullable)
 
     @classmethod
     def _read_edge(cls, b, r):
@@ -497,8 +500,8 @@ class PathIO(_GraphBinaryTypeIO):
         return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, ba)
 
     @classmethod
-    def objectify(cls, buff, reader, as_value=False):
-        return cls.is_null(buff, reader, lambda b, r: Path(r.readObject(b), r.readObject(b)))
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, lambda b, r: Path(r.readObject(b), r.readObject(b)), nullable)
 
 
 class PropertyIO(_GraphBinaryTypeIO):
@@ -515,8 +518,8 @@ class PropertyIO(_GraphBinaryTypeIO):
         return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, ba)
 
     @classmethod
-    def objectify(cls, buff, reader, as_value=False):
-        return cls.is_null(buff, reader, cls._read_property)
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, cls._read_property, nullable)
 
     @classmethod
     def _read_property(cls, b, r):
@@ -553,8 +556,8 @@ class VertexIO(_GraphBinaryTypeIO):
         return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, ba)
 
     @classmethod
-    def objectify(cls, buff, reader, as_value=False):
-        return cls.is_null(buff, reader, cls._read_vertex)
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, cls._read_vertex, nullable)
 
     @classmethod
     def _read_vertex(cls, b, r):
@@ -570,7 +573,7 @@ class VertexPropertyIO(_GraphBinaryTypeIO):
 
     @classmethod
     def dictify(cls, obj, writer, as_value=False):
-        ba = bytearray() 
+        ba = bytearray()
         ba.extend(writer.writeObject(obj.id))
         ba.extend(cls.string_as_bytes(obj.label))
         ba.extend(writer.writeObject(obj.value))
@@ -579,8 +582,8 @@ class VertexPropertyIO(_GraphBinaryTypeIO):
         return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, ba)
 
     @classmethod
-    def objectify(cls, buff, reader, as_value=False):
-        return cls.is_null(buff, reader, cls._read_vertexproperty)
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, cls._read_vertexproperty, nullable)
 
     @classmethod
     def _read_vertexproperty(cls, b, r):
@@ -599,8 +602,8 @@ class _EnumIO(_GraphBinaryTypeIO):
         return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, ba)
 
     @classmethod
-    def objectify(cls, buff, reader, as_value=False):
-        return cls.is_null(buff, reader, lambda b, r: cls.python_type[cls.read_string(b)])
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, lambda b, r: cls.python_type[cls.read_string(b)], nullable)
 
 
 class BarrierIO(_EnumIO):
@@ -644,7 +647,7 @@ class PopIO(_EnumIO):
 
 
 class BindingIO(_GraphBinaryTypeIO):
-    
+
     python_type = Binding
     graphbinary_type = DataType.binding
 
@@ -654,16 +657,16 @@ class BindingIO(_GraphBinaryTypeIO):
         ba.extend(cls.string_as_bytes(obj.key))
         ba.extend(writer.writeObject(obj.value))
         return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, ba)
-    
+
     @classmethod
-    def objectify(cls, buff, reader, as_value=False):
-        return cls.is_null(buff, reader, lambda b, r: Binding(cls.read_string(b), reader.readObject(b)))
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, lambda b, r: Binding(cls.read_string(b), reader.readObject(b)), nullable)
 
 
 class BytecodeIO(_GraphBinaryTypeIO):
     python_type = Bytecode
     graphbinary_type = DataType.bytecode
-    
+
     @classmethod
     def dictify(cls, obj, writer, as_value=False):
         ba = bytearray()
@@ -686,13 +689,13 @@ class BytecodeIO(_GraphBinaryTypeIO):
         return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, ba)
 
     @classmethod
-    def objectify(cls, buff, reader, as_value=False):
-        return cls.is_null(buff, reader, cls._read_bytecode)
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, cls._read_bytecode, nullable)
 
     @classmethod
     def _read_bytecode(cls, b, r):
         bytecode = Bytecode()
-        
+
         step_count = cls.read_int(b)
         ix = 0
         while ix < step_count:
@@ -787,8 +790,8 @@ class TraverserIO(_GraphBinaryTypeIO):
         return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, ba)
 
     @classmethod
-    def objectify(cls, buff, reader, as_value=False):
-        return cls.is_null(buff, reader, cls._read_traverser)
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, cls._read_traverser, nullable)
 
     @classmethod
     def _read_traverser(cls, b, r):
@@ -806,8 +809,10 @@ class ByteIO(_GraphBinaryTypeIO):
         return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, struct.pack(">b", obj))
 
     @classmethod
-    def objectify(cls, buff, reader, as_value=False):
-        return cls.is_null(buff, reader, lambda b, r: int.__new__(SingleByte, struct.unpack_from(">b", b.read(1))[0]))
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader,
+                           lambda b, r: int.__new__(SingleByte, struct.unpack_from(">b", b.read(1))[0]),
+                           nullable)
 
 
 class ByteBufferIO(_GraphBinaryTypeIO):
@@ -819,8 +824,8 @@ class ByteBufferIO(_GraphBinaryTypeIO):
         return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), len(obj), obj)
 
     @classmethod
-    def objectify(cls, buff, reader):
-        return cls.is_null(buff, reader, cls._read_bytebuffer)
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, cls._read_bytebuffer, nullable)
 
     @classmethod
     def _read_bytebuffer(cls, b, r):
@@ -834,11 +839,14 @@ class BooleanIO(_GraphBinaryTypeIO):
 
     @classmethod
     def dictify(cls, obj, writer, as_value=False):
-        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, struct.pack(">b", 0x01 if obj else 0x00))
+        return cls.as_bytes(cls.write_as_value(
+            cls.graphbinary_type, as_value), None, struct.pack(">b", 0x01 if obj else 0x00))
 
     @classmethod
-    def objectify(cls, buff, reader, as_value=False):
-        return cls.is_null(buff, reader, lambda b, r: True if struct.unpack_from(">b", b.read(1))[0] == 0x01 else False)
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader,
+                           lambda b, r: True if struct.unpack_from(">b", b.read(1))[0] == 0x01 else False,
+                           nullable)
 
 
 class TextPIO(_GraphBinaryTypeIO):
@@ -863,8 +871,8 @@ class BulkSetIO(_GraphBinaryTypeIO):
     graphbinary_type = DataType.bulkset
 
     @classmethod
-    def objectify(cls, buff, reader, as_value=False):
-        return cls.is_null(buff, reader, cls._read_bulkset)
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, cls._read_bulkset, nullable)
 
     @classmethod
     def _read_bulkset(cls, b, r):

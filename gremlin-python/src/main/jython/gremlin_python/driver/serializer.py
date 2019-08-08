@@ -16,6 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 """
+
 try:
     import ujson as json
 except ImportError:
@@ -243,34 +244,13 @@ class GraphBinaryMessageSerializerV1(object):
     def deserialize_message(self, message):
         b = io.BytesIO(message)
 
-        #TODO: lots of hardcode null checks need better resolution
-
         b.read(1)  # version
 
-        b.read(1)  # requestid nullable
-        request_id = str(uuid.UUID(bytes=b.read(16))) # result queue uses string as a key
-
+        request_id = str(self._graphbinary_reader.toObject(b, graphbinaryV1.DataType.uuid))
         status_code = struct.unpack(">i", b.read(4))[0]
-
-        b.read(1)  # status message nullable
-        status_msg = b.read(struct.unpack(">i", b.read(4))[0]).decode("utf-8")
-
-        attr_count = struct.unpack(">i", b.read(4))[0]
-        status_attrs = {}
-        while attr_count > 0:
-            k = self._graphbinary_reader.toObject(b)
-            v = self._graphbinary_reader.toObject(b)
-            status_attrs[k] = v
-            attr_count = attr_count - 1
-
-        meta_count = struct.unpack(">i", b.read(4))[0]
-        meta_attrs = {}
-        while meta_count > 0:
-            k = self._graphbinary_reader.toObject(b)
-            v = self._graphbinary_reader.toObject(b)
-            meta_attrs[k] = v
-            meta_count = meta_count - 1
-
+        status_msg = self._graphbinary_reader.toObject(b, graphbinaryV1.DataType.string)
+        status_attrs = self._graphbinary_reader.toObject(b, graphbinaryV1.DataType.map, nullable=False)
+        meta_attrs = self._graphbinary_reader.toObject(b, graphbinaryV1.DataType.map, nullable=False)
         result = self._graphbinary_reader.toObject(b)
 
         msg = {'requestId': request_id,
