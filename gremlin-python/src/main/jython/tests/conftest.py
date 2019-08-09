@@ -29,7 +29,7 @@ from gremlin_python.driver.driver_remote_connection import (
 from gremlin_python.driver.protocol import GremlinServerWSProtocol
 from gremlin_python.driver.serializer import (
     GraphSONMessageSerializer, GraphSONSerializersV2d0, GraphSONSerializersV3d0,
-    GraphBinaryMessageSerializerV1)
+    GraphBinarySerializersV1)
 from gremlin_python.driver.tornado.transport import TornadoTransport
 
 gremlin_server_host = "localhost"
@@ -88,7 +88,7 @@ def remote_connection(request):
     try:
         if request.param == 'graphbinaryv1':
             remote_conn = DriverRemoteConnection(gremlin_server_url, 'gmodern',
-                                                 message_serializer=serializer.GraphBinaryMessageSerializerV1())
+                                                 message_serializer=serializer.GraphBinarySerializersV1())
         elif request.param == 'graphsonv2':
             remote_conn = DriverRemoteConnection(gremlin_server_url, 'gmodern',
                                                  message_serializer=serializer.GraphSONSerializersV2d0())
@@ -129,4 +129,4 @@ def graphson_serializer_v3(request):
 
 @pytest.fixture
 def graphbinary_serializer_v1(request):
-    return GraphBinaryMessageSerializerV1()
+    return GraphBinarySerializersV1()

@@ -729,6 +729,7 @@ class DirectionIO(_GraphSONTypeIO):
     def objectify(cls, d, reader):
         return Direction[d]
 
+
 class TraversalMetricsDeserializer(_GraphSONTypeIO):
     graphson_type = "g:TraversalMetrics"
 

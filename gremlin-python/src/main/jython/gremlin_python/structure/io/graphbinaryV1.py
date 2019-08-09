@@ -36,7 +36,7 @@ from isodate import parse_duration, duration_isoformat
 
 from gremlin_python import statics
 from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, DictType, ListType, SetType, \
-                                   SingleByte, ByteBufferType, SingleChar
+                                   SingleByte, ByteBufferType, SingleChar, GremlinType
 from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Cardinality, Column, Direction, Operator, \
                                              Order, Pick, Pop, P, Scope, TextP, Traversal, Traverser, \
                                              TraversalStrategy, T
@@ -58,7 +58,7 @@ class DataType(Enum):
     string = 0x03
     date = 0x04
     timestamp = 0x05
-    clazz = 0x06                  #todo
+    clazz = 0x06
     double = 0x07
     float = 0x08
     list = 0x09
@@ -68,7 +68,7 @@ class DataType(Enum):
     edge = 0x0d
     path = 0x0e
     property = 0x0f
-    graph = 0x10
+    graph = 0x10                  # no graph object in python yet
     vertex = 0x11
     vertexproperty = 0x12
     barrier = 0x13
@@ -93,12 +93,15 @@ class DataType(Enum):
     short = 0x26                  #todo?
     boolean = 0x27
     textp = 0x28
-    traversalstrategy = 0x29      #todo
+    traversalstrategy = 0x29
     bulkset = 0x2a
-    tree = 0x2b                   #todo
-    metrics = 0x2c                #todo
-    traversalmetrics = 0x2d       #todo
+    tree = 0x2b                   # no tree object in Python yet
+    metrics = 0x2c
+    traversalmetrics = 0x2d
     custom = 0x00                 #todo
+
+
+NULL_BYTES = [DataType.null.value, 0x01]
 
 
 class GraphBinaryTypeType(type):
@@ -172,11 +175,11 @@ class _GraphBinaryTypeIO(object):
                  "filter_": "filter", "id_": "id", "max_": "max", "min_": "min", "sum_": "sum"}
 
     @classmethod
-    def as_bytes(cls, graphbin_type=None, size=None, *args):
+    def as_bytes(cls, graphbin_type=None, size=None, nullable=True, *args):
         ba = bytearray() if graphbin_type is None else bytearray([graphbin_type.value])
 
-        # todo: empty value flag just hardcoded in
-        ba.extend(struct.pack(">b", 0))
+        if nullable:
+            ba.extend(struct.pack(">b", 0))
 
         if size is not None:
             ba.extend(struct.pack(">i", size))
@@ -215,7 +218,7 @@ class _GraphBinaryTypeIO(object):
     def is_null(cls, buff, reader, else_opt, nullable=True):
         return None if nullable and buff.read(1)[0] == 0x01 else else_opt(buff, reader)
 
-    def dictify(self, obj, writer, as_value=False):
+    def dictify(self, obj, writer, as_value=False, nullable=True):
         raise NotImplementedError()
 
     def objectify(self, d, reader, nullable=True):
@@ -229,12 +232,12 @@ class LongIO(_GraphBinaryTypeIO):
     byte_format = ">q"
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
         if obj < -9223372036854775808 or obj > 9223372036854775807:
             raise Exception("TODO: don't forget bigint")
         else:
             return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), 
-                                None, struct.pack(cls.byte_format, obj))
+                                None, nullable, struct.pack(cls.byte_format, obj))
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
@@ -258,7 +261,7 @@ class DateIO(_GraphBinaryTypeIO):
     graphbinary_type = DataType.date
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
         try:
             timestamp_seconds = calendar.timegm(obj.utctimetuple())
             pts = timestamp_seconds * 1e3 + getattr(obj, 'microsecond', 0) / 1e3
@@ -267,7 +270,7 @@ class DateIO(_GraphBinaryTypeIO):
 
         ts = int(round(pts))
         return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value),
-                            None, struct.pack(">q", ts))
+                            None, nullable, struct.pack(">q", ts))
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
@@ -283,18 +286,18 @@ class TimestampIO(_GraphBinaryTypeIO):
     graphbinary_type = DataType.timestamp
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
         # Java timestamp expects milliseconds integer - Have to use int because of legacy Python
         ts = int(round(obj * 1000))
         return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value),
-                            None, struct.pack(">q", ts))
+                            None, nullable, struct.pack(">q", ts))
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
         # Python timestamp expects seconds
         return cls.is_null(buff, reader, lambda b, r: statics.timestamp(struct.unpack(">q", b.read(8))[0] / 1000.0),
                            nullable)
-
+    
 
 def _long_bits_to_double(bits):
     return struct.unpack('d', struct.pack('Q', bits))[0]
@@ -313,19 +316,19 @@ class FloatIO(LongIO):
     byte_format = ">f"
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
         if math.isnan(obj):
             return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value),
-                                None, struct.pack(cls.byte_format, NAN))
+                                None, nullable, struct.pack(cls.byte_format, NAN))
         elif math.isinf(obj) and obj > 0:
             return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value),
-                                None, struct.pack(cls.byte_format, POSITIVE_INFINITY))
+                                None, nullable, struct.pack(cls.byte_format, POSITIVE_INFINITY))
         elif math.isinf(obj) and obj < 0:
             return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value),
-                                None, struct.pack(cls.byte_format, NEGATIVE_INFINITY))
+                                None, nullable, struct.pack(cls.byte_format, NEGATIVE_INFINITY))
         else:
             return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value),
-                                None, struct.pack(cls.byte_format, obj))
+                                None, nullable, struct.pack(cls.byte_format, obj))
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
@@ -346,23 +349,15 @@ class DoubleIO(FloatIO):
         return cls.is_null(buff, reader, lambda b, r: struct.unpack(cls.byte_format, b.read(8))[0], nullable)
 
 
-class TypeSerializer(_GraphBinaryTypeIO):
-    python_type = TypeType
-
-    @classmethod
-    def dictify(cls, typ, writer, as_value=False):
-        return writer.toDict(typ())
-
-
 class StringIO(_GraphBinaryTypeIO):
 
     python_type = str
     graphbinary_type = DataType.string
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
         return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value),
-                            len(obj), obj.encode("utf-8"))
+                            len(obj), nullable, obj.encode("utf-8"))
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
@@ -375,13 +370,13 @@ class ListIO(_GraphBinaryTypeIO):
     graphbinary_type = DataType.list
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
         list_data = bytearray()
         for item in obj:
             list_data.extend(writer.writeObject(item))
 
         return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value),
-                            len(obj), list_data)
+                            len(obj), nullable, list_data)
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
@@ -414,14 +409,14 @@ class MapIO(_GraphBinaryTypeIO):
     graphbinary_type = DataType.map
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
         map_data = bytearray()
         for k, v in obj.items():
             map_data.extend(writer.writeObject(k))
             map_data.extend(writer.writeObject(v))
 
         return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value),
-                            len(obj), map_data)
+                            len(obj), nullable, map_data)
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
@@ -446,9 +441,9 @@ class UuidIO(_GraphBinaryTypeIO):
     graphbinary_type = DataType.uuid
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
         return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value),
-                            None, obj.bytes)
+                            None, nullable, obj.bytes)
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
@@ -461,7 +456,7 @@ class EdgeIO(_GraphBinaryTypeIO):
     graphbinary_type = DataType.edge
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
         ba = bytearray()
         ba.extend(writer.writeObject(obj.id))
         ba.extend(cls.string_as_bytes(obj.label))
@@ -469,9 +464,9 @@ class EdgeIO(_GraphBinaryTypeIO):
         ba.extend(cls.string_as_bytes(obj.inV.label))
         ba.extend(writer.writeObject(obj.outV.id))
         ba.extend(cls.string_as_bytes(obj.outV.label))
-        ba.extend([DataType.null.value])
-        ba.extend([DataType.null.value])
-        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, ba)
+        ba.extend(NULL_BYTES)
+        ba.extend(NULL_BYTES)
+        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, nullable, ba)
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
@@ -483,7 +478,7 @@ class EdgeIO(_GraphBinaryTypeIO):
         edgelbl = cls.read_string(b)
         edge = Edge(edgeid, Vertex(r.readObject(b), cls.read_string(b)),
                     edgelbl, Vertex(r.readObject(b), cls.read_string(b)))
-        b.read(2)
+        b.read(4)
         return edge
 
 
@@ -493,11 +488,11 @@ class PathIO(_GraphBinaryTypeIO):
     graphbinary_type = DataType.path
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
         ba = bytearray()
         ba.extend(writer.writeObject(obj.labels))
         ba.extend(writer.writeObject(obj.objects))
-        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, ba)
+        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, nullable, ba)
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
@@ -510,12 +505,12 @@ class PropertyIO(_GraphBinaryTypeIO):
     graphbinary_type = DataType.property
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
         ba = bytearray()
         ba.extend(cls.string_as_bytes(obj.key))
         ba.extend(writer.writeObject(obj.value))
-        ba.extend([DataType.null.value])
-        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, ba)
+        ba.extend(NULL_BYTES)
+        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, nullable, ba)
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
@@ -524,7 +519,7 @@ class PropertyIO(_GraphBinaryTypeIO):
     @classmethod
     def _read_property(cls, b, r):
         p = Property(cls.read_string(b), r.readObject(b), None)
-        b.read(1)
+        b.read(2)
         return p
 
 
@@ -534,7 +529,7 @@ class TinkerGraphIO(_GraphBinaryTypeIO):
     graphbinary_type = DataType.graph
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
         raise AttributeError("TinkerGraph serialization is not currently supported by gremlin-python")
 
     @classmethod
@@ -548,12 +543,12 @@ class VertexIO(_GraphBinaryTypeIO):
     graphbinary_type = DataType.vertex
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
         ba = bytearray()
         ba.extend(writer.writeObject(obj.id))
         ba.extend(cls.string_as_bytes(obj.label))
-        ba.extend([DataType.null.value])
-        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, ba)
+        ba.extend(NULL_BYTES)
+        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, nullable, ba)
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
@@ -562,7 +557,7 @@ class VertexIO(_GraphBinaryTypeIO):
     @classmethod
     def _read_vertex(cls, b, r):
         vertex = Vertex(r.readObject(b), cls.read_string(b))
-        b.read(1)
+        b.read(2)
         return vertex
 
 
@@ -572,14 +567,14 @@ class VertexPropertyIO(_GraphBinaryTypeIO):
     graphbinary_type = DataType.vertexproperty
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
         ba = bytearray()
         ba.extend(writer.writeObject(obj.id))
         ba.extend(cls.string_as_bytes(obj.label))
         ba.extend(writer.writeObject(obj.value))
-        ba.extend([DataType.null.value])
-        ba.extend([DataType.null.value])
-        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, ba)
+        ba.extend(NULL_BYTES)
+        ba.extend(NULL_BYTES)
+        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, nullable, ba)
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
@@ -588,18 +583,17 @@ class VertexPropertyIO(_GraphBinaryTypeIO):
     @classmethod
     def _read_vertexproperty(cls, b, r):
         vp = VertexProperty(r.readObject(b), cls.read_string(b), r.readObject(b), None)
-        b.read(1)
-        b.read(1)
+        b.read(4)
         return vp
 
 
 class _EnumIO(_GraphBinaryTypeIO):
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
         ba = bytearray()
         ba.extend(cls.string_as_bytes(cls.unmangleKeyword(str(obj.name))))
-        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, ba)
+        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, nullable, ba)
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
@@ -652,11 +646,11 @@ class BindingIO(_GraphBinaryTypeIO):
     graphbinary_type = DataType.binding
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
         ba = bytearray()
         ba.extend(cls.string_as_bytes(obj.key))
         ba.extend(writer.writeObject(obj.value))
-        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, ba)
+        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, nullable, ba)
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
@@ -668,7 +662,7 @@ class BytecodeIO(_GraphBinaryTypeIO):
     graphbinary_type = DataType.bytecode
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
         ba = bytearray()
         ba.extend(struct.pack(">i", len(obj.step_instructions)))
         for inst in obj.step_instructions:
@@ -684,9 +678,12 @@ class BytecodeIO(_GraphBinaryTypeIO):
             ba.extend(cls.string_as_bytes(inst_name))
             ba.extend(struct.pack(">i", len(inst_args)))
             for arg in inst_args:
-                ba.extend(writer.writeObject(arg))
+                if isinstance(arg, TypeType):
+                    ba.extend(writer.writeObject(GremlinType(arg().fqcn)))
+                else:
+                    ba.extend(writer.writeObject(arg))
 
-        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, ba)
+        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, nullable, ba)
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
@@ -729,7 +726,7 @@ class LambdaIO(_GraphBinaryTypeIO):
     graphbinary_type = DataType.lambda_
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
         ba = bytearray() if as_value else bytearray([cls.graphbinary_type.value])
         lambda_result = obj()
         script = lambda_result if isinstance(lambda_result, str) else lambda_result[0]
@@ -748,7 +745,7 @@ class LambdaIO(_GraphBinaryTypeIO):
         ba.extend(cls.string_as_bytes(script_cleaned))
         ba.extend(struct.pack(">i", script_args))
 
-        return ba
+        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, nullable, ba)
 
 
 class PIO(_GraphBinaryTypeIO):
@@ -756,16 +753,25 @@ class PIO(_GraphBinaryTypeIO):
     python_type = P
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
-        ba = bytearray() if as_value else bytearray([cls.graphbinary_type.value])
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
+        ba = bytearray()
         ba.extend(cls.string_as_bytes(obj.operator))
-        additional = [writer.writeObject(obj.value), writer.writeObject(obj.other)] \
-            if obj.other is not None else [writer.writeObject(obj.value)]
-        ba.extend(struct.pack(">i", len(additional)))
-        for a in additional:
-            ba.extend(a)
+        
+        args = []
+        if obj.other is None:
+            if isinstance(obj.value, ListType):
+                args = obj.value
+            else:
+                args.append(obj.value)
+        else:
+            args.append(obj.value)
+            args.append(obj.other)
+        
+        ba.extend(struct.pack(">i", len(args)))
+        for a in args:
+            ba.extend(writer.writeObject(a))
 
-        return ba
+        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, nullable, ba)
 
 
 class ScopeIO(_EnumIO):
@@ -783,11 +789,11 @@ class TraverserIO(_GraphBinaryTypeIO):
     python_type = Traverser
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
         ba = bytearray()
         ba.extend(struct.pack(">q", obj.bulk))
         ba.extend(writer.writeObject(obj.object))
-        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, ba)
+        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, nullable, ba)
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
@@ -805,8 +811,8 @@ class ByteIO(_GraphBinaryTypeIO):
     graphbinary_type = DataType.byte
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
-        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, struct.pack(">b", obj))
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
+        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, nullable, struct.pack(">b", obj))
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
@@ -820,8 +826,8 @@ class ByteBufferIO(_GraphBinaryTypeIO):
     graphbinary_type = DataType.bytebuffer
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
-        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), len(obj), obj)
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
+        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), len(obj), nullable, obj)
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
@@ -838,9 +844,9 @@ class BooleanIO(_GraphBinaryTypeIO):
     graphbinary_type = DataType.boolean
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
         return cls.as_bytes(cls.write_as_value(
-            cls.graphbinary_type, as_value), None, struct.pack(">b", 0x01 if obj else 0x00))
+            cls.graphbinary_type, as_value), None, nullable, struct.pack(">b", 0x01 if obj else 0x00))
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
@@ -854,16 +860,25 @@ class TextPIO(_GraphBinaryTypeIO):
     python_type = TextP
 
     @classmethod
-    def dictify(cls, obj, writer, as_value=False):
-        ba = bytearray() if as_value else bytearray([cls.graphbinary_type.value])
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
+        ba = bytearray()
         ba.extend(cls.string_as_bytes(obj.operator))
-        additional = [writer.writeObject(obj.value), writer.writeObject(obj.other)] \
-            if obj.other is not None else [writer.writeObject(obj.value)]
-        ba.extend(struct.pack(">i", len(additional)))
-        for a in additional:
-            ba.extend(a)
 
-        return ba
+        args = []
+        if obj.other is None:
+            if isinstance(obj.value, ListType):
+                args = obj.value
+            else:
+                args.append(obj.value)
+        else:
+            args.append(obj.value)
+            args.append(obj.other)
+
+        ba.extend(struct.pack(">i", len(args)))
+        for a in args:
+            ba.extend(writer.writeObject(a))
+
+        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, nullable, ba)
 
 
 class BulkSetIO(_GraphBinaryTypeIO):
@@ -886,3 +901,72 @@ class BulkSetIO(_GraphBinaryTypeIO):
             size = size - 1
 
         return the_list
+
+
+class MetricsIO(_GraphBinaryTypeIO):
+
+    graphbinary_type = DataType.metrics
+
+    @classmethod
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, cls._read_metrics, nullable)
+
+    @classmethod
+    def _read_metrics(cls, b, r):
+        metricid = cls.read_string(b)
+        name = cls.read_string(b)
+        duration = r.toObject(b, DataType.long, nullable=False)
+        counts = r.toObject(b, DataType.map, nullable=False)
+        annotations = r.toObject(b, DataType.map, nullable=False)
+        metrics = r.toObject(b, DataType.list, nullable=False)
+
+        return {"id": metricid,
+                "name": name,
+                "dur": duration,
+                "counts": counts,
+                "annotations": annotations,
+                "metrics": metrics}
+
+
+class TraversalMetricsIO(_GraphBinaryTypeIO):
+
+    graphbinary_type = DataType.traversalmetrics
+
+    @classmethod
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, cls._read_traversalmetrics, nullable)
+
+    @classmethod
+    def _read_traversalmetrics(cls, b, r):
+        duration = r.toObject(b, DataType.long, nullable=False)
+        metrics = r.toObject(b, DataType.list, nullable=False)
+
+        return {"dur": duration,
+                "metrics": metrics}
+
+
+class ClassIO(_GraphBinaryTypeIO):
+    graphbinary_type = DataType.clazz
+    python_type = GremlinType
+
+    @classmethod
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
+        return cls.as_bytes(cls.write_as_value(
+            cls.graphbinary_type, as_value), None, nullable, StringIO.dictify(obj.gremlin_type, writer, True, False))
+
+
+class TraversalStrategyIO(_GraphBinaryTypeIO):
+    graphbinary_type = DataType.traversalstrategy
+    python_type = TraversalStrategy
+
+    @classmethod
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
+        ba = bytearray()
+        ba.extend(ClassIO.dictify(GremlinType(obj.fqcn), writer, True, False))
+        conf = {k: cls._convert(v) for k, v in obj.configuration.items()}
+        ba.extend(MapIO.dictify(conf, writer, True, False))
+        return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, nullable, ba)
+
+    @classmethod
+    def _convert(cls, v):
+        return v.bytecode if isinstance(v, Traversal) else v

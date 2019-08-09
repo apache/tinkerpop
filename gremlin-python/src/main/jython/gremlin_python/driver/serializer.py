@@ -170,7 +170,7 @@ class GraphSONSerializersV3d0(GraphSONMessageSerializer):
         super(GraphSONSerializersV3d0, self).__init__(reader, writer, version)
 
 
-class GraphBinaryMessageSerializerV1(object):
+class GraphBinarySerializersV1(object):
     DEFAULT_READER_CLASS = graphbinaryV1.GraphBinaryReader
     DEFAULT_WRITER_CLASS = graphbinaryV1.GraphBinaryWriter
     DEFAULT_VERSION = b"application/vnd.graphbinary-v1.0"

@@ -581,8 +581,9 @@ class TraversalStrategies(object):
 
 
 class TraversalStrategy(object):
-    def __init__(self, strategy_name=None, configuration=None):
+    def __init__(self, strategy_name=None, configuration=None, fqcn=None):
         self.strategy_name = type(self).__name__ if strategy_name is None else strategy_name
+        self.fqcn = fqcn
         self.configuration = {} if configuration is None else configuration
 
     def apply(self, traversal):

@@ -64,8 +64,9 @@ class PartitionStrategy(TraversalStrategy):
 
 
 class SubgraphStrategy(TraversalStrategy):
+    
     def __init__(self, vertices=None, edges=None, vertex_properties=None):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy")
         if vertices is not None:
             self.configuration["vertices"] = vertices
         if edges is not None:
@@ -77,7 +78,7 @@ class SubgraphStrategy(TraversalStrategy):
 class VertexProgramStrategy(TraversalStrategy):
     def __init__(self, graph_computer=None, workers=None, persist=None, result=None, vertices=None, edges=None,
                  configuration=None):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy")
         if graph_computer is not None:
             self.configuration["graphComputer"] = graph_computer
         if workers is not None:
