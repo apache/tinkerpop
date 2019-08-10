@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class DependencyGrabberIntegrateTest {
     private static final GroovyClassLoader dummyClassLoader = new GroovyClassLoader();
-    private static final File extTestDir = TestHelper.makeTestDataPath(DependencyGrabberIntegrateTest.class);
+    private static final File extTestDir = new File(TestHelper.makeTestDataDirectory(DependencyGrabberIntegrateTest.class));
     private static final DependencyGrabber dg = new DependencyGrabber(dummyClassLoader, extTestDir.getAbsolutePath());
 
     @AfterClass

@@ -56,7 +56,7 @@ public class IoDataGenerationTest {
     private static final String tempPath;
 
     static {
-        tempPath = TestHelper.makeTestDataPath(TinkerGraphTest.class, "tinkerpop-io").getPath() + File.separator;
+        tempPath = TestHelper.makeTestDataDirectory(TinkerGraphTest.class, "tinkerpop-io");
     }
 
     @BeforeClass

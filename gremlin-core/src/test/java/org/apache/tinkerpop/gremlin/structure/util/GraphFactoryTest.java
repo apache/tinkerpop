@@ -86,7 +86,7 @@ public class GraphFactoryTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionOnIfConfigurationFileIsNotAnActualFile() {
-        GraphFactory.open(TestHelper.makeTestDataPath(GraphFactoryTest.class, "path").getAbsolutePath());
+        GraphFactory.open(TestHelper.makeTestDataDirectory(GraphFactoryTest.class, "path"));
     }
 
     @Test(expected = RuntimeException.class)

@@ -50,6 +50,8 @@ import static org.junit.Assume.assumeThat;
  * Utility methods for test development.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ *
+ * NOTE: This class duplicates the TestHelper class from gremlin-core. One of them must be removed.
  */
 public final class TestHelper {
     private static final Logger logger = LoggerFactory.getLogger(TestHelper.class);
@@ -75,8 +77,12 @@ public final class TestHelper {
      * {@code childPath} arguments would yield a relative directory like: {@code test-case-data/clazz/a/b/c}. It is
      * a good idea to use the test class for the {@code clazz} argument so that it's easy to find the data if
      * necessary after test execution.
+     *
+     * It is private in order to impose the use of platform-independent {@link #makeTestDataDirectory(Class, String...)}
+     * and avoid using makeTestDataPath(...).getAbsolutePath() that produces platform-dependent paths, that are
+     * incompatible with regular expressions and escape characters.
      */
-    public static File makeTestDataPath(final Class clazz, final String... childPath) {
+    private static File makeTestDataPath(final Class clazz, final String... childPath) {
         final File root = getRootOfBuildDirectory(clazz);
         final List<String> cleanedPaths = Stream.of(childPath).map(TestHelper::cleanPathSegment).collect(Collectors.toList());
 
@@ -96,9 +102,10 @@ public final class TestHelper {
     /**
      * Internally calls {@link #makeTestDataPath(Class, String...)} but returns the path as a string with the system
      * separator appended to the end.
+     * @return UNIX-formatted path to a directory, still usable under Windows
      */
     public static String makeTestDataDirectory(final Class clazz, final String... childPath) {
-        return makeTestDataPath(clazz, childPath).getAbsolutePath() + SEP;
+        return makeTestDataPath(clazz, childPath).getAbsolutePath().replace('\\', '/') + '/';
     }
 
     /**
@@ -134,7 +141,7 @@ public final class TestHelper {
      * called {@code temp}.
      */
     public static File generateTempFile(final Class clazz, final String fileName, final String fileNameSuffix) throws IOException {
-        final File path = makeTestDataPath(clazz, "temp");
+        final File path = new File(makeTestDataDirectory(clazz, "temp"));
         if (!path.exists()) path.mkdirs();
         return File.createTempFile(fileName, fileNameSuffix, path);
     }
@@ -152,7 +159,7 @@ public final class TestHelper {
      * {@link TestHelper#makeTestDataPath} in a subdirectory called {@code temp/resources}.
      */
     public static File generateTempFileFromResource(final Class graphClass, final Class resourceClass, final String resourceName, final String extension) throws IOException {
-        final File temp = makeTestDataPath(graphClass, "resources");
+        final File temp = new File(makeTestDataDirectory(graphClass, "resources"));
         if (!temp.exists()) temp.mkdirs();
         final File tempFile = new File(temp, resourceName + extension);
         final FileOutputStream outputStream = new FileOutputStream(tempFile);

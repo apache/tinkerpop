@@ -75,7 +75,7 @@ public abstract class RecordReaderWriterTest {
             final List<FileSplit> splits = generateFileSplits(testFile, numberOfSplits);
             final Class<? extends InputFormat<NullWritable, VertexWritable>> inputFormatClass = getInputFormat();
             final Class<? extends OutputFormat<NullWritable, VertexWritable>> outputFormatClass = getOutputFormat();
-            final File outputDirectory = TestHelper.makeTestDataPath(inputFormatClass, "hadoop-record-reader-writer-test");
+            final File outputDirectory = new File(TestHelper.makeTestDataDirectory(inputFormatClass, "hadoop-record-reader-writer-test"));
             final Configuration config = configure(outputDirectory);
             config.addResource(this.configuration);
             validateFileSplits(splits, config, inputFormatClass, Optional.of(outputFormatClass));

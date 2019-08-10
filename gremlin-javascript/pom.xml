@@ -26,7 +26,7 @@ limitations under the License.
     <artifactId>gremlin-javascript</artifactId>
     <name>Apache TinkerPop :: Gremlin Javascript</name>
     <properties>
-        <maven.test.skip>false</maven.test.skip>
+        <maven.test.skip>true</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
         <gremlin.server.dir>${project.parent.basedir}/gremlin-server</gremlin.server.dir>
     </properties>

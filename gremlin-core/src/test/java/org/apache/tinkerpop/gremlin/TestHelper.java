@@ -36,7 +36,7 @@ import static org.junit.Assert.assertTrue;
  */
 public final class TestHelper {
 
-    private static final String SEP = File.separator;
+    private static final char SEP = '/';
     public static final String TEST_DATA_RELATIVE_DIR = "test-case-data";
 
     private TestHelper() {}
@@ -51,24 +51,29 @@ public final class TestHelper {
 
     /**
      * See {@code TestHelper} in gremlin-test for the official version.
+     *
+     * It is private in order to impose the use of platform-independent {@link #makeTestDataDirectory(Class, String...)}
+     * and avoid using makeTestDataPath(...).getAbsolutePath() that produces platform-dependent paths, that are
+     * incompatible with regular expressions and escape characters.
      */
-    public static File makeTestDataPath(final Class clazz, final String... childPath) {
+    private static File makeTestDataPath(final Class clazz, final String... childPath) {
         final File root = getRootOfBuildDirectory(clazz);
         final List<String> cleanedPaths = Stream.of(childPath).map(TestHelper::cleanPathSegment).collect(Collectors.toList());
 
         // use the class name in the directory structure
         cleanedPaths.add(0, cleanPathSegment(clazz.getSimpleName()));
 
-        final File f = new File(root, TEST_DATA_RELATIVE_DIR + SEP + String.join(SEP, cleanedPaths));
+        final File f = new File(new File(root, TEST_DATA_RELATIVE_DIR), String.join(""+SEP, cleanedPaths));
         if (!f.exists()) f.mkdirs();
         return f;
     }
 
     /**
      * See {@code TestHelper} in gremlin-test for the official version.
+     * @return UNIX-formatted path to a directory, still usable under Windows
      */
     public static String makeTestDataDirectory(final Class clazz, final String... childPath) {
-        return makeTestDataPath(clazz, childPath).getAbsolutePath() + SEP;
+        return makeTestDataPath(clazz, childPath).getAbsolutePath().replace('\\', SEP)+SEP;
     }
 
     /**
@@ -87,7 +92,7 @@ public final class TestHelper {
     }
 
     private static String computePath(final Class clazz) {
-        final String clsUri = clazz.getName().replace('.', SEP.charAt(0)) + ".class";
+        final String clsUri = clazz.getName().replace('.', '/') + ".class";
         final URL url = clazz.getClassLoader().getResource(clsUri);
         final String clsPath = url.getPath();
         return clsPath.substring(0, clsPath.length() - clsUri.length());
@@ -97,7 +102,7 @@ public final class TestHelper {
      * See {@code TestHelper} in gremlin-test for the official version.
      */
     public static File generateTempFile(final Class clazz, final String fileName, final String fileNameSuffix) throws IOException {
-        final File path = makeTestDataPath(clazz, "temp");
+        final File path = new File(makeTestDataDirectory(clazz, "temp"));
         if (!path.exists()) path.mkdirs();
         return File.createTempFile(fileName, fileNameSuffix, path);
     }
@@ -113,7 +118,7 @@ public final class TestHelper {
      * See {@code TestHelper} in gremlin-test for the official version.
      */
     public static File generateTempFileFromResource(final Class graphClass, final Class resourceClass, final String resourceName, final String extension) throws IOException {
-        final File temp = makeTestDataPath(graphClass, "resources");
+        final File temp = new File(makeTestDataDirectory(graphClass, "resources"));
         if (!temp.exists()) temp.mkdirs();
         final File tempFile = new File(temp, resourceName + extension);
         final FileOutputStream outputStream = new FileOutputStream(tempFile);
