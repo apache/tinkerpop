@@ -34,15 +34,15 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class TestHelper {
+public class CoreTestHelper {
 
-    private static final char SEP = '/';
     public static final String TEST_DATA_RELATIVE_DIR = "test-case-data";
 
-    private TestHelper() {}
+    protected CoreTestHelper() {}
 
     public static void assertIsUtilityClass(final Class<?> utilityClass) throws Exception {
         final Constructor constructor = utilityClass.getDeclaredConstructor();
+
         assertTrue(Modifier.isFinal(utilityClass.getModifiers()));
         assertTrue(Modifier.isPrivate(constructor.getModifiers()));
         constructor.setAccessible(true);
@@ -50,7 +50,12 @@ public final class TestHelper {
     }
 
     /**
-     * See {@code TestHelper} in gremlin-test for the official version.
+     * Creates a {@link File} reference that points to a directory relative to the supplied class in the
+     * {@code /target} directory. Each {@code childPath} passed introduces a new sub-directory and all are placed
+     * below the {@link #TEST_DATA_RELATIVE_DIR}.  For example, calling this method with "a", "b", and "c" as the
+     * {@code childPath} arguments would yield a relative directory like: {@code test-case-data/clazz/a/b/c}. It is
+     * a good idea to use the test class for the {@code clazz} argument so that it's easy to find the data if
+     * necessary after test execution.
      *
      * It is private in order to impose the use of platform-independent {@link #makeTestDataDirectory(Class, String...)}
      * and avoid using makeTestDataPath(...).getAbsolutePath() that produces platform-dependent paths, that are
@@ -58,26 +63,33 @@ public final class TestHelper {
      */
     private static File makeTestDataPath(final Class clazz, final String... childPath) {
         final File root = getRootOfBuildDirectory(clazz);
-        final List<String> cleanedPaths = Stream.of(childPath).map(TestHelper::cleanPathSegment).collect(Collectors.toList());
+        final List<String> cleanedPaths = Stream.of(childPath).map(CoreTestHelper::cleanPathSegment).collect(Collectors.toList());
 
         // use the class name in the directory structure
         cleanedPaths.add(0, cleanPathSegment(clazz.getSimpleName()));
 
-        final File f = new File(new File(root, TEST_DATA_RELATIVE_DIR), String.join(""+SEP, cleanedPaths));
+        final File f = new File(new File(root, TEST_DATA_RELATIVE_DIR), String.join("/", cleanedPaths));
         if (!f.exists()) f.mkdirs();
         return f;
     }
 
     /**
-     * See {@code TestHelper} in gremlin-test for the official version.
-     * @return UNIX-formatted path to a directory, still usable under Windows
+     * Creates a {@link File} reference that .  For example, calling this method with "a", "b", and "c" as the
+     * {@code childPath} arguments would yield a relative directory like: {@code test-case-data/clazz/a/b/c}. It is
+     * a good idea to use the test class for the {@code clazz} argument so that it's easy to find the data if
+     * necessary after test execution.
+     *
+     * @return UNIX-formatted path to a directory, still usable under Windows. The directory is relative to the supplied class in the
+     * {@code /target} directory. Each {@code childPath} passed introduces a new sub-directory and all are placed
+     * below the {@link #TEST_DATA_RELATIVE_DIR}
      */
     public static String makeTestDataDirectory(final Class clazz, final String... childPath) {
-        return makeTestDataPath(clazz, childPath).getAbsolutePath().replace('\\', SEP)+SEP;
+        return makeTestDataPath(clazz, childPath).getAbsolutePath().replace('\\', '/') + '/';
     }
 
     /**
-     * See {@code TestHelper} in gremlin-test for the official version.
+     * Gets and/or creates the root of the test data directory.  This  method is here as a convenience and should not
+     * be used to store test data.  Use {@link #makeTestDataPath(Class, String...)} instead.
      */
     public static File getRootOfBuildDirectory(final Class clazz) {
         // build.dir gets sets during runs of tests with maven via the surefire configuration in the pom.xml
@@ -99,7 +111,8 @@ public final class TestHelper {
     }
 
     /**
-     * See {@code TestHelper} in gremlin-test for the official version.
+     * Creates a {@link File} reference in the path returned from {@link TestHelper#makeTestDataPath} in a subdirectory
+     * called {@code temp}.
      */
     public static File generateTempFile(final Class clazz, final String fileName, final String fileNameSuffix) throws IOException {
         final File path = new File(makeTestDataDirectory(clazz, "temp"));
@@ -108,14 +121,16 @@ public final class TestHelper {
     }
 
     /**
-     * See {@code TestHelper} in gremlin-test for the official version.
+     * Copies a file stored as part of a resource to the file system in the path returned from
+     * {@link TestHelper#makeTestDataPath} in a subdirectory called {@code temp/resources}.
      */
     public static File generateTempFileFromResource(final Class resourceClass, final String resourceName, final String extension) throws IOException {
         return generateTempFileFromResource(resourceClass, resourceClass, resourceName, extension);
     }
 
     /**
-     * See {@code TestHelper} in gremlin-test for the official version.
+     * Copies a file stored as part of a resource to the file system in the path returned from
+     * {@link TestHelper#makeTestDataPath} in a subdirectory called {@code temp/resources}.
      */
     public static File generateTempFileFromResource(final Class graphClass, final Class resourceClass, final String resourceName, final String extension) throws IOException {
         final File temp = new File(makeTestDataDirectory(graphClass, "resources"));
@@ -133,7 +148,7 @@ public final class TestHelper {
     }
 
     /**
-     * See {@code TestHelper} in gremlin-test for the official version.
+     * Takes a class and converts its package name to a path that can be used to access a resource in that package.
      */
     public static String convertPackageToResourcePath(final Class clazz) {
         final String packageName = clazz.getPackage().getName();
@@ -141,7 +156,7 @@ public final class TestHelper {
     }
 
     /**
-     * See {@code TestHelper} in gremlin-test for the official version.
+     * Removes characters that aren't acceptable in a file path (mostly for windows).
      */
     public static String cleanPathSegment(final String toClean) {
         final String cleaned = toClean.replaceAll("[.\\\\/:*?\"<>|\\[\\]\\(\\)]", "");

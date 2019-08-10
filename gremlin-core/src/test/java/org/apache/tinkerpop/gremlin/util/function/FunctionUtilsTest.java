@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util.function;
 
-import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.CoreTestHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
@@ -34,7 +34,7 @@ public class FunctionUtilsTest {
 
     @Test
     public void shouldBeUtilityClass() throws Exception {
-        TestHelper.assertIsUtilityClass(FunctionUtils.class);
+        CoreTestHelper.assertIsUtilityClass(FunctionUtils.class);
     }
 
     @Test

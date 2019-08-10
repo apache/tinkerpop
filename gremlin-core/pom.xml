@@ -157,7 +157,7 @@ limitations under the License.
                     </goals>
                     <configuration>
                       <includes>
-                        <include>**/TestHelper*</include>
+                        <include>**/*TestHelper*</include>
                       </includes>
                     </configuration>
                   </execution>
