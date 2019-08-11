@@ -23,6 +23,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.storage.StorageLevel;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.AbstractStorageCheck;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
@@ -71,7 +72,8 @@ public class SparkContextStorageCheck extends AbstractStorageCheck {
     public void shouldSupportCopyMethods() throws Exception {
         final Storage storage = SparkContextStorage.open(graph.configuration());
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
-        final String newOutputLocation = "new-location-for-copy";
+        final String newOutputLocation = TestHelper.makeTestDataDirectory(this.getClass(), "new-location-for-copy");
+
         super.checkCopyMethods(storage, outputLocation, newOutputLocation, PersistedInputRDD.class, PersistedInputRDD.class);
     }
 
