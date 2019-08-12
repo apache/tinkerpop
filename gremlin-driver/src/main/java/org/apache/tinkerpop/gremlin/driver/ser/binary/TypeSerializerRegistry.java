@@ -52,8 +52,6 @@ import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.Inet4Address;
-import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
@@ -146,8 +144,6 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(Character.class, new CharSerializer()),
             new RegistryEntry<>(Duration.class, new DurationSerializer()),
             new RegistryEntry<>(InetAddress.class, new InetAddressSerializer()),
-            new RegistryEntry<>(Inet4Address.class, new InetAddressSerializer<>()),
-            new RegistryEntry<>(Inet6Address.class, new InetAddressSerializer<>()),
             new RegistryEntry<>(Instant.class, new InstantSerializer()),
             new RegistryEntry<>(LocalDate.class, new LocalDateSerializer()),
             new RegistryEntry<>(LocalTime.class, new LocalTimeSerializer()),

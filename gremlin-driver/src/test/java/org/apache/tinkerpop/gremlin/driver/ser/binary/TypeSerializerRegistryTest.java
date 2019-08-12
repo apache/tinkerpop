@@ -26,6 +26,9 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.junit.Test;
 
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetAddress;
 import java.util.UUID;
 
 import static junit.framework.TestCase.assertEquals;
@@ -75,6 +78,23 @@ public class TypeSerializerRegistryTest {
         assertSame(expectedForProperty, registry.getSerializer(Property.class));
         assertSame(expectedForVertexProperty, registry.getSerializer(DataType.VERTEXPROPERTY));
         assertSame(expectedForProperty, registry.getSerializer(DataType.PROPERTY));
+    }
+
+    @Test
+    public void shouldResolveSerializerForSuperclass() throws SerializationException {
+        final TypeSerializer<InetAddress> expectedForInetAddress = new TestInetAddressSerializer();
+
+        final TypeSerializerRegistry registry = TypeSerializerRegistry.build()
+                .add(InetAddress.class, expectedForInetAddress)
+                .create();
+
+        assertSame(expectedForInetAddress, registry.getSerializer(InetAddress.class));
+
+        // this should return the superclass serializer, which does not
+//        assertSame(expectedForInetAddress, registry.getSerializer(Inet4Address.class));
+
+        // this should return the superclass serializer, which does not
+//        assertSame(expectedForInetAddress, registry.getSerializer(Inet6Address.class));
     }
 
     @Test
@@ -133,6 +153,14 @@ public class TypeSerializerRegistryTest {
         @Override
         public DataType getDataType() {
             return DataType.UUID;
+        }
+    }
+
+    private static class TestInetAddressSerializer extends TestBaseTypeSerializer<InetAddress> {
+
+        @Override
+        public DataType getDataType() {
+            return DataType.INETADDRESS;
         }
     }
 
