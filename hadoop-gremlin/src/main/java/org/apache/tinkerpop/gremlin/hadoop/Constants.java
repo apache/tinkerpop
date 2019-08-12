@@ -31,8 +31,21 @@ public final class Constants {
     private Constants() {
     }
 
+    /**
+     * A key mapped to non-null, not empty UNIX-formatted file system path
+     * @see #getGraphLocation(String)
+     * @see #getMemoryLocation(String, String)
+     */
     public static final String GREMLIN_HADOOP_INPUT_LOCATION = "gremlin.hadoop.inputLocation";
+
+    /**
+     * A key mapped to non-null, not empty UNIX-formatted file system path to store the graph, memory
+     * and other files and directories, specific for Hadoop.
+     * @see #getGraphLocation(String)
+     * @see #getMemoryLocation(String, String)
+     */
     public static final String GREMLIN_HADOOP_OUTPUT_LOCATION = "gremlin.hadoop.outputLocation";
+
     public static final String GREMLIN_HADOOP_GRAPH_READER = "gremlin.hadoop.graphReader";
     public static final String GREMLIN_HADOOP_GRAPH_WRITER = "gremlin.hadoop.graphWriter";
     public static final String GREMLIN_HADOOP_GRAPH_READER_HAS_EDGES = "gremlin.hadoop.graphReader.hasEdges";
@@ -65,10 +78,19 @@ public final class Constants {
     public static final String SPARK_KRYO_REGISTRATOR = "spark.kryo.registrator";
     public static final String SPARK_KRYO_REGISTRATION_REQUIRED = "spark.kryo.registrationRequired";
 
+    /**
+     * @param location not null, not empty UNIX-formatted file system path
+     * @return not empty UNIX-formatted file system path to the graph in the location, still compatible with Windows and java.io.File
+     */
     public static String getGraphLocation(final String location) {
         return location.endsWith("/") ? location + Constants.HIDDEN_G : location + "/" + Constants.HIDDEN_G;
     }
 
+    /**
+     * @param location not null, not empty UNIX-formatted file system path
+     * @param memoryKey not null, not empty
+     * @return not empty UNIX-formatted file system path to the memory in the location, still compatible with Windows and java.io.File
+     */
     public static String getMemoryLocation(final String location, final String memoryKey) {
         return location.endsWith("/") ? location + memoryKey : location + "/" + memoryKey;
     }
