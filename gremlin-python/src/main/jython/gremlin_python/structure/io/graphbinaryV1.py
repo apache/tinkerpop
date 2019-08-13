@@ -908,7 +908,7 @@ class BulkSetIO(_GraphBinaryTypeIO):
         the_list = []
         while size > 0:
             itm = r.readObject(b)
-            bulk = cls.read_int(b)
+            bulk = struct.unpack(">q", b.read(8))[0]
             for y in range(bulk):
                 the_list.append(itm)            
             size = size - 1
