@@ -595,12 +595,17 @@ class _EnumIO(_GraphBinaryTypeIO):
     @classmethod
     def dictify(cls, obj, writer, as_value=False, nullable=True):
         ba = bytearray()
-        ba.extend(cls.string_as_bytes(cls.unmangleKeyword(str(obj.name))))
+        ba.extend(StringIO.dictify(cls.unmangleKeyword(str(obj.name)), writer))
         return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, nullable, ba)
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
-        return cls.is_null(buff, reader, lambda b, r: cls.python_type[cls.read_string(b)], nullable)
+        return cls.is_null(buff, reader, cls._read_enumval, nullable)
+
+    @classmethod
+    def _read_enumval(cls, b, r):
+        enum_name = r.toObject(b)
+        return cls.python_type[enum_name]
 
 
 class BarrierIO(_EnumIO):
