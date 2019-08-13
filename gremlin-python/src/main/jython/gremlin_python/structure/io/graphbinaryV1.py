@@ -40,6 +40,7 @@ from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, T
 from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Cardinality, Column, Direction, Operator, \
                                              Order, Pick, Pop, P, Scope, TextP, Traversal, Traverser, \
                                              TraversalStrategy, T
+from gremlin_python.process.graph_traversal import GraphTraversal
 from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path
 
 log = logging.getLogger(__name__)
@@ -663,17 +664,18 @@ class BytecodeIO(_GraphBinaryTypeIO):
 
     @classmethod
     def dictify(cls, obj, writer, as_value=False, nullable=True):
+        bc = obj.bytecode if isinstance(obj, Traversal) else obj
         ba = bytearray()
-        ba.extend(struct.pack(">i", len(obj.step_instructions)))
-        for inst in obj.step_instructions:
+        ba.extend(struct.pack(">i", len(bc.step_instructions)))
+        for inst in bc.step_instructions:
             inst_name, inst_args = inst[0], inst[1:] if len(inst) > 1 else []
             ba.extend(cls.string_as_bytes(inst_name))
             ba.extend(struct.pack(">i", len(inst_args)))
             for arg in inst_args:
                 ba.extend(writer.writeObject(arg))
 
-        ba.extend(struct.pack(">i", len(obj.source_instructions)))
-        for inst in obj.source_instructions:
+        ba.extend(struct.pack(">i", len(bc.source_instructions)))
+        for inst in bc.source_instructions:
             inst_name, inst_args = inst[0], inst[1:] if len(inst) > 1 else []
             ba.extend(cls.string_as_bytes(inst_name))
             ba.extend(struct.pack(">i", len(inst_args)))
@@ -718,6 +720,10 @@ class BytecodeIO(_GraphBinaryTypeIO):
             ix += 1
 
         return bytecode
+
+
+class TraversalIO(BytecodeIO):
+    python_type = GraphTraversal
 
 
 class LambdaIO(_GraphBinaryTypeIO):

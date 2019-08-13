@@ -32,6 +32,7 @@ from gremlin_python.driver.serializer import (
     GraphBinarySerializersV1)
 from gremlin_python.driver.tornado.transport import TornadoTransport
 
+# docker Gremlin Server = 172.17.0.2
 gremlin_server_host = "localhost"
 gremlin_server_url = 'ws://' + gremlin_server_host + ':45940/gremlin'
 
@@ -92,8 +93,11 @@ def remote_connection(request):
         elif request.param == 'graphsonv2':
             remote_conn = DriverRemoteConnection(gremlin_server_url, 'gmodern',
                                                  message_serializer=serializer.GraphSONSerializersV2d0())
+        elif request.param == 'graphsonv3':
+            remote_conn = DriverRemoteConnection(gremlin_server_url, 'gmodern',
+                                                 message_serializer=serializer.GraphSONSerializersV3d0())
         else:
-            remote_conn = DriverRemoteConnection(gremlin_server_url, 'gmodern')
+            raise ValueError("Invalid serializer option - " + request.param)
     except OSError:
         pytest.skip('Gremlin Server is not running')
     else:
