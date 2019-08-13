@@ -95,6 +95,11 @@ public enum T implements Function<Element, Object> {
     @Override
     public abstract Object apply(final Element element);
 
+    @Override
+    public String toString() {
+        return "T." + name();
+    }
+
     public static T fromString(final String accessor) {
         if (accessor.equals(LABEL))
             return label;

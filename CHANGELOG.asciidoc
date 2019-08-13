@@ -23,8 +23,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-3-9]]
 === TinkerPop 3.3.9 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-* TINKERPOP-2260 Update jackson databind 2.9.9.3
-
+* Altered `T.toString()` to include the "T." prefix.
+* Update jackson databind 2.9.9.3
 
 [[release-3-3-8]]
 === TinkerPop 3.3.8 (Release Date: August 5, 2019)

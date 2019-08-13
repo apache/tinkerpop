@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -182,6 +183,8 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
             return "VertexProperty.Cardinality." + object.toString();
         else if (object instanceof TraversalOptionParent.Pick)
             return "TraversalOptionParent.Pick." + object.toString();
+        else if (object instanceof T)
+            return "T." + ((T) object).name();
         else if (object instanceof Enum)
             return ((Enum) object).getDeclaringClass().getSimpleName() + "." + object.toString();
         else if (object instanceof Element) {
