@@ -157,10 +157,12 @@ class GraphBinaryReader(object):
 
     def toObject(self, buff, data_type=None, nullable=True):
         if data_type is None:
-            bt = buff.read(1)
-            if bt[0] == DataType.null.value:
+            bt = struct.unpack('>B', buff.read(1))[0]
+            if bt == DataType.null.value:
+                if nullable:
+                    buff.read(1)
                 return None
-            return self.deserializers[DataType(struct.unpack('>b', bt)[0])].objectify(buff, self, nullable)
+            return self.deserializers[DataType(bt)].objectify(buff, self, nullable)
         else:
             return self.deserializers[data_type].objectify(buff, self, nullable)
 

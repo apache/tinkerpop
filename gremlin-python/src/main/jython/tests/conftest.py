@@ -74,7 +74,8 @@ def client(request):
 @pytest.fixture
 def secure_client(request):
     try:
-        client = Client('ws://' + gremlin_server_host + ':45941/gremlin', 'gmodern', username='stephen', password='password')
+        client = Client('ws://' + gremlin_server_host + ':45941/gremlin', 'gmodern',
+                        username='stephen', password='password')
     except OSError:
         pytest.skip('Gremlin Server is not running')
     else:

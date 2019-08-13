@@ -165,12 +165,11 @@ class TestDriverRemoteConnection(object):
         assert 6 == g.E().count().next()
 
 
-def test_in_tornado_app(remote_connection):
+def test_in_tornado_app():
     # Make sure nothing weird with loops
     @gen.coroutine
     def go():
-        conn = DriverRemoteConnection(
-            'ws://localhost:45940/gremlin', 'gmodern', pool_size=4)
+        conn = DriverRemoteConnection('ws://localhost:45940/gremlin', 'gmodern', pool_size=4)
         g = traversal().withRemote(conn)
         yield gen.sleep(0)
         assert len(g.V().toList()) == 6
