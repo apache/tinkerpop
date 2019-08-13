@@ -735,12 +735,12 @@ class LambdaIO(_GraphBinaryTypeIO):
 
     @classmethod
     def dictify(cls, obj, writer, as_value=False, nullable=True):
-        ba = bytearray() if as_value else bytearray([cls.graphbinary_type.value])
+        ba = bytearray()
         lambda_result = obj()
         script = lambda_result if isinstance(lambda_result, str) else lambda_result[0]
         language = statics.default_lambda_language if isinstance(lambda_result, str) else lambda_result[1]
 
-        ba.extend(cls.string_as_bytes(language))
+        ba.extend(StringIO.dictify(language, writer, True, False))
 
         script_cleaned = script
         script_args = -1
@@ -750,7 +750,7 @@ class LambdaIO(_GraphBinaryTypeIO):
                 script_cleaned = "lambda " + script
             script_args = six.get_function_code(eval(script_cleaned)).co_argcount
 
-        ba.extend(cls.string_as_bytes(script_cleaned))
+        ba.extend(StringIO.dictify(script_cleaned, writer, True, False))
         ba.extend(struct.pack(">i", script_args))
 
         return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, nullable, ba)

@@ -82,6 +82,10 @@ class TestDriverRemoteConnection(object):
         assert 'marko' in results
         assert 'vadas' in results
         # #
+        results = g.V().has('person', 'name', 'marko').map(lambda: ("it.get().value('name')", "gremlin-groovy")).toList()
+        assert 1 == len(results)
+        assert 'marko' in results
+        # #
         # this test just validates that the underscored versions of steps conflicting with Gremlin work
         # properly and can be removed when the old steps are removed - TINKERPOP-2272
         results = g.V().filter_(__.values('age').sum_().and_(
