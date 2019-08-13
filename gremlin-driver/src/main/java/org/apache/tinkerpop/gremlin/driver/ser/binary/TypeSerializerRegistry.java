@@ -319,7 +319,7 @@ public class TypeSerializerRegistry {
         }
     }
 
-    public <DT> TypeSerializer<DT> getSerializer(final Class<DT> type) throws SerializationException {
+    public <DT> TypeSerializer<DT> findSerializer(final Class<DT> type) {
         TypeSerializer<?> serializer = serializers.get(type);
 
         if (null == serializer) {
@@ -349,6 +349,17 @@ public class TypeSerializerRegistry {
                 }
             }
         }
+
+        if (null == serializer && null != type.getSuperclass()) {
+            // Lookup by superclass
+            return (TypeSerializer<DT>) findSerializer(type.getSuperclass());
+        }
+
+        return (TypeSerializer<DT>) serializer;
+    }
+
+    public <DT> TypeSerializer<DT> getSerializer(final Class<DT> type) throws SerializationException {
+        TypeSerializer<?> serializer = findSerializer(type);
 
         if (null == serializer && fallbackResolver != null) {
             serializer = fallbackResolver.apply(type);

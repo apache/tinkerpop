@@ -90,11 +90,30 @@ public class TypeSerializerRegistryTest {
 
         assertSame(expectedForInetAddress, registry.getSerializer(InetAddress.class));
 
-        // this should return the superclass serializer, which does not
-//        assertSame(expectedForInetAddress, registry.getSerializer(Inet4Address.class));
+        // this should return the superclass serializer
+        assertSame(expectedForInetAddress, registry.getSerializer(Inet4Address.class));
 
-        // this should return the superclass serializer, which does not
-//        assertSame(expectedForInetAddress, registry.getSerializer(Inet6Address.class));
+        // this should return the superclass serializer
+        assertSame(expectedForInetAddress, registry.getSerializer(Inet6Address.class));
+    }
+
+    @Test
+    public void shouldResolveSerializerForDirectMatchClassBeforeSuperclass() throws SerializationException {
+        final TypeSerializer<InetAddress> expectedForInetAddress = new TestInetAddressSerializer();
+        final TypeSerializer<Inet4Address> expectedForInet4Address = new TestInet4AddressSerializer();
+
+        final TypeSerializerRegistry registry = TypeSerializerRegistry.build()
+                .add(Inet4Address.class, expectedForInet4Address)
+                .add(InetAddress.class, expectedForInetAddress)
+                .create();
+
+        assertSame(expectedForInetAddress, registry.getSerializer(InetAddress.class));
+
+        // this should return the direct match class serializer
+        assertSame(expectedForInet4Address, registry.getSerializer(Inet4Address.class));
+
+        // this should return the superclass serializer
+        assertSame(expectedForInetAddress, registry.getSerializer(Inet6Address.class));
     }
 
     @Test
@@ -157,6 +176,14 @@ public class TypeSerializerRegistryTest {
     }
 
     private static class TestInetAddressSerializer extends TestBaseTypeSerializer<InetAddress> {
+
+        @Override
+        public DataType getDataType() {
+            return DataType.INETADDRESS;
+        }
+    }
+
+    private static class TestInet4AddressSerializer extends TestBaseTypeSerializer<Inet4Address> {
 
         @Override
         public DataType getDataType() {
