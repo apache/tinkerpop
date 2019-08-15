@@ -54,7 +54,6 @@ namespace Gremlin.Net.Process.Remote
         {
             if (traversal.Traversers != null) return;
             var remoteTraversal = await _remoteConnection.SubmitAsync<S, E>(traversal.Bytecode).ConfigureAwait(false);
-            traversal.SideEffects = remoteTraversal.SideEffects;
             traversal.Traversers = remoteTraversal.Traversers;
         }
     }

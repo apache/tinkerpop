@@ -47,18 +47,6 @@ namespace Gremlin.Net.Driver
         public static string OpsEval = "eval";
 
         /// <summary>
-        ///     Operation used to get a particular side-effect as produced by a previously executed Traversal.
-        /// </summary>
-        [Obsolete("As of release 3.3.8, not replaced, prefer use of cap()-step to retrieve side-effects as part of traversal iteration", false)]
-        public static string OpsGather = "gather";
-
-        /// <summary>
-        ///     Operation used to get all the keys of all side-effects as produced by a previously executed Traversal.
-        /// </summary>
-        [Obsolete("As of release 3.3.8, not replaced, prefer use of cap()-step to retrieve side-effects as part of traversal iteration", false)]
-        public static string OpsKeys = "keys";
-
-        /// <summary>
         ///     Operation used to get all the keys of all side-effects as produced by a previously executed Traversal.
         /// </summary>
         public static string OpsClose = "close";
@@ -91,24 +79,6 @@ namespace Gremlin.Net.Driver
         public static string ArgsGremlin = "gremlin";
 
         /// <summary>
-        ///     Argument name that allows to specify the unique identifier for the request.
-        /// </summary>
-        [Obsolete("As of release 3.3.8, not replaced, prefer use of cap()-step to retrieve side-effects as part of traversal iteration", false)]
-        public static string ArgsSideEffect = "sideEffect";
-
-        /// <summary>
-        ///     Argument name that allows to specify the key for a specific side-effect.
-        /// </summary>
-        [Obsolete("As of release 3.3.8, not replaced, prefer use of cap()-step to retrieve side-effects as part of traversal iteration", false)]
-        public static string ArgsSideEffectKey = "sideEffectKey";
-
-        /// <summary>
-        ///     <see cref="ResponseMessage{T}" /> argument that describes how side-effect data should be treated.
-        /// </summary>
-        [Obsolete("As of release 3.3.8, not replaced, prefer use of cap()-step to retrieve side-effects as part of traversal iteration", false)]
-        public static string ArgsAggregateTo = "aggregateTo";
-
-        /// <summary>
         ///     Argument name that allows to change the flavor of Gremlin used (e.g. gremlin-groovy).
         /// </summary>
         public static string ArgsLanguage = "language";
@@ -124,11 +94,5 @@ namespace Gremlin.Net.Driver
         ///     authentication mechanism required by the server.
         /// </summary>
         public static string ArgsSasl = "sasl";
-
-        [Obsolete("As of release 3.3.8, not replaced, prefer use of cap()-step to retrieve side-effects as part of traversal iteration", false)]
-        internal static string ValAggregateToMap = "map";
-
-        [Obsolete("As of release 3.3.8, not replaced, prefer use of cap()-step to retrieve side-effects as part of traversal iteration", false)]
-        internal static string ValAggregateToBulkSet = "bulkset";
     }
 }

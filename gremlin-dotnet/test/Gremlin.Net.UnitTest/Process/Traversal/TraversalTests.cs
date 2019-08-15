@@ -24,7 +24,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Moq;
 using Xunit;
 using Gremlin.Net.Process.Traversal;
 
@@ -179,17 +178,6 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
 
             var expectedObjs = UnfoldBulks(objs, bulks);
             Assert.Equal(expectedObjs, traversedObjs);
-        }
-
-        [Fact]
-        public void ShouldDisposeSideEffectsWhenDisposeIsCalled()
-        {
-            var sideEffectsMock = new Mock<ITraversalSideEffects>();
-            var traversal = new TestTraversal(new List<object>()) {SideEffects = sideEffectsMock.Object};
-
-            traversal.Dispose();
-
-            sideEffectsMock.Verify(m => m.Dispose());
         }
     }
 }

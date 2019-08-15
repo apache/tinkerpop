@@ -498,7 +498,6 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 [INFO] OpLoader - Adding the standard OpProcessor.
 [INFO] OpLoader - Adding the session OpProcessor.
 [INFO] OpLoader - Adding the traversal OpProcessor.
-[INFO] TraversalOpProcessor - Initialized cache for TraversalOpProcessor with size 1000 and expiration time of 600000 ms
 [INFO] GremlinServer - Executing start up LifeCycleHook
 [INFO] Logger$info - Loading 'modern' graph data.
 [INFO] GremlinServer - idleConnectionTimeout was set to 0 which resolves to 0 seconds when configuring this value - this feature will be disabled
@@ -1075,16 +1074,7 @@ method for processing script evaluation requests.
 ===== TraversalOpProcessor
 
 The `TraversalOpProcessor` provides a way to accept traversals configured via <<connecting-via-drivers,withRemote()>>.
-
-[width="100%",cols="3,10,^2",options="header"]
-|=========================================================
-|Name |Description |Default
-|cacheExpirationTime |Time in milliseconds before side-effects from a `Traversal` will be evicted. |60000
-|cacheMaxSize |The maximum number of entries in the side-effect cache. |1000
-|=========================================================
-
-If there is no intention to gather side-effects from traversals, the `cacheMaxSize` can be set to zero to disable the
-cache.
+It has no special configuration settings.
 
 [[security]]
 ==== Security

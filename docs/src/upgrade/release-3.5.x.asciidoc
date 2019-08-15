@@ -107,6 +107,14 @@ Display stack trace? [yN]
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2099[TINKERPOP-2099]
 
+==== Remote SideEffects
+
+Remote traversals no longer support the retrieval of remote side-effects. Users must therefore directly return
+side-effects as part of their query if they need that data. Note that server settings for `TraversalOpProcessor`, which
+formerly held the cache for these side-effects, no longer have any effect and can be removed.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2269[TINKERPOP-2269]
+
 ==== Deprecation Removal
 
 The following deprecated classes, methods or fields have been removed in this version:
@@ -124,6 +132,10 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRankVertexProgramStep.modulateTimes()`
 ** `org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressureVertexProgramStep.modulateBy(*)`
 ** `org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressureVertexProgramStep.modulateTimes()`
+** `org.apache.tinkerpop.gremlin.process.remote.traversal.AbstractRemoteTraversalSideEffects`
+** `org.apache.tinkerpop.gremlin.process.remote.traversal.EmbeddedRemoteTraversalSideEffects`
+** `org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversalSideEffects`
+** `org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal#getSideEffects()`
 ** `org.apache.tinkerpop.gremlin.process.traversal.Order.decr`
 ** `org.apache.tinkerpop.gremlin.process.traversal.Order.incr`
 ** `org.apache.tinkerpop.gremlin.process.traversal.TraversalSource#withRemote(*)`
@@ -131,12 +143,14 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep(Traversal.Admin, boolean, PropertyType, String...)`
 ** `org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep#isIncludeTokens()`
 ** `org.apache.tinkerpop.gremlin.structure.util.star.StarGraph#builder()`
-** `org.apache.tinkerpop.gremlin.structure.util.star.StarGraph.Builder.create()`
+** `org.apache.tinkerpop.gremlin.structure.util.star.StarGraph.Builder#create()`
 * `gremlin-driver`
 ** `org.apache.tinkerpop.gremlin.driver.Cluster.Builder#keyCertChainFile(String)`
 ** `org.apache.tinkerpop.gremlin.driver.Cluster.Builder#keyFile(String)`
 ** `org.apache.tinkerpop.gremlin.driver.Cluster.Builder#keyPassword(String)`
 ** `org.apache.tinkerpop.gremlin.driver.Cluster.Builder#trustCertificateChainFile(String)`
+** `org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteTraversalSideEffects`
+** `org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteTraversal#getSideEffects()`
 * `gremlin-server`
 ** `org.apache.tinkerpop.gremlin.server.Settings.SslSettings.keyCertChainFile`
 ** `org.apache.tinkerpop.gremlin.server.Settings.SslSettings.keyFile`
@@ -150,6 +164,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor.makeFrame(Context, RequestMessage, MessageSerializer, boolean, List, ResponseStatusCode, Map)`
 ** `org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor.makeFrame(ResponseHandlerContext, RequestMessage, MessageSerializer, boolean, List, ResponseStatusCode, Map)`
 ** `org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor.makeFrame(ResponseHandlerContext, RequestMessage, MessageSerializer, boolean, List, ResponseStatusCode, Map, Map)`
+** `org.apache.tinkerpop.gremlin.server.util.SideEffectIterator`
 * `neo4j-gremlin`
 ** `org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph#getTrait()`
 ** `org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph#CONFIG_META_PROPERTIES`
@@ -162,6 +177,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2080[TINKERPOP-2080],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2231[TINKERPOP-2231],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2233[TINKERPOP-2233],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2239[TINKERPOP-2239],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2269[TINKERPOP-2269],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2273[TINKERPOP-2273],
 link:http://tinkerpop.apache.org/docs/3.5.0/upgrade/#_ssl_security[3.2.10 Upgrade Documentation for SSL]
 
@@ -182,4 +198,11 @@ Note that `StoreStep` has been renamed to `AggregateLocalStep` and `AggregateSte
 `AggregateGlobalStep`. The renaming is important to consider if any custom `TraversalStrategies` have been written
 that rely on the old step names.
 
-link:https://issues.apache.org/jira/browse/TINKERPOP-2254[TINKERPOP-2254]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2254[TINKERPOP-2254]
+
+===== TraversalOpProcessor Side-effects
+
+`TraversalOpProcessor` no longer holds a cache of side-effects and more generally the entire side-effect protocol has
+been removed and is no longer supported in the server or drivers.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2269[TINKERPOP-2269]

@@ -39,15 +39,6 @@ public class EmbeddedRemoteTraversal<S,E> extends AbstractRemoteTraversal<S,E> {
         return t.asAdmin().nextTraverser();
     }
 
-    /**
-     * @deprecated as of release 3.3.8, not directly replaced, see {@link Admin#getSideEffects()} for more information.
-     */
-    @Override
-    @Deprecated
-    public RemoteTraversalSideEffects getSideEffects() {
-        return new EmbeddedRemoteTraversalSideEffects(t.asAdmin().getSideEffects());
-    }
-
     @Override
     public boolean hasNext() {
         return t.hasNext();

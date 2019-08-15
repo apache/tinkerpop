@@ -94,6 +94,14 @@ import java.util.Iterator;
         test = "org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest",
         method = "*",
         reason = "The interruption model in the test can't guarantee interruption at the right time with RemoteGraph.")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.ComplexTest",
+        method = "classicRecommendation",
+        reason = "Test asserts traversal side-effects which are not supported by remote traversals.")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTest",
+        method = "g_V_group_byXlabelX_byXbothE_groupXaX_byXlabelX_byXweight_sumX_weight_sumX",
+        reason = "Test asserts traversal side-effects which are not supported by remote traversals.")
 public class RemoteGraph implements Graph {
 
     private final RemoteConnection connection;

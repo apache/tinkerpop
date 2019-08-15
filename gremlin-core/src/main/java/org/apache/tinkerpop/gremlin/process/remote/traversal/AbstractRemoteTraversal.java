@@ -53,6 +53,11 @@ public abstract class AbstractRemoteTraversal<S,E> implements RemoteTraversal<S,
     public abstract Traverser.Admin<E> nextTraverser();
 
     @Override
+    public TraversalSideEffects getSideEffects() {
+        throw new UnsupportedOperationException("Remote traversals do not support this method");
+    }
+
+    @Override
     public Bytecode getBytecode() {
         throw new UnsupportedOperationException("Remote traversals do not support this method");
     }

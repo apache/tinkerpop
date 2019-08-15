@@ -40,7 +40,6 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
-import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
@@ -49,10 +48,8 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtens
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.structure.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler;
 import org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
@@ -1120,178 +1117,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         g.addV("person").property("age", 20).iterate();
         g.addV("person").property("age", 10).iterate();
         assertEquals(50L, g.V().hasLabel("person").map(Lambda.function("it.get().value('age') + 10")).sum().next());
-    }
-
-    @Test
-    public void shouldGetSideEffectKeysAndStatusUsingWithRemote() throws Exception {
-        final GraphTraversalSource g = traversal().withRemote(conf);
-        g.addV("person").property("age", 20).iterate();
-        g.addV("person").property("age", 10).iterate();
-        final GraphTraversal traversal = g.V().aggregate("a").aggregate("b");
-        traversal.iterate();
-        final DriverRemoteTraversalSideEffects se = (DriverRemoteTraversalSideEffects) traversal.asAdmin().getSideEffects();
-        assertThat(se.statusAttributes().containsKey(Tokens.ARGS_HOST), is(true));
-
-        // Get keys
-        final Set<String> sideEffectKeys = se.keys();
-        assertEquals(2, sideEffectKeys.size());
-
-        // Get side effects
-        final BulkSet aSideEffects = se.get("a");
-        assertThat(aSideEffects.isEmpty(), is(false));
-        final BulkSet bSideEffects = se.get("b");
-        assertThat(bSideEffects.isEmpty(), is(false));
-
-        // Should get local keys/side effects after close
-        se.close();
-
-        final Set<String> localSideEffectKeys = se.keys();
-        assertEquals(2, localSideEffectKeys.size());
-
-        final BulkSet localASideEffects = se.get("a");
-        assertThat(localASideEffects.isEmpty(), is(false));
-
-        final BulkSet localBSideEffects = se.get("b");
-        assertThat(localBSideEffects.isEmpty(), is(false));
-
-        final GraphTraversal gdotv = g.V();
-        gdotv.toList();
-        final DriverRemoteTraversalSideEffects gdotvSe = (DriverRemoteTraversalSideEffects) gdotv.asAdmin().getSideEffects();
-        assertThat(gdotvSe.statusAttributes().containsKey(Tokens.ARGS_HOST), is(true));
-    }
-
-    @Test
-    public void shouldCloseSideEffectsUsingWithRemote() throws Exception {
-        final GraphTraversalSource g = traversal().withRemote(conf);
-        g.addV("person").property("age", 20).iterate();
-        g.addV("person").property("age", 10).iterate();
-        final GraphTraversal traversal = g.V().aggregate("a").aggregate("b");
-        traversal.iterate();
-        final DriverRemoteTraversalSideEffects se = (DriverRemoteTraversalSideEffects) traversal.asAdmin().getSideEffects();
-        final BulkSet sideEffects = se.get("a");
-        assertThat(sideEffects.isEmpty(), is(false));
-        se.close();
-
-        // Can't get new side effects after close
-        try {
-            se.get("b");
-            fail("The traversal is closed");
-        } catch (Exception ex) {
-            assertThat(ex, instanceOf(IllegalStateException.class));
-            assertEquals("Traversal has been closed - no new side-effects can be retrieved", ex.getMessage());
-        }
-
-        // Earlier keys should be cached locally
-        final Set<String> localSideEffectKeys = se.keys();
-        assertEquals(2, localSideEffectKeys.size());
-        final BulkSet localSideEffects = se.get("a");
-        assertThat(localSideEffects.isEmpty(), is(false));
-
-        // Try to get side effect from server
-        final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect();
-        final Field field = DriverRemoteTraversalSideEffects.class.getDeclaredField("serverSideEffect");
-        field.setAccessible(true);
-        final UUID serverSideEffectId = (UUID) field.get(se);
-        final Map<String, String> aliases = new HashMap<>();
-        aliases.put("g", "g");
-        final RequestMessage msg = RequestMessage.build(Tokens.OPS_GATHER)
-                .addArg(Tokens.ARGS_SIDE_EFFECT, serverSideEffectId)
-                .addArg(Tokens.ARGS_SIDE_EFFECT_KEY, "b")
-                .addArg(Tokens.ARGS_ALIASES, aliases)
-                .processor("traversal").create();
-        boolean error;
-        try {
-            client.submitAsync(msg).get().one();
-            error = false;
-        } catch (Exception ex) {
-            error = true;
-        }
-        assertThat(error, is(true));
-    }
-
-    @Test
-    public void shouldBlockWhenGettingSideEffectKeysUsingWithRemote() throws Exception {
-        final GraphTraversalSource g = traversal().withRemote(conf);
-        g.addV("person").property("age", 20).iterate();
-        g.addV("person").property("age", 10).iterate();
-        final GraphTraversal traversal = g.V().aggregate("a")
-                .sideEffect(Lambda.consumer("{Thread.sleep(3000)}"))
-                .aggregate("b");
-
-        // force strategy application - if this doesn't happen then getSideEffects() returns DefaultTraversalSideEffects
-        traversal.hasNext();
-
-        // start a separate thread to iterate
-        final Thread t = new Thread(traversal::iterate);
-        t.start();
-
-        // blocks here until traversal iteration is complete
-        final DriverRemoteTraversalSideEffects se = (DriverRemoteTraversalSideEffects) traversal.asAdmin().getSideEffects();
-
-        // Get keys
-        final Set<String> sideEffectKeys = se.keys();
-        assertEquals(2, sideEffectKeys.size());
-
-        // Get side effects
-        final BulkSet aSideEffects = se.get("a");
-        assertThat(aSideEffects.isEmpty(), is(false));
-        final BulkSet bSideEffects = se.get("b");
-        assertThat(bSideEffects.isEmpty(), is(false));
-
-        // Should get local keys/side effects after close
-        se.close();
-
-        final Set<String> localSideEffectKeys = se.keys();
-        assertEquals(2, localSideEffectKeys.size());
-
-        final BulkSet localASideEffects = se.get("a");
-        assertThat(localASideEffects.isEmpty(), is(false));
-
-        final BulkSet localBSideEffects = se.get("b");
-        assertThat(localBSideEffects.isEmpty(), is(false));
-    }
-
-    @Test
-    public void shouldBlockWhenGettingSideEffectValuesUsingWithRemote() throws Exception {
-        final GraphTraversalSource g = traversal().withRemote(conf);
-        g.addV("person").property("age", 20).iterate();
-        g.addV("person").property("age", 10).iterate();
-        final GraphTraversal traversal = g.V().aggregate("a")
-                .sideEffect(Lambda.consumer("{Thread.sleep(3000)}"))
-                .aggregate("b");
-
-        // force strategy application - if this doesn't happen then getSideEffects() returns DefaultTraversalSideEffects
-        traversal.hasNext();
-
-        // start a separate thread to iterate
-        final Thread t = new Thread(traversal::iterate);
-        t.start();
-
-        // blocks here until traversal iteration is complete
-        final DriverRemoteTraversalSideEffects se = (DriverRemoteTraversalSideEffects) traversal.asAdmin().getSideEffects();
-
-        // Get side effects
-        final BulkSet aSideEffects = se.get("a");
-        assertThat(aSideEffects.isEmpty(), is(false));
-        final BulkSet bSideEffects = se.get("b");
-        assertThat(bSideEffects.isEmpty(), is(false));
-
-        // Get keys
-        final Set<String> sideEffectKeys = se.keys();
-        assertEquals(2, sideEffectKeys.size());
-
-        // Should get local keys/side effects after close
-        se.close();
-
-        final Set<String> localSideEffectKeys = se.keys();
-        assertEquals(2, localSideEffectKeys.size());
-
-        final BulkSet localASideEffects = se.get("a");
-        assertThat(localASideEffects.isEmpty(), is(false));
-
-        final BulkSet localBSideEffects = se.get("b");
-        assertThat(localBSideEffects.isEmpty(), is(false));
     }
 
     @Test

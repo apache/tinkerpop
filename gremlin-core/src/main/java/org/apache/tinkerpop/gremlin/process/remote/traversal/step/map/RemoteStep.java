@@ -88,7 +88,6 @@ public final class RemoteStep<S, E> extends AbstractStep<S, E> {
             if (null == traversalFuture.get()) {
                 traversalFuture.set(this.remoteConnection.submitAsync(this.traversal.getBytecode()).<Traversal<?, E>>thenApply(t -> {
                     this.remoteTraversal = (RemoteTraversal<?, E>) t;
-                    this.traversal.setSideEffects(this.remoteTraversal.getSideEffects());
                     return traversal;
                 }));
             }

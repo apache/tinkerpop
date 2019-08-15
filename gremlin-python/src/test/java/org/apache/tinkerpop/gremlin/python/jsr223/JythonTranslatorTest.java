@@ -82,8 +82,6 @@ public class JythonTranslatorTest {
         assertEquals(5, sacks.get(3).intValue());
         assertEquals(6, sacks.get(4).intValue());
         assertEquals(7, sacks.get(5).intValue());
-        //
-        assertEquals(24, t.getSideEffects().<Number>get("lengthSum").intValue());
     }
 
     @Test
