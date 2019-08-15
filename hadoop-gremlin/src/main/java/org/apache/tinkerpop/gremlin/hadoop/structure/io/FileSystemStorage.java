@@ -80,7 +80,7 @@ public final class FileSystemStorage implements Storage {
 
     private static String fileStatusString(final FileStatus status) {
         StringBuilder s = new StringBuilder();
-        s.append(status.getPermission()).append(" ");
+        s.append(status.getPermission()).append(SPACE);
         s.append(status.getOwner()).append(SPACE);
         s.append(status.getGroup()).append(SPACE);
         s.append(status.getLen()).append(SPACE);
@@ -140,14 +140,14 @@ public final class FileSystemStorage implements Storage {
     public boolean rm(final String location) {
         try {
             final FileStatus[] statuses = this.fs.globStatus(new Path(tryHomeDirectory(location) + "*"));
-            Stream.of(statuses).forEach(status -> {
-                try {
-                    this.fs.delete(status.getPath(), true);
-                } catch (IOException e) {
-                    throw new IllegalStateException(e.getMessage(), e);
-                }
-            });
-            return statuses.length > 0;
+            return statuses.length > 0
+                   && Stream.of(statuses).allMatch(status -> {
+                          try {
+                              return this.fs.delete(status.getPath(), true);
+                          } catch (IOException e) {
+                              throw new IllegalStateException(e.getMessage(), e);
+                          }
+                      });
         } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
