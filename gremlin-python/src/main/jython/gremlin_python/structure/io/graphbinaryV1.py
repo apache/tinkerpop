@@ -16,6 +16,8 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 """
+
+import six
 import datetime
 import calendar
 import struct
@@ -127,7 +129,12 @@ class GraphBinaryWriter(object):
 
     def toDict(self, obj):
         try:
-            return self.serializers[type(obj)].dictify(obj, self)
+            t = type(obj)
+            
+            # coerce unicode to str so the serializer will be found properly in the cache...better way?
+            if not six.PY3:
+                t = str if isinstance(obj, unicode) else t
+            return self.serializers[t].dictify(obj, self)
         except KeyError:
             for key, serializer in self.serializers.items():
                 if isinstance(obj, key):

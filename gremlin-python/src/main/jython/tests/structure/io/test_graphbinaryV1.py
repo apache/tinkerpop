@@ -119,7 +119,16 @@ class TestGraphSONWriter(object):
              987: ["go", "deep", {"here": "!"}]}
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
         assert x == output
-        
+
+        x = {"marko": [666], "noone": ["blah"]}
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output
+
+        x = {"ripple": [], "peter": ["created"], "noone": ["blah"], "vadas": [],
+             "josh": ["created", "created"], "lop": [], "marko": [666, "created", "knows", "knows"]}
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output
+
     def test_uuid(self):
         x = uuid.UUID("41d2e28a-20a4-4ab0-b379-d810dede3786")
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))

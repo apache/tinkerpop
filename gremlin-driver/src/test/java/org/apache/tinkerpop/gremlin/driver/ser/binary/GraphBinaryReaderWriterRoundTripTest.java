@@ -228,6 +228,7 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 new Object[] {"Por", P.gt(1).or(P.lt(2)), null},
                 new Object[] {"Pnot", P.not(P.lte(1)), null},
                 new Object[] {"Pwithout", P.without(1,2,3,4), null},
+                new Object[] {"Pinside", P.inside(0.0d, 0.6d), null},
                 new Object[] {"TextP", TextP.startingWith("mark"), null},
 
                 // graph

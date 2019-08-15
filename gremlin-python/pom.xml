@@ -419,7 +419,7 @@ limitations under the License.
                                             <env key="PYTHONPATH" value=""/>
                                             <arg line="setup.py install"/>
                                         </exec>
-                                        <!-- run for graphson 2.0 -->
+                                        <!-- run for graphson 3.0 -->
                                         <exec executable="env/bin/radish" dir="${project.build.directory}/python2"
                                               failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
