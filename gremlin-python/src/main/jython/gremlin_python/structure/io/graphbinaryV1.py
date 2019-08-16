@@ -403,7 +403,7 @@ class ListIO(_GraphBinaryTypeIO):
         return the_list
 
 
-class SetIO(ListIO):
+class SetDeserializer(ListIO):
 
     python_type = SetType
     graphbinary_type = DataType.set
@@ -740,7 +740,7 @@ class TraversalIO(BytecodeIO):
     python_type = GraphTraversal
 
 
-class LambdaIO(_GraphBinaryTypeIO):
+class LambdaSerializer(_GraphBinaryTypeIO):
 
     python_type = FunctionType
     graphbinary_type = DataType.lambda_
@@ -768,7 +768,7 @@ class LambdaIO(_GraphBinaryTypeIO):
         return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, nullable, ba)
 
 
-class PIO(_GraphBinaryTypeIO):
+class PSerializer(_GraphBinaryTypeIO):
     graphbinary_type = DataType.p
     python_type = P
 
@@ -875,7 +875,7 @@ class BooleanIO(_GraphBinaryTypeIO):
                            nullable)
 
 
-class TextPIO(_GraphBinaryTypeIO):
+class TextPSerializer(_GraphBinaryTypeIO):
     graphbinary_type = DataType.textp
     python_type = TextP
 
@@ -901,7 +901,7 @@ class TextPIO(_GraphBinaryTypeIO):
         return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, nullable, ba)
 
 
-class BulkSetIO(_GraphBinaryTypeIO):
+class BulkSetDeserializer(_GraphBinaryTypeIO):
 
     graphbinary_type = DataType.bulkset
 
@@ -923,7 +923,7 @@ class BulkSetIO(_GraphBinaryTypeIO):
         return the_list
 
 
-class MetricsIO(_GraphBinaryTypeIO):
+class MetricsDeserializer(_GraphBinaryTypeIO):
 
     graphbinary_type = DataType.metrics
 
@@ -948,7 +948,7 @@ class MetricsIO(_GraphBinaryTypeIO):
                 "metrics": metrics}
 
 
-class TraversalMetricsIO(_GraphBinaryTypeIO):
+class TraversalMetricsDeserializer(_GraphBinaryTypeIO):
 
     graphbinary_type = DataType.traversalmetrics
 
@@ -965,7 +965,7 @@ class TraversalMetricsIO(_GraphBinaryTypeIO):
                 "metrics": metrics}
 
 
-class ClassIO(_GraphBinaryTypeIO):
+class ClassSerializer(_GraphBinaryTypeIO):
     graphbinary_type = DataType.clazz
     python_type = GremlinType
 
@@ -975,14 +975,14 @@ class ClassIO(_GraphBinaryTypeIO):
             cls.graphbinary_type, as_value), None, nullable, StringIO.dictify(obj.gremlin_type, writer, True, False))
 
 
-class TraversalStrategyIO(_GraphBinaryTypeIO):
+class TraversalStrategySerializer(_GraphBinaryTypeIO):
     graphbinary_type = DataType.traversalstrategy
     python_type = TraversalStrategy
 
     @classmethod
     def dictify(cls, obj, writer, as_value=False, nullable=True):
         ba = bytearray()
-        ba.extend(ClassIO.dictify(GremlinType(obj.fqcn), writer, True, False))
+        ba.extend(ClassSerializer.dictify(GremlinType(obj.fqcn), writer, True, False))
         conf = {k: cls._convert(v) for k, v in obj.configuration.items()}
         ba.extend(MapIO.dictify(conf, writer, True, False))
         return cls.as_bytes(cls.write_as_value(cls.graphbinary_type, as_value), None, nullable, ba)

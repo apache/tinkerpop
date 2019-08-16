@@ -32,7 +32,7 @@ It describes arbitrary object graphs with a fully-qualified format:
 
 Where:
 
-* `{type_code}` is a single byte representing the type number.
+* `{type_code}` is a single unsigned byte representing the type number.
 * `{type_info}` is an optional sequence of bytes providing additional information of the type represented. This is
 specially useful for representing complex and custom types.
 * `{value_flag}` is a single byte providing information about the value. Flags have the following meaning:
