@@ -1809,6 +1809,20 @@ to as "detached elements" and cases where properties are not included are "refer
 With the type of request and detachment model in mind, it is now possible to discuss how best to consider element
 properties in relation to them all in concert.
 
+By default, Gremlin Server sample configurations utilize `ReferenceElementStrategy` when creating the out-of-the-box
+`GraphTraversalSource`. As the name suggests, this means that elements will be detached by reference and will
+therefore not have properties included. The relevant configuration from the Gremlin Server initialization script looks
+like this:
+
+[source,groovy]
+----
+globals << [g : graph.traversal().withStrategies(ReferenceElementStrategy.instance())]
+----
+
+This configuration is global to Gremlin Server and therefore all methods of connection will always return elements
+without properties. If this strategy is not included, then there are other considerations to take into account such as
+the connection type (i.e. script or bytecode) and the serializer.
+
 For script-based requests, users should take care when returning graph elements. By default, elements will be returned
 as "detached elements" and depending on the serializer being used those detached elements may or may not have their
 properties carried with them. Gryo and GraphSON serializers will write all properties in the return payload in this
