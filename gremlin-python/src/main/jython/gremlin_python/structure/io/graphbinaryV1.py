@@ -30,7 +30,7 @@ import logging
 from aenum import Enum
 from gremlin_python import statics
 from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, DictType, ListType, SetType, \
-                                   SingleByte, ByteBufferType, GremlinType
+                                   SingleByte, ByteBufferType, GremlinType, SingleChar
 from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Cardinality, Column, Direction, Operator, \
                                              Order, Pick, Pop, P, Scope, TextP, Traversal, Traverser, \
                                              TraversalStrategy, T
@@ -93,6 +93,7 @@ class DataType(Enum):
     tree = 0x2b                   # no tree object in Python yet
     metrics = 0x2c
     traversalmetrics = 0x2d
+    char = 0x80
     custom = 0x00                 #todo
 
 
@@ -326,6 +327,31 @@ class DoubleIO(FloatIO):
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
         return cls.is_null(buff, reader, lambda b, r: struct.unpack(cls.byte_format, b.read(8))[0], nullable)
+
+
+class CharIO(_GraphBinaryTypeIO):
+    python_type = SingleChar
+    graphbinary_type = DataType.char
+
+    @classmethod
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
+        ba = obj.encode("utf-8")
+        return cls.as_bytes(cls.graphbinary_type, as_value, nullable, ba)
+
+    @classmethod
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, cls._read_char, nullable)
+
+    @classmethod
+    def _read_char(cls, b, r):
+        max_bytes = 4
+        x = b.read(1)
+        while max_bytes > 0:
+            max_bytes = max_bytes - 1
+            try:
+                return x.decode("utf-8")
+            except UnicodeDecodeError:
+                x += b.read(1)
 
 
 class StringIO(_GraphBinaryTypeIO):
@@ -963,3 +989,4 @@ class TraversalStrategySerializer(_GraphBinaryTypeIO):
     @classmethod
     def _convert(cls, v):
         return v.bytecode if isinstance(v, Traversal) else v
+

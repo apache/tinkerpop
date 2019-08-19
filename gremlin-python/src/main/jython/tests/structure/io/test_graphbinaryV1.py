@@ -196,4 +196,12 @@ class TestGraphSONWriter(object):
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
         assert x == output
 
+    def test_char(self):
+        x = str.__new__(SingleChar, chr(76))
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output
 
+        if six.PY3:
+            x = str.__new__(SingleChar, chr(57344))
+            output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+            assert x == output

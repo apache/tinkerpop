@@ -20,6 +20,7 @@ under the License.
 import datetime
 import uuid
 
+from gremlin_python.driver.serializer import GraphSONSerializersV2d0
 from gremlin_python.structure.graph import Graph
 from gremlin_python.statics import *
 
@@ -62,3 +63,26 @@ def test_uuid(remote_connection):
         assert uid_prop.value == uid
     finally:
         g.V(vid).drop().iterate()
+
+
+def test_odd_bits(remote_connection):
+    if not isinstance(remote_connection._client._message_serializer, GraphSONSerializersV2d0):
+        g = Graph().traversal().withRemote(remote_connection)
+        char_lower = str.__new__(SingleChar, chr(78))
+        resp = g.addV('test_vertex').property('char_lower', char_lower).toList()
+        vid = resp[0].id
+        try:
+            v = g.V(vid).values('char_lower').toList()[0]
+            assert v == char_lower
+        finally:
+            g.V(vid).drop().iterate()
+
+        if six.PY3:
+            char_upper = str.__new__(SingleChar, chr(57344))
+            resp = g.addV('test_vertex').property('char_upper', char_upper).toList()
+            vid = resp[0].id
+            try:
+                v = g.V(vid).values('char_upper').toList()[0]
+                assert v == char_upper
+            finally:
+                g.V(vid).drop().iterate()
