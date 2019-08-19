@@ -195,16 +195,8 @@ class _GraphBinaryTypeIO(object):
         return struct.unpack(">i", buff.read(4))[0]
 
     @classmethod
-    def read_string(cls, buff):
-        return buff.read(cls.read_int(buff)).decode("utf-8")
-
-    @classmethod
     def unmangleKeyword(cls, symbol):
         return cls.symbolMap.get(symbol, symbol)
-    
-    @classmethod
-    def write_as_value(cls, graphbin_type, as_value):
-        return None if as_value else graphbin_type
 
     @classmethod
     def is_null(cls, buff, reader, else_opt, nullable=True):
@@ -463,9 +455,9 @@ class EdgeIO(_GraphBinaryTypeIO):
     @classmethod
     def _read_edge(cls, b, r):
         edgeid = r.readObject(b)
-        edgelbl = cls.read_string(b)
-        edge = Edge(edgeid, Vertex(r.readObject(b), cls.read_string(b)),
-                    edgelbl, Vertex(r.readObject(b), cls.read_string(b)))
+        edgelbl = r.toObject(b, DataType.string, False)
+        edge = Edge(edgeid, Vertex(r.readObject(b), r.toObject(b, DataType.string, False)),
+                    edgelbl, Vertex(r.readObject(b), r.toObject(b, DataType.string, False)))
         b.read(4)
         return edge
 
@@ -506,7 +498,7 @@ class PropertyIO(_GraphBinaryTypeIO):
 
     @classmethod
     def _read_property(cls, b, r):
-        p = Property(cls.read_string(b), r.readObject(b), None)
+        p = Property(r.toObject(b, DataType.string, False), r.readObject(b), None)
         b.read(2)
         return p
 
@@ -544,7 +536,7 @@ class VertexIO(_GraphBinaryTypeIO):
 
     @classmethod
     def _read_vertex(cls, b, r):
-        vertex = Vertex(r.readObject(b), cls.read_string(b))
+        vertex = Vertex(r.readObject(b), r.toObject(b, DataType.string, False))
         b.read(2)
         return vertex
 
@@ -570,7 +562,7 @@ class VertexPropertyIO(_GraphBinaryTypeIO):
 
     @classmethod
     def _read_vertexproperty(cls, b, r):
-        vp = VertexProperty(r.readObject(b), cls.read_string(b), r.readObject(b), None)
+        vp = VertexProperty(r.readObject(b), r.toObject(b, DataType.string, False), r.readObject(b), None)
         b.read(4)
         return vp
 
@@ -647,7 +639,8 @@ class BindingIO(_GraphBinaryTypeIO):
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
-        return cls.is_null(buff, reader, lambda b, r: Binding(cls.read_string(b), reader.readObject(b)), nullable)
+        return cls.is_null(buff, reader, lambda b, r: Binding(r.toObject(b, DataType.string, False),
+                                                              reader.readObject(b)), nullable)
 
 
 class BytecodeIO(_GraphBinaryTypeIO):
@@ -690,7 +683,7 @@ class BytecodeIO(_GraphBinaryTypeIO):
         step_count = cls.read_int(b)
         ix = 0
         while ix < step_count:
-            inst = [cls.read_string(b)]
+            inst = [r.toObject(b, DataType.string, False)]
             inst_ct = cls.read_int(b)
             iy = 0
             while iy < inst_ct:
@@ -702,7 +695,7 @@ class BytecodeIO(_GraphBinaryTypeIO):
         source_count = cls.read_int(b)
         ix = 0
         while ix < source_count:
-            inst = [cls.read_string(b)]
+            inst = [r.toObject(b, DataType.string, False)]
             inst_ct = cls.read_int(b)
             iy = 0
             while iy < inst_ct:
@@ -913,8 +906,8 @@ class MetricsDeserializer(_GraphBinaryTypeIO):
 
     @classmethod
     def _read_metrics(cls, b, r):
-        metricid = cls.read_string(b)
-        name = cls.read_string(b)
+        metricid = r.toObject(b, DataType.string, False)
+        name = r.toObject(b, DataType.string, False)
         duration = r.toObject(b, DataType.long, nullable=False)
         counts = r.toObject(b, DataType.map, nullable=False)
         annotations = r.toObject(b, DataType.map, nullable=False)
