@@ -25,36 +25,34 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 
 import org.junit.Test;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class SocialDslTest {
 
     private Graph graph = TinkerFactory.createModern();
+    private SocialTraversalSource social = traversal(SocialTraversalSource.class).withGraph(graph);
 
     @Test
     public void shouldValidateThatMarkoKnowsJosh() {
-        SocialTraversalSource social = graph.traversal(SocialTraversalSource.class);
         assertTrue(social.V().has("name","marko").knows("josh").hasNext());
         assertTrue(social.persons("marko").knows("josh").hasNext());
     }
 
     @Test
     public void shouldGetAgeOfYoungestFriendOfMarko() {
-        SocialTraversalSource social = graph.traversal(SocialTraversalSource.class);
         assertEquals(27, social.V().has("name","marko").youngestFriendsAge().next().intValue());
         assertEquals(27, social.persons("marko").youngestFriendsAge().next().intValue());
     }
 
     @Test
     public void shouldFindAllPersons() {
-        SocialTraversalSource social = graph.traversal(SocialTraversalSource.class);
         assertEquals(4, social.persons().count().next().intValue());
     }
 
     @Test
     public void shouldFindAllPersonsWithTwoOrMoreProjects() {
-        SocialTraversalSource social = graph.traversal(SocialTraversalSource.class);
         assertEquals(1, social.persons().filter(__.createdAtLeast(2)).count().next().intValue());
     }
 }
