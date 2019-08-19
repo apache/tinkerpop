@@ -37,7 +37,7 @@ class Connection:
         self._transport = None
         self._pool = pool
         self._results = {}
-        self.connect()
+        self._inited = False
 
     def connect(self):
         if self._transport:
@@ -45,11 +45,15 @@ class Connection:
         self._transport = self._transport_factory()
         self._transport.connect(self._url)
         self._protocol.connection_made(self._transport)
+        self._inited = True
 
     def close(self):
-        self._transport.close()
+        if self._inited:
+            self._transport.close()
 
     def write(self, request_message):
+        if not self._inited:
+            self.connect()
         request_id = str(uuid.uuid4())
         result_set = resultset.ResultSet(queue.Queue(), request_id)
         self._results[request_id] = result_set
