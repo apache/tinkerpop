@@ -195,7 +195,7 @@ class _GraphBinaryTypeIO(object):
         return struct.unpack(">i", buff.read(4))[0]
 
     @classmethod
-    def unmangleKeyword(cls, symbol):
+    def unmangle_keyword(cls, symbol):
         return cls.symbolMap.get(symbol, symbol)
 
     @classmethod
@@ -572,7 +572,7 @@ class _EnumIO(_GraphBinaryTypeIO):
     @classmethod
     def dictify(cls, obj, writer, as_value=False, nullable=True):
         ba = bytearray()
-        ba.extend(StringIO.dictify(cls.unmangleKeyword(str(obj.name)), writer))
+        ba.extend(StringIO.dictify(cls.unmangle_keyword(str(obj.name)), writer))
         return cls.as_bytes(cls.graphbinary_type, as_value, nullable, ba)
 
     @classmethod
