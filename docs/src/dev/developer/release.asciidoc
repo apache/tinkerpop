@@ -387,6 +387,8 @@ http://tinkerpop.apache.org/docs/xx.yy.zz/reference/ (user docs)
 http://tinkerpop.apache.org/docs/xx.yy.zz/upgrade/#XXXXXXXXXXXXXXXXXX (upgrade docs)
 http://tinkerpop.apache.org/javadocs/xx.yy.zz/core/ (core javadoc)
 http://tinkerpop.apache.org/javadocs/xx.yy.zz/full/ (full javadoc)
+http://tinkerpop.apache.org/dotnetdocs/xx.yy.zz/ (.NET API docs)
+http://tinkerpop.apache.org/jsdocs/xx.yy.zz/ (Javascript API docs)
 http://tinkerpop.apache.org/docs/xx.yy.zz/some-new-content/ (some new content) [NEW!]
 
 The release notes are available here:
