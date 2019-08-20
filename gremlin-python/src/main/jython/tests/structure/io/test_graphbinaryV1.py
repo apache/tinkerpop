@@ -205,3 +205,9 @@ class TestGraphSONWriter(object):
             x = str.__new__(SingleChar, chr(57344))
             output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
             assert x == output
+
+    def test_duration(self):
+        x = datetime.timedelta(seconds=1000, microseconds=1000)
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output
+        

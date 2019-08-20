@@ -86,3 +86,12 @@ def test_odd_bits(remote_connection):
                 assert v == char_upper
             finally:
                 g.V(vid).drop().iterate()
+                
+        dur = datetime.timedelta(seconds=1000, microseconds=1000)
+        resp = g.addV('test_vertex').property('dur', dur).toList()
+        vid = resp[0].id
+        try:
+            v = g.V(vid).values('dur').toList()[0]
+            assert v == dur
+        finally:
+            g.V(vid).drop().iterate()

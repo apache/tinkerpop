@@ -28,6 +28,7 @@ from collections import OrderedDict
 import logging
 
 from aenum import Enum
+from datetime import timedelta
 from gremlin_python import statics
 from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, DictType, ListType, SetType, \
                                    SingleByte, ByteBufferType, GremlinType, SingleChar
@@ -63,7 +64,7 @@ class DataType(Enum):
     edge = 0x0d
     path = 0x0e
     property = 0x0f
-    graph = 0x10                  # no graph object in python yet
+    graph = 0x10                  # not supported - no graph object in python yet
     vertex = 0x11
     vertexproperty = 0x12
     barrier = 0x13
@@ -81,20 +82,34 @@ class DataType(Enum):
     scope = 0x1f
     t = 0x20
     traverser = 0x21
-    bigdecimal = 0x22             #todo
-    biginteger = 0x23             #todo
+    bigdecimal = 0x22             # todo
+    biginteger = 0x23             # todo
     byte = 0x24
     bytebuffer = 0x25
-    short = 0x26                  #todo?
+    short = 0x26                  # todo
     boolean = 0x27
     textp = 0x28
     traversalstrategy = 0x29
     bulkset = 0x2a
-    tree = 0x2b                   # no tree object in Python yet
+    tree = 0x2b                   # not supported - no tree object in Python yet
     metrics = 0x2c
     traversalmetrics = 0x2d
     char = 0x80
-    custom = 0x00                 #todo
+    duration = 0x81
+    inetaddress = 0x82            # todo
+    instant = 0x83                # todo
+    localdate = 0x84              # todo
+    localdatetime = 0x85          # todo
+    localtime = 0x86              # todo
+    monthday = 0x87               # todo
+    offsetdatetime = 0x88         # todo
+    offsettime = 0x89             # todo
+    period = 0x8a                 # todo
+    year = 0x8b                   # todo
+    yearmonth = 0x8c              # todo
+    zonedatetime = 0x8d           # todo
+    zoneoffset = 0x8e             # todo
+    custom = 0x00                 # todo
 
 
 NULL_BYTES = [DataType.null.value, 0x01]
@@ -990,3 +1005,24 @@ class TraversalStrategySerializer(_GraphBinaryTypeIO):
     def _convert(cls, v):
         return v.bytecode if isinstance(v, Traversal) else v
 
+
+class DurationIO(_GraphBinaryTypeIO):
+    python_type = timedelta
+    graphbinary_type = DataType.duration
+
+    @classmethod
+    def dictify(cls, obj, writer, as_value=False, nullable=True):
+        ba = bytearray()
+        ba.extend(LongIO.dictify(obj.seconds, writer, True, False))
+        ba.extend(IntIO.dictify(obj.microseconds * 1000, writer, True, False))
+        return cls.as_bytes(cls.graphbinary_type, as_value, nullable, ba)
+
+    @classmethod
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, cls._read_duration, nullable)
+    
+    @classmethod
+    def _read_duration(cls, b, r):
+        seconds = r.toObject(b, DataType.long, False)
+        nanos = r.toObject(b, DataType.int, False)
+        return timedelta(seconds=seconds, microseconds=nanos / 1000)
