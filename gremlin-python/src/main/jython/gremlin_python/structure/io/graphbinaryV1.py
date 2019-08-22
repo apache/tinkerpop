@@ -376,9 +376,10 @@ class StringIO(_GraphBinaryTypeIO):
 
     @classmethod
     def dictify(cls, obj, writer, as_value=False, nullable=True):
+        str_bytes = obj.encode("utf-8")
         ba = bytearray()
-        ba.extend(struct.pack(">i", len(obj)))
-        ba.extend(obj.encode("utf-8"))
+        ba.extend(struct.pack(">i", len(str_bytes)))
+        ba.extend(str_bytes)
         return cls.as_bytes(cls.graphbinary_type, as_value, nullable, ba)
 
     @classmethod
