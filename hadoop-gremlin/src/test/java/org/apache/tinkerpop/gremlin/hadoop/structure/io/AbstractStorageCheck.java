@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.ClusterCountMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -77,29 +78,30 @@ public abstract class AbstractStorageCheck extends AbstractGremlinTest {
     }
 
     public void checkRemoveAndListMethods(final Storage storage, final String outputLocation) throws Exception {
-        graphProvider.getGraphComputer(graph).program(PeerPressureVertexProgram.build().create(graph)).mapReduce(ClusterCountMapReduce.build().memoryKey("clusterCount").create()).submit().get();
+        final String graphLocation = Constants.getGraphLocation(outputLocation);
+        final String memoryLocation= Constants.getMemoryLocation(outputLocation, "clusterCount");
+        final GraphComputer graphComputer = graphProvider.getGraphComputer(graph);
+
+        graphComputer.program(PeerPressureVertexProgram.build().create(graph)).mapReduce(ClusterCountMapReduce.build().memoryKey("clusterCount").create()).submit().get();
+
         assertTrue(storage.exists(outputLocation));
-        assertTrue(storage.exists(Constants.getGraphLocation(outputLocation)));
-        assertTrue(storage.exists(Constants.getMemoryLocation(outputLocation, "clusterCount")));
+        assertTrue(storage.exists(graphLocation));
+
+        assertTrue(storage.exists(memoryLocation));
         assertEquals(2, storage.ls(outputLocation).size());
-        assertTrue(storage.rm(Constants.getGraphLocation(outputLocation)));
-        assertFalse(storage.rm(Constants.getGraphLocation(outputLocation)));
+
+        assertTrue(storage.rm(graphLocation));
+        assertFalse(storage.rm(graphLocation));
+        assertFalse(storage.exists(graphLocation));
+
         assertEquals(1, storage.ls(outputLocation).size());
-        assertTrue(storage.rm(Constants.getMemoryLocation(outputLocation, "clusterCount")));
+
+        assertTrue(storage.rm(memoryLocation));
+        assertFalse(storage.rm(memoryLocation));
+        assertFalse(storage.exists(memoryLocation));
+
         assertEquals(0, storage.ls(outputLocation).size());
-        assertFalse(storage.exists(Constants.getGraphLocation(outputLocation)));
-        assertFalse(storage.exists(Constants.getMemoryLocation(outputLocation, "clusterCount")));
-        if (storage.exists(outputLocation))
-            assertTrue(storage.rm(outputLocation));
-        assertFalse(storage.exists(outputLocation));
 
-        ////////////////
-
-        graphProvider.getGraphComputer(graph).program(PeerPressureVertexProgram.build().create(graph)).mapReduce(ClusterCountMapReduce.build().memoryKey("clusterCount").create()).submit().get();
-        assertTrue(storage.exists(outputLocation));
-        assertTrue(storage.exists(Constants.getGraphLocation(outputLocation)));
-        assertTrue(storage.exists(Constants.getMemoryLocation(outputLocation, "clusterCount")));
-        assertEquals(2, storage.ls(outputLocation).size());
         assertTrue(storage.rm(outputLocation));
         assertFalse(storage.exists(outputLocation));
         assertEquals(0, storage.ls(outputLocation).size());
