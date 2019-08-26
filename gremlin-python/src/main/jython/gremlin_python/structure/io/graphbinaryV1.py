@@ -193,18 +193,22 @@ class _GraphBinaryTypeIO(object):
                  "filter_": "filter", "id_": "id", "max_": "max", "min_": "min", "sum_": "sum"}
 
     @classmethod
-    def as_bytes(cls, graphbin_type, as_value=False, nullable=True, bytes_to_write=bytes()):
-        ba = bytearray() if as_value else bytearray([graphbin_type.value])
+    def as_bytes(cls, graphbin_type, as_value=False, nullable=True, bytes_to_write=None, to_extend=None):
+        if to_extend is None:
+            to_extend = bytearray()
+            
+        if not as_value:
+            to_extend.extend([graphbin_type.value])
 
         if nullable:
-            ba.extend(struct.pack(">b", 0))
+            to_extend.extend(struct.pack(">b", 0))
 
         if isinstance(bytes_to_write, (bytes, bytearray)):
-            ba.extend(bytes_to_write)
+            to_extend.extend(bytes_to_write)
         else:
             raise Exception("MISSING")
 
-        return ba
+        return to_extend
 
     @classmethod
     def read_int(cls, buff):
