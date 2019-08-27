@@ -42,7 +42,7 @@ public class GremlinDslProcessorTest {
 
     @Test
     public void shouldCompileToDefaultPackage() {
-        Compilation compilation = javac()
+        final Compilation compilation = javac()
                 .withProcessors(new GremlinDslProcessor())
                 .compile(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialTraversalDsl.java")));
         assertThat(compilation).succeededWithoutWarnings();
@@ -50,7 +50,7 @@ public class GremlinDslProcessorTest {
 
     @Test
     public void shouldCompileAndMovePackage() {
-        Compilation compilation = javac()
+        final Compilation compilation = javac()
                 .withProcessors(new GremlinDslProcessor())
                 .compile(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialMoveTraversalDsl.java")));
         assertThat(compilation).succeededWithoutWarnings();
@@ -60,7 +60,7 @@ public class GremlinDslProcessorTest {
 
     @Test
     public void shouldCompileTraversalAndTraversalSourceToDefaultPackage() {
-        Compilation compilation = javac()
+        final Compilation compilation = javac()
                 .withProcessors(new GremlinDslProcessor())
                 .compile(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialPackageTraversalDsl.java")));
         assertThat(compilation).succeededWithoutWarnings();
@@ -68,7 +68,7 @@ public class GremlinDslProcessorTest {
 
     @Test
     public void shouldCompileWithNoDefaultMethods() {
-        Compilation compilation = javac()
+        final Compilation compilation = javac()
                 .withProcessors(new GremlinDslProcessor())
                 .compile(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialNoDefaultMethodsTraversalDsl.java")));
         assertThat(compilation).succeededWithoutWarnings();
@@ -76,14 +76,14 @@ public class GremlinDslProcessorTest {
 
     @Test
     public void shouldCompileRemoteDslTraversal() {
-        Compilation compilation = javac()
+        final Compilation compilation = javac()
                 .withProcessors(new GremlinDslProcessor())
                 .compile(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialTraversalDsl.java")),
                         JavaFileObjects.forResource(GremlinDsl.class.getResource("RemoteDslTraversal.java")));
 
         try {
-            ClassLoader cl = new JavaFileObjectClassLoader(compilation.generatedFiles());
-            Class cls = cl.loadClass("org.apache.tinkerpop.gremlin.process.traversal.dsl.RemoteDslTraversal");
+            final ClassLoader cl = new JavaFileObjectClassLoader(compilation.generatedFiles());
+            final Class cls = cl.loadClass("org.apache.tinkerpop.gremlin.process.traversal.dsl.RemoteDslTraversal");
             cls.getConstructor().newInstance();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -110,11 +110,11 @@ public class GremlinDslProcessorTest {
         }
 
         private byte[] loadClassData(String name) throws IOException {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            String classFilename = name.replaceAll("\\.", "/") + ".class";
-            InputStream in = classFileMap.get(classFilename).openInputStream();
+            final ByteArrayOutputStream out = new ByteArrayOutputStream();
+            final String classFilename = name.replaceAll("\\.", "/") + ".class";
+            final InputStream in = classFileMap.get(classFilename).openInputStream();
             try {
-                byte[] buf = new byte[1024];
+                final byte[] buf = new byte[1024];
                 int len = in.read(buf);
                 while (len != -1) {
                     out.write(buf, 0, len);

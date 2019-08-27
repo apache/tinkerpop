@@ -23,7 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-4-4]]
 === TinkerPop 3.4.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-* Support DSL with remote connection.
+* Provided support for DSLs by way of remote connections through `AnonymousTraversalSource`.
 
 [[release-3-4-3]]
 === TinkerPop 3.4.3 (Release Date: August 5, 2019)
