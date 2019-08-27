@@ -18,6 +18,7 @@
  */
 package ${package};
 
+import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.GremlinDsl;
@@ -42,6 +43,10 @@ public class SocialTraversalSourceDsl extends GraphTraversalSource {
 
     public SocialTraversalSourceDsl(final Graph graph) {
         super(graph);
+    }
+
+    public SocialTraversalSourceDsl(final RemoteConnection connection) {
+        super(connection);
     }
 
     /**
