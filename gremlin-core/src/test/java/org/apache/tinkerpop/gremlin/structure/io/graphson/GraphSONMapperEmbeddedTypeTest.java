@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraver
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
@@ -51,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__;
 import static org.hamcrest.Matchers.either;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.StringStartsWith.startsWith;
@@ -82,6 +84,15 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Parameterized.Parameter(0)
     public String version;
+
+    @Test
+    public void shouldHandleTraversalExplanation() throws Exception {
+        assumeThat(version, not(startsWith("v1")));
+        
+        final TraversalExplanation o = __().out().outV().outE().explain();
+        final TraversalExplanation deser = serializeDeserialize(mapper, o, TraversalExplanation.class);
+        assertEquals(o.prettyPrint(), deser.prettyPrint());
+    }
 
     @Test
     public void shouldHandleNumberConstants() throws Exception {

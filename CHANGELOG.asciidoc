@@ -23,8 +23,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-3-9]]
 === TinkerPop 3.3.9 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-* Update jackson databind 2.9.9.3.
-* Postpone the timing of transport creation to `connection.write` in Gremlin Python.
+* Added `ImmutableExplanation` for a `TraversalExplanation` that just contains data.
+* Fixed `TraversalExplanation` deserialization in GraphSON 2 and 3 which was not supported before in Java.
+* Updated jackson databind 2.9.9.3.
+* Postponed the timing of transport creation to `connection.write` in Gremlin Python.
 
 [[release-3-3-8]]
 === TinkerPop 3.3.8 (Release Date: August 5, 2019)
