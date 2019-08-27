@@ -18,17 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.dsl;
 
+import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.GremlinDsl;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
@@ -42,6 +39,10 @@ public class SocialPackageTraversalSourceDsl extends GraphTraversalSource {
 
     public SocialPackageTraversalSourceDsl(final Graph graph) {
         super(graph);
+    }
+
+    public SocialPackageTraversalSourceDsl(final RemoteConnection connection) {
+        super(connection);
     }
 
     public GraphTraversal<Vertex, Vertex> persons(String... names) {

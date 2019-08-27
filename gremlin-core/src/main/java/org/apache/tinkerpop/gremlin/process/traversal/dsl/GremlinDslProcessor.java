@@ -27,6 +27,7 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeVariableName;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -231,6 +232,11 @@ public class GremlinDslProcessor extends AbstractProcessor {
                 .addParameter(Graph.class, "graph")
                 .addParameter(TraversalStrategies.class, "strategies")
                 .addStatement("super($N, $N)", "graph", "strategies")
+                .build());
+        traversalSourceClass.addMethod(MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(RemoteConnection.class, "connection")
+                .addStatement("super($N)", "connection")
                 .build());
 
         // override methods to return a the DSL TraversalSource. find GraphTraversalSource class somewhere in the hierarchy
