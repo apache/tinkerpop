@@ -26,7 +26,7 @@ __author__ = 'David M. Brown (davebshow@gmail.com)'
 class AbstractBaseTransport:
 
     @abc.abstractmethod
-    def connect(self, url):
+    def connect(self, url, headers=None):
         pass
 
     @abc.abstractmethod
