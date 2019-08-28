@@ -60,7 +60,7 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
     public GraphStep(final Traversal.Admin traversal, final Class<E> returnClass, final boolean isStart, final Object... ids) {
         super(traversal);
         this.returnClass = returnClass;
-        this.ids = (ids.length == 1 && ids[0] instanceof Collection) ? ((Collection) ids[0]).toArray(new Object[((Collection) ids[0]).size()]) : ids;
+        this.ids = (ids != null && ids.length == 1 && ids[0] instanceof Collection) ? ((Collection) ids[0]).toArray(new Object[((Collection) ids[0]).size()]) : ids;
         this.isStart = isStart;
         this.iteratorSupplier = () -> (Iterator<E>) (Vertex.class.isAssignableFrom(this.returnClass) ?
                 this.getTraversal().getGraph().get().vertices(this.ids) :
@@ -100,7 +100,7 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
     }
 
     public void addIds(final Object... newIds) {
-        if (this.ids.length == 0 &&
+        if ((this.ids == null || this.ids.length == 0) &&
                 newIds.length == 1 &&
                 newIds[0] instanceof Collection && ((Collection) newIds[0]).isEmpty())
             this.ids = null;
@@ -122,9 +122,11 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
     }
 
     public void convertElementsToIds() {
-        for (int i = 0; i < this.ids.length; i++) {    // if this is going to OLAP, convert to ids so you don't serialize elements
-            if (this.ids[i] instanceof Element)
-                this.ids[i] = ((Element) this.ids[i]).id();
+        if (null != this.ids) {
+            for (int i = 0; i < this.ids.length; i++) {    // if this is going to OLAP, convert to ids so you don't serialize elements
+                if (this.ids[i] instanceof Element)
+                    this.ids[i] = ((Element) this.ids[i]).id();
+            }
         }
     }
 
@@ -160,8 +162,10 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
     @Override
     public int hashCode() {
         int result = super.hashCode() ^ this.returnClass.hashCode();
-        for (final Object id : this.ids) {
-            result ^= id.hashCode();
+        if (null != this.ids) {
+            for (final Object id : this.ids) {
+                result ^= id.hashCode();
+            }
         }
         return result;
     }
