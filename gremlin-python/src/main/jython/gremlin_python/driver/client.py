@@ -38,8 +38,10 @@ class Client:
 
     def __init__(self, url, traversal_source, protocol_factory=None,
                  transport_factory=None, pool_size=None, max_workers=None,
-                 message_serializer=None, username="", password=""):
+                 message_serializer=None, username="", password="",
+                 headers=None):
         self._url = url
+        self._headers = headers
         self._traversal_source = traversal_source
         if message_serializer is None:
             message_serializer = serializer.GraphSONSerializersV3d0()
@@ -102,7 +104,8 @@ class Client:
         protocol = self._protocol_factory()
         return connection.Connection(
             self._url, self._traversal_source, protocol,
-            self._transport_factory, self._executor, self._pool)
+            self._transport_factory, self._executor, self._pool,
+            headers=self._headers)
 
     def submit(self, message, bindings=None):
         return self.submitAsync(message, bindings=bindings).result()
