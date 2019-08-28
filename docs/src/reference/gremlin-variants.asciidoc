@@ -182,6 +182,13 @@ There are various ways to submit a traversal to a `RemoteConnection`. Just as in
 * `Traversal.toSet()`
 * `Traversal.iterate()`
 
+If you need to send additional headers in the websockets connection, you can pass an optional `headers` parameter
+to the `DriverRemoteConnection` constructor.
+
+[source,python]
+g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g',headers={'Header':'Value'}))
+
+
 === Gremlin-Python Sugar
 
 Python supports meta-programming and operator overloading. There are three uses of these techniques in Gremlin-Python that
@@ -307,7 +314,7 @@ g.V().out().map(lambda: "x: len(x.get().value('name'))").sum().toList()         
 
 === Limitations
 
-* Traversals that return a `Set` *might* be coerced to a `List` in Python. In the case of Python, number equality 
+* Traversals that return a `Set` *might* be coerced to a `List` in Python. In the case of Python, number equality
 is different from JVM languages which produces different `Set` results when those types are in use. When this case
 is detected during deserialization, the `Set` is coerced to a `List` so that traversals return consistent
 results within a collection across different languages. If a `Set` is needed then convert `List` results
@@ -438,8 +445,8 @@ When a traversal bytecode is sent over a `IRemoteConnection` (e.g. Gremlin Serve
 and then executed. If the same traversal is sent again, translation and compilation can be skipped as the previously
 compiled version should be cached. Many traversals are unique up to some parameterization. For instance,
 `g.V(1).Out("created").Values("name")` is considered different from `g.V(4).Out("created").Values("Name")`
-as they have different script "string" representations. However, `g.V(x).Out("created").Values("name")` with bindings of 
-`{x : 1}` and `{x : 4}` are considered the same. If a traversal is going to be executed repeatedly, but with different 
+as they have different script "string" representations. However, `g.V(x).Out("created").Values("name")` with bindings of
+`{x : 1}` and `{x : 4}` are considered the same. If a traversal is going to be executed repeatedly, but with different
 parameters, then bindings should be used. In Gremlin.Net, bindings are objects that can be created as follows.
 
 [source,csharp]
