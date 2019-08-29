@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
 import org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator;
-import org.ietf.jgss.GSSException;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
@@ -36,7 +35,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import javax.security.auth.login.LoginException;
+import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -134,7 +133,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
             fail("This should not succeed as the client config does not contain a JaasEntry");
         } catch(Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertTrue(root instanceof ResponseException || root instanceof GSSException);
+            assertTrue(root instanceof TimeoutException);
         } finally {
             cluster.close();
         }
@@ -150,7 +149,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
             fail("This should not succeed as the client config does not contain a valid ticket cache");
         } catch(Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertEquals(LoginException.class, root.getClass());
+            assertTrue(root instanceof TimeoutException);
         } finally {
             cluster.close();
         }

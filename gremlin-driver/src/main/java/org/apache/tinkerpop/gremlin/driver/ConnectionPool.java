@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -408,10 +407,7 @@ final class ConnectionPool {
         Connection connection = null;
         try {
             connection = borrowConnection(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
-            final RequestMessage ping = client.buildMessage(cluster.validationRequest()).create();
-            final CompletableFuture<ResultSet> f = new CompletableFuture<>();
-            connection.write(ping, f);
-            f.get().all().get();
+            connection.validate();
 
             // host is reconnected and a connection is now available
             this.cluster.loadBalancingStrategy().onAvailable(h);

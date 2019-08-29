@@ -938,7 +938,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldFailClientSideWithTooLargeAResponse() {
-        final Cluster cluster = TestClientFactory.build().maxContentLength(1).create();
+        final int maxContentLength = 128;
+        final Cluster cluster = TestClientFactory.build().maxContentLength(maxContentLength).create();
         final Client client = cluster.connect();
 
         try {
@@ -947,7 +948,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw an exception.");
         } catch (Exception re) {
             final Throwable root = ExceptionUtils.getRootCause(re);
-            assertTrue(root.getMessage().equals("Max frame length of 1 has been exceeded."));
+            assertTrue(root.getMessage().equals("Max frame length of " + maxContentLength + " has been exceeded."));
         } finally {
             cluster.close();
         }
