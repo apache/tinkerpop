@@ -129,8 +129,11 @@ public final class FileSystemStorage implements Storage {
 
     @Override
     public boolean exists(final String location) {
+        final FileStatus[] statuses;
+
         try {
-            return this.fs.globStatus(new Path(tryHomeDirectory(location) + "*")).length > 0;
+            statuses = this.fs.globStatus(new Path(tryHomeDirectory(location) + "*"));
+            return statuses != null && statuses.length > 0;
         } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -140,7 +143,8 @@ public final class FileSystemStorage implements Storage {
     public boolean rm(final String location) {
         try {
             final FileStatus[] statuses = this.fs.globStatus(new Path(tryHomeDirectory(location)));
-            return statuses.length > 0
+            return statuses != null
+                   && statuses.length > 0
                    && Stream.of(statuses).allMatch(status -> {
                           try {
                               return this.fs.delete(status.getPath(), true);

@@ -190,6 +190,6 @@ public abstract class AbstractStorageCheck extends AbstractGremlinTest {
         assertTrue(storage.rm(directory2 + "/f*"));
         assertFalse(storage.rm(directory2 + "/file*"));
         assertEquals(0, storage.ls(directory2).size());
-        assertEquals(0, storage.ls(directory2 + "*").size());
+        assertEquals(0, storage.ls(directory2 + "/*").size());
     }
 }

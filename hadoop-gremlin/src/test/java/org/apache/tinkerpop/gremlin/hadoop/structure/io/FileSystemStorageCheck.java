@@ -84,10 +84,10 @@ public class FileSystemStorageCheck extends AbstractStorageCheck {
         final String directory1 = TestHelper.makeTestDataDirectory(FileSystemStorageCheck.class, "directory1");
         final String directory2 = TestHelper.makeTestDataDirectory(FileSystemStorageCheck.class, "directory2");
         for (int i = 0; i < 10; i++) {
-            new File(directory1 + "/" + "file1-" + i + ".txt.bz").createNewFile();
+            new File(directory1, "file1-" + i + ".txt.bz").createNewFile();
         }
         for (int i = 0; i < 5; i++) {
-            new File(directory2 + "/" + "file2-" + i + ".txt.bz").createNewFile();
+            new File(directory2, "file2-" + i + ".txt.bz").createNewFile();
         }
         super.checkFileDirectoryDistinction(storage, directory1, directory2);
         deleteDirectory(directory1);
