@@ -84,7 +84,7 @@ public class CoreTestHelper {
      * below the {@link #TEST_DATA_RELATIVE_DIR}
      */
     public static String makeTestDataDirectory(final Class clazz, final String... childPath) {
-        return makeTestDataPath(clazz, childPath).getAbsolutePath().replace('\\', '/') + '/';
+        return makeTestDataPath(clazz, childPath).getAbsolutePath().replace('\\', '/');
     }
 
     /**

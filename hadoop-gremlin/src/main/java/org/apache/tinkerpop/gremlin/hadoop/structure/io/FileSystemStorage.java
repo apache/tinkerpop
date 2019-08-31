@@ -139,7 +139,7 @@ public final class FileSystemStorage implements Storage {
     @Override
     public boolean rm(final String location) {
         try {
-            final FileStatus[] statuses = this.fs.globStatus(new Path(tryHomeDirectory(location) + "*"));
+            final FileStatus[] statuses = this.fs.globStatus(new Path(tryHomeDirectory(location)));
             return statuses.length > 0
                    && Stream.of(statuses).allMatch(status -> {
                           try {
