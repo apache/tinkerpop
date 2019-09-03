@@ -67,21 +67,21 @@ public class HostTest {
         PowerMockito.mockStatic(InetAddress.class);
         PowerMockito.when(InetAddress.getAllByName(hostname)).thenReturn(hosts);
 
-        Cluster cluster = Cluster.build().addContactPoint(hostname).create();
+        final Cluster cluster = Cluster.build().addContactPoint(hostname).create();
 
         cluster.init();
 
         assertEquals(addresses.size(), cluster.allHosts().size());
 
         cluster.allHosts().forEach(host -> {
-            String uriHost = host.getHostUri().getHost();
-            String address = host.getAddress().getAddress().getHostAddress();
+            final String uriHost = host.getHostUri().getHost();
+            final String address = host.getAddress().getAddress().getHostAddress();
             assertEquals(address, uriHost);
             assertTrue(addresses.contains(address));
         });
     }
 
-    private InetAddress inetAddress(String hostname, String address) {
+    private InetAddress inetAddress(final String hostname, final String address) {
         try {
             return InetAddress.getByAddress(hostname, InetAddress.getByName(address).getAddress());
         } catch (UnknownHostException ex) {
