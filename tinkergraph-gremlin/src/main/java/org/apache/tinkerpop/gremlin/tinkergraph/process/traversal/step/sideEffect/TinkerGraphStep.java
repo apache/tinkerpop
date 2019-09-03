@@ -121,7 +121,7 @@ public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E>
         if (this.hasContainers.isEmpty())
             return super.toString();
         else
-            return 0 == this.ids.length ?
+            return (null == this.ids || 0 == this.ids.length) ?
                     StringFactory.stepString(this, this.returnClass.getSimpleName().toLowerCase(), this.hasContainers) :
                     StringFactory.stepString(this, this.returnClass.getSimpleName().toLowerCase(), Arrays.toString(this.ids), this.hasContainers);
     }
