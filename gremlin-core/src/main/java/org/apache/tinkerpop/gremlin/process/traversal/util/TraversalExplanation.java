@@ -23,12 +23,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -39,12 +40,12 @@ import java.util.stream.Stream;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalExplanation implements Serializable {
+public class TraversalExplanation extends AbstractExplanation implements Serializable {
 
     private Traversal.Admin<?, ?> traversal;
     private List<Pair<TraversalStrategy, Traversal.Admin<?, ?>>> strategyTraversals = new ArrayList<>();
 
-    private TraversalExplanation() {
+    protected TraversalExplanation() {
         // no arg constructor for serialization
     }
 
@@ -78,101 +79,26 @@ public class TraversalExplanation implements Serializable {
         return this.traversal;
     }
 
+    public ImmutableExplanation asImmutable() {
+        return new ImmutableExplanation(getOriginalTraversalAsString(),
+                this.getIntermediates().collect(Collectors.toList()));
+    }
+
     @Override
-    public String toString() {
-        return this.prettyPrint(Integer.MAX_VALUE);
-    }
-
-    public String prettyPrint() {
-        return this.prettyPrint(100);
-    }
-
-    /**
-     * A pretty-print representation of the traversal explanation.
-     *
-     * @return a {@link String} representation of the traversal explanation
-     */
-    public String prettyPrint(final int maxLineLength) {
-        final String originalTraversal = "Original Traversal";
-        final String finalTraversal = "Final Traversal";
-        final int maxStrategyColumnLength = this.strategyTraversals.stream()
+    protected Stream<String> getStrategyTraversalsAsString() {
+        return this.strategyTraversals.stream()
                 .map(Pair::getValue0)
-                .map(Object::toString)
-                .map(String::length)
-                .max(Comparator.naturalOrder())
-                .orElse(15);
-        final int newLineIndent = maxStrategyColumnLength + 10;
-        final int maxTraversalColumn = maxLineLength - newLineIndent;
-        if (maxTraversalColumn < 1)
-            throw new IllegalArgumentException("The maximum line length is too small to present the " + TraversalExplanation.class.getSimpleName() + ": " + maxLineLength);
-        int largestTraversalColumn = Stream.concat(Stream.of(Pair.with(null, this.traversal)), this.strategyTraversals.stream())
-                .map(Pair::getValue1)
-                .map(Object::toString)
-                .map(s -> wordWrap(s, maxTraversalColumn, newLineIndent))
-                .flatMap(s -> Stream.of(s.split("\n")))
-                .map(String::trim)
-                .map(s -> s.trim().startsWith("[") ? s : "   " + s) // 3 indent on new lines
-                .map(String::length)
-                .max(Comparator.naturalOrder())
-                .get();
-
-        final StringBuilder builder = new StringBuilder("Traversal Explanation\n");
-        for (int i = 0; i < (maxStrategyColumnLength + 7 + largestTraversalColumn); i++) {
-            builder.append("=");
-        }
-        builder.append("\n");
-        builder.append(originalTraversal);
-        for (int i = 0; i < maxStrategyColumnLength - originalTraversal.length() + 7; i++) {
-            builder.append(" ");
-        }
-        builder.append(wordWrap(this.traversal.toString(), maxTraversalColumn, newLineIndent));
-        builder.append("\n\n");
-        for (final Pair<TraversalStrategy, Traversal.Admin<?, ?>> pairs : this.strategyTraversals) {
-            builder.append(pairs.getValue0());
-            int spacesToAdd = maxStrategyColumnLength - pairs.getValue0().toString().length() + 1;
-            for (int i = 0; i < spacesToAdd; i++) {
-                builder.append(" ");
-            }
-            builder.append("[").append(pairs.getValue0().getTraversalCategory().getSimpleName().substring(0, 1)).append("]");
-            for (int i = 0; i < 3; i++) {
-                builder.append(" ");
-            }
-            builder.append(wordWrap(pairs.getValue1().toString(), maxTraversalColumn, newLineIndent)).append("\n");
-        }
-        builder.append("\n");
-        builder.append(finalTraversal);
-        for (int i = 0; i < maxStrategyColumnLength - finalTraversal.length() + 7; i++) {
-            builder.append(" ");
-        }
-        builder.append(wordWrap((this.strategyTraversals.size() > 0 ?
-                this.strategyTraversals.get(this.strategyTraversals.size() - 1).getValue1().toString() :
-                this.traversal.toString()), maxTraversalColumn, newLineIndent));
-        return builder.toString();
+                .map(Object::toString);
     }
 
-    private String wordWrap(final String longString, final int maxLengthPerLine, final int newLineIndent) {
-        if (longString.length() <= maxLengthPerLine)
-            return longString;
-
-        StringBuilder builder = new StringBuilder();
-        int counter = 0;
-        for (int i = 0; i < longString.length(); i++) {
-            if (0 == counter) {
-                builder.append(longString.charAt(i));
-            } else if (counter < maxLengthPerLine) {
-                builder.append(longString.charAt(i));
-            } else {
-                builder.append("\n");
-                for (int j = 0; j < newLineIndent; j++) {
-                    builder.append(" ");
-                }
-                builder.append(longString.charAt(i));
-                counter = 0;
-            }
-            counter++;
-        }
-
-        return builder.toString();
+    @Override
+    protected String getOriginalTraversalAsString() {
+        return getOriginalTraversal().toString();
     }
 
+    @Override
+    protected Stream<Triplet<String, String, String>> getIntermediates() {
+        return this.strategyTraversals.stream().map( p -> Triplet.with(p.getValue0().toString(),
+                p.getValue0().getTraversalCategory().getSimpleName(), p.getValue1().toString()));
+    }
 }

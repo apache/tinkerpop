@@ -39,6 +39,14 @@ import static org.junit.Assert.assertTrue;
 public class TraversalExplanationTest {
 
     @Test
+    public void shouldMakeImmutable() {
+        final TraversalExplanation explanation = __.V().out().out().explain();
+        final ImmutableExplanation immutable = explanation.asImmutable();
+        assertEquals(explanation.prettyPrint(), immutable.prettyPrint());
+        assertEquals(explanation.toString(), immutable.toString());
+    }
+
+    @Test
     public void shouldSupportAnonymousTraversals() {
         final String toString = __.out("knows").in("created").explain().toString();
         assertTrue(toString.contains("Traversal Explanation"));
