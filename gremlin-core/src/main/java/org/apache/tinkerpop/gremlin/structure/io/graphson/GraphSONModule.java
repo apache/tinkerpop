@@ -269,6 +269,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(Edge.class, new GraphSONSerializersV3d0.EdgeJacksonDeserializer());
             addDeserializer(Property.class, new GraphSONSerializersV3d0.PropertyJacksonDeserializer());
             addDeserializer(Path.class, new GraphSONSerializersV3d0.PathJacksonDeserializer());
+            addDeserializer(TraversalExplanation.class, new GraphSONSerializersV3d0.TraversalExplanationJacksonDeserializer());
             addDeserializer(VertexProperty.class, new GraphSONSerializersV3d0.VertexPropertyJacksonDeserializer());
             addDeserializer(Metrics.class, new GraphSONSerializersV3d0.MetricsJacksonDeserializer());
             addDeserializer(TraversalMetrics.class, new GraphSONSerializersV3d0.TraversalMetricsJacksonDeserializer());
@@ -495,6 +496,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(Property.class, new GraphSONSerializersV2d0.PropertyJacksonDeserializer());
             addDeserializer(Path.class, new GraphSONSerializersV2d0.PathJacksonDeserializer());
             addDeserializer(VertexProperty.class, new GraphSONSerializersV2d0.VertexPropertyJacksonDeserializer());
+            addDeserializer(TraversalExplanation.class, new GraphSONSerializersV2d0.TraversalExplanationJacksonDeserializer());
             addDeserializer(Metrics.class, new GraphSONSerializersV2d0.MetricsJacksonDeserializer());
             addDeserializer(TraversalMetrics.class, new GraphSONSerializersV2d0.TraversalMetricsJacksonDeserializer());
             addDeserializer(Tree.class, new GraphSONSerializersV2d0.TreeJacksonDeserializer());

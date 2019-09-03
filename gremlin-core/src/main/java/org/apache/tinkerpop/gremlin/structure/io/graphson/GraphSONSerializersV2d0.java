@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MutablePath;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ImmutableExplanation;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
@@ -57,6 +58,7 @@ import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.type.TypeFactory;
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -602,6 +604,32 @@ class GraphSONSerializersV2d0 {
             }
 
             return vp.create();
+        }
+
+        @Override
+        public boolean isCachable() {
+            return true;
+        }
+    }
+
+    static class TraversalExplanationJacksonDeserializer extends StdDeserializer<TraversalExplanation> {
+        public TraversalExplanationJacksonDeserializer() {
+            super(TraversalExplanation.class);
+        }
+
+        @Override
+        public TraversalExplanation deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            final Map<String, Object> explainData = deserializationContext.readValue(jsonParser, Map.class);
+            final String originalTraversal = explainData.get(GraphSONTokens.ORIGINAL).toString();
+            final List<Triplet<String, String, String>> intermediates = new ArrayList<>();
+            final List<Map<String,Object>> listMap = (List<Map<String,Object>>) explainData.get(GraphSONTokens.INTERMEDIATE);
+            for (Map<String,Object> m : listMap) {
+                intermediates.add(Triplet.with(m.get(GraphSONTokens.STRATEGY).toString(),
+                        m.get(GraphSONTokens.CATEGORY).toString(),
+                        m.get(GraphSONTokens.TRAVERSAL).toString()));
+            }
+
+            return new ImmutableExplanation(originalTraversal, intermediates);
         }
 
         @Override
