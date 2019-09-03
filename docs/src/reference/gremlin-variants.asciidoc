@@ -601,7 +601,7 @@ compile group: 'org.apache.tinkerpop', name: 'gremlin-core', version: '3.3.4'
 compile group: 'org.apache.tinkerpop', name: 'gremlin-driver', version: '3.3.4'
 ---- 
 
-[[gremlin-groovy-differences]
+[[gremlin-groovy-differences]]
 === Differences
 
 In Groovy, `as`, `in`, and `not` are reserved words. Gremlin-Groovy does not allow these steps to be called
@@ -951,7 +951,7 @@ g.V().both()[1].toList()
 g.V().both().name.toList()
 ----
 
-[[gremlin-python-differences]
+[[gremlin-python-differences]]
 === Differences
 
 In situations where Python reserved words and global functions overlap with standard Gremlin steps and tokens, those
@@ -1316,7 +1316,7 @@ g.person('marko').aged(29).values('name').toList().
   then(names => console.log(names));
 ----
 
-[[gremlin-javascript-differences]
+[[gremlin-javascript-differences]]
 === Differences
 
 In situations where Javascript reserved words and global functions overlap with standard Gremlin steps and tokens, those
