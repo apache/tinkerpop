@@ -22,20 +22,29 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
+import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.ietf.jgss.GSSException;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AnyOf.anyOf;
@@ -76,6 +85,54 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldAuthenticateTraversalWithThreads() throws Exception {
+        final Cluster cluster = TestClientFactory.build()
+                .nioPoolSize(1).credentials("stephen", "password").create();
+        final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "gmodern"));
+
+        final ExecutorService executor = Executors.newFixedThreadPool(4);
+        final Callable<Long> countTraversalJob = () -> g.V().both().both().count().next();
+        final List<Future<Long>> results = executor.invokeAll(Collections.nCopies(100, countTraversalJob));
+
+        assertEquals(100, results.size());
+        for (int ix = 0; ix < results.size(); ix++) {
+            try {
+                assertEquals(30L, results.get(ix).get(1000, TimeUnit.MILLISECONDS).longValue());
+            } catch (Exception ex) {
+                // failure but shouldn't have
+                cluster.close();
+                fail("Exception halted assertions - " + ex.getMessage());
+            }
+        }
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldAuthenticateScriptWithThreads() throws Exception {
+        final Cluster cluster = TestClientFactory.build()
+                .nioPoolSize(1).credentials("stephen", "password").create();
+        final Client client = cluster.connect();
+
+        final ExecutorService executor = Executors.newFixedThreadPool(4);
+        final Callable<Long> countTraversalJob = () -> client.submit("gmodern.V().both().both().count()").all().get().get(0).getLong();
+        final List<Future<Long>> results = executor.invokeAll(Collections.nCopies(100, countTraversalJob));
+
+        assertEquals(100, results.size());
+        for (int ix = 0; ix < results.size(); ix++) {
+            try {
+                assertEquals(30L, results.get(ix).get(1000, TimeUnit.MILLISECONDS).longValue());
+            } catch (Exception ex) {
+                // failure but shouldn't have
+                cluster.close();
+                fail("Exception halted assertions - " + ex.getMessage());
+            }
+        }
+
+        cluster.close();
     }
 
     @Test
