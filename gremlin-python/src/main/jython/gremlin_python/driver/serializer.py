@@ -236,14 +236,17 @@ class GraphBinarySerializersV1(object):
         args = message["args"]
         ba.extend(struct.pack(">i", len(args)))
         for k, v in args.items():
-            ba.extend(self._graphbinary_writer.writeObject(k))
+            self._graphbinary_writer.toDict(k, ba)
 
             # processor_obj.get_op_args in serialize_message() seems to already handle bytecode. in python 3
             # because bytearray isn't bound to a type in graphbinary it falls through the writeObject() and
             # just works but python 2 bytearray is bound to ByteBufferType so it writes DataType.bytebuffer
             # rather than DataType.bytecode and the server gets confused. special casing this for now until
             # it can be refactored
-            ba.extend(v if k == "gremlin" else self._graphbinary_writer.writeObject(v))
+            if k == "gremlin":
+                ba.extend(v)
+            else:
+                self._graphbinary_writer.toDict(v, ba)
 
         return bytes(ba)
 
