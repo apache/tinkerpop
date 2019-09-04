@@ -598,7 +598,7 @@ Gremlin-Java constructs. Moreover, given its scripting nature, Gremlin-Groovy se
 ----
 compile group: 'org.apache.tinkerpop', name: 'gremlin-core', version: '3.3.4'
 compile group: 'org.apache.tinkerpop', name: 'gremlin-driver', version: '3.3.4'
----- 
+----
 
 [[gremlin-groovy-differences]]
 === Differences
@@ -631,6 +631,12 @@ the "g" provided to the `DriverRemoteConnection` corresponds to the name of a `G
 
 [source,python]
 g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
+
+If you need to send additional headers in the websockets connection, you can pass an optional `headers` parameter
+to the `DriverRemoteConnection` constructor.
+
+[source,python]
+g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g',headers={'Header':'Value'}))
 
 [[python-imports]]
 === Common Imports

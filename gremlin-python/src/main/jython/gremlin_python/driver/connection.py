@@ -28,8 +28,9 @@ __author__ = 'David M. Brown (davebshow@gmail.com)'
 class Connection:
 
     def __init__(self, url, traversal_source, protocol, transport_factory,
-                 executor, pool):
+                 executor, pool, headers=None):
         self._url = url
+        self._headers = headers
         self._traversal_source = traversal_source
         self._protocol = protocol
         self._transport_factory = transport_factory
@@ -43,7 +44,7 @@ class Connection:
         if self._transport:
             self._transport.close()
         self._transport = self._transport_factory()
-        self._transport.connect(self._url)
+        self._transport.connect(self._url, self._headers)
         self._protocol.connection_made(self._transport)
         self._inited = True
 

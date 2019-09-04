@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 """
 from tornado import ioloop, websocket
+from tornado import httpclient
 
 from gremlin_python.driver.transport import AbstractBaseTransport
 
@@ -28,7 +29,9 @@ class TornadoTransport(AbstractBaseTransport):
     def __init__(self):
         self._loop = ioloop.IOLoop(make_current=False)
 
-    def connect(self, url):
+    def connect(self, url, headers=None):
+        if headers:
+            url = httpclient.HTTPRequest(url, headers=headers)
         self._ws = self._loop.run_sync(
             lambda: websocket.websocket_connect(url))
 
