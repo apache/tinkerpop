@@ -23,10 +23,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ConsoleMutationListener;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Ignore;
@@ -40,14 +43,9 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.Operator.sum;
-import static org.apache.tinkerpop.gremlin.process.traversal.P.between;
-import static org.apache.tinkerpop.gremlin.process.traversal.P.gt;
-import static org.apache.tinkerpop.gremlin.process.traversal.P.gte;
-import static org.apache.tinkerpop.gremlin.process.traversal.P.lt;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.branch;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.choose;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.constant;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
@@ -57,7 +55,6 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.sack;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.union;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.valueMap;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -134,12 +131,25 @@ public class TinkerGraphPlayTest {
     @Test
     @Ignore
     public void testPlayDK() throws Exception {
-        GraphTraversalSource g = TinkerFactory.createModern().traversal();
+        final Graph graph = TinkerGraph.open();
+        final EventStrategy strategy = EventStrategy.build().addListener(new ConsoleMutationListener(graph)).create();
+        final GraphTraversalSource g = graph.traversal().withStrategies(strategy);
 
-        g.V().index().forEachRemaining(System.out::println);
-        g.V().fold().index().forEachRemaining(System.out::println);
-        g.V().index().with(WithOptions.indexer, WithOptions.list).forEachRemaining(System.out::println);
-        g.V().fold().index().with(WithOptions.indexer, WithOptions.map).forEachRemaining(System.out::println);
+        g.addV().property(T.id, 1).iterate();
+        g.V(1).property("name", "name1").iterate();
+        g.V(1).property("name", "name2").iterate();
+        g.V(1).property("name", "name2").iterate();
+
+        g.addV().property(T.id, 2).iterate();
+        g.V(2).property(VertexProperty.Cardinality.list, "name", "name1").iterate();
+        g.V(2).property(VertexProperty.Cardinality.list, "name", "name2").iterate();
+        g.V(2).property(VertexProperty.Cardinality.list, "name", "name2").iterate();
+
+
+        g.addV().property(T.id, 3).iterate();
+        g.V(3).property(VertexProperty.Cardinality.set, "name", "name1", "ping", "pong").iterate();
+        g.V(3).property(VertexProperty.Cardinality.set, "name", "name2", "ping", "pong").iterate();
+        g.V(3).property(VertexProperty.Cardinality.set, "name", "name2", "pong", "ping").iterate();
     }
 
     @Test
