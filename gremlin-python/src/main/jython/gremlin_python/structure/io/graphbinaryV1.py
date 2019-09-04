@@ -149,14 +149,14 @@ class GraphBinaryWriter(object):
         except KeyError:
             for key, serializer in self.serializers.items():
                 if isinstance(obj, key):
-                    return serializer.dictify(obj, self)
+                    return serializer.dictify(obj, self, to_extend)
 
         if isinstance(obj, dict):
-            return dict((self.toDict(k), self.toDict(v)) for k, v in obj.items())
+            return dict((self.toDict(k, to_extend), self.toDict(v, to_extend)) for k, v in obj.items())
         elif isinstance(obj, set):
-            return set([self.toDict(o) for o in obj])
+            return set([self.toDict(o, to_extend) for o in obj])
         elif isinstance(obj, list):
-            return [self.toDict(o) for o in obj]
+            return [self.toDict(o, to_extend) for o in obj]
         else:
             return obj
 
@@ -1023,7 +1023,7 @@ class TraversalStrategySerializer(_GraphBinaryTypeIO):
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
 
-        to_extend.extend(ClassSerializer.dictify(GremlinType(obj.fqcn), writer, True, False))
+        ClassSerializer.dictify(GremlinType(obj.fqcn), writer, to_extend, True, False)
         conf = {k: cls._convert(v) for k, v in obj.configuration.items()}
         MapIO.dictify(conf, writer, to_extend, True, False)
 
