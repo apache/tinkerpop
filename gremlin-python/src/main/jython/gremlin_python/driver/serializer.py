@@ -262,6 +262,8 @@ class GraphBinarySerializersV1(object):
         meta_attrs = self._graphbinary_reader.toObject(b, graphbinaryV1.DataType.map, nullable=False)
         result = self._graphbinary_reader.toObject(b)
 
+        b.close()
+
         msg = {'requestId': request_id,
                'status': {'code': status_code,
                           'message': status_msg,
