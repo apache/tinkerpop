@@ -410,7 +410,7 @@ class ListIO(_GraphBinaryTypeIO):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
         to_extend.extend(struct.pack(">i", len(obj)))
         for item in obj:
-            to_extend.extend(writer.writeObject(item))
+            writer.toDict(item, to_extend)
 
         return to_extend
 
@@ -450,8 +450,8 @@ class MapIO(_GraphBinaryTypeIO):
 
         to_extend.extend(struct.pack(">i", len(obj)))
         for k, v in obj.items():
-            to_extend.extend(writer.writeObject(k))
-            to_extend.extend(writer.writeObject(v))
+            writer.toDict(k, to_extend)
+            writer.toDict(v, to_extend)
 
         return to_extend
 
@@ -497,11 +497,11 @@ class EdgeIO(_GraphBinaryTypeIO):
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
 
-        to_extend.extend(writer.writeObject(obj.id))
+        writer.toDict(obj.id, to_extend)
         StringIO.dictify(obj.label, writer, to_extend, True, False)
-        to_extend.extend(writer.writeObject(obj.inV.id))
+        writer.toDict(obj.inV.id, to_extend)
         StringIO.dictify(obj.inV.label, writer, to_extend, True, False)
-        to_extend.extend(writer.writeObject(obj.outV.id))
+        writer.toDict(obj.outV.id, to_extend)
         StringIO.dictify(obj.outV.label, writer, to_extend, True, False)
         to_extend.extend(NULL_BYTES)
         to_extend.extend(NULL_BYTES)
@@ -530,8 +530,8 @@ class PathIO(_GraphBinaryTypeIO):
     @classmethod
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-        to_extend.extend(writer.writeObject(obj.labels))
-        to_extend.extend(writer.writeObject(obj.objects))
+        writer.toDict(obj.labels, to_extend)
+        writer.toDict(obj.objects, to_extend)
         return to_extend
 
     @classmethod
@@ -548,7 +548,7 @@ class PropertyIO(_GraphBinaryTypeIO):
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
         StringIO.dictify(obj.key, writer, to_extend, True, False)
-        to_extend.extend(writer.writeObject(obj.value))
+        writer.toDict(obj.value, to_extend)
         to_extend.extend(NULL_BYTES)
         return to_extend
 
@@ -585,7 +585,7 @@ class VertexIO(_GraphBinaryTypeIO):
     @classmethod
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-        to_extend.extend(writer.writeObject(obj.id))
+        writer.toDict(obj.id, to_extend)
         StringIO.dictify(obj.label, writer, to_extend, True, False)
         to_extend.extend(NULL_BYTES)
         return to_extend
@@ -609,9 +609,9 @@ class VertexPropertyIO(_GraphBinaryTypeIO):
     @classmethod
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-        to_extend.extend(writer.writeObject(obj.id))
+        writer.toDict(obj.id, to_extend)
         StringIO.dictify(obj.label, writer, to_extend, True, False)
-        to_extend.extend(writer.writeObject(obj.value))
+        writer.toDict(obj.value, to_extend)
         to_extend.extend(NULL_BYTES)
         to_extend.extend(NULL_BYTES)
         return to_extend
@@ -694,7 +694,7 @@ class BindingIO(_GraphBinaryTypeIO):
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
         StringIO.dictify(obj.key, writer, to_extend, True, False)
-        to_extend.extend(writer.writeObject(obj.value))
+        writer.toDict(obj.value, to_extend)
         return to_extend
 
     @classmethod
@@ -717,7 +717,7 @@ class BytecodeIO(_GraphBinaryTypeIO):
             StringIO.dictify(inst_name, writer, to_extend, True, False)
             to_extend.extend(struct.pack(">i", len(inst_args)))
             for arg in inst_args:
-                to_extend.extend(writer.writeObject(arg))
+                writer.toDict(arg, to_extend)
 
         to_extend.extend(struct.pack(">i", len(bc.source_instructions)))
         for inst in bc.source_instructions:
@@ -726,9 +726,9 @@ class BytecodeIO(_GraphBinaryTypeIO):
             to_extend.extend(struct.pack(">i", len(inst_args)))
             for arg in inst_args:
                 if isinstance(arg, TypeType):
-                    to_extend.extend(writer.writeObject(GremlinType(arg().fqcn)))
+                    writer.toDict(GremlinType(arg().fqcn), to_extend)
                 else:
-                    to_extend.extend(writer.writeObject(arg))
+                    writer.toDict(arg, to_extend)
         return to_extend
 
     @classmethod
@@ -821,7 +821,7 @@ class PSerializer(_GraphBinaryTypeIO):
 
         to_extend.extend(struct.pack(">i", len(args)))
         for a in args:
-            to_extend.extend(writer.writeObject(a))
+            writer.toDict(a, to_extend)
 
         return to_extend
 
@@ -844,7 +844,7 @@ class TraverserIO(_GraphBinaryTypeIO):
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
         to_extend.extend(struct.pack(">q", obj.bulk))
-        to_extend.extend(writer.writeObject(obj.object))
+        writer.toDict(obj.object, to_extend)
         return to_extend
 
     @classmethod
@@ -935,7 +935,7 @@ class TextPSerializer(_GraphBinaryTypeIO):
 
         to_extend.extend(struct.pack(">i", len(args)))
         for a in args:
-            to_extend.extend(writer.writeObject(a))
+            writer.toDict(a, to_extend)
 
         return to_extend
 
