@@ -96,7 +96,9 @@ final class ConnectionPool {
         } catch (ConnectionException ce) {
             // ok if we don't get it initialized here - when a request is attempted in a connection from the
             // pool it will try to create new connections as needed.
-            logger.debug("Could not initialize connections in pool for {} - pool size at {}", host, this.connections.size());
+            if (logger.isErrorEnabled()) {
+                logger.error(String.format("Could not initialize connections in pool for %s - pool size at %d", host, this.connections.size()), ce);
+            }
             considerHostUnavailable();
         }
 
@@ -298,7 +300,7 @@ final class ConnectionPool {
         try {
             connections.add(new Connection(host.getHostUri(), this, settings().maxInProcessPerConnection));
         } catch (ConnectionException ce) {
-            logger.debug("Connections were under max, but there was an error creating the connection.", ce);
+            logger.error("Connections were under max, but there was an error creating the connection.", ce);
             open.decrementAndGet();
             considerHostUnavailable();
             return false;
@@ -377,7 +379,7 @@ final class ConnectionPool {
             logger.debug("Continue to wait for connection on {} if {} > 0", host, remaining);
         } while (remaining > 0);
 
-        logger.debug("Timed-out waiting for connection on {} - possibly unavailable", host);
+        logger.error("Timed-out ({} {}) waiting for connection on {} - possibly unavailable", timeout, unit, host);
 
         // if we timeout borrowing a connection that might mean the host is dead (or the timeout was super short).
         // either way supply a function to reconnect
