@@ -2775,6 +2775,9 @@ link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/grem
 The `shortestPath()`-step provides an easy way to find shortest non-cyclic paths in a graph. It is configurable
 using the `with()`-modulator with the options given below.
 
+IMPORTANT: The `shortestPath()`-step is a `VertexComputing`-step and as such, can only be used against a graph
+that supports `GraphComputer` (OLAP).
+
 [width="100%",cols="3,3,15,5",options="header"]
 |=========================================================
 | Key | Type | Description | Default
