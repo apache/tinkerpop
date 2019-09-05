@@ -95,19 +95,19 @@ limitations under the License.
          <div class="item">
                   <pre><code class="language-gremlin">
     // What are the names of projects that were created by two friends?
-    g.V().match(
-      as("a").out("knows").as("b"),
-      as("a").out("created").as("c"),
-      as("b").out("created").as("c"),
-      as("c").in("created").count().is(2)).
-        select("c").by("name")
+    g.V().
+      match(as("a").out("knows").as("b"),
+            as("a").out("created").as("c"),
+            as("b").out("created").as("c"),
+            as("c").in("created").count().is(2)).
+      select("c").by("name")
           </code></pre>
          </div>
          <div class="item">
                   <pre><code class="language-gremlin">
 
-    // What are the names of the managers in
-    //  the management chain going from Gremlin to the CEO?
+    // What are the names of the managers in the
+    // management chain going from Gremlin to the CEO?
     g.V().has("name","gremlin").
       repeat(in("manages")).until(has("title","ceo")).
       path().by("name")
@@ -120,7 +120,7 @@ limitations under the License.
     // What is the distribution of job titles amongst Gremlin's collaborators?
     g.V().has("name","gremlin").as("a").
       out("created").in("created").
-        where(neq("a")).
+      where(neq("a")).
       groupCount().by("title")
 
           </code></pre>
@@ -131,9 +131,9 @@ limitations under the License.
     // Get a ranking of the most relevant products for Gremlin given his purchase history.
     g.V().has("name","gremlin").out("bought").aggregate("stash").
       in("bought").out("bought").
-        where(not(within("stash"))).
+      where(not(within("stash"))).
       groupCount().
-        order(local).by(values,desc)
+      order(local).by(values,desc)
           </code></pre>
          </div>
       </div>
