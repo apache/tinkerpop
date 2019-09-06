@@ -56,8 +56,11 @@ public class SparkContextStorageCheck extends AbstractStorageCheck {
 
         graph.configuration().setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
 
-        final Storage storage = SparkContextStorage.open(graph.configuration());
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
+        final Storage storage = SparkContextStorage.open(graph.configuration());
+
+        storage.rm(outputLocation);
+
         super.checkHeadMethods(storage, graph.configuration().getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION), outputLocation, PersistedInputRDD.class, PersistedInputRDD.class);
     }
 

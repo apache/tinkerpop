@@ -88,8 +88,8 @@ public abstract class AbstractStorageCheck extends AbstractGremlinTest {
 
         assertTrue("storage.exists(outputLocation)", storage.exists(outputLocation));
         assertTrue("storage.exists(graphLocation)", storage.exists(graphLocation));
-
         assertTrue("storage.exists(memoryLocation)", storage.exists(memoryLocation));
+
         assertEquals(2, storage.ls(outputLocation).size());
 
         assertTrue("storage.rm(graphLocation)", storage.rm(graphLocation));
@@ -104,7 +104,8 @@ public abstract class AbstractStorageCheck extends AbstractGremlinTest {
 
         assertEquals(0, storage.ls(outputLocation).size());
 
-        assertTrue("storage.rm(outputLocation)", storage.rm(outputLocation));
+        storage.rm(outputLocation);
+
         assertFalse("storage.exists(outputLocation)", storage.exists(outputLocation));
         assertEquals(0, storage.ls(outputLocation).size());
     }
