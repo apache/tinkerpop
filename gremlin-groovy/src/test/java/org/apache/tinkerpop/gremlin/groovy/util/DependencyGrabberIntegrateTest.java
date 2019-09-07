@@ -22,6 +22,7 @@ import groovy.lang.GroovyClassLoader;
 import java.io.File;
 import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.junit.AfterClass;
 import org.junit.Test;
 import static org.junit.Assert.assertFalse;
@@ -32,8 +33,8 @@ import static org.junit.Assert.assertTrue;
  */
 public class DependencyGrabberIntegrateTest {
     private static final GroovyClassLoader dummyClassLoader = new GroovyClassLoader();
-    private static final File extTestDir = new File(TestHelper.makeTestDataDirectory(DependencyGrabberIntegrateTest.class));
-    private static final DependencyGrabber dg = new DependencyGrabber(dummyClassLoader, extTestDir.getAbsolutePath());
+    private static final File extTestDir = TestHelper.makeTestDataPath(DependencyGrabberIntegrateTest.class);
+    private static final DependencyGrabber dg = new DependencyGrabber(dummyClassLoader, Storage.toPath(extTestDir));
 
     @AfterClass
     public static void tearDown() {

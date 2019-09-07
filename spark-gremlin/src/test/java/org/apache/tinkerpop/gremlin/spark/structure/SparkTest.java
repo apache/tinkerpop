@@ -52,8 +52,7 @@ public class SparkTest extends AbstractSparkTest {
 
     @Test
     public void testSparkRDDPersistence() throws Exception {
-        final String root = TestHelper.makeTestDataDirectory(SparkTest.class, "testSparkRDDPersistence");
-        final String prefix = root + "/" + "graphRDD-";
+        final String prefix = TestHelper.makeTestDataFile(SparkTest.class, "testSparkRDDPersistence", "graphRDD-");
         final Configuration configuration = new BaseConfiguration();
         configuration.setProperty("spark.master", "local[4]");
         Spark.create(configuration);

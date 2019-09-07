@@ -22,11 +22,12 @@ package org.apache.tinkerpop.gremlin.structure.io;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 
 /**
- * Storage is a standard API that providers can implement to allow "file-system"-based access to data sources.
+ * Storage is a standard API that providers can implement to allow abstract UNIX-like file system for data sources.
  * The methods provided by Storage are similar in form and behavior to standard Linux operating system commands.
  *<ul>
  * <li>A <b>name pattern</b> (file or directory) is a sequence of characters, not containing "/", leading spaces, trailing spaces. </li>
@@ -51,8 +52,9 @@ import java.util.List;
  */
 public interface Storage {
 
-    String ROOT_DIRECTORY = "/";
+    String FILE_SEPARATOR = "/";
 
+    String ROOT_DIRECTORY = FILE_SEPARATOR;
 
     /**
      * List all the data sources in the root directory.
@@ -181,5 +183,14 @@ public interface Storage {
      */
     public default <K, V> Iterator<KeyValue<K, V>> head(final String location, final String memoryKey, final Class readerClass) {
         return this.head(location, memoryKey, readerClass, Integer.MAX_VALUE);
+    }
+
+
+    /**
+     * @param path non-null local file path
+     * @return non-null, not empty path in the {@link Storage} file system.
+     */
+    public static String toPath(final File path) {
+        return path.getAbsolutePath().replace("\\", FILE_SEPARATOR);
     }
 }

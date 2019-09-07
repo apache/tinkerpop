@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertNotNull;
 
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
+import org.apache.tinkerpop.gremlin.structure.io.Storage;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -52,13 +53,13 @@ public class ServerTestHelper {
                           .map(s -> new File(s))
                           .map(f -> f.isAbsolute() ? f
                                                    : new File(homeDir, f.getName()))
-                          .map(f -> f.getAbsolutePath())
+                          .map(f -> Storage.toPtah(f))
                           .collect(Collectors.toList()));
         }
 
         overridenSettings.graphs = overridenSettings.graphs.entrySet().stream()
                 .map(kv -> {
-                    kv.setValue(new File(homeDir, new File(kv.getValue()).getName()).getAbsolutePath());
+                    kv.setValue(Storage.toPtah(new File(homeDir, new File(kv.getValue()))));
                     return kv;
                 }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }

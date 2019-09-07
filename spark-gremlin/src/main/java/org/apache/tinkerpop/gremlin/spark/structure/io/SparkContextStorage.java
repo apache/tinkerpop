@@ -130,7 +130,7 @@ public final class SparkContextStorage implements Storage {
      * @see Storage
      */
     private static String toStorage(final String localPattern) {
-        return localPattern.trim().replace('\\', '/');
+        return toPath(localPattern.trim());
     }
 
     /**

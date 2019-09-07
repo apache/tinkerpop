@@ -55,7 +55,6 @@ public final class FileSystemStorage implements Storage {
 
     private static final String SPACE = " ";
     private static final String D_SPACE = "(D) ";
-    private static final String FORWARD_ASTERISK = "/*";
 
     private final FileSystem fs;
 
@@ -259,7 +258,7 @@ public final class FileSystemStorage implements Storage {
         if (fs.isFile(path)) {
             paths.add(path);
         } else {
-            for (final FileStatus status : fs.globStatus(new Path(path + FORWARD_ASTERISK), filter)) {
+            for (final FileStatus status : fs.globStatus(new Path(path, "*"), filter)) {
                 paths.addAll(getAllFilePaths(fs, status.getPath(), filter));
             }
         }

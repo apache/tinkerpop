@@ -56,7 +56,9 @@ public class GryoSerializerIntegrateTest extends AbstractSparkTest {
         final TinkerGraph randomGraph = TinkerGraph.open();
         int totalVertices = 200000;
         TestHelper.createRandomGraph(randomGraph, totalVertices, 100);
-        final String inputLocation = TestHelper.makeTestDataDirectory(GryoSerializerIntegrateTest.class, UUID.randomUUID().toString()) + "/random-graph.kryo";
+        final String inputLocation = TestHelper.makeTestDataFile(GryoSerializerIntegrateTest.class,
+                                                                 UUID.randomUUID().toString(),
+                                                                 "/random-graph.kryo");
         randomGraph.io(IoCore.gryo()).writeGraph(inputLocation);
         randomGraph.clear();
         randomGraph.close();

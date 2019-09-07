@@ -44,7 +44,7 @@ public class AbstractHadoopGraphComputerTest {
         final FileSystem fs = FileSystem.get(new Configuration());
         File path;
 
-        path = new File(System.getProperty("java.io.tmpdir") + "/" + localName);
+        path = new File(new File(System.getProperty("java.io.tmpdir")), localName);
         if (!path.exists()) {
             assertTrue(path.mkdir());
         }
@@ -61,8 +61,8 @@ public class AbstractHadoopGraphComputerTest {
 
         if (fs.exists(new Path("target/" + hdfsName)))
             assertTrue(fs.delete(new Path("target/" + hdfsName), true));
-        fs.copyFromLocalFile(true, new Path(tempFile1.getAbsolutePath()), new Path("target/" + hdfsName + "/test1.dat"));
-        fs.copyFromLocalFile(true, new Path(tempFile2.getAbsolutePath()), new Path("target/" + hdfsName + "/test2.dat"));
+        fs.copyFromLocalFile(true, new Path(tempFile1.toURI()), new Path("target/" + hdfsName + "/test1.dat"));
+        fs.copyFromLocalFile(true, new Path(tempFile2.toURI()), new Path("target/" + hdfsName + "/test2.dat"));
         assertTrue(fs.exists(new Path("target/" + hdfsName + "/test1.dat")));
         assertTrue(fs.exists(new Path("target/" + hdfsName + "/test2.dat")));
         assertTrue(fs.exists(new Path("target/" + hdfsName)));
@@ -79,8 +79,8 @@ public class AbstractHadoopGraphComputerTest {
         assertTrue(fs.isDirectory(new Path("target/" + hdfsName)));
         /////
         final String hadoopGremlinLibsRemote = "hadoop-gremlin-" + Gremlin.version() + "-libs";
-        final File localDirectory = new File(System.getProperty("java.io.tmpdir") + "/" + hadoopGremlinLibsRemote);
-        final File localLibDirectory = new File(localDirectory.getAbsolutePath() + "/" + hdfsName);
+        final File localDirectory = new File(System.getProperty("java.io.tmpdir"), hadoopGremlinLibsRemote);
+        final File localLibDirectory = new File(localDirectory, hdfsName);
         if (localLibDirectory.exists()) {
             Stream.of(localLibDirectory.listFiles()).forEach(File::delete);
             assertTrue(localLibDirectory.delete());

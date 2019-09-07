@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoResourceAccess;
 import org.apache.tinkerpop.gremlin.structure.io.script.ScriptResourceAccess;
@@ -82,7 +83,8 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
                     "tinkerpop-crew-v3d0.kryo",
                     "tinkerpop-sink-v3d0.kryo");
             for (final String fileName : kryoResources) {
-                PATHS.put(fileName, TestHelper.generateTempFileFromResource(GryoResourceAccess.class, fileName, "").getAbsolutePath().replace('\\', '/'));
+                PATHS.put(fileName,
+                          Storage.toPtah(TestHelper.generateTempFileFromResource(GryoResourceAccess.class, fileName, "")));
             }
 
             final List<String> graphsonResources = Arrays.asList(
@@ -96,7 +98,8 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
                     "tinkerpop-crew-v3d0.json",
                     "tinkerpop-sink-v3d0.json");
             for (final String fileName : graphsonResources) {
-                PATHS.put(fileName, TestHelper.generateTempFileFromResource(GraphSONResourceAccess.class, fileName, "").getAbsolutePath().replace('\\', '/'));
+                PATHS.put(fileName,
+                          Storage.toPtah(TestHelper.generateTempFileFromResource(GraphSONResourceAccess.class, fileName, "")));
             }
 
             final List<String> scriptResources = Arrays.asList(
@@ -107,7 +110,8 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
                     "script-input-grateful-dead.groovy",
                     "script-output-grateful-dead.groovy");
             for (final String fileName : scriptResources) {
-                PATHS.put(fileName, TestHelper.generateTempFileFromResource(ScriptResourceAccess.class, fileName, "").getAbsolutePath().replace('\\', '/'));
+                PATHS.put(fileName,
+                          Storage.toPtah(TestHelper.generateTempFileFromResource(ScriptResourceAccess.class, fileName, "")));
             }
         } catch (Exception e) {
             e.printStackTrace();

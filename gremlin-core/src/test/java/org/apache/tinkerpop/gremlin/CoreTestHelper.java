@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -29,7 +31,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.assertTrue;
+import org.apache.tinkerpop.gremlin.structure.io.Storage;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -57,11 +59,11 @@ public class CoreTestHelper {
      * a good idea to use the test class for the {@code clazz} argument so that it's easy to find the data if
      * necessary after test execution.
      *
-     * It is private in order to impose the use of platform-independent {@link #makeTestDataDirectory(Class, String...)}
-     * and avoid using makeTestDataPath(...).getAbsolutePath() that produces platform-dependent paths, that are
-     * incompatible with regular expressions and escape characters.
+     * Avoid using makeTestDataPath(...).getAbsolutePath() and makeTestDataPath(...).toString() that produces
+     * platform-dependent paths, that are incompatible with regular expressions and escape characters.
+     * Instead use {@link Storage#toPath(File)}
      */
-    private static File makeTestDataPath(final Class clazz, final String... childPath) {
+    public static File makeTestDataPath(final Class clazz, final String... childPath) {
         final File root = getRootOfBuildDirectory(clazz);
         final List<String> cleanedPaths = Stream.of(childPath).map(CoreTestHelper::cleanPathSegment).collect(Collectors.toList());
 
@@ -79,13 +81,35 @@ public class CoreTestHelper {
      * a good idea to use the test class for the {@code clazz} argument so that it's easy to find the data if
      * necessary after test execution.
      *
-     * @return UNIX-formatted path to a directory, still usable under Windows. The directory is relative to the supplied class in the
-     * {@code /target} directory. Each {@code childPath} passed introduces a new sub-directory and all are placed
-     * below the {@link #TEST_DATA_RELATIVE_DIR}
+     * @return UNIX-formatted path to a directory in the underlying {@link Storage}. The directory is relative to the
+     * supplied class in the {@code /target} directory. Each {@code childPath} passed introduces a new sub-directory
+     * and all are placed below the {@link #TEST_DATA_RELATIVE_DIR}
      */
     public static String makeTestDataDirectory(final Class clazz, final String... childPath) {
-        return makeTestDataPath(clazz, childPath).getAbsolutePath().replace('\\', '/');
+        return Storage.toPath(makeTestDataPath(clazz, childPath));
     }
+
+    /**
+     * @param clazz
+     * @param fileName
+     * @return UNIX-formatted path to a fileName in the underlying {@link Storage}. The file is relative to the
+     * supplied class in the {@code /target} directory.
+     */
+    public static String makeTestDataFile(final Class clazz, final String fileName) {
+      return Storage.toPath(new File(makeTestDataPath(clazz), fileName));
+    }
+
+    /**
+     * @param clazz
+     * @param subdir
+     * @param fileName
+     * @return UNIX-formatted path to a subdir/fileName in the underlying {@link Storage}. The file is relative to the
+     * supplied class in the {@code /target} directory.
+     */
+    public static String makeTestDataFile(final Class clazz, final String subdir, final String fileName) {
+      return Storage.toPath(new File(makeTestDataPath(clazz, subdir), fileName));
+    }
+
 
     /**
      * Gets and/or creates the root of the test data directory.  This  method is here as a convenience and should not
@@ -115,7 +139,7 @@ public class CoreTestHelper {
      * called {@code temp}.
      */
     public static File generateTempFile(final Class clazz, final String fileName, final String fileNameSuffix) throws IOException {
-        final File path = new File(makeTestDataDirectory(clazz, "temp"));
+        final File path = makeTestDataPath(clazz, "temp");
         if (!path.exists()) path.mkdirs();
         return File.createTempFile(fileName, fileNameSuffix, path);
     }
@@ -133,8 +157,7 @@ public class CoreTestHelper {
      * {@link TestHelper#makeTestDataPath} in a subdirectory called {@code temp/resources}.
      */
     public static File generateTempFileFromResource(final Class graphClass, final Class resourceClass, final String resourceName, final String extension) throws IOException {
-        final File temp = new File(makeTestDataDirectory(graphClass, "resources"));
-        if (!temp.exists()) temp.mkdirs();
+        final File temp = makeTestDataPath(graphClass, "resources");
         final File tempFile = new File(temp, resourceName + extension);
         final FileOutputStream outputStream = new FileOutputStream(tempFile);
         int data;

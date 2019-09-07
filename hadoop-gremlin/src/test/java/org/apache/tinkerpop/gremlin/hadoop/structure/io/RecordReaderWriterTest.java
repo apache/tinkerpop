@@ -75,7 +75,8 @@ public abstract class RecordReaderWriterTest {
             final List<FileSplit> splits = generateFileSplits(testFile, numberOfSplits);
             final Class<? extends InputFormat<NullWritable, VertexWritable>> inputFormatClass = getInputFormat();
             final Class<? extends OutputFormat<NullWritable, VertexWritable>> outputFormatClass = getOutputFormat();
-            final File outputDirectory = new File(TestHelper.makeTestDataDirectory(inputFormatClass, "hadoop-record-reader-writer-test"));
+
+            final File outputDirectory = TestHelper.makeTestDataPath(inputFormatClass, "hadoop-record-reader-writer-test");
             final Configuration config = configure(outputDirectory);
             config.addResource(this.configuration);
             validateFileSplits(splits, config, inputFormatClass, Optional.of(outputFormatClass));
@@ -86,7 +87,7 @@ public abstract class RecordReaderWriterTest {
         final Configuration configuration = new Configuration(false);
         configuration.set("fs.file.impl", LocalFileSystem.class.getName());
         configuration.set("fs.defaultFS", "file:///");
-        configuration.set("mapreduce.output.fileoutputformat.outputdir", "file:///" + outputDirectory.getAbsolutePath());
+        configuration.set("mapreduce.output.fileoutputformat.outputdir", outputDirectory.toURI().toString());
         return configuration;
     }
 
