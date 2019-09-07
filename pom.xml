@@ -453,6 +453,7 @@ limitations under the License.
                     <configuration>
                         <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true
                         </argLine>
+                        <trimStackTrace>false</trimStackTrace>
                         <excludes>
                             <exclude>**/*IntegrateTest.java</exclude>
                         </excludes>
