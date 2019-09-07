@@ -62,8 +62,8 @@ public final class TestHelper extends CoreTestHelper {
     }
 
     public static String convertToRelative(final Class clazz, final File f) {
-        final File root = getRootOfBuildDirectory(clazz).getParentFile().getAbsoluteFile();
-        return root.toURI().relativize(f.getAbsoluteFile().toURI()).toString();
+        final File root = getRootOfBuildDirectory(clazz).getParentFile();
+        return root.toURI().relativize(f.toURI()).toString();
     }
 
 

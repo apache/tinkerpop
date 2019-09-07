@@ -84,7 +84,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
                     "tinkerpop-sink-v3d0.kryo");
             for (final String fileName : kryoResources) {
                 PATHS.put(fileName,
-                          Storage.toPtah(TestHelper.generateTempFileFromResource(GryoResourceAccess.class, fileName, "")));
+                          Storage.toPath(TestHelper.generateTempFileFromResource(GryoResourceAccess.class, fileName, "")));
             }
 
             final List<String> graphsonResources = Arrays.asList(
@@ -99,7 +99,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
                     "tinkerpop-sink-v3d0.json");
             for (final String fileName : graphsonResources) {
                 PATHS.put(fileName,
-                          Storage.toPtah(TestHelper.generateTempFileFromResource(GraphSONResourceAccess.class, fileName, "")));
+                          Storage.toPath(TestHelper.generateTempFileFromResource(GraphSONResourceAccess.class, fileName, "")));
             }
 
             final List<String> scriptResources = Arrays.asList(
@@ -111,7 +111,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
                     "script-output-grateful-dead.groovy");
             for (final String fileName : scriptResources) {
                 PATHS.put(fileName,
-                          Storage.toPtah(TestHelper.generateTempFileFromResource(ScriptResourceAccess.class, fileName, "")));
+                          Storage.toPath(TestHelper.generateTempFileFromResource(ScriptResourceAccess.class, fileName, "")));
             }
         } catch (Exception e) {
             e.printStackTrace();

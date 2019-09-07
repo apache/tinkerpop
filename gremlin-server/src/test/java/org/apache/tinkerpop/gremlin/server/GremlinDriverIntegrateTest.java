@@ -137,7 +137,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldAliasTraversalSourceVariables":
             case "shouldAliasTraversalSourceVariablesInSession":
                 try {
-                    final String p = Storage.toPtah(TestHelper.generateTempFileFromResource(
+                    final String p = Storage.toPath(TestHelper.generateTempFileFromResource(
                                                       GremlinDriverIntegrateTest.class,
                                                       "generate-shouldRebindTraversalSourceVariables.groovy", ""));
                     final Map<String,Object> m = new HashMap<>();

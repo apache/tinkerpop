@@ -70,7 +70,7 @@ public class CoreTestHelper {
         // use the class name in the directory structure
         cleanedPaths.add(0, cleanPathSegment(clazz.getSimpleName()));
 
-        final File f = new File(new File(root, TEST_DATA_RELATIVE_DIR), String.join("/", cleanedPaths));
+        final File f = new File(new File(root, TEST_DATA_RELATIVE_DIR), String.join(Storage.FILE_SEPARATOR, cleanedPaths));
         if (!f.exists()) f.mkdirs();
         return f;
     }
@@ -116,22 +116,27 @@ public class CoreTestHelper {
      * be used to store test data.  Use {@link #makeTestDataPath(Class, String...)} instead.
      */
     public static File getRootOfBuildDirectory(final Class clazz) {
+        final File root;
+
         // build.dir gets sets during runs of tests with maven via the surefire configuration in the pom.xml
         // if that is not set as an environment variable, then the path is computed based on the location of the
         // requested class.  the computed version at least as far as intellij is concerned comes drops it into
         // /target/test-classes.  the build.dir had to be added because maven doesn't seem to like a computed path
         // as it likes to find that path in the .m2 directory and other weird places......
         final String buildDirectory = System.getProperty("build.dir");
-        final File root = null == buildDirectory ? new File(computePath(clazz)).getParentFile() : new File(buildDirectory);
+
+        if ( null == buildDirectory ) {
+            final String clsUri = clazz.getName().replace(".", Storage.FILE_SEPARATOR) + ".class";
+            final URL url = clazz.getClassLoader().getResource(clsUri);
+            final String clsPath = url.getPath();
+            final String computePath = clsPath.substring(0, clsPath.length() - clsUri.length());
+
+            root = new File(computePath).getParentFile();
+        } else {
+            root = new File(buildDirectory);
+        }
         if (!root.exists()) root.mkdirs();
         return root;
-    }
-
-    private static String computePath(final Class clazz) {
-        final String clsUri = clazz.getName().replace('.', '/') + ".class";
-        final URL url = clazz.getClassLoader().getResource(clsUri);
-        final String clsPath = url.getPath();
-        return clsPath.substring(0, clsPath.length() - clsUri.length());
     }
 
     /**
@@ -168,14 +173,6 @@ public class CoreTestHelper {
         outputStream.close();
         inputStream.close();
         return tempFile;
-    }
-
-    /**
-     * Takes a class and converts its package name to a path that can be used to access a resource in that package.
-     */
-    public static String convertPackageToResourcePath(final Class clazz) {
-        final String packageName = clazz.getPackage().getName();
-        return String.format("/%s/", packageName.replaceAll("\\.", "\\/"));
     }
 
     /**

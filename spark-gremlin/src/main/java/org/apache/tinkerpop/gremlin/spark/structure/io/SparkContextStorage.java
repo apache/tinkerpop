@@ -31,7 +31,6 @@ import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.rdd.RDD;
-import org.apache.spark.storage.StorageLevel;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
@@ -89,10 +88,10 @@ public final class SparkContextStorage implements Storage {
      * @param action not null processing of each RDD matching the pattern
      */
     private static void forEachMatching(final String pattern, Consumer<RDD<?>> action) {
-        final Pattern storagePattern = toRegularExpression(toPattern(toStorage(pattern)));
+        final Pattern storagePattern = toRegularExpression(toPattern(Storage.toPath(pattern)));
 
         for (final RDD<?> rdd : Spark.getRDDs()) {
-            if (storagePattern.matcher(toStorage(rdd.name())).matches() ) {
+            if (storagePattern.matcher(Storage.toPath(rdd.name())).matches() ) {
                 action.accept( rdd );
             }
         }
@@ -103,10 +102,10 @@ public final class SparkContextStorage implements Storage {
      * @return true if there is at least one RDD matching the pattern
      */
     private static boolean thereIsMatching(final String pattern) {
-        final Pattern storagePattern = toRegularExpression(toPattern(toStorage(pattern)));
+        final Pattern storagePattern = toRegularExpression(toPattern(Storage.toPath(pattern)));
 
         for (final RDD<?> rdd : Spark.getRDDs()) {
-            if (storagePattern.matcher(toStorage(rdd.name())).matches() ) {
+            if (storagePattern.matcher(Storage.toPath(rdd.name())).matches() ) {
                 return true;
             }
         }
@@ -119,18 +118,6 @@ public final class SparkContextStorage implements Storage {
      */
     private static String toPattern(final String location) {
         return location.endsWith("*") ? location : location + "*";
-    }
-
-    /**
-     * @param localPattern non-null, not empty pattern in the local file system
-     * @return non-null, not empty unified pattern in the abstract {@link Storage}.
-     *
-     * NOTE: if the localPattern is a path (i.e. does not contain * and ?), the result
-     *       is also a path.
-     * @see Storage
-     */
-    private static String toStorage(final String localPattern) {
-        return toPath(localPattern.trim());
     }
 
     /**

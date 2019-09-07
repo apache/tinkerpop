@@ -90,7 +90,7 @@ public class GremlinExecutorTest {
             final List<String> groovyScriptResources = Collections.singletonList("GremlinExecutorInit.groovy");
             for (final String fileName : groovyScriptResources) {
                 PATHS.put(fileName,
-                          Storage.toPtah(TestHelper.generateTempFileFromResource(GremlinExecutorTest.class, fileName, ""));
+                          Storage.toPath(TestHelper.generateTempFileFromResource(GremlinExecutorTest.class, fileName, "")));
             }
         } catch (Exception e) {
             e.printStackTrace();

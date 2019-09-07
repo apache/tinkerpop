@@ -92,7 +92,7 @@ public abstract class AbstractIoRegistryCheck extends AbstractGremlinTest {
         final File input = TestHelper.generateTempFile(this.getClass(), "graphson-io-registry", ".json");
         graph.configuration().setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GraphSONInputFormat.class.getCanonicalName());
         graph.configuration().setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, GraphSONOutputFormat.class.getCanonicalName());
-        graph.configuration().setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, Storage.toPtah(input));
+        graph.configuration().setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, Storage.toPath(input));
         graph.configuration().setProperty(IoRegistry.IO_REGISTRY, ToyIoRegistry.class.getCanonicalName());
         final GraphSONRecordWriter writer = new GraphSONRecordWriter(new DataOutputStream(new FileOutputStream(input)), ConfUtil.makeHadoopConfiguration(graph.configuration()));
         validateIoRegistryGraph(graph, graphComputerClass, writer);

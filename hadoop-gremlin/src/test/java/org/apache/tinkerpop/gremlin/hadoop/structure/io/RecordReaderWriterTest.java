@@ -96,7 +96,7 @@ public abstract class RecordReaderWriterTest {
         final long splitLength = (long) ((double) fileSize / (double) numberOfSplits);
         final List<FileSplit> splits = new ArrayList<>();
         for (int i = 0; i < fileSize; i = i + (int) splitLength + 1) {
-            splits.add(new FileSplit(new Path(file.getAbsoluteFile().toURI().toString()), i, splitLength, null));
+            splits.add(new FileSplit(new Path(file.toURI()), i, splitLength, null));
         }
         return splits;
     }

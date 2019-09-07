@@ -37,11 +37,11 @@ public class ServerTestHelper {
      *  If an overriden path is determined to be absolute then the path is not re-written.
      */
     public static void rewritePathsInGremlinServerSettings(final Settings overridenSettings) {
-        Map<String, Map<String, Object>> plugins;
-        Map<String, Object> scriptFileGremlinPlugin;
-        File homeDir;
+        final Map<String, Map<String, Object>> plugins;
+        final Map<String, Object> scriptFileGremlinPlugin;
+        final File homeDir;
 
-        homeDir = new File( getBaseDir(), "../src/test/scripts" );
+        homeDir = new File( getBuildDir(), "../src/test/scripts" );
 
         plugins = overridenSettings.scriptEngines.get("gremlin-groovy").plugins;
         scriptFileGremlinPlugin = plugins.get(ScriptFileGremlinPlugin.class.getName());
@@ -52,19 +52,33 @@ public class ServerTestHelper {
                      ((List<String>) scriptFileGremlinPlugin.get("files")).stream()
                           .map(s -> new File(s))
                           .map(f -> f.isAbsolute() ? f
-                                                   : new File(homeDir, f.getName()))
-                          .map(f -> Storage.toPtah(f))
+                                                   : new File(relocateFile( homeDir, f)))
+                          .map(f -> Storage.toPath(f))
                           .collect(Collectors.toList()));
         }
 
         overridenSettings.graphs = overridenSettings.graphs.entrySet().stream()
                 .map(kv -> {
-                    kv.setValue(Storage.toPtah(new File(homeDir, new File(kv.getValue()))));
+                    kv.setValue(relocateFile( homeDir, new File(kv.getValue())));
                     return kv;
                 }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private static File getBaseDir() {
+    /**
+     * Strip the directories from the configured filePath, replace them with homeDir, this way relocating
+     * the files
+     *
+     * @param homeDir
+     * @param filePath absolute or relative file path
+     * @return the absolute storage path of the relocated file
+     */
+    private static String relocateFile(final File homeDir, File filePath) {
+      final String plainFileName = filePath.getName();
+
+      return Storage.toPath(new File(homeDir, plainFileName));
+    }
+
+    private static File getBuildDir() {
       String result;
 
       result = System.getProperty("build.dir");
