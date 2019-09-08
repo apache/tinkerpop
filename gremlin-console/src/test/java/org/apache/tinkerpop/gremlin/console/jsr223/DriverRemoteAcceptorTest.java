@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.console.jsr223;
 
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteException;
+import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.junit.After;
 import org.junit.Before;
@@ -129,6 +130,7 @@ public class DriverRemoteAcceptorTest {
     public void shouldConnect() throws Exception {
         // there is no gremlin server running for this test, but gremlin-driver lazily connects so this should
         // be ok to just validate that a connection is created
-        assertThat(acceptor.connect(Arrays.asList(TestHelper.generateTempFileFromResource(this.getClass(), "remote.yaml", ".tmp").getAbsolutePath())).toString(), startsWith("Configured "));
+        assertThat(acceptor.connect(Arrays.asList(Storage.toPath(TestHelper.generateTempFileFromResource(this.getClass(), "remote.yaml", ".tmp")))).toString(),
+                   startsWith("Configured "));
     }
 }

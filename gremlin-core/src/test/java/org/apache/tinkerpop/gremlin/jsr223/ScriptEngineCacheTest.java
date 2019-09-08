@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
-import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.CoreTestHelper;
 import org.junit.Test;
 
 import static org.junit.Assert.assertSame;
@@ -30,7 +30,7 @@ public class ScriptEngineCacheTest {
 
     @Test
     public void shouldBeUtilityClass() throws Exception {
-        TestHelper.assertIsUtilityClass(ScriptEngineCache.class);
+        CoreTestHelper.assertIsUtilityClass(ScriptEngineCache.class);
     }
 
     @Test

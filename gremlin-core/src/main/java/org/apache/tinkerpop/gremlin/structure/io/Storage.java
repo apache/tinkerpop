@@ -19,59 +19,107 @@
 
 package org.apache.tinkerpop.gremlin.structure.io;
 
-import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-
+import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 /**
- * Storage is a standard API that providers can implement to allow "file-system"-based access to data sources.
+ * Storage is a standard API that providers can implement to allow abstract UNIX-like file system for data sources.
  * The methods provided by Storage are similar in form and behavior to standard Linux operating system commands.
- *
+ *<ul>
+ * <li>A <b>name pattern</b> (file or directory) is a sequence of characters, not containing "/", leading spaces, trailing spaces. </li>
+ * <li>A <b>name</b> (file or directory name) is a name pattern, not containing "*" or "?".</li>
+ * <li>A <b>pattern</b> is a sequence of names separated with "/", optionally ending at a name pattern.
+ * <pre>
+ *   &lt;pattern&gt; ::= &lt;absolute pattern&gt; |
+ *                 &lt;relative pattern&gt;
+ *   &lt;absolute path&gt; ::= / [&lt;relative pattern&gt;]
+ *   &lt;relative path&gt; ::= &lt;name&gt; {/ &lt;name&gt;} [/ &lt;name pattern&gt;] [/] |
+ *                       &lt;name pattern&gt; [/]
+ * </pre></li>
+ * <li>A <b>path</b> is a path is a pattern, not containing any name pattern. </li>
+ * </ul>
+ * NOTE: <ol>
+ * <li>Even though the syntax allows patterns with trailing "/", they are treated as referring the same
+ *    file or directory as the path without the trailing /
+ * <li>This is an abstract file system abstracting the underlying physical file system if any. Thus, under Windows the
+ *     directories separator is still /, no matter that Windows uses \
+ * </ol>
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface Storage {
 
+    String FILE_SEPARATOR = "/";
+
+    String ROOT_DIRECTORY = FILE_SEPARATOR;
+
     /**
      * List all the data sources in the root directory.
      *
-     * @return the data sources in the root directory
+     * @return non-null list of files (data sources) and directories in the root directory (/)
+     * @see #ls(String)
      */
     public List<String> ls();
 
     /**
-     * List all the data sources at the specified location.
+     * List all the files (e.g. data sources) and directories matching the location pattern.
      *
-     * @param location a location
-     * @return the data sources at the specified location
+     * @param pattern non-null pattern specifying a set of files and directories. Cases:<ul>
+     *    <li>a path to a file - specifies a single file to list
+     *    <li>a path to a directory - specifies all files and directories immediately nested in that directory to list
+     *    <li>pattern - specifies a set of files and directories to list
+     *    <li>/ - specifies the root directory to list its contents
+     *  </ul>
+     * @return non-null list of files (data sources) and directories matching the pattern.
      */
-    public List<String> ls(final String location);
+    public List<String> ls(final String pattern);
 
     /**
      * Recursively copy all the data sources from the source location to the target location.
      *
-     * @param sourceLocation the source location
-     * @param targetLocation the target location
+     * @param sourcePattern non-null pattern specifying a set of files and directories. Cases:<ul>
+     *    <li>a path to a file - specifies a single file
+     *    <li>a path to a directory - specifies all files and directories nested (recursively) in that directory
+     *    <li>pattern - specifies a set of files and directories
+     *    <li>/ - specifies the contents of the root directory (recursively)
+     *  </ul>
+     * @param targetDirectory non-null directory where to copy to
      * @return whether data sources were copied
      */
-    public boolean cp(final String sourceLocation, final String targetLocation);
+    public boolean cp(final String sourcePattern, final String targetDirectory);
 
     /**
      * Determine whether the specified location has a data source.
      *
-     * @param location a location to check
-     * @return whether that location has a data source.
+     * @param pattern non-null pattern specifying a set of files and directories. Examples:<ul>
+     *    <li>a path to a file - specifies a single file
+     *    <li>a path to a directory - specifies the contents of that directory as all files and directories immediately nested in it
+     *    <li>pattern - specifies a set of files and directories
+     *    <li>/ - specifies the immediate contents of the root directory
+     *  </ul>
+     *
+     * @return true if the pattern specifies a non-empty set of files and directories
      */
-    public boolean exists(final String location);
+    public boolean exists(final String pattern);
 
     /**
-     * Recursively remove the data source at the specified location.
+     * Recursively remove the file (data source) at the specified location.
      *
-     * @param location the location of the data source
-     * @return whether a data source was removed.
+     * NOTE: Some implementations derive the notion of the containing directory from the presence of the file,
+     *       so removing all files from a directory in those implementations removes also their directory.
+     *
+     * @param pattern non-null pattern specifying a set of files and directories. Examples:<ul>
+     *    <li>a path to a file - specifies a single file
+     *    <li>a path to a directory - specifies <b>that directory and</b> all files and directories recursively nested in it
+     *    <li>pattern - specifies a set of files and directories
+     *    <li>/ - specifies the root directory
+     *  </ul>
+     * @return true if all specified files and directories were removed
      */
-    public boolean rm(final String location);
+    public boolean rm(final String pattern);
 
     /**
      * Get a string representation of the specified number of lines at the data source location.
@@ -135,5 +183,22 @@ public interface Storage {
      */
     public default <K, V> Iterator<KeyValue<K, V>> head(final String location, final String memoryKey, final Class readerClass) {
         return this.head(location, memoryKey, readerClass, Integer.MAX_VALUE);
+    }
+
+
+    /**
+     * @param path non-null local file path
+     * @return non-null, not empty path in the {@link Storage} file system.
+     */
+    public static String toPath(final File path) {
+        return toPath(path.getAbsolutePath());
+    }
+
+    /**
+     * @param path non-null local file path
+     * @return non-null, not empty path in the {@link Storage} file system.
+     */
+    public static String toPath(final String path) {
+        return path.replace("\\", FILE_SEPARATOR);
     }
 }

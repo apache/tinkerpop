@@ -141,8 +141,13 @@ public class Spark {
 
     public static void close() {
         NAME_TO_RDD.clear();
-        if (null != CONTEXT)
+        if (null != CONTEXT) {
             CONTEXT.stop();
+
+            // Allow Spark / Hadoop close and finalize() the input streams to its intrenal files.
+            // This is a well known problem reported in https://issues.apache.org/jira/browse/SPARK-12216
+            System.gc();
+        }
         CONTEXT = null;
     }
 

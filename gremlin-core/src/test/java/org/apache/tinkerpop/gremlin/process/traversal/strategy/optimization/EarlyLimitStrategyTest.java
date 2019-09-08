@@ -70,7 +70,7 @@ public class EarlyLimitStrategyTest {
     }
 
     @Parameterized.Parameters(name = "{0}")
-    public static Iterable<Object> generateTestParameters() {
+    public static Iterable<Object[]> generateTestParameters() {
         return Arrays.asList(new Object[][]{
                 {__.out().valueMap().limit(1), __.out().limit(1).valueMap(), Collections.emptyList()},
                 {__.out().limit(5).valueMap().range(5, 10), __.start().out().none(), Collections.emptyList()},
@@ -97,7 +97,7 @@ public class EarlyLimitStrategyTest {
                 {__.out().store("a").limit(10), __.out().limit(10).store("a"), Collections.emptyList()},
                 {__.out().aggregate("a").limit(10), __.out().aggregate("a").limit(10), Collections.emptyList()},
                 {__.V().branch(__.label()).option("person", __.out("knows").valueMap().limit(1)).option("software", __.out("created").valueMap().limit(2).fold()),
-                        __.V().branch(__.label()).option("person", __.out("knows").limit(1).valueMap()).option("software", __.out("created").limit(2).valueMap().fold()), Collections.emptyList()}
+                 __.V().branch(__.label()).option("person", __.out("knows").limit(1).valueMap()).option("software", __.out("created").limit(2).valueMap().fold()), Collections.emptyList()}
         });
     }
 }

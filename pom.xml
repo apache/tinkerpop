@@ -180,7 +180,6 @@ limitations under the License.
             </plugin>
             <plugin>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>1.4.1</version>
                 <executions>
                     <execution>
                         <id>enforce-all</id>
@@ -454,6 +453,7 @@ limitations under the License.
                     <configuration>
                         <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true
                         </argLine>
+                        <trimStackTrace>false</trimStackTrace>
                         <excludes>
                             <exclude>**/*IntegrateTest.java</exclude>
                         </excludes>
@@ -553,6 +553,11 @@ limitations under the License.
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-clean-plugin</artifactId>
                     <version>3.1.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>1.4.1</version>
                 </plugin>
             </plugins>
         </pluginManagement>

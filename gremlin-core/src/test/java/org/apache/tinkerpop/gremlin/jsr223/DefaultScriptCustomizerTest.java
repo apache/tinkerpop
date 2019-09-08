@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
-import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.CoreTestHelper;
 import org.junit.Test;
 
 import java.io.File;
@@ -36,8 +36,8 @@ public class DefaultScriptCustomizerTest {
 
     @Test
     public void shouldOpenViaPropertiesFileConfig() throws IOException {
-        final File scriptFile1 = TestHelper.generateTempFileFromResource(DefaultScriptCustomizerTest.class, "script-customizer-1.groovy", ".groovy");
-        final File scriptFile2 = TestHelper.generateTempFileFromResource(DefaultScriptCustomizerTest.class, "script-customizer-2.groovy", ".groovy");
+        final File scriptFile1 = CoreTestHelper.generateTempFileFromResource(DefaultScriptCustomizerTest.class, "script-customizer-1.groovy", ".groovy");
+        final File scriptFile2 = CoreTestHelper.generateTempFileFromResource(DefaultScriptCustomizerTest.class, "script-customizer-2.groovy", ".groovy");
         final List<File> files = new ArrayList<>();
         files.add(scriptFile1);
         files.add(scriptFile2);

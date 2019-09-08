@@ -18,12 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
-
 import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import static org.junit.Assert.assertNotNull;
+
+import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
+import org.apache.tinkerpop.gremlin.structure.io.Storage;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -35,23 +37,53 @@ public class ServerTestHelper {
      *  If an overriden path is determined to be absolute then the path is not re-written.
      */
     public static void rewritePathsInGremlinServerSettings(final Settings overridenSettings) {
-        final String buildDir = System.getProperty("build.dir");
-        final String homeDir = buildDir.substring(0, buildDir.indexOf("gremlin-server") + "gremlin-server".length()) +
-                File.separator + "src" + File.separator + "test" + File.separator +"scripts";
+        final Map<String, Map<String, Object>> plugins;
+        final Map<String, Object> scriptFileGremlinPlugin;
+        final File homeDir;
 
-        if (overridenSettings.scriptEngines.get("gremlin-groovy").plugins.containsKey(ScriptFileGremlinPlugin.class.getName())) {
-            overridenSettings.scriptEngines.get("gremlin-groovy").
-                    plugins.get(ScriptFileGremlinPlugin.class.getName()).
-                    put("files", ((List<String>) overridenSettings.scriptEngines
-                            .get("gremlin-groovy").plugins.get(ScriptFileGremlinPlugin.class.getName()).get("files")).stream()
-                            .map(s -> new File(s).isAbsolute() ? s : homeDir + s.substring(s.lastIndexOf(File.separator)))
-                            .collect(Collectors.toList()));
+        homeDir = new File( getBuildDir(), "../src/test/scripts" );
+
+        plugins = overridenSettings.scriptEngines.get("gremlin-groovy").plugins;
+        scriptFileGremlinPlugin = plugins.get(ScriptFileGremlinPlugin.class.getName());
+
+        if (scriptFileGremlinPlugin != null) {
+            scriptFileGremlinPlugin
+                .put("files",
+                     ((List<String>) scriptFileGremlinPlugin.get("files")).stream()
+                          .map(s -> new File(s))
+                          .map(f -> f.isAbsolute() ? f
+                                                   : new File(relocateFile( homeDir, f)))
+                          .map(f -> Storage.toPath(f))
+                          .collect(Collectors.toList()));
         }
 
         overridenSettings.graphs = overridenSettings.graphs.entrySet().stream()
                 .map(kv -> {
-                    kv.setValue(homeDir + kv.getValue().substring(kv.getValue().lastIndexOf(File.separator)));
+                    kv.setValue(relocateFile( homeDir, new File(kv.getValue())));
                     return kv;
                 }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    /**
+     * Strip the directories from the configured filePath, replace them with homeDir, this way relocating
+     * the files
+     *
+     * @param homeDir
+     * @param filePath absolute or relative file path
+     * @return the absolute storage path of the relocated file
+     */
+    private static String relocateFile(final File homeDir, File filePath) {
+      final String plainFileName = filePath.getName();
+
+      return Storage.toPath(new File(homeDir, plainFileName));
+    }
+
+    private static File getBuildDir() {
+      String result;
+
+      result = System.getProperty("build.dir");
+      assertNotNull("Expected base.dir system property is set to the project's target directory", result);
+
+      return new File(result);
     }
 }

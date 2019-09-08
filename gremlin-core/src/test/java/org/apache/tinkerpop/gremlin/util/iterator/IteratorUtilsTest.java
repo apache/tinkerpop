@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util.iterator;
 
-import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.CoreTestHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.junit.Test;
 
@@ -45,7 +45,7 @@ public class IteratorUtilsTest {
 
     @Test
     public void shouldBeUtilityClass() throws Exception {
-        TestHelper.assertIsUtilityClass(IteratorUtils.class);
+        CoreTestHelper.assertIsUtilityClass(IteratorUtils.class);
     }
 
     @Test

@@ -146,6 +146,23 @@ limitations under the License.
                     </compilerArgs>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                  <execution>
+                    <id>package-test-lib</id>
+                    <goals>
+                      <goal>test-jar</goal>
+                    </goals>
+                    <configuration>
+                      <includes>
+                        <include>**/*TestHelper*</include>
+                      </includes>
+                    </configuration>
+                  </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
