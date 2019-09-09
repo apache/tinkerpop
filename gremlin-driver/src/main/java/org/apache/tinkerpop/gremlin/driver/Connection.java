@@ -19,7 +19,9 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.handler.codec.CodecException;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
+import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -116,6 +118,23 @@ final class Connection {
         } catch (Exception ie) {
             logger.debug("Error opening connection on {}", uri);
             throw new ConnectionException(uri, "Could not open connection", ie);
+        }
+
+        // Trigger authentication early to avoid unauthorized response
+        // to concurrent requests from an authenticating client.
+        validate();
+    }
+
+    void validate() throws ConnectionException {
+        try {
+            final CompletableFuture<ResultSet> future = new CompletableFuture<>();
+            write(cluster.validationRequest().create(), future);
+            future.get().all().get();
+        } catch (Exception ex) {
+            final Throwable rootCause = ExceptionUtils.getRootCause(ex);
+            if (!(rootCause instanceof ResponseException)) {
+                throw new ConnectionException(uri, "Validation failed", rootCause);
+            }
         }
     }
 
