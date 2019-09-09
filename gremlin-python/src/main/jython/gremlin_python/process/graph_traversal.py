@@ -229,6 +229,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("drop", *args)
         return self
 
+    def elementMap(self, *args):
+        self.bytecode.add_step("elementMap", *args)
+        return self
+
     def emit(self, *args):
         self.bytecode.add_step("emit", *args)
         return self
@@ -664,6 +668,10 @@ class __(object):
         return cls.graph_traversal(None, None, Bytecode()).drop(*args)
 
     @classmethod
+    def elementMap(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).elementMap(*args)
+
+    @classmethod
     def emit(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).emit(*args)
 
@@ -1046,6 +1054,10 @@ def drop(*args):
     return __.drop(*args)
 
 
+def elementMap(*args):
+    return __.elementMap(*args)
+
+
 def emit(*args):
     return __.emit(*args)
 
@@ -1387,6 +1399,8 @@ statics.add_static('cyclicPath', cyclicPath)
 statics.add_static('dedup', dedup)
 
 statics.add_static('drop', drop)
+
+statics.add_static('elementMap', elementMap)
 
 statics.add_static('emit', emit)
 

@@ -80,6 +80,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.DedupLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ElementMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
@@ -553,7 +554,26 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Map the {@link Element} to a {@link Map} of the property values key'd according to their {@link Property#key}.
+     * Map the {@link Element} to a {@code Map} of the property values key'd according to their {@link Property#key}.
+     * If no property keys are provided, then all property values are retrieved. For vertices, the {@code Map} will
+     * be returned with the assumption of single property values along with {@link T#id} and {@link T#label}. Prefer
+     * {@link #valueMap(String...)} if multi-property processing is required. For  edges, keys will include additional
+     * related edge structure of {@link Direction#IN} and {@link Direction#OUT} which themselves are {@code Map}
+     * instances of the particular {@link Vertex} represented by {@link T#id} and {@link T#label}.
+     *
+     * @param propertyKeys the properties to retrieve
+     * @param <E2>         the value type of the returned properties
+     * @return the traversal with an appended {@link ElementMapStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#elementmap-step" target="_blank">Reference Documentation - ElementMap Step</a>
+     * @since 3.4.4
+     */
+    public default <E2> GraphTraversal<S, Map<Object, E2>> elementMap(final String... propertyKeys) {
+        this.asAdmin().getBytecode().addStep(Symbols.elementMap, propertyKeys);
+        return this.asAdmin().addStep(new ElementMapStep<>(this.asAdmin(), propertyKeys));
+    }
+
+    /**
+     * Map the {@link Element} to a {@code Map} of the property values key'd according to their {@link Property#key}.
      * If no property keys are provided, then all property values are retrieved.
      *
      * @param propertyKeys the properties to retrieve
@@ -568,7 +588,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Map the {@link Element} to a {@link Map} of the property values key'd according to their {@link Property#key}.
+     * Map the {@link Element} to a {@code Map} of the property values key'd according to their {@link Property#key}.
      * If no property keys are provided, then all property values are retrieved.
      *
      * @param includeTokens whether to include {@link T} tokens in the emitted map.
@@ -578,7 +598,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#valuemap-step" target="_blank">Reference Documentation - ValueMap Step</a>
      * @since 3.0.0-incubating
      * @deprecated As of release 3.4.0, deprecated in favor of {@link GraphTraversal#valueMap(String...)} in conjunction with
-     *             {@link GraphTraversal#with(String, Object)}.
+     *             {@link GraphTraversal#with(String, Object)} or simple prefer {@link #elementMap(String...)}.
      */
     @Deprecated
     public default <E2> GraphTraversal<S, Map<Object, E2>> valueMap(final boolean includeTokens, final String... propertyKeys) {
@@ -2946,6 +2966,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String values = "values";
         public static final String propertyMap = "propertyMap";
         public static final String valueMap = "valueMap";
+        public static final String elementMap = "elementMap";
         public static final String select = "select";
         public static final String key = "key";
         public static final String value = "value";

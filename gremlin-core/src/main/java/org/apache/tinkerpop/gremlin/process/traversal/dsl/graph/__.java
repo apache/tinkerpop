@@ -254,6 +254,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#elementMap(String...)
+     */
+    public static <A extends Element, B> GraphTraversal<A, Map<Object, B>> elementMap(final String... propertyKeys) {
+        return __.<A>start().elementMap(propertyKeys);
+    }
+
+    /**
      * @see GraphTraversal#valueMap(String...)
      */
     public static <A extends Element, B> GraphTraversal<A, Map<Object, B>> valueMap(final String... propertyKeys) {

@@ -487,6 +487,17 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Adds the elementMap step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<S, IDictionary<object, E2>> ElementMap<E2> (params string[] propertyKeys)
+        {
+            var args = new List<object>(0 + propertyKeys.Length) {};
+            args.AddRange(propertyKeys);
+            Bytecode.AddStep("elementMap", args.ToArray());
+            return Wrap<S, IDictionary<object, E2>>(this);
+        }
+
+        /// <summary>
         ///     Adds the emit step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal<S, E> Emit ()

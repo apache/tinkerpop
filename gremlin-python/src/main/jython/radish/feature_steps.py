@@ -80,7 +80,7 @@ def add_parameter(step, param_name, param):
     if not hasattr(step.context, "traversal_params"):
         step.context.traversal_params = {}
 
-    step.context.traversal_params[param_name] = _convert(param, step.context)
+    step.context.traversal_params[param_name] = _convert(param.replace('\\"', '"'), step.context)
 
 
 @given("the traversal of")
@@ -172,14 +172,16 @@ def _convert(val, ctx):
     elif isinstance(val, str) and re.match("^e\[.*\]$", val):           # parse edge
         return __find_cached_element(ctx, graph_name, val[2:-1], "e")
     elif isinstance(val, str) and re.match("^m\[.*\]$", val):           # parse json as a map
-        return _convert(json.loads(val[2:-1].replace('\\"', '"')), ctx)
+        return _convert(json.loads(val[2:-1]), ctx)
     elif isinstance(val, str) and re.match("^p\[.*\]$", val):           # parse path
         path_objects = list(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
         return Path([set([])], path_objects)
     elif isinstance(val, str) and re.match("^c\[.*\]$", val):           # parse lambda/closure
         return lambda: (val[2:-1], "gremlin-groovy")
-    elif isinstance(val, str) and re.match("^t\[.*\]$", val):         # parse instance of T enum
+    elif isinstance(val, str) and re.match("^t\[.*\]$", val):           # parse instance of T enum
         return T[val[2:-1]]
+    elif isinstance(val, str) and re.match("^D\[.*\]$", val):           # parse instance of Direction enum
+        return Direction[val[2:-1]]
     else:
         return val
 

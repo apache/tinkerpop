@@ -51,6 +51,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             new Dictionary<string, Func<string, string, object>>
             {
                 {@"d\[([\d.]+)\]\.([ilfdm])", ToNumber},
+                {@"D\[(.+)\]", ToDirection},
                 {@"v\[(.+)\]", ToVertex},
                 {@"v\[(.+)\]\.id", (x, graphName) => ToVertex(x, graphName).Id},
                 {@"v\[(.+)\]\.sid", (x, graphName) => ToVertex(x, graphName).Id.ToString()},
@@ -90,7 +91,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         [Given("using the parameter (\\w+) defined as \"(.*)\"")]
         public void UsingParameter(string name, string value)
         {
-            var parsedValue = ParseValue(value, _graphName);
+            var parsedValue = ParseValue(value.Replace("\\\"", "\""), _graphName);
             _parameters.Add(name, parsedValue);
         }
 
@@ -244,6 +245,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             return T.GetByValue(enumName);
         }
 
+        private static object ToDirection(string enumName, string graphName)
+        {
+            return Direction.GetByValue(enumName);
+        }
+
         private static object ToNumber(string stringNumber, string graphName)
         {
             return NumericParsers[stringNumber[stringNumber.Length - 1]](
@@ -306,8 +312,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
         private static object ParseValue(string stringValue, string graphName)
         {
-            // Parser issue: quotes are not normalized
-            stringValue = stringValue.Replace("\\\"", "\"");
             Func<string, string, object> parser = null;
             string extractedValue = null;
             foreach (var kv in Parsers)

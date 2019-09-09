@@ -163,6 +163,7 @@ const deserializers = {
   'g:Float':  typeSerializers.NumberSerializer,
   'g:Double': typeSerializers.NumberSerializer,
   'g:Date': typeSerializers.DateSerializer,
+  'g:Direction': typeSerializers.DirectionSerializer,
   'g:Vertex': typeSerializers.VertexSerializer,
   'g:Edge': typeSerializers.EdgeSerializer,
   'g:VertexProperty': typeSerializers.VertexPropertySerializer,

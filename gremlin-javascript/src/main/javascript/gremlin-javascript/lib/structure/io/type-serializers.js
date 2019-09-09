@@ -363,6 +363,12 @@ class TSerializer extends TypeSerializer {
   }
 }
 
+class DirectionSerializer extends TypeSerializer {
+    deserialize(obj) {
+        return t.direction[obj[valueKey].toLowerCase()];
+    }
+}
+
 class ArraySerializer extends TypeSerializer {
   constructor(typeKey) {
     super();
@@ -458,6 +464,7 @@ module.exports = {
   BulkSetSerializer,
   BytecodeSerializer,
   DateSerializer,
+  DirectionSerializer,
   EdgeSerializer,
   EnumSerializer,
   LambdaSerializer,

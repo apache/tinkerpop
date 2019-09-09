@@ -34,6 +34,7 @@ const traversal = require('../../lib/process/anonymous-traversal').traversal;
 const Path = graphModule.Path;
 const __ = graphTraversalModule.statics;
 const t = traversalModule.t;
+const direction = traversalModule.direction
 
 // Determines whether the feature maps (m[]), are deserialized as objects (true) or maps (false).
 // Use false for GraphSON3.
@@ -52,7 +53,8 @@ const parsers = [
   [ 's\\[(.*)\\]', toArray ],
   [ 'm\\[(.+)\\]', toMap ],
   [ 'c\\[(.+)\\]', toLambda ],
-  [ 't\\[(.+)\\]', toT ]
+  [ 't\\[(.+)\\]', toT ],
+  [ 'D\\[(.+)\\]', toDirection ]
 ].map(x => [ new RegExp('^' + x[0] + '$'), x[1] ]);
 
 const ignoreReason = {
@@ -274,6 +276,10 @@ function toPath(value) {
 
 function toT(value) {
   return t[value];
+}
+
+function toDirection(value) {
+    return direction[value.toLowerCase()];
 }
 
 function toArray(stringList) {
