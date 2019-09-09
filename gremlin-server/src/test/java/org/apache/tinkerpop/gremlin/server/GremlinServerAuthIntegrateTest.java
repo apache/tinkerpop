@@ -180,7 +180,8 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
             final Throwable root = ExceptionUtils.getRootCause(ex);
 
             // depending on the configuration of the system environment you might get either of these
-            assertThat(root, anyOf(instanceOf(GSSException.class), instanceOf(ResponseException.class)));
+            assertThat(root, anyOf(instanceOf(GSSException.class), instanceOf(ResponseException.class),
+                                   instanceOf(NoHostAvailableException.class)));
         } finally {
             cluster.close();
         }

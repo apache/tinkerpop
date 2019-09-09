@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator;
+import org.ietf.jgss.GSSException;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ExecutionException;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.AnyOf.anyOf;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -197,7 +201,10 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
             fail("This should not succeed as the client config does not contain a JaasEntry");
         } catch(Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertTrue(root instanceof ResponseException || root instanceof NoHostAvailableException);
+
+            // depending on the configuration of the system environment you might get either of these
+            assertThat(root, anyOf(instanceOf(GSSException.class), instanceOf(ResponseException.class),
+                                   instanceOf(NoHostAvailableException.class)));
         } finally {
             cluster.close();
         }
