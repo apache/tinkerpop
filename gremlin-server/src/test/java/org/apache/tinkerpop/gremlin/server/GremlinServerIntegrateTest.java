@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
+import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -564,7 +565,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw exception because ssl is enabled on the server but not on client");
         } catch(Exception x) {
             final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
+            assertThat(root, instanceOf(NoHostAvailableException.class));
         } finally {
             cluster.close();
         }
@@ -594,7 +595,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw exception because ssl client auth is enabled on the server but client does not have a cert");
         } catch(Exception x) {
             final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
+            assertThat(root, instanceOf(NoHostAvailableException.class));
         } finally {
             cluster.close();
         }
@@ -612,7 +613,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw exception because ssl client auth is enabled on the server but does not trust client's cert");
         } catch(Exception x) {
             final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
+            assertThat(root, instanceOf(NoHostAvailableException.class));
         } finally {
             cluster.close();
         }
@@ -655,7 +656,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw exception because ssl client auth is enabled on the server but client does not have a cert");
         } catch (Exception x) {
             final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
+            assertThat(root, instanceOf(NoHostAvailableException.class));
         } finally {
             cluster.close();
         }
@@ -672,7 +673,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw exception because ssl client auth is enabled on the server but does not trust client's cert");
         } catch (Exception x) {
             final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
+            assertThat(root, instanceOf(NoHostAvailableException.class));
         } finally {
             cluster.close();
         }
@@ -689,7 +690,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw exception because ssl client requires TLSv1.2 whereas server supports only TLSv1.1");
         } catch (Exception x) {
             final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
+            assertThat(root, instanceOf(NoHostAvailableException.class));
         } finally {
             cluster.close();
         }
@@ -706,7 +707,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw exception because ssl client requires TLSv1.2 whereas server supports only TLSv1.1");
         } catch (Exception x) {
             final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
+            assertThat(root, instanceOf(NoHostAvailableException.class));
         } finally {
             cluster.close();
         }
