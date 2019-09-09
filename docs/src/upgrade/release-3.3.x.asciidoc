@@ -21,6 +21,22 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Gremlin Symphony #40 in G Minor*
 
+== TinkerPop 3.3.9
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.3.9/CHANGELOG.asciidoc#release-3-3-9[changelog] for a complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+==== Java Driver NoHostAvailableException
+
+Expect a `NoHostAvailableException` rather than a more generic `TimeoutException` if the Java driver is unable to
+connect to a `Host`. This sort of failure can occur in a number of different scenarios, but can often occur when there
+are configuration problems with authentication and SSL, preventing the connection to the `Host` to be established.
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-2132[TINKERPOP-2132]
+
 == TinkerPop 3.3.8
 
 *Release Date: August 5, 2019*
