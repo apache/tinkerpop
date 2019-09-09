@@ -127,11 +127,11 @@ final class Connection {
 
     void validate() throws ConnectionException {
         try {
-            CompletableFuture<ResultSet> future = new CompletableFuture<>();
+            final CompletableFuture<ResultSet> future = new CompletableFuture<>();
             write(cluster.validationRequest().create(), future);
             future.get().all().get();
         } catch (Exception ex) {
-            Throwable rootCause = ExceptionUtils.getRootCause(ex);
+            final Throwable rootCause = ExceptionUtils.getRootCause(ex);
             if (!(rootCause instanceof ResponseException)) {
                 throw new ConnectionException(uri, "Validation failed", rootCause);
             }
