@@ -246,7 +246,7 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
                     wsClient.submit(gremlin).all().get();
                     fail("Should not authorize on incorrect auth creds");
                 } catch(Exception e) {
-                    assertEquals("Username and/or password are incorrect", e.getCause().getMessage());
+                    assertEquals("Failed to authenticate", e.getCause().getMessage());
                 }
             }
             if (nioBuilder != null) {
@@ -254,7 +254,7 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
                 try {
                     nioClient.submit(gremlin);
                 } catch(Exception e) {
-                    assertEquals("Username and/or password are incorrect", e.getCause().getMessage());
+                    assertEquals("Failed to authenticate", e.getCause().getMessage());
                 }
             }
 
