@@ -175,6 +175,10 @@ class GraphBinarySerializersV1(object):
     DEFAULT_WRITER_CLASS = graphbinaryV1.GraphBinaryWriter
     DEFAULT_VERSION = b"application/vnd.graphbinary-v1.0"
 
+    header_struct = struct.Struct('>b32sB')
+    header_pack = header_struct.pack
+    int_pack = graphbinaryV1.int32_pack
+
     def __init__(self, reader=None, writer=None, version=None):
         if not version:
             version = self.DEFAULT_VERSION
@@ -222,19 +226,17 @@ class GraphBinarySerializersV1(object):
 
     def finalize_message(self, message, mime_len, mime_type):
         ba = bytearray()
-        ba.extend(struct.pack(">b", mime_len))
-        ba.extend(mime_type)
-        ba.extend([0x81])
+        ba.extend(self.header_pack(mime_len, mime_type, 0x81))
         ba.extend(uuid.UUID(message['requestId']).bytes)
 
-        ba.extend(struct.pack(">i", len(message['op'])))
+        ba.extend(self.int_pack(len(message['op'])))
         ba.extend(message['op'].encode("utf-8"))
 
-        ba.extend(struct.pack(">i", len(message['processor'])))
+        ba.extend(self.int_pack(len(message['processor'])))
         ba.extend(message['processor'].encode("utf-8"))
 
         args = message["args"]
-        ba.extend(struct.pack(">i", len(args)))
+        ba.extend(self.int_pack(len(args)))
         for k, v in args.items():
             self._graphbinary_writer.toDict(k, ba)
 
