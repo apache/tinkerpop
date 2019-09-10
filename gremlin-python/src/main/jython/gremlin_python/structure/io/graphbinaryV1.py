@@ -27,7 +27,7 @@ import struct
 from collections import OrderedDict
 import logging
 
-from struct import pack, unpack, unpack_from
+from struct import pack, unpack
 from aenum import Enum
 from datetime import timedelta
 from gremlin_python import statics
@@ -891,7 +891,7 @@ class ByteIO(_GraphBinaryTypeIO):
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
         return cls.is_null(buff, reader,
-                           lambda b, r: int.__new__(SingleByte, unpack_from(">b", b.read(1))[0]),
+                           lambda b, r: int.__new__(SingleByte, int8_unpack(b.read(1))),
                            nullable)
 
 
@@ -929,7 +929,7 @@ class BooleanIO(_GraphBinaryTypeIO):
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
         return cls.is_null(buff, reader,
-                           lambda b, r: True if unpack_from(">b", b.read(1))[0] == 0x01 else False,
+                           lambda b, r: True if int8_unpack(b.read(1)) == 0x01 else False,
                            nullable)
 
 
