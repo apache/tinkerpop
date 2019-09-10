@@ -38,24 +38,9 @@ import org.junit.Test;
  */
 public class SparkContextStorageCheck extends AbstractStorageCheck {
 
-  @Before
-    public void setup() throws Exception {
-        GraphManager.setGraphProvider(new SparkHadoopGraphProvider());
-
-        super.setup();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        super.tearDown();
-    }
-
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldSupportHeadMethods() throws Exception {
-
-        graph.configuration().setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
-
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         final Storage storage = SparkContextStorage.open(graph.configuration());
 
@@ -67,11 +52,6 @@ public class SparkContextStorageCheck extends AbstractStorageCheck {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldSupportRemoveAndListMethods() throws Exception {
-
-        // This test expects that Spark is kept open while attempting to destroy its directories
-
-        graph.configuration().setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
-
         final Storage storage = SparkContextStorage.open(graph.configuration());
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         super.checkRemoveAndListMethods(storage, outputLocation);
@@ -80,9 +60,6 @@ public class SparkContextStorageCheck extends AbstractStorageCheck {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldSupportCopyMethods() throws Exception {
-
-        graph.configuration().setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
-
         final Storage storage = SparkContextStorage.open(graph.configuration());
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         final String newOutputLocation = TestHelper.makeTestDataDirectory(this.getClass(), "new-location-for-copy");
@@ -93,9 +70,6 @@ public class SparkContextStorageCheck extends AbstractStorageCheck {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldNotHaveResidualDataInStorage() throws Exception {
-
-        graph.configuration().setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
-
         final Storage storage = SparkContextStorage.open(graph.configuration());
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         super.checkResidualDataInStorage(storage, outputLocation);
@@ -103,9 +77,6 @@ public class SparkContextStorageCheck extends AbstractStorageCheck {
 
     @Test
     public void shouldSupportDirectoryFileDistinction() throws Exception {
-
-        graph.configuration().setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
-
         final Storage storage = SparkContextStorage.open(graph.configuration());
         for (int i = 0; i < 10; i++) {
             JavaSparkContext.fromSparkContext(Spark.getContext()).emptyRDD().setName("directory1/file1-" + i + ".txt.bz").persist(StorageLevel.DISK_ONLY());

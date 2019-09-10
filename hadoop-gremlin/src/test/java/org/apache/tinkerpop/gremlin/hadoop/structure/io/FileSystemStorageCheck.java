@@ -42,6 +42,10 @@ public class FileSystemStorageCheck extends AbstractStorageCheck {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldSupportHeadMethods() throws Exception {
+        // Make sure Spark is shut down before deleting its files and directories,
+        // which are locked under Windows and fail the tests. See FileSystemStorageCheck
+        graph.configuration().setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);
+
         final Storage storage = FileSystemStorage.open(ConfUtil.makeHadoopConfiguration(graph.configuration()));
         final String inputLocation = Constants.getSearchGraphLocation(graph.configuration().getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION), storage).get();
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
@@ -53,6 +57,10 @@ public class FileSystemStorageCheck extends AbstractStorageCheck {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldSupportRemoveAndListMethods() throws Exception {
+        // Make sure Spark is shut down before deleting its files and directories,
+        // which are locked under Windows and fail the tests. See FileSystemStorageCheck
+        graph.configuration().setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);
+
         final Storage storage = FileSystemStorage.open(ConfUtil.makeHadoopConfiguration(graph.configuration()));
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         super.checkRemoveAndListMethods(storage, outputLocation);

@@ -61,10 +61,7 @@ public class SparkHadoopGraphProvider extends HadoopGraphProvider {
         }
 
         final Map<String, Object> config = super.getBaseConfiguration(graphName, test, testMethodName, loadGraphWith);
-
-        // Make sure Spark is shut down before deleting its files and directories,
-        // which are locked under Windows and fail the tests. See FileSystemStorageCheck
-        config.put(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);
+        config.put(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);  // this makes the test suite go really fast
 
         // toy graph inputRDD does not have corresponding outputRDD so where jobs chain, it fails (failing makes sense)
         if (null != loadGraphWith &&
