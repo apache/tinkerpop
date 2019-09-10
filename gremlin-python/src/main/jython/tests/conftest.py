@@ -33,7 +33,7 @@ from gremlin_python.driver.serializer import (
 from gremlin_python.driver.tornado.transport import TornadoTransport
 
 # docker Gremlin Server = 172.17.0.2
-gremlin_server_host = "172.17.0.2"
+gremlin_server_host = "localhost"
 gremlin_server_url = 'ws://' + gremlin_server_host + ':45940/gremlin'
 
 
