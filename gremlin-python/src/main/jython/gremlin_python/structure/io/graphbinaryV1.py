@@ -23,6 +23,7 @@ import calendar
 import uuid
 import math
 import io
+import struct
 from collections import OrderedDict
 import logging
 
@@ -115,6 +116,22 @@ class DataType(Enum):
 NULL_BYTES = [DataType.null.value, 0x01]
 
 
+def _make_packer(format_string):
+    packer = struct.Struct(format_string)
+    pack = packer.pack
+    unpack = lambda s: packer.unpack(s)[0]
+    return pack, unpack
+
+
+int64_pack, int64_unpack = _make_packer('>q')
+int32_pack, int32_unpack = _make_packer('>i')
+int8_pack, int8_unpack = _make_packer('>b')
+uint64_pack, uint64_unpack = _make_packer('>Q')
+uint8_pack, uint8_unpack = _make_packer('>B')
+float_pack, float_unpack = _make_packer('>f')
+double_pack, double_unpack = _make_packer('>d')
+
+
 class GraphBinaryTypeType(type):
     def __new__(mcs, name, bases, dct):
         cls = super(GraphBinaryTypeType, mcs).__new__(mcs, name, bases, dct)
@@ -175,7 +192,7 @@ class GraphBinaryReader(object):
 
     def toObject(self, buff, data_type=None, nullable=True):
         if data_type is None:
-            bt = unpack('>B', buff.read(1))[0]
+            bt = uint8_unpack(buff.read(1))
             if bt == DataType.null.value:
                 if nullable:
                     buff.read(1)
@@ -204,13 +221,13 @@ class _GraphBinaryTypeIO(object):
             to_extend.extend([graphbin_type.value])
 
         if nullable:
-            to_extend.extend(pack(">b", 0))
+            to_extend.extend(int8_pack(0))
 
         return to_extend
 
     @classmethod
     def read_int(cls, buff):
-        return unpack(">i", buff.read(4))[0]
+        return int32_unpack(buff.read(4))
 
     @classmethod
     def unmangle_keyword(cls, symbol):
@@ -231,7 +248,8 @@ class LongIO(_GraphBinaryTypeIO):
 
     python_type = LongType
     graphbinary_type = DataType.long
-    byte_format = ">q"
+    byte_format_pack = int64_pack
+    byte_format_unpack = int64_unpack
 
     @classmethod
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
@@ -239,19 +257,20 @@ class LongIO(_GraphBinaryTypeIO):
             raise Exception("TODO: don't forget bigint")
         else:
             cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-            to_extend.extend(pack(cls.byte_format, obj))
+            to_extend.extend(cls.byte_format_pack(obj))
             return to_extend
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
-        return cls.is_null(buff, reader, lambda b, r: unpack(cls.byte_format, b.read(8))[0], nullable)
+        return cls.is_null(buff, reader, lambda b, r: cls.byte_format_unpack(b.read(8)), nullable)
 
 
 class IntIO(LongIO):
 
     python_type = IntType
     graphbinary_type = DataType.int
-    byte_format = ">i"
+    byte_format_pack = int32_pack
+    byte_format_unpack = int32_unpack
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
@@ -273,13 +292,13 @@ class DateIO(_GraphBinaryTypeIO):
 
         ts = int(round(pts))
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-        to_extend.extend(pack(">q", ts))
+        to_extend.extend(int64_pack(ts))
         return to_extend
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
         return cls.is_null(buff, reader,
-                           lambda b, r: datetime.datetime.utcfromtimestamp(unpack(">q", b.read(8))[0] / 1000.0),
+                           lambda b, r: datetime.datetime.utcfromtimestamp(int64_unpack(b.read(8)) / 1000.0),
                            nullable)
 
 
@@ -294,13 +313,13 @@ class TimestampIO(_GraphBinaryTypeIO):
         # Java timestamp expects milliseconds integer - Have to use int because of legacy Python
         ts = int(round(obj * 1000))
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-        to_extend.extend(pack(">q", ts))
+        to_extend.extend(int64_pack(ts))
         return to_extend
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
         # Python timestamp expects seconds
-        return cls.is_null(buff, reader, lambda b, r: statics.timestamp(unpack(">q", b.read(8))[0] / 1000.0),
+        return cls.is_null(buff, reader, lambda b, r: statics.timestamp(int64_unpack(b.read(8)) / 1000.0),
                            nullable)
     
 
@@ -318,7 +337,8 @@ class FloatIO(LongIO):
     python_type = FloatType
     graphbinary_type = DataType.float
     graphbinary_base_type = DataType.float
-    byte_format = ">f"
+    byte_format_pack = float_pack
+    byte_format_unpack = float_unpack
 
     @classmethod
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
@@ -391,7 +411,7 @@ class StringIO(_GraphBinaryTypeIO):
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
         str_bytes = obj.encode("utf-8")
-        to_extend.extend(pack(">i", len(str_bytes)))
+        to_extend.extend(int32_pack(len(str_bytes)))
         to_extend.extend(str_bytes)
         return to_extend
 
@@ -408,7 +428,7 @@ class ListIO(_GraphBinaryTypeIO):
     @classmethod
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-        to_extend.extend(pack(">i", len(obj)))
+        to_extend.extend(int32_pack(len(obj)))
         for item in obj:
             writer.toDict(item, to_extend)
 
@@ -448,7 +468,7 @@ class MapIO(_GraphBinaryTypeIO):
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
 
-        to_extend.extend(pack(">i", len(obj)))
+        to_extend.extend(int32_pack(len(obj)))
         for k, v in obj.items():
             writer.toDict(k, to_extend)
             writer.toDict(v, to_extend)
@@ -711,19 +731,19 @@ class BytecodeIO(_GraphBinaryTypeIO):
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
         bc = obj.bytecode if isinstance(obj, Traversal) else obj
-        to_extend.extend(pack(">i", len(bc.step_instructions)))
+        to_extend.extend(int32_pack(len(bc.step_instructions)))
         for inst in bc.step_instructions:
             inst_name, inst_args = inst[0], inst[1:] if len(inst) > 1 else []
             StringIO.dictify(inst_name, writer, to_extend, True, False)
-            to_extend.extend(pack(">i", len(inst_args)))
+            to_extend.extend(int32_pack(len(inst_args)))
             for arg in inst_args:
                 writer.toDict(arg, to_extend)
 
-        to_extend.extend(pack(">i", len(bc.source_instructions)))
+        to_extend.extend(int32_pack(len(bc.source_instructions)))
         for inst in bc.source_instructions:
             inst_name, inst_args = inst[0], inst[1:] if len(inst) > 1 else []
             StringIO.dictify(inst_name, writer, to_extend, True, False)
-            to_extend.extend(pack(">i", len(inst_args)))
+            to_extend.extend(int32_pack(len(inst_args)))
             for arg in inst_args:
                 if isinstance(arg, TypeType):
                     writer.toDict(GremlinType(arg().fqcn), to_extend)
@@ -794,7 +814,7 @@ class LambdaSerializer(_GraphBinaryTypeIO):
             script_args = six.get_function_code(eval(script_cleaned)).co_argcount
 
         StringIO.dictify(script_cleaned, writer, to_extend, True, False)
-        to_extend.extend(pack(">i", script_args))
+        to_extend.extend(int32_pack(script_args))
 
         return to_extend
 
@@ -819,7 +839,7 @@ class PSerializer(_GraphBinaryTypeIO):
             args.append(obj.value)
             args.append(obj.other)
 
-        to_extend.extend(pack(">i", len(args)))
+        to_extend.extend(int32_pack(len(args)))
         for a in args:
             writer.toDict(a, to_extend)
 
@@ -843,7 +863,7 @@ class TraverserIO(_GraphBinaryTypeIO):
     @classmethod
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-        to_extend.extend(pack(">q", obj.bulk))
+        to_extend.extend(int64_pack(obj.bulk))
         writer.toDict(obj.object, to_extend)
         return to_extend
 
@@ -853,7 +873,7 @@ class TraverserIO(_GraphBinaryTypeIO):
 
     @classmethod
     def _read_traverser(cls, b, r):
-        bulk = unpack(">q", b.read(8))[0]
+        bulk = int64_unpack(b.read(8))
         obj = r.readObject(b)
         return Traverser(obj, bulk=bulk)
 
@@ -865,7 +885,7 @@ class ByteIO(_GraphBinaryTypeIO):
     @classmethod
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-        to_extend.extend(pack(">b", obj))
+        to_extend.extend(int8_pack(obj))
         return to_extend
 
     @classmethod
@@ -882,7 +902,7 @@ class ByteBufferIO(_GraphBinaryTypeIO):
     @classmethod
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-        to_extend.extend(pack(">i", len(obj)))
+        to_extend.extend(int32_pack(len(obj)))
         to_extend.extend(obj)
         return to_extend
 
@@ -903,7 +923,7 @@ class BooleanIO(_GraphBinaryTypeIO):
     @classmethod
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-        to_extend.extend(pack(">b", 0x01 if obj else 0x00))
+        to_extend.extend(int8_pack(0x01 if obj else 0x00))
         return to_extend
 
     @classmethod
@@ -933,7 +953,7 @@ class TextPSerializer(_GraphBinaryTypeIO):
             args.append(obj.value)
             args.append(obj.other)
 
-        to_extend.extend(pack(">i", len(args)))
+        to_extend.extend(int32_pack(len(args)))
         for a in args:
             writer.toDict(a, to_extend)
 
@@ -954,7 +974,7 @@ class BulkSetDeserializer(_GraphBinaryTypeIO):
         the_list = []
         while size > 0:
             itm = r.readObject(b)
-            bulk = unpack(">q", b.read(8))[0]
+            bulk = int64_unpack(b.read(8))
             for y in range(bulk):
                 the_list.append(itm)            
             size = size - 1
