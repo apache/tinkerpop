@@ -175,7 +175,7 @@ class GraphBinarySerializersV1(object):
     DEFAULT_WRITER_CLASS = graphbinaryV1.GraphBinaryWriter
     DEFAULT_VERSION = b"application/vnd.graphbinary-v1.0"
 
-    header_struct = struct.Struct('>b32sB')
+    header_struct = struct.Struct('>b32sB16B')
     header_pack = header_struct.pack
     int_pack = graphbinaryV1.int32_pack
 
@@ -226,14 +226,15 @@ class GraphBinarySerializersV1(object):
 
     def finalize_message(self, message, mime_len, mime_type):
         ba = bytearray()
-        ba.extend(self.header_pack(mime_len, mime_type, 0x81))
-        ba.extend(uuid.UUID(message['requestId']).bytes)
+        ba.extend(self.header_pack(mime_len, mime_type, 0x81, *uuid.UUID(message['requestId']).bytes))
 
-        ba.extend(self.int_pack(len(message['op'])))
-        ba.extend(message['op'].encode("utf-8"))
+        op_bytes = message['op'].encode("utf-8")
+        ba.extend(self.int_pack(len(op_bytes)))
+        ba.extend(op_bytes)
 
-        ba.extend(self.int_pack(len(message['processor'])))
-        ba.extend(message['processor'].encode("utf-8"))
+        processor_bytes = message['processor'].encode("utf-8")
+        ba.extend(self.int_pack(len(processor_bytes)))
+        ba.extend(processor_bytes)
 
         args = message["args"]
         ba.extend(self.int_pack(len(args)))
