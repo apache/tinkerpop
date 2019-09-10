@@ -218,10 +218,10 @@ class _GraphBinaryTypeIO(object):
             to_extend = bytearray()
 
         if not as_value:
-            to_extend.extend([graphbin_type.value])
+            to_extend += uint8_pack(graphbin_type.value)
 
         if nullable:
-            to_extend.extend(int8_pack(0))
+            to_extend += int8_pack(0)
 
         return to_extend
 
@@ -262,7 +262,7 @@ class LongIO(_GraphBinaryTypeIO):
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
-        return cls.is_null(buff, reader, lambda b, r: cls.byte_format_unpack(b.read(8)), nullable)
+            return cls.is_null(buff, reader, lambda b, r: int64_unpack(buff.read(8)), nullable)
 
 
 class IntIO(LongIO):
@@ -344,22 +344,22 @@ class FloatIO(LongIO):
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         if math.isnan(obj):
             cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-            to_extend.extend(pack(cls.byte_format, NAN))
+            to_extend.extend(cls.byte_format_pack(NAN))
         elif math.isinf(obj) and obj > 0:
             cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-            to_extend.extend(pack(cls.byte_format, POSITIVE_INFINITY))
+            to_extend.extend(cls.byte_format_pack(POSITIVE_INFINITY))
         elif math.isinf(obj) and obj < 0:
             cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-            to_extend.extend(pack(cls.byte_format, NEGATIVE_INFINITY))
+            to_extend.extend(cls.byte_format_pack(NEGATIVE_INFINITY))
         else:
             cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-            to_extend.extend(pack(cls.byte_format, obj))
+            to_extend.extend(cls.byte_format_pack(obj))
 
         return to_extend
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
-        return cls.is_null(buff, reader, lambda b, r: unpack(cls.byte_format, b.read(4))[0], nullable)
+        return cls.is_null(buff, reader, lambda b, r: float_unpack(b.read(4)), nullable)
 
 
 class DoubleIO(FloatIO):
@@ -369,11 +369,12 @@ class DoubleIO(FloatIO):
 
     graphbinary_type = DataType.double
     graphbinary_base_type = DataType.double
-    byte_format = ">d"
+    byte_format_pack = double_pack
+    byte_format_unpack = double_unpack
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
-        return cls.is_null(buff, reader, lambda b, r: unpack(cls.byte_format, b.read(8))[0], nullable)
+        return cls.is_null(buff, reader, lambda b, r: double_unpack(b.read(8)), nullable)
 
 
 class CharIO(_GraphBinaryTypeIO):
