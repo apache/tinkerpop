@@ -179,6 +179,7 @@ class GraphBinarySerializersV1(object):
     header_struct = struct.Struct('>b32sBQQ')
     header_pack = header_struct.pack
     int_pack = graphbinaryV1.int32_pack
+    int32_unpack = struct.Struct(">i").unpack
 
     def __init__(self, reader=None, writer=None, version=None):
         if not version:
@@ -263,7 +264,7 @@ class GraphBinarySerializersV1(object):
         b.read(1)  # version
 
         request_id = str(self._graphbinary_reader.toObject(b, graphbinaryV1.DataType.uuid))
-        status_code = struct.unpack(">i", b.read(4))[0]
+        status_code = self.int32_unpack(b.read(4))[0]
         status_msg = self._graphbinary_reader.toObject(b, graphbinaryV1.DataType.string)
         status_attrs = self._graphbinary_reader.toObject(b, graphbinaryV1.DataType.map, nullable=False)
         meta_attrs = self._graphbinary_reader.toObject(b, graphbinaryV1.DataType.map, nullable=False)

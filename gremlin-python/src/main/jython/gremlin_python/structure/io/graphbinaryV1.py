@@ -412,8 +412,8 @@ class StringIO(_GraphBinaryTypeIO):
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
         str_bytes = obj.encode("utf-8")
-        to_extend.extend(int32_pack(len(str_bytes)))
-        to_extend.extend(str_bytes)
+        to_extend += int32_pack(len(str_bytes))
+        to_extend += str_bytes
         return to_extend
 
     @classmethod
