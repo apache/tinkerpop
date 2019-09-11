@@ -32,6 +32,7 @@ const Bytecode = require('./lib/process/bytecode');
 const Translator = require('./lib/process/translator');
 const utils = require('./lib/utils');
 const DriverRemoteConnection = require('./lib/driver/driver-remote-connection');
+const ResponseError = require('./lib/driver/response-error');
 const Client = require('./lib/driver/client');
 const ResultSet = require('./lib/driver/result-set');
 const Authenticator = require('./lib/driver/auth/authenticator');
@@ -43,6 +44,7 @@ module.exports = {
     RemoteConnection: rc.RemoteConnection,
     RemoteStrategy: rc.RemoteStrategy,
     RemoteTraversal: rc.RemoteTraversal,
+    ResponseError,
     DriverRemoteConnection,
     Client,
     ResultSet,

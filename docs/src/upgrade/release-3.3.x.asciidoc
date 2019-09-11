@@ -29,6 +29,21 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.3.9/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Javascript ResponseError
+
+Gremlin Javascript now enables more robust error handling by way of a `ResponseError` which provides access to more
+information from the server. Specifically, it includes the `statusMessage` and `statusCode` which were formerly packed
+into the `Error.message` property, which meant that the error message string had to be parsed if there was a need to
+take a specific action based on that information. The `ResponseError` also includes the `statusAttributes` which
+is a `Map` object that will typically incorporate server `exceptions` and `stackTrace` keys, but could also include
+provider specific error information.
+
+The original error messaging has remained unchanged and therefore users who were message parsing should not expect
+changes in behavior, however, future versions will eliminate the "overuse" of the `Error.message` property, so it is
+advised that users update their code to take advantage of the `ResponseError` features.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2285[TINKERPOP-2285]
+
 ==== Java Driver NoHostAvailableException
 
 Expect a `NoHostAvailableException` rather than a more generic `TimeoutException` if the Java driver is unable to

@@ -28,6 +28,7 @@ const util = require('util');
 const utils = require('../utils');
 const serializer = require('../structure/io/graph-serializer');
 const ResultSet = require('./result-set');
+const ResponseError = require('./response-error');
 
 const responseStatusCode = {
   success: 200,
@@ -235,10 +236,12 @@ class Connection extends EventEmitter {
         this._clearHandler(requestId);
         if (response.status !== undefined && response.status.message) {
           return handler.callback(
-            new Error(util.format(
-              'Server error (no request information): %s (%d)', response.status.message, response.status.code)));
+            // TINKERPOP-2285: keep the old server error message in case folks are parsing that - fix in a future breaking version
+            new ResponseError(util.format(
+              'Server error (no request information): %s (%d)', response.status.message, response.status.code), response.status));
         } else {
-          return handler.callback(new Error(util.format('Server error (no request information): %j', response)));
+           // TINKERPOP-2285: keep the old server error message in case folks are parsing that - fix in a future breaking version
+          return handler.callback(new ResponseError(util.format('Server error (no request information): %j', response), response.status));
         }
       });
       return;
@@ -262,7 +265,8 @@ class Connection extends EventEmitter {
     else if (response.status.code >= 400) {
       // callback in error
       return handler.callback(
-        new Error(util.format('Server error: %s (%d)', response.status.message, response.status.code)));
+        // TINKERPOP-2285: keep the old server error message in case folks are parsing that - fix in a future breaking version
+        new ResponseError(util.format('Server error: %s (%d)', response.status.message, response.status.code), response.status));
     }
     switch (response.status.code) {
       case responseStatusCode.noContent:
