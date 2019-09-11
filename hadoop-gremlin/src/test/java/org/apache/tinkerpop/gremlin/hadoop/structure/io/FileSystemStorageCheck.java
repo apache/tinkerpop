@@ -19,6 +19,12 @@
 
 package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
@@ -27,12 +33,6 @@ import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.junit.Test;
-
-import java.io.File;
-import java.io.IOException;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -69,6 +69,10 @@ public class FileSystemStorageCheck extends AbstractStorageCheck {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldSupportCopyMethods() throws Exception {
+        // Make sure Spark is shut down before deleting its files and directories,
+        // which are locked under Windows and fail the tests. See FileSystemStorageCheck
+        graph.configuration().setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);
+
         final Storage storage = FileSystemStorage.open(ConfUtil.makeHadoopConfiguration(graph.configuration()));
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         final String newOutputLocation = TestHelper.makeTestDataDirectory(FileSystemStorageCheck.class, "new-location-for-copy");
@@ -81,6 +85,10 @@ public class FileSystemStorageCheck extends AbstractStorageCheck {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldNotHaveResidualDataInStorage() throws Exception {
+        // Make sure Spark is shut down before deleting its files and directories,
+        // which are locked under Windows and fail the tests. See FileSystemStorageCheck
+        graph.configuration().setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);
+
         final Storage storage = FileSystemStorage.open(ConfUtil.makeHadoopConfiguration(graph.configuration()));
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         super.checkResidualDataInStorage(storage, outputLocation);
@@ -88,6 +96,10 @@ public class FileSystemStorageCheck extends AbstractStorageCheck {
 
     @Test
     public void shouldSupportDirectoryFileDistinction() throws Exception {
+        // Make sure Spark is shut down before deleting its files and directories,
+        // which are locked under Windows and fail the tests. See FileSystemStorageCheck
+        graph.configuration().setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);
+
         final Storage storage = FileSystemStorage.open(ConfUtil.makeHadoopConfiguration(graph.configuration()));
         final String directory1 = TestHelper.makeTestDataDirectory(FileSystemStorageCheck.class, "directory1");
         final String directory2 = TestHelper.makeTestDataDirectory(FileSystemStorageCheck.class, "directory2");
