@@ -278,7 +278,7 @@ public class PersistedInputOutputRDDIntegrateTest extends AbstractSparkTest {
         ////
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();
-        graph.io(IoCore.gryo()).readGraph(TestHelper.makeTestDataDirectory(PersistedInputOutputRDDIntegrateTest.class, "testBulkLoaderVertexProgramChainWithInputOutputHelperMapping.kryo"));
+        graph.io(IoCore.gryo()).readGraph(TestHelper.makeTestDataFile(PersistedInputOutputRDDIntegrateTest.class, "testBulkLoaderVertexProgramChainWithInputOutputHelperMapping.kryo"));
         assertEquals(6l, g.V().count().next().longValue());
         assertEquals(6l, g.E().count().next().longValue());
         assertEquals("marko", g.V().has("name", "marko").values("name").next());

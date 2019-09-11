@@ -58,7 +58,7 @@ public class GryoSerializerIntegrateTest extends AbstractSparkTest {
         TestHelper.createRandomGraph(randomGraph, totalVertices, 100);
         final String inputLocation = TestHelper.makeTestDataFile(GryoSerializerIntegrateTest.class,
                                                                  UUID.randomUUID().toString(),
-                                                                 "/random-graph.kryo");
+                                                                 "random-graph.kryo");
         randomGraph.io(IoCore.gryo()).writeGraph(inputLocation);
         randomGraph.clear();
         randomGraph.close();
