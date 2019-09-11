@@ -1250,7 +1250,7 @@ The following table describes the various YAML configuration options that Gremli
 |scriptEngines.<name>.staticImports |A comma separated list of "static" imports to make available to the `ScriptEngine`. |_none_
 |scriptEngines.<name>.scripts |A comma separated list of script files to execute on `ScriptEngine` initialization. `Graph` and `TraversalSource` instance references produced from scripts will be stored globally in Gremlin Server, therefore it is possible to use initialization scripts to add Traversal Strategies or create entirely new `Graph` instances all together. Instantiating a `LifeCycleHook` in a script provides a way to execute scripts when Gremlin Server starts and stops.|_none_
 |scriptEngines.<name>.config |A `Map` of configuration settings for the `ScriptEngine`.  These settings are dependent on the `ScriptEngine` implementation being used. |_none_
-|scriptEvaluationTimeout |The amount of time in milliseconds before a script evaluation and iteration of result times out. This feature can be turned off by setting the value to `0`. |30000
+|evaluationTimeout |The amount of time in milliseconds before a script evaluation and iteration of result times out. This feature can be turned off by setting the value to `0`. |30000
 |serializers |A `List` of `Map` settings, where each `Map` represents a `MessageSerializer` implementation to use along with its configuration. If this value is not set, then Gremlin Server will configure with GraphSON and Gryo but will not register any `ioRegistries` for configured graphs. |_empty_
 |serializers[X].className |The full class name of the `MessageSerializer` implementation. |_none_
 |serializers[X].config |A `Map` containing `MessageSerializer` specific configurations. |_none_
@@ -1603,7 +1603,7 @@ continuously:
 gremlin> :remote connect tinkerpop.server conf/remote.yaml
 ==>Configured localhost/127.0.0.1:8182
 gremlin> :> while(true) { }
-==>Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 30000 ms or evaluation was otherwise cancelled directly for request [while(true) {}]
+==>Evaluation exceeded the configured 'evaluationTimeout' threshold of 30000 ms or evaluation was otherwise cancelled directly for request [while(true) {}]
 
 The `GroovyCompilerGremlinPlugin` has a number of configuration options:
 
@@ -1920,10 +1920,10 @@ generally means being measured in the low hundreds of milliseconds and "slow" me
 evaluations are blocking operations that aren't always easily interrupted, so once a "slow" script is being evaluated in
 the context of a `ScriptEngine` it must finish its work.  Lots of "slow" scripts will eventually consume the
 `gremlinPool` preventing other scripts from getting processed from the queue.
-** To limit the impact of this problem, consider properly setting the `scriptEvaluationTimeout` to something "sane".
+** To limit the impact of this problem, consider properly setting the `evaluationTimeout` to something "sane".
 In other words, test the traversals being sent to Gremlin Server and determine the maximum time they take to evaluate
 and iterate over results, then set the timeout value accordingly.
-** Note that `scriptEvaluationTimeout` can only attempt to interrupt the evaluation on timeout.  It allows Gremlin
+** Note that `evaluationTimeout` can only attempt to interrupt the evaluation on timeout.  It allows Gremlin
 Server to "ignore" the result of that evaluation, which means the thread in the `gremlinPool` that did the evaluation
 may still be consumed after the timeout if interruption does not succeed on the thread.
 * Graph element serialization for `Vertex` and `Edge` can be expensive, as their data structures are complex given the

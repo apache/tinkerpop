@@ -96,7 +96,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
         }
 
         [Fact]
-        public async Task ShouldUseSpecifiedScriptEvaluationTimeout()
+        public async Task ShouldUseSpecifiedEvaluationTimeout()
         {
             var gremlinServer = new GremlinServer(TestHost, TestPort);
             using (var gremlinClient = new GremlinClient(gremlinServer))

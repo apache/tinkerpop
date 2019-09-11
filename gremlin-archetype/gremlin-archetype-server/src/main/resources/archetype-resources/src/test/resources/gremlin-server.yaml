@@ -19,7 +19,7 @@ host: localhost
 port: 45940
 threadPoolWorker: 1
 gremlinPool: 8
-scriptEvaluationTimeout: 30000
+evaluationTimeout: 30000
 serializedResponseTimeout: 30000
 graphs: {
   graph: conf/tinkergraph-empty.properties}

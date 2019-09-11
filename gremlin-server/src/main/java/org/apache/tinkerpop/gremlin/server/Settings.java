@@ -30,7 +30,6 @@ import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager;
-import info.ganglia.gmetric4j.gmetric.GMetric;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.yaml.snakeyaml.TypeDescription;
@@ -102,15 +101,25 @@ public class Settings {
     public int threadPoolBoss = 1;
 
     /**
-     * Time in milliseconds to wait for a script to complete execution.  Defaults to 30000.
+     * Time in milliseconds to wait for a request (script or bytecode) to complete execution.  Defaults to -1 and
+     * thus defers to {@link #evaluationTimeout} for this configuration. When set to something greater than -1 then
+     * this configuration is used.
+     *
+     * @deprecated As of release 3.3.9, replaced by {@link #evaluationTimeout}.
      */
-    public long scriptEvaluationTimeout = 30000L;
+    @Deprecated
+    public long scriptEvaluationTimeout = -1L;
+
+    /**
+     * Time in milliseconds to wait for a request (script or bytecode) to complete execution. Defaults to 30000.
+     */
+    public long evaluationTimeout = 30000L;
 
     /**
      * Time in milliseconds to wait while an evaluated script serializes its results. This value represents the
      * total serialization time allowed for the request.  Defaults to 0 which disables this setting.
      *
-     * @deprecated As of release 3.2.1, replaced wholly by {@link #scriptEvaluationTimeout}.
+     * @deprecated As of release 3.2.1, replaced wholly by {@link #evaluationTimeout}.
      */
     @Deprecated
     public long serializedResponseTimeout = 0L;
@@ -252,6 +261,10 @@ public class Settings {
 
     public Optional<SslSettings> optionalSsl() {
         return Optional.ofNullable(ssl);
+    }
+
+    public long getEvaluationTimeout() {
+        return -1 == scriptEvaluationTimeout ? evaluationTimeout : scriptEvaluationTimeout;
     }
 
     /**
