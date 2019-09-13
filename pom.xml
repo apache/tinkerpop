@@ -363,6 +363,7 @@ limitations under the License.
                     <excludeSubProjects>false</excludeSubProjects>
                     <excludes>
                         <exclude>.mailmap</exclude>
+                        <exclude>.asf.yaml</exclude>
                         <exclude>.travis.yml</exclude>
                         <exclude>.travis.*.sh</exclude>
                         <exclude>.dockerignore</exclude>

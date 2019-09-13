@@ -1,0 +1,11 @@
+github:
+  description: "Apache TinkerPop - a graph computing framework"
+  homepage: https://tinkerpop.apache.org/
+  labels:
+    - tinkerpop
+    - gremlin
+    - graph
+    - graphdb
+    - graph-database
+    - gremlin-server
+    - apache
