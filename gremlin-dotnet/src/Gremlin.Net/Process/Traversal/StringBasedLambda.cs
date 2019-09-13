@@ -21,22 +21,41 @@
 
 #endregion
 
+using System;
+
 namespace Gremlin.Net.Process.Traversal
 {
     internal class StringBasedLambda : ILambda
     {
         private const int DefaultArgument = -1;
+        private int _arguments;
 
         public StringBasedLambda(string expression, string language)
         {
             LambdaExpression = expression;
             Language = language;
+            _arguments = DefaultArgument;
         }
 
         public string LambdaExpression { get; }
 
         public string Language { get; }
 
-        public object Arguments => DefaultArgument;
+        public int Arguments
+        {
+            get => _arguments;
+            protected set => _arguments = value;
+        }
+    }
+
+    internal class GroovyStringBasedLambda : StringBasedLambda
+    {
+        public GroovyStringBasedLambda(string expression) : base(expression, "gremlin-groovy")
+        {
+            // try to detect 1 or 2 argument lambda if possible otherwise go with unknown which is the default
+            if (!expression.Contains("->")) return;
+            var args = expression.Substring(0, expression.IndexOf("->", StringComparison.Ordinal));
+            Arguments = args.Contains(",") ? 2 : 1;
+        }
     }
 }

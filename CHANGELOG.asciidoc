@@ -24,6 +24,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.3.9 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Added `ImmutableExplanation` for a `TraversalExplanation` that just contains data.
+* Added support for `UnaryOperator` and `BinaryOperator` for `Lambda` instances.
 * Fixed `TraversalExplanation` deserialization in GraphSON 2 and 3 which was not supported before in Java.
 * Added support for custom request headers in Python.
 * Bumped jackson databind 2.9.9.3.

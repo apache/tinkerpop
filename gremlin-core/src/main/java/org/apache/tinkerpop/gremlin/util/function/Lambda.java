@@ -19,16 +19,23 @@
 
 package org.apache.tinkerpop.gremlin.util.function;
 
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
+
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
+ * Provides a way to serialize string lambdas as scripts which can be evaluated by a {@link GremlinScriptEngine}.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface Lambda extends Serializable {
 
@@ -103,6 +110,12 @@ public interface Lambda extends Serializable {
 
     }
 
+    public static class UnaryLambda<A> extends OneArgLambda<A, A> implements UnaryOperator<A> {
+        public UnaryLambda(final String lambdaSource, final String lambdaLanguage) {
+            super(lambdaSource, lambdaLanguage);
+        }
+    }
+
     public static class OneArgLambda<A, B> extends AbstractLambda implements Function<A, B>, Predicate<A>, Consumer<A> {
 
         public OneArgLambda(final String lambdaSource, final String lambdaLanguage) {
@@ -122,6 +135,12 @@ public interface Lambda extends Serializable {
         @Override
         public void accept(final A a) {
 
+        }
+    }
+
+    public static class BinaryLambda<A> extends TwoArgLambda<A, A, A> implements BinaryOperator<A> {
+        public BinaryLambda(final String lambdaSource, final String lambdaLanguage) {
+            super(lambdaSource, lambdaLanguage);
         }
     }
 
@@ -146,6 +165,10 @@ public interface Lambda extends Serializable {
     ///
 
     public static String DEFAULT_LAMBDA_LANGUAGE = "gremlin-groovy";
+
+    public static <A> UnaryOperator<A> unaryOperator(final String lambdaSource, final String lambdaLanguage) {
+        return new UnaryLambda<>(lambdaSource, lambdaLanguage);
+    }
 
     public static <A, B> Function<A, B> function(final String lambdaSource, final String lambdaLanguage) {
         return new OneArgLambda<>(lambdaSource, lambdaLanguage);
@@ -173,6 +196,10 @@ public interface Lambda extends Serializable {
 
     //
 
+    public static <A> UnaryOperator<A> unaryOperator(final String lambdaSource) {
+        return new UnaryLambda<>(lambdaSource, DEFAULT_LAMBDA_LANGUAGE);
+    }
+
     public static <A, B> Function<A, B> function(final String lambdaSource) {
         return new OneArgLambda<>(lambdaSource, DEFAULT_LAMBDA_LANGUAGE);
     }
@@ -195,5 +222,9 @@ public interface Lambda extends Serializable {
 
     public static <A, B, C> BiFunction<A, B, C> biFunction(final String lambdaSource) {
         return new TwoArgLambda<>(lambdaSource, DEFAULT_LAMBDA_LANGUAGE);
+    }
+
+    public static <A> BinaryOperator<A> binaryOperator(final String lambdaSource) {
+        return new BinaryLambda<>(lambdaSource, DEFAULT_LAMBDA_LANGUAGE);
     }
 }

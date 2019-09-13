@@ -49,5 +49,17 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             Assert.Contains("josh", results);
             Assert.Contains("peter", results);
         }
+                
+        [Fact]
+        public void ShouldHandleLambdasInWithSack()
+        {
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+
+            Assert.Equal(24.0, g.WithSack(1.0, (IUnaryOperator) Lambda.Groovy("x -> x + 1")).V().Both().Sack<double>().Sum<double>().Next());                        
+            Assert.Equal(24.0, g.WithSack((ISupplier) Lambda.Groovy("{1.0d}"), (IUnaryOperator) Lambda.Groovy("x -> x + 1")).V().Both().Sack<double>().Sum<double>().Next());
+            Assert.Equal(48.0, g.WithSack(1.0, (IBinaryOperator) Lambda.Groovy("x, y -> x + y + 1")).V().Both().Sack<double>().Sum<double>().Next());                        
+            Assert.Equal(48.0, g.WithSack((ISupplier) Lambda.Groovy("{1.0d}"), (IBinaryOperator) Lambda.Groovy("x, y -> x + y + 1")).V().Both().Sack<double>().Sum<double>().Next());       
+        }
     }
 }

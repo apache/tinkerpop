@@ -20,7 +20,6 @@
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import org.apache.commons.configuration.MapConfiguration;
-import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.jsr223.TranslatorCustomizer;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
@@ -71,6 +70,7 @@ import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GroovyTranslatorTest {
 
@@ -99,6 +99,32 @@ public class GroovyTranslatorTest {
         }})), ReadOnlyStrategy.instance()).V().values("name").asAdmin().getBytecode(), bindings, "g");
         assertEquals("marko", traversal.next());
         assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    public void shouldHandleConfusingSacks() {
+        final TinkerGraph graph = TinkerFactory.createModern();
+        final GraphTraversalSource g = graph.traversal();
+
+        final Traversal<Vertex,Double> tConstantUnary = g.withSack(1.0, Lambda.unaryOperator("it + 1")).V().sack();
+        final String scriptConstantUnary = GroovyTranslator.of("g").translate(tConstantUnary.asAdmin().getBytecode());
+        assertEquals("g.withSack(1.0d, (java.util.function.UnaryOperator) {it + 1}).V().sack()", scriptConstantUnary);
+        assertThatScriptOk(scriptConstantUnary, "g", g);
+
+        final Traversal<Vertex,Double> tSupplierUnary = g.withSack(Lambda.supplier("1.0d"), Lambda.<Double>unaryOperator("it + 1")).V().sack();
+        final String scriptSupplierUnary = GroovyTranslator.of("g").translate(tSupplierUnary.asAdmin().getBytecode());
+        assertEquals("g.withSack((java.util.function.Supplier) {1.0d}, (java.util.function.UnaryOperator) {it + 1}).V().sack()", scriptSupplierUnary);
+        assertThatScriptOk(scriptSupplierUnary, "g", g);
+
+        final Traversal<Vertex,Double> tConstantBinary = g.withSack(1.0, Lambda.binaryOperator("x,y -> x + y + 1")).V().sack();
+        final String scriptConstantBinary = GroovyTranslator.of("g").translate(tConstantBinary.asAdmin().getBytecode());
+        assertEquals("g.withSack(1.0d, (java.util.function.BinaryOperator) {x,y -> x + y + 1}).V().sack()", scriptConstantBinary);
+        assertThatScriptOk(scriptConstantBinary, "g", g);
+
+        final Traversal<Vertex,Double> tSupplierBinary = g.withSack(Lambda.supplier("1.0d"), Lambda.<Double>binaryOperator("x,y -> x + y + 1")).V().sack();
+        final String scriptSupplierBinary = GroovyTranslator.of("g").translate(tSupplierBinary.asAdmin().getBytecode());
+        assertEquals("g.withSack((java.util.function.Supplier) {1.0d}, (java.util.function.BinaryOperator) {x,y -> x + y + 1}).V().sack()", scriptSupplierBinary);
+        assertThatScriptOk(scriptSupplierBinary, "g", g);
     }
 
     @Test
