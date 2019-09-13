@@ -30,6 +30,8 @@ import java.util.function.Function;
 public enum T implements Function<Element, Object> {
     /**
      * Label (representing Element.label())
+     *
+     * @since 3.0.0-incubating
      */
     label {
         @Override
@@ -44,6 +46,8 @@ public enum T implements Function<Element, Object> {
     },
     /**
      * Id (representing Element.id())
+     *
+     * @since 3.0.0-incubating
      */
     id {
         @Override
@@ -58,6 +62,8 @@ public enum T implements Function<Element, Object> {
     },
     /**
      * Key (representing Property.key())
+     *
+     * @since 3.0.0-incubating
      */
     key {
         @Override
@@ -72,6 +78,8 @@ public enum T implements Function<Element, Object> {
     },
     /**
      * Value (representing Property.value())
+     *
+     * @since 3.0.0-incubating
      */
     value {
         @Override

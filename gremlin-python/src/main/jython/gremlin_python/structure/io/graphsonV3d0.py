@@ -34,7 +34,7 @@ from isodate import parse_duration, duration_isoformat
 
 from gremlin_python import statics
 from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, DictType, ListType, SetType, SingleByte, ByteBufferType, SingleChar
-from gremlin_python.process.traversal import Binding, Bytecode, P, TextP, Traversal, Traverser, TraversalStrategy, T
+from gremlin_python.process.traversal import Binding, Bytecode, Direction, P, TextP, Traversal, Traverser, TraversalStrategy, T
 from gremlin_python.structure.graph import Edge, Property, Vertex, VertexProperty, Path
 
 log = logging.getLogger(__name__)
@@ -710,6 +710,20 @@ class TDeserializer(_GraphSONTypeIO):
     @classmethod
     def objectify(cls, d, reader):
         return T[d]
+
+
+class DirectionIO(_GraphSONTypeIO):
+    graphson_type = "g:Direction"
+    graphson_base_type = "Direction"
+    python_type = Direction
+
+    @classmethod
+    def dictify(cls, d, writer):
+        return GraphSONUtil.typedValue(cls.graphson_base_type, d.name, "g")
+
+    @classmethod
+    def objectify(cls, d, reader):
+        return Direction[d]
 
 class TraversalMetricsDeserializer(_GraphSONTypeIO):
     graphson_type = "g:TraversalMetrics"

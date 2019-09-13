@@ -280,6 +280,18 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(T.Label, readT);
         }
 
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializeDirection(int version)
+        {
+            var serializedValue = "{\"@type\":\"g:Direction\",\"@value\":\"OUT\"}";
+            var reader = CreateStandardGraphSONReader(version);
+
+            var jObject = JObject.Parse(serializedValue);
+            var deserializedValue = reader.ToObject(jObject);
+
+            Assert.Equal(Direction.Out, deserializedValue);
+        }
+
         [Fact]
         public void ShouldDeserializePathFromGraphSON2()
         {

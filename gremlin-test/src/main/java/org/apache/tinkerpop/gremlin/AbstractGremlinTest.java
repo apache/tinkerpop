@@ -159,8 +159,8 @@ public abstract class AbstractGremlinTest {
                 logger.warn("The {} is not of type ManagedGraphProvider and therefore graph instances may leak between test cases.", graphProvider.getClass());
 
             if (shouldTestIteratorLeak) {
-                long wait = 300;
-                long[] tries = new long[] { 1, 3, 5, 7, 9, 18, 27, 36, 72, 144, 256, 512 };
+                final long wait = 300;
+                final long[] tries = new long[] { 1, 3, 5, 7, 9, 18, 27, 36, 72, 144, 256, 512 };
                 long openItrCount = StoreIteratorCounter.INSTANCE.getOpenIteratorCount();
                 for (int ix = 0; ix < tries.length && openItrCount > 0; ix++) {
                     Thread.sleep(wait * tries[ix]);

@@ -829,6 +829,37 @@ g.V()
 
 * link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#drop--++[`drop()`]
 
+[[elementmap-step]]
+=== ElementMap Step
+
+The `elementMap()`-step yields a `Map` representation of the structure of an element.
+
+[gremlin-groovy,modern]
+----
+g.V().elementMap()
+g.V().elementMap('age')
+g.V().elementMap('age','blah')
+g.E().elementMap()
+----
+
+It is important to note that the map of a vertex assumes that cardinality for each key is `single` and if it is `list`
+then only the first item encountered will be returned. As `single` is the more common cardinality for properties this
+assumption should serve the greatest number of use cases.
+
+[gremlin-groovy,theCrew]
+----
+g.V().elementMap()
+g.V().has('name','marko').properties('location')
+g.V().has('name','marko').properties('location').elementMap()
+----
+
+IMPORTANT: The `elementMap()`-step does not return the vertex labels for incident vertices when using `GraphComputer`
+as the `id` is the only available data to the star graph.
+
+*Additional References*
+
+link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#elementMap-java.lang.String...-++[`elementMap(String...)`]
+
 [[emit-step]]
 === Emit Step
 
@@ -3239,7 +3270,7 @@ link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/grem
 [[valuemap-step]]
 === ValueMap Step
 
-The `valueMap()`-step yields a Map representation of the properties of an element.
+The `valueMap()`-step yields a `Map` representation of the properties of an element.
 
 [gremlin-groovy,modern]
 ----

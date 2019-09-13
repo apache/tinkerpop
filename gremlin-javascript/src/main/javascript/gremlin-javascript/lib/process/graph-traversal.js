@@ -443,6 +443,16 @@ class GraphTraversal extends Traversal {
   }
   
   /**
+   * Graph traversal elementMap method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  elementMap(...args) {
+    this.bytecode.addStep('elementMap', args);
+    return this;
+  }
+  
+  /**
    * Graph traversal emit method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1264,6 +1274,7 @@ const statics = {
   cyclicPath: (...args) => callOnEmptyTraversal('cyclicPath', args),
   dedup: (...args) => callOnEmptyTraversal('dedup', args),
   drop: (...args) => callOnEmptyTraversal('drop', args),
+  elementMap: (...args) => callOnEmptyTraversal('elementMap', args),
   emit: (...args) => callOnEmptyTraversal('emit', args),
   filter: (...args) => callOnEmptyTraversal('filter', args),
   flatMap: (...args) => callOnEmptyTraversal('flatMap', args),

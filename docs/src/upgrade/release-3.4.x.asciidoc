@@ -30,6 +30,84 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Avant-Gremlin Construction #3 for Theremin and Flowers*
 
+== TinkerPop 3.4.4
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.4.4/CHANGELOG.asciidoc#release-3-4-4[changelog] for a complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+==== elementMap() Step
+
+Since graph elements (i.e. `Vertex`, `Edge`, and `VertexProperty`) are returned from remote sources as references
+(i.e. without properties), one of the more common needs for Gremlin users is the ability to easily return a `Map`
+representation of the elements that they are querying. Typically, such transformations are handled by `valueMap()`:
+
+[source,text]
+----
+gremlin> g.V().has('person','name','marko').valueMap(true)
+==>[id:1,label:person,name:[marko],age:[29]]
+gremlin> g.V().has('person','name','marko').valueMap().by(unfold())
+==>[name:marko,age:29]
+----
+
+or by way of `project()`:
+
+[source,text]
+----
+gremlin> g.V().has('person','name','marko').
+......1>   project('name','age','vid','vlabel').
+......2>     by('name').
+......3>     by('age').
+......4>     by(id).
+......5>     by(label)
+==>[name:marko,age:29,vid:1,vlabel:person]
+----
+
+While `valueMap()` works reasonably well for `Vertex` and `VertexProperty` transformations it does less well for `Edge`
+as it fails to include incident vertices:
+
+[source,text]
+----
+gremlin> g.E(11).valueMap(true)
+==>[id:11,label:created,weight:0.4]
+----
+
+This limitation forces a fairly verbose use of `project()` for what is a reasonably common requirement:
+
+[source,text]
+----
+gremlin> g.E(12).union(valueMap(true),
+......1>               project('inV','outV','inVLabel','outVLabel').
+......2>                 by(inV().id()).
+......3>                 by(outV().id()).
+......4>                 by(inV().label()).
+......5>                 by(outV().label())).unfold().
+......6>               group().
+......7>                 by(keys).
+......8>                 by(select(values))
+==>[inV:3,id:12,inVLabel:software,weight:0.2,outVLabel:person,label:created,outV:6]
+----
+
+By introducing `elementMap()`-step, there is now a single step that covers the most common transformation requirements
+for all three graph elements:
+
+[source,text]
+----
+gremlin> g.V().has('person','name','marko').elementMap()
+==>[id:1,label:person,name:marko,age:29]
+gremlin> g.V().has('person','name','marko').elementMap('name')
+==>[id:1,label:person,name:marko]
+gremlin> g.V().has('person','name','marko').properties('name').elementMap()
+==>[id:0,key:name,value:marko]
+gremlin> g.E(11).elementMap()
+==>[id:11,label:created,IN:[id:3,label:software],OUT:[id:4,label:person],weight:0.4]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2284[TINKERPOP-2284],
+link:http://tinkerpop.apache.org/docs/3.4.4/reference/#elementmap-step[Reference Documentation]
+
 == TinkerPop 3.4.3
 
 *Release Date: August 5, 2019*
