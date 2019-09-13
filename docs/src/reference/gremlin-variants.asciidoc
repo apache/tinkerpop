@@ -170,6 +170,7 @@ g = traversal().withRemote('conf/remote-graph.properties')
 g.V().valueMap(true)
 g.close()
 ----
+
 [source,java]
 ----
 GraphTraversalSource g = traversal().withRemote("conf/remote-graph.properties");
@@ -309,9 +310,11 @@ most languages do not support lambda introspection and thus, code analysis. In G
 <<connecting-embedded,embedded>> usage, lambdas can be leveraged directly:
 
 [source,java]
+----
 g.V().out("knows").map(t -> t.get().value("name") + " is the friend name") <1>
 g.V().out("knows").sideEffect(System.out::println) <2>
 g.V().as("a").out("knows").as("b").select("b").by((Function<Vertex, Integer>) v -> v.<String>value("name").length()) <3>
+----
 
 <1> A Java `Function` is used to map a `Traverser<S>` to an object `E`.
 <2> Gremlin steps that take consumer arguments can be passed Java method references.
@@ -324,9 +327,11 @@ string-based lambda that is  then converted into a lambda/closure/anonymous-func
 language's JSR-223 `ScriptEngine` implementation.
 
 [source,java]
+----
 g.V().out("knows").map(Lambda.function("it.get().value('name') + ' is the friend name'"))
 g.V().out("knows").sideEffect(Lambda.consumer("println it"))
 g.V().as("a").out("knows").as("b").select("b").by(Lambda.<Vertex,Integer>function("it.value('name').length()"))
+----
 
 Finally, Gremlin `Bytecode` that includes lambdas requires that the traversal be processed by the
 `ScriptEngine`. To avoid continued recompilation costs, it supports the encoding of bindings, which allow Gremlin
@@ -419,8 +424,10 @@ made available to them.  Therefore, if Gremlin Server configures two `TraversalS
 a script can simply reference them directly as:
 
 [source,java]
+----
 client.submit("g1.V()")
 client.submit("g2.V()")
+----
 
 While this is an acceptable way to submit scripts, it has the downside of forcing the client to encode the server-side
 variable name directly into the script being sent.  If the server configuration ever changed such that "g1" became
@@ -428,10 +435,12 @@ variable name directly into the script being sent.  If the server configuration 
 server configuration can be managed by the `alias` method on `Client` as follows:
 
 [source,java]
+----
 Client g1Client = client.alias("g1")
 Client g2Client = client.alias("g2")
 g1Client.submit("g.V()")
 g2Client.submit("g.V()")
+----
 
 The above code demonstrates how the `alias` method can be used such that the script need only contain a reference
 to "g" and "g1" and "g2" are automatically rebound into "g" on the server-side.
@@ -621,7 +630,9 @@ succinct.
 To install Gremlin-Python, use Python's link:https://en.wikipedia.org/wiki/Pip_(package_manager)[pip] package manager.
 
 [source,bash]
+----
 pip install gremlinpython
+----
 
 === Connecting
 
@@ -630,13 +641,17 @@ creating a `GraphTraversalSource`. A `GraphTraversalSource` is created from the 
 the "g" provided to the `DriverRemoteConnection` corresponds to the name of a `GraphTraversalSource` on the remote end.
 
 [source,python]
+----
 g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
+----
 
 If you need to send additional headers in the websockets connection, you can pass an optional `headers` parameter
 to the `DriverRemoteConnection` constructor.
 
 [source,python]
+----
 g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g',headers={'Header':'Value'}))
+----
 
 [[python-imports]]
 === Common Imports
@@ -675,7 +690,9 @@ g.V().hasLabel('person').has('age',P.gt(30)).order().by('age',Order.desc).toList
 Moreover, by importing the `statics` of Gremlin-Python, the class prefixes can be omitted.
 
 [source,python]
+----
 >>> statics.load_statics(globals())
+----
 
 With statics loaded its possible to represent the above traversal as below.
 
