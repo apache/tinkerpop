@@ -28,7 +28,7 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.util.CoreTestHelper;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
@@ -75,7 +75,7 @@ public class FileSystemStorageCheck extends AbstractStorageCheck {
 
         final Storage storage = FileSystemStorage.open(ConfUtil.makeHadoopConfiguration(graph.configuration()));
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
-        final String newOutputLocation = CoreTestHelper.makeTestDataDirectory(FileSystemStorageCheck.class, "new-location-for-copy");
+        final String newOutputLocation = TestHelper.makeTestDataDirectory(FileSystemStorageCheck.class, "new-location-for-copy");
         // TestHelper creates the directory and we need it not to exist
         deleteDirectory(newOutputLocation);
         super.checkCopyMethods(storage, outputLocation, newOutputLocation, InputOutputHelper.getInputFormat((Class) Class.forName(graph.configuration().getString(Constants.GREMLIN_HADOOP_GRAPH_WRITER))), SequenceFileInputFormat.class);
@@ -101,8 +101,8 @@ public class FileSystemStorageCheck extends AbstractStorageCheck {
         graph.configuration().setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);
 
         final Storage storage = FileSystemStorage.open(ConfUtil.makeHadoopConfiguration(graph.configuration()));
-        final String directory1 = CoreTestHelper.makeTestDataDirectory(FileSystemStorageCheck.class, "directory1");
-        final String directory2 = CoreTestHelper.makeTestDataDirectory(FileSystemStorageCheck.class, "directory2");
+        final String directory1 = TestHelper.makeTestDataDirectory(FileSystemStorageCheck.class, "directory1");
+        final String directory2 = TestHelper.makeTestDataDirectory(FileSystemStorageCheck.class, "directory2");
         for (int i = 0; i < 10; i++) {
             new File(directory1, "file1-" + i + ".txt.bz").createNewFile();
         }
