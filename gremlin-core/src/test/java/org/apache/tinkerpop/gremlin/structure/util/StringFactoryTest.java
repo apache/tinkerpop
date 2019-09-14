@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
-import org.apache.tinkerpop.gremlin.CoreTestHelper;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.junit.Test;
 
 /**
@@ -27,6 +27,6 @@ import org.junit.Test;
 public class StringFactoryTest {
     @Test
     public void shouldBeUtilityClass() throws Exception {
-        CoreTestHelper.assertIsUtilityClass(StringFactory.class);
+        TestHelper.assertIsUtilityClass(StringFactory.class);
     }
 }

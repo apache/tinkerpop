@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.util;
 
-import org.apache.tinkerpop.gremlin.CoreTestHelper;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.assertEquals;
+import org.apache.tinkerpop.gremlin.TestHelper;
+import org.junit.Test;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -32,7 +32,7 @@ public class TimeUtilTest {
 
     @Test
     public void shouldBeUtilityClass() throws Exception {
-        CoreTestHelper.assertIsUtilityClass(TimeUtil.class);
+        TestHelper.assertIsUtilityClass(TimeUtil.class);
     }
 
     @Test

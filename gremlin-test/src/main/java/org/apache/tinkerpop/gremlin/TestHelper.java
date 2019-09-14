@@ -21,9 +21,15 @@ package org.apache.tinkerpop.gremlin;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -36,6 +42,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.Comparators;
+import org.apache.tinkerpop.gremlin.util.CoreTestHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +68,15 @@ public final class TestHelper extends CoreTestHelper {
     private TestHelper() {
     }
 
+    public static void assertIsUtilityClass(final Class<?> utilityClass) throws Exception {
+        final Constructor constructor = utilityClass.getDeclaredConstructor();
+
+        assertTrue(Modifier.isFinal(utilityClass.getModifiers()));
+        assertTrue(Modifier.isPrivate(constructor.getModifiers()));
+        constructor.setAccessible(true);
+        constructor.newInstance();
+    }
+    
     public static String convertToRelative(final Class clazz, final File f) {
         final File root = getRootOfBuildDirectory(clazz).getParentFile();
         return root.toURI().relativize(f.toURI()).toString();
@@ -80,7 +96,7 @@ public final class TestHelper extends CoreTestHelper {
         assumeThat("Set the 'assertNonDeterministic' property to true to execute this test",
                 System.getProperty("assertNonDeterministic"), is("true"));
     }
-
+        
     ///////////////
 
     public static void validateVertexEquality(final Vertex originalVertex, final Vertex otherVertex, boolean testEdges) {

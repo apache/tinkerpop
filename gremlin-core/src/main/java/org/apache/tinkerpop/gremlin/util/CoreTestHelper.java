@@ -16,16 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin;
-
-import static org.junit.Assert.assertTrue;
+package org.apache.tinkerpop.gremlin.util;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,15 +37,6 @@ public class CoreTestHelper {
     public static final String TEST_DATA_RELATIVE_DIR = "test-case-data";
 
     protected CoreTestHelper() {}
-
-    public static void assertIsUtilityClass(final Class<?> utilityClass) throws Exception {
-        final Constructor constructor = utilityClass.getDeclaredConstructor();
-
-        assertTrue(Modifier.isFinal(utilityClass.getModifiers()));
-        assertTrue(Modifier.isPrivate(constructor.getModifiers()));
-        constructor.setAccessible(true);
-        constructor.newInstance();
-    }
 
     /**
      * Creates a {@link File} reference that points to a directory relative to the supplied class in the

@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io;
 
-import org.apache.tinkerpop.gremlin.CoreTestHelper;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.junit.Test;
 
 /**
@@ -27,6 +27,6 @@ import org.junit.Test;
 public class GraphMigratorTest {
     @Test
     public void shouldBeUtilityClass() throws Exception {
-        CoreTestHelper.assertIsUtilityClass(GraphMigrator.class);
+        TestHelper.assertIsUtilityClass(GraphMigrator.class);
     }
 }

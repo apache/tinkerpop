@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
-import org.apache.tinkerpop.gremlin.CoreTestHelper;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.junit.Test;
 
 /**
@@ -27,6 +27,6 @@ import org.junit.Test;
 public class GraphSONTokensTest {
     @Test
     public void shouldBeUtilityClass() throws Exception {
-        CoreTestHelper.assertIsUtilityClass(GraphSONTokens.class);
+        TestHelper.assertIsUtilityClass(GraphSONTokens.class);
     }
 }

@@ -18,7 +18,22 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
-import org.apache.tinkerpop.gremlin.CoreTestHelper;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -29,28 +44,13 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.javatuples.Pair;
 import org.junit.Test;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ElementHelperTest {
     @Test
     public void shouldBeUtilityClass() throws Exception {
-        CoreTestHelper.assertIsUtilityClass(ElementHelper.class);
+        TestHelper.assertIsUtilityClass(ElementHelper.class);
     }
 
     @Test

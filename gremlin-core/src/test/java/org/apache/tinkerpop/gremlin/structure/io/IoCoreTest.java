@@ -18,14 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io;
 
-import org.apache.tinkerpop.gremlin.CoreTestHelper;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.junit.Test;
-
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -33,7 +33,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class IoCoreTest {
     @Test
     public void shouldBeUtilityClass() throws Exception {
-        CoreTestHelper.assertIsUtilityClass(IoCore.class);
+        TestHelper.assertIsUtilityClass(IoCore.class);
     }
 
     @Test

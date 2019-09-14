@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.util.tools;
 
-import org.apache.tinkerpop.gremlin.CoreTestHelper;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.junit.Test;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,9 +28,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import org.apache.tinkerpop.gremlin.TestHelper;
+import org.junit.Test;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -39,7 +38,7 @@ public class MultiMapTest {
 
     @Test
     public void shouldBeUtilityClass() throws Exception {
-        CoreTestHelper.assertIsUtilityClass(MultiMap.class);
+        TestHelper.assertIsUtilityClass(MultiMap.class);
     }
 
     @Test

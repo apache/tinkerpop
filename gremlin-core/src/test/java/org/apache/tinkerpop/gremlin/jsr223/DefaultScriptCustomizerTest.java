@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
-import org.apache.tinkerpop.gremlin.CoreTestHelper;
+import org.apache.tinkerpop.gremlin.util.CoreTestHelper;
 import org.junit.Test;
 
 import java.io.File;

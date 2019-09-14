@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
-import org.apache.tinkerpop.gremlin.CoreTestHelper;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+
+import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.junit.Test;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -31,7 +31,7 @@ import static org.junit.Assert.fail;
 public class GraphVariableHelperTest {
     @Test
     public void shouldBeUtilityClass() throws Exception {
-        CoreTestHelper.assertIsUtilityClass(GraphVariableHelper.class);
+        TestHelper.assertIsUtilityClass(GraphVariableHelper.class);
     }
 
     @Test

@@ -113,6 +113,12 @@ limitations under the License.
             <artifactId>compile-testing</artifactId>
             <version>0.10</version>
             <scope>test</scope>
+            <exclusions>
+              <exclusion>
+                <artifactId>tools</artifactId>
+                <groupId>com.sun</groupId>
+              </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
     <build>
@@ -145,23 +151,6 @@ limitations under the License.
                         <arg>-proc:none</arg>
                     </compilerArgs>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <executions>
-                  <execution>
-                    <id>package-test-lib</id>
-                    <goals>
-                      <goal>test-jar</goal>
-                    </goals>
-                    <configuration>
-                      <includes>
-                        <include>**/*TestHelper*</include>
-                      </includes>
-                    </configuration>
-                  </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

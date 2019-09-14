@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.util;
 
-import org.apache.tinkerpop.gremlin.CoreTestHelper;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
+
+import org.apache.tinkerpop.gremlin.TestHelper;
+import org.junit.Test;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -29,7 +29,7 @@ import static org.junit.Assert.assertEquals;
 public class GremlinTest {
     @Test
     public void shouldBeUtilityClass() throws Exception {
-        CoreTestHelper.assertIsUtilityClass(Gremlin.class);
+        TestHelper.assertIsUtilityClass(Gremlin.class);
     }
 
     @Test
