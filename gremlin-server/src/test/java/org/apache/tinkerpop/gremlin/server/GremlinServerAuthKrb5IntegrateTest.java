@@ -22,7 +22,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
-import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
@@ -47,8 +46,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ExecutionException;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 /**
@@ -197,7 +198,8 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
             fail("This should not succeed as the client config does not contain a JaasEntry");
         } catch(Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertTrue(root instanceof ResponseException || root instanceof NoHostAvailableException);
+            assertThat(root, instanceOf(ResponseException.class));
+            assertThat(root.getMessage(), containsString("Failed to find any Kerberos tgt"));
         } finally {
             cluster.close();
         }
@@ -213,7 +215,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
             fail("This should not succeed as the client config does not contain a valid ticket cache");
         } catch(Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertTrue(root instanceof NoHostAvailableException);
+            assertThat(root, instanceOf(ResponseException.class));
         } finally {
             cluster.close();
         }

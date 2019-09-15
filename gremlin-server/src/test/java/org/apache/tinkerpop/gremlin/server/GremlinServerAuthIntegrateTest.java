@@ -197,7 +197,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         } catch(Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertEquals(ResponseException.class, root.getClass());
-            assertEquals("Failed to authenticate", root.getMessage());
+            assertEquals("Username and/or password are incorrect", root.getMessage());
         } finally {
             cluster.close();
         }
@@ -213,7 +213,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         } catch(Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertEquals(ResponseException.class, root.getClass());
-            assertEquals("Failed to authenticate", root.getMessage());
+            assertEquals("Username and/or password are incorrect", root.getMessage());
         } finally {
             cluster.close();
         }
