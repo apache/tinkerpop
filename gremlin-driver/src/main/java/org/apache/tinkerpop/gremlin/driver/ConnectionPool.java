@@ -388,7 +388,7 @@ final class ConnectionPool {
         throw new TimeoutException("Timed-out waiting for connection on " + host + " - possibly unavailable");
     }
 
-    public void considerHostUnavailable() {
+    void considerHostUnavailable() {
         // called when a connection is "dead" due to a non-recoverable error.
         host.makeUnavailable(this::tryReconnect);
 
@@ -409,7 +409,7 @@ final class ConnectionPool {
         Connection connection = null;
         try {
             connection = borrowConnection(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
-            connection.validate();
+            connection.validateConnection();
 
             // host is reconnected and a connection is now available
             this.cluster.loadBalancingStrategy().onAvailable(h);

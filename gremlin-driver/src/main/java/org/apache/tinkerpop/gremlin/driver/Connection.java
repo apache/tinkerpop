@@ -120,12 +120,16 @@ final class Connection {
             throw new ConnectionException(uri, "Could not open connection", ie);
         }
 
-        // Trigger authentication early to avoid unauthorized response
-        // to concurrent requests from an authenticating client.
-        validate();
+        // Trigger authentication early to avoid unauthorized response to concurrent requests from an
+        // authenticating client.
+        validateConnection();
     }
 
-    void validate() throws ConnectionException {
+    /**
+     * Sends a message to determine if the host is available. The message sent is determined by the
+     * {@link Cluster#validationRequest()}.
+     */
+    void validateConnection() throws ConnectionException {
         try {
             final CompletableFuture<ResultSet> future = new CompletableFuture<>();
             write(cluster.validationRequest().create(), future);
