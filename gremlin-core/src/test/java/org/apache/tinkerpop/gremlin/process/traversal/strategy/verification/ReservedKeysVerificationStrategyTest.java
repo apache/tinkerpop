@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
-import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,10 +46,10 @@ import static org.junit.Assert.fail;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(Parameterized.class)
-public class EdgeLabelVerificationStrategyTest {
+public class ReservedKeysVerificationStrategyTest {
 
     private final static Predicate<String> MSG_PREDICATE = Pattern.compile(
-            "^The provided traversal contains a vertex step without any specified edge label: VertexStep.*")
+            ".*that is setting a property key to a reserved word.*")
             .asPredicate();
 
     private TestLogAppender logAppender;
@@ -57,7 +57,7 @@ public class EdgeLabelVerificationStrategyTest {
 
     @Before
     public void setupForEachTest() {
-        final org.apache.log4j.Logger strategyLogger = org.apache.log4j.Logger.getLogger(AbstractWarningVerificationStrategy.class);
+        final Logger strategyLogger = Logger.getLogger(AbstractWarningVerificationStrategy.class);
         previousLogLevel = strategyLogger.getLevel();
         strategyLogger.setLevel(Level.WARN);
         Logger.getRootLogger().addAppender(logAppender = new TestLogAppender());
@@ -65,7 +65,7 @@ public class EdgeLabelVerificationStrategyTest {
 
     @After
     public void teardownForEachTest() {
-        final org.apache.log4j.Logger strategyLogger = org.apache.log4j.Logger.getLogger(AbstractWarningVerificationStrategy.class);
+        final Logger strategyLogger = Logger.getLogger(AbstractWarningVerificationStrategy.class);
         strategyLogger.setLevel(previousLogLevel);
         Logger.getRootLogger().removeAppender(logAppender);
     }
@@ -73,16 +73,14 @@ public class EdgeLabelVerificationStrategyTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"__.inE()", __.inE(), false},
-                {"__.outE()", __.outE(), false},
-                {"__.bothE()", __.bothE(), false},
-                {"__.to(OUT)", __.to(Direction.OUT), false},
-                {"__.toE(IN)", __.toE(Direction.IN), false},
-                {"__.inE('knows')", __.inE("knows"), true},
-                {"__.outE('knows')", __.outE("knows"), true},
-                {"__.bothE('created','knows')", __.bothE("created", "knows"), true},
-                {"__.to(OUT,'created','knows')", __.to(Direction.OUT, "created", "knows"), true},
-                {"__.toE(IN,'knows')", __.toE(Direction.IN, "knows"), true}
+                {"__.addV().property('id',123)", __.addV().property("id", 123), false},
+                {"__.addE('knows').property('id',123)", __.addE("knows").property("id", 123), false},
+                {"__.addV().property(T.id,123)", __.addV().property(T.id, 123), true},
+                {"__.addE('knows').property(T.label,123)", __.addE("knows").property(T.label, "blah"), true},
+                {"__.addV().property('label','xyz')", __.addV().property("label", "xyz"), false},
+                {"__.addE('knows').property('label','xyz')", __.addE("knows").property("id", "xyz"), false},
+                {"__.addV().property('x','xyz', 'label', 'xxx')", __.addV().property("x", "xyz", "label", "xxx"), false},
+                {"__.addV().property('x','xyz', 'not-Label', 'xxx')", __.addV().property("x", "xyz", "not-label", "xxx"), true},
         });
     }
 
@@ -98,7 +96,7 @@ public class EdgeLabelVerificationStrategyTest {
     @Test
     public void shouldIgnore() {
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(EdgeLabelVerificationStrategy.build().create());
+        strategies.addStrategies(ReservedKeysVerificationStrategy.build().create());
         final Traversal traversal = this.traversal.asAdmin().clone();
         traversal.asAdmin().setStrategies(strategies);
         traversal.asAdmin().applyStrategies();
@@ -108,7 +106,7 @@ public class EdgeLabelVerificationStrategyTest {
     @Test
     public void shouldOnlyThrow() {
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(EdgeLabelVerificationStrategy.build().throwException().create());
+        strategies.addStrategies(ReservedKeysVerificationStrategy.build().throwException().create());
         final Traversal traversal = this.traversal.asAdmin().clone();
         traversal.asAdmin().setStrategies(strategies);
         if (allow) {
@@ -127,7 +125,7 @@ public class EdgeLabelVerificationStrategyTest {
     @Test
     public void shouldOnlyLog() {
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(EdgeLabelVerificationStrategy.build().logWarning().create());
+        strategies.addStrategies(ReservedKeysVerificationStrategy.build().logWarning().create());
         final Traversal traversal = this.traversal.asAdmin().clone();
         traversal.asAdmin().setStrategies(strategies);
         traversal.asAdmin().applyStrategies();
@@ -140,7 +138,7 @@ public class EdgeLabelVerificationStrategyTest {
     @Test
     public void shouldThrowAndLog() {
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(EdgeLabelVerificationStrategy.build().throwException().logWarning().create());
+        strategies.addStrategies(ReservedKeysVerificationStrategy.build().throwException().logWarning().create());
         final Traversal traversal = this.traversal.asAdmin().clone();
         traversal.asAdmin().setStrategies(strategies);
         if (allow) {
