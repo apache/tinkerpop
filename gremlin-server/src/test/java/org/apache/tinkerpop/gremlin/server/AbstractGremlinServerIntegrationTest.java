@@ -65,14 +65,14 @@ public abstract class AbstractGremlinServerIntegrationTest {
     }
 
     /**
-     * This method may be called after {@link #startServer()} to (re-)set the script evaluation timeout in
+     * This method may be called after {@link #startServer()} to (re-)set the evaluation timeout in
      * the running server.
-     * @param timeoutInMillis new script evaluation timeout
+     * @param timeoutInMillis new evaluation timeout
      */
-    protected void overrideScriptEvaluationTimeout(final long timeoutInMillis) {
+    protected void overrideEvaluationTimeout(final long timeoutInMillis) {
         // Note: overriding settings in a running server is not guaranteed to work for all settings.
         // It works for the evaluation timeout, though, because GremlinExecutor is re-created for each evaluation.
-        overriddenSettings.scriptEvaluationTimeout = timeoutInMillis;
+        overriddenSettings.evaluationTimeout = timeoutInMillis;
     }
 
     public InputStream getSettingsInputStream() {

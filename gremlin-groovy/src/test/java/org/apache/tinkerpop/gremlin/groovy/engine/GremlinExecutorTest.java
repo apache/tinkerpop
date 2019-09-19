@@ -285,6 +285,33 @@ public class GremlinExecutorTest {
     }
 
     @Test
+    public void shouldTimeoutSleepingEval() throws Exception {
+        final AtomicBoolean successCalled = new AtomicBoolean(false);
+        final AtomicBoolean failureCalled = new AtomicBoolean(false);
+
+        final CountDownLatch timeOutCount = new CountDownLatch(1);
+
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
+                .evaluationTimeout(250)
+                .afterFailure((b, e) -> failureCalled.set(true))
+                .afterSuccess((b) -> successCalled.set(true))
+                .afterTimeout((b) -> timeOutCount.countDown()).create();
+        try {
+            gremlinExecutor.eval("Thread.sleep(1000);10").get();
+            fail("This script should have timed out with an exception");
+        } catch (Exception ex) {
+            assertEquals(TimeoutException.class, ex.getCause().getClass());
+        }
+
+        assertTrue(timeOutCount.await(2000, TimeUnit.MILLISECONDS));
+
+        assertFalse(successCalled.get());
+        assertFalse(failureCalled.get());
+        assertEquals(0, timeOutCount.getCount());
+        gremlinExecutor.close();
+    }
+
+    @Test
     public void shouldTimeoutSleepingScriptViaOverrideOnLifeCycle() throws Exception {
         final AtomicBoolean successCalled = new AtomicBoolean(false);
         final AtomicBoolean failureCalled = new AtomicBoolean(false);
@@ -299,6 +326,35 @@ public class GremlinExecutorTest {
         try {
             final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build()
                     .scriptEvaluationTimeoutOverride(250L).create();
+            gremlinExecutor.eval("Thread.sleep(1000);10", "gremlin-groovy", new SimpleBindings(), lifeCycle).get();
+            fail("This script should have timed out with an exception");
+        } catch (Exception ex) {
+            assertEquals(TimeoutException.class, ex.getCause().getClass());
+        }
+
+        assertTrue(timeOutCount.await(2000, TimeUnit.MILLISECONDS));
+
+        assertFalse(successCalled.get());
+        assertFalse(failureCalled.get());
+        assertEquals(0, timeOutCount.getCount());
+        gremlinExecutor.close();
+    }
+
+    @Test
+    public void shouldTimeoutSleepingEvalViaOverrideOnLifeCycle() throws Exception {
+        final AtomicBoolean successCalled = new AtomicBoolean(false);
+        final AtomicBoolean failureCalled = new AtomicBoolean(false);
+
+        final CountDownLatch timeOutCount = new CountDownLatch(1);
+
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
+                .evaluationTimeout(10000)
+                .afterFailure((b, e) -> failureCalled.set(true))
+                .afterSuccess((b) -> successCalled.set(true))
+                .afterTimeout((b) -> timeOutCount.countDown()).create();
+        try {
+            final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build()
+                    .evaluationTimeoutOverride(250L).create();
             gremlinExecutor.eval("Thread.sleep(1000);10", "gremlin-groovy", new SimpleBindings(), lifeCycle).get();
             fail("This script should have timed out with an exception");
         } catch (Exception ex) {
@@ -401,7 +457,7 @@ public class GremlinExecutorTest {
     }
 
     @Test
-    public void shouldCancelTimeoutOnSuccessfulEval() throws Exception {
+    public void shouldCancelTimeoutOnSuccessfulScript() throws Exception {
         final long scriptEvaluationTimeout = 5_000;
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .scriptEvaluationTimeout(scriptEvaluationTimeout)
@@ -411,6 +467,19 @@ public class GremlinExecutorTest {
         assertEquals(2, gremlinExecutor.eval("1+1").get());
         gremlinExecutor.close();
         assertTrue(System.currentTimeMillis() - now < scriptEvaluationTimeout);
+    }
+
+    @Test
+    public void shouldCancelTimeoutOnSuccessfulEval() throws Exception {
+        final long evaluationTimeout = 5_000;
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
+                .evaluationTimeout(evaluationTimeout)
+                .create();
+
+        final long now = System.currentTimeMillis();
+        assertEquals(2, gremlinExecutor.eval("1+1").get());
+        gremlinExecutor.close();
+        assertTrue(System.currentTimeMillis() - now < evaluationTimeout);
     }
 
     @Test

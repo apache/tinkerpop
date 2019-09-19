@@ -184,12 +184,12 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
             case "shouldProcessSessionRequestsInOrderAfterTimeout":
-                settings.scriptEvaluationTimeout = 250;
+                settings.evaluationTimeout = 250;
                 settings.threadPoolWorker = 1;
                 break;
             case "shouldProcessTraversalInterruption":
             case "shouldProcessEvalInterruption":
-                settings.scriptEvaluationTimeout = 1500;
+                settings.evaluationTimeout = 1500;
                 break;
             case "shouldProcessEvalTimeoutOverride":
                 settings.scriptEvaluationTimeout = 15000;
@@ -1661,7 +1661,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         {
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
-            assertThat(root.getMessage(), startsWith("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 250 ms"));
+            assertThat(root.getMessage(), startsWith("Evaluation exceeded the configured 'evaluationTimeout' threshold of 250 ms"));
         }
     }
 }

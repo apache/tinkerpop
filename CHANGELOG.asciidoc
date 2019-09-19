@@ -484,6 +484,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `ImmutableExplanation` for a `TraversalExplanation` that just contains data.
 * Fixed `TraversalExplanation` deserialization in GraphSON 2 and 3 which was not supported before in Java.
 * Added support for custom request headers in Python.
+* Deprecated `scriptEvaluationTimeout` in favor of the more generic `evaluationTimeout`.
+* Update jackson databind 2.9.9.3.
 * Bumped jackson databind 2.9.9.3.
 * Fixed Java driver authentication problems when calling the driver from multiple threads.
 * Modified Java driver to use IP address rather than hostname to create connections.

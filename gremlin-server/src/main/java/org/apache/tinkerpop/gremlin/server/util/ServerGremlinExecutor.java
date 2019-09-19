@@ -108,7 +108,7 @@ public class ServerGremlinExecutor {
         logger.info("Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*");
 
         final GremlinExecutor.Builder gremlinExecutorBuilder = GremlinExecutor.build()
-                .scriptEvaluationTimeout(settings.scriptEvaluationTimeout)
+                .evaluationTimeout(settings.getEvaluationTimeout())
                 .afterFailure((b, e) -> this.graphManager.rollbackAll())
                 .beforeEval(b -> this.graphManager.rollbackAll())
                 .afterTimeout(b -> this.graphManager.rollbackAll())
@@ -137,7 +137,7 @@ public class ServerGremlinExecutor {
             try {
                 // use no timeout on the engine initialization - perhaps this can be a configuration later
                 final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build().
-                        scriptEvaluationTimeoutOverride(0L).create();
+                        evaluationTimeoutOverride(0L).create();
                 gremlinExecutor.eval("1+1", engineName, new SimpleBindings(Collections.emptyMap()), lifeCycle).join();
                 registerMetrics(engineName);
                 logger.info("Initialized {} GremlinScriptEngine and registered metrics", engineName);

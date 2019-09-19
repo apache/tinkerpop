@@ -1001,7 +1001,7 @@ be aliased to different variable names for purposes of the current request.  The
 global variable and its key represents the new binding name as it will be referenced in the Gremlin query.  For
 example, if the Gremlin Server defines two `TraversalSource` instances named `g1` and `g2`, it would be possible
 to send an alias pair with key of "g" and value of "g2" and thus allow the script to refer to "g2" simply as "g".
-|scriptEvaluationTimeout |Long |An override for the server setting that determines the maximum time to wait for a script to execute on the server.
+|evaluationTimeout |Long |An override for the server setting that determines the maximum time to wait for a script to execute on the server.
 |=========================================================
 
 ==== Session OpProcessor
@@ -1044,7 +1044,7 @@ Gremlin Server are deployed, session state is not shared among them.
 |session |String | *Required* The session identifier for the current session - typically this value should be a UUID (the session will be created if it doesn't exist).
 |manageTransaction |Boolean |When set to `true` the transaction for the current request is auto-committed or rolled-back as are done with sessionless requests - defaulted to `false`.
 |bindings |Map |A map of key/value pairs to apply as variables in the context of the Gremlin script.
-|scriptEvaluationTimeout |Long |An override for the server setting that determines the maximum time to wait for a script to execute on the server.
+|evaluationTimeout |Long |An override for the server setting that determines the maximum time to wait for a script to execute on the server.
 |language |String |The flavor of Gremlin used (e.g. `gremlin-groovy`)
 |aliases |Map |A map of key/value pairs that allow globally bound `Graph` and `TraversalSource` objects to
 be aliased to different variable names for purposes of the current request.  The value represents the name the

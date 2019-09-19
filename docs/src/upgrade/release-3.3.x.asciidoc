@@ -52,6 +52,20 @@ are configuration problems with authentication and SSL, preventing the connectio
 
 link:https://issues.apache.org/jira/browse/TINKERPOP-2132[TINKERPOP-2132]
 
+==== Deprecated scriptEvaluationTimeout
+
+The `scriptEvaluationTimeout` controls the length of time a request is processed by Gremlin Server (or at its core,
+the `GremlinExecutor`). Of course, with the introduction of bytecode-based requests many versions ago, this naming
+has failed to make complete sense in more recent times. Therefore, `scriptEvaluationTimeout` has been deprecated and
+replaced by `evaluationTimeout`. Both configurations are still respected, but it is advised that users switch to
+`evaluationTimeout` as `scriptEvaluationTimeout` will be removed in a later version.
+
+Note that when configuring Gremlin Server's `evaluationTimeout` that the `scriptEvaluationTimeout` should be set to
+`-1` (the default) or else it will use that value in its initialization of the server and ignore the
+`evaluationTimeout`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2213[TINKERPOP-2213]
+
 == TinkerPop 3.3.8
 
 *Release Date: August 5, 2019*

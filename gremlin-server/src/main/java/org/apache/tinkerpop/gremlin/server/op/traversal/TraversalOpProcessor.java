@@ -159,11 +159,14 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         // earlier validation in selection of this op method should free us to cast this without worry
         final Map<String, String> aliases = (Map<String, String>) msg.optionalArgs(Tokens.ARGS_ALIASES).get();
 
-        // timeout override
-        final long seto = msg.getArgs().containsKey(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT)
-            // could be sent as an integer or long
-            ? ((Number) msg.getArgs().get(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT)).longValue()
-            : context.getSettings().scriptEvaluationTimeout;
+        // timeout override - handle both deprecated and newly named configuration. earlier logic should prevent
+        // both configurations from being submitted at the same time
+        final Map<String, Object> args = msg.getArgs();
+        final long seto = args.containsKey(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT) || args.containsKey(Tokens.ARGS_EVAL_TIMEOUT)
+                // could be sent as an integer or long
+                ? (args.containsKey(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT) ?
+                ((Number) args.get(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT)).longValue() : ((Number) args.get(Tokens.ARGS_EVAL_TIMEOUT)).longValue())
+                : context.getSettings().getEvaluationTimeout();
 
         final GraphManager graphManager = context.getGraphManager();
         final String traversalSourceName = aliases.entrySet().iterator().next().getValue();
@@ -201,7 +204,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                         t = t.getCause();
 
                     if (t instanceof InterruptedException || t instanceof TraversalInterruptedException) {
-                        final String errorMessage = String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to scriptEvaluationTimeout", msg);
+                        final String errorMessage = String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to evaluationTimeout", msg);
                         logger.warn(errorMessage);
                         context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
                                                              .statusMessage(errorMessage)

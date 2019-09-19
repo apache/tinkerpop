@@ -84,10 +84,10 @@ namespace Gremlin.Net.Driver
         public static string ArgsLanguage = "language";
 
         /// <summary>
-        ///     Argument name that allows to override the server setting that determines the maximum time to wait for a script to
-        ///     execute on the server.
+        ///     Argument name that allows to override the server setting that determines the maximum time to wait for a
+        ///     request to execute on the server.
         /// </summary>
-        public static string ArgsEvalTimeout = "scriptEvaluationTimeout";
+        public static string ArgsEvalTimeout = "evaluationTimeout";
 
         /// <summary>
         ///     Argument name for the response to the server authentication challenge. This value is dependent on the SASL

@@ -93,7 +93,7 @@ public class GroovyCompilerGremlinPlugin extends AbstractGremlinPlugin {
         /**
          * Introduces timed checks to loops and other portions of a script to provide an interrupt for a long running
          * script. This configuration should not be used in conjunction with the Gremlin Server which has its own
-         * {@code scriptEvaluationTimeout} which performs a similar task but in a more complete way specific to the
+         * {@code evaluationTimeout} which performs a similar task but in a more complete way specific to the
          * server. Configuring both may lead to inconsistent timeout errors returning from the server. This
          * configuration should only be used if configuring a standalone instance fo the {@link GremlinGroovyScriptEngine}.
          */
