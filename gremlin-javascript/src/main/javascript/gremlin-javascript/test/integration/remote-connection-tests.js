@@ -53,6 +53,11 @@ describe('DriverRemoteConnection', function () {
         .catch(function (err) {
           assert.ok(err);
           assert.ok(err.message.indexOf('599') > 0);
+          assert.ok(err.statusCode === 599);
+          assert.ok(err.statusMessage === 'Could not locate method: GraphTraversalSource.SYNTAX_ERROR()');
+          assert.ok(err.statusAttributes);
+          assert.ok(err.statusAttributes.has('exceptions'));
+          assert.ok(err.statusAttributes.has('stackTrace'));
         });
     });
   });
