@@ -504,21 +504,6 @@ public class GremlinExecutor implements AutoCloseable {
         }
 
         /**
-         * Amount of time a script has before it times out. Note that the time required covers both script evaluation
-         * as well as any time needed for a post result transformation (if the transformation function is supplied
-         * to the {@link GremlinExecutor#eval}).
-         *
-         * @param scriptEvaluationTimeout Time in milliseconds that an evaluation is allowed to run and its
-         *                                results potentially transformed. Set to zero to have no timeout set.
-         * @deprecated As of release 3.3.9, replaced by {@link #evaluationTimeout}.
-         */
-        @Deprecated
-        public Builder scriptEvaluationTimeout(final long scriptEvaluationTimeout) {
-            this.evaluationTimeout = scriptEvaluationTimeout;
-            return this;
-        }
-
-        /**
          * Amount of time an evaluation has before it times out. Note that the time required covers both evaluation
          * as well as any time needed for a post result transformation (if the transformation function is supplied
          * to the {@link GremlinExecutor#eval}).
@@ -635,14 +620,6 @@ public class GremlinExecutor implements AutoCloseable {
             evaluationTimeoutOverride = Optional.ofNullable(builder.evaluationTimeoutOverride);
         }
 
-        /**
-         * @deprecated As of release 3.3.9, replaced by {@link #getEvaluationTimeoutOverride()}.
-         */
-        @Deprecated
-        public Optional<Long> getScriptEvaluationTimeoutOverride() {
-            return evaluationTimeoutOverride;
-        }
-
         public Optional<Long> getEvaluationTimeoutOverride() {
             return evaluationTimeoutOverride;
         }
@@ -736,18 +713,6 @@ public class GremlinExecutor implements AutoCloseable {
              */
             public Builder afterFailure(final BiConsumer<Bindings, Throwable> afterFailure) {
                 this.afterFailure = afterFailure;
-                return this;
-            }
-
-            /**
-             * An override to the global {@code evaluationTimeout} setting on the script engine. If this value
-             * is set to {@code null} (the default) it will use the global setting.
-             *
-             * @deprecated As of release 3.3.9, replaced by {@link #evaluationTimeoutOverride}
-             */
-            @Deprecated
-            public Builder scriptEvaluationTimeoutOverride(final Long scriptEvaluationTimeoutOverride) {
-                this.evaluationTimeoutOverride = scriptEvaluationTimeoutOverride;
                 return this;
             }
 

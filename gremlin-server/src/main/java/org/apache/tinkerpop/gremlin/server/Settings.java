@@ -101,16 +101,6 @@ public class Settings {
     public int threadPoolBoss = 1;
 
     /**
-     * Time in milliseconds to wait for a request (script or bytecode) to complete execution.  Defaults to -1 and
-     * thus defers to {@link #evaluationTimeout} for this configuration. When set to something greater than -1 then
-     * this configuration is used.
-     *
-     * @deprecated As of release 3.3.9, replaced by {@link #evaluationTimeout}.
-     */
-    @Deprecated
-    public long scriptEvaluationTimeout = -1L;
-
-    /**
      * Time in milliseconds to wait for a request (script or bytecode) to complete execution. Defaults to 30000.
      */
     public long evaluationTimeout = 30000L;
@@ -255,7 +245,7 @@ public class Settings {
     }
 
     public long getEvaluationTimeout() {
-        return -1 == scriptEvaluationTimeout ? evaluationTimeout : scriptEvaluationTimeout;
+        return evaluationTimeout;
     }
 
     /**

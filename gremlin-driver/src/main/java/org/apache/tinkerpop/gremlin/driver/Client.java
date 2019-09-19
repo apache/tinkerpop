@@ -341,7 +341,7 @@ public abstract class Client {
                 .add(Tokens.ARGS_BATCH_SIZE, batchSize);
 
         // apply settings if they were made available
-        options.getTimeout().ifPresent(timeout -> request.add(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT, timeout));
+        options.getTimeout().ifPresent(timeout -> request.add(Tokens.ARGS_EVAL_TIMEOUT, timeout));
         options.getParameters().ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, params));
         options.getAliases().ifPresent(aliases -> request.addArg(Tokens.ARGS_ALIASES, aliases));
         options.getOverrideRequestId().ifPresent(request::overrideRequestId);
@@ -565,7 +565,7 @@ public abstract class Client {
 
                 // apply settings if they were made available
                 options.getBatchSize().ifPresent(batchSize -> request.add(Tokens.ARGS_BATCH_SIZE, batchSize));
-                options.getTimeout().ifPresent(timeout -> request.add(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT, timeout));
+                options.getTimeout().ifPresent(timeout -> request.add(Tokens.ARGS_EVAL_TIMEOUT, timeout));
 
                 return submitAsync(request.create());
             } catch (Exception ex) {

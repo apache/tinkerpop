@@ -64,14 +64,11 @@ import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -81,7 +78,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.apache.tinkerpop.gremlin.driver.Tokens.ARGS_SCRIPT_EVAL_TIMEOUT;
+import static org.apache.tinkerpop.gremlin.driver.Tokens.ARGS_EVAL_TIMEOUT;
 import static org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin.Compilation.COMPILE_STATIC;
 import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE;
 import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE_CONNECTION_CLASS;
@@ -269,9 +266,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldTimeOutRemoteTraversal":
                 settings.evaluationTimeout = 500;
                 break;
-            case "shouldTimeOutRemoteTraversalUsingDeprecatedConfiguration":
-                settings.scriptEvaluationTimeout = 500;
-                break;
             case "shouldPingChannelIfClientDies":
                 settings.keepAliveInterval = 1000;
                 break;
@@ -383,40 +377,12 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldTimeOutRemoteTraversalUsingDeprecatedConfiguration() throws Exception {
-        final GraphTraversalSource g = traversal().withRemote(conf);
-
-        try {
-            // tests sleeping thread
-            g.inject(1).sideEffect(Lambda.consumer("Thread.sleep(10000)")).iterate();
-            fail("This traversal should have timed out");
-        } catch (Exception ex) {
-            final Throwable t = ex.getCause();
-            assertThat(t, instanceOf(ResponseException.class));
-            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
-        }
-
-        // make a graph with a cycle in it to force a long run traversal
-        graphGetter.get().traversal().addV("person").as("p").addE("self").to("p").iterate();
-
-        try {
-            // tests an "unending" traversal
-            g.V().repeat(__.out()).until(__.outE().count().is(0)).iterate();
-            fail("This traversal should have timed out");
-        } catch (Exception ex) {
-            final Throwable t = ex.getCause();
-            assertThat(t, instanceOf(ResponseException.class));
-            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
-        }
-    }
-
-    @Test
     public void shouldTimeOutRemoteTraversalWithPerRequestOption() {
         final GraphTraversalSource g = traversal().withRemote(conf);
 
         try {
             // tests sleeping thread
-            g.with(ARGS_SCRIPT_EVAL_TIMEOUT, 500L).inject(1).sideEffect(Lambda.consumer("Thread.sleep(10000)")).iterate();
+            g.with(ARGS_EVAL_TIMEOUT, 500L).inject(1).sideEffect(Lambda.consumer("Thread.sleep(10000)")).iterate();
             fail("This traversal should have timed out");
         } catch (Exception ex) {
             final Throwable t = ex.getCause();
@@ -429,7 +395,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
         try {
             // tests an "unending" traversal
-            g.with(ARGS_SCRIPT_EVAL_TIMEOUT, 500L).V().repeat(__.out()).until(__.outE().count().is(0)).iterate();
+            g.with(ARGS_EVAL_TIMEOUT, 500L).V().repeat(__.out()).until(__.outE().count().is(0)).iterate();
             fail("This traversal should have timed out");
         } catch (Exception ex) {
             final Throwable t = ex.getCause();
@@ -930,22 +896,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try (SimpleClient client = TestClientFactory.createWebSocketClient()){
             final List<ResponseMessage> responses = client.submit("Thread.sleep(3000);'some-stuff-that-should not return'");
             assertThat(responses.get(0).getStatus().getMessage(), startsWith("Evaluation exceeded the configured 'evaluationTimeout' threshold of 1000 ms"));
-
-            // validate that we can still send messages to the server
-            assertEquals(2, ((List<Integer>) client.submit("1+1").get(0).getResult().getData()).get(0).intValue());
-        }
-    }
-
-    @Test
-    @SuppressWarnings("unchecked")
-    public void shouldReceiveFailureTimeOutOnScriptEvalUsingOverride() throws Exception {
-        try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
-            final RequestMessage msg = RequestMessage.build("eval")
-                    .addArg(ARGS_SCRIPT_EVAL_TIMEOUT, 100L)
-                    .addArg(Tokens.ARGS_GREMLIN, "Thread.sleep(3000);'some-stuff-that-should not return'")
-                    .create();
-            final List<ResponseMessage> responses = client.submit(msg);
-            assertThat(responses.get(0).getStatus().getMessage(), startsWith("Evaluation exceeded the configured 'evaluationTimeout' threshold of 100 ms"));
 
             // validate that we can still send messages to the server
             assertEquals(2, ((List<Integer>) client.submit("1+1").get(0).getResult().getData()).get(0).intValue());

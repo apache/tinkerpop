@@ -221,11 +221,8 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
 
         // timeout override - handle both deprecated and newly named configuration. earlier logic should prevent
         // both configurations from being submitted at the same time
-        final long seto = args.containsKey(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT) || args.containsKey(Tokens.ARGS_EVAL_TIMEOUT)
-            // could be sent as an integer or long
-            ? (args.containsKey(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT) ?
-                ((Number) args.get(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT)).longValue() : ((Number) args.get(Tokens.ARGS_EVAL_TIMEOUT)).longValue())
-            : settings.getEvaluationTimeout();
+        final long seto = args.containsKey(Tokens.ARGS_EVAL_TIMEOUT) ?
+                ((Number) args.get(Tokens.ARGS_EVAL_TIMEOUT)).longValue() : settings.getEvaluationTimeout();
 
         final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build()
                 .evaluationTimeoutOverride(seto)

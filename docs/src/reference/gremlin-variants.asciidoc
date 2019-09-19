@@ -407,7 +407,7 @@ which will boost performance and reduce resources required on the server.
 
 There are a number of overloads to `Client.submit()` that accept a `RequestOptions` object. The `RequestOptions`
 provide a way to include options that are specific to the request made with the call to `submit()`. A good use-case for
-this feature is to set a per-request override to the `scriptEvaluationTimeout` so that it only applies to the current
+this feature is to set a per-request override to the `evaluationTimeout` so that it only applies to the current
 request.
 
 [source,java]

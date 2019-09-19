@@ -145,6 +145,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.structure.util.star.StarGraph#builder()`
 ** `org.apache.tinkerpop.gremlin.structure.util.star.StarGraph.Builder#create()`
 * `gremlin-driver`
+** `org.apache.tinkerpop.gremlin.driver.Tokens#ARGS_SCRIPT_EVAL_TIMEOUT`
 ** `org.apache.tinkerpop.gremlin.driver.Cluster.Builder#keyCertChainFile(String)`
 ** `org.apache.tinkerpop.gremlin.driver.Cluster.Builder#keyFile(String)`
 ** `org.apache.tinkerpop.gremlin.driver.Cluster.Builder#keyPassword(String)`
@@ -152,6 +153,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteTraversalSideEffects`
 ** `org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteTraversal#getSideEffects()`
 * `gremlin-server`
+** `org.apache.tinkerpop.gremlin.server.Settings.scriptEvaluationTimeout`
 ** `org.apache.tinkerpop.gremlin.server.Settings.SslSettings.keyCertChainFile`
 ** `org.apache.tinkerpop.gremlin.server.Settings.SslSettings.keyFile`
 ** `org.apache.tinkerpop.gremlin.server.Settings.SslSettings.keyPassword`
