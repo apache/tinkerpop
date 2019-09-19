@@ -101,9 +101,19 @@ public class Settings {
     public int threadPoolBoss = 1;
 
     /**
-     * Time in milliseconds to wait for a script to complete execution.  Defaults to 30000.
+     * Time in milliseconds to wait for a request (script or bytecode) to complete execution.  Defaults to -1 and
+     * thus defers to {@link #evaluationTimeout} for this configuration. When set to something greater than -1 then
+     * this configuration is used.
+     *
+     * @deprecated As of release 3.3.9, replaced by {@link #evaluationTimeout}.
      */
-    public long scriptEvaluationTimeout = 30000L;
+    @Deprecated
+    public long scriptEvaluationTimeout = -1L;
+
+    /**
+     * Time in milliseconds to wait for a request (script or bytecode) to complete execution. Defaults to 30000.
+     */
+    public long evaluationTimeout = 30000L;
 
     /**
      * Number of items in a particular resultset to iterate and serialize prior to pushing the data down the wire
@@ -242,6 +252,10 @@ public class Settings {
 
     public Optional<SslSettings> optionalSsl() {
         return Optional.ofNullable(ssl);
+    }
+
+    public long getEvaluationTimeout() {
+        return -1 == scriptEvaluationTimeout ? evaluationTimeout : scriptEvaluationTimeout;
     }
 
     /**

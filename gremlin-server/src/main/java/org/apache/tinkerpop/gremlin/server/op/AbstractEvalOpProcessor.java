@@ -229,14 +229,16 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
         final boolean managedTransactionsForRequest = manageTransactions ?
                 true : (Boolean) args.getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION, false);
 
-        // timeout override
-        final long seto = args.containsKey(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT)
+        // timeout override - handle both deprecated and newly named configuration. earlier logic should prevent
+        // both configurations from being submitted at the same time
+        final long seto = args.containsKey(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT) || args.containsKey(Tokens.ARGS_EVAL_TIMEOUT)
             // could be sent as an integer or long
-            ? ((Number) args.get(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT)).longValue()
-            : settings.scriptEvaluationTimeout;
+            ? (args.containsKey(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT) ?
+                ((Number) args.get(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT)).longValue() : ((Number) args.get(Tokens.ARGS_EVAL_TIMEOUT)).longValue())
+            : settings.getEvaluationTimeout();
 
         final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build()
-                .scriptEvaluationTimeoutOverride(seto)
+                .evaluationTimeoutOverride(seto)
                 .afterFailure((b,t) -> {
                     if (managedTransactionsForRequest) attemptRollback(msg, ctx.getGraphManager(), settings.strictTransactionManagement);
                 })

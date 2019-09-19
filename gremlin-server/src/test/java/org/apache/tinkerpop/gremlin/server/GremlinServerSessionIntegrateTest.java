@@ -223,7 +223,7 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
             fail("The close of the session on client2 should have interrupted the script sent on client1");
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertThat(root.getMessage(), startsWith("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 30000 ms or evaluation was otherwise cancelled directly for request"));
+            assertThat(root.getMessage(), startsWith("Evaluation exceeded the configured 'evaluationTimeout' threshold of 30000 ms or evaluation was otherwise cancelled directly for request"));
         }
 
         client1.close();

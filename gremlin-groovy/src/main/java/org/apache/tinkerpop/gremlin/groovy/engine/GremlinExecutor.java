@@ -80,7 +80,7 @@ public class GremlinExecutor implements AutoCloseable {
     private GremlinScriptEngineManager gremlinScriptEngineManager;
 
     private final Map<String, Map<String, Map<String,Object>>> plugins;
-    private final long scriptEvaluationTimeout;
+    private final long evaluationTimeout;
     private final Bindings globalBindings;
     private final ExecutorService executorService;
     private final ScheduledExecutorService scheduledExecutorService;
@@ -101,7 +101,7 @@ public class GremlinExecutor implements AutoCloseable {
         this.afterTimeout = builder.afterTimeout;
         this.afterFailure = builder.afterFailure;
         this.plugins = builder.plugins;
-        this.scriptEvaluationTimeout = builder.scriptEvaluationTimeout;
+        this.evaluationTimeout = builder.evaluationTimeout;
         this.globalBindings = builder.globalBindings;
 
         this.gremlinScriptEngineManager = new CachedGremlinScriptEngineManager();
@@ -253,7 +253,7 @@ public class GremlinExecutor implements AutoCloseable {
         bindings.putAll(boundVars);
 
         // override the timeout if the lifecycle has a value assigned
-        final long scriptEvalTimeOut = lifeCycle.getScriptEvaluationTimeoutOverride().orElse(scriptEvaluationTimeout);
+        final long scriptEvalTimeOut = lifeCycle.getEvaluationTimeoutOverride().orElse(evaluationTimeout);
 
         final CompletableFuture<Object> evaluationFuture = new CompletableFuture<>();
         final FutureTask<Void> evalFuture = new FutureTask<>(() -> {
@@ -293,7 +293,7 @@ public class GremlinExecutor implements AutoCloseable {
                         || root instanceof InterruptedIOException) {
                     lifeCycle.getAfterTimeout().orElse(afterTimeout).accept(bindings);
                     evaluationFuture.completeExceptionally(new TimeoutException(
-                            String.format("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of %s ms or evaluation was otherwise cancelled directly for request [%s]: %s", scriptEvalTimeOut, script, root.getMessage())));
+                            String.format("Evaluation exceeded the configured 'evaluationTimeout' threshold of %s ms or evaluation was otherwise cancelled directly for request [%s]: %s", scriptEvalTimeOut, script, root.getMessage())));
                 } else {
                     lifeCycle.getAfterFailure().orElse(afterFailure).accept(bindings, root);
                     evaluationFuture.completeExceptionally(root);
@@ -312,7 +312,7 @@ public class GremlinExecutor implements AutoCloseable {
                     final CompletableFuture<Object> ef = evaluationFutureRef.get();
                     if (ef != null) {
                         ef.completeExceptionally(new TimeoutException(
-                                String.format("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of %s ms or evaluation was otherwise cancelled directly for request [%s]", scriptEvalTimeOut, script)));
+                                String.format("Evaluation exceeded the configured 'evaluationTimeout' threshold of %s ms or evaluation was otherwise cancelled directly for request [%s]", scriptEvalTimeOut, script)));
                     }
                 }
             }, scriptEvalTimeOut, TimeUnit.MILLISECONDS);
@@ -463,7 +463,7 @@ public class GremlinExecutor implements AutoCloseable {
     }
 
     public final static class Builder {
-        private long scriptEvaluationTimeout = 8000;
+        private long evaluationTimeout = 8000;
 
         private Map<String, Map<String, Map<String,Object>>> plugins = new HashMap<>();
 
@@ -508,11 +508,26 @@ public class GremlinExecutor implements AutoCloseable {
          * as well as any time needed for a post result transformation (if the transformation function is supplied
          * to the {@link GremlinExecutor#eval}).
          *
-         * @param scriptEvaluationTimeout Time in milliseconds that a script is allowed to run and its
+         * @param scriptEvaluationTimeout Time in milliseconds that an evaluation is allowed to run and its
          *                                results potentially transformed. Set to zero to have no timeout set.
+         * @deprecated As of release 3.3.9, replaced by {@link #evaluationTimeout}.
          */
+        @Deprecated
         public Builder scriptEvaluationTimeout(final long scriptEvaluationTimeout) {
-            this.scriptEvaluationTimeout = scriptEvaluationTimeout;
+            this.evaluationTimeout = scriptEvaluationTimeout;
+            return this;
+        }
+
+        /**
+         * Amount of time an evaluation has before it times out. Note that the time required covers both evaluation
+         * as well as any time needed for a post result transformation (if the transformation function is supplied
+         * to the {@link GremlinExecutor#eval}).
+         *
+         * @param evaluationTimeout Time in milliseconds that an evaluation is allowed to run and its
+         *                          results potentially transformed. Set to zero to have no timeout set.
+         */
+        public Builder evaluationTimeout(final long evaluationTimeout) {
+            this.evaluationTimeout = evaluationTimeout;
             return this;
         }
 
@@ -608,7 +623,7 @@ public class GremlinExecutor implements AutoCloseable {
         private final Optional<Consumer<Bindings>> afterSuccess;
         private final Optional<Consumer<Bindings>> afterTimeout;
         private final Optional<BiConsumer<Bindings, Throwable>> afterFailure;
-        private final Optional<Long> scriptEvaluationTimeoutOverride;
+        private final Optional<Long> evaluationTimeoutOverride;
 
         private LifeCycle(final Builder builder) {
             beforeEval = Optional.ofNullable(builder.beforeEval);
@@ -617,11 +632,19 @@ public class GremlinExecutor implements AutoCloseable {
             afterSuccess = Optional.ofNullable(builder.afterSuccess);
             afterTimeout = Optional.ofNullable(builder.afterTimeout);
             afterFailure = Optional.ofNullable(builder.afterFailure);
-            scriptEvaluationTimeoutOverride = Optional.ofNullable(builder.scriptEvaluationTimeoutOverride);
+            evaluationTimeoutOverride = Optional.ofNullable(builder.evaluationTimeoutOverride);
         }
 
+        /**
+         * @deprecated As of release 3.3.9, replaced by {@link #getEvaluationTimeoutOverride()}.
+         */
+        @Deprecated
         public Optional<Long> getScriptEvaluationTimeoutOverride() {
-            return scriptEvaluationTimeoutOverride;
+            return evaluationTimeoutOverride;
+        }
+
+        public Optional<Long> getEvaluationTimeoutOverride() {
+            return evaluationTimeoutOverride;
         }
 
         public Optional<Consumer<Bindings>> getBeforeEval() {
@@ -659,7 +682,7 @@ public class GremlinExecutor implements AutoCloseable {
             private Consumer<Bindings> afterSuccess = null;
             private Consumer<Bindings> afterTimeout = null;
             private BiConsumer<Bindings, Throwable> afterFailure = null;
-            private Long scriptEvaluationTimeoutOverride = null;
+            private Long evaluationTimeoutOverride = null;
 
             /**
              * Specifies the function to execute prior to the script being evaluated.  This function can also be
@@ -717,11 +740,23 @@ public class GremlinExecutor implements AutoCloseable {
             }
 
             /**
-             * An override to the global {@code scriptEvaluationTimeout} setting on the script engine. If this value
+             * An override to the global {@code evaluationTimeout} setting on the script engine. If this value
+             * is set to {@code null} (the default) it will use the global setting.
+             *
+             * @deprecated As of release 3.3.9, replaced by {@link #evaluationTimeoutOverride}
+             */
+            @Deprecated
+            public Builder scriptEvaluationTimeoutOverride(final Long scriptEvaluationTimeoutOverride) {
+                this.evaluationTimeoutOverride = scriptEvaluationTimeoutOverride;
+                return this;
+            }
+
+            /**
+             * An override to the global {@code evaluationTimeout} setting on the script engine. If this value
              * is set to {@code null} (the default) it will use the global setting.
              */
-            public Builder scriptEvaluationTimeoutOverride(final Long scriptEvaluationTimeoutOverride) {
-                this.scriptEvaluationTimeoutOverride = scriptEvaluationTimeoutOverride;
+            public Builder evaluationTimeoutOverride(final Long evaluationTimeoutOverride) {
+                this.evaluationTimeoutOverride = evaluationTimeoutOverride;
                 return this;
             }
 
