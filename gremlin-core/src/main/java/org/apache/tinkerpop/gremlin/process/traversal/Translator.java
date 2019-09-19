@@ -27,6 +27,7 @@ import java.util.function.BiFunction;
  * The parameterization of Translator is S (traversal source) and T (full translation).
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stark Arya (sandszhou.zj@alibaba-inc.com)
  */
 public interface Translator<S, T> {
 
@@ -58,15 +59,15 @@ public interface Translator<S, T> {
     ///
 
     /**
-     * Translates bytecode to a string representation.
+     * Translates bytecode to a Script representation.
      */
-    public interface ScriptTranslator extends Translator<String, String> {
+    public interface ScriptTranslator extends Translator<String, Script> {
 
         /**
          * Provides a way for the {@link ScriptTranslator} to convert various data types to their string
          * representations in their target language.
          */
-        public interface TypeTranslator extends BiFunction<String, Object, Object> { }
+        public interface TypeTranslator extends BiFunction<String, Object, Script> { }
     }
 
     /**

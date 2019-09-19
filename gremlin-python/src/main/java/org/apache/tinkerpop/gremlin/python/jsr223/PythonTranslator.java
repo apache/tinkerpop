@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
+import org.apache.tinkerpop.gremlin.process.traversal.Script;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -89,8 +90,9 @@ public class PythonTranslator implements Translator.ScriptTranslator {
     }
 
     @Override
-    public String translate(final Bytecode bytecode) {
-        return this.internalTranslate(this.traversalSource, bytecode);
+    public Script translate(final Bytecode bytecode) {
+        Script script = new Script();
+        return script.append(this.internalTranslate(this.traversalSource, bytecode));
     }
 
     @Override
