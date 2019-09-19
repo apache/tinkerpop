@@ -39,6 +39,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.apache.tinkerpop.gremlin.driver.Tokens.ARGS_BATCH_SIZE;
 import static org.apache.tinkerpop.gremlin.driver.Tokens.ARGS_SCRIPT_EVAL_TIMEOUT;
+import static org.apache.tinkerpop.gremlin.driver.Tokens.ARGS_EVAL_TIMEOUT;
 import static org.apache.tinkerpop.gremlin.driver.Tokens.ARGS_USER_AGENT;
 import static org.apache.tinkerpop.gremlin.driver.Tokens.REQUEST_ID;
 
@@ -233,6 +234,8 @@ public class DriverRemoteConnection implements RemoteConnection {
         while (itty.hasNext()) {
             final OptionsStrategy optionsStrategy = itty.next();
             final Map<String,Object> options = optionsStrategy.getOptions();
+            if (options.containsKey(ARGS_EVAL_TIMEOUT))
+                builder.timeout((long) options.get(ARGS_EVAL_TIMEOUT));
             if (options.containsKey(ARGS_SCRIPT_EVAL_TIMEOUT))
                 builder.timeout((long) options.get(ARGS_SCRIPT_EVAL_TIMEOUT));
             if (options.containsKey(REQUEST_ID))
