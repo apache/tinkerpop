@@ -23,33 +23,24 @@ import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
-import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator;
+import org.ietf.jgss.GSSException;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ExecutionException;
+import javax.security.auth.login.LoginException;
+import java.util.concurrent.TimeoutException;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -96,7 +87,6 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
 
         final String nameOfTest = name.getMethodName();
         switch (nameOfTest) {
-            case "shouldAuthenticateWithThreads":
             case "shouldAuthenticateWithDefaults":
             case "shouldFailWithoutClientJaasEntry":
             case "shouldFailWithoutClientTicketCache":
@@ -128,59 +118,6 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
     }
 
     @Test
-    public void shouldAuthenticateTraversalWithThreads() throws Exception {
-        final Cluster cluster = TestClientFactory.build()
-                .nioPoolSize(1)
-                .jaasEntry(TESTCONSOLE)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
-        final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "gmodern"));
-
-        final ExecutorService executor = Executors.newFixedThreadPool(4);
-        final Callable<Long> countTraversalJob = () -> g.V().both().both().count().next();
-        final List<Future<Long>> results = executor.invokeAll(Collections.nCopies(100, countTraversalJob));
-
-        assertEquals(100, results.size());
-        for (int ix = 0; ix < results.size(); ix++) {
-            try {
-                assertEquals(30L, results.get(ix).get(1000, TimeUnit.MILLISECONDS).longValue());
-            } catch (Exception ex) {
-                // failure but shouldn't have
-                cluster.close();
-                fail("Exception halted assertions - " + ex.getMessage());
-            }
-        }
-
-        cluster.close();
-    }
-
-    @Test
-    public void shouldAuthenticateScriptWithThreads() throws Exception {
-        final Cluster cluster = TestClientFactory.build()
-                .nioPoolSize(1)
-                .jaasEntry(TESTCONSOLE)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
-        final Client client = cluster.connect();
-
-        final ExecutorService executor = Executors.newFixedThreadPool(4);
-        final Callable<Long> countTraversalJob = () -> client.submit("gmodern.V().both().both().count()").all().get().get(0).getLong();
-        final List<Future<Long>> results = executor.invokeAll(Collections.nCopies(100, countTraversalJob));
-
-        assertEquals(100, results.size());
-        for (int ix = 0; ix < results.size(); ix++) {
-            try {
-                assertEquals(30L, results.get(ix).get(1000, TimeUnit.MILLISECONDS).longValue());
-            } catch (Exception ex) {
-                // failure but shouldn't have
-                cluster.close();
-                fail("Exception halted assertions - " + ex.getMessage());
-            }
-        }
-
-        cluster.close();
-    }
-
-
-    @Test
     public void shouldAuthenticateWithDefaults() throws Exception {
         final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
                 .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
@@ -198,8 +135,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
             fail("This should not succeed as the client config does not contain a JaasEntry");
         } catch(Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertThat(root, instanceOf(ResponseException.class));
-            assertThat(root.getMessage(), containsString("Failed to find any Kerberos tgt"));
+            assertTrue(root instanceof ResponseException || root instanceof GSSException);
         } finally {
             cluster.close();
         }
@@ -215,7 +151,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
             fail("This should not succeed as the client config does not contain a valid ticket cache");
         } catch(Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertThat(root, instanceOf(ResponseException.class));
+            assertEquals(LoginException.class, root.getClass());
         } finally {
             cluster.close();
         }
