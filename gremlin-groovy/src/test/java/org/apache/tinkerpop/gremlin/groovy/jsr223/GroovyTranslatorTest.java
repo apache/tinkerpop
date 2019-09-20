@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.jsr223.TranslatorCustomizer;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.Script;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -141,7 +142,7 @@ public class GroovyTranslatorTest {
         //
         assertEquals(24, t.getSideEffects().<Number>get("lengthSum").intValue());
 
-        final String script = GroovyTranslator.of("g").translate(t.getBytecode());
+        final String script = GroovyTranslator.of("g").translate(t.getBytecode()).getScript();
         assertEquals("g.withStrategies(org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy.instance())" +
                         ".withSideEffect(\"lengthSum\",(int) 0).withSack((int) 1)" +
                         ".V()" +
@@ -161,7 +162,7 @@ public class GroovyTranslatorTest {
         final String script = GroovyTranslator.of("g").translate(g.V().id().is(new LinkedHashMap<Object,Object>() {{
             put(3, "32");
             put(Arrays.asList(1, 2, 3.1d), 4);
-        }}).asAdmin().getBytecode());
+        }}).asAdmin().getBytecode()).getScript();
         assertEquals("g.V().id().is([((int) 3):(\"32\"),([(int) 1, (int) 2, 3.1d]):((int) 4)])", script);
         assertThatScriptOk(script, "g", g);
     }
@@ -171,7 +172,7 @@ public class GroovyTranslatorTest {
         final TinkerGraph graph = TinkerFactory.createModern();
         final GraphTraversalSource g = graph.traversal();
         final Function identity = new Lambda.OneArgLambda("it.get()", "gremlin-groovy");
-        final String script = GroovyTranslator.of("g").translate(g.inject(Collections.emptyMap()).map(identity).asAdmin().getBytecode());
+        final String script = GroovyTranslator.of("g").translate(g.inject(Collections.emptyMap()).map(identity).asAdmin().getBytecode()).getScript();
         assertEquals("g.inject([]).map({it.get()})", script);
         assertThatScriptOk(script, "g", g);
     }
@@ -231,12 +232,12 @@ public class GroovyTranslatorTest {
 
         // without type translation we get uglinesss
         final String scriptBad = GroovyTranslator.of("g").
-                translate(g.inject(notSillyEnough).asAdmin().getBytecode());
+                translate(g.inject(notSillyEnough).asAdmin().getBytecode()).getScript();
         assertEquals(String.format("g.inject(%s)", "not silly enough:100"), scriptBad);
 
         // with type translation we get valid gremlin
-        final String scriptGood = GroovyTranslator.of("g", new SillyClassTranslator()).
-                translate(g.inject(notSillyEnough).asAdmin().getBytecode());
+        final String scriptGood = GroovyTranslator.of("g", new SillyClassTranslator(false), false).
+                translate(g.inject(notSillyEnough).asAdmin().getBytecode()).getScript();
         assertEquals(String.format("g.inject(org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslatorTest.SillyClass.from('%s', (int) %s))", notSillyEnough.getX(), notSillyEnough.getY()), scriptGood);
         assertThatScriptOk(scriptGood, "g", g);
 
@@ -264,7 +265,7 @@ public class GroovyTranslatorTest {
                 .property("name", "Foo\u0020Bar")
                 .property("age", 25)
                 .property("special", "`~!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?")
-                .asAdmin().getBytecode());
+                .asAdmin().getBytecode()).getScript();
 
         assertEquals("g.addV(\"customer\")" +
                         ".property(\"customer_id\",501L)" +
@@ -282,7 +283,7 @@ public class GroovyTranslatorTest {
         final Object id1 = "customer:10:foo\u0020bar\u0020\u0024100#90"; // customer:10:foo bar $100#90
         final Vertex vertex1 = DetachedVertex.build().setLabel("customer").setId(id1)
                 .create();
-        final String script1 = GroovyTranslator.of("g").translate(g.inject(vertex1).asAdmin().getBytecode());
+        final String script1 = GroovyTranslator.of("g").translate(g.inject(vertex1).asAdmin().getBytecode()).getScript();
         assertEquals("g.inject(new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex(" +
                         "\"customer:10:foo bar \\$100#90\"," +
                         "\"customer\", Collections.emptyMap()))",
@@ -292,7 +293,7 @@ public class GroovyTranslatorTest {
         final Object id2 = "user:20:foo\\u0020bar\\u005c\\u0022mr\\u005c\\u0022\\u00241000#50"; // user:20:foo\u0020bar\u005c\u0022mr\u005c\u0022\u00241000#50
         final Vertex vertex2 = DetachedVertex.build().setLabel("user").setId(id2)
                 .create();
-        final String script2 = GroovyTranslator.of("g").translate(g.inject(vertex2).asAdmin().getBytecode());
+        final String script2 = GroovyTranslator.of("g").translate(g.inject(vertex2).asAdmin().getBytecode()).getScript();
         assertEquals("g.inject(new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex(" +
                         "\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\"," +
                         "\"user\", Collections.emptyMap()))",
@@ -304,7 +305,7 @@ public class GroovyTranslatorTest {
                 .setOutV((DetachedVertex) vertex1)
                 .setInV((DetachedVertex) vertex2)
                 .create();
-        final String script3 = GroovyTranslator.of("g").translate(g.inject(edge).asAdmin().getBytecode());
+        final String script3 = GroovyTranslator.of("g").translate(g.inject(edge).asAdmin().getBytecode()).getScript();
         assertEquals("g.inject(new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge(" +
                         "\"knows:30:foo bar \\$100:\\\\u0020\\\\u0024500#70\"," +
                         "\"knows\",Collections.emptyMap()," +
@@ -315,7 +316,7 @@ public class GroovyTranslatorTest {
 
         final String script4 = GroovyTranslator.of("g").translate(
                 g.addE("knows").from(vertex1).to(vertex2).property("when", "2018/09/21")
-                        .asAdmin().getBytecode());
+                        .asAdmin().getBytecode()).getScript();
         assertEquals("g.addE(\"knows\")" +
                         ".from(new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex(\"customer:10:foo bar \\$100#90\",\"customer\", Collections.emptyMap()))" +
                         ".to(new org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex(\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\",\"user\", Collections.emptyMap()))" +
@@ -332,9 +333,9 @@ public class GroovyTranslatorTest {
     }
 
     private void assertTranslation(final String expectedTranslation, final Object... objs) {
-        final String script = GroovyTranslator.of("g").translate(g.inject(objs).asAdmin().getBytecode());
-        assertEquals(String.format("g.inject(%s)", expectedTranslation), script);
-        assertThatScriptOk(script, "g", g);
+        final Script script = GroovyTranslator.of("g").translate(g.inject(objs).asAdmin().getBytecode());
+        assertEquals(String.format("g.inject(%s)", expectedTranslation), script.getScript());
+        assertThatScriptOk(script.getScript(), "g", g);
     }
 
     private void assertThatScriptOk(final String s, final Object... args) {
@@ -376,13 +377,18 @@ public class GroovyTranslatorTest {
 
     public static class SillyClassTranslator extends GroovyTranslator.DefaultTypeTranslator {
 
+        public SillyClassTranslator(final boolean withParameters) {
+            super(withParameters);
+        }
+
         @Override
-        protected String convertToString(final Object object) {
-            if (object instanceof SillyClass)
-                return String.format("org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslatorTest.SillyClass.from('%s', (int) %s)",
-                        ((SillyClass) object).getX(), ((SillyClass) object).getY());
-            else
-                return super.convertToString(object);
+        protected Script convertToScript(final Object object) {
+            if (object instanceof SillyClass) {
+                return script.append(String.format("org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslatorTest.SillyClass.from('%s', (int) %s)",
+                        ((SillyClass) object).getX(), ((SillyClass) object).getY()));
+            } else {
+                return super.convertToScript(object);
+            }
         }
     }
 
@@ -390,7 +396,7 @@ public class GroovyTranslatorTest {
 
         @Override
         public Translator.ScriptTranslator.TypeTranslator createTypeTranslator() {
-            return new SillyClassTranslator();
+            return new SillyClassTranslator(false);
         }
     }
 }

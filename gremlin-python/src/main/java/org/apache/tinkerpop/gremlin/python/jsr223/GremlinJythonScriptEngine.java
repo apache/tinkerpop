@@ -109,7 +109,7 @@ public class GremlinJythonScriptEngine implements GremlinScriptEngine {
         inner.putAll(bytecode.getBindings());
         inner.put(HIDDEN_G, b);
 
-        return (Traversal.Admin) this.eval(JythonTranslator.of(HIDDEN_G).translate(bytecode), inner);
+        return (Traversal.Admin) this.eval(JythonTranslator.of(HIDDEN_G).translate(bytecode).getScript(), inner);
     }
 
     @Override
