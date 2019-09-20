@@ -292,7 +292,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         inner.putAll(bindings);
         inner.putAll(bytecode.getBindings());
         inner.put(HIDDEN_G, b);
-        org.apache.tinkerpop.gremlin.process.traversal.Script script = GroovyTranslator.of(HIDDEN_G, typeTranslator, false).translate(bytecode);
+        org.apache.tinkerpop.gremlin.process.traversal.Script script = GroovyTranslator.of(HIDDEN_G, typeTranslator).translate(bytecode);
         script.getParameters().ifPresent(inner::putAll);
         return (Traversal.Admin) this.eval(script.getScript(), inner);
     }

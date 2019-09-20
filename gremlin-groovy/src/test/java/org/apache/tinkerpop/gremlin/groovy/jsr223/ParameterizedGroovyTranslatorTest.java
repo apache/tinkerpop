@@ -129,7 +129,7 @@ public class ParameterizedGroovyTranslatorTest {
     public void shouldSupportStringSupplierLambdas() {
         final TinkerGraph graph = TinkerFactory.createModern();
         GraphTraversalSource g = graph.traversal();
-        g = g.withStrategies(new TranslationStrategy(g, GroovyTranslator.of("g", null, true), false));
+        g = g.withStrategies(new TranslationStrategy(g, GroovyTranslator.of("g", true), false));
         final GraphTraversal.Admin<Vertex, Integer> t = g.withSideEffect("lengthSum", 0).withSack(1)
                 .V()
                 .filter(Lambda.predicate("it.get().label().equals('person')"))
@@ -167,7 +167,7 @@ public class ParameterizedGroovyTranslatorTest {
         //
         assertEquals(24, t.getSideEffects().<Number>get("lengthSum").intValue());
 
-        final Script script = GroovyTranslator.of("g", null, true).translate(t.getBytecode());
+        final Script script = GroovyTranslator.of("g", true).translate(t.getBytecode());
         Bindings bindings = new SimpleBindings();
         script.getParameters().ifPresent(bindings::putAll);
         assertEquals(9, bindings.size());
@@ -196,7 +196,7 @@ public class ParameterizedGroovyTranslatorTest {
     public void shouldHandleArray() {
         final TinkerGraph graph = TinkerFactory.createModern();
         final GraphTraversalSource g = graph.traversal();
-        final Script script = GroovyTranslator.of("g", null, true).translate(g.V().has(T.id, P.within(new ArrayList() {{
+        final Script script = GroovyTranslator.of("g", true).translate(g.V().has(T.id, P.within(new ArrayList() {{
             add(1);
             add(2);
             add(3);
@@ -229,7 +229,7 @@ public class ParameterizedGroovyTranslatorTest {
     public void shouldHandleSet() {
         final TinkerGraph graph = TinkerFactory.createModern();
         final GraphTraversalSource g = graph.traversal();
-        final Script script = GroovyTranslator.of("g", null, true).translate(g.V().id().is(new HashSet<Object>() {{
+        final Script script = GroovyTranslator.of("g", true).translate(g.V().id().is(new HashSet<Object>() {{
             add(3);
             add(Arrays.asList(1, 2, 3.1d));
             add(3);
@@ -259,7 +259,7 @@ public class ParameterizedGroovyTranslatorTest {
     public void shouldHandleMaps() {
         final TinkerGraph graph = TinkerFactory.createModern();
         final GraphTraversalSource g = graph.traversal();
-        final Script script = GroovyTranslator.of("g", null, true).translate(g.V().id().is(new LinkedHashMap<Object,Object>() {{
+        final Script script = GroovyTranslator.of("g", true).translate(g.V().id().is(new LinkedHashMap<Object,Object>() {{
             put(3, "32");
             put(Arrays.asList(1, 2, 3.1d), 4);
         }}).asAdmin().getBytecode());
@@ -286,7 +286,7 @@ public class ParameterizedGroovyTranslatorTest {
         final TinkerGraph graph = TinkerFactory.createModern();
         final GraphTraversalSource g = graph.traversal();
         final Function identity = new Lambda.OneArgLambda("it.get()", "gremlin-groovy");
-        final Script script = GroovyTranslator.of("g", null, true).translate(g.inject(Collections.emptyMap()).map(identity).asAdmin().getBytecode());
+        final Script script = GroovyTranslator.of("g", true).translate(g.inject(Collections.emptyMap()).map(identity).asAdmin().getBytecode());
         Bindings bindings = new SimpleBindings();
         script.getParameters().ifPresent(bindings::putAll);
         assertEquals(1, bindings.size());
@@ -380,7 +380,7 @@ public class ParameterizedGroovyTranslatorTest {
         final GraphTraversalSource g = graph.traversal();
 
         // without type translation we get uglinesss
-        final Script parameterizedScriptBad = GroovyTranslator.of("g", null, true).
+        final Script parameterizedScriptBad = GroovyTranslator.of("g", true).
                 translate(g.inject(notSillyEnough).asAdmin().getBytecode());
         Bindings bindings = new SimpleBindings();
         parameterizedScriptBad.getParameters().ifPresent(bindings::putAll);
@@ -390,7 +390,7 @@ public class ParameterizedGroovyTranslatorTest {
         bindings.clear();
 
         // with type translation we get valid gremlin
-        final Script parameterizedScriptGood = GroovyTranslator.of("g", new ParameterizedSillyClassTranslatorCustomizer().createTypeTranslator(), true).
+        final Script parameterizedScriptGood = GroovyTranslator.of("g", new ParameterizedSillyClassTranslatorCustomizer().createTypeTranslator()).
                 translate(g.inject(notSillyEnough).asAdmin().getBytecode());
         parameterizedScriptGood.getParameters().ifPresent(bindings::putAll);
         assertEquals(2, bindings.size());
@@ -410,14 +410,14 @@ public class ParameterizedGroovyTranslatorTest {
 
     @Test
     public void shouldHaveValidToString() {
-        assertEquals("translator[h:gremlin-groovy]", GroovyTranslator.of("h", null, true).toString());
+        assertEquals("translator[h:gremlin-groovy]", GroovyTranslator.of("h", true).toString());
     }
 
     @Test
     public void shouldEscapeStrings() {
         final TinkerGraph graph = TinkerFactory.createModern();
         final GraphTraversalSource g = graph.traversal();
-        final Script script = GroovyTranslator.of("g", null, true).translate(g.addV("customer")
+        final Script script = GroovyTranslator.of("g", true).translate(g.addV("customer")
                 .property("customer_id", 501L)
                 .property("name", "Foo\u0020Bar")
                 .property("age", 25)
@@ -457,7 +457,7 @@ public class ParameterizedGroovyTranslatorTest {
         final Object id1 = "customer:10:foo\u0020bar\u0020\u0024100#90"; // customer:10:foo bar $100#90
         final Vertex vertex1 = DetachedVertex.build().setLabel("customer").setId(id1)
                 .create();
-        final Script script1 = GroovyTranslator.of("g", null, true).translate(g.inject(vertex1).asAdmin().getBytecode());
+        final Script script1 = GroovyTranslator.of("g", true).translate(g.inject(vertex1).asAdmin().getBytecode());
         Bindings bindings = new SimpleBindings();
         script1.getParameters().ifPresent(bindings::putAll);
         assertEquals(2, bindings.size());
@@ -473,7 +473,7 @@ public class ParameterizedGroovyTranslatorTest {
         final Object id2 = "user:20:foo\\u0020bar\\u005c\\u0022mr\\u005c\\u0022\\u00241000#50"; // user:20:foo\u0020bar\u005c\u0022mr\u005c\u0022\u00241000#50
         final Vertex vertex2 = DetachedVertex.build().setLabel("user").setId(id2)
                 .create();
-        final Script script2 = GroovyTranslator.of("g", null, true).translate(g.inject(vertex2).asAdmin().getBytecode());
+        final Script script2 = GroovyTranslator.of("g", true).translate(g.inject(vertex2).asAdmin().getBytecode());
         script2.getParameters().ifPresent(bindings::putAll);
         assertEquals(2, bindings.size());
         assertEquals(id2, bindings.get("_args_0"));
@@ -489,7 +489,7 @@ public class ParameterizedGroovyTranslatorTest {
                 .setOutV((DetachedVertex) vertex1)
                 .setInV((DetachedVertex) vertex2)
                 .create();
-        final Script script3 = GroovyTranslator.of("g", null, true).translate(g.inject(edge).asAdmin().getBytecode());
+        final Script script3 = GroovyTranslator.of("g", true).translate(g.inject(edge).asAdmin().getBytecode());
         script3.getParameters().ifPresent(bindings::putAll);
         assertEquals(6, bindings.size());
         assertEquals(id3, bindings.get("_args_0"));
@@ -504,7 +504,7 @@ public class ParameterizedGroovyTranslatorTest {
         assertParameterizedScriptOk(standard3.getScript(), script3.getScript(), bindings, false);
         bindings.clear();
 
-        final Script script4 = GroovyTranslator.of("g", null, true).translate(
+        final Script script4 = GroovyTranslator.of("g", true).translate(
                 g.addE("knows").from(vertex1).to(vertex2).property("when", "2018/09/21")
                         .asAdmin().getBytecode());
         script4.getParameters().ifPresent(bindings::putAll);
@@ -524,7 +524,7 @@ public class ParameterizedGroovyTranslatorTest {
         assertParameterizedScriptOk(standard4.getScript(), script4.getScript(), bindings, false);
         bindings.clear();
 
-        final Script script5 = GroovyTranslator.of("g", null, true).translate(g.V().has("age").asAdmin().getBytecode());
+        final Script script5 = GroovyTranslator.of("g", true).translate(g.V().has("age").asAdmin().getBytecode());
         script5.getParameters().ifPresent(bindings::putAll);
         assertEquals(1, bindings.size());
         assertEquals("age", bindings.get("_args_0"));
@@ -541,7 +541,7 @@ public class ParameterizedGroovyTranslatorTest {
     }
 
     private void assertParameterizedTranslation(final String expectedTranslation, final Object... objs) {
-        final Script script = GroovyTranslator.of("g", null, true).translate(g.inject(objs).asAdmin().getBytecode());
+        final Script script = GroovyTranslator.of("g", true).translate(g.inject(objs).asAdmin().getBytecode());
         Bindings bindings = new SimpleBindings();
         script.getParameters().ifPresent(bindings::putAll);
         assertEquals(1, bindings.size());
@@ -554,7 +554,7 @@ public class ParameterizedGroovyTranslatorTest {
     }
 
     private void assertNonParameterizedTranslation(final String expectedTranslation, final Object... objs) {
-        final Script script = GroovyTranslator.of("g", null, true).translate(g.inject(objs).asAdmin().getBytecode());
+        final Script script = GroovyTranslator.of("g", true).translate(g.inject(objs).asAdmin().getBytecode());
         Bindings bindings = new SimpleBindings();
         script.getParameters().ifPresent(bindings::putAll);
         assertEquals(0, bindings.size());

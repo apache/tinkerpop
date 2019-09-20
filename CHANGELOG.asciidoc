@@ -29,13 +29,14 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Upgraded to Apache Commons Configuration2.
 * Renamed `StoreStep` to `AggregateLocalStep`.
 * Renamed `AggregateStep` to `AggregateGlobalStep`.
-* Renamed `SERVER_ERROR_SCRIPT_EVALUATION` to `SERVER_ERROR_EVALUATION` given that this response code applies to remote traversals as well as scripts.
 * Configured GraphBinary as the default binary serialization format for the Java Driver.
 * Configured GraphSON 3.0 as the default text serialization format when no serializer can be determined.
 * Upgraded to Neo4j 3.4.11.
+* Added a parameterized `TypeTranslator` for use with `GroovyTranslator` that should produce more cache hits.
 * Added support for `TextP` in Neo4j using its string search functions.
 * Removed the "experimental" support for multi/meta-properties in Neo4j.
 * Removed Gryo serialization configurations from Gremlin Server sample configurations and default configurations.
+* Removed previously deprecated `scriptEvaluationTimeout`.
 * Removed previously deprecated remote traversal side-effects.
 * Removed previously deprecated `Serializers.DEFAULT_RESULT_SERIALIZER` and `Serializers.DEFAULT_REQUEST_SERIALIZER`.
 * Removed previously deprecated `decr` and `incr` from `Order`.
@@ -493,7 +494,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed potential for `NullPointerException` with empty identifiers in `GraphStep`.
 * Postponed the timing of transport creation to `connection.write` in Gremlin Python.
 * Made `EventStrategy` compatible with multi-valued properties.
-* Changed `TraversalOpProcessor` to throw a `SERVER_ERROR_SCRIPT_EVALUATION` (597) if lambdas don't compile.
 
 [[release-3-3-8]]
 === TinkerPop 3.3.8 (Release Date: August 5, 2019)

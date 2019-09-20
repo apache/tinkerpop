@@ -236,7 +236,7 @@ public class GroovyTranslatorTest {
         assertEquals(String.format("g.inject(%s)", "not silly enough:100"), scriptBad);
 
         // with type translation we get valid gremlin
-        final String scriptGood = GroovyTranslator.of("g", new SillyClassTranslator(false), false).
+        final String scriptGood = GroovyTranslator.of("g", new SillyClassTranslator(false)).
                 translate(g.inject(notSillyEnough).asAdmin().getBytecode()).getScript();
         assertEquals(String.format("g.inject(org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslatorTest.SillyClass.from('%s', (int) %s))", notSillyEnough.getX(), notSillyEnough.getY()), scriptGood);
         assertThatScriptOk(scriptGood, "g", g);

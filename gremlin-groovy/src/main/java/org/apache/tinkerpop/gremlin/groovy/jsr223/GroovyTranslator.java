@@ -69,19 +69,25 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
         this.typeTranslator = typeTranslator;
     }
 
+    /**
+     * Creates the translator with a {@code false} argument to {@code withParameters} using
+     * {@link #of(String, boolean)}.
+     */
     public static final GroovyTranslator of(final String traversalSource) {
-        return of(traversalSource, null, false);
+        return of(traversalSource, false);
     }
 
     /**
-     * @param traversalSource
-     * @param typeTranslator user provided typeTranslator if not null
-     * @param withParameters if need parameterized script ?, ignored when typeTranslator not null
-     * @return
+     * Creates the translator with the {@link DefaultTypeTranslator} passing the {@code withParameters} option to it
+     * which will handle type translation in a fashion that should typically increase cache hits and reduce
+     * compilation times if enabled at the sacrifice to rewriting of the script that could reduce readability.
      */
-    public static final GroovyTranslator of(final String traversalSource, final TypeTranslator typeTranslator, final boolean withParameters) {
-        return new GroovyTranslator(traversalSource,
-                Optional.ofNullable(typeTranslator).orElseGet(() -> new DefaultTypeTranslator(withParameters)));
+    public static final GroovyTranslator of(final String traversalSource, final boolean withParameters) {
+        return of(traversalSource, new DefaultTypeTranslator(withParameters));
+    }
+
+    public static final GroovyTranslator of(final String traversalSource, final TypeTranslator typeTranslator) {
+        return new GroovyTranslator(traversalSource, typeTranslator);
     }
 
     ///////

@@ -50,12 +50,12 @@ public final class Script {
        return this;
     }
 
-    public Script setCharAtEnd(char ch) {
+    public Script setCharAtEnd(final char ch) {
         scriptBuilder.setCharAt(scriptBuilder.length() - 1, ch);
         return this;
     }
 
-    public <V> Script getBoundKeyOrAssign(boolean withParameters, final V value) {
+    public <V> Script getBoundKeyOrAssign(final boolean withParameters, final V value) {
         if (withParameters) {
             if (!parameters.containsKey(value)) {
                 parameters.put(value, getNextBoundKey());
