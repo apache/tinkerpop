@@ -88,8 +88,8 @@ public enum ResponseStatusCode {
     SERVER_ERROR(500),
 
     /**
-     * The script submitted for processing evaluated in the {@code ScriptEngine} with errors and could not be
-     * processed.  Check the script submitted for syntax errors or other problems and then resubmit.
+     * The request submitted for processing evaluated by the server with errors and could not be processed.
+     * Check the script or remote traversal submitted for errors or other problems and then resubmit.
      */
     SERVER_ERROR_SCRIPT_EVALUATION(597),
 
