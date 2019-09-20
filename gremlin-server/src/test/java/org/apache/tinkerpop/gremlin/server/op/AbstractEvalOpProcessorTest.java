@@ -60,7 +60,7 @@ public class AbstractEvalOpProcessorTest {
         processor.evalOpInternal(contextspy, contextspy::getGremlinExecutor, SimpleBindings::new);
 
         Mockito.verify(contextspy, Mockito.times(1)).writeAndFlush(responseCaptor.capture());
-        assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, responseCaptor.getValue().getStatus().getCode());
+        assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, responseCaptor.getValue().getStatus().getCode());
         assertEquals(request.getRequestId(), responseCaptor.getValue().getRequestId());
         assertThat(responseCaptor.getValue().getStatus().getMessage(), CoreMatchers.containsString("test-exception"));
     }

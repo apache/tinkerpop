@@ -91,7 +91,7 @@ public enum ResponseStatusCode {
      * The request submitted for processing evaluated by the server with errors and could not be processed.
      * Check the script or remote traversal submitted for errors or other problems and then resubmit.
      */
-    SERVER_ERROR_SCRIPT_EVALUATION(597),
+    SERVER_ERROR_EVALUATION(597),
 
     /**
      * The server exceeded one of the timeout settings for the request and could therefore only partially responded

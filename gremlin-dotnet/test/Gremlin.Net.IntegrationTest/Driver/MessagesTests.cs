@@ -139,7 +139,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
                 var thrownException =
                     await Assert.ThrowsAsync<ResponseException>(() => gremlinClient.SubmitAsync(requestMsg));
 
-                Assert.Contains("ScriptEvaluationError", thrownException.Message);
+                Assert.Contains("ServerEvaluationError", thrownException.Message);
                 Assert.Contains(unknownLanguage, thrownException.Message);
             }
         }

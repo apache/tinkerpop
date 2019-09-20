@@ -312,7 +312,7 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
         } catch (Exception ex) {
             final Throwable cause = ExceptionUtils.getCause(ex);
             assertThat(cause, instanceOf(ResponseException.class));
-            assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, ((ResponseException) cause).getResponseStatusCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, ((ResponseException) cause).getResponseStatusCode());
 
             // validate that we can still send messages to the server
             assertEquals(2, client.submit("1+1").all().join().get(0).getInt());

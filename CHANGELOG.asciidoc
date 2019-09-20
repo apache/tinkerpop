@@ -29,6 +29,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Upgraded to Apache Commons Configuration2.
 * Renamed `StoreStep` to `AggregateLocalStep`.
 * Renamed `AggregateStep` to `AggregateGlobalStep`.
+* Renamed `SERVER_ERROR_SCRIPT_EVALUATION` to `SERVER_ERROR_EVALUATION` given that this response code applies to remote traversals as well as scripts.
 * Configured GraphBinary as the default binary serialization format for the Java Driver.
 * Configured GraphSON 3.0 as the default text serialization format when no serializer can be determined.
 * Upgraded to Neo4j 3.4.11.

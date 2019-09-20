@@ -77,10 +77,10 @@ namespace Gremlin.Net.Driver.Messages
         ServerError = 500,
 
         /// <summary>
-        ///     The script submitted for processing evaluated in the ScriptEngine with errors and could not be processed.
-        ///     Check the script submitted for syntax errors or other problems and then resubmit.
+        ///     The request submitted for processing evaluated by the server with errors and could not be processed.
+        ///     Check the script or remote traversal submitted for errors or other problems and then resubmit.
         /// </summary>
-        ScriptEvaluationError = 597,
+        ServerEvaluationError = 597,
 
         /// <summary>
         ///     The server exceeded one of the timeout settings for the request and could therefore only partially responded
@@ -111,7 +111,7 @@ namespace Gremlin.Net.Driver.Messages
                 case ResponseStatusCode.MalformedRequest:
                 case ResponseStatusCode.InvalidRequestArguments:
                 case ResponseStatusCode.ServerError:
-                case ResponseStatusCode.ScriptEvaluationError:
+                case ResponseStatusCode.ServerEvaluationError:
                 case ResponseStatusCode.ServerTimeout:
                 case ResponseStatusCode.ServerSerializationError:
                     return true;

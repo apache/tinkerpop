@@ -294,13 +294,13 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                             ((MultipleCompilationErrorsException) t).getErrorCollector().getErrorCount() == 1) {
                         final String errorMessage = String.format("The Gremlin statement that was submitted exceeds the maximum compilation size allowed by the JVM, please split it into multiple smaller statements - %s", trimMessage(msg));
                         logger.warn(errorMessage);
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION)
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_EVALUATION)
                                                          .statusMessage(errorMessage)
                                                          .statusAttributeException(t).create());
                     } else {
                         final String errorMessage =  (t.getMessage() == null) ? t.toString() : t.getMessage();
                         logger.warn(String.format("Exception processing a script on request [%s].", msg), t);
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION)
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_EVALUATION)
                                                          .statusMessage(errorMessage)
                                                          .statusAttributeException(t).create());
                     }

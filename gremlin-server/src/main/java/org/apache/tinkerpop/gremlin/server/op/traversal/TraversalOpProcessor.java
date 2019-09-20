@@ -183,7 +183,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         } catch (ScriptException ex) {
             logger.error("Traversal contains a lambda that cannot be compiled", ex);
             throw new OpProcessorException("Traversal contains a lambda that cannot be compiled",
-                    ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION)
+                    ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_EVALUATION)
                             .statusMessage(ex.getMessage())
                             .statusAttributeException(ex).create());
         } catch (Exception ex) {

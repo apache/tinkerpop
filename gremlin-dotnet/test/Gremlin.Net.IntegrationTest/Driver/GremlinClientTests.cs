@@ -129,7 +129,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
                     await Assert.ThrowsAsync<ResponseException>(() => gremlinClient.SubmitAsync(requestMsg));
 
                 Assert.Equal(typeof(ResponseException), exception.GetType());
-                Assert.Contains($"ScriptEvaluationError: No such property: {requestMsg}",
+                Assert.Contains($"ServerEvaluationError: No such property: {requestMsg}",
                     exception.Message);
             }
         }

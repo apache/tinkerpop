@@ -1394,7 +1394,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
-            assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, re.getResponseStatusCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, re.getResponseStatusCode());
         }
 
         final Client rebound = cluster.connect().alias("graph");
@@ -1416,7 +1416,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
-            assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, re.getResponseStatusCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, re.getResponseStatusCode());
         }
 
         final Client clientAliased = client.alias("g1");
@@ -1438,7 +1438,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
-            assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, re.getResponseStatusCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, re.getResponseStatusCode());
         }
 
         final Client aliased = client.alias("graph");
@@ -1461,7 +1461,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
-            assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, re.getResponseStatusCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, re.getResponseStatusCode());
         }
 
         final Client clientAliased = client.alias("g1");
