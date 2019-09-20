@@ -55,6 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
+import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
@@ -392,6 +393,12 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                 traversal = JavaTranslator.of(g).translate(bytecode);
             else
                 traversal = context.getGremlinExecutor().eval(bytecode, EMPTY_BINDINGS, lambdaLanguage.get(), traversalSourceName);
+        } catch (ScriptException ex) {
+            logger.error("Traversal contains a lambda that cannot be compiled", ex);
+            throw new OpProcessorException("Traversal contains a lambda that cannot be compiled",
+                    ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION)
+                            .statusMessage(ex.getMessage())
+                            .statusAttributeException(ex).create());
         } catch (Exception ex) {
             logger.error("Could not deserialize the Traversal instance", ex);
             throw new OpProcessorException("Could not deserialize the Traversal instance",
