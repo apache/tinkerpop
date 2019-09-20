@@ -323,6 +323,34 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    public void shouldScriptEvaluationErrorForRemoteTraversal() throws Exception {
+        final GraphTraversalSource g = traversal().withRemote(conf);
+
+        try {
+            // tests bad lambda
+            g.inject(1).sideEffect(Lambda.consumer("(")).iterate();
+            fail("This traversal should not have executed since lambda can't be compiled");
+        } catch (Exception ex) {
+            final Throwable t = ex.getCause();
+            assertThat(t, instanceOf(ResponseException.class));
+            assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, ((ResponseException) t).getResponseStatusCode());
+        }
+
+        // make a graph with a cycle in it to force a long run traversal
+        graphGetter.get().traversal().addV("person").as("p").addE("self").to("p").iterate();
+
+        try {
+            // tests an "unending" traversal
+            g.V().repeat(__.out()).until(__.outE().count().is(0)).iterate();
+            fail("This traversal should have timed out");
+        } catch (Exception ex) {
+            final Throwable t = ex.getCause();
+            assertThat(t, instanceOf(ResponseException.class));
+            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+        }
+    }
+
+    @Test
     public void shouldCloseChannelIfClientDoesntRespond() throws Exception {
         final SimpleClient client = TestClientFactory.createWebSocketClient();
         client.submit("1+1");
@@ -590,7 +618,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             cluster.close();
         }
     }
-    
+
     @Test
     public void shouldEnableSslAndClientCertificateAuthWithPkcs12() {
         final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(P12_CLIENT_KEY).keyStorePassword(KEY_PASS)
@@ -650,7 +678,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             cluster.close();
         }
     }
-    
+
     @Test
     public void shouldEnableSslAndFailIfProtocolsDontMatch() {
         final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_SERVER_KEY).keyStorePassword(KEY_PASS)
