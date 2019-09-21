@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.util.tools;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.junit.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,8 +28,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.tinkerpop.gremlin.TestHelper;
-import org.junit.Test;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

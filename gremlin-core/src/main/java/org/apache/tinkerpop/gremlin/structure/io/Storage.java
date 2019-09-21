@@ -19,12 +19,12 @@
 
 package org.apache.tinkerpop.gremlin.structure.io;
 
+import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import java.io.File;
 import java.util.Iterator;
 import java.util.List;
-
-import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * Storage is a standard API that providers can implement to allow abstract UNIX-like file system for data sources.
@@ -51,7 +51,9 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface Storage {
-
+    /**
+	 * The file and directory names separator in this uniform UNIX-like abstract file system
+	 */
     String FILE_SEPARATOR = "/";
 
     String ROOT_DIRECTORY = FILE_SEPARATOR;

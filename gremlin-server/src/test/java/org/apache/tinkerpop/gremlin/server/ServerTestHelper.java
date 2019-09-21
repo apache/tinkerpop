@@ -18,14 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
+import org.apache.tinkerpop.gremlin.structure.io.Storage;
+
 import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import static org.junit.Assert.assertNotNull;
 
-import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
-import org.apache.tinkerpop.gremlin.structure.io.Storage;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

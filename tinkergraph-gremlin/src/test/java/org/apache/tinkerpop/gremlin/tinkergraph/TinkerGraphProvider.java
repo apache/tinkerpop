@@ -18,12 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
@@ -42,6 +36,12 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraphVariables;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

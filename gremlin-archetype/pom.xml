@@ -27,6 +27,7 @@ limitations under the License.
     <artifactId>gremlin-archetype</artifactId>
     <name>Apache TinkerPop :: Gremlin Archetype</name>
     <packaging>pom</packaging>
+
     <modules>
         <module>gremlin-archetype-tinkergraph</module>
         <module>gremlin-archetype-server</module>

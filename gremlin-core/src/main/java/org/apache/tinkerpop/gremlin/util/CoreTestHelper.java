@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.util;
 
+import org.apache.tinkerpop.gremlin.structure.io.Storage;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -26,8 +28,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.apache.tinkerpop.gremlin.structure.io.Storage;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -113,7 +113,7 @@ public class CoreTestHelper {
         final String buildDirectory = System.getProperty("build.dir");
 
         if ( null == buildDirectory ) {
-            final String clsUri = clazz.getName().replace(".", Storage.FILE_SEPARATOR) + ".class";
+            final String clsUri = clazz.getName().replace(".", "/") + ".class";
             final URL url = clazz.getClassLoader().getResource(clsUri);
             final String clsPath = url.getPath();
             final String computePath = clsPath.substring(0, clsPath.length() - clsUri.length());

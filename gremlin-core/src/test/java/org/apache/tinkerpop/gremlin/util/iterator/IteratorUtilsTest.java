@@ -18,11 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.util.iterator;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,9 +32,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.tinkerpop.gremlin.TestHelper;
-import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
-import org.junit.Test;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

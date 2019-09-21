@@ -18,7 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -28,9 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

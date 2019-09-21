@@ -18,13 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.stream.IntStream;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.TestHelper;
@@ -46,6 +39,13 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.stream.IntStream;
 
 /**
  * Less of a test of functionality and more of a tool to help generate data files for TinkerPop.

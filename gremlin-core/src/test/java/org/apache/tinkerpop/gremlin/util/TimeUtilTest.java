@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.util;
 
-import static org.junit.Assert.assertEquals;
+import org.apache.tinkerpop.gremlin.TestHelper;
+import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.tinkerpop.gremlin.TestHelper;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

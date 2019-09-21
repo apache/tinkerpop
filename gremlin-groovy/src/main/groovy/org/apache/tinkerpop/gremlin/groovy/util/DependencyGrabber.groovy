@@ -41,59 +41,60 @@ import java.util.jar.Manifest
 class DependencyGrabber {
     private static final Logger logger = LoggerFactory.getLogger(DependencyGrabber.class);
 
-    private final static String fileSep = System.getProperty("file.separator")
     private final ClassLoader classLoaderToUse
-    private final String extensionDirectory
+    private final File extensionDirectory
 
     public DependencyGrabber(final ClassLoader cl, final String extensionDirectory) {
+        this(cl, File(extensionDirectory))
+    }
+
+    public DependencyGrabber(final ClassLoader cl, final File extensionDirectory) {
         this.classLoaderToUse = cl
         this.extensionDirectory = extensionDirectory
     }
 
     def String deleteDependenciesFromPath(final Artifact artifact) {
         final def dep = makeDepsMap(artifact)
-        final String extClassPath = getPathFromDependency(dep)
-        final File f = new File(extClassPath)
-        if (!f.exists()) {
+        final File extClassPath = getPathFromDependency(dep)
+
+        if (!extClassPath.exists()) {
             return "There is no module with the name ${dep.module} to remove - ${extClassPath}"
         }
         else {
-            f.deleteDir()
+            extClassPath.deleteDir()
             return "Uninstalled ${dep.module}"
         }
     }
 
     def Set<String> copyDependenciesToPath(final Artifact artifact) {
         final def dep = makeDepsMap(artifact)
-        final String extClassPath = getPathFromDependency(dep)
-        final String extLibPath = extClassPath + fileSep + "lib"
-        final String extPluginPath = extClassPath + fileSep + "plugin"
-        final File f = new File(extClassPath)
+        final File extClassPath = getPathFromDependency(dep)
+        final File extLibPath = new File(extClassPath, "lib")
+        final File extPluginPath = new File(extClassPath, "plugin")
 
-        if (f.exists()) throw new IllegalStateException("a module with the name ${dep.module} is already installed")
+        if (extClassPath.exists()) throw new IllegalStateException("a module with the name ${dep.module} is already installed")
 
         try {
-            if (!f.mkdirs()) throw new IOException("could not create directory at ${f}")
-            if (!new File(extLibPath).mkdirs()) throw new IOException("could not create directory at ${extLibPath}")
-            if (!new File(extPluginPath).mkdirs()) throw new IOException("could not create directory at ${extPluginPath}")
+            if (!extClassPath.mkdirs()) throw new IOException("could not create directory at ${extClassPath}")
+            if (!extLibPath.mkdirs()) throw new IOException("could not create directory at ${extLibPath}")
+            if (!extPluginPath.mkdirs()) throw new IOException("could not create directory at ${extPluginPath}")
         } catch (IOException ioe) {
             // installation failed. make sure to cleanup directories.
             deleteDependenciesFromPath(artifact)
             throw ioe
         }
 
-        new File(extClassPath + fileSep + "plugin-info.txt").withWriter { out -> out << [artifact.group, artifact.artifact, artifact.version].join(":") }
+        new File(extClassPath, "plugin-info.txt").withWriter { out -> out << [artifact.group, artifact.artifact, artifact.version].join(":") }
 
-        def fs = FileSystems.default
-        def targetPluginPath = fs.getPath(extPluginPath)
-        def targetLibPath = fs.getPath(extLibPath)
+        def targetPluginPath = extPluginPath.toPath()
+        def targetLibPath = extLibPath.toPath()
 
         // collect the files already on the path in /lib. making some unfortunate assumptions about what the path
         // looks like for the gremlin distribution
         def filesAlreadyInPath = []
         def libClassPath
         try {
-            libClassPath = fs.getPath(System.getProperty("user.dir") + fileSep + "lib")
+            libClassPath = new File(System.getProperty("user.dir"), "lib").toPath()
             getFileNames(filesAlreadyInPath, libClassPath)
         } catch (Exception ignored) {
             // the user might have a non-standard directory system.  if they are non-standard then they must be
@@ -116,18 +117,26 @@ class DependencyGrabber {
             // additional dependencies are outside those pulled by grape and are defined in the manifest of the plugin jar.
             // if a plugin uses that setting, it should force "restart" when the plugin is activated.  right now,
             // it is up to the plugin developer to enforce that setting.
-            dependencyLocations.collect(convertUriToPath(fs))
+            dependencyLocations
+                    .collect({ URI uri -> new File(uri).toPath() })
                     .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
-                    .findAll {!filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
+                    .findAll { !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
                     .each(copyTo(targetPluginPath))
-            getAdditionalDependencies(targetPluginPath, artifact).collect(convertUriToPath(fs))
+
+            getAdditionalDependencies(targetPluginPath, artifact)
+                    .collect({ URI uri -> new File(uri).toPath() })
                     .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
                     .findAll { !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
                     .each(copyTo(targetPluginPath))
 
             // get dependencies for the lib path.  the lib path should not filter out any jars - used for reference
-            dependencyLocations.collect(convertUriToPath(fs)).each(copyTo(targetLibPath))
-            getAdditionalDependencies(targetLibPath, artifact).collect(convertUriToPath(fs)).each(copyTo(targetLibPath))
+            dependencyLocations
+                    .collect({ URI uri -> new File(uri).toPath() })
+                    .each(copyTo(targetLibPath))
+
+            getAdditionalDependencies(targetLibPath, artifact)
+                    .collect({ URI uri -> new File(uri).toPath() })
+                    .each(copyTo(targetLibPath))
         }
         catch (Exception e) {
             // installation failed. make sure to cleanup directories.
@@ -161,15 +170,8 @@ class DependencyGrabber {
         }
     }
 
-    /**
-     * Windows places a starting forward slash in the URI that needs to be stripped off or else the
-     * {@code FileSystem} won't properly resolve it.
-     */
-    private static Closure convertUriToPath(def fs) {
-        return { URI uri ->
-            def p = SystemUtils.IS_OS_WINDOWS ? uri.path.substring(1) : uri.path
-            return fs.getPath(p)
-        }
+    private static Closure convertUriToPath() {
+        return { URI uri -> new File(uri).toPath() }
     }
 
     private Set<URI> getAdditionalDependencies(final Path extPath, final Artifact artifact) {
@@ -225,8 +227,8 @@ class DependencyGrabber {
         }
     }
 
-    private String getPathFromDependency(final Map<String, Object> dep) {
-        return this.extensionDirectory + fileSep + (String) dep.module
+    private File getPathFromDependency(final Map<String, Object> dep) {
+        return new File(this.extensionDirectory, (String) dep.module)
     }
 
     public def makeDepsMap(final Artifact artifact) {

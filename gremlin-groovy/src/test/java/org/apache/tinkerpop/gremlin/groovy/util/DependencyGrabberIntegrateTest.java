@@ -18,85 +18,90 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.util;
 
-import groovy.lang.GroovyClassLoader;
-import java.io.File;
 import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.TestHelper;
-import org.apache.tinkerpop.gremlin.structure.io.Storage;
-import org.junit.AfterClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.assertFalse;
+
+import groovy.lang.GroovyClassLoader;
+
+import java.io.File;
+
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Jason Plurad (http://github.com/pluradj)
  */
 public class DependencyGrabberIntegrateTest {
-    private static final GroovyClassLoader dummyClassLoader = new GroovyClassLoader();
-    private static final File extTestDir = TestHelper.makeTestDataPath(DependencyGrabberIntegrateTest.class);
-    private static final DependencyGrabber dg = new DependencyGrabber(dummyClassLoader, Storage.toPath(extTestDir));
+    private static final String GROUP_ID = "org.apache.tinkerpop";
+    private static final String VERSION = "3.3.7";
 
-    @AfterClass
-    public static void tearDown() {
+    private static final GroovyClassLoader groovyClassLoader = new GroovyClassLoader();
+    private static final File extTestDir = TestHelper.makeTestDataPath(DependencyGrabberIntegrateTest.class);
+    private static final DependencyGrabber dg = new DependencyGrabber(groovyClassLoader, extTestDir);
+
+    @Before
+    public void setUp() {
+        FileUtils.deleteQuietly(extTestDir);
+    }
+
+    @After
+    public void tearDown() {
         FileUtils.deleteQuietly(extTestDir);
     }
 
     @Test
     public void shouldInstallAndUninstallDependencies() {
-        final String pkg = "org.apache.tinkerpop";
         final String name = "tinkergraph-gremlin";
-        final String ver = "3.0.1-incubating";
-        final Artifact a = new Artifact(pkg, name, ver);
+        final Artifact a = new Artifact(GROUP_ID, name, VERSION);
+        final File pluginDir = new File(extTestDir, name);
 
         // install the plugin
-        final File pluginDir = new File(extTestDir, name);
         dg.copyDependenciesToPath(a);
-        assertTrue(pluginDir.exists());
+        assertTrue("Plugin installation directory exists", pluginDir.exists());
 
         // delete the plugin
         dg.deleteDependenciesFromPath(a);
-        assertFalse(pluginDir.exists());
+        assertTrue("Plugin installation directory deleted", !pluginDir.exists());
     }
 
-    @Test(expected=IllegalStateException.class)
+    @Test
     public void shouldThrowIllegalStateException() {
-        final String pkg = "org.apache.tinkerpop";
         final String name = "gremlin-groovy";
-        final String ver = "3.0.1-incubating";
-        final Artifact a = new Artifact(pkg, name, ver);
+        final Artifact a = new Artifact(GROUP_ID, name, VERSION);
+        final File pluginDir = new File(extTestDir, name);
 
         // install the plugin for the first time
-        final File pluginDir = new File(extTestDir, name);
         dg.copyDependenciesToPath(a);
-        assertTrue(pluginDir.exists());
+        assertTrue("Plugin installation directory exists", pluginDir.exists());
 
         // attempt to install plugin a second time
         try {
             dg.copyDependenciesToPath(a);
-        } catch (IllegalStateException ise) {
-            // validate that the plugin dir wasn't deleted by accident
-            assertTrue(pluginDir.exists());
-            // throw the IllegalStateException
-            throw ise;
+
+            fail("The plugin re-installed");
+
+        } catch (Exception ise) {
+          assertTrue("Plugin re-install keeps the installation directory", pluginDir.exists());
         }
     }
 
-    @Test(expected=RuntimeException.class)
+    @Test
     public void shouldThrowRuntimeException() {
-        final String pkg = "org.apache.tinkerpop";
         final String name = "gremlin-bogus";
-        final String ver = "3.0.1-incubating";
-        final Artifact a = new Artifact(pkg, name, ver);
+        final Artifact a = new Artifact(GROUP_ID, name, VERSION);
+        final File pluginDir = new File(extTestDir, name);
 
         // attempt to install bogus plugin
         try {
             dg.copyDependenciesToPath(a);
-        } catch (RuntimeException re) {
-            // validate that the plugin dir was deleted
-            final File pluginDir = new File(extTestDir, name);
-            assertFalse(pluginDir.exists());
-            // throw the RuntimeException
-            throw re;
+
+            fail("The bogus plugin installed");
+
+        } catch (Exception re) {
+            assertTrue("The bogus plugin dir was not installed", !pluginDir.exists());
         }
     }
 }

@@ -109,9 +109,6 @@ limitations under the License.
             <url>https://github.com/twilmes</url>
         </contributor>
     </contributors>
-    <prerequisites>
-        <maven>3.3.9</maven>
-    </prerequisites>
     <modules>
         <module>gremlin-shaded</module>
         <module>gremlin-core</module>
@@ -281,7 +278,7 @@ limitations under the License.
                 <executions>
                     <execution>
                         <!-- source: https://stackoverflow.com/a/39139979/6753576 -->
-                        <!-- sets the only.when.is.snapshot.used property to true if SNAPSHOT was used, 
+                        <!-- sets the only.when.is.snapshot.used property to true if SNAPSHOT was used,
                             to the project version otherwise -->
                         <id>build-helper-regex-is-snapshot-used</id>
                         <phase>validate</phase>
@@ -297,7 +294,7 @@ limitations under the License.
                         </configuration>
                     </execution>
                     <execution>
-                        <!-- sets the only.when.is.prerelease.version property to true if a prerelease version was used, 
+                        <!-- sets the only.when.is.prerelease.version property to true if a prerelease version was used,
                             to the project version otherwise -->
                         <id>build-helper-regex-is-prerelease-version</id>
                         <phase>validate</phase>
@@ -1559,7 +1556,7 @@ limitations under the License.
         because it doesn't filter all the files out that we need as it assumes a pure java infrastructure and we
         have all manner of different languages hanging about
         -->
-        
+
         <profile>
             <id>apache-release</id>
             <build>

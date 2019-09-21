@@ -19,12 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.spark.structure.io;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.regex.Pattern;
-
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -38,6 +32,12 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
