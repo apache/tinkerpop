@@ -327,9 +327,7 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
                         if (!castFirstArgTo.isEmpty())
                             script.append(String.format("(%s) ", castFirstArgTo));
                         convertToScript(instruction.getArguments()[0]);
-                        script.append(", (");
-                        script.append(castSecondArgTo);
-                        script.append(") ");
+                        script.append(", (").append(castSecondArgTo).append(") ");
                         convertToScript(instruction.getArguments()[1]);
                         script.append(",");
                     } else {

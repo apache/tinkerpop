@@ -42,7 +42,7 @@ public final class Script {
 
     public void init() {
         scriptBuilder.setLength(0);
-        parameters.clear();;
+        parameters.clear();
     }
 
     public Script append(final String script) {
@@ -79,7 +79,7 @@ public final class Script {
      * @return  a monotonically increasing key
      */
     private String getNextBoundKey() {
-        return KEY_PREFIX + String.valueOf(parameters.size());
+        return KEY_PREFIX + parameters.size();
     }
 
     @Override
@@ -94,9 +94,7 @@ public final class Script {
                         return !o.toString().isEmpty();
                     }
                 })
-                .map(o -> {
-                    return o.toString();
-                }).collect(Collectors.toList());
+                .map(Object::toString).collect(Collectors.toList());
         if (!strings.isEmpty()) {
             builder.append('(');
             builder.append(String.join(",", strings));
