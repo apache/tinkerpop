@@ -780,6 +780,10 @@ g.V().out().map(lambda: "x: len(x.get().value('name'))").sum().toList()         
 <7> The default lambda language is changed back to Gremlin-Python.
 <8> If the `lambda`-prefix is not provided, then it is appended automatically in order to give a more natural look to the expression.
 
+TIP: When running into situations where Groovy cannot properly discern a method signature based on the `Lambda`
+instance created, it will help to fully define the closure in the lambda expression - so rather than
+`lambda: ("it.get().value("name')","gremlin-groovy")`, prefer `lambda: ("x -> x.get().value("name"),"gremlin-groovy")`.
+
 Finally, Gremlin `Bytecode` that includes lambdas requires that the traversal be processed by the
 `ScriptEngine`. To avoid continued recompilation costs, it supports the encoding of bindings, which allow a remote
 engine to to cache traversals that will be reused over and over again save that some parameterization may change. Thus,
@@ -1103,6 +1107,10 @@ g.V().Out().Map<int>(Lambda.Python("lambda x: len(x.get().value('name'))")).Sum<
 
 The `ILambda` interface returned by these two methods inherits interfaces like `IFunction` and `IPredicate` that mirror
 their Java counterparts which makes it possible to use lambdas with Gremlin.Net for the same steps as in Gremlin-Java.
+
+TIP: When running into situations where Groovy cannot properly discern a method signature based on the `Lambda`
+instance created, it will help to fully define the closure in the lambda expression - so rather than
+`Lambda.Groovy("it.get().value('name'))`, prefer `Lambda.Groovy("x -> x.get().value('name'))`.
 
 === Submitting Scripts
 

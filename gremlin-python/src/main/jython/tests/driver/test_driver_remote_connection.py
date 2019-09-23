@@ -92,6 +92,17 @@ class TestDriverRemoteConnection(object):
             __.max_().is_(gt(0)), __.min_().is_(gt(0)))).range_(0, 1).id_().next()
         assert 1 == results
 
+    def test_lambda_traversals(self, remote_connection):
+        statics.load_statics(globals())
+        assert "remoteconnection[ws://localhost:45940/gremlin,gmodern]" == str(remote_connection)
+        g = traversal().withRemote(remote_connection)
+
+        assert 24.0 == g.withSack(1.0, lambda: ("x -> x + 1", "gremlin-groovy")).V().both().sack().sum().next()
+        assert 24.0 == g.withSack(lambda: ("{1.0d}", "gremlin-groovy"), lambda: ("x -> x + 1", "gremlin-groovy")).V().both().sack().sum().next()
+
+        assert 48.0 == g.withSack(1.0, lambda: ("x, y ->  x + y + 1", "gremlin-groovy")).V().both().sack().sum().next()
+        assert 48.0 == g.withSack(lambda: ("{1.0d}", "gremlin-groovy"), lambda: ("x, y ->  x + y + 1", "gremlin-groovy")).V().both().sack().sum().next()
+
     def test_iteration(self, remote_connection):
         statics.load_statics(globals())
         assert "remoteconnection[ws://localhost:45940/gremlin,gmodern]" == str(remote_connection)
