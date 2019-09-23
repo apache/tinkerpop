@@ -19,10 +19,8 @@ under the License.
 import calendar
 import datetime
 import json
-import time
 import uuid
 import math
-import base64
 from collections import OrderedDict
 from decimal import *
 import logging
@@ -330,8 +328,14 @@ class LambdaSerializer(_GraphSONTypeIO):
                 script = "lambda " + script
                 out["script"] = script
             out["arguments"] = six.get_function_code(eval(out["script"])).co_argcount
+        elif language == "gremlin-groovy" and "->" in script:
+            # if the user has explicitly added parameters to the groovy closure then we can easily detect one or two
+            # arg lambdas - if we can't detect 1 or 2 then we just go with "unknown"
+            args = script[0:script.find("->")]
+            out["arguments"] = 2 if "," in args else 1
         else:
             out["arguments"] = -1
+
         return GraphSONUtil.typedValue("Lambda", out)
 
 

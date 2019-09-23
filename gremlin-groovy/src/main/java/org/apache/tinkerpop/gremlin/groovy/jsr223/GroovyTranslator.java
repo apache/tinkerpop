@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
@@ -48,6 +49,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.BinaryOperator;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
  * Converts bytecode to a Groovy string of Gremlin.
@@ -221,8 +225,31 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
                 else {
                     traversalScript.append(".");
                     String temp = methodName + "(";
-                    for (final Object object : instruction.getArguments()) {
-                        temp = temp + convertToString(object) + ",";
+
+                    // have to special case withSack() for Groovy because UnaryOperator and BinaryOperator signatures
+                    // make it impossible for the interpreter to figure out which function to call. specifically we need
+                    // to discern between:
+                    //     withSack(A initialValue, UnaryOperator<A> splitOperator)
+                    //     withSack(A initialValue, BinaryOperator<A> splitOperator)
+                    // and:
+                    //     withSack(Supplier<A> initialValue, UnaryOperator<A> mergeOperator)
+                    //     withSack(Supplier<A> initialValue, BinaryOperator<A> mergeOperator)
+                    if (methodName.equals(TraversalSource.Symbols.withSack) &&
+                            instruction.getArguments().length == 2 && instruction.getArguments()[1] instanceof Lambda) {
+                        final String castFirstArgTo = instruction.getArguments()[0] instanceof Lambda ?
+                                Supplier.class.getName() : "";
+                        final Lambda secondArg = (Lambda) instruction.getArguments()[1];
+                        final String castSecondArgTo = secondArg.getLambdaArguments() == 1 ? UnaryOperator.class.getName() :
+                                BinaryOperator.class.getName();
+                        if (!castFirstArgTo.isEmpty())
+                            temp = temp + String.format("(%s) ", castFirstArgTo);
+                        temp = temp + String.format("%s, (%s) %s,",
+                                convertToString(instruction.getArguments()[0]), castSecondArgTo,
+                                convertToString(instruction.getArguments()[1]));
+                    } else {
+                        for (final Object object : instruction.getArguments()) {
+                            temp = temp + convertToString(object) + ",";
+                        }
                     }
                     traversalScript.append(temp.substring(0, temp.length() - 1)).append(")");
                 }

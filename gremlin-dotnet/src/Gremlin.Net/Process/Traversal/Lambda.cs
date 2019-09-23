@@ -42,7 +42,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Gets the arguments of this lambda.
         /// </summary>
-        object Arguments { get;  }
+        int Arguments { get;  }
     }
 
     /// <summary>
@@ -57,7 +57,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <returns>The created lambda.</returns>
         public static ILambda Groovy(string expression)
         {
-            return new StringBasedLambda(expression, "gremlin-groovy");
+            return new GroovyStringBasedLambda(expression);
         }
 
         /// <summary>
