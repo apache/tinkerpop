@@ -32,6 +32,21 @@ chaining ``(a.b.c)``, round bracket function arguments ``(a(b,c))```, and suppor
 ``(a(b()) vs a(__.b()))```. As such, anyone familiar with Gremlin-Java will immediately be able to work with
 Gremlin-Python. Moreover, there are a few added constructs to Gremlin-Python that make traversals a bit more succinct.
 
+Gremlin-Python is designed to connect to a "server" that is hosting a TinkerPop-enabled graph system. That "server"
+could be `Gremlin Server <http://tinkerpop.apache.org/docs/current/reference/#gremlin-server>`_ or a
+`remote Gremlin provider` <http://tinkerpop.apache.org/docs/current/reference/#connecting-rgp>`_ that exposes
+protocols by which Gremlin-Python can connect.
+
+A typical connection to a server running on "localhost" that supports the Gremlin Server protocol using websockets
+from the Python shell looks like this:
+
+    >>> from gremlin_python.process.anonymous_traversal import traversal
+    >>> from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
+    >>> g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
+
+Once "g" has been established as a connection, it is then possible to start writing Gremlin traversals to query the
+remote graph:
+
     >>> g.V().both()[1:3].toList()
     [v[2], v[4]]
     >>> g.V().both()[1].toList()
