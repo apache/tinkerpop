@@ -44,7 +44,7 @@ from the Python shell looks like this:
     >>> from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
     >>> g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
 
-Once "g" has been established as a connection, it is then possible to start writing Gremlin traversals to query the
+Once "g" has been created using a connection, it is then possible to start writing Gremlin traversals to query the
 remote graph:
 
     >>> g.V().both()[1:3].toList()
