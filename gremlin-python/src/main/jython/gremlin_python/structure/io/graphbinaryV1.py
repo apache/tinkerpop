@@ -537,8 +537,9 @@ class EdgeIO(_GraphBinaryTypeIO):
     def _read_edge(cls, b, r):
         edgeid = r.readObject(b)
         edgelbl = r.toObject(b, DataType.string, False)
-        edge = Edge(edgeid, Vertex(r.readObject(b), r.toObject(b, DataType.string, False)),
-                    edgelbl, Vertex(r.readObject(b), r.toObject(b, DataType.string, False)))
+        inv = Vertex(r.readObject(b), r.toObject(b, DataType.string, False))
+        outv = Vertex(r.readObject(b), r.toObject(b, DataType.string, False))
+        edge = Edge(edgeid, outv, edgelbl, inv)
         b.read(4)
         return edge
 
@@ -813,6 +814,11 @@ class LambdaSerializer(_GraphBinaryTypeIO):
             if not script.strip().startswith("lambda"):
                 script_cleaned = "lambda " + script
             script_args = six.get_function_code(eval(script_cleaned)).co_argcount
+        elif language == "gremlin-groovy" and "->" in script:
+            # if the user has explicitly added parameters to the groovy closure then we can easily detect one or two
+            # arg lambdas - if we can't detect 1 or 2 then we just go with "unknown"
+            args = script[0:script.find("->")]
+            script_args = 2 if "," in args else 1
 
         StringIO.dictify(script_cleaned, writer, to_extend, True, False)
         to_extend.extend(int32_pack(script_args))

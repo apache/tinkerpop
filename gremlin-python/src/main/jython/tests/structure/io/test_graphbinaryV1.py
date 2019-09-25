@@ -138,6 +138,8 @@ class TestGraphSONWriter(object):
         x = Edge(123, Vertex(1, 'person'), "developed", Vertex(10, "software"))
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
         assert x == output
+        assert x.inV == output.inV
+        assert x.outV == output.outV
 
     def test_path(self):
         x = Path(["x", "y", "z"], [1, 2, 3])

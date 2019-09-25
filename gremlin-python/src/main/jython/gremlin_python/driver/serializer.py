@@ -72,8 +72,8 @@ class Traversal(Processor):
         return self.keys(args)
 
     def gather(self, args):
-        side_effect = args['sideEffect']
-        args['sideEffect'] = {'@type': 'g:UUID', '@value': side_effect}
+        side_effect = uuid.UUID(args['sideEffect'])
+        args['sideEffect'] = self._writer.toDict(side_effect)
         aliases = args.get('aliases', '')
         if not aliases:
             aliases = {'g': 'g'}
@@ -81,8 +81,8 @@ class Traversal(Processor):
         return args
 
     def keys(self, args):
-        side_effect = args['sideEffect']
-        args['sideEffect'] = {'@type': 'g:UUID', '@value': side_effect}
+        side_effect = uuid.UUID(args['sideEffect'])
+        args['sideEffect'] = self._writer.toDict(side_effect)
         return args
 
 
@@ -251,7 +251,7 @@ class GraphBinarySerializersV1(object):
             # just works but python 2 bytearray is bound to ByteBufferType so it writes DataType.bytebuffer
             # rather than DataType.bytecode and the server gets confused. special casing this for now until
             # it can be refactored
-            if k == "gremlin":
+            if k == "gremlin" or k == "sideEffect":
                 ba.extend(v)
             else:
                 self._graphbinary_writer.toDict(v, ba)
