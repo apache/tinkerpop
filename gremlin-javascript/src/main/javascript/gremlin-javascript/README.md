@@ -47,7 +47,7 @@ const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
 const g = traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
 ```
 
-Once "g" has been established as a connection, it is then possible to start writing Gremlin traversals to query the 
+Once "g" has been created using a connection, it is then possible to start writing Gremlin traversals to query the 
 remote graph:
 
 ```javascript
