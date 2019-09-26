@@ -26,6 +26,8 @@ import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReservedKeysVerificationStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -46,7 +48,6 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoClassResolverV1d0;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
-import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.kryo.ClassResolver;
@@ -67,6 +68,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -78,9 +80,11 @@ import java.util.function.Supplier;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 import static org.mockito.Mockito.mock;
 
@@ -104,7 +108,7 @@ public class TinkerGraphTest {
         g.createIndex("oid1", Edge.class);
         g.createIndex("oid2", Edge.class);
 
-        // add the same one twice to check idempotance
+        // add the same one twice to check idempotency
         g.createIndex("name1", Vertex.class);
 
         keys = g.getIndexedKeys(Vertex.class);
@@ -683,6 +687,29 @@ public class TinkerGraphTest {
         final List<Edge> expected = g.E(7, 7, 8, 9).order().by(T.id).toList();
         assertEquals(expected, g.withComputer(Computer.compute().workers(3)).V(1, 2).optional(__.bothE().dedup()).order().by(T.id).toList());
         assertEquals(expected, g.withComputer(Computer.compute().workers(4)).V(1, 2).optional(__.bothE().dedup()).order().by(T.id).toList());
+    }
+
+    @Test
+    public void shouldReservedKeyVerify() {
+        final Set<String> reserved = new HashSet<>(Arrays.asList("something", "id", "label"));
+        final GraphTraversalSource g = TinkerGraph.open().traversal().withStrategies(
+                ReservedKeysVerificationStrategy.build().reservedKeys(reserved).throwException().create());
+
+        g.addV("person").property(T.id, 123).iterate();
+
+        try {
+            g.addV("person").property("id", 123).iterate();
+            fail("Verification exception expected");
+        } catch (IllegalStateException ve) {
+            assertThat(ve.getMessage(), containsString("that is setting a property key to a reserved word"));
+        }
+
+        try {
+            g.addV("person").property("something", 123).iterate();
+            fail("Verification exception expected");
+        } catch (IllegalStateException ve) {
+            assertThat(ve.getMessage(), containsString("that is setting a property key to a reserved word"));
+        }
     }
 
     /**

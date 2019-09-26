@@ -22,6 +22,7 @@ import pytest
 from tornado import ioloop, gen
 
 from gremlin_python import statics
+from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.statics import long
 from gremlin_python.driver.driver_remote_connection import (
     DriverRemoteConnection)
@@ -31,7 +32,7 @@ from gremlin_python.process.traversal import P
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.structure.graph import Vertex
-from gremlin_python.process.strategies import SubgraphStrategy
+from gremlin_python.process.strategies import SubgraphStrategy, ReservedKeysVerificationStrategy
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
@@ -180,6 +181,18 @@ class TestDriverRemoteConnection(object):
         g = traversal().withRemote(remote_connection).withComputer()
         assert 6 == g.V().count().next()
         assert 6 == g.E().count().next()
+        #
+        g = traversal().withRemote(remote_connection). \
+            withStrategies(ReservedKeysVerificationStrategy(throw_exception=True))
+        try:
+            g.addV("person").property("id", "please-don't-use-id").iterate()
+            assert False
+        except GremlinServerError as gse:
+            assert gse.status_code == 500
+        except KeyError as ke:
+            # gross we need to fix this: https://issues.apache.org/jira/browse/TINKERPOP-2297
+            # would prefer to assert a GremlinServerError status code
+            assert True
 
 
 def test_in_tornado_app():

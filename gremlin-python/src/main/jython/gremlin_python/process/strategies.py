@@ -64,7 +64,7 @@ class PartitionStrategy(TraversalStrategy):
 
 
 class SubgraphStrategy(TraversalStrategy):
-    
+
     def __init__(self, vertices=None, edges=None, vertex_properties=None):
         TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy")
         if vertices is not None:
@@ -175,6 +175,7 @@ class GraphFilterStrategy(TraversalStrategy):
         TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy")
 
 
+
 class EarlyLimitStrategy(TraversalStrategy):
     def __init__(self):
         TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategy")
@@ -192,3 +193,18 @@ class LambdaRestrictionStrategy(TraversalStrategy):
 class ReadOnlyStrategy(TraversalStrategy):
     def __init__(self):
         TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy")
+
+
+class EdgeLabelVerificationStrategy(TraversalStrategy):
+    def __init__(self, log_warning=False, throw_exception=False):
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy")
+        self.configuration["logWarning"] = log_warning
+        self.configuration["throwException"] = throw_exception
+
+
+class ReservedKeysVerificationStrategy(TraversalStrategy):
+    def __init__(self, log_warning=False, throw_exception=False, keys=["id", "label"]):
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReservedKeysVerificationStrategy")
+        self.configuration["logWarning"] = log_warning
+        self.configuration["throwException"] = throw_exception
+        self.configuration["keys"] = keys

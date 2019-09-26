@@ -489,8 +489,11 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed `TraversalExplanation` deserialization in GraphSON 2 and 3 which was not supported before in Java.
 * Added support for custom request headers in Python.
 * Deprecated `scriptEvaluationTimeout` in favor of the more generic `evaluationTimeout`.
-* Update jackson databind 2.9.9.3.
 * Bumped jackson databind 2.9.9.3.
+* Added `ReservedKeysVerificationStrategy` to allow warnings or exceptions when certain keys are used for properties.
+* Added the `AbstractWarningVerificationStrategy` base class for "warning" style `VerificationStrategy` implementations.
+* Refactored `EdgeLabelVerificationStrategy` to use `AbstractWarningVerificationStrategy`.
+* Added `EdgeLabelVerificationStrategy` to Python.
 * Fixed Java driver authentication problems when calling the driver from multiple threads.
 * Modified Java driver to use IP address rather than hostname to create connections.
 * Fixed potential for `NullPointerException` with empty identifiers in `GraphStep`.
