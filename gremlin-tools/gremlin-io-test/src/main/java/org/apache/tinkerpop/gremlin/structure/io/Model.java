@@ -40,6 +40,7 @@ import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.graphbinary.GraphBinaryCompatibility;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONCompatibility;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoCompatibility;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
@@ -92,6 +93,7 @@ public class Model {
     private static final List<Compatibility> ALL = Collections.unmodifiableList(new ArrayList<Compatibility>() {{
         addAll(Arrays.asList(GraphSONCompatibility.values()));
         addAll(Arrays.asList(GryoCompatibility.values()));
+        addAll(Arrays.asList(GraphBinaryCompatibility.values()));
     }});
 
     private static final Model model = new Model();
@@ -104,6 +106,10 @@ public class Model {
         final TinkerGraph graph = TinkerGraph.open(conf);
         TinkerFactory.generateTheCrew(graph);
         final GraphTraversalSource g = graph.traversal();
+
+        // TODO: gotta fix graphbinary
+        final Compatibility[] noTypeGraphSONPlusBrokenGraphBinary = Compatibilities.with(GraphSONCompatibility.class)
+                .configuredAs(".*no-types|v1d0").join(Compatibilities.with(GraphBinaryCompatibility.class)).matchToArray();
 
         final Compatibility[] noTypeGraphSONPlusGryo3_2_3 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.2.4").join(Compatibilities.UNTYPED_GRAPHSON).matchToArray();
         final Compatibility[] noTypeGraphSONPlusGryo3_3_0 = Compatibilities.with(GryoCompatibility.class).beforeRelease("3.3.0").join(Compatibilities.UNTYPED_GRAPHSON).matchToArray();
@@ -259,7 +265,7 @@ public class Model {
         addExtendedEntry(new Short("100"), "Short", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addExtendedEntry(Year.of(2016), "Year", "The following example is of the `Year` \"2016\".", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
         addExtendedEntry(YearMonth.of(2016, 6), "YearMonth", "The following example is a `YearMonth` of \"June 2016\"", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
-        addExtendedEntry(ZonedDateTime.of(2016, 12, 23, 12, 12, 24, 36, ZoneId.of("GMT+2")), "ZonedDateTime", "", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
+        addExtendedEntry(ZonedDateTime.of(2016, 12, 23, 12, 12, 24, 36, ZoneId.of("GMT+2")), "ZonedDateTime", "", noTypeGraphSONPlusBrokenGraphBinary);
         addExtendedEntry(ZoneOffset.ofHoursMinutesSeconds(3, 6, 9), "ZoneOffset", "The following example is a `ZoneOffset` of three hours, six minutes, and nine seconds.", Compatibilities.UNTYPED_GRAPHSON.matchToArray());
     }
 
@@ -344,6 +350,7 @@ public class Model {
     private void addRequestMessageEntry(final Object obj, final String title, final String description) {
         final List<Compatibility> incompatibilityList = Compatibilities.with(GryoCompatibility.class)
                 .before("3.0")
+                .join(Compatibilities.with(GraphBinaryCompatibility.class))
                 .match();
 
         final Compatibility[] incompatibilities = new Compatibility[incompatibilityList.size()];
@@ -354,6 +361,7 @@ public class Model {
     private void addResponseMessageEntry(final Object obj, final String title, final String description) {
         final List<Compatibility> incompatibilityList = Compatibilities.with(GryoCompatibility.class)
                 .before("3.0")
+                .join(Compatibilities.with(GraphBinaryCompatibility.class))
                 .match();
 
         // TODO: temporary problem? seems to be something breaking in vertex serialization
@@ -427,6 +435,8 @@ public class Model {
                 return "gryo-" + ((GryoCompatibility) c).name();
             else if (c instanceof GraphSONCompatibility)
                 return "graphson-" + ((GraphSONCompatibility) c).name();
+            else if (c instanceof GraphBinaryCompatibility)
+                return "graphbinary-" + ((GraphBinaryCompatibility) c).name();
             else
                 throw new IllegalStateException("No support for the provided Compatibility type");
         }).collect(Collectors.toList()));
@@ -490,6 +500,10 @@ public class Model {
 
         public boolean hasGraphSONCompatibility() {
             return compatibleWith.stream().anyMatch(c -> c instanceof GryoCompatibility);
+        }
+
+        public boolean hasGraphBinaryCompatibility() {
+            return compatibleWith.stream().anyMatch(c -> c instanceof GraphBinaryCompatibility);
         }
     }
 }

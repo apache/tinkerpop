@@ -16,6 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
+
 import pytest
 
 from tornado import ioloop, gen
@@ -38,7 +39,6 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 class TestDriverRemoteConnection(object):
     def test_traversals(self, remote_connection):
         statics.load_statics(globals())
-        assert "remoteconnection[ws://localhost:45940/gremlin,gmodern]" == str(remote_connection)
         g = traversal().withRemote(remote_connection)
 
         assert long(6) == g.V().count().toList()[0]
@@ -60,8 +60,7 @@ class TestDriverRemoteConnection(object):
         assert 4 == g.V()[2:].count().next()
         assert 2 == g.V()[:2].count().next()
         # #
-        results = g.withSideEffect('a', ['josh', 'peter']).V(1).out('created').in_('created').values('name').where(
-            within('a')).toList()
+        results = g.withSideEffect('a', ['josh', 'peter']).V(1).out('created').in_('created').values('name').where(P.within('a')).toList()
         assert 2 == len(results)
         assert 'josh' in results
         assert 'peter' in results
@@ -86,6 +85,10 @@ class TestDriverRemoteConnection(object):
         assert 'marko' in results
         assert 'vadas' in results
         # #
+        results = g.V().has('person', 'name', 'marko').map(lambda: ("it.get().value('name')", "gremlin-groovy")).toList()
+        assert 1 == len(results)
+        assert 'marko' in results
+        # #
         # this test just validates that the underscored versions of steps conflicting with Gremlin work
         # properly and can be removed when the old steps are removed - TINKERPOP-2272
         results = g.V().filter_(__.values('age').sum_().and_(
@@ -105,7 +108,6 @@ class TestDriverRemoteConnection(object):
 
     def test_iteration(self, remote_connection):
         statics.load_statics(globals())
-        assert "remoteconnection[ws://localhost:45940/gremlin,gmodern]" == str(remote_connection)
         g = traversal().withRemote(remote_connection)
 
         t = g.V().count()
@@ -143,11 +145,11 @@ class TestDriverRemoteConnection(object):
 
     def test_strategies(self, remote_connection):
         statics.load_statics(globals())
-        #
         g = traversal().withRemote(remote_connection). \
             withStrategies(TraversalStrategy("SubgraphStrategy",
                                              {"vertices": __.hasLabel("person"),
-                                              "edges": __.hasLabel("created")}))
+                                              "edges": __.hasLabel("created")},
+                                              "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy"))
         assert 4 == g.V().count().next()
         assert 0 == g.E().count().next()
         assert 1 == g.V().label().dedup().count().next()
@@ -180,12 +182,11 @@ class TestDriverRemoteConnection(object):
         assert 6 == g.E().count().next()
 
 
-def test_in_tornado_app(remote_connection):
+def test_in_tornado_app():
     # Make sure nothing weird with loops
     @gen.coroutine
     def go():
-        conn = DriverRemoteConnection(
-            'ws://localhost:45940/gremlin', 'gmodern', pool_size=4)
+        conn = DriverRemoteConnection('ws://localhost:45940/gremlin', 'gmodern', pool_size=4)
         g = traversal().withRemote(conn)
         yield gen.sleep(0)
         assert len(g.V().toList()) == 6

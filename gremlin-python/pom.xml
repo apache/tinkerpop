@@ -426,6 +426,13 @@ limitations under the License.
                                             <env key="PYTHONIOENCODING" value="utf-8:surrogateescape"/>
                                             <arg line="-f dots -e -t -b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/ --user-data=&quot;serializer=application/vnd.gremlin-v3.0+json&quot;"/> <!-- -no-line-jump -->
                                         </exec>
+                                        <!-- run for graphbinary 1.0 -->
+                                        <exec executable="env/bin/radish" dir="${project.build.directory}/python2"
+                                              failonerror="true">
+                                            <env key="PYTHONPATH" value=""/>
+                                            <env key="PYTHONIOENCODING" value="utf-8:surrogateescape"/>
+                                            <arg line="-f dots -e -t -b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/ --user-data=&quot;serializer=application/vnd.graphbinary-v1.0&quot;"/> <!-- -no-line-jump -->
+                                        </exec>
                                     </target>
                                 </configuration>
                             </execution>

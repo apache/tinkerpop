@@ -558,7 +558,8 @@ class TraversalStrategies(object):
 
 
 class TraversalStrategy(object):
-    def __init__(self, strategy_name=None, configuration=None):
+    def __init__(self, strategy_name=None, configuration=None, fqcn=None):
+        self.fqcn = fqcn
         self.strategy_name = type(self).__name__ if strategy_name is None else strategy_name
         self.configuration = {} if configuration is None else configuration
 
@@ -655,7 +656,7 @@ class Bindings(object):
 
 
 class Binding(object):
-    def __init__(self,key,value):
+    def __init__(self, key, value):
         self.key = key
         self.value = value
 
