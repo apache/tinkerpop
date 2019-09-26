@@ -29,6 +29,22 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.3.9/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== ReservedKeysVerificationStrategy
+
+`ReservedKeysVerificationStrategy` is a new `VerificationStrategy` that can be used to help prevent traversals from
+adding property keys that are protected. They may be protected as a result of the key being a reserved keyword of the
+underlying graph system or they key may simply violate some standard conventions.
+
+[source,text]
+----
+gremlin> g.withStrategies(ReservedKeysVerificationStrategy.build().throwException().create()).addV('person').property("id",123)
+The provided traversal contains a AddVertexStartStep that is setting a property key to a reserved word: id
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+----
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-2280[TINKERPOP-2280]
+
 ==== Javascript ResponseError
 
 Gremlin Javascript now enables more robust error handling by way of a `ResponseError` which provides access to more

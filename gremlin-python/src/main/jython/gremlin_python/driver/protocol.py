@@ -27,6 +27,7 @@ except ImportError:
     import json
 
 from gremlin_python.driver import serializer, request
+from gremlin_python.driver.resultset import ResultSet
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
@@ -81,7 +82,7 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
 
         message = self._message_serializer.deserialize_message(message)
         request_id = message['requestId']
-        result_set = results_dict[request_id]
+        result_set = results_dict[request_id] if request_id in results_dict else ResultSet(None, None)
         status_code = message['status']['code']
         aggregate_to = message['result']['meta'].get('aggregateTo', 'list')
         data = message['result']['data']
