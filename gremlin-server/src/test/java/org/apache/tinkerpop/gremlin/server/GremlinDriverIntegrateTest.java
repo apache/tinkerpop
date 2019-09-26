@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
-import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
@@ -77,6 +76,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -354,7 +354,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should not have gone through because the server is not running");
         } catch (Exception i) {
             final Throwable root = ExceptionUtils.getRootCause(i);
-            assertThat(root, instanceOf(NoHostAvailableException.class));
+            assertThat(root, instanceOf(TimeoutException.class));
         }
 
         startServer();
@@ -388,7 +388,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should not have gone through because the server is not running");
         } catch (Exception i) {
             final Throwable root = ExceptionUtils.getRootCause(i);
-            assertThat(root, instanceOf(NoHostAvailableException.class));
+            assertThat(root, instanceOf(TimeoutException.class));
         }
 
         startServer();
@@ -984,8 +984,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldFailClientSideWithTooLargeAResponse() {
-        final int maxContentLength = 128;
-        final Cluster cluster = TestClientFactory.build().maxContentLength(maxContentLength).create();
+        final Cluster cluster = TestClientFactory.build().maxContentLength(1).create();
         final Client client = cluster.connect();
 
         try {
@@ -994,7 +993,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw an exception.");
         } catch (Exception re) {
             final Throwable root = ExceptionUtils.getRootCause(re);
-            assertTrue(root.getMessage().equals("Max frame length of " + maxContentLength + " has been exceeded."));
+            assertTrue(root.getMessage().equals("Max frame length of 1 has been exceeded."));
         } finally {
             cluster.close();
         }

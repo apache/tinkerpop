@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.server.handler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.codec.base64.Base64Decoder;
 import io.netty.util.Attribute;
 
 import java.net.InetAddress;
@@ -35,6 +37,7 @@ import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
@@ -142,14 +145,10 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
                         ctx.writeAndFlush(error);
                     }
                 } else {
-                    // the authenticator has been set for the context, but for some reason the client isn't sending
-                    // the required keys to complete the handshake. this could be related to an initial failure on
-                    // the client side with the first authentication process so just fire more authentication
-                    // challenges at it.
-                    request.set(requestMessage);
-                    final ResponseMessage authenticate = ResponseMessage.build(requestMessage)
-                            .code(ResponseStatusCode.AUTHENTICATE).create();
-                    ctx.writeAndFlush(authenticate);
+                    final ResponseMessage error = ResponseMessage.build(requestMessage)
+                            .statusMessage("Failed to authenticate")
+                            .code(ResponseStatusCode.UNAUTHORIZED).create();
+                    ctx.writeAndFlush(error);
                 }
             }
         }
