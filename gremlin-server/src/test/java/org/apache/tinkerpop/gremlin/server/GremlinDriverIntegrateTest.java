@@ -191,9 +191,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldProcessEvalInterruption":
                 settings.evaluationTimeout = 1500;
                 break;
-            case "shouldProcessEvalTimeoutOverride":
-                settings.scriptEvaluationTimeout = 15000;
-                break;
         }
 
         return settings;
@@ -219,23 +216,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         // should not die completely just because we had a bad serialization error.  that kind of stuff happens
         // from time to time, especially in the console if you're just exploring.
         assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-
-        cluster.close();
-    }
-
-    @Test
-    public void shouldProcessEvalTimeoutOverride() throws Exception {
-        final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect();
-        final RequestOptions options = RequestOptions.build().timeout(500).create();
-
-        try {
-            client.submit("Thread.sleep(5000);'done'", options).all().get();
-            fail("Should have timed out");
-        } catch (Exception ex) {
-            final ResponseException re = (ResponseException) ex.getCause();
-            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, re.getResponseStatusCode());
-        }
 
         cluster.close();
     }

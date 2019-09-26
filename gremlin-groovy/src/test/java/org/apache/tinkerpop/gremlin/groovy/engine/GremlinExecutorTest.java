@@ -265,7 +265,7 @@ public class GremlinExecutorTest {
         final CountDownLatch timeOutCount = new CountDownLatch(1);
 
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .scriptEvaluationTimeout(250)
+                .evaluationTimeout(250)
                 .afterFailure((b, e) -> failureCalled.set(true))
                 .afterSuccess((b) -> successCalled.set(true))
                 .afterTimeout((b) -> timeOutCount.countDown()).create();
@@ -319,13 +319,13 @@ public class GremlinExecutorTest {
         final CountDownLatch timeOutCount = new CountDownLatch(1);
 
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .scriptEvaluationTimeout(10000)
+                .evaluationTimeout(10000)
                 .afterFailure((b, e) -> failureCalled.set(true))
                 .afterSuccess((b) -> successCalled.set(true))
                 .afterTimeout((b) -> timeOutCount.countDown()).create();
         try {
             final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build()
-                    .scriptEvaluationTimeoutOverride(250L).create();
+                    .evaluationTimeoutOverride(250L).create();
             gremlinExecutor.eval("Thread.sleep(1000);10", "gremlin-groovy", new SimpleBindings(), lifeCycle).get();
             fail("This script should have timed out with an exception");
         } catch (Exception ex) {
@@ -458,15 +458,15 @@ public class GremlinExecutorTest {
 
     @Test
     public void shouldCancelTimeoutOnSuccessfulScript() throws Exception {
-        final long scriptEvaluationTimeout = 5_000;
+        final long evaluationTimeout = 5_000;
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .scriptEvaluationTimeout(scriptEvaluationTimeout)
+                .evaluationTimeout(evaluationTimeout)
                 .create();
 
         final long now = System.currentTimeMillis();
         assertEquals(2, gremlinExecutor.eval("1+1").get());
         gremlinExecutor.close();
-        assertTrue(System.currentTimeMillis() - now < scriptEvaluationTimeout);
+        assertTrue(System.currentTimeMillis() - now < evaluationTimeout);
     }
 
     @Test

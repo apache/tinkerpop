@@ -40,12 +40,6 @@ public final class Tokens {
     public static final String ARGS_FORCE = "force";
     public static final String ARGS_GREMLIN = "gremlin";
     public static final String ARGS_LANGUAGE = "language";
-
-    /**
-     * @deprecated As of release 3.3.9, replaced by {@link #ARGS_EVAL_TIMEOUT}.
-     */
-    @Deprecated
-    public static final String ARGS_SCRIPT_EVAL_TIMEOUT = "scriptEvaluationTimeout";
     public static final String ARGS_EVAL_TIMEOUT = "evaluationTimeout";
     public static final String ARGS_HOST = "host";
     public static final String ARGS_SESSION = "session";

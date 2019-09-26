@@ -127,7 +127,7 @@ public final class RequestOptions {
         }
 
         /**
-         * The per client request override in milliseconds for the server configured {@code scriptEvaluationTimeout}.
+         * The per client request override in milliseconds for the server configured {@code evaluationTimeout}.
          * If this value is not set, then the configuration for the server is used.
          */
         public Builder timeout(final long timeout) {
