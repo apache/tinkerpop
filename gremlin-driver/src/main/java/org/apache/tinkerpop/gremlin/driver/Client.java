@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
-import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -508,7 +507,7 @@ public abstract class Client {
             // you can get no possible hosts in more than a few situations. perhaps the servers are just all down.
             // or perhaps the client is not configured properly (disables ssl when ssl is enabled on the server).
             if (!possibleHosts.hasNext())
-                throw new NoHostAvailableException();
+                throw new TimeoutException("Timed out while waiting for an available host - check the client configuration and connectivity to the server if this message persists");
 
             final Host bestHost = possibleHosts.next();
             final ConnectionPool pool = hostConnectionPools.get(bestHost);
@@ -721,7 +720,7 @@ public abstract class Client {
             // chooses an available host at random
             final List<Host> hosts = cluster.allHosts()
                     .stream().filter(Host::isAvailable).collect(Collectors.toList());
-            if (hosts.isEmpty()) new NoHostAvailableException();
+            if (hosts.isEmpty()) throw new IllegalStateException("No available host in the cluster");
             Collections.shuffle(hosts);
             final Host host = hosts.get(0);
             connectionPool = new ConnectionPool(host, this, Optional.of(1), Optional.of(1));
