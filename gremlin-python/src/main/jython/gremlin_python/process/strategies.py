@@ -168,6 +168,7 @@ class GraphFilterStrategy(TraversalStrategy):
     def __init__(self):
         TraversalStrategy.__init__(self)
 
+
 class EarlyLimitStrategy(TraversalStrategy):
     def __init__(self):
         TraversalStrategy.__init__(self)
@@ -175,6 +176,7 @@ class EarlyLimitStrategy(TraversalStrategy):
 ###########################
 # VERIFICATION STRATEGIES #
 ###########################
+
 
 class LambdaRestrictionStrategy(TraversalStrategy):
     def __init__(self):
@@ -184,3 +186,18 @@ class LambdaRestrictionStrategy(TraversalStrategy):
 class ReadOnlyStrategy(TraversalStrategy):
     def __init__(self):
         TraversalStrategy.__init__(self)
+
+
+class EdgeLabelVerificationStrategy(TraversalStrategy):
+    def __init__(self, log_warning=False, throw_exception=False):
+        TraversalStrategy.__init__(self)
+        self.configuration["logWarning"] = log_warning
+        self.configuration["throwException"] = throw_exception
+
+
+class ReservedKeysVerificationStrategy(TraversalStrategy):
+    def __init__(self, log_warning=False, throw_exception=False, keys=["id", "label"]):
+        TraversalStrategy.__init__(self)
+        self.configuration["logWarning"] = log_warning
+        self.configuration["throwException"] = throw_exception
+        self.configuration["keys"] = keys

@@ -46,86 +46,39 @@ import java.util.Map;
  * __.toE(IN)          // throws an IllegalStateException
  * </pre>
  */
-public final class EdgeLabelVerificationStrategy
-        extends AbstractTraversalStrategy<TraversalStrategy.VerificationStrategy>
-        implements TraversalStrategy.VerificationStrategy {
+public final class EdgeLabelVerificationStrategy extends AbstractWarningVerificationStrategy {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EdgeLabelVerificationStrategy.class);
-
-    private static final String THROW_EXCEPTION = "throwException";
-    private static final String LOG_WARNING = "logWarning";
-
-    private final boolean throwException;
-    private final boolean logWarning;
-
-    private EdgeLabelVerificationStrategy(final boolean throwException, final boolean logWarning) {
-        this.throwException = throwException;
-        this.logWarning = logWarning;
+    private EdgeLabelVerificationStrategy(final Builder builder) {
+        super(builder);
     }
 
     @Override
-    public void apply(final Traversal.Admin<?, ?> traversal) {
+    void verify(final Traversal.Admin<?, ?> traversal) throws VerificationException {
         for (final Step<?, ?> step : traversal.getSteps()) {
             if (step instanceof VertexStep && ((VertexStep) step).getEdgeLabels().length == 0) {
                 final String msg = String.format(
                         "The provided traversal contains a vertex step without any specified edge label: %s\nAlways " +
                                 "specify edge labels which restrict traversal paths ensuring optimal performance.", step);
-                if (logWarning) {
-                    LOGGER.warn(msg);
-                }
-                if (throwException) {
-                    throw new VerificationException(msg, traversal);
-                }
+                throw new VerificationException(msg, traversal);
             }
         }
     }
 
     public static EdgeLabelVerificationStrategy create(final Configuration configuration) {
-        return new EdgeLabelVerificationStrategy(
-                configuration.getBoolean(THROW_EXCEPTION, false),
-                configuration.getBoolean(LOG_WARNING, false));
-    }
-
-    @Override
-    public Configuration getConfiguration() {
-        final Map<String, Object> m = new HashMap<>(2);
-        m.put(THROW_EXCEPTION, this.throwException);
-        m.put(LOG_WARNING, this.logWarning);
-        return new MapConfiguration(m);
+        return build().throwException(configuration.getBoolean(THROW_EXCEPTION, false))
+                        .logWarning(configuration.getBoolean(LOG_WARNING, false)).create();
     }
 
     public static EdgeLabelVerificationStrategy.Builder build() {
         return new EdgeLabelVerificationStrategy.Builder();
     }
 
-    public final static class Builder {
+    public final static class Builder extends AbstractWarningVerificationStrategy.Builder<EdgeLabelVerificationStrategy, Builder> {
+        private Builder() {}
 
-        private boolean throwException;
-        private boolean logWarning;
-
-        private Builder() {
-        }
-
-        public EdgeLabelVerificationStrategy.Builder throwException() {
-            return this.throwException(true);
-        }
-
-        public EdgeLabelVerificationStrategy.Builder throwException(final boolean throwException) {
-            this.throwException = throwException;
-            return this;
-        }
-
-        public EdgeLabelVerificationStrategy.Builder logWarning() {
-            return this.logWarning(true);
-        }
-
-        public EdgeLabelVerificationStrategy.Builder logWarning(final boolean logWarning) {
-            this.logWarning = logWarning;
-            return this;
-        }
-
+        @Override
         public EdgeLabelVerificationStrategy create() {
-            return new EdgeLabelVerificationStrategy(this.throwException, this.logWarning);
+            return new EdgeLabelVerificationStrategy(this);
         }
     }
 }
