@@ -31,7 +31,6 @@ import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.ietf.jgss.GSSException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +54,6 @@ import javax.security.auth.login.LoginException;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslClient;
 import javax.security.sasl.SaslException;
-import javax.xml.ws.Response;
 
 /**
  * Holder for internal handler classes used in constructing the channel pipeline.
@@ -85,29 +83,15 @@ final class Handler {
 
         @Override
         protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessage response) throws Exception {
-            // We are only interested in AUTHENTICATE or UNAUTHORIZED responses here. Everything else can
-            // get passed down the pipeline. 
-            if (response.getStatus().getCode() == ResponseStatusCode.UNAUTHORIZED)
-                channelHandlerContext.attr(saslClientKey).set(null);
-
+            // We are only interested in AUTHENTICATE responses here. Everything else can
+            // get passed down the pipeline
             if (response.getStatus().getCode() == ResponseStatusCode.AUTHENTICATE) {
                 final Attribute<SaslClient> saslClient = ((AttributeMap) channelHandlerContext).attr(saslClientKey);
                 final Attribute<Subject> subject = ((AttributeMap) channelHandlerContext).attr(subjectKey);
                 final RequestMessage.Builder messageBuilder = RequestMessage.build(Tokens.OPS_AUTHENTICATION);
-
                 // First time through we don't have a sasl client
                 if (saslClient.get() == null) {
-                    try {
-                        subject.set(login());
-                    } catch (LoginException le) {
-                        // prevent the client side LoginException from bubbling up since Connection.validate() swallows
-                        // the LoginException and doesn't give feedback to the user.
-                        final ResponseMessage clientSideError = ResponseMessage.build(response.getRequestId())
-                                .code(ResponseStatusCode.FORBIDDEN).statusMessage(le.getMessage()).create();
-                        channelHandlerContext.fireChannelRead(clientSideError);
-                        return;
-                    }
-
+                    subject.set(login());
                     try {
                         saslClient.set(saslClient(getHostName(channelHandlerContext)));
                     } catch (SaslException saslException) {
@@ -122,26 +106,9 @@ final class Handler {
                         return;
                     }
 
-                    try {
-                        messageBuilder.addArg(Tokens.ARGS_SASL_MECHANISM, getMechanism());
-                        messageBuilder.addArg(Tokens.ARGS_SASL, saslClient.get().hasInitialResponse() ?
-                                BASE64_ENCODER.encodeToString(evaluateChallenge(subject, saslClient, NULL_CHALLENGE)) : null);
-                    } catch (SaslException saslException) {
-                        saslClient.set(null);
-
-                        // Build message from SASL and the underlying GSSException if there is one. Perhaps we
-                        // shouldn't include the GSSException message and keep that for the server, but past versions
-                        // have leaked this so for  now we'll maintain it
-                        String errorMessage = saslException.getMessage();
-                        final Throwable cause = saslException.getCause();
-                        if (cause instanceof GSSException)
-                            errorMessage = errorMessage + " - " + cause.getMessage();
-
-                        final ResponseMessage clientSideError = ResponseMessage.build(response.getRequestId())
-                                .code(ResponseStatusCode.FORBIDDEN).statusMessage(errorMessage).create();
-                        channelHandlerContext.fireChannelRead(clientSideError);
-                        return;
-                    }
+                    messageBuilder.addArg(Tokens.ARGS_SASL_MECHANISM, getMechanism());
+                    messageBuilder.addArg(Tokens.ARGS_SASL, saslClient.get().hasInitialResponse() ?
+                            BASE64_ENCODER.encodeToString(evaluateChallenge(subject, saslClient, NULL_CHALLENGE)) : null);
                 } else {
                     // the server sends base64 encoded sasl as well as the byte array. the byte array will eventually be
                     // phased out, but is present now for backward compatibility in 3.2.x
