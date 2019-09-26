@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Provided support for DSLs by way of remote connections through `AnonymousTraversalSource`.
 * Added `elementMap()` step.
+* Added GraphBinary support for Python.
 * Allowed for embedded map assertions in GLV tests.
 * Added `Direction` deserialization support in GLVs.
 

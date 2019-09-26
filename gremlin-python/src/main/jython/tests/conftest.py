@@ -28,9 +28,13 @@ from gremlin_python.driver.driver_remote_connection import (
     DriverRemoteConnection)
 from gremlin_python.driver.protocol import GremlinServerWSProtocol
 from gremlin_python.driver.serializer import (
-    GraphSONMessageSerializer, GraphSONSerializersV2d0,
-    GraphSONSerializersV3d0)
+    GraphSONMessageSerializer, GraphSONSerializersV2d0, GraphSONSerializersV3d0,
+    GraphBinarySerializersV1)
 from gremlin_python.driver.tornado.transport import TornadoTransport
+
+# docker Gremlin Server = 172.17.0.2
+gremlin_server_host = "localhost"
+gremlin_server_url = 'ws://' + gremlin_server_host + ':45940/gremlin'
 
 
 @pytest.fixture
@@ -41,7 +45,7 @@ def connection(request):
     executor = concurrent.futures.ThreadPoolExecutor(5)
     pool = queue.Queue()
     try:
-        conn = Connection('ws://localhost:45941/gremlin', 'gmodern', protocol,
+        conn = Connection(gremlin_server_url, 'gmodern', protocol,
                           lambda: TornadoTransport(), executor, pool)
     except OSError:
         executor.shutdown()
@@ -57,7 +61,7 @@ def connection(request):
 @pytest.fixture
 def client(request):
     try:
-        client = Client('ws://localhost:45940/gremlin', 'gmodern')
+        client = Client(gremlin_server_url, 'gmodern')
     except OSError:
         pytest.skip('Gremlin Server is not running')
     else:
@@ -70,7 +74,8 @@ def client(request):
 @pytest.fixture
 def secure_client(request):
     try:
-        client = Client('ws://localhost:45941/gremlin', 'gmodern', username='stephen', password='password')
+        client = Client('ws://' + gremlin_server_host + ':45941/gremlin', 'gmodern',
+                        username='stephen', password='password')
     except OSError:
         pytest.skip('Gremlin Server is not running')
     else:
@@ -80,14 +85,20 @@ def secure_client(request):
         return client
 
 
-@pytest.fixture(params=['v2', 'v3'])
+@pytest.fixture(params=['graphsonv2', 'graphsonv3', 'graphbinaryv1'])
 def remote_connection(request):
     try:
-        if request.param == 'v2':
-            remote_conn = DriverRemoteConnection('ws://localhost:45940/gremlin', 'gmodern',
+        if request.param == 'graphbinaryv1':
+            remote_conn = DriverRemoteConnection(gremlin_server_url, 'gmodern',
+                                                 message_serializer=serializer.GraphBinarySerializersV1())
+        elif request.param == 'graphsonv2':
+            remote_conn = DriverRemoteConnection(gremlin_server_url, 'gmodern',
                                                  message_serializer=serializer.GraphSONSerializersV2d0())
+        elif request.param == 'graphsonv3':
+            remote_conn = DriverRemoteConnection(gremlin_server_url, 'gmodern',
+                                                 message_serializer=serializer.GraphSONSerializersV3d0())
         else:
-            remote_conn = DriverRemoteConnection('ws://localhost:45940/gremlin', 'gmodern')
+            raise ValueError("Invalid serializer option - " + request.param)
     except OSError:
         pytest.skip('Gremlin Server is not running')
     else:
@@ -100,7 +111,8 @@ def remote_connection(request):
 @pytest.fixture
 def remote_connection_v2(request):
     try:
-        remote_conn = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g', message_serializer=serializer.GraphSONSerializersV2d0())
+        remote_conn = DriverRemoteConnection(gremlin_server_url, 'g',
+                                             message_serializer=serializer.GraphSONSerializersV2d0())
     except OSError:
         pytest.skip('Gremlin Server is not running')
     else:
@@ -118,3 +130,8 @@ def graphson_serializer_v2(request):
 @pytest.fixture
 def graphson_serializer_v3(request):
     return GraphSONSerializersV3d0()
+
+
+@pytest.fixture
+def graphbinary_serializer_v1(request):
+    return GraphBinarySerializersV1()

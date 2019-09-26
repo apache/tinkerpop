@@ -62,14 +62,15 @@ public class PSerializer<T extends P> extends SimpleTypeSerializer<T> {
             args[i] = context.read(buffer);
             argumentClasses[i] = args[i].getClass();
         }
-
-        if ("and".equals(predicateName)) {
+                    
+        if ("and".equals(predicateName))
             return (T) ((P) args[0]).and((P) args[1]);
-        } else if ("or".equals(predicateName)) {
+        else if ("or".equals(predicateName))
             return (T) ((P) args[0]).or((P) args[1]);
-        }
+        else if ("not".equals(predicateName))
+            return (T) P.not((P) args[0]);
 
-        CheckedFunction<Object[], T> f = getMethod(predicateName, argumentClasses);
+        final CheckedFunction<Object[], T> f = getMethod(predicateName, argumentClasses);
 
         try {
             return f.apply(args);
@@ -99,7 +100,12 @@ public class PSerializer<T extends P> extends SimpleTypeSerializer<T> {
                     try {
                         m = classOfP.getMethod(predicateName, Object.class);
                     } catch (NoSuchMethodException ex2) {
-                        throw new SerializationException(String.format("Can't find predicate method: '%s'", predicateName), ex2);
+                        // finally go for the generics
+                        try {
+                            m = classOfP.getMethod(predicateName, Object.class, Object.class);
+                        } catch (NoSuchMethodException ex3) {
+                            throw new SerializationException(String.format("Can't find predicate method: '%s'", predicateName), ex2);
+                        }
                     }
                 }
             }

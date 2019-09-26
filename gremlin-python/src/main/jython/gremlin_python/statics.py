@@ -43,19 +43,20 @@ else:
     from types import TypeType
     from types import ListType
     from types import DictType
+    from types import TypeType
 
 
 class timestamp(float):
     """
     In Python a timestamp is simply a float. This dummy class (similar to long), allows users to wrap a float
-    in a GLV script to make sure the value is serialized as a GraphSON timestamp.
+    in a GLV script to make sure the value is serialized as a Gremlin timestamp.
     """
     pass
 
 
 class SingleByte(int):
     """
-    Provides a way to pass a single byte via GraphSON.
+    Provides a way to pass a single byte via Gremlin.
     """
     def __new__(cls, b):
         if -128 <= b < 128:
@@ -66,7 +67,7 @@ class SingleByte(int):
 
 class SingleChar(str):
     """
-    Provides a way to pass a single character via GraphSON.
+    Provides a way to pass a single character via Gremlin.
     """
     def __new__(cls, c):
         if len(b) == 1:
@@ -74,6 +75,14 @@ class SingleChar(str):
         else:
             raise ValueError("string must contain a single character")
 
+
+class GremlinType(object):
+    """
+    Provides a way to represent a "Java class" for Gremlin.
+    """
+    def __init__(self, gremlin_type):
+        self.gremlin_type = gremlin_type
+        
 
 staticMethods = {}
 staticEnums = {}

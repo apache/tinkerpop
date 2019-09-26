@@ -29,6 +29,23 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.4.4/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Python GraphBinary
+
+There is now support for GraphBinary in Python. As with Java, it remains a working but experimental format that is
+still under evaluation. This new serializer can be used by first ensuring that it is available on the server and then
+configuring the connection as follows:
+
+[source,python]
+----
+from gremlin_python.driver.serializer import GraphBinarySerializersV1
+gremlin_server_url = "ws://172.17.0.2:45940/gremlin"
+remote_conn = DriverRemoteConnection(gremlin_server_url, 'g',
+                                     message_serializer=GraphBinarySerializersV1())
+g = Graph().traversal().withRemote(remote_conn)
+----
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-2279[TINKERPOP-2279]
+
 ==== elementMap() Step
 
 Since graph elements (i.e. `Vertex`, `Edge`, and `VertexProperty`) are returned from remote sources as references

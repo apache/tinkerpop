@@ -165,6 +165,9 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 new Object[] {"Integer", 1, null},
                 new Object[] {"Float", 2f, null},
                 new Object[] {"Double", 3.1d, null},
+                new Object[] {"Double", Double.NaN, null},
+                new Object[] {"Double", Double.POSITIVE_INFINITY, null},
+                new Object[] {"Double", Double.NEGATIVE_INFINITY, null},
                 new Object[] {"Long", 10122L, null},
                 new Object[] {"IntegerZero", 0, null},
                 new Object[] {"FloatZero", 0f, null},
@@ -225,6 +228,7 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 new Object[] {"Por", P.gt(1).or(P.lt(2)), null},
                 new Object[] {"Pnot", P.not(P.lte(1)), null},
                 new Object[] {"Pwithout", P.without(1,2,3,4), null},
+                new Object[] {"Pinside", P.inside(0.0d, 0.6d), null},
                 new Object[] {"TextP", TextP.startingWith("mark"), null},
 
                 // graph

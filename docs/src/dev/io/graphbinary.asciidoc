@@ -32,7 +32,7 @@ It describes arbitrary object graphs with a fully-qualified format:
 
 Where:
 
-* `{type_code}` is a single byte representing the type number.
+* `{type_code}` is a single unsigned byte representing the type number.
 * `{type_info}` is an optional sequence of bytes providing additional information of the type represented. This is
 specially useful for representing complex and custom types.
 * `{value_flag}` is a single byte providing information about the value. Flags have the following meaning:
@@ -423,7 +423,7 @@ Where:
 
 ==== P
 
-Format: `{predicate}{values_length}{value_0}...{value_n}`
+Format: `{name}{values_length}{value_0}...{value_n}`
 
 Where:
 
@@ -532,8 +532,8 @@ Where:
 `{type_code}{type_info}{value_flag}{value}` followed by the "bulk" which is a `Long` value.
 
 If the implementing language does not have a `BulkSet` object to deserialize into, this format can be coerced to a
-`List` and still be considered compliant with Gremlin. Simply create "expand the bulk" by adding the item to the `List`
-the number of times specified by the bulk.
+`List` and still be considered compliant with Gremlin. Simply "expand the bulk" by adding the item to the `List` the
+number of times specified by the bulk.
 
 ==== Tree
 

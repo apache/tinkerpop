@@ -28,31 +28,31 @@ from gremlin_python.process.traversal import TraversalStrategy
 
 class ConnectiveStrategy(TraversalStrategy):
     def __init__(self):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy")
 
 
 class ElementIdStrategy(TraversalStrategy):
     def __init__(self):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy")
 
 
 # EventStrategy doesn't make sense outside JVM traversal machine
 
 class HaltedTraverserStrategy(TraversalStrategy):
     def __init__(self, halted_traverser_factory=None):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy")
         if halted_traverser_factory is not None:
             self.configuration["haltedTraverserFactory"] = halted_traverser_factory
 
 
 class OptionsStrategy(TraversalStrategy):
     def __init__(self, options=None):
-        TraversalStrategy.__init__(self, configuration=options)
+        TraversalStrategy.__init__(self, configuration=options, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy")
 
 
 class PartitionStrategy(TraversalStrategy):
     def __init__(self, partition_key=None, write_partition=None, read_partitions=None, include_meta_properties=None):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy")
         if partition_key is not None:
             self.configuration["partitionKey"] = partition_key
         if write_partition is not None:
@@ -64,8 +64,9 @@ class PartitionStrategy(TraversalStrategy):
 
 
 class SubgraphStrategy(TraversalStrategy):
+    
     def __init__(self, vertices=None, edges=None, vertex_properties=None):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy")
         if vertices is not None:
             self.configuration["vertices"] = vertices
         if edges is not None:
@@ -77,7 +78,7 @@ class SubgraphStrategy(TraversalStrategy):
 class VertexProgramStrategy(TraversalStrategy):
     def __init__(self, graph_computer=None, workers=None, persist=None, result=None, vertices=None, edges=None,
                  configuration=None):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy")
         if graph_computer is not None:
             self.configuration["graphComputer"] = graph_computer
         if workers is not None:
@@ -100,7 +101,7 @@ class VertexProgramStrategy(TraversalStrategy):
 
 class MatchAlgorithmStrategy(TraversalStrategy):
     def __init__(self, match_algorithm=None):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy")
         if match_algorithm is not None:
             self.configuration["matchAlgorithm"] = match_algorithm
 
@@ -111,81 +112,83 @@ class MatchAlgorithmStrategy(TraversalStrategy):
 
 class AdjacentToIncidentStrategy(TraversalStrategy):
     def __init__(self):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy")
 
 
 class FilterRankingStrategy(TraversalStrategy):
     def __init__(self):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy")
 
 
 class IdentityRemovalStrategy(TraversalStrategy):
     def __init__(self):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy")
 
 
 class IncidentToAdjacentStrategy(TraversalStrategy):
     def __init__(self):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategy")
 
 
 class InlineFilterStrategy(TraversalStrategy):
     def __init__(self):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.InlineFilterStrategy")
 
 
 class LazyBarrierStrategy(TraversalStrategy):
     def __init__(self):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.LazyBarrierStrategy")
 
 
 class MatchPredicateStrategy(TraversalStrategy):
     def __init__(self):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchPredicateStrategy")
 
 
 class OrderLimitStrategy(TraversalStrategy):
     def __init__(self):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.OrderLimitStrategy")
 
 
 class PathProcessorStrategy(TraversalStrategy):
     def __init__(self):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathProcessorStrategy")
 
 
 class PathRetractionStrategy(TraversalStrategy):
     def __init__(self):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy")
 
 
 class CountStrategy(TraversalStrategy):
     def __init__(self):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy")
 
 
 class RepeatUnrollStrategy(TraversalStrategy):
     def __init__(self):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy")
 
 
 class GraphFilterStrategy(TraversalStrategy):
     def __init__(self):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy")
+
 
 class EarlyLimitStrategy(TraversalStrategy):
     def __init__(self):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategy")
 
 ###########################
 # VERIFICATION STRATEGIES #
 ###########################
 
+
 class LambdaRestrictionStrategy(TraversalStrategy):
     def __init__(self):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy")
 
 
 class ReadOnlyStrategy(TraversalStrategy):
     def __init__(self):
-        TraversalStrategy.__init__(self)
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy")
