@@ -185,10 +185,8 @@ class TestDriverRemoteConnection(object):
         try:
             g.addV("person").property("id", "please-don't-use-id").iterate()
             assert False
-        except KeyError as gse:
-            # gross we need to fix this: https://issues.apache.org/jira/browse/TINKERPOP-2297
-            # would prefer to assert a GremlinServerError status code
-            assert True
+        except GremlinServerError as gse:
+            assert gse.status_code == 500
 
     def test_side_effects(self, remote_connection):
         statics.load_statics(globals())

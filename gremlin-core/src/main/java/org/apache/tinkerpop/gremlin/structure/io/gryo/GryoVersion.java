@@ -66,6 +66,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Repe
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReservedKeysVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_O_P_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_O_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_S_SE_SL_Traverser;
@@ -340,7 +341,8 @@ public enum GryoVersion {
             add(GryoTypeReg.of(EarlyLimitStrategy.class, 188));
             add(GryoTypeReg.of(MatchStep.CountMatchAlgorithm.class, 160));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 164));
-            add(GryoTypeReg.of(EdgeLabelVerificationStrategy.class, 189));   // ***LAST ID***
+            add(GryoTypeReg.of(EdgeLabelVerificationStrategy.class, 189));
+            add(GryoTypeReg.of(ReservedKeysVerificationStrategy.class, 190));   // ***LAST ID***
 
             add(GryoTypeReg.of(TraverserSet.class, 58));
             add(GryoTypeReg.of(Tree.class, 61));
@@ -560,7 +562,8 @@ public enum GryoVersion {
             add(GryoTypeReg.of(EarlyLimitStrategy.class, 188));
             add(GryoTypeReg.of(MatchStep.CountMatchAlgorithm.class, 160));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 167));
-            add(GryoTypeReg.of(EdgeLabelVerificationStrategy.class, 189));   // ***LAST ID***
+            add(GryoTypeReg.of(EdgeLabelVerificationStrategy.class, 189));
+            add(GryoTypeReg.of(ReservedKeysVerificationStrategy.class, 190));   // ***LAST ID***
             // skip 171, 172 to sync with tp33
             add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));
         }};
