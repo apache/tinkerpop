@@ -189,10 +189,6 @@ class TestDriverRemoteConnection(object):
             assert False
         except GremlinServerError as gse:
             assert gse.status_code == 500
-        except KeyError as ke:
-            # gross we need to fix this: https://issues.apache.org/jira/browse/TINKERPOP-2297
-            # would prefer to assert a GremlinServerError status code
-            assert True
 
 
 def test_in_tornado_app():
