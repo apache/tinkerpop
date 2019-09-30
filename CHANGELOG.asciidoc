@@ -467,6 +467,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Postponed the timing of transport creation to `connection.write` in Gremlin Python.
 * Made `EventStrategy` compatible with multi-valued properties.
 * Changed `TraversalOpProcessor` to throw a `SERVER_ERROR_SCRIPT_EVALUATION` (597) if lambdas don't compile.
+* Bumped `commons-compress` to 1.19 due to CVE-2018-11771.
 
 [[release-3-3-8]]
 === TinkerPop 3.3.8 (Release Date: August 5, 2019)
