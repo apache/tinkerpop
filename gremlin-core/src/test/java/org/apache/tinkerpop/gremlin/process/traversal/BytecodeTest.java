@@ -176,4 +176,15 @@ public class BytecodeTest {
         assertEquals(1, b.getStepInstructions().size());
         assertEquals(2, b.getStepInstructions().get(0).getArguments().length);
     }
+
+    @Test
+    public void shouldAvoidArgumentsNpe() {
+        final Bytecode first = new Bytecode();
+        try {
+            first.addSource("3", null);
+            first.addSource(TraversalSource.Symbols.withoutStrategies, null);
+        } catch (Exception e) {
+            e.getCause().printStackTrace(System.err);
+        }
+    }
 }
