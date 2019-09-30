@@ -127,7 +127,7 @@ public class ClientSingleRequestConnectionIntegrateTest extends AbstractGremlinS
     public void shouldRecoverFromConnectionCloseDueToUnRecoverableError() throws Exception {
         // Set a low value of maxContentLength to intentionally trigger CorruptedFrameException
         final Cluster cluster = TestClientFactory.build()
-                                                 .maxContentLength(64)
+                                                 .maxContentLength(96)
                                                  .maxConnectionPoolSize(1)
                                                  .maxSimultaneousUsagePerConnection(0)
                                                  .minSimultaneousUsagePerConnection(0)
@@ -409,9 +409,9 @@ public class ClientSingleRequestConnectionIntegrateTest extends AbstractGremlinS
             cluster.close();
         }
 
-        assertThat(recordingAppender.getMessages(), hasItem("INFO - Closed ConnectionPool{closing=true, host=Host{address=localhost/127.0.0.1:45940, hostUri=ws://localhost:45940/gremlin}, BusyConnectionCount=0}\n"));
+        assertThat(recordingAppender.logContainsAny("INFO - Closed ConnectionPool\\{closing=true, host=Host\\{address=.*, hostUri=.*\\}, BusyConnectionCount=0\\}"), is(true));
         // No errors or warnings should be printed
-        assertThat(recordingAppender.getMessages(), not(hasItem("ERROR - .*")));
+        assertThat(recordingAppender.logContainsAny("ERROR - .*"), is(false));
     }
 
     @Test
@@ -436,8 +436,8 @@ public class ClientSingleRequestConnectionIntegrateTest extends AbstractGremlinS
         // Close the cluster abruptly while the requests are in flight
         cluster.close();
 
-        assertThat(recordingAppender.getMessages(), hasItem("INFO - Closing active channels borrowed from ChannelPool [BusyConnectionCount=50]\n"));
-        assertThat(recordingAppender.getMessages(), hasItem("INFO - Closed ConnectionPool{closing=true, host=Host{address=localhost/127.0.0.1:45940, hostUri=ws://localhost:45940/gremlin}, BusyConnectionCount=0}\n"));
+        assertThat(recordingAppender.logContainsAny("INFO - Closing active channels borrowed from ChannelPool \\[BusyConnectionCount=50\\]"), is(true));
+        assertThat(recordingAppender.logContainsAny("INFO - Closed ConnectionPool\\{closing=true, host=Host\\{address=.*, hostUri=.*\\}, BusyConnectionCount=0\\}"), is(true));
     }
 
     private Cluster createClusterWithXNumOfConnection(int x) {
