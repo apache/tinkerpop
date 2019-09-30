@@ -62,13 +62,17 @@ public final class Bytecode implements Cloneable, Serializable {
      */
     public void addSource(final String sourceName, final Object... arguments) {
         if (sourceName.equals(TraversalSource.Symbols.withoutStrategies)) {
-            final Class<TraversalStrategy>[] classes = new Class[arguments.length];
-            for (int i = 0; i < arguments.length; i++) {
-                classes[i] = arguments[i] instanceof TraversalStrategyProxy ?
-                        ((TraversalStrategyProxy) arguments[i]).getStrategyClass() :
-                        (Class) arguments[i];
+            if (arguments == null)
+                this.sourceInstructions.add(new Instruction(sourceName, null));
+            else {
+                final Class<TraversalStrategy>[] classes = new Class[arguments.length];
+                for (int i = 0; i < arguments.length; i++) {
+                    classes[i] = arguments[i] instanceof TraversalStrategyProxy ?
+                            ((TraversalStrategyProxy) arguments[i]).getStrategyClass() :
+                            (Class) arguments[i];
+                }
+                this.sourceInstructions.add(new Instruction(sourceName, classes));
             }
-            this.sourceInstructions.add(new Instruction(sourceName, classes));
         } else
             this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
         Bindings.clear();
@@ -262,7 +266,7 @@ public final class Bytecode implements Cloneable, Serializable {
     /////
 
     private final Object[] flattenArguments(final Object... arguments) {
-        if (arguments.length == 0)
+        if (arguments == null || arguments.length == 0)
             return EMPTY_ARRAY;
         final List<Object> flatArguments = new ArrayList<>(arguments.length);
         for (final Object object : arguments) {
