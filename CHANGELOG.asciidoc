@@ -456,7 +456,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed `TraversalExplanation` deserialization in GraphSON 2 and 3 which was not supported before in Java.
 * Added support for custom request headers in Python.
 * Deprecated `scriptEvaluationTimeout` in favor of the more generic `evaluationTimeout`.
-* Bumped jackson databind 2.9.9.3.
+* Bumped jackson-databind to 2.9.10 due to CVE-2019-14379, CVE-2019-14540, CVE-2019-16335.
+* Bumped jackson-annotations to 2.9.10 to align the version of jackson-databind.
+* Bumped jackson-module-scala_2.11 to 2.9.10 to align the version of jackson-databind.
+* Bumped scala-library and scala-reflect to 2.11.12 due to the upgrade of jackson-module-scala_2.11.
 * Added `ReservedKeysVerificationStrategy` to allow warnings or exceptions when certain keys are used for properties.
 * Added the `AbstractWarningVerificationStrategy` base class for "warning" style `VerificationStrategy` implementations.
 * Refactored `EdgeLabelVerificationStrategy` to use `AbstractWarningVerificationStrategy`.
