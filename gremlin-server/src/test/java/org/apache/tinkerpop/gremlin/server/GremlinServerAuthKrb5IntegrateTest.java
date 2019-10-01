@@ -287,6 +287,29 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
         assertAuthViaToStringWithSpecifiedSerializer(new GraphBinaryMessageSerializerV1());
     }
 
+    @Test
+    public void shouldAuthenticateWithThreads() throws Exception {
+        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
+                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
+        final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "gmodern"));
+
+        final ExecutorService executor = Executors.newFixedThreadPool(4);
+        final Callable<Long> countTraversalJob = () -> g.V().both().both().count().next();
+        final List<Future<Long>> results = executor.invokeAll(Collections.nCopies(100, countTraversalJob));
+
+        assertEquals(100, results.size());
+        for (int ix = 0; ix < results.size(); ix++) {
+            try {
+                assertEquals(30L, results.get(ix).get(1000, TimeUnit.MILLISECONDS).longValue());
+            } catch (Exception ex) {
+                // failure but shouldn't have
+                cluster.close();
+                fail("Exception halted assertions - " + ex.getMessage());
+            }
+        }
+        cluster.close();
+    }
+
     public void assertAuthViaToStringWithSpecifiedSerializer(final MessageSerializer serializer) throws InterruptedException, ExecutionException {
         final Map<String,Object> config = new HashMap<>();
         config.put("serializeResultToString", true);
