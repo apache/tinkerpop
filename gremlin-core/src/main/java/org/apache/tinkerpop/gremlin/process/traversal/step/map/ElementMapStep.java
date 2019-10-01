@@ -97,6 +97,9 @@ public class ElementMapStep<K,E> extends MapStep<Element, Map<K, E>> implements 
         this.onGraphComputer = true;
     }
 
+    public boolean isOnGraphComputer() {
+        return onGraphComputer;
+    }
 
     public String[] getPropertyKeys() {
         return propertyKeys;
