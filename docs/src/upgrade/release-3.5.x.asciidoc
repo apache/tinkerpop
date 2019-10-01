@@ -29,6 +29,16 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.5.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Java Driver
+
+The `gremlin-driver` has undergone some significant changes that have improved it's usability and stability. By
+modifying its request processing model to utilize a single channel, the logic for configuring the driver becomes less
+entangled and easier to reason about as the removal of multiplexing eliminates the need to think about simultaneous
+connection usage and requests in process. Instead, users simply need to consider the connection pool size which
+represents the maximum number of concurrent requests that the client can make to the server.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2205[TINKERPOP-2205]
+
 ==== Gryo Usage
 
 Since the first release of TinkerPop 3.x, Gryo has been the default serialization format for Gremlin Server and

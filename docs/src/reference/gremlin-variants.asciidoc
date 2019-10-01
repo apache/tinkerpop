@@ -273,9 +273,14 @@ Please see the link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/t
 
 ==== Choosing a value for ConnectionPool.maxSize
 
-`ConnectionPool.maxSize` represents the maximum number of concurrent requests that the client can make to the server. Each request is made using its own websocket connection, hence, this parameter also controls the maximum number of WebSocket connections that can be concurrently opened to the server.
+`ConnectionPool.maxSize` represents the maximum number of concurrent requests that the client can make to the server.
+Each request is made using its own websocket connection, hence, this parameter also controls the maximum number of
+WebSocket connections that can be concurrently opened to the server.
 
-While choosing a value for this parameter, determine how many requests you anticipate to run in parallel from your client. Beyond this number you would start getting timeout exceptions and should handle those timeouts at the application layer.
+While choosing a value for this parameter, determine how many requests you anticipate to run in parallel from your
+client. Beyond this number you would start getting timeout exceptions and should handle those timeouts at the
+application layer.
+
 === Serialization
 
 Remote systems like Gremlin Server and Remote Gremlin Providers respond to requests made in a particular serialization
