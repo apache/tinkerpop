@@ -131,8 +131,8 @@ public class ConnectionPoolImpl implements ConnectionPool {
     }
 
     private FixedChannelPool createChannelPool(final Bootstrap b,
-                                                        final Settings.ConnectionPoolSettings connectionPoolSettings,
-                                                        final ChannelPoolHandler handler) {
+                                               final Settings.ConnectionPoolSettings connectionPoolSettings,
+                                               final ChannelPoolHandler handler) {
         return new FixedChannelPool(b,
                                     handler,
                                     ChannelHealthChecker.ACTIVE,
