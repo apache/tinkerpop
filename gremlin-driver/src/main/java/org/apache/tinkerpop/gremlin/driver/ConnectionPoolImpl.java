@@ -24,6 +24,7 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.pool.ChannelHealthChecker;
 import io.netty.channel.pool.ChannelPoolHandler;
+import io.netty.channel.pool.FixedChannelPool;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
@@ -52,7 +53,7 @@ public class ConnectionPoolImpl implements ConnectionPool {
      * Netty's implementation of channel management with an upper bound. This connection
      * pool is responsible for attaching a channel with each request.
      */
-    private TinkerpopFixedChannelPool channelPool;
+    private FixedChannelPool channelPool;
     /**
      * Channel initializer that is safe to be re-used across multiple channels.
      */
@@ -129,17 +130,17 @@ public class ConnectionPoolImpl implements ConnectionPool {
         logger.debug("Initialized {} successfully.", this);
     }
 
-    private TinkerpopFixedChannelPool createChannelPool(final Bootstrap b,
+    private FixedChannelPool createChannelPool(final Bootstrap b,
                                                         final Settings.ConnectionPoolSettings connectionPoolSettings,
                                                         final ChannelPoolHandler handler) {
-        return new TinkerpopFixedChannelPool(b,
-                                             handler,
-                                             ChannelHealthChecker.ACTIVE,
-                                             TinkerpopFixedChannelPool.AcquireTimeoutAction.FAIL, // throw an exception on acquire timeout
-                                             connectionPoolSettings.maxWaitForConnection,
-                                             calculateMaxPoolSize(connectionPoolSettings), /*maxConnections*/
-                                             1, /*maxPendingAcquires*/
-                                             true);/*releaseHealthCheck*/
+        return new FixedChannelPool(b,
+                                    handler,
+                                    ChannelHealthChecker.ACTIVE,
+                                    FixedChannelPool.AcquireTimeoutAction.FAIL, // throw an exception on acquire timeout
+                                    connectionPoolSettings.maxWaitForConnection,
+                                    calculateMaxPoolSize(connectionPoolSettings), /*maxConnections*/
+                  1, /*maxPendingAcquires*/
+                   true);/*releaseHealthCheck*/
     }
 
     @Override
