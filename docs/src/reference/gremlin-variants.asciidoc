@@ -999,6 +999,20 @@ to `Set` manually.
 * Gremlin is capable of returning `Dictionary` results that use non-hashable keys (e.g. Dictionary as a key) and Python
 does not support that at a language level. Gremlin that returns such results will need to be re-written to avoid that.
 
+=== Application Examples
+
+The TinkerPop source code contains a simple Python script that shows a basic example of how gremlinpython works. It
+can be found in GitHub link:https://github.com/apache/tinkerpop/tree/xx.yy.zz/gremlin-python/src/main/jython/example.py[here]
+and is designed to work best with a running <<gremlin-server,Gremlin Server>> configured with the default
+`conf/gremlin-server.yaml` file as included with the standard release packaging.
+
+[source,shell]
+----
+pip install gremlinpython
+pip install tornado
+python example.py
+----
+
 anchor:gremlin-DotNet[]
 [[gremlin-dotnet]]
 == Gremlin.Net
