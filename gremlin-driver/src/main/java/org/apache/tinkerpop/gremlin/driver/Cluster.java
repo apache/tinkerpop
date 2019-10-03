@@ -903,8 +903,15 @@ public final class Cluster {
         /**
          * Adds an address representing a group of Gremlin Servers, which will be added to the list of servers a
          * {@link Client} will try to contact to send requests to. The address should be parseable by
-         * {@link InetAddress#getAllByName(String)}. That's the only validation performed at this point.
+         * {@code InetAddress#getAllByName(String)}. That's the only validation performed at this point.
          * No connection to the hosts is attempted.
+         * <p/>
+         * Note that if the address argument is a hostname that resolves to multiple {@code INetAddress} objects that
+         * happen to point to the same physical Gremlin Server instance the driver will think that it has more hosts
+         * for it to send requests to than there are in reality. A common situation in which this issue may occur is
+         * when IPv6 addressing is present as {@code InetAddress#getAllByName(String)} will return both the IPv6 and
+         * the IPv4 addresses. In these cases, the issue can be resolved by simply using the IP address directly or
+         * setting the Java system property {@code -Djava.net.preferIPv4Stack=true}.
          */
         public Builder addContactPoint(final String address) {
             try {
