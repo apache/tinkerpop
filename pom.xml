@@ -452,7 +452,7 @@ limitations under the License.
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.21.0</version>
                     <configuration>
-                        <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true
+                        <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true
                         </argLine>
                         <excludes>
                             <exclude>**/*IntegrateTest.java</exclude>
@@ -474,8 +474,7 @@ limitations under the License.
                                     <include>**/*IntegrateTest.java</include>
                                 </includes>
                                 <skipTests>${skipIntegrationTests}</skipTests>
-                                <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182
-                                    -Dbuild.dir=${project.build.directory} -Dis.testing=true
+                                <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182 -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true
                                 </argLine>
                                 <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
                             </configuration>
@@ -1413,8 +1412,7 @@ limitations under the License.
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-silent.properties}
-                                -Dbuild.dir=${project.build.directory} -Dis.testing=true
+                            <argLine>-Dlog4j.configuration=${log4j-silent.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true
                             </argLine>
                             <excludes>
                                 <exclude>**/*IntegrateTest.java</exclude>
@@ -1511,7 +1509,7 @@ limitations under the License.
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true ${surefireArgLine}
+                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true ${surefireArgLine} -Djava.net.preferIPv4Stack=true
                             </argLine>
                         </configuration>
                     </plugin>
@@ -1519,8 +1517,7 @@ limitations under the License.
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182
-                                -Dbuild.dir=${project.build.directory} -Dis.testing=true ${failsafeArgLine}
+                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182 -Dbuild.dir=${project.build.directory} -Dis.testing=true ${failsafeArgLine} -Djava.net.preferIPv4Stack=true
                             </argLine>
                         </configuration>
                     </plugin>
