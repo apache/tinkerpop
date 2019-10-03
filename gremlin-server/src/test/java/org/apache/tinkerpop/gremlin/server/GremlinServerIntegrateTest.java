@@ -58,7 +58,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
 import java.net.ConnectException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -277,7 +276,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldPingChannelIfClientDies() throws Exception {
-        final Client client = TestClientFactory.build().maxConnectionPoolSize(1).minConnectionPoolSize(1).keepAliveInterval(0).create().connect();
+        final Client client = TestClientFactory.build().maxConnectionPoolSize(1).keepAliveInterval(0).create().connect();
         client.submit("1+1").all().get();
 
         // since we do nothing for 3 seconds and the time limit for ping is 1 second we should get *about* 3 pings -

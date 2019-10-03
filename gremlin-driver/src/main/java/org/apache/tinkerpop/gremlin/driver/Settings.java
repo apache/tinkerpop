@@ -200,23 +200,8 @@ final class Settings {
             if (connectionPoolConf.containsKey("sslSkipCertValidation"))
                 cpSettings.sslSkipCertValidation = connectionPoolConf.getBoolean("sslSkipCertValidation");
 
-            if (connectionPoolConf.containsKey("minSize"))
-                cpSettings.minSize = connectionPoolConf.getInt("minSize");
-
             if (connectionPoolConf.containsKey("maxSize"))
                 cpSettings.maxSize = connectionPoolConf.getInt("maxSize");
-
-            if (connectionPoolConf.containsKey("minSimultaneousUsagePerConnection"))
-                cpSettings.minSimultaneousUsagePerConnection = connectionPoolConf.getInt("minSimultaneousUsagePerConnection");
-
-            if (connectionPoolConf.containsKey("maxSimultaneousUsagePerConnection"))
-                cpSettings.maxSimultaneousUsagePerConnection = connectionPoolConf.getInt("maxSimultaneousUsagePerConnection");
-
-            if (connectionPoolConf.containsKey("maxInProcessPerConnection"))
-                cpSettings.maxInProcessPerConnection = connectionPoolConf.getInt("maxInProcessPerConnection");
-
-            if (connectionPoolConf.containsKey("minInProcessPerConnection"))
-                cpSettings.minInProcessPerConnection = connectionPoolConf.getInt("minInProcessPerConnection");
 
             if (connectionPoolConf.containsKey("maxWaitForConnection"))
                 cpSettings.maxWaitForConnection = connectionPoolConf.getInt("maxWaitForConnection");
@@ -298,13 +283,6 @@ final class Settings {
         public boolean sslSkipCertValidation = false;
 
         /**
-         * The minimum size of a connection pool for a {@link Host}. By default this is set to 2.
-         * @deprecated As of release 3.4.3, value is ignore
-         */
-        @Deprecated
-        public int minSize = ConnectionPool.DEFAULT_MIN_POOL_SIZE;
-
-        /**
          * The maximum size of a connection pool for a {@link Host}. By default this is set to 8.
          */
         public int maxSize = ConnectionPool.DEFAULT_MAX_POOL_SIZE;
@@ -315,56 +293,6 @@ final class Settings {
          * {@link Channelizer#supportsKeepAlive()}. Set to zero to disable this feature.
          */
         public long keepAliveInterval = Connection.DEFAULT_KEEP_ALIVE_INTERVAL;
-
-        /**
-         * A connection under low use can be destroyed. This setting determines the threshold for determining when
-         * that connection can be released and is defaulted to 8.
-         *
-         * @deprecated As of release 3.4.3, not replaced, this parameter is ignored.
-         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
-         */
-        @Deprecated
-        public int minSimultaneousUsagePerConnection = ConnectionPool.DEFAULT_MIN_SIMULTANEOUS_USAGE_PER_CONNECTION;
-
-        /**
-         * If a connection is over used, then it might mean that is necessary to expand the pool by adding a new
-         * connection.  This setting determines the threshold for a connections over use and is defaulted to 16. Set
-         * the value to 0 to disable the use of this parameter.
-         *
-         * @deprecated As of release 3.4.3, replaced by {@link ConnectionPool#DEFAULT_MAX_POOL_SIZE}.
-         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
-         */
-        @Deprecated
-        public int maxSimultaneousUsagePerConnection = ConnectionPool.DEFAULT_MAX_SIMULTANEOUS_USAGE_PER_CONNECTION;
-
-        /**
-         * The maximum number of requests in flight on a connection where the default is 4. Set the value to 0 to disable
-         * the use of this parameter.
-         *
-         * @deprecated As of release 3.4.3, replaced by {@link ConnectionPool#DEFAULT_MAX_POOL_SIZE}. For backward
-         * compatibility it is still used to approximate the amount of parallelism required. In future versions, the
-         * approximation logic will be removed and dependency on this parameter will be completely eliminated.
-         * To disable the dependency on this parameter right now, explicitly set the value of
-         * {@link Settings.ConnectionPoolSettings#maxInProcessPerConnection} and {@link Settings.ConnectionPoolSettings#maxSimultaneousUsagePerConnection}
-         * to 0.
-         *
-         * @see ConnectionPoolImpl#calculateMaxPoolSize(Settings.ConnectionPoolSettings) for approximation logic.
-         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
-         */
-        @Deprecated
-        public int maxInProcessPerConnection = Connection.DEFAULT_MAX_IN_PROCESS;
-
-        /**
-         * A connection has available in-process requests which is calculated by subtracting the number of current
-         * in-flight requests on a connection and subtracting that from the {@link #maxInProcessPerConnection}. When
-         * that number drops below this configuration setting, the connection is recommended for replacement. The
-         * default for this setting is 1.
-         *
-         * @deprecated As of release 3.4.3, not replaced, this parameter is ignored.
-         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
-         */
-        @Deprecated
-        public int minInProcessPerConnection = Connection.DEFAULT_MIN_IN_PROCESS;
 
         /**
          * The amount of time in milliseconds to wait for a new connection before timing out where the default value

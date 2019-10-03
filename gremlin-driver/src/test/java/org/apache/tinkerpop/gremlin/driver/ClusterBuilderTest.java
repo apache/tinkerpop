@@ -38,8 +38,6 @@ public class ClusterBuilderTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"maxInProcessPerConnectionNeg1", Cluster.build().maxInProcessPerConnection(-1), "maxInProcessPerConnection must be greater than equal to zero"},
-                {"maxSimultaneousUsagePerConnectionNeg1", Cluster.build().maxSimultaneousUsagePerConnection(-1), "maxSimultaneousUsagePerConnection must be greater than equal to zero"},
                 {"maxConnectionPoolSize0", Cluster.build().maxConnectionPoolSize(0), "maxConnectionPoolSize must be greater than zero"},
                 {"maxConnectionPoolSizeNeg1", Cluster.build().maxConnectionPoolSize(-1), "maxConnectionPoolSize must be greater than zero"},
                 {"maxConnectionPoolSize0", Cluster.build().maxWaitForConnection(0), "maxWaitForConnection must be greater than zero"},

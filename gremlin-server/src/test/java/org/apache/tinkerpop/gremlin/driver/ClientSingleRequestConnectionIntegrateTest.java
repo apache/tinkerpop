@@ -127,10 +127,6 @@ public class ClientSingleRequestConnectionIntegrateTest extends AbstractGremlinS
         final Cluster cluster = TestClientFactory.build()
                                                  .maxContentLength(96)
                                                  .maxConnectionPoolSize(1)
-                                                 .maxSimultaneousUsagePerConnection(0)
-                                                 .minSimultaneousUsagePerConnection(0)
-                                                 .maxInProcessPerConnection(0)
-                                                 .minInProcessPerConnection(0)
                                                  .create();
         final Client.ClusteredClient client = cluster.connect();
 
@@ -189,10 +185,6 @@ public class ClientSingleRequestConnectionIntegrateTest extends AbstractGremlinS
     public void testTimeoutOnExpiredMaxWaitForConnection() {
         final Cluster cluster = TestClientFactory.build()
                                                  .maxConnectionPoolSize(2)
-                                                 .maxSimultaneousUsagePerConnection(0)
-                                                 .minSimultaneousUsagePerConnection(0)
-                                                 .maxInProcessPerConnection(0)
-                                                 .minInProcessPerConnection(0)
                                                  .maxWaitForConnection(500)
                                                  .create();
 
@@ -413,7 +405,7 @@ public class ClientSingleRequestConnectionIntegrateTest extends AbstractGremlinS
     }
 
     @Test
-    public void testAbruptClose() throws ExecutionException, InterruptedException, TimeoutException {
+    public void testAbruptClose() throws InterruptedException {
         final Cluster cluster = this.createClusterWithXNumOfConnection(50);
 
 
@@ -441,10 +433,6 @@ public class ClientSingleRequestConnectionIntegrateTest extends AbstractGremlinS
     private Cluster createClusterWithXNumOfConnection(int x) {
         return TestClientFactory.build()
                                 .maxConnectionPoolSize(x)
-                                .maxSimultaneousUsagePerConnection(0)
-                                .minSimultaneousUsagePerConnection(0)
-                                .maxInProcessPerConnection(0)
-                                .minInProcessPerConnection(0)
                                 .create();
     }
 }

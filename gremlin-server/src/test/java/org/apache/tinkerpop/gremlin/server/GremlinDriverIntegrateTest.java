@@ -98,8 +98,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.mockito.Mockito.verify;
 
 /**
@@ -258,8 +256,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         // complicate the assertion logic
         final Cluster cluster = TestClientFactory.build().
                 maxConnectionPoolSize(1).
-                maxSimultaneousUsagePerConnection(0).
-                maxInProcessPerConnection(0).
                 keepAliveInterval(1002).create();
         final Client client = cluster.connect();
 
@@ -1213,6 +1209,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(101, results12.all().get().get(0).getInt());
             assertEquals(4, results22.all().get().get(0).getInt());
             assertEquals(30, results32.all().get().get(0).getInt());
+        } catch (Exception ex) {
+            throw ex;
         } finally {
             cluster.close();
         }
@@ -1265,17 +1263,14 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldBeThreadSafeToUseOneClient() throws Exception {
         final Cluster cluster = TestClientFactory.build().workerPoolSize(2)
-                .maxInProcessPerConnection(64)
-                .minInProcessPerConnection(32)
-                .maxConnectionPoolSize(16)
-                .minConnectionPoolSize(8).create();
+                .maxConnectionPoolSize(128).create();
         final Client client = cluster.connect();
 
         final Map<Integer, Integer> results = new ConcurrentHashMap<>();
         final List<Thread> threads = new ArrayList<>();
         for (int ix = 0; ix < 100; ix++) {
             final int otherNum = ix;
-            final Thread t = new Thread(()->{
+            final Thread t = new Thread(() -> {
                 try {
                     results.put(otherNum, client.submit("1000+" + otherNum).all().get().get(0).getInt());
                 } catch (Exception ex) {

@@ -329,8 +329,6 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
     public void shouldEnsureSessionBindingsAreThreadSafe() throws Exception {
         final Cluster cluster = TestClientFactory.build()
                                                  .maxConnectionPoolSize(1000)
-                                                 .maxInProcessPerConnection(0) // disable these deprecated parameters
-                                                 .maxSimultaneousUsagePerConnection(0) // disable these deprecated parameters
                                                  .create();
         try {
             final Client client = cluster.connect(name.getMethodName());

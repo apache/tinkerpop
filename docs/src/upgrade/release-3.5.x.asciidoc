@@ -37,6 +37,13 @@ entangled and easier to reason about as the removal of multiplexing eliminates t
 connection usage and requests in process. Instead, users simply need to consider the connection pool size which
 represents the maximum number of concurrent requests that the client can make to the server.
 
+A number of configuration options have been removed, so expect the potential for compilation problems on upgrade.
+Moreover, given the significance of the change in the processing model, expect the need to alter configurations and
+application code in some cases to achieve the same performance as before.
+
+For example, as the driver may now open more connections than before, it may be necessary to modify the operating
+system setting for the maximum number of open files.
+
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2205[TINKERPOP-2205]
 
 ==== Gryo Usage

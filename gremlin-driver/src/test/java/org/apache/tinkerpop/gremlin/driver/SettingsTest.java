@@ -55,12 +55,7 @@ public class SettingsTest {
         conf.setProperty("connectionPool.sslEnabledProtocols", Arrays.asList("TLSv1.1","TLSv1.2"));
         conf.setProperty("connectionPool.sslCipherSuites", Arrays.asList("TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"));
         conf.setProperty("connectionPool.sslSkipCertValidation", true);
-        conf.setProperty("connectionPool.minSize", 100);
         conf.setProperty("connectionPool.maxSize", 200);
-        conf.setProperty("connectionPool.minSimultaneousUsagePerConnection", 300);
-        conf.setProperty("connectionPool.maxSimultaneousUsagePerConnection", 400);
-        conf.setProperty("connectionPool.maxInProcessPerConnection", 500);
-        conf.setProperty("connectionPool.minInProcessPerConnection", 600);
         conf.setProperty("connectionPool.maxWaitForConnection", 700);
         conf.setProperty("connectionPool.maxContentLength", 800);
         conf.setProperty("connectionPool.reconnectInterval", 900);
@@ -89,12 +84,7 @@ public class SettingsTest {
         assertEquals(Arrays.asList("TLSv1.1","TLSv1.2"), settings.connectionPool.sslEnabledProtocols);
         assertEquals(Arrays.asList("TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"), settings.connectionPool.sslCipherSuites);
         assertThat(settings.connectionPool.sslSkipCertValidation, is(true));
-        assertEquals(100, settings.connectionPool.minSize);
         assertEquals(200, settings.connectionPool.maxSize);
-        assertEquals(300, settings.connectionPool.minSimultaneousUsagePerConnection);
-        assertEquals(400, settings.connectionPool.maxSimultaneousUsagePerConnection);
-        assertEquals(500, settings.connectionPool.maxInProcessPerConnection);
-        assertEquals(600, settings.connectionPool.minInProcessPerConnection);
         assertEquals(700, settings.connectionPool.maxWaitForConnection);
         assertEquals(800, settings.connectionPool.maxContentLength);
         assertEquals(900, settings.connectionPool.reconnectInterval);

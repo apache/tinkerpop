@@ -138,7 +138,7 @@ public class ConnectionPoolImpl implements ConnectionPool {
                                     ChannelHealthChecker.ACTIVE,
                                     FixedChannelPool.AcquireTimeoutAction.FAIL, // throw an exception on acquire timeout
                                     connectionPoolSettings.maxWaitForConnection,
-                                    calculateMaxPoolSize(connectionPoolSettings), /*maxConnections*/
+                                    connectionPoolSettings.maxSize, /*maxConnections*/
                   1, /*maxPendingAcquires*/
                    true);/*releaseHealthCheck*/
     }
@@ -216,20 +216,6 @@ public class ConnectionPoolImpl implements ConnectionPool {
         channelizer.connected(ch);
 
         return new SingleRequestConnection(ch, this);
-    }
-
-    /**
-     * Calculates the max size of the channel pool. To maintain backward compatibility
-     * it is calculated as a function of maxInProcess and maxSimultaneousUsage. In future
-     * version, when backward compatibility is not required, it should be equal to
-     * Connectionpoolsettings.maxSize
-     */
-    int calculateMaxPoolSize(Settings.ConnectionPoolSettings connectionPoolSettings) {
-        if (connectionPoolSettings.maxSimultaneousUsagePerConnection != 0 || connectionPoolSettings.maxInProcessPerConnection != 0) {
-            return connectionPoolSettings.maxSize * Math.max(connectionPoolSettings.maxSimultaneousUsagePerConnection, connectionPoolSettings.maxInProcessPerConnection);
-        } else {
-            return connectionPoolSettings.maxSize;
-        }
     }
 
     @Override

@@ -197,12 +197,7 @@ public final class Cluster {
                 .channelizer(settings.connectionPool.channelizer)
                 .maxContentLength(settings.connectionPool.maxContentLength)
                 .maxWaitForConnection(settings.connectionPool.maxWaitForConnection)
-                .maxInProcessPerConnection(settings.connectionPool.maxInProcessPerConnection)
-                .minInProcessPerConnection(settings.connectionPool.minInProcessPerConnection)
-                .maxSimultaneousUsagePerConnection(settings.connectionPool.maxSimultaneousUsagePerConnection)
-                .minSimultaneousUsagePerConnection(settings.connectionPool.minSimultaneousUsagePerConnection)
                 .maxConnectionPoolSize(settings.connectionPool.maxSize)
-                .minConnectionPoolSize(settings.connectionPool.minSize)
                 .validationRequest(settings.connectionPool.validationRequest);
 
         if (settings.username != null && settings.password != null)
@@ -335,47 +330,10 @@ public final class Cluster {
     }
 
     /**
-     * Gets the minimum number of in-flight requests that can occur on a {@link Connection} before it is considered
-     * for closing on return to the {@link ConnectionPool}.
-     */
-    public int getMinInProcessPerConnection() {
-        return manager.connectionPoolSettings.minInProcessPerConnection;
-    }
-
-    /**
-     * Gets the maximum number of in-flight requests that can occur on a {@link Connection}.
-     */
-    public int getMaxInProcessPerConnection() {
-        return manager.connectionPoolSettings.maxInProcessPerConnection;
-    }
-
-    /**
-     * Gets the maximum number of times that a {@link Connection} can be borrowed from the pool simultaneously.
-     */
-    public int maxSimultaneousUsagePerConnection() {
-        return manager.connectionPoolSettings.maxSimultaneousUsagePerConnection;
-    }
-
-    /**
-     * Gets the minimum number of times that a {@link Connection} should be borrowed from the pool before it falls
-     * under consideration for closing.
-     */
-    public int minSimultaneousUsagePerConnection() {
-        return manager.connectionPoolSettings.minSimultaneousUsagePerConnection;
-    }
-
-    /**
      * Gets the maximum size that the {@link ConnectionPool} can grow.
      */
     public int maxConnectionPoolSize() {
         return manager.connectionPoolSettings.maxSize;
-    }
-
-    /**
-     * Gets the minimum size of the {@link ConnectionPool}.
-     */
-    public int minConnectionPoolSize() {
-        return manager.connectionPoolSettings.minSize;
     }
 
     /**
@@ -549,12 +507,7 @@ public final class Cluster {
         private MessageSerializer serializer = Serializers.GRAPHBINARY_V1D0.simpleInstance();
         private int nioPoolSize = Runtime.getRuntime().availableProcessors();
         private int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
-        private int minConnectionPoolSize = ConnectionPool.DEFAULT_MIN_POOL_SIZE;
         private int maxConnectionPoolSize = ConnectionPool.DEFAULT_MAX_POOL_SIZE;
-        private int minSimultaneousUsagePerConnection = ConnectionPool.DEFAULT_MIN_SIMULTANEOUS_USAGE_PER_CONNECTION;
-        private int maxSimultaneousUsagePerConnection = ConnectionPool.DEFAULT_MAX_SIMULTANEOUS_USAGE_PER_CONNECTION;
-        private int maxInProcessPerConnection = Connection.DEFAULT_MAX_IN_PROCESS;
-        private int minInProcessPerConnection = Connection.DEFAULT_MIN_IN_PROCESS;
         private int maxWaitForConnection = Connection.DEFAULT_MAX_WAIT_FOR_CONNECTION;
         private int maxWaitForSessionClose = Connection.DEFAULT_MAX_WAIT_FOR_SESSION_CLOSE;
         private int maxContentLength = Connection.DEFAULT_MAX_CONTENT_LENGTH;
@@ -736,98 +689,10 @@ public final class Cluster {
         }
 
         /**
-         * The minimum number of in-flight requests that can occur on a {@link Connection} before it is considered
-         * for closing on return to the {@link ConnectionPool}.
-         *
-         * @deprecated As of release 3.4.3, not replaced, this parameter is ignored.
-         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
-         */
-        @Deprecated
-        public Builder minInProcessPerConnection(final int minInProcessPerConnection) {
-            this.minInProcessPerConnection = minInProcessPerConnection;
-            return this;
-        }
-
-        /**
-         * The maximum number of in-flight requests that can occur on a {@link Connection}. This represents an
-         * indication of how busy a {@link Connection} is allowed to be.  This number is linked to the
-         * {@link #maxSimultaneousUsagePerConnection} setting, but is slightly different in that it refers to
-         * the total number of requests on a {@link Connection}.  In other words, a {@link Connection} might
-         * be borrowed once to have multiple requests executed against it.  This number controls the maximum
-         * number of requests whereas {@link #maxInProcessPerConnection} controls the times borrowed.
-         *
-         * @deprecated As of release 3.4.3, replaced by {@link #maxConnectionPoolSize}. For backward
-         * compatibility it is still used to approximate the amount of parallelism required. In future versions, the
-         * approximation logic will be removed and dependency on this parameter will be completely eliminated.
-         * To disable the dependency on this parameter right now, explicitly set the value of
-         * {@link #maxInProcessPerConnection} and {@link #maxSimultaneousUsagePerConnection} to zero.
-         *
-         * @see ConnectionPoolImpl#calculateMaxPoolSize(Settings.ConnectionPoolSettings) for approximation logic.
-         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
-         */
-        @Deprecated
-        public Builder maxInProcessPerConnection(final int maxInProcessPerConnection) {
-            this.maxInProcessPerConnection = maxInProcessPerConnection;
-            return this;
-        }
-
-        /**
-         * The maximum number of times that a {@link Connection} can be borrowed from the pool simultaneously.
-         * This represents an indication of how busy a {@link Connection} is allowed to be.  Set too large and the
-         * {@link Connection} may queue requests too quickly, rather than wait for an available {@link Connection}
-         * or create a fresh one.  If set too small, the {@link Connection} will show as busy very quickly thus
-         * forcing waits for available {@link Connection} instances in the pool when there is more capacity available.
-         *
-         * @deprecated As of release 3.4.3, replaced by {@link #maxConnectionPoolSize}. For backward
-         * compatibility it is still used to approximate the amount of parallelism required. In future versions, the
-         * approximation logic will be removed and dependency on this parameter will be completely eliminated.
-         * To disable the dependency on this parameter right now, explicitly set the value of
-         * {@link #maxInProcessPerConnection} and {@link #maxSimultaneousUsagePerConnection} to zero.
-         *
-         * @see ConnectionPoolImpl#calculateMaxPoolSize(Settings.ConnectionPoolSettings) for approximation logic.
-         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
-         */
-        @Deprecated
-        public Builder maxSimultaneousUsagePerConnection(final int maxSimultaneousUsagePerConnection) {
-            this.maxSimultaneousUsagePerConnection = maxSimultaneousUsagePerConnection;
-            return this;
-        }
-
-        /**
-         * The minimum number of times that a {@link Connection} should be borrowed from the pool before it falls
-         * under consideration for closing.  If a {@link Connection} is not busy and the
-         * {@link #minConnectionPoolSize} is exceeded, then there is no reason to keep that connection open.  Set
-         * too large and {@link Connection} that isn't busy will continue to consume resources when it is not being
-         * used.  Set too small and {@link Connection} instances will be destroyed when the driver might still be
-         * busy.
-         *
-         * @deprecated As of release 3.4.3, not replaced, this parameter is ignored.
-         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
-         */
-        @Deprecated
-        public Builder minSimultaneousUsagePerConnection(final int minSimultaneousUsagePerConnection) {
-            this.minSimultaneousUsagePerConnection = minSimultaneousUsagePerConnection;
-            return this;
-        }
-
-        /**
          * The maximum size that the {@link ConnectionPool} can grow.
          */
         public Builder maxConnectionPoolSize(final int maxSize) {
             this.maxConnectionPoolSize = maxSize;
-            return this;
-        }
-
-        /**
-         * The minimum size of the {@link ConnectionPool}.  When the {@link Client} is started, {@link Connection}
-         * objects will be initially constructed to this size.
-         *
-         * @deprecated As of release 3.4.3, not replaced, this parameter is ignored.
-         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
-         */
-        @Deprecated
-        public Builder minConnectionPoolSize(final int minSize) {
-            this.minConnectionPoolSize = minSize;
             return this;
         }
 
@@ -1035,12 +900,7 @@ public final class Cluster {
             this.contactPoints = builder.getContactPoints();
 
             connectionPoolSettings = new Settings.ConnectionPoolSettings();
-            connectionPoolSettings.maxInProcessPerConnection = builder.maxInProcessPerConnection;
-            connectionPoolSettings.minInProcessPerConnection = builder.minInProcessPerConnection;
-            connectionPoolSettings.maxSimultaneousUsagePerConnection = builder.maxSimultaneousUsagePerConnection;
-            connectionPoolSettings.minSimultaneousUsagePerConnection = builder.minSimultaneousUsagePerConnection;
             connectionPoolSettings.maxSize = builder.maxConnectionPoolSize;
-            connectionPoolSettings.minSize = builder.minConnectionPoolSize;
             connectionPoolSettings.maxWaitForConnection = builder.maxWaitForConnection;
             connectionPoolSettings.maxWaitForSessionClose = builder.maxWaitForSessionClose;
             connectionPoolSettings.maxContentLength = builder.maxContentLength;
@@ -1077,12 +937,6 @@ public final class Cluster {
         }
 
         private void validateBuilder(final Builder builder) {
-            if (builder.maxInProcessPerConnection < 0)
-                throw new IllegalArgumentException("maxInProcessPerConnection must be greater than equal to zero");
-
-            if (builder.maxSimultaneousUsagePerConnection < 0)
-                throw new IllegalArgumentException("maxSimultaneousUsagePerConnection must be greater than equal to zero");
-
             if (builder.maxConnectionPoolSize < 1)
                 throw new IllegalArgumentException("maxConnectionPoolSize must be greater than zero");
 

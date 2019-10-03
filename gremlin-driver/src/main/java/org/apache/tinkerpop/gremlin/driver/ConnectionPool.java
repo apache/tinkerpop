@@ -44,32 +44,7 @@ import java.util.concurrent.TimeoutException;
  */
 public interface ConnectionPool {
     int DEFAULT_MAX_POOL_SIZE = 8;
-    /**
-     * @deprecated As of release 3.4.3, not replaced, this setting is ignored.
-     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
-     */
-    @Deprecated
-    int DEFAULT_MIN_POOL_SIZE = 2;
-    /**
-     * @deprecated As of release 3.4.3, not replaced, this setting is ignored.
-     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
-     */
-    @Deprecated
-    int DEFAULT_MIN_SIMULTANEOUS_USAGE_PER_CONNECTION = 8;
-    /**
-     * @deprecated As of release 3.4.3, replaced by {@link ConnectionPool#DEFAULT_MAX_POOL_SIZE}. For backward
-     * compatibility it is still used to approximate the amount of parallelism required. In future versions, the
-     * approximation logic will be removed and dependency on this parameter will be completely eliminated.
-     * To disable the dependency on this parameter right now, explicitly set the value of
-     * {@link Settings.ConnectionPoolSettings#maxInProcessPerConnection} and {@link Settings.ConnectionPoolSettings#maxSimultaneousUsagePerConnection}
-     * to 0.
-     *
-     * @see ConnectionPoolImpl#calculateMaxPoolSize(Settings.ConnectionPoolSettings) for approximation
-     * logic.
-     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
-     */
-    @Deprecated
-    int DEFAULT_MAX_SIMULTANEOUS_USAGE_PER_CONNECTION = 16;
+
     /**
      * Borrow a connection from the connection pool which would execute the request. Connection pool ensures
      * that the connection is backed by a healthy {@link Channel} and WebSocket handshake is already complete.
