@@ -57,8 +57,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -67,6 +69,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A connection to a set of one or more Gremlin Server instances.
@@ -553,7 +556,7 @@ public final class Cluster {
     }
 
     public final static class Builder {
-        private List<InetAddress> addresses = new ArrayList<>();
+        private Set<InetAddress> addresses = new LinkedHashSet<>();
         private int port = 8182;
         private String path = "/gremlin";
         private MessageSerializer serializer = Serializers.GRYO_V3D0.simpleInstance();
@@ -972,7 +975,19 @@ public final class Cluster {
          */
         public Builder addContactPoint(final String address) {
             try {
-                this.addresses.addAll(Arrays.asList(InetAddress.getAllByName(address)));
+                // dont let localhost get added more than once - like a loopback ipv6 alongside a ipv4. it will make
+                // the Cluster thing think there are more hosts than there really are and might make testing misbehave.
+                // this filtering doesn't do much for hosts that have multiple addys that route to the same machine,
+                // but i'm not sure if we can properly filter those??? seems like if you want that specificity then
+                // you should probably use the actual ip addresses you want to connect to??
+                boolean hasLocalHost = this.addresses.stream().anyMatch(InetAddress::isAnyLocalAddress);
+                final InetAddress[] addys = InetAddress.getAllByName(address);
+                for (InetAddress addy : addys) {
+                    if (!hasLocalHost) {
+                        this.addresses.add(addy);
+                        hasLocalHost = addy.isAnyLocalAddress();
+                    }
+                }
                 return this;
             } catch (UnknownHostException e) {
                 throw new IllegalArgumentException(e.getMessage());
