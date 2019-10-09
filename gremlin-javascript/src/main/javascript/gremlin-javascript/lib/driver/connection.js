@@ -214,7 +214,7 @@ class Connection extends EventEmitter {
   _handleError(err) {
     this.emit('log', `ws error ${err}`);
     this._cleanupWebsocket();
-    this.emit('error', err);
+    this.emit('socketError', err);
   }
 
   _handleClose(code, message) {
