@@ -150,18 +150,7 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
             traversal.getStartStep().removeLabel(MARKER);
             return;
         }
-        for (final Step step : traversal.getSteps()) {
-            if (step instanceof TraversalParent) {
-                for (final Traversal.Admin t : ((TraversalParent) step).getLocalChildren()) {
-                    this.apply(t);
-                    t.getStartStep().addLabel(MARKER);
-                }
-                for (final Traversal.Admin t : ((TraversalParent) step).getGlobalChildren()) {
-                    this.apply(t);
-                    t.getStartStep().addLabel(MARKER);
-                }
-            }
-        }
+
         //
         final List<GraphStep> graphSteps = TraversalHelper.getStepsOfAssignableClass(GraphStep.class, traversal);
         final List<VertexStep> vertexSteps = TraversalHelper.getStepsOfAssignableClass(VertexStep.class, traversal);

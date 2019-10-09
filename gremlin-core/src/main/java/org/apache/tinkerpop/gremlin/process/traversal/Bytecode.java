@@ -137,6 +137,10 @@ public final class Bytecode implements Cloneable, Serializable {
         return bindingsMap;
     }
 
+    public boolean isEmpty() {
+        return this.sourceInstructions.isEmpty() && this.stepInstructions.isEmpty();
+    }
+
     private static final void addArgumentBinding(final Map<String, Object> bindingsMap, final Object argument) {
         if (argument instanceof Binding)
             bindingsMap.put(((Binding) argument).key, ((Binding) argument).value);

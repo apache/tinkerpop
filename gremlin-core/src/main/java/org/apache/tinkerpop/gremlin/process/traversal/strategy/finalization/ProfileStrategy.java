@@ -45,9 +45,11 @@ public final class ProfileStrategy extends AbstractTraversalStrategy<TraversalSt
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if ((traversal.getParent() instanceof EmptyStep || traversal.getParent() instanceof VertexProgramStep) &&
+        if (!traversal.getEndStep().getLabels().contains(MARKER) &&
+                (traversal.getParent() instanceof EmptyStep || traversal.getParent() instanceof VertexProgramStep) &&
                 TraversalHelper.hasStepOfAssignableClassRecursively(ProfileSideEffectStep.class, traversal))
             TraversalHelper.applyTraversalRecursively(t -> t.getEndStep().addLabel(MARKER), traversal);
+
         if (traversal.getEndStep().getLabels().contains(MARKER)) {
             traversal.getEndStep().removeLabel(MARKER);
             // Add .profile() step after every pre-existing step.

@@ -116,7 +116,7 @@ public final class TraversalHelper {
                 }
             } else if (step instanceof TraversalParent) {
                 final char currState = state;
-                Set<Character> states = new HashSet<>();
+                final Set<Character> states = new HashSet<>();
                 for (final Traversal.Admin<?, ?> local : ((TraversalParent) step).getLocalChildren()) {
                     final char s = isLocalStarGraph(local, currState);
                     if ('x' == s) return 'x';
@@ -465,7 +465,9 @@ public final class TraversalHelper {
      */
     public static void applyTraversalRecursively(final Consumer<Traversal.Admin<?, ?>> consumer, final Traversal.Admin<?, ?> traversal) {
         consumer.accept(traversal);
-        for (final Step<?, ?> step : traversal.getSteps()) {
+        final List<Step> steps = traversal.getSteps();
+        for (int ix = 0; ix < steps.size(); ix++) {
+            final Step step = steps.get(ix);
             if (step instanceof TraversalParent) {
                 for (final Traversal.Admin<?, ?> local : ((TraversalParent) step).getLocalChildren()) {
                     applyTraversalRecursively(consumer, local);

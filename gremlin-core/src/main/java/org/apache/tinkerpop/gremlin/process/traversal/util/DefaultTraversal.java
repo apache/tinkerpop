@@ -18,16 +18,20 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.DefaultTraverserGeneratorFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
@@ -121,25 +125,30 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     public void applyStrategies() throws IllegalStateException {
         if (this.locked) throw Traversal.Exceptions.traversalIsLocked();
         TraversalHelper.reIdSteps(this.stepPosition, this);
-        this.strategies.applyStrategies(this);
         boolean hasGraph = null != this.graph;
-        for (int i = 0, j = this.steps.size(); i < j; i++) { // "foreach" can lead to ConcurrentModificationExceptions
-            final Step step = this.steps.get(i);
-            if (step instanceof TraversalParent) {
-                for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
-                    globalChild.setStrategies(this.strategies);
-                    globalChild.setSideEffects(this.sideEffects);
-                    if (hasGraph) globalChild.setGraph(this.graph);
-                    globalChild.applyStrategies();
-                }
-                for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
-                    localChild.setStrategies(this.strategies);
-                    localChild.setSideEffects(this.sideEffects);
-                    if (hasGraph) localChild.setGraph(this.graph);
-                    localChild.applyStrategies();
-                }
+
+        if (this.getParent() instanceof EmptyStep || this.getParent() instanceof VertexProgramStep) {
+            TraversalHelper.applyTraversalRecursively(t -> {
+                t.setStrategies(this.strategies);
+                t.setSideEffects(this.sideEffects);
+            }, this);
+
+            for (final TraversalStrategy strategy : this.strategies.toList()) {
+                TraversalHelper.applyTraversalRecursively(t -> {
+                    if (hasGraph) t.setGraph(this.graph);
+                    strategy.apply(t);
+                }, this);
             }
+
+            // don't need to re-apply strategies to "this" - leads to endless recursion in GraphComputer.
+            TraversalHelper.applyTraversalRecursively(t -> {
+                if(!(t.getParent() instanceof EmptyStep) && t != this && !t.isLocked()) {
+                    t.setStrategies(new DefaultTraversalStrategies());
+                    t.applyStrategies();
+                }
+            }, this);
         }
+        
         this.finalEndStep = this.getEndStep();
         // finalize requirements
         if (this.getParent() instanceof EmptyStep) {

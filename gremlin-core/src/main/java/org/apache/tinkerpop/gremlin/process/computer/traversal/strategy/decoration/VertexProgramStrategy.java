@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.AbstractLambdaTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -70,7 +71,9 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         // VertexPrograms can only execute at the root level of a Traversal and should not be applied locally prior to RemoteStrategy
-        if (!(traversal.getParent() instanceof EmptyStep) || traversal.getStrategies().getStrategy(RemoteStrategy.class).isPresent())
+        if (!(traversal.getParent() instanceof EmptyStep)
+                || traversal instanceof AbstractLambdaTraversal
+                || traversal.getStrategies().getStrategy(RemoteStrategy.class).isPresent())
             return;
 
         // back propagate as()-labels off of vertex computing steps
