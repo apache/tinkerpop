@@ -67,6 +67,16 @@ class DriverRemoteConnection extends RemoteConnection {
   close() {
     return this._client.close();
   }
+
+  /** @override */
+  addListener(...args) {
+    return this._client.addListener(...args);
+  }
+
+  /** @override */
+  removeListener(...args) {
+    return this._client.removeListener(...args);
+  }
 }
 
 module.exports = DriverRemoteConnection;

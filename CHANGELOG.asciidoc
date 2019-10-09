@@ -507,6 +507,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Made `EventStrategy` compatible with multi-valued properties.
 * Changed `TraversalOpProcessor` to throw a `SERVER_ERROR_SCRIPT_EVALUATION` (597) if lambdas don't compile.
 * Bumped `commons-compress` to 1.19 due to CVE-2018-11771.
+* gremlin-javascript: Use `socketError` Connection event to prevent exit on error and expose Connection events.
 
 [[release-3-3-8]]
 === TinkerPop 3.3.8 (Release Date: August 5, 2019)

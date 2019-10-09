@@ -65,7 +65,7 @@ class Client {
     if (typeof message === 'string') {
       const args = {
         'gremlin': message,
-        'bindings': bindings, 
+        'bindings': bindings,
         'language': 'gremlin-groovy',
         'accept': this._connection.mimeType,
         'aliases': { 'g': this._options.traversalSource || 'g' }
@@ -86,7 +86,24 @@ class Client {
   close() {
     return this._connection.close();
   }
-  
+
+  /**
+   * Adds an event listener to the connection
+   * @param {String} event The event name that you want to listen to.
+   * @param {Function} handler The callback to be called when the event occurs.
+   */
+  addListener(event, handler) {
+    this._connection.on(event, handler)
+  }
+
+  /**
+   * Removes a previowsly added event listener to the connection
+   * @param {String} event The event name that you want to listen to.
+   * @param {Function} handler The event handler to be removed.
+   */
+  removeListener(event, handler) {
+    this._connection.removeListener(event, handler)
+  }
 }
 
 module.exports = Client;
