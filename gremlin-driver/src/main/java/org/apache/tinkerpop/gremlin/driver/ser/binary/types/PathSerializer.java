@@ -18,13 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MutablePath;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 
 import java.util.List;
@@ -40,7 +40,7 @@ public class PathSerializer extends SimpleTypeSerializer<Path> {
     }
 
     @Override
-    protected Path readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Path readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final MutablePath path = (MutablePath) MutablePath.make();
         final List<Set<String>> labels = context.read(buffer);
         final List<Object> objects = context.read(buffer);
@@ -56,7 +56,7 @@ public class PathSerializer extends SimpleTypeSerializer<Path> {
     }
 
     @Override
-    protected void writeValue(final Path value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final Path value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         context.write(value.labels(), buffer);
         context.write(value.objects(), buffer);
     }

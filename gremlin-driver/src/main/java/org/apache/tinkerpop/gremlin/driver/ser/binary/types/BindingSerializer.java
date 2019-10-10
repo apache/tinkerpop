@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -35,13 +35,13 @@ public class BindingSerializer extends SimpleTypeSerializer<Bytecode.Binding> {
     }
 
     @Override
-    protected Bytecode.Binding readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Bytecode.Binding readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final String k = context.readValue(buffer, String.class, false);
         return new Bytecode.Binding<>(k, context.read(buffer));
     }
 
     @Override
-    protected void writeValue(final Bytecode.Binding value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final Bytecode.Binding value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         context.writeValue(value.variable(), buffer, false);
         context.write(value.value(), buffer);
     }

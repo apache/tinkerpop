@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -37,13 +37,13 @@ public class LocalDateTimeSerializer extends SimpleTypeSerializer<LocalDateTime>
     }
 
     @Override
-    protected LocalDateTime readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected LocalDateTime readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         return LocalDateTime.of(context.readValue(buffer, LocalDate.class, false),
                 context.readValue(buffer, LocalTime.class, false));
     }
 
     @Override
-    protected void writeValue(final LocalDateTime value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final LocalDateTime value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         context.writeValue(value.toLocalDate(), buffer, false);
         context.writeValue(value.toLocalTime(), buffer, false);
     }

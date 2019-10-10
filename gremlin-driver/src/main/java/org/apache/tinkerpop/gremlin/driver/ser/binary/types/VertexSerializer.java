@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
 /**
@@ -35,7 +35,7 @@ public class VertexSerializer extends SimpleTypeSerializer<Vertex> {
     }
 
     @Override
-    protected Vertex readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Vertex readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final Vertex v = new ReferenceVertex(context.read(buffer), 
                                              context.readValue(buffer, String.class, false));
         
@@ -46,7 +46,7 @@ public class VertexSerializer extends SimpleTypeSerializer<Vertex> {
     }
 
     @Override
-    protected void writeValue(final Vertex value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final Vertex value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         context.write(value.id(), buffer);
         context.writeValue(value.label(), buffer, false);
         context.write(null, buffer);

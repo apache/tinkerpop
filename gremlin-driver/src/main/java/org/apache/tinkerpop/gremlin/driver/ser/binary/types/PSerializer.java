@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
@@ -26,6 +25,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -53,7 +53,7 @@ public class PSerializer<T extends P> extends SimpleTypeSerializer<T> {
     }
 
     @Override
-    protected T readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected T readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final String predicateName = context.readValue(buffer, String.class, false);
         final int length = context.readValue(buffer, Integer.class, false);
         final Object[] args = new Object[length];
@@ -149,7 +149,7 @@ public class PSerializer<T extends P> extends SimpleTypeSerializer<T> {
     }
 
     @Override
-    protected void writeValue(final T value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final T value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         // the predicate name is either a static method of P or an instance method when a type ConnectiveP
         final boolean isConnectedP = value instanceof ConnectiveP;
         final String predicateName = isConnectedP ?

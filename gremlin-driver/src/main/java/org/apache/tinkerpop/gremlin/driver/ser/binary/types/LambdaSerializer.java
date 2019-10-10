@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
 /**
@@ -34,7 +34,7 @@ public class LambdaSerializer extends SimpleTypeSerializer<Lambda> {
     }
 
     @Override
-    protected Lambda readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Lambda readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final String lang = context.readValue(buffer, String.class, false);
         final String script = context.readValue(buffer, String.class, false);
         final int args = context.readValue(buffer, Integer.class, false);
@@ -50,7 +50,7 @@ public class LambdaSerializer extends SimpleTypeSerializer<Lambda> {
     }
 
     @Override
-    protected void writeValue(final Lambda value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final Lambda value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         context.writeValue(value.getLambdaLanguage(), buffer, false);
         context.writeValue(value.getLambdaScript(), buffer, false);
         context.writeValue(value.getLambdaArguments(), buffer, false);

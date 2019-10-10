@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -36,7 +36,7 @@ public class InetAddressSerializer<T extends InetAddress> extends SimpleTypeSeri
     }
 
     @Override
-    protected T readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected T readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final int length = buffer.readInt();
         final byte[] bytes = new byte[length];
         buffer.readBytes(bytes);
@@ -49,7 +49,7 @@ public class InetAddressSerializer<T extends InetAddress> extends SimpleTypeSeri
     }
 
     @Override
-    protected void writeValue(final T value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final T value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         final byte[] bytes = value.getAddress();
         buffer.writeInt(bytes.length).writeBytes(bytes);
     }

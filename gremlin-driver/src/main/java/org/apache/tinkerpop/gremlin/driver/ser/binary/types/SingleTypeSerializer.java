@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.time.Year;
 import java.util.function.BiConsumer;
@@ -33,39 +33,39 @@ import java.util.function.Function;
  */
 public class SingleTypeSerializer<T> extends SimpleTypeSerializer<T> {
     public static final SingleTypeSerializer<Integer> IntSerializer =
-            new SingleTypeSerializer<>(DataType.INT, ByteBuf::readInt, (v, b) -> b.writeInt(v));
+            new SingleTypeSerializer<>(DataType.INT, Buffer::readInt, (v, b) -> b.writeInt(v));
     public static final SingleTypeSerializer<Long> LongSerializer =
-            new SingleTypeSerializer<>(DataType.LONG, ByteBuf::readLong, (v, b) -> b.writeLong(v));
+            new SingleTypeSerializer<>(DataType.LONG, Buffer::readLong, (v, b) -> b.writeLong(v));
     public static final SingleTypeSerializer<Double> DoubleSerializer =
-            new SingleTypeSerializer<>(DataType.DOUBLE, ByteBuf::readDouble, (v, b) -> b.writeDouble(v));
+            new SingleTypeSerializer<>(DataType.DOUBLE, Buffer::readDouble, (v, b) -> b.writeDouble(v));
     public static final SingleTypeSerializer<Float> FloatSerializer =
-            new SingleTypeSerializer<>(DataType.FLOAT, ByteBuf::readFloat, (v, b) -> b.writeFloat(v));
+            new SingleTypeSerializer<>(DataType.FLOAT, Buffer::readFloat, (v, b) -> b.writeFloat(v));
     public static final SingleTypeSerializer<Short> ShortSerializer =
-            new SingleTypeSerializer<>(DataType.SHORT, ByteBuf::readShort, (v, b) -> b.writeShort(v));
+            new SingleTypeSerializer<>(DataType.SHORT, Buffer::readShort, (v, b) -> b.writeShort(v));
     public static final SingleTypeSerializer<Boolean> BooleanSerializer =
-            new SingleTypeSerializer<>(DataType.BOOLEAN, ByteBuf::readBoolean, (v, b) -> b.writeBoolean(v));
+            new SingleTypeSerializer<>(DataType.BOOLEAN, Buffer::readBoolean, (v, b) -> b.writeBoolean(v));
     public static final SingleTypeSerializer<Byte> ByteSerializer =
-            new SingleTypeSerializer<>(DataType.BYTE, ByteBuf::readByte, (v, b) -> b.writeByte(v));
+            new SingleTypeSerializer<>(DataType.BYTE, Buffer::readByte, (v, b) -> b.writeByte(v));
     public static final SingleTypeSerializer<Year> YearSerializer =
             new SingleTypeSerializer<>(DataType.YEAR, bb -> Year.of(bb.readInt()), (v, b) -> b.writeInt(v.getValue()));
 
-    private final Function<ByteBuf, T> readFunc;
-    private final BiConsumer<T, ByteBuf> writeFunc;
+    private final Function<Buffer, T> readFunc;
+    private final BiConsumer<T, Buffer> writeFunc;
 
-    private SingleTypeSerializer(final DataType dataType, final Function<ByteBuf, T> readFunc,
-                                 final BiConsumer<T, ByteBuf> writeFunc) {
+    private SingleTypeSerializer(final DataType dataType, final Function<Buffer, T> readFunc,
+                                 final BiConsumer<T, Buffer> writeFunc) {
         super(dataType);
         this.readFunc = readFunc;
         this.writeFunc = writeFunc;
     }
 
     @Override
-    public T readValue(final ByteBuf buffer, final GraphBinaryReader context) {
+    public T readValue(final Buffer buffer, final GraphBinaryReader context) {
         return readFunc.apply(buffer);
     }
 
     @Override
-    protected void writeValue(final T value, final ByteBuf buffer, final GraphBinaryWriter context) {
+    protected void writeValue(final T value, final Buffer buffer, final GraphBinaryWriter context) {
         writeFunc.accept(value, buffer);
     }
 }

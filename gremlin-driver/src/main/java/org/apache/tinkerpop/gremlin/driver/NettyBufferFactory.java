@@ -16,27 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
+package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
+import org.apache.tinkerpop.gremlin.structure.io.BufferFactory;
 
-import java.util.UUID;
+import java.nio.ByteBuffer;
 
-public class UUIDSerializer extends SimpleTypeSerializer<UUID> {
-    public UUIDSerializer() {
-        super(DataType.UUID);
+/**
+ * Represents a factory to create {@link Buffer} instances from wrapped {@link ByteBuf} instances.
+ */
+public class NettyBufferFactory implements BufferFactory<ByteBuf> {
+    @Override
+    public Buffer create(ByteBuf value) {
+        return new NettyBuffer(value);
     }
 
     @Override
-    protected UUID readValue(final Buffer buffer, final GraphBinaryReader context) {
-        return new UUID(buffer.readLong(), buffer.readLong());
-    }
-
-    @Override
-    protected void writeValue(final UUID value, final Buffer buffer, final GraphBinaryWriter context) {
-        buffer.writeLong(value.getMostSignificantBits()).writeLong(value.getLeastSignificantBits());
+    public Buffer wrap(ByteBuffer value) {
+        return create(Unpooled.wrappedBuffer(value));
     }
 }

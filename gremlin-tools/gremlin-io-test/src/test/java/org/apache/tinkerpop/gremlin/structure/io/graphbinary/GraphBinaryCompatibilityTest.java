@@ -18,13 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphbinary;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.UnpooledDirectByteBuf;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.tinkerpop.gremlin.driver.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractTypedCompatibilityTest;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.Compatibility;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoCompatibility;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
@@ -48,6 +48,7 @@ public class GraphBinaryCompatibilityTest extends AbstractTypedCompatibilityTest
     private static final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
     private static final GraphBinaryWriter writerV1 = new GraphBinaryWriter();
     private static final GraphBinaryReader readerV1 = new GraphBinaryReader();
+    private static final NettyBufferFactory bufferFactory = new NettyBufferFactory();
 
     @Parameterized.Parameters(name = "expect({0})")
     public static Iterable<Object[]> data() {
@@ -67,14 +68,14 @@ public class GraphBinaryCompatibilityTest extends AbstractTypedCompatibilityTest
 
     @Override
     public <T> T read(final byte[] bytes, final Class<T> clazz) throws Exception {
-        final ByteBuf buffer = allocator.buffer();
+        final Buffer buffer = bufferFactory.create(allocator.buffer());
         buffer.writeBytes(bytes);
         return reader.read(buffer);
     }
 
     @Override
     public byte[] write(final Object o, final Class<?> clazz) throws Exception  {
-        final ByteBuf buffer = allocator.buffer();
+        final Buffer buffer = bufferFactory.create(allocator.buffer());
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             writer.write(o, buffer);
             buffer.readerIndex(0);

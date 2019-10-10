@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -37,14 +37,14 @@ public class ZonedDateTimeSerializer extends SimpleTypeSerializer<ZonedDateTime>
     }
 
     @Override
-    protected ZonedDateTime readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected ZonedDateTime readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final LocalDateTime ldt = context.readValue(buffer, LocalDateTime.class, false);
         final ZoneOffset zo = context.readValue(buffer, ZoneOffset.class, false);
         return ZonedDateTime.of(ldt, zo);
     }
 
     @Override
-    protected void writeValue(final ZonedDateTime value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final ZonedDateTime value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         context.writeValue(value.toLocalDateTime(), buffer, false);
         context.writeValue(value.getOffset(), buffer, false);
     }

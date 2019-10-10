@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 public class ClassSerializer extends SimpleTypeSerializer<Class> {
     public ClassSerializer() {
@@ -30,7 +30,7 @@ public class ClassSerializer extends SimpleTypeSerializer<Class> {
     }
 
     @Override
-    protected Class readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Class readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final String name = context.readValue(buffer, String.class, false);
         try {
             return Class.forName(name);
@@ -40,7 +40,7 @@ public class ClassSerializer extends SimpleTypeSerializer<Class> {
     }
 
     @Override
-    protected void writeValue(final Class value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final Class value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         context.writeValue(value.getName(), buffer, false);
     }
 }

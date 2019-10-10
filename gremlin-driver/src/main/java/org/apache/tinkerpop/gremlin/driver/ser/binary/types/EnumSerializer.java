@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
@@ -33,6 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.util.function.Function;
 
@@ -62,12 +62,12 @@ public class EnumSerializer<E extends Enum> extends SimpleTypeSerializer<E> {
     }
 
     @Override
-    protected E readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected E readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         return readFunc.apply(context.read(buffer));
     }
 
     @Override
-    protected void writeValue(final E value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final E value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         context.write(value.name(), buffer);
     }
 }

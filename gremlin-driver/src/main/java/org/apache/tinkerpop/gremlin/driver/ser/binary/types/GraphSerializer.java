@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
@@ -32,6 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.lang.reflect.Method;
@@ -52,7 +51,7 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
     }
 
     @Override
-    protected Graph readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Graph readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
 
         if (null == openMethod)
             throw new SerializationException("TinkerGraph is an optional dependency to gremlin-driver - if deserializing Graph instances it must be explicitly added as a dependency");
@@ -109,7 +108,7 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
     }
 
     @Override
-    protected void writeValue(final Graph value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final Graph value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         // this kinda looks scary memory-wise, but GraphBinary is about network derser so we are dealing with a
         // graph instance that should live in memory already - not expecting "big" stuff here.
         final List<Vertex> vertexList = IteratorUtils.list(value.vertices());
@@ -128,7 +127,7 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
         }
     }
 
-    private void writeVertex(ByteBuf buffer, GraphBinaryWriter context, Vertex vertex) throws SerializationException {
+    private void writeVertex(Buffer buffer, GraphBinaryWriter context, Vertex vertex) throws SerializationException {
         final List<VertexProperty<Object>> vertexProperties = IteratorUtils.list(vertex.properties());
 
         context.write(vertex.id(), buffer);
@@ -148,7 +147,7 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
         }
     }
 
-    private void writeEdge(ByteBuf buffer, GraphBinaryWriter context, Edge edge) throws SerializationException {
+    private void writeEdge(Buffer buffer, GraphBinaryWriter context, Edge edge) throws SerializationException {
         context.write(edge.id(), buffer);
         context.writeValue(edge.label(), buffer, false);
 

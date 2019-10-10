@@ -18,9 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 /**
  * Represents a serializer for a given type.
@@ -35,7 +34,7 @@ public interface TypeSerializer<T> {
     /**
      * Reads the type information and value from the buffer and returns an instance of T.
      */
-    T read(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException;
+    T read(final Buffer buffer, final GraphBinaryReader context) throws SerializationException;
 
     /**
      * Reads the value from the buffer (not the type information) and returns an instance of T.
@@ -44,15 +43,15 @@ public interface TypeSerializer<T> {
      *     information.
      * </p>
      */
-    T readValue(final ByteBuf buffer, final GraphBinaryReader context, final boolean nullable) throws SerializationException;
+    T readValue(final Buffer buffer, final GraphBinaryReader context, final boolean nullable) throws SerializationException;
 
     /**
      * Writes the type code, information and value to a buffer using the provided allocator.
      */
-    void write(final T value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException;
+    void write(final T value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException;
 
     /**
      * Writes the value to a buffer, composed by the value flag and the sequence of bytes.
      */
-    void writeValue(final T value, final ByteBuf buffer, final GraphBinaryWriter context, final boolean nullable) throws SerializationException;
+    void writeValue(final T value, final Buffer buffer, final GraphBinaryWriter context, final boolean nullable) throws SerializationException;
 }

@@ -18,12 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.nio.charset.StandardCharsets;
 
@@ -33,7 +32,7 @@ public class CharSerializer extends SimpleTypeSerializer<Character> {
     }
 
     @Override
-    protected Character readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Character readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final int firstByte = buffer.readByte() & 0xff;
         int byteLength = 1;
         // A byte with the first byte ON (10000000) signals that more bytes are needed to represent the UTF-8 char
@@ -60,7 +59,7 @@ public class CharSerializer extends SimpleTypeSerializer<Character> {
     }
 
     @Override
-    protected void writeValue(final Character value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final Character value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         final String stringValue = Character.toString(value);
         buffer.writeBytes(stringValue.getBytes(StandardCharsets.UTF_8));
     }

@@ -18,16 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 /**
  * Reads a value from a buffer using the {@link TypeSerializer} instances configured in the
  * {@link TypeSerializerRegistry}.
  *
  * <p>
- *     This class exposes two different methods to read a value from a buffer: {@link GraphBinaryReader#read(ByteBuf)}
- *     and {@link GraphBinaryReader#readValue(ByteBuf, Class, boolean)}:
+ *     This class exposes two different methods to read a value from a buffer: {@link GraphBinaryReader#read(Buffer)}
+ *     and {@link GraphBinaryReader#readValue(Buffer, Class, boolean)}:
  *     <ul>
  *         <li>{@code read()} method expects a value in fully-qualified format, composed of
  *         <code>{type_code}{type_info}{value_flag}{value}</code>.</li>
@@ -65,7 +65,7 @@ public class GraphBinaryReader {
      * <p>When the value is not nullable, the reader expects only the <code>{value}</code> to be contained in the
      * buffer.</p>
      */
-    public <T> T readValue(final ByteBuf buffer, final Class<T> type, final boolean nullable) throws SerializationException {
+    public <T> T readValue(final Buffer buffer, final Class<T> type, final boolean nullable) throws SerializationException {
         if (buffer == null) {
             throw new IllegalArgumentException("input cannot be null.");
         } else if (type == null) {
@@ -79,7 +79,7 @@ public class GraphBinaryReader {
     /**
      * Reads the type code, information and value of a given buffer with fully-qualified format.
      */
-    public <T> T read(final ByteBuf buffer) throws SerializationException {
+    public <T> T read(final Buffer buffer) throws SerializationException {
         // Fully-qualified format: {type_code}{type_info}{value_flag}{value}
         final DataType type = DataType.get(Byte.toUnsignedInt(buffer.readByte()));
 

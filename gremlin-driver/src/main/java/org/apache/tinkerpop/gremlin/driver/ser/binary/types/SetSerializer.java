@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -35,12 +35,12 @@ public class SetSerializer extends SimpleTypeSerializer<Set>{
     }
 
     @Override
-    protected Set readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Set readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         return new HashSet<>(collectionSerializer.readValue(buffer, context));
     }
 
     @Override
-    protected void writeValue(final Set value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final Set value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         collectionSerializer.writeValue(value, buffer, context);
     }
 }

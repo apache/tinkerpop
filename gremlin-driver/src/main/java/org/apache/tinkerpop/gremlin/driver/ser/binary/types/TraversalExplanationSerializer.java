@@ -18,13 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.javatuples.Pair;
 
 import java.util.HashMap;
@@ -45,12 +45,12 @@ public class TraversalExplanationSerializer extends SimpleTypeSerializer<Travers
     }
 
     @Override
-    protected TraversalExplanation readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected TraversalExplanation readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         throw new SerializationException("A TraversalExplanation should not be read individually");
     }
 
     @Override
-    protected void writeValue(final TraversalExplanation value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final TraversalExplanation value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         throw new SerializationException("A TraversalExplanation should not be written individually");
     }
 

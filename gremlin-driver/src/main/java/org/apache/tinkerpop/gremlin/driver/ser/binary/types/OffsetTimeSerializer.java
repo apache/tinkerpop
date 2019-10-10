@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.time.LocalTime;
 import java.time.OffsetTime;
@@ -37,14 +37,14 @@ public class OffsetTimeSerializer extends SimpleTypeSerializer<OffsetTime> {
     }
 
     @Override
-    protected OffsetTime readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected OffsetTime readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final LocalTime ldt = context.readValue(buffer, LocalTime.class, false);
         final ZoneOffset zo = context.readValue(buffer, ZoneOffset.class, false);
         return OffsetTime.of(ldt, zo);
     }
 
     @Override
-    protected void writeValue(final OffsetTime value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final OffsetTime value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         context.writeValue(value.toLocalTime(), buffer, false);
         context.writeValue(value.getOffset(), buffer, false);
     }

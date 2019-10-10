@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.driver.ser.binary.types.sample;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import org.apache.tinkerpop.gremlin.driver.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
@@ -28,6 +29,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.TypeSerializerRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.junit.Test;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 
@@ -46,6 +48,7 @@ import static org.junit.Assert.assertThat;
 public class SamplePersonSerializerTest {
 
     private static final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
+    private static final NettyBufferFactory bufferFactory = new NettyBufferFactory();
 
     @Test
     public void shouldCustomSerializationWithPerson() throws SerializationException {
@@ -86,7 +89,7 @@ public class SamplePersonSerializerTest {
                 Date.from(LocalDateTime.of(2005, 8, 5, 1, 0).toInstant(ZoneOffset.UTC)));
 
         for (boolean nullable: new boolean[] { true, false }) {
-            final ByteBuf buffer = allocator.buffer();
+            final Buffer buffer = bufferFactory.create(allocator.buffer());
             writer.writeValue(person, buffer, nullable);
             final SamplePerson actual = reader.readValue(buffer, SamplePerson.class, nullable);
 

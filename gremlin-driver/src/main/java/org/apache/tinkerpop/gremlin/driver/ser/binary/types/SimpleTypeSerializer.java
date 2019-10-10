@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.TypeSerializer;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 /**
  * Base class for serialization of types that don't contain type specific information only {type_code}, {value_flag}
@@ -41,13 +41,13 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
     }
 
     @Override
-    public T read(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    public T read(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         // No {type_info}, just {value_flag}{value}
         return readValue(buffer, context, true);
     }
 
     @Override
-    public T readValue(final ByteBuf buffer, final GraphBinaryReader context, final boolean nullable) throws SerializationException {
+    public T readValue(final Buffer buffer, final GraphBinaryReader context, final boolean nullable) throws SerializationException {
         if (nullable) {
             final byte valueFlag = buffer.readByte();
             if ((valueFlag & 1) == 1) {
@@ -65,15 +65,15 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
      * @return
      * @throws SerializationException
      */
-    protected abstract T readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException;
+    protected abstract T readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException;
 
     @Override
-    public void write(final T value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    public void write(final T value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         writeValue(value, buffer, context, true);
     }
 
     @Override
-    public void writeValue(final T value, final ByteBuf buffer, final GraphBinaryWriter context, final boolean nullable) throws SerializationException {
+    public void writeValue(final T value, final Buffer buffer, final GraphBinaryWriter context, final boolean nullable) throws SerializationException {
         if (value == null) {
             if (!nullable) {
                 throw new SerializationException("Unexpected null value when nullable is false");
@@ -97,5 +97,5 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
      * @param context The binary writer.
      * @throws SerializationException
      */
-    protected abstract void writeValue(final T value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException;
+    protected abstract void writeValue(final T value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException;
 }

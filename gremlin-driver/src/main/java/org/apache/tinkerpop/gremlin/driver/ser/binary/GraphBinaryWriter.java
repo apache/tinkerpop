@@ -18,11 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.CustomTypeSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.TransformSerializer;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 /**
  * Writes a value to a buffer using the {@link TypeSerializer} instances configured in the
@@ -30,8 +29,8 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.types.TransformSerializer;
  *
  * <p>
  *     This class exposes two different methods to write a value to a buffer:
- *     {@link GraphBinaryWriter#write(Object, ByteBuf)} and
- *     {@link GraphBinaryWriter#writeValue(Object, ByteBuf, boolean)}:
+ *     {@link GraphBinaryWriter#write(Object, Buffer)} and
+ *     {@link GraphBinaryWriter#writeValue(Object, Buffer, boolean)}:
  *     <ul>
  *         <li>{@code write()} method writes the binary representation of the
  *         <code>{type_code}{type_info}{value_flag}{value}</code> components.</li>
@@ -60,7 +59,7 @@ public class GraphBinaryWriter {
     /**
      * Writes a value without including type information.
      */
-    public <T> void writeValue(final T value, final ByteBuf buffer, final boolean nullable) throws SerializationException {
+    public <T> void writeValue(final T value, final Buffer buffer, final boolean nullable) throws SerializationException {
         if (value == null) {
             if (!nullable) {
                 throw new SerializationException("Unexpected null value when nullable is false");
@@ -79,7 +78,7 @@ public class GraphBinaryWriter {
     /**
      * Writes an object in fully-qualified format, containing {type_code}{type_info}{value_flag}{value}.
      */
-    public <T> void write(final T value, final ByteBuf buffer) throws SerializationException {
+    public <T> void write(final T value, final Buffer buffer) throws SerializationException {
         if (value == null) {
             // return Object of type "unspecified object null" with the value flag set to null.
             buffer.writeBytes(unspecifiedNullBytes);
@@ -93,7 +92,7 @@ public class GraphBinaryWriter {
             // It's a custom type
             CustomTypeSerializer customTypeSerializer = (CustomTypeSerializer) serializer;
 
-            buffer.writeBytes(Unpooled.wrappedBuffer(customTypeCodeBytes));
+            buffer.writeBytes(customTypeCodeBytes);
             writeValue(customTypeSerializer.getTypeName(), buffer, false);
             customTypeSerializer.write(value, buffer, this);
             return;
@@ -117,7 +116,7 @@ public class GraphBinaryWriter {
      * specified.
      * <p>Note that for simple types, the provided information will be <code>null</code>.</p>
      */
-    public <T> void writeFullyQualifiedNull(final Class<T> objectClass, ByteBuf buffer, final Object information) throws SerializationException {
+    public <T> void writeFullyQualifiedNull(final Class<T> objectClass, Buffer buffer, final Object information) throws SerializationException {
         TypeSerializer<T> serializer = registry.getSerializer(objectClass);
         serializer.write(null, buffer, this);
     }
@@ -125,14 +124,14 @@ public class GraphBinaryWriter {
     /**
      * Writes a single byte representing the null value_flag.
      */
-    public void writeValueFlagNull(ByteBuf buffer) {
+    public void writeValueFlagNull(Buffer buffer) {
         buffer.writeByte(VALUE_FLAG_NULL);
     }
 
     /**
      * Writes a single byte with value 0, representing an unset value_flag.
      */
-    public void writeValueFlagNone(ByteBuf buffer) {
+    public void writeValueFlagNone(Buffer buffer) {
         buffer.writeByte(VALUE_FLAG_NONE);
     }
 }

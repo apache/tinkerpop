@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.time.Duration;
 
@@ -35,12 +35,12 @@ public class DurationSerializer extends SimpleTypeSerializer<Duration> {
     }
 
     @Override
-    protected Duration readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Duration readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         return Duration.ofSeconds(buffer.readLong(), buffer.readInt());
     }
 
     @Override
-    protected void writeValue(final Duration value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final Duration value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         buffer.writeLong(value.getSeconds()).writeInt(value.getNano());
     }
 }

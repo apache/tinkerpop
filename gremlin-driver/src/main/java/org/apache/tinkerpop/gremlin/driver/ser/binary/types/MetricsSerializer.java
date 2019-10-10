@@ -18,13 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.util.Collection;
 import java.util.Map;
@@ -38,7 +38,7 @@ public class MetricsSerializer extends SimpleTypeSerializer<Metrics> {
     }
 
     @Override
-    protected Metrics readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Metrics readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         // Consider using a custom implementation, like "DefaultMetrics"
         final MutableMetrics result = new MutableMetrics(
                 context.readValue(buffer, String.class, false),
@@ -54,7 +54,7 @@ public class MetricsSerializer extends SimpleTypeSerializer<Metrics> {
     }
 
     @Override
-    protected void writeValue(final Metrics value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final Metrics value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         context.writeValue(value.getId(), buffer, false);
         context.writeValue(value.getName(), buffer, false);
         context.writeValue(value.getDuration(TimeUnit.NANOSECONDS), buffer, false);

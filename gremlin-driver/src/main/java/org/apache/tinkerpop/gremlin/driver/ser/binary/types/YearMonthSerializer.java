@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.time.YearMonth;
 
@@ -35,12 +35,12 @@ public class YearMonthSerializer extends SimpleTypeSerializer<YearMonth> {
     }
 
     @Override
-    protected YearMonth readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected YearMonth readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         return YearMonth.of(buffer.readInt(), buffer.readByte());
     }
 
     @Override
-    protected void writeValue(final YearMonth value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final YearMonth value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         buffer.writeInt(value.getYear()).writeByte(value.getMonthValue());
     }
 }

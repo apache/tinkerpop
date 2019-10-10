@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
@@ -36,7 +36,7 @@ public class EdgeSerializer extends SimpleTypeSerializer<Edge> {
     }
 
     @Override
-    protected Edge readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Edge readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final Object id = context.read(buffer);
         final String label = context.readValue(buffer, String.class, false);
 
@@ -57,7 +57,7 @@ public class EdgeSerializer extends SimpleTypeSerializer<Edge> {
     }
 
     @Override
-    protected void writeValue(final Edge value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final Edge value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
 
         context.write(value.id(), buffer);
         context.writeValue(value.label(), buffer, false);

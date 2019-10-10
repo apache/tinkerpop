@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Level;
@@ -49,20 +50,21 @@ public class GraphBinaryReaderWriterBenchmark extends AbstractBenchmarkBase {
     private static GraphBinaryReader reader = new GraphBinaryReader();
     private static GraphBinaryWriter writer = new GraphBinaryWriter();
     private static UnpooledByteBufAllocator allocator = new UnpooledByteBufAllocator(false);
+    private static NettyBufferFactory bufferFactory = new NettyBufferFactory();
 
     @State(Scope.Thread)
     public static class BenchmarkState {
-        public ByteBuf bytecodeBuffer1 = allocator.buffer(2048);
-        public ByteBuf bytecodeBuffer2 = allocator.buffer(2048);
-        public ByteBuf pBuffer1 = allocator.buffer(2048);
+        public Buffer bytecodeBuffer1 = bufferFactory.create(allocator.buffer(2048));
+        public Buffer bytecodeBuffer2 = bufferFactory.create(allocator.buffer(2048));
+        public Buffer pBuffer1 = bufferFactory.create(allocator.buffer(2048));
         public final Bytecode bytecode1 = new Bytecode();
 
-        public ByteBuf bufferWrite = allocator.buffer(2048);
+        public Buffer bufferWrite = bufferFactory.create(allocator.buffer(2048));
 
         public Bytecode bytecode2;
 
         @Setup(Level.Trial)
-        public void doSetup() throws IOException, SerializationException {
+        public void doSetup() throws IOException {
             bytecode1.addStep("V");
             bytecode1.addStep("values", "name");
             bytecode1.addStep("tail", 5);

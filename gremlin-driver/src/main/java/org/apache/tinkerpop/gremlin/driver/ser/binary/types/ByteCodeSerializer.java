@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.util.List;
 
@@ -33,7 +33,7 @@ public class ByteCodeSerializer extends SimpleTypeSerializer<Bytecode> {
     }
 
     @Override
-    protected Bytecode readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Bytecode readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final Bytecode result = new Bytecode();
 
         final int stepsLength = buffer.readInt();
@@ -49,7 +49,7 @@ public class ByteCodeSerializer extends SimpleTypeSerializer<Bytecode> {
         return result;
     }
 
-    private static Object[] getInstructionArguments(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    private static Object[] getInstructionArguments(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final int valuesLength = buffer.readInt();
         final Object[] values = new Object[valuesLength];
         for (int j = 0; j < valuesLength; j++) {
@@ -59,7 +59,7 @@ public class ByteCodeSerializer extends SimpleTypeSerializer<Bytecode> {
     }
 
     @Override
-    protected void writeValue(final Bytecode value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final Bytecode value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         final List<Bytecode.Instruction> steps = value.getStepInstructions();
         final List<Bytecode.Instruction> sources = value.getSourceInstructions();
         // 2 buffers for the length + plus 2 buffers per each step and source
@@ -68,7 +68,7 @@ public class ByteCodeSerializer extends SimpleTypeSerializer<Bytecode> {
         writeInstructions(buffer, context, sources);
     }
 
-    private void writeInstructions(final ByteBuf buffer, final GraphBinaryWriter context,
+    private void writeInstructions(final Buffer buffer, final GraphBinaryWriter context,
                                    final List<Bytecode.Instruction> instructions) throws SerializationException {
 
         context.writeValue(instructions.size(), buffer, false);
@@ -79,7 +79,7 @@ public class ByteCodeSerializer extends SimpleTypeSerializer<Bytecode> {
         }
     }
 
-    private static void fillArgumentsBuffer(final Object[] arguments, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    private static void fillArgumentsBuffer(final Object[] arguments, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
 
         context.writeValue(arguments.length, buffer, false);
 

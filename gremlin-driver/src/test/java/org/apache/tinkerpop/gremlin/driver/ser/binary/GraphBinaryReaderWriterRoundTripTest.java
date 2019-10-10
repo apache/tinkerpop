@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import org.apache.tinkerpop.gremlin.driver.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
@@ -48,6 +48,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
@@ -92,6 +93,7 @@ public class GraphBinaryReaderWriterRoundTripTest {
     private final GraphBinaryWriter writer = new GraphBinaryWriter();
     private final GraphBinaryReader reader = new GraphBinaryReader();
     private final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
+    private static NettyBufferFactory bufferFactory = new NettyBufferFactory();
 
     private static final GraphTraversalSource g = TinkerFactory.createModern().traversal();
 
@@ -298,7 +300,7 @@ public class GraphBinaryReaderWriterRoundTripTest {
     public void shouldWriteAndRead() throws Exception {
         // Test it multiple times as the type registry might change its internal state
         for (int i = 0; i < 5; i++) {
-            final ByteBuf buffer = allocator.buffer();
+            final Buffer buffer = bufferFactory.create(allocator.buffer());
             writer.write(value, buffer);
             buffer.readerIndex(0);
             final Object result = reader.read(buffer);

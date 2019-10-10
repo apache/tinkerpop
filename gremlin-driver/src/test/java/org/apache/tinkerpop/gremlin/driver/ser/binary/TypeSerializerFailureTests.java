@@ -19,8 +19,8 @@
 
 package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
+import org.apache.tinkerpop.gremlin.driver.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferencePath;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
@@ -52,6 +53,7 @@ public class TypeSerializerFailureTests {
 
     private final GraphBinaryWriter writer = new GraphBinaryWriter();
     private final UnpooledByteBufAllocator allocator = new UnpooledByteBufAllocator(false);
+    private static final NettyBufferFactory bufferFactory = new NettyBufferFactory();
 
     @Parameterized.Parameters(name = "Value={0}")
     public static Collection input() {
@@ -94,7 +96,7 @@ public class TypeSerializerFailureTests {
 
     @Test
     public void shouldReleaseMemoryWhenFails() {
-        final ByteBuf buffer = allocator.buffer();
+        final Buffer buffer = bufferFactory.create(allocator.buffer());
         try {
             writer.write(value, buffer);
             fail("Should throw exception");

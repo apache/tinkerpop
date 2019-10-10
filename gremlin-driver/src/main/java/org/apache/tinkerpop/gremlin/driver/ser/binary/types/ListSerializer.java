@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.util.List;
 
@@ -34,13 +34,13 @@ public class ListSerializer extends SimpleTypeSerializer<List> {
     }
 
     @Override
-    protected List readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected List readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         // The collection is a List<>
         return (List) collectionSerializer.readValue(buffer, context);
     }
 
     @Override
-    protected void writeValue(final List value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final List value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         collectionSerializer.writeValue(value, buffer, context);
     }
 }

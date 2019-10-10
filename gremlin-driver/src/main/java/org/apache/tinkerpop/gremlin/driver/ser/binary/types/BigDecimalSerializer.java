@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -36,14 +36,14 @@ public class BigDecimalSerializer extends SimpleTypeSerializer<BigDecimal> {
     }
 
     @Override
-    protected BigDecimal readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected BigDecimal readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final int scale = context.readValue(buffer, Integer.class, false);
         final BigInteger unscaled = context.readValue(buffer, BigInteger.class, false);
         return new BigDecimal(unscaled, scale);
     }
 
     @Override
-    protected void writeValue(final BigDecimal value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final BigDecimal value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         context.writeValue(value.scale(), buffer, false);
         context.writeValue(value.unscaledValue(), buffer, false);
     }

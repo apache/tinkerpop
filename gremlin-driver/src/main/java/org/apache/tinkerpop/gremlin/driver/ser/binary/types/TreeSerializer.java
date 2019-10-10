@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 public class TreeSerializer extends SimpleTypeSerializer<Tree> {
     public TreeSerializer() {
@@ -31,7 +31,7 @@ public class TreeSerializer extends SimpleTypeSerializer<Tree> {
     }
 
     @Override
-    protected Tree readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Tree readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final int length = buffer.readInt();
 
         final Tree result = new Tree();
@@ -43,7 +43,7 @@ public class TreeSerializer extends SimpleTypeSerializer<Tree> {
     }
 
     @Override
-    protected void writeValue(final Tree value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final Tree value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         buffer.writeInt(value.size());
 
         for (Object key : value.keySet()) {

@@ -18,13 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.CompositeByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.util.Map;
 
@@ -37,7 +36,7 @@ public class BulkSetSerializer extends SimpleTypeSerializer<BulkSet> {
     }
 
     @Override
-    protected BulkSet readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected BulkSet readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final int length = buffer.readInt();
 
         final BulkSet result = new BulkSet();
@@ -49,7 +48,7 @@ public class BulkSetSerializer extends SimpleTypeSerializer<BulkSet> {
     }
 
     @Override
-    protected void writeValue(final BulkSet value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final BulkSet value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         final Map<Object,Long> raw = value.asBulk();
         buffer.writeInt(raw.size());
 

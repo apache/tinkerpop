@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.nio.charset.StandardCharsets;
 
@@ -31,7 +31,7 @@ public class StringSerializer extends SimpleTypeSerializer<String> {
     }
 
     @Override
-    protected String readValue(final ByteBuf buffer, final GraphBinaryReader context) {
+    protected String readValue(final Buffer buffer, final GraphBinaryReader context) {
         // Use Netty 4.0 API (avoid ByteBuf#readCharSequence() method) to maximize compatibility
         final byte[] bytes = new byte[buffer.readInt()];
         buffer.readBytes(bytes);
@@ -39,7 +39,7 @@ public class StringSerializer extends SimpleTypeSerializer<String> {
     }
 
     @Override
-    protected void writeValue(final String value, final ByteBuf buffer, final GraphBinaryWriter context) {
+    protected void writeValue(final String value, final Buffer buffer, final GraphBinaryWriter context) {
         final byte[] stringBytes = value.getBytes(StandardCharsets.UTF_8);
         buffer.writeInt(stringBytes.length).writeBytes(stringBytes);
     }

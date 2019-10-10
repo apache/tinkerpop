@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types.sample;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.CustomTypeSerializer;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -45,7 +45,7 @@ public final class SamplePersonSerializer implements CustomTypeSerializer<Sample
     }
 
     @Override
-    public SamplePerson read(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    public SamplePerson read(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         // {custom type info}, {value_flag} and {value}
         // No custom_type_info
         if (buffer.readInt() != 0) {
@@ -56,7 +56,7 @@ public final class SamplePersonSerializer implements CustomTypeSerializer<Sample
     }
 
     @Override
-    public SamplePerson readValue(final ByteBuf buffer, final GraphBinaryReader context, final boolean nullable) throws SerializationException {
+    public SamplePerson readValue(final Buffer buffer, final GraphBinaryReader context, final boolean nullable) throws SerializationException {
         if (nullable) {
             final byte valueFlag = buffer.readByte();
             if ((valueFlag & 1) == 1) {
@@ -83,7 +83,7 @@ public final class SamplePersonSerializer implements CustomTypeSerializer<Sample
     }
 
     @Override
-    public void write(final SamplePerson value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    public void write(final SamplePerson value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         // Write {custom type info}, {value_flag} and {value}
         buffer.writeBytes(typeInfoBuffer);
 
@@ -91,7 +91,7 @@ public final class SamplePersonSerializer implements CustomTypeSerializer<Sample
     }
 
     @Override
-    public void writeValue(final SamplePerson value, final ByteBuf buffer, final GraphBinaryWriter context, final boolean nullable) throws SerializationException {
+    public void writeValue(final SamplePerson value, final Buffer buffer, final GraphBinaryWriter context, final boolean nullable) throws SerializationException {
         if (value == null) {
             if (!nullable) {
                 throw new SerializationException("Unexpected null value when nullable is false");

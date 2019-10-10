@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
 
 /**
@@ -36,7 +36,7 @@ public class PropertySerializer extends SimpleTypeSerializer<Property> {
     }
 
     @Override
-    protected Property readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Property readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final Property p = new ReferenceProperty<>(context.readValue(buffer, String.class, false), context.read(buffer));
 
         // discard the parent element as it's not serialized for references right now
@@ -45,7 +45,7 @@ public class PropertySerializer extends SimpleTypeSerializer<Property> {
     }
 
     @Override
-    protected void writeValue(final Property value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final Property value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         context.writeValue(value.key(), buffer, false);
         context.write(value.value(), buffer);
 

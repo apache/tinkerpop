@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
@@ -26,6 +25,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,14 +39,14 @@ public class TraversalMetricsSerializer extends SimpleTypeSerializer<TraversalMe
     }
 
     @Override
-    protected TraversalMetrics readValue(ByteBuf buffer, GraphBinaryReader context) throws SerializationException {
+    protected TraversalMetrics readValue(Buffer buffer, GraphBinaryReader context) throws SerializationException {
         Long durationNanos = context.readValue(buffer, Long.class, false);
         final List<MutableMetrics> metrics = new ArrayList<>(collectionSerializer.readValue(buffer, context));
         return new DefaultTraversalMetrics(durationNanos, metrics);
     }
 
     @Override
-    protected void writeValue(TraversalMetrics value, ByteBuf buffer, GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(TraversalMetrics value, Buffer buffer, GraphBinaryWriter context) throws SerializationException {
         context.writeValue(value.getDuration(TimeUnit.NANOSECONDS), buffer, false);
         collectionSerializer.writeValue(value.getMetrics(), buffer, context);
     }

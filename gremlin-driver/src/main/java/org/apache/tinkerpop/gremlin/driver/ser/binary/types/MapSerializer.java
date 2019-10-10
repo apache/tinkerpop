@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -34,7 +34,7 @@ public class MapSerializer extends SimpleTypeSerializer<Map> {
     }
 
     @Override
-    protected Map readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Map readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final int length = buffer.readInt();
 
         final Map<Object,Object> result = new LinkedHashMap<>(length);
@@ -46,7 +46,7 @@ public class MapSerializer extends SimpleTypeSerializer<Map> {
     }
 
     @Override
-    protected void writeValue(final Map value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final Map value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         buffer.writeInt(value.size());
 
         for (Map.Entry entry : (Set<Map.Entry>) value.entrySet()) {

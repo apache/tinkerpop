@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -43,12 +43,12 @@ public class DateSerializer<T extends Date> extends SimpleTypeSerializer<T> {
     }
 
     @Override
-    protected T readValue(final ByteBuf buffer, final GraphBinaryReader context) {
+    protected T readValue(final Buffer buffer, final GraphBinaryReader context) {
         return reader.apply(buffer.readLong());
     }
 
     @Override
-    protected void writeValue(final T value, final ByteBuf buffer, final GraphBinaryWriter context) {
+    protected void writeValue(final T value, final Buffer buffer, final GraphBinaryWriter context) {
         buffer.writeLong(value.getTime());
     }
 }

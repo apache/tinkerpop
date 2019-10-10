@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 
 /**
@@ -36,7 +36,7 @@ public class VertexPropertySerializer extends SimpleTypeSerializer<VertexPropert
     }
 
     @Override
-    protected VertexProperty readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected VertexProperty readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final VertexProperty v = new ReferenceVertexProperty<>(context.read(buffer),
                 context.readValue(buffer, String.class, false),
                 context.read(buffer));
@@ -51,7 +51,7 @@ public class VertexPropertySerializer extends SimpleTypeSerializer<VertexPropert
     }
 
     @Override
-    protected void writeValue(final VertexProperty value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final VertexProperty value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         context.write(value.id(), buffer);
         context.writeValue(value.label(), buffer, false);
         context.write(value.value(), buffer);

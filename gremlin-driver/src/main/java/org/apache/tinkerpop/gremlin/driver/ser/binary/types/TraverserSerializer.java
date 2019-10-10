@@ -18,13 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -36,14 +36,14 @@ public class TraverserSerializer extends SimpleTypeSerializer<Traverser> {
     }
 
     @Override
-    protected Traverser readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Traverser readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final long bulk = context.readValue(buffer, Long.class, false);
         final Object v = context.read(buffer);
         return new DefaultRemoteTraverser<>(v, bulk);
     }
 
     @Override
-    protected void writeValue(final Traverser value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final Traverser value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         context.writeValue(value.bulk(), buffer, false);
         context.write(value.get(), buffer);
     }

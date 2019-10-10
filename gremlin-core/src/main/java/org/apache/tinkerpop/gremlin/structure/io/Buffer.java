@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.tinkerpop.gremlin.structure.io;
 
 import java.io.IOException;
@@ -8,6 +26,11 @@ import java.nio.ByteBuffer;
  * Represents an abstract view for one or more primitive byte arrays and NIO buffers.
  */
 public interface Buffer {
+
+    /**
+     * Returns the number of readable bytes.
+     */
+    int readableBytes();
 
     /**
      * Returns the reader index of this buffer.
@@ -29,16 +52,29 @@ public interface Buffer {
 
     /**
      * Sets the writer index of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if its out of bounds.
      */
     Buffer writerIndex(int writerIndex);
+
+    /**
+     * Marks the current writer index in this buffer.
+     */
+    Buffer markWriterIndex();
+
+    /**
+     * Repositions the current writer index to the marked index in this buffer.
+     */
+    Buffer resetWriterIndex();
 
     /**
      * Returns the number of bytes (octets) this buffer can contain.
      */
     int capacity();
+
+    /**
+     * Returns {@code true} if and only if this buffer is backed by an
+     * NIO direct buffer.
+     */
+    boolean isDirect();
 
     /**
      * Gets a boolean and advances the reader index.
@@ -151,6 +187,12 @@ public interface Buffer {
     Buffer writeBytes(byte[] src);
 
     /**
+     * Transfers the specified source byte data to this buffer starting at the current writer index
+     * and advances the index.
+     */
+    Buffer writeBytes(ByteBuffer src);
+
+    /**
      * Transfers the specified source array's data to this buffer starting at the current writer index
      * and advances the index.
      */
@@ -171,4 +213,23 @@ public interface Buffer {
      * Returns the reference count of this object.
      */
     int referenceCount();
+
+    /**
+     * Exposes this buffer's readable bytes as an NIO ByteBuffer's.
+     */
+    ByteBuffer[] nioBuffers();
+
+    /**
+     * Exposes this buffer's readable bytes as a NIO {@link ByteBuffer}. The returned buffer
+     * either share or contains the copied content of this buffer, while changing the position
+     * and limit of the returned NIO buffer does not affect the indexes and marks of this buffer.
+     */
+    ByteBuffer nioBuffer();
+
+    /**
+     * Transfers this buffer's data to the specified destination starting at
+     * the specified absolute {@code index}.
+     * This method does not modify reader or writer indexes.
+     */
+    Buffer getBytes(int index, byte[] dst);
 }

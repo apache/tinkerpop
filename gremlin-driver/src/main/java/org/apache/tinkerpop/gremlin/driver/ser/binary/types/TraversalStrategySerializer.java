@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
@@ -28,6 +27,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -42,7 +42,7 @@ public class TraversalStrategySerializer extends SimpleTypeSerializer<TraversalS
     }
 
     @Override
-    protected TraversalStrategy readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected TraversalStrategy readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final Class<TraversalStrategy> clazz = context.readValue(buffer, Class.class, false);
         final Map config = context.readValue(buffer, Map.class, false);
 
@@ -50,7 +50,7 @@ public class TraversalStrategySerializer extends SimpleTypeSerializer<TraversalS
     }
 
     @Override
-    protected void writeValue(final TraversalStrategy value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final TraversalStrategy value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         context.writeValue(value.getClass(), buffer, false);
         context.writeValue(translateToBytecode(ConfigurationConverter.getMap(value.getConfiguration())), buffer, false);
     }

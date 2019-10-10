@@ -18,11 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.buffer.UnpooledByteBufAllocator;
+import org.apache.tinkerpop.gremlin.driver.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -37,6 +38,7 @@ import static org.junit.Assert.assertTrue;
 public class CharSerializerTest {
     private final ByteBufAllocator allocator = new UnpooledByteBufAllocator(false);
     private static final CharSerializer serializer = new CharSerializer();
+    private static final NettyBufferFactory bufferFactory = new NettyBufferFactory();
 
     @Parameterized.Parameters(name = "Character={0}")
     public static Collection input() {
@@ -57,13 +59,13 @@ public class CharSerializerTest {
 
     @Test
     public void readValueTest() throws SerializationException {
-        final Character actual = serializer.readValue(Unpooled.wrappedBuffer(byteArray), null);
+        final Character actual = serializer.readValue(bufferFactory.create(Unpooled.wrappedBuffer(byteArray)), null);
         assertEquals(charValue, actual.charValue());
     }
 
     @Test
     public void writeValueTest() throws SerializationException {
-        final ByteBuf actual = allocator.buffer();
+        final Buffer actual = bufferFactory.create(allocator.buffer());
          serializer.writeValue(charValue, actual, null);
         final byte[] actualBytes = new byte[byteArray.length];
         actual.readBytes(actualBytes);

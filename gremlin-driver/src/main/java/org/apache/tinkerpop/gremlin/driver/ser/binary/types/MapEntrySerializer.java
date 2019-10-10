@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,12 +32,12 @@ public class MapEntrySerializer extends SimpleTypeSerializer<Map.Entry> implemen
     }
 
     @Override
-    protected Map.Entry readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected Map.Entry readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         throw new SerializationException("A map entry should not be read individually");
     }
 
     @Override
-    protected void writeValue(final Map.Entry value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final Map.Entry value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         throw new SerializationException("A map entry should not be written individually");
     }
 

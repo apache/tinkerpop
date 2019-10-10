@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.sample.SamplePerson;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.sample.SamplePersonSerializer;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.junit.Test;
 
 import java.util.UUID;
@@ -138,22 +138,22 @@ public class TypeSerializerRegistryTest {
 
     private static abstract class TestBaseTypeSerializer<T> implements TypeSerializer<T> {
         @Override
-        public T read(ByteBuf buffer, GraphBinaryReader context) {
+        public T read(Buffer buffer, GraphBinaryReader context) {
             return null;
         }
 
         @Override
-        public T readValue(ByteBuf buffer, GraphBinaryReader context, boolean nullable) {
+        public T readValue(Buffer buffer, GraphBinaryReader context, boolean nullable) {
             return null;
         }
 
         @Override
-        public void write(T value, ByteBuf buffer, GraphBinaryWriter context) {
+        public void write(T value, Buffer buffer, GraphBinaryWriter context) {
 
         }
 
         @Override
-        public void writeValue(T value, ByteBuf buffer, GraphBinaryWriter context, boolean nullable) {
+        public void writeValue(T value, Buffer buffer, GraphBinaryWriter context, boolean nullable) {
 
         }
     }

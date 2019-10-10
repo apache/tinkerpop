@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.time.MonthDay;
 
@@ -35,12 +35,12 @@ public class MonthDaySerializer extends SimpleTypeSerializer<MonthDay> {
     }
 
     @Override
-    protected MonthDay readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected MonthDay readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         return MonthDay.of(buffer.readByte(), buffer.readByte());
     }
 
     @Override
-    protected void writeValue(final MonthDay value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final MonthDay value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         buffer.writeByte(value.getMonthValue()).writeByte(value.getDayOfMonth());
     }
 }

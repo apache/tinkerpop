@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.DataType;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.nio.ByteBuffer;
 
@@ -36,7 +36,7 @@ public class ByteBufferSerializer extends SimpleTypeSerializer<ByteBuffer> {
     }
 
     @Override
-    protected ByteBuffer readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    protected ByteBuffer readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final ByteBuffer bb = ByteBuffer.allocate(buffer.readInt());
         buffer.readBytes(bb);
         bb.rewind();
@@ -44,7 +44,7 @@ public class ByteBufferSerializer extends SimpleTypeSerializer<ByteBuffer> {
     }
 
     @Override
-    protected void writeValue(final ByteBuffer value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    protected void writeValue(final ByteBuffer value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         final byte[] bytes = value.array();
         buffer.writeInt(bytes.length).writeBytes(bytes);
     }
