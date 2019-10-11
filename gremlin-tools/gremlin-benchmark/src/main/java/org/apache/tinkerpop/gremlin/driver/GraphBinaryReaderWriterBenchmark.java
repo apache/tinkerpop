@@ -18,16 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.tinkerpop.benchmark.util.AbstractBenchmarkBase;
-import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.driver.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Level;
@@ -104,27 +103,27 @@ public class GraphBinaryReaderWriterBenchmark extends AbstractBenchmarkBase {
     }
 
     @Benchmark
-    public void writeBytecode1(BenchmarkState state) throws SerializationException {
+    public void writeBytecode1(BenchmarkState state) throws IOException {
         writer.writeValue(state.bytecode1, state.bufferWrite, false);
     }
 
     @Benchmark
-    public void writeBytecode2(BenchmarkState state) throws SerializationException {
+    public void writeBytecode2(BenchmarkState state) throws IOException {
         writer.writeValue(state.bytecode2, state.bufferWrite, false);
     }
 
     @Benchmark
-    public void readBytecode1(BenchmarkState state) throws SerializationException {
+    public void readBytecode1(BenchmarkState state) throws IOException {
         reader.readValue(state.bytecodeBuffer1, Bytecode.class, false);
     }
 
     @Benchmark
-    public void readBytecode2(BenchmarkState state) throws SerializationException {
+    public void readBytecode2(BenchmarkState state) throws IOException {
         reader.readValue(state.bytecodeBuffer2, Bytecode.class, false);
     }
 
     @Benchmark
-    public void readP1(BenchmarkState state) throws SerializationException {
+    public void readP1(BenchmarkState state) throws IOException {
         reader.readValue(state.pBuffer1, P.class, false);
     }
 }

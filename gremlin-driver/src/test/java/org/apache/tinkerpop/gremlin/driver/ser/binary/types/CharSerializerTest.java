@@ -21,13 +21,15 @@ package org.apache.tinkerpop.gremlin.driver.ser.binary.types;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.buffer.UnpooledByteBufAllocator;
-import org.apache.tinkerpop.gremlin.driver.NettyBufferFactory;
-import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.driver.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -37,8 +39,10 @@ import static org.junit.Assert.assertTrue;
 @RunWith(Parameterized.class)
 public class CharSerializerTest {
     private final ByteBufAllocator allocator = new UnpooledByteBufAllocator(false);
-    private static final CharSerializer serializer = new CharSerializer();
     private static final NettyBufferFactory bufferFactory = new NettyBufferFactory();
+
+    private static final GraphBinaryReader reader = new GraphBinaryReader();
+    private static final GraphBinaryWriter writer = new GraphBinaryWriter();
 
     @Parameterized.Parameters(name = "Character={0}")
     public static Collection input() {
@@ -58,15 +62,16 @@ public class CharSerializerTest {
     public byte[] byteArray;
 
     @Test
-    public void readValueTest() throws SerializationException {
-        final Character actual = serializer.readValue(bufferFactory.create(Unpooled.wrappedBuffer(byteArray)), null);
+    public void readValueTest() throws IOException {
+        final Character actual = reader.readValue(
+                bufferFactory.create(Unpooled.wrappedBuffer(byteArray)),Character.class, false);
         assertEquals(charValue, actual.charValue());
     }
 
     @Test
-    public void writeValueTest() throws SerializationException {
+    public void writeValueTest() throws IOException {
         final Buffer actual = bufferFactory.create(allocator.buffer());
-         serializer.writeValue(charValue, actual, null);
+        writer.writeValue(charValue, actual, false);
         final byte[] actualBytes = new byte[byteArray.length];
         actual.readBytes(actualBytes);
         assertTrue(Arrays.deepEquals(new byte[][]{byteArray}, new byte[][]{actualBytes}));

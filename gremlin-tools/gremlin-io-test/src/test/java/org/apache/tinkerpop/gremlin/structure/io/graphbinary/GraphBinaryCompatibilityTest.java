@@ -20,20 +20,12 @@ package org.apache.tinkerpop.gremlin.structure.io.graphbinary;
 
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.tinkerpop.gremlin.driver.NettyBufferFactory;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.driver.ser.NettyBufferFactory;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractTypedCompatibilityTest;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.Compatibility;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoCompatibility;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV2d0;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3d0;
-import org.apache.tinkerpop.shaded.kryo.Kryo;
-import org.apache.tinkerpop.shaded.kryo.io.Input;
-import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 

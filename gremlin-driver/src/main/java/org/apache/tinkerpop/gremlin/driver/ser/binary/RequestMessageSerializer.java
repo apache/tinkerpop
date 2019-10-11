@@ -19,11 +19,14 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
 import io.netty.buffer.ByteBuf;
-import org.apache.tinkerpop.gremlin.driver.NettyBufferFactory;
+import org.apache.tinkerpop.gremlin.driver.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 
@@ -42,31 +45,39 @@ public class RequestMessageSerializer {
             throw new SerializationException("The most significant bit should be set according to the format");
         }
 
-        final UUID id = context.readValue(buffer, UUID.class, false);
-        final String op = context.readValue(buffer, String.class, false);
-        final String processor = context.readValue(buffer, String.class, false);
+        try {
+            final UUID id = context.readValue(buffer, UUID.class, false);
+            final String op = context.readValue(buffer, String.class, false);
+            final String processor = context.readValue(buffer, String.class, false);
 
-        final RequestMessage.Builder builder = RequestMessage.build(op).overrideRequestId(id).processor(processor);
+            final RequestMessage.Builder builder = RequestMessage.build(op).overrideRequestId(id).processor(processor);
 
-        final Map<String, Object> args = context.readValue(buffer, Map.class, false);
-        args.forEach(builder::addArg);
+            final Map<String, Object> args = context.readValue(buffer, Map.class, false);
+            args.forEach(builder::addArg);
 
-        return builder.create();
+            return builder.create();
+        } catch (IOException ex) {
+            throw new SerializationException(ex);
+        }
     }
 
     public void writeValue(final RequestMessage value, final ByteBuf byteBuf, final GraphBinaryWriter context) throws SerializationException {
         // Wrap netty's buffer
         final Buffer buffer = bufferFactory.create(byteBuf);
 
-        // Version
-        buffer.writeByte(GraphBinaryWriter.VERSION_BYTE);
-        // RequestId
-        context.writeValue(value.getRequestId(), buffer, false);
-        // Op
-        context.writeValue(value.getOp(), buffer, false);
-        // Processor
-        context.writeValue(value.getProcessor(), buffer, false);
-        // Args
-        context.writeValue(value.getArgs(), buffer, false);
+        try {
+            // Version
+            buffer.writeByte(GraphBinaryWriter.VERSION_BYTE);
+            // RequestId
+            context.writeValue(value.getRequestId(), buffer, false);
+            // Op
+            context.writeValue(value.getOp(), buffer, false);
+            // Processor
+            context.writeValue(value.getProcessor(), buffer, false);
+            // Args
+            context.writeValue(value.getArgs(), buffer, false);
+        } catch (IOException ex) {
+            throw new SerializationException(ex);
+        }
     }
 }

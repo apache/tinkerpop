@@ -20,6 +20,12 @@ limitations under the License.
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
+[[release-3-4-5]]
+=== TinkerPop 3.4.5 (Release Date: NOT OFFICIALLY RELEASED YET)
+
+* GraphBinary: Introduced our own `Buffer` API as a way to wrap Netty's Buffer API. Moved `GraphBinaryReader`,
+`GraphBinaryWriter` and `TypeSerializer<T>` to gremlin-core.
+
 [[release-3-4-4]]
 === TinkerPop 3.4.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 

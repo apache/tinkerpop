@@ -18,7 +18,7 @@
  */
 
 import io.netty.buffer.ByteBufAllocator
-import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.*
 import org.apache.tinkerpop.gremlin.structure.*
 import org.apache.tinkerpop.gremlin.structure.io.*

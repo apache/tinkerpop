@@ -20,8 +20,7 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
 import io.netty.buffer.UnpooledByteBufAllocator;
-import org.apache.tinkerpop.gremlin.driver.NettyBufferFactory;
-import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.driver.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
@@ -31,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetri
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferencePath;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
@@ -40,6 +40,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -100,7 +101,7 @@ public class TypeSerializerFailureTests {
         try {
             writer.write(value, buffer);
             fail("Should throw exception");
-        } catch (SerializationException | RuntimeException e) {
+        } catch (IOException | RuntimeException e) {
             // We are the owner of the buffer, we should release it
             buffer.release();
         }
