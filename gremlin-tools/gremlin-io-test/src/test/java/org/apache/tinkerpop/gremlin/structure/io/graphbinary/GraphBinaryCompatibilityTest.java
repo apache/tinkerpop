@@ -52,7 +52,8 @@ public class GraphBinaryCompatibilityTest extends AbstractTypedCompatibilityTest
     @Parameterized.Parameters(name = "expect({0})")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {GraphBinaryCompatibility.V1_3_4_3, readerV1, writerV1 }
+                {GraphBinaryCompatibility.V1_3_4_4, readerV1, writerV1 },
+                {GraphBinaryCompatibility.V1_3_4_4, readerV1, writerV1 }
         });
     }
 

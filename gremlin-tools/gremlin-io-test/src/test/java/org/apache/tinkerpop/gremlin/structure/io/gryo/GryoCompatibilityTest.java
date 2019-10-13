@@ -73,6 +73,8 @@ public class GryoCompatibilityTest extends AbstractTypedCompatibilityTest {
                 {GryoCompatibility.V3D0_3_3_7, mapperV3 },
                 {GryoCompatibility.V1D0_3_3_8, mapperV1 },
                 {GryoCompatibility.V3D0_3_3_8, mapperV3 },
+                {GryoCompatibility.V1D0_3_3_9, mapperV1 },
+                {GryoCompatibility.V3D0_3_3_9, mapperV3 },
                 {GryoCompatibility.V1D0_3_4_0, mapperV1 },
                 {GryoCompatibility.V3D0_3_4_0, mapperV3 },
                 {GryoCompatibility.V1D0_3_4_1, mapperV1 },
@@ -81,6 +83,9 @@ public class GryoCompatibilityTest extends AbstractTypedCompatibilityTest {
                 {GryoCompatibility.V3D0_3_4_2, mapperV3 },
                 {GryoCompatibility.V1D0_3_4_3, mapperV1 },
                 {GryoCompatibility.V3D0_3_4_3, mapperV3 },
+                {GryoCompatibility.V1D0_3_4_4, mapperV1 },
+                {GryoCompatibility.V3D0_3_4_4, mapperV3 },
+
                 {GryoCompatibility.V1D0_3_5_0, mapperV1 },
                 {GryoCompatibility.V3D0_3_5_0, mapperV3 }
         });
