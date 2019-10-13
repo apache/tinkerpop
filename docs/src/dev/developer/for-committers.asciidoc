@@ -798,6 +798,14 @@ the `SNAPSHOT` version and the generated `test-case-data` copied in appropriatel
 The second case, does require some additional discussion. When a new version is added the following classes will need
 to be updated in the following ways:
 
+*GraphBinaryCompatibility* - Include new GraphBinary 1.0 enums for the current `SNAPSHOT`.
+
+[source,java]
+----
+V1_3_4_3("3.4.3", "1.0", "v1"),
+V1_3_4_4("3.4.4", "1.0", "v1");
+----
+
 *GryoCompatibility* - Include new Gryo 1.0 and 3.0 enums for the current `SNAPSHOT`.
 
 [source,java]
@@ -815,6 +823,9 @@ V2D0_PARTIAL_3_3_x("3.3.x", "2.0", "v2d0-partial"),
 V2D0_NO_TYPE_3_3_x("3.3.x", "2.0", "v2d0-no-types"),
 V3D0_PARTIAL_3_3_x("3.3.x", "3.0", "v3d0");
 ----
+
+*GraphBinaryCompatibilityTest* - Add the newly included `GraphBinaryCompatibility` enums to the test parameters being
+careful to match the appropriate "mapper" to the right version.
 
 *GryoCompatibilityTest* - Add the newly included `GryoCompatibility` enums to the test parameters being careful to
 match the appropriate "mapper" to the right version.
