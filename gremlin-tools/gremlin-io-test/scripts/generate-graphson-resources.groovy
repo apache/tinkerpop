@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.*
 import org.apache.tinkerpop.gremlin.structure.*
 import org.apache.tinkerpop.gremlin.structure.io.graphson.*
 import org.apache.tinkerpop.gremlin.structure.io.Model
-import org.apache.commons.configuration.BaseConfiguration
+import org.apache.commons.configuration2.BaseConfiguration
 
 new File("${projectBuildDir}/dev-docs/").mkdirs()
 new File("${projectBuildDir}/test-case-data/io/graphson/").mkdirs()

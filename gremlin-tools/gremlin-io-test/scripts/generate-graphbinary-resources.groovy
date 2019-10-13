@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.*
 import org.apache.tinkerpop.gremlin.structure.*
 import org.apache.tinkerpop.gremlin.structure.io.*
-import org.apache.commons.configuration.BaseConfiguration
+import org.apache.commons.configuration2.BaseConfiguration
 
 new File("${projectBuildDir}/test-case-data/io/graphbinary").mkdirs()
 
