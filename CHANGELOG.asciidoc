@@ -448,7 +448,7 @@ This release also includes changes from <<release-3-3-4, 3.3.4>> and <<release-3
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-mozart.png[width=185]
 
 [[release-3-3-9]]
-=== TinkerPop 3.3.9 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.3.9 (Release Date: October 14, 2019)
 
 * Exposed response status attributes in a `ResponseError` in gremlin-javascript.
 * Added `ImmutableExplanation` for a `TraversalExplanation` that just contains data.
@@ -471,6 +471,27 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Changed `TraversalOpProcessor` to throw a `SERVER_ERROR_SCRIPT_EVALUATION` (597) if lambdas don't compile.
 * Bumped `commons-compress` to 1.19 due to CVE-2018-11771.
 * gremlin-javascript: Use `socketError` Connection event to prevent exit on error and expose Connection events.
+
+==== Bugs
+
+* TINKERPOP-2159 EventStrategy doesn't handle multi-valued properties
+* TINKERPOP-2283 GraphStep's ids null exception
+* TINKERPOP-2285 Error object is unreachable
+* TINKERPOP-2289 Use address instead of hostname for connection
+* TINKERPOP-2290 Javascript GLV connection refused error handling
+* TINKERPOP-2291 TraversalExplanation deserialization in GraphSON
+* TINKERPOP-2298 Bytecode.java  flattenArguments throw exception when null
+* TINKERPOP-2303 GremlinDsl generate addV instead of addE
+
+==== Improvements
+
+* TINKERPOP-1810 Add Lambda.binaryOperator and Lambda.unaryOperator
+* TINKERPOP-1838 Python sample script
+* TINKERPOP-2046 Gremlin-Python: Support custom request headers in WebSocket request
+* TINKERPOP-2213 Replace scriptEvaluationTimeout in favor of something more suitable to bytecode
+* TINKERPOP-2275 Update jackson databind 2.9.9.3+
+* TINKERPOP-2277 Python sdk postpone the timing to create transport
+* TINKERPOP-2280 Prevent use of T values as property key overloads
 
 [[release-3-3-8]]
 === TinkerPop 3.3.8 (Release Date: August 5, 2019)
