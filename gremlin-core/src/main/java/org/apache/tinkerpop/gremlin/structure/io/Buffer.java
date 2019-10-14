@@ -215,9 +215,19 @@ public interface Buffer {
     int referenceCount();
 
     /**
-     * Exposes this buffer's readable bytes as an NIO ByteBuffer's.
+     * Returns the maximum number of NIO {@link ByteBuffer}s that consist this buffer.
+     */
+    int nioBufferCount();
+
+    /**
+     * Exposes this buffer's readable bytes as NIO ByteBuffer's instances.
      */
     ByteBuffer[] nioBuffers();
+
+    /**
+     * Exposes this buffer's readable bytes as NIO ByteBuffer's instances.
+     */
+    ByteBuffer[] nioBuffers(int index, int length);
 
     /**
      * Exposes this buffer's readable bytes as a NIO {@link ByteBuffer}. The returned buffer
@@ -225,6 +235,11 @@ public interface Buffer {
      * and limit of the returned NIO buffer does not affect the indexes and marks of this buffer.
      */
     ByteBuffer nioBuffer();
+
+    /**
+     * Exposes this buffer's sub-region as an NIO {@link ByteBuffer}.
+     */
+    ByteBuffer nioBuffer(int index, int length);
 
     /**
      * Transfers this buffer's data to the specified destination starting at

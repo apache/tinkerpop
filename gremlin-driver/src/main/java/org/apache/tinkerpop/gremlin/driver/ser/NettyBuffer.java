@@ -238,8 +238,30 @@ final class NettyBuffer implements Buffer {
     }
 
     @Override
+    public ByteBuffer nioBuffer(int index, int length) {
+        return this.buffer.nioBuffer(index, length);
+    }
+
+    @Override
+    public ByteBuffer[] nioBuffers(int index, int length) {
+        return this.buffer.nioBuffers(index, length);
+    }
+
+    @Override
+    public int nioBufferCount() {
+        return this.buffer.nioBufferCount();
+    }
+
+    @Override
     public Buffer getBytes(int index, byte[] dst) {
         this.buffer.getBytes(index, dst);
         return this;
+    }
+
+    /**
+     * Returns the underlying buffer.
+     */
+    public ByteBuf getUnderlyingBuffer() {
+        return this.buffer;
     }
 }
