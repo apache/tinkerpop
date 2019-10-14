@@ -143,7 +143,7 @@ find . -type f | xargs -n1 -I {} file {} --mime | grep 'charset=binary' | cut -f
   grep -Pv '^./gremlin-dotnet/src/images/[^/]*\.(png|ico)$' |
   grep -Pv '^./gremlin-dotnet/.*\.snk$' |
   grep -Pv '^./gremlin-server/src/test/resources/[^/]*\.(p12|jks)$' |
-  grep -Pv '/(resources|data)/.*\.(kryo|json)$' > ../binary-files.txt
+  grep -Pv '/(resources|data)/.*\.(kryo|json|gbin)$' > ../binary-files.txt
 if [ -s ../binary-files.txt ]; then
   echo "Found unexpected binary files (see $(cd .. ; pwd)/binary-files.txt)"
   exit 1
