@@ -21,13 +21,40 @@ limitations under the License.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
 [[release-3-4-4]]
-=== TinkerPop 3.4.4 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.4.4 (Release Date: October 14, 2019)
+
+This release also includes changes from <<release-3-3-9, 3.3.9>>.
 
 * Provided support for DSLs by way of remote connections through `AnonymousTraversalSource`.
 * Added `elementMap()` step.
 * Added GraphBinary support for Python.
 * Allowed for embedded map assertions in GLV tests.
 * Added `Direction` deserialization support in GLVs.
+
+==== Bugs
+
+* TINKERPOP-2159 EventStrategy doesn't handle multi-valued properties
+* TINKERPOP-2276 No constructor for remote connection in DSL generated traversal source
+* TINKERPOP-2283 GraphStep's ids null exception
+* TINKERPOP-2285 Error object is unreachable
+* TINKERPOP-2289 Use address instead of hostname for connection
+* TINKERPOP-2290 Javascript GLV connection refused error handling
+* TINKERPOP-2291 TraversalExplanation deserialization in GraphSON
+* TINKERPOP-2298 Bytecode.java  flattenArguments throw exception when null
+* TINKERPOP-2303 GremlinDsl generate addV instead of addE
+
+==== Improvements
+
+* TINKERPOP-1810 Add Lambda.binaryOperator and Lambda.unaryOperator
+* TINKERPOP-1838 Python sample script
+* TINKERPOP-2046 Gremlin-Python: Support custom request headers in WebSocket request
+* TINKERPOP-2213 Replace scriptEvaluationTimeout in favor of something more suitable to bytecode
+* TINKERPOP-2275 Update jackson databind 2.9.9.3+
+* TINKERPOP-2277 Python sdk postpone the timing to create transport
+* TINKERPOP-2279 GraphBinary support in Python
+* TINKERPOP-2280 Prevent use of T values as property key overloads
+* TINKERPOP-2284 Make it easier to return more structure of graph elements
+* TINKERPOP-2302 Add isOnGraphComputer() field accessor to ElementMapStep
 
 [[release-3-4-3]]
 === TinkerPop 3.4.3 (Release Date: August 5, 2019)
