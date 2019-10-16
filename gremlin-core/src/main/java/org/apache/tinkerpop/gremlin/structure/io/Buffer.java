@@ -43,7 +43,7 @@ public interface Buffer {
      * @throws IndexOutOfBoundsException
      *         if its out of bounds.
      */
-    Buffer readerIndex(int readerIndex);
+    Buffer readerIndex(final int readerIndex);
 
     /**
      * Returns the writer index of this buffer.
@@ -53,7 +53,7 @@ public interface Buffer {
     /**
      * Sets the writer index of this buffer.
      */
-    Buffer writerIndex(int writerIndex);
+    Buffer writerIndex(final int writerIndex);
 
     /**
      * Marks the current writer index in this buffer.
@@ -125,14 +125,14 @@ public interface Buffer {
      * @param dstIndex the first index of the destination
      * @param length   the number of bytes to transfer
      */
-    Buffer readBytes(byte[] destination, int dstIndex, int length);
+    Buffer readBytes(final byte[] destination, final int dstIndex, final int length);
 
     /**
      * Transfers this buffer's data to the specified destination starting at
      * the current reader index until the destination's position
      * reaches its limit, and advances the reader index.
      */
-    Buffer readBytes(ByteBuffer dst);
+    Buffer readBytes(final ByteBuffer dst);
 
     /**
      * Transfers this buffer's data to the specified stream starting at the
@@ -143,60 +143,60 @@ public interface Buffer {
      * @throws IOException
      *         if the specified stream threw an exception during I/O
      */
-    Buffer readBytes(OutputStream out, int length) throws IOException;
+    Buffer readBytes(final OutputStream out, final int length) throws IOException;
 
     /**
      * Sets the specified boolean at the current writer index and advances the index.
      */
-    Buffer writeBoolean(boolean value);
+    Buffer writeBoolean(final boolean value);
 
     /**
      * Sets the specified byte at the current writer index and advances the index.
      */
-    Buffer writeByte(int value);
+    Buffer writeByte(final int value);
 
     /**
      * Sets the specified 16-bit short integer at the current writer index and advances the index.
      */
-    Buffer writeShort(int value);
+    Buffer writeShort(final int value);
 
     /**
      * Sets the specified 32-bit integer at the current writer index and advances the index.
      */
-    Buffer writeInt(int value);
+    Buffer writeInt(final int value);
 
     /**
      * Sets the specified 64-bit long integer at the current writer index and advances the index.
      */
-    Buffer writeLong(long value);
+    Buffer writeLong(final long value);
 
     /**
      * Sets the specified 32-bit floating point number at the current writer index and advances the index.
      */
-    Buffer writeFloat(float value);
+    Buffer writeFloat(final float value);
 
     /**
      * Sets the specified 64-bit floating point number at the current writer index and advances the index.
      */
-    Buffer writeDouble(double value);
+    Buffer writeDouble(final double value);
 
     /**
      * Transfers the specified source array's data to this buffer starting at the current writer index
      * and advances the index.
      */
-    Buffer writeBytes(byte[] src);
+    Buffer writeBytes(final byte[] src);
 
     /**
      * Transfers the specified source byte data to this buffer starting at the current writer index
      * and advances the index.
      */
-    Buffer writeBytes(ByteBuffer src);
+    Buffer writeBytes(final ByteBuffer src);
 
     /**
      * Transfers the specified source array's data to this buffer starting at the current writer index
      * and advances the index.
      */
-    Buffer writeBytes(byte[] src, int srcIndex, int length);
+    Buffer writeBytes(final byte[] src, final int srcIndex, final int length);
 
     /**
      * Decreases the reference count by {@code 1} and deallocates this object if the reference count reaches at
@@ -227,7 +227,7 @@ public interface Buffer {
     /**
      * Exposes this buffer's readable bytes as NIO ByteBuffer's instances.
      */
-    ByteBuffer[] nioBuffers(int index, int length);
+    ByteBuffer[] nioBuffers(final int index, final int length);
 
     /**
      * Exposes this buffer's readable bytes as a NIO {@link ByteBuffer}. The returned buffer
@@ -239,12 +239,12 @@ public interface Buffer {
     /**
      * Exposes this buffer's sub-region as an NIO {@link ByteBuffer}.
      */
-    ByteBuffer nioBuffer(int index, int length);
+    ByteBuffer nioBuffer(final int index, final int length);
 
     /**
      * Transfers this buffer's data to the specified destination starting at
      * the specified absolute {@code index}.
      * This method does not modify reader or writer indexes.
      */
-    Buffer getBytes(int index, byte[] dst);
+    Buffer getBytes(final int index, final byte[] dst);
 }

@@ -31,16 +31,16 @@ import java.util.function.Consumer;
  */
 public class NettyBufferFactory implements BufferFactory<ByteBuf> {
     @Override
-    public Buffer create(ByteBuf value) {
+    public Buffer create(final ByteBuf value) {
         return new NettyBuffer(value);
     }
 
     @Override
-    public Buffer wrap(ByteBuffer value) {
+    public Buffer wrap(final ByteBuffer value) {
         return create(Unpooled.wrappedBuffer(value));
     }
 
-    private static ByteBuf getFromIndex(Buffer buffer, int index) {
+    private static ByteBuf getFromIndex(final Buffer buffer, final int index) {
         if (buffer.nioBufferCount() == 1) {
             // Heap and direct buffers usually take a single buffer
             // It will create a new ByteBuf using the same backing byte array
@@ -59,7 +59,7 @@ public class NettyBufferFactory implements BufferFactory<ByteBuf> {
      * In case the provided {@link Buffer} instance is not a {@link NettyBuffer}, it will create a {@link ByteBuf}
      * wrapper for the consumer to use, releasing it after use.
      */
-    public static void readRaw(Buffer buffer, Consumer<ByteBuf> consumer) {
+    public static void readRaw(final Buffer buffer, final Consumer<ByteBuf> consumer) {
         if (buffer instanceof NettyBuffer) {
             consumer.accept(((NettyBuffer)buffer).getUnderlyingBuffer());
             return;
@@ -88,7 +88,7 @@ public class NettyBufferFactory implements BufferFactory<ByteBuf> {
      * In case the provided {@link Buffer} instance is not a {@link NettyBuffer}, it will create a {@link ByteBuf}
      * wrapper for the consumer to use, releasing it after use.
      */
-    public static void writeRaw(Buffer buffer, Consumer<ByteBuf> consumer) {
+    public static void writeRaw(final Buffer buffer, final Consumer<ByteBuf> consumer) {
         if (buffer instanceof NettyBuffer) {
             consumer.accept(((NettyBuffer)buffer).getUnderlyingBuffer());
             return;

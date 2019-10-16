@@ -30,10 +30,10 @@ public interface BufferFactory<T> {
      * @param value
      * @return
      */
-    Buffer create(T value);
+    Buffer create(final T value);
 
     /**
      * Wraps a NIO buffer.
      */
-    Buffer wrap(ByteBuffer value);
+    Buffer wrap(final ByteBuffer value);
 }

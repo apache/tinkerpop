@@ -54,7 +54,7 @@ final class NettyBuffer implements Buffer {
     }
 
     @Override
-    public Buffer readerIndex(int readerIndex) {
+    public Buffer readerIndex(final int readerIndex) {
         this.buffer.readerIndex(readerIndex);
         return this;
     }
@@ -65,7 +65,7 @@ final class NettyBuffer implements Buffer {
     }
 
     @Override
-    public Buffer writerIndex(int writerIndex) {
+    public Buffer writerIndex(final int writerIndex) {
         this.buffer.writerIndex(writerIndex);
         return this;
     }
@@ -128,85 +128,85 @@ final class NettyBuffer implements Buffer {
     }
 
     @Override
-    public Buffer readBytes(byte[] destination) {
+    public Buffer readBytes(final byte[] destination) {
         this.buffer.readBytes(destination);
         return this;
     }
 
     @Override
-    public Buffer readBytes(byte[] destination, int dstIndex, int length) {
+    public Buffer readBytes(final byte[] destination, final int dstIndex, final int length) {
         this.buffer.readBytes(destination, dstIndex, length);
         return this;
     }
 
     @Override
-    public Buffer readBytes(ByteBuffer dst) {
+    public Buffer readBytes(final ByteBuffer dst) {
         this.buffer.readBytes(dst);
         return this;
     }
 
     @Override
-    public Buffer readBytes(OutputStream out, int length) throws IOException {
+    public Buffer readBytes(final OutputStream out, final int length) throws IOException {
         this.buffer.readBytes(out, length);
         return this;
     }
 
     @Override
-    public Buffer writeBoolean(boolean value) {
+    public Buffer writeBoolean(final boolean value) {
         this.buffer.writeBoolean(value);
         return this;
     }
 
     @Override
-    public Buffer writeByte(int value) {
+    public Buffer writeByte(final int value) {
         this.buffer.writeByte(value);
         return this;
     }
 
     @Override
-    public Buffer writeShort(int value) {
+    public Buffer writeShort(final int value) {
         this.buffer.writeShort(value);
         return this;
     }
 
     @Override
-    public Buffer writeInt(int value) {
+    public Buffer writeInt(final int value) {
         this.buffer.writeInt(value);
         return this;
     }
 
     @Override
-    public Buffer writeLong(long value) {
+    public Buffer writeLong(final long value) {
         this.buffer.writeLong(value);
         return this;
     }
 
     @Override
-    public Buffer writeFloat(float value) {
+    public Buffer writeFloat(final float value) {
         this.buffer.writeFloat(value);
         return this;
     }
 
     @Override
-    public Buffer writeDouble(double value) {
+    public Buffer writeDouble(final double value) {
         this.buffer.writeDouble(value);
         return this;
     }
 
     @Override
-    public Buffer writeBytes(byte[] src) {
+    public Buffer writeBytes(final byte[] src) {
         this.buffer.writeBytes(src);
         return this;
     }
 
     @Override
-    public Buffer writeBytes(ByteBuffer src) {
+    public Buffer writeBytes(final ByteBuffer src) {
         this.buffer.writeBytes(src);
         return this;
     }
 
     @Override
-    public Buffer writeBytes(byte[] src, int srcIndex, int length) {
+    public Buffer writeBytes(byte[] src, final int srcIndex, final int length) {
         this.buffer.writeBytes(src, srcIndex, length);
         return this;
     }
@@ -238,12 +238,12 @@ final class NettyBuffer implements Buffer {
     }
 
     @Override
-    public ByteBuffer nioBuffer(int index, int length) {
+    public ByteBuffer nioBuffer(final int index, final int length) {
         return this.buffer.nioBuffer(index, length);
     }
 
     @Override
-    public ByteBuffer[] nioBuffers(int index, int length) {
+    public ByteBuffer[] nioBuffers(final int index, final int length) {
         return this.buffer.nioBuffers(index, length);
     }
 
@@ -253,7 +253,7 @@ final class NettyBuffer implements Buffer {
     }
 
     @Override
-    public Buffer getBytes(int index, byte[] dst) {
+    public Buffer getBytes(final int index, final byte[] dst) {
         this.buffer.getBytes(index, dst);
         return this;
     }

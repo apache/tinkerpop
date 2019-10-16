@@ -19,6 +19,7 @@
 
 import io.netty.buffer.ByteBufAllocator
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter
+import org.apache.tinkerpop.gremlin.driver.ser.NettyBufferFactory
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.*
 import org.apache.tinkerpop.gremlin.structure.*
 import org.apache.tinkerpop.gremlin.structure.io.*
@@ -35,13 +36,14 @@ g = graph.traversal()
 model = Model.instance()
 
 allocator = ByteBufAllocator.DEFAULT
+factory = new NettyBufferFactory()
 
 toGraphBinary = { o, type, mapper, suffix = "" ->
     def fileToWriteTo = new File("${projectBuildDir}/test-case-data/io/graphbinary/" + type.title.toLowerCase().replace(" ","") + "-" + suffix + ".gbin")
     if (fileToWriteTo.exists()) fileToWriteTo.delete()
     filestream = new FileOutputStream(fileToWriteTo)
     try {
-        buffer = allocator.buffer()
+        buffer = factory.create(allocator.buffer())
         writer.write(o, buffer)
         buffer.readerIndex(0)
         buffer.readBytes(filestream, buffer.readableBytes())
@@ -53,6 +55,7 @@ toGraphBinary = { o, type, mapper, suffix = "" ->
             throw ex
     } finally {
         filestream.close()
+        buffer.release()
     }
 }
 
