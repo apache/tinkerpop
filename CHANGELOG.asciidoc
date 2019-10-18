@@ -55,6 +55,11 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
 [[release-3-4-4]]
+=== TinkerPop 3.4.5 (Release Date: NOT OFFICIALLY RELEASED YET)
+
+This release also includes changes from <<release-3-3-10, 3.3.10>>.
+
+[[release-3-4-4]]
 === TinkerPop 3.4.4 (Release Date: October 14, 2019)
 
 This release also includes changes from <<release-3-3-9, 3.3.9>>.
@@ -507,6 +512,10 @@ This release also includes changes from <<release-3-3-4, 3.3.4>> and <<release-3
 == TinkerPop 3.3.0 (Gremlin Symphony #40 in G Minor)
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-mozart.png[width=185]
+
+[[release-3-3-10]]
+=== TinkerPop 3.3.10 (Release Date: NOT OFFICIALLY RELEASED YET)
+
 
 [[release-3-3-9]]
 === TinkerPop 3.3.9 (Release Date: October 14, 2019)
