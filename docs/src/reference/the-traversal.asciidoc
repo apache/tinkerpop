@@ -220,7 +220,7 @@ g.addE('knows').from(marko).to(peter) <7>
 <2> Add incoming createdBy edges from the josh-vertex to the lop- and ripple-vertices.
 <3> Add an inverse createdBy edge for all created edges.
 <4> The newly created edge is a traversable object.
-<5> Two arbitrary bindings in a traversal can be joined `from()`->`to()`, where `id` can be provided for graphs that
+<5> Two arbitrary bindings in a traversal can be joined ``from()``->``to()``, where `id` can be provided for graphs that
 supports user provided ids.
 <6> Add an edge between marko and peter given the directed (detached) vertex references.
 <7> Add an edge between marko and peter given the directed (detached) vertex references.
@@ -966,7 +966,7 @@ g.V().has('name', within('marko', 'vadas', 'josh')).as('person').
   V().has('name', within('lop', 'ripple')).addE('uses').from('person').iterate().toString() <2>
 ----
 
-<1> Normally the `V()`-step will iterate over all vertices. However, graph strategies can fold `HasContainer`'s into a `GraphStep` to allow index lookups.
+<1> Normally the `V()`-step will iterate over all vertices. However, graph strategies can fold ``HasContainer``'s into a `GraphStep` to allow index lookups.
 <2> Whether the graph system provider supports mid-traversal `V()` index lookups or not can easily be determined by inspecting the `toString()` output of the iterated traversal. If `has` conditions were folded into the `V()`-step, an index - if one exists - will be used.
 
 *Additional References*
@@ -1884,8 +1884,8 @@ results.
 
 *Additional References*
 
-link:++http://tinkerpop.apache.org/javadocs/current/core/org/apache/tinkerpop/gremlin/process/traversal/Traversal.html#none--++['none()']
-link:++http://tinkerpop.apache.org/javadocs/current/core/org/apache/tinkerpop/gremlin/process/traversal/Traversal.html#iterate--++['iterate()']
+link:++http://tinkerpop.apache.org/javadocs/current/core/org/apache/tinkerpop/gremlin/process/traversal/Traversal.html#none--++[`none()`]
+link:++http://tinkerpop.apache.org/javadocs/current/core/org/apache/tinkerpop/gremlin/process/traversal/Traversal.html#iterate--++[`iterate()`]
 
 [[not-step]]
 === Not Step
