@@ -236,3 +236,37 @@ force pushed back to the branch.
 the changes brings extensive conflict between branches.
 
 On successful review, the *pull request will be merged* to the main repository and the JIRA issue will be closed.
+
+== Versioning
+
+TinkerPop version numbers follow a format of `MAJOR.MINOR.PATCH`, where:
+
+* `MAJOR` version is incremented for epochs of thinking around TinkerPop and its relation to the graph ecosystem.
+* `MINOR` version is incremented when incompatible changes cannot be avoided.
+* `PATCH` version is incremented when changes are backward compatible.
+
+The number for `MAJOR` rarely changes and when it does, it typically represents a complete re-write of the software
+and thus massive changes can be expected. As a result of the definition for `MAJOR`, we tend to focus on the other
+two numbers when considering where changes will land.
+
+The driving question for determining if a change is suitable for `MINOR` or `PATCH` versions is whether or not the
+change introduces some form of incompatibility. As the focus for making the determination is "breaking change", we
+therefore allow the option for new features to land in `PATCH` versions. Taking this approach, lengthens the life span
+of `MINOR` versions considerably which is helpful to graph providers looking for stable long-lived support for a
+particular release line.
+
+With all of the above rules in mind, there are some subtle considerations that have come into play in the past when
+trying to determine where a change should land:
+
+* A `PATCH` has been known to take a breaking change if that breaking change:
+** Is necessary to fix a critical bug
+** Has a limited breaking scope (e.g. a utility class that no one would likely use, a break that affects graph
+providers only)
+* It is preferred that "major" new features go to `MINOR`, but it is sometimes the case that they will make their way
+to `PATCH` if that change provides significant enough value.
+* As `PATCH` release numbers get higher, there is less incentive to push new features there as there is likely new
+focus on the next unreleased `MINOR`.
+* The preference is to find deprecation paths whenever possible.
+
+In short, the dev mailing list is open to discussion on where a change will land. The discussion just needs to have
+good reasoning and use the general principles above as a framework for coming to a consensus.
