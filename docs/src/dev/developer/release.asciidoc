@@ -381,7 +381,7 @@ https://www.apache.org/dyn/closer.lua/tinkerpop/xx.yy.zz/apache-tinkerpop-xx.yy.
 The online docs can be found here:
 
 http://tinkerpop.apache.org/docs/xx.yy.zz/reference/ (user docs)
-http://tinkerpop.apache.org/docs/xx.yy.zz/upgrade/#XXXXXXXXXXXXXXXXXX (upgrade docs)
+http://tinkerpop.apache.org/docs/xx.yy.zz/upgrade/#_tinkerpop_xx_yy_zz (upgrade docs)
 http://tinkerpop.apache.org/javadocs/xx.yy.zz/core/ (core javadoc)
 http://tinkerpop.apache.org/javadocs/xx.yy.zz/full/ (full javadoc)
 http://tinkerpop.apache.org/dotnetdocs/xx.yy.zz/ (.NET API docs)
@@ -415,3 +415,15 @@ https://hub.docker.com/u/tinkerpop/
 
 [include the release line logo image]
 ----
+
+=== Standard Tweet Text
+
+The tweet from `@apachetinkerpop` doesn't need to really adhere to any specific format necessarily, but for general
+patch releases, the following simple text is common:
+
+[source,text]
+----
+Apache TinkerPop xx.yy.zz Released. [name of release] [link to gremlin-users announcement] #graphdb #nosql
+----
+
+Remember to include the picture for the release with the tweet.
