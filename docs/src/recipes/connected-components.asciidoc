@@ -54,7 +54,7 @@ g.addV().property(id, "A").as("a").
   addE("link").from("d").to("e").iterate()
 ----
 
-==== Small graph traversals
+=== Small graph traversals
 
 Connected components in a small graph can be determined with either an OLTP traversal or the OLAP
 `connectedComponent()`-step. The `connectedComponent()`-step is available as of TinkerPop 3.4.0 and is
@@ -100,7 +100,7 @@ weak component.
 
 <5> The values of the groupby map contain the lists of vertices making up the requested components.
 
-==== Small graph scalability
+=== Small graph scalability
 
 The scalability of the OLTP traversal and the `connectedComponent()`-step for in-memory graphs is shown in the figures
 below.
@@ -132,7 +132,7 @@ characteristics show clearly from the graph. Indeed, for a given number of verti
 `connectedComponent()`-step does not depend on the number of edges, but rather on the maximum shortest path length in
 the graph.
 
-==== Large graphs
+=== Large graphs
 
 Large graphs in TinkerPop require distributed processing by `SparkGraphComputer` to get results in a reasonable time (OLAP
 approach). This means that the graph must be available as `HadoopGraph` (third party TinkerPop implementations often
