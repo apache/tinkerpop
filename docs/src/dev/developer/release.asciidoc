@@ -256,7 +256,7 @@ and link:https://hub.docker.com/r/tinkerpop/gremlin-server/[Server]
 . Report the release through link:https://reporter.apache.org/addrelease.html?tinkerpop[reporter.apache.org] (an email reminder should arrive shortly following the svn command above to do the release)
 . Wait for zip distributions to sync to the Apache mirrors (i.e ensure the download links work from a mirror).
 . `bin/publish-home.sh <username>` to publish the updated web site with new releases.
-. Execute `bin/update-current-docs.sh` to migrate to the latest documentation set for `/current`.
+. Execute `bin/update-current-docs.sh <username>` to migrate to the latest documentation set for `/current`.
 . This step should only occur after the website is updated and all links are working. If there are releases present in
 SVN that represents lines of code that are no longer under development, then remove those releases. In other words,
 if `3.2.0` is present and `3.2.1` is released then remove `3.2.0`.  However, if `3.1.3` is present and that line of
@@ -390,7 +390,7 @@ http://tinkerpop.apache.org/docs/xx.yy.zz/some-new-content/ (some new content) [
 
 The release notes are available here:
 
-https://github.com/apache/tinkerpop/blob/xx.yy.zz/CHANGELOG.asciidoc#XXXXXXXXXXXXXXXXXX
+https://github.com/apache/tinkerpop/blob/xx.yy.zz/CHANGELOG.asciidoc#release-xx-yy-zz
 
 The Central Maven repo has sync'd as well:
 
