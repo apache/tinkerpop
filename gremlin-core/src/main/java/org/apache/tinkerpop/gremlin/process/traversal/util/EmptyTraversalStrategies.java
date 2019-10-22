@@ -18,14 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserGeneratorFactory;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.DefaultTraverserGeneratorFactory;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -43,9 +40,10 @@ public final class EmptyTraversalStrategies implements TraversalStrategies {
         return Collections.emptyList();
     }
 
-    @Override
-    public void applyStrategies(final Traversal.Admin<?, ?> traversal) {
 
+    @Override
+    public Iterator<TraversalStrategy<?>> toIterator() {
+        return toList().iterator();
     }
 
     @Override

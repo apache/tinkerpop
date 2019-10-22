@@ -125,7 +125,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     public void applyStrategies() throws IllegalStateException {
         if (this.locked) throw Traversal.Exceptions.traversalIsLocked();
         TraversalHelper.reIdSteps(this.stepPosition, this);
-        boolean hasGraph = null != this.graph;
+        final boolean hasGraph = null != this.graph;
 
         if (this.getParent() instanceof EmptyStep || this.getParent() instanceof VertexProgramStep) {
             TraversalHelper.applyTraversalRecursively(t -> {
@@ -133,15 +133,15 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
                 t.setSideEffects(this.sideEffects);
             }, this);
 
-            for (final TraversalStrategy strategy : this.strategies.toList()) {
-                TraversalHelper.applyTraversalRecursively(t -> {
-                    if (hasGraph) t.setGraph(this.graph);
-                    strategy.apply(t);
-                }, this);
+            final Iterator<TraversalStrategy<?>> strategyIterator = this.strategies.toIterator();
+            while (strategyIterator.hasNext()) {
+                final TraversalStrategy<?> strategy = strategyIterator.next();
+                TraversalHelper.applyTraversalRecursively(strategy::apply, this);
             }
 
             // don't need to re-apply strategies to "this" - leads to endless recursion in GraphComputer.
             TraversalHelper.applyTraversalRecursively(t -> {
+                if (hasGraph) t.setGraph(this.graph);
                 if(!(t.getParent() instanceof EmptyStep) && t != this && !t.isLocked()) {
                     t.setStrategies(new DefaultTraversalStrategies());
                     t.applyStrategies();

@@ -18,13 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -70,23 +70,17 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     }
 
     @Override
+    public Iterator<TraversalStrategy<?>> toIterator() {
+        return this.traversalStrategies.iterator();
+    }
+
+    @Override
     public <T extends TraversalStrategy> Optional<T> getStrategy(final Class<T> traversalStrategyClass) {
         for (final TraversalStrategy<?> traversalStrategy : this.traversalStrategies) {
             if (traversalStrategyClass.isAssignableFrom(traversalStrategy.getClass()))
                 return (Optional) Optional.of(traversalStrategy);
         }
         return Optional.empty();
-    }
-    /**
-     * @deprecated As of release 3.3.10, not directly replaced as this mode of strategy application has not been
-     * utilized since early days of 3.x
-     */
-    @Override
-    @Deprecated
-    public void applyStrategies(final Traversal.Admin<?, ?> traversal) {
-        for (final TraversalStrategy<?> traversalStrategy : this.traversalStrategies) {
-            traversalStrategy.apply(traversal);
-        }
     }
 
     @Override
