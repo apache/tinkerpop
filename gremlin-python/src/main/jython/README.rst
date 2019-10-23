@@ -28,8 +28,8 @@ traversals on (or queries of) their application's property graph.
 
 Gremlin-Python implements Gremlin within the Python language and can be used on any Python virtual machine including
 the popular CPython machine. Python’s syntax has the same constructs as Java including "dot notation" for function
-chaining ``(a.b.c)``, round bracket function arguments ``(a(b,c))```, and support for global namespaces
-``(a(b()) vs a(__.b()))```. As such, anyone familiar with Gremlin-Java will immediately be able to work with
+chaining ``(a.b.c)``, round bracket function arguments ``(a(b,c))``, and support for global namespaces
+``(a(b()) vs a(__.b()))``. As such, anyone familiar with Gremlin-Java will immediately be able to work with
 Gremlin-Python. Moreover, there are a few added constructs to Gremlin-Python that make traversals a bit more succinct.
 
 Gremlin-Python is designed to connect to a "server" that is hosting a TinkerPop-enabled graph system. That "server"
