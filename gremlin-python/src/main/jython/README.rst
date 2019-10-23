@@ -34,7 +34,7 @@ Gremlin-Python. Moreover, there are a few added constructs to Gremlin-Python tha
 
 Gremlin-Python is designed to connect to a "server" that is hosting a TinkerPop-enabled graph system. That "server"
 could be `Gremlin Server <http://tinkerpop.apache.org/docs/current/reference/#gremlin-server>`_ or a
-`remote Gremlin provider` <http://tinkerpop.apache.org/docs/current/reference/#connecting-rgp>`_ that exposes
+`remote Gremlin provider <http://tinkerpop.apache.org/docs/current/reference/#connecting-rgp>`_ that exposes
 protocols by which Gremlin-Python can connect.
 
 A typical connection to a server running on "localhost" that supports the Gremlin Server protocol using websockets
