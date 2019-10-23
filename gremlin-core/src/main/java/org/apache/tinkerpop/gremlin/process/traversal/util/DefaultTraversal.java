@@ -131,11 +131,13 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         // application of the strategies we need to call applyStrategies() on all the children to ensure that their
         // steps get reId'd and traverser requirements are set.
         if (isRoot() || this.getParent() instanceof VertexProgramStep) {
-            TraversalHelper.applyTraversalRecursively(t -> {
-                t.setStrategies(this.strategies);
-                t.setSideEffects(this.sideEffects);
-            }, this);
 
+            // note that prior to applying strategies to children we used to set side-effects and strategies of all
+            // children to that of the parent. under this revised model of strategy application from TINKERPOP-1568
+            // it doesn't appear to be necessary to do that (at least from the perspective of the test suite). by,
+            // moving side-effect setting after actual recursive strategy application we save a loop and by
+            // consequence also fix a problem where strategies might reset something in sideeffects which seems to
+            // happen in TranslationStrategy.
             final Iterator<TraversalStrategy<?>> strategyIterator = this.strategies.toIterator();
             while (strategyIterator.hasNext()) {
                 final TraversalStrategy<?> strategy = strategyIterator.next();
@@ -147,6 +149,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
                 if (hasGraph) t.setGraph(this.graph);
                 if(!(t.isRoot()) && t != this && !t.isLocked()) {
                     t.setStrategies(new DefaultTraversalStrategies());
+                    t.setSideEffects(this.sideEffects);
                     t.applyStrategies();
                 }
             }, this);
