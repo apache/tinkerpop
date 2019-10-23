@@ -192,6 +192,56 @@ link:http://tinkerpop.apache.org/docs/3.5.0/upgrade/#_ssl_security[3.2.10 Upgrad
 
 ==== Graph System Providers
 
+===== TraversalStrategy Application
+
+The methodology for strategy application has been altered and the change is most easily described by example. Given a
+traversal with the structure:
+
+[source,text]
+----
+a(b(),c(d()))
+----
+
+Strategies were formerly applied in the following order:
+
+[source,text]
+----
+StrategyA on a
+StrategyB on a
+StrategyA on b
+StrategyB on b
+StrategyA on c
+StrategyB on c
+StrategyA on d
+StrategyB on d
+----
+
+This approach has always prevented strategies from performing global operations across the traversal and all decedents
+effectively as children will not have been processed by preceding strategies yet. As of this release, the approach
+has been altered to apply strategies as follows:
+
+[source,text]
+----
+StrategyA on a
+StrategyA on b
+StrategyA on c
+StrategyA on d
+StrategyB on a
+StrategyB on b
+StrategyB on c
+StrategyB on d
+----
+
+In this way, strategy B can check if it is being applied to the root traversal and if it is it knows that A has been
+applied globally.
+
+This revised methodology could represent a breaking change for `TraversalStrategy` implementations if they somehow
+relied on the old ordering of application. It may also present an opportunity to revise how a `TraversalStrategy` is
+written to gain some processing benefit to the new order. Please be sure to review any custom strategies carefully
+when upgrading to this version.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1568[TINKERPOP-1568]
+
 ===== AbstractOpProcessor API Change
 
 The `generateMetaData()` method was removed as it was deprecated in a previous version. There already was a preferred
