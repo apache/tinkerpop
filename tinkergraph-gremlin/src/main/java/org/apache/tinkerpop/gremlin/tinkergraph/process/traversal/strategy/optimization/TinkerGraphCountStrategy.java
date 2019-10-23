@@ -60,7 +60,7 @@ public final class TinkerGraphCountStrategy extends AbstractTraversalStrategy<Tr
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!(traversal.getParent() instanceof EmptyStep) || TraversalHelper.onGraphComputer(traversal))
+        if (!(traversal.isRoot()) || TraversalHelper.onGraphComputer(traversal))
             return;
         final List<Step> steps = traversal.getSteps();
         if (steps.size() < 2 ||

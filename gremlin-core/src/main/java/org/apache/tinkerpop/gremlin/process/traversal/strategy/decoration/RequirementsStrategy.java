@@ -44,7 +44,7 @@ public final class RequirementsStrategy extends AbstractTraversalStrategy<Traver
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getParent() instanceof EmptyStep && !this.requirements.isEmpty())
+        if (traversal.isRoot() && !this.requirements.isEmpty())
             traversal.addStep(new RequirementsStep<>(traversal, this.requirements));
     }
 

@@ -82,7 +82,7 @@ public final class RemoteStrategy extends AbstractTraversalStrategy<TraversalStr
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!(traversal.getParent() instanceof EmptyStep))
+        if (!(traversal.isRoot()))
             return;
 
         // remote step wraps the traversal and emits the results from the remote connection.

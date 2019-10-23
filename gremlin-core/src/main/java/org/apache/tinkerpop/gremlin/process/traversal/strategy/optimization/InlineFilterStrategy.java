@@ -96,7 +96,7 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                         step instanceof OrStep && InlineFilterStrategy.processOrStep((OrStep) step, traversal) ||
                         step instanceof AndStep && InlineFilterStrategy.processAndStep((AndStep) step, traversal);
             }
-            if (!changed && traversal.getParent() instanceof EmptyStep) {
+            if (!changed && traversal.isRoot()) {
                 final Iterator<MatchStep> matchStepIterator = TraversalHelper.getStepsOfClass(MatchStep.class, traversal).iterator();
                 while (!changed && matchStepIterator.hasNext()) {
                     if (InlineFilterStrategy.processMatchStep(matchStepIterator.next(), traversal))

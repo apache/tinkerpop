@@ -71,7 +71,7 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         // VertexPrograms can only execute at the root level of a Traversal and should not be applied locally prior to RemoteStrategy
-        if (!(traversal.getParent() instanceof EmptyStep)
+        if (!(traversal.isRoot())
                 || traversal instanceof AbstractLambdaTraversal
                 || traversal.getStrategies().getStrategy(RemoteStrategy.class).isPresent())
             return;

@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
-import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
@@ -31,7 +30,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.DefaultTraverserGeneratorFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
@@ -93,8 +91,6 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         steps.addAll(traversal.getSteps());
     }
 
-    // TODO: clean up unused or redundant constructors
-
     public DefaultTraversal() {
         this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class), new Bytecode());
     }
@@ -115,7 +111,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     @Override
     public TraverserGenerator getTraverserGenerator() {
         if (null == this.generator)
-            this.generator = (this.parent instanceof EmptyStep) ?
+            this.generator = isRoot() ?
                     DefaultTraverserGeneratorFactory.instance().getTraverserGenerator(this.getTraverserRequirements()) :
                     TraversalHelper.getRootTraversal(this).getTraverserGenerator();
         return this.generator;
@@ -127,7 +123,14 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         TraversalHelper.reIdSteps(this.stepPosition, this);
         final boolean hasGraph = null != this.graph;
 
-        if (this.getParent() instanceof EmptyStep || this.getParent() instanceof VertexProgramStep) {
+        // we only want to apply strategies on the top-level step or if we got some graphcomputer stuff going on.
+        // seems like in that case, the "top-level" of the traversal is really held by the VertexProgramStep which
+        // needs to have strategies applied on "pure" copies of the traversal it is holding (i think). it further
+        // seems that we need three recursions over the traversal hierarchy to ensure everything "works", where
+        // strategy application requires top-level strategies and side-effects pushed into each child and then after
+        // application of the strategies we need to call applyStrategies() on all the children to ensure that their
+        // steps get reId'd and traverser requirements are set.
+        if (isRoot() || this.getParent() instanceof VertexProgramStep) {
             TraversalHelper.applyTraversalRecursively(t -> {
                 t.setStrategies(this.strategies);
                 t.setSideEffects(this.sideEffects);
@@ -142,7 +145,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
             // don't need to re-apply strategies to "this" - leads to endless recursion in GraphComputer.
             TraversalHelper.applyTraversalRecursively(t -> {
                 if (hasGraph) t.setGraph(this.graph);
-                if(!(t.getParent() instanceof EmptyStep) && t != this && !t.isLocked()) {
+                if(!(t.isRoot()) && t != this && !t.isLocked()) {
                     t.setStrategies(new DefaultTraversalStrategies());
                     t.applyStrategies();
                 }
@@ -150,12 +153,17 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         }
         
         this.finalEndStep = this.getEndStep();
+
         // finalize requirements
-        if (this.getParent() instanceof EmptyStep) {
-            this.requirements = null;
-            this.getTraverserRequirements();
+        if (this.isRoot()) {
+            resetTraverserRequirements();
         }
         this.locked = true;
+    }
+
+    private void resetTraverserRequirements() {
+        this.requirements = null;
+        this.getTraverserRequirements();
     }
 
     @Override

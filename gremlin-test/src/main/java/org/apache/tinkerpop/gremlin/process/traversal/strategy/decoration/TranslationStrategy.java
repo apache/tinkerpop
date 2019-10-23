@@ -73,7 +73,7 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!(traversal.getParent() instanceof EmptyStep) || traversal.getBytecode().isEmpty())
+        if (!(traversal.isRoot()) || traversal.getBytecode().isEmpty())
             return;
 
         final Traversal.Admin<?, ?> translatedTraversal;

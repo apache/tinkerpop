@@ -47,7 +47,7 @@ public final class SackStrategy extends AbstractTraversalStrategy<TraversalStrat
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getParent() instanceof EmptyStep)
+        if (traversal.isRoot())
             traversal.getSideEffects().setSack(this.initialValue, this.splitOperator, this.mergeOperator);
     }
 
