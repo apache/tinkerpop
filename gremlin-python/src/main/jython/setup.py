@@ -63,7 +63,8 @@ setup(
     license='Apache 2',
     url='http://tinkerpop.apache.org',
     description='Gremlin-Python for Apache TinkerPop',
-    long_description=codecs.open("README", "r", "UTF-8").read(),
+    long_description=codecs.open("README.rst", "r", "UTF-8").read(),
+    long_description_content_type='text/x-rst',
     test_suite="tests",
     data_files=[("", ["LICENSE", "NOTICE"])],
     setup_requires=[

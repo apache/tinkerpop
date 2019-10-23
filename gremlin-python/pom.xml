@@ -596,6 +596,11 @@ limitations under the License.
                                               failonerror="true">
                                             <arg line="install twine==1.12.1"/>
                                         </exec>
+					<!-- check the dist for errors before deploying -->
+                                        <exec dir="${project.build.directory}/python-packaged" executable="env/bin/twine"
+                                              failonerror="true">
+                                            <arg line="check dist/*"/>
+                                        </exec>
                                         <!-- to use the pypi test environment add: -r pypitest -->
                                         <exec dir="${project.build.directory}/python-packaged" executable="env/bin/twine"
                                               failonerror="true">
