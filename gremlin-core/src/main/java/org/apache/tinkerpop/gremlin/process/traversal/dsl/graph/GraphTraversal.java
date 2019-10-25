@@ -2476,7 +2476,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     ///////////////////// UTILITY STEPS /////////////////////
 
     /**
-     * A step modulator that provides a lable to the step that can be accessed later in the traversal by other steps.
+     * A step modulator that provides a label to the step that can be accessed later in the traversal by other steps.
      *
      * @param stepLabel  the name of the step
      * @param stepLabels additional names for the label
