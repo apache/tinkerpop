@@ -188,9 +188,85 @@ IMPORTANT: `LabelP.of()` is only required if multi-labels are leveraged. `LabelP
 filtering/looking-up vertices by their label(s) as the standard `P.eq()` does a direct match on the `::`-representation
 of `vertex.label()`
 
+=== Configuration
+
+The previous examples showed how to create a `Neo4jGraph` with the default configuration, but Neo4j has many other
+options to initialize it that are native to Neo4j. In order to expose those, `Neo4jGraph` has an `open(Configuration)`
+method which takes a standard Apache Configuration object. The same can be said of the standard method for creating
+`Graph` instances with `GraphFactory`. Each configuration key that Neo4j has must simply be prefixed with
+`gremlin.neo4j.conf.` and the suffix configuration key will be passed through to Neo4j.
+
+NOTE: Gremlin Server uses `GraphFactory` to instantiate the `Graph` instances it manages, so the example below is also
+relevant for that purpose as well.
+
+For example, a standard configuration file called `neo4j.properties` that sets the Neo4j
+`dbms.index_sampling.background_enabled` setting might look like:
+
+[source,properties]
+----
+gremlin.graph=org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph
+gremlin.neo4j.directory=/tmp/neo4j
+gremlin.neo4j.conf.dbms.index_sampling.background_enabled=true
+----
+
+which can then be used as follows:
+
+[source,text]
+----
+gremlin> graph = GraphFactory.open('neo4j.properties')
+==>neo4jgraph[community single [/tmp/neo4j]]
+gremlin> g = graph.traversal()
+==>graphtraversalsource[neo4jgraph[community single [/tmp/neo4j]], standard]
+----
+
+Having this ability to set standard Neo4j configurations makes it possible to better control the initialization of
+Neo4j itself and provides the ability to enable certain features that would not otherwise be accessible.
+
+=== Bolt Configuration
+
+While `Neo4jGraph` enables Gremlin based queries, users may find it helpful to also be able to connect to that graph
+with native Neo4j drivers and other tools from that space. It is possible to enable the
+link:https://boltprotocol.org/[Bolt Protocol] as a way to do this:
+
+[source,properties]
+----
+gremlin.graph=org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph
+gremlin.neo4j.directory=/tmp/neo4j
+gremlin.neo4j.conf.dbms.connector.0.type=BOLT
+gremlin.neo4j.conf.dbms.connector.0.enabled=true
+gremlin.neo4j.conf.dbms.connector.0.address=localhost:7687
+----
+
+This configuration is especially relevant to Gremlin Server where one might want to connect to the same graph instance
+with both Gremlin and Cypher.
+
+[source,text]
+----
+gremlin> :install org.neo4j.driver neo4j-java-driver 1.7.2
+==>Loaded: [org.neo4j.driver, neo4j-java-driver, 1.7.2]
+... // restart Gremlin Console
+gremlin> import org.neo4j.driver.v1.*
+==>org.apache.tinkerpop.gremlin.structure.*, org.apache.tinkerpop.gremlin.structure.util.*, ... org.neo4j.driver.v1.*
+gremlin> driver = GraphDatabase.driver( "bolt://localhost:7687", AuthTokens.basic("neo4j", "neo4j"))
+Oct 28, 2019 3:28:20 PM org.neo4j.driver.internal.logging.JULogger info
+INFO: Direct driver instance 1385140107 created for server address localhost:7687
+==>org.neo4j.driver.internal.InternalDriver@528f8f8b
+gremlin> session = driver.session()
+==>org.neo4j.driver.internal.NetworkSession@f3fcd59
+gremlin> session.run( "CREATE (a:person {name: {name}, age: {age}})",
+......1>                 Values.parameters("name", "stephen", "age", 29))
+gremlin> :remote connect tinkerpop.server conf/remote.yaml
+==>Configured localhost/127.0.0.1:8182
+gremlin> :remote console
+==>All scripts will now be sent to Gremlin Server - [localhost/127.0.0.1:8182] - type ':remote console' to return to local mode
+gremlin> g.V().elementMap()
+==>{id=0, label=person, name=stephen, age=29}
+----
+
 === High Availability Configuration
 
-image:neo4j-ha.png[width=400,float=right] TinkerPop supports running Neo4j with its fault tolerant master-slave replication configuration, referred to as its
+image:neo4j-ha.png[width=400,float=right] TinkerPop supports running Neo4j with its fault tolerant master-slave
+replication configuration, referred to as its
 link:http://neo4j.com/docs/operations-manual/current/#_neo4j_cluster_install[High Availability (HA) cluster]. From the
 TinkerPop perspective, configuring for HA is not that different than configuring for embedded mode as shown above. The
 main difference is the usage of HA configuration options that enable the cluster. Once connected to a cluster, usage
