@@ -83,7 +83,7 @@ BEGIN {
       print "    mapper = GraphSONMapper.build().version(GraphSONVersion.V2_0).create().createMapper()"
       print "    bytecode = mapper.readValue(jython.eval('GraphSONWriter().writeObject(j)').toString(), Bytecode.class)"
       print "    language = BytecodeHelper.getLambdaLanguage(bytecode).orElse('gremlin-groovy')"
-      print "    result = language.equals('gremlin-groovy') ? groovy.eval(org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslator.of(\"g\").translate(bytecode) + '.toList()').toString() : jython.eval(JythonTranslator.of(\"h\").translate(bytecode) + '.toList()').toString()"
+      print "    result = language.equals('gremlin-groovy') ? groovy.eval(org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslator.of(\"g\").translate(bytecode).getScript() + '.toList()').toString() : jython.eval(JythonTranslator.of(\"h\").translate(bytecode).getScript() + '.toList()').toString()"
       print "    jython.getContext().getBindings(GLOBAL_SCOPE).put('json', mapper.writeValueAsString(result))"
       print "    return jython.eval('GraphSONReader().readObject(json)').toString()"
       print "  } else {"
