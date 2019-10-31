@@ -89,7 +89,10 @@ public interface TraversalStrategies extends Serializable, Cloneable {
      * strategies are sorted prior to application.
      *
      * @param traversal the traversal to apply the strategies to
+     * @deprecated As of release 3.3.10, not directly replaced as this mode of strategy application has not been
+     * utilized since early days of 3.x
      */
+    @Deprecated
     public void applyStrategies(final Traversal.Admin<?, ?> traversal);
 
     /**
