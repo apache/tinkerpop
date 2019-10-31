@@ -2,9 +2,9 @@ language: java
 os:
   - linux
 jdk:
-  - oraclejdk8
+  - openjdk8
 sudo: required
-dist: trusty
+dist: xenial
 services:
   - docker
 cache:
@@ -20,12 +20,13 @@ install:
   - mvn -version
 
 before_install:
-  - sudo apt-get install -y dpkg # workaround for travis-ci/travis-ci#9361
-  - wget -q https://packages.microsoft.com/config/ubuntu/14.04/packages-microsoft-prod.deb
+  - wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
   - sudo dpkg -i packages-microsoft-prod.deb
-  - sudo apt-get install apt-transport-https
-  - sudo apt-get update
-  - sudo apt-get install dotnet-sdk-2.2
+  - sudo add-apt-repository universe
+  - sudo apt update
+  - sudo apt install apt-transport-https
+  - sudo apt update
+  - sudo apt install dotnet-sdk-2.2
 
 jobs:
   include:
