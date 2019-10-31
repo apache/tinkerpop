@@ -77,8 +77,12 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
         }
         return Optional.empty();
     }
-
+    /**
+     * @deprecated As of release 3.3.10, not directly replaced as this mode of strategy application has not been
+     * utilized since early days of 3.x
+     */
     @Override
+    @Deprecated
     public void applyStrategies(final Traversal.Admin<?, ?> traversal) {
         for (final TraversalStrategy<?> traversalStrategy : this.traversalStrategies) {
             traversalStrategy.apply(traversal);

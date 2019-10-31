@@ -23,6 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-3-10]]
 === TinkerPop 3.3.10 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Deprecated `TraversalStrategies.applyStrategies()`.
 
 [[release-3-3-9]]
 === TinkerPop 3.3.9 (Release Date: October 14, 2019)
