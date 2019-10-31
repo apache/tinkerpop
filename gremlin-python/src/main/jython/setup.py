@@ -46,7 +46,7 @@ version = __version__.version
 
 install_requires = [
     'aenum>=1.4.5',
-    'tornado>=4.4.1,<5.0',
+    'tornado>=4.4.1,<6.0',
     'six>=1.10.0',
     'isodate>=0.6.0'
 ]

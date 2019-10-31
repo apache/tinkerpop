@@ -295,18 +295,3 @@ class TestDriverRemoteConnection(object):
         assert results
         results = t.side_effects.close()
         assert not results
-
-
-def test_in_tornado_app(remote_connection):
-    # Make sure nothing weird with loops
-    @gen.coroutine
-    def go():
-        conn = DriverRemoteConnection(
-            'ws://localhost:45940/gremlin', 'gmodern', pool_size=4)
-        g = traversal().withRemote(conn)
-        yield gen.sleep(0)
-        assert len(g.V().toList()) == 6
-        conn.close()
-
-    io_loop = ioloop.IOLoop.current()
-    io_loop.run_sync(go)
