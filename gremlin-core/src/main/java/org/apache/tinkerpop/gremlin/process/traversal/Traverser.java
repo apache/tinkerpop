@@ -18,9 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LoopsStep;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -134,7 +136,12 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
      */
     @Override
     public default int compareTo(final Traverser<T> other) throws ClassCastException {
-        return ((Comparable) this.get()).compareTo(other.get());
+        final Object thisObj = this.get();
+        final Object otherObj = other.get();
+        if (thisObj == otherObj) return 0;
+        if (null == thisObj) return -1;
+        if (null == otherObj) return 1;
+        return ((Comparable) thisObj).compareTo(otherObj);
     }
 
     /**

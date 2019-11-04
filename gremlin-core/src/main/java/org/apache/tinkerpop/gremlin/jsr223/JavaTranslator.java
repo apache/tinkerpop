@@ -214,7 +214,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                         for (int i = 0; i < parameters.length; i++) {
                             if (parameters[i].isVarArgs()) {
                                 final Class<?> parameterClass = parameters[i].getType().getComponentType();
-                                if (argumentsCopy.length > i && !parameterClass.isAssignableFrom(argumentsCopy[i].getClass())) {
+                                if (argumentsCopy.length > i && argumentsCopy[i] != null && !parameterClass.isAssignableFrom(argumentsCopy[i].getClass())) {
                                     found = false;
                                     break;
                                 }

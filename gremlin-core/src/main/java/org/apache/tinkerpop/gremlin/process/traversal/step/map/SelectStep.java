@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -74,6 +75,11 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
         }
         this.traversalRing.reset();
         return bindings;
+    }
+
+    @Override
+    protected boolean isEmptyTraverser(final Map<String, E> obj) {
+        return null == obj;
     }
 
     @Override

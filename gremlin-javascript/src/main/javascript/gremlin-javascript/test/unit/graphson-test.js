@@ -32,6 +32,11 @@ const GraphSONWriter = gs.GraphSONWriter;
 const P = t.P;
 
 describe('GraphSONReader', function () {
+  it('should parse GraphSON null', function () {
+    const reader = new GraphSONReader();
+    const result = reader.read(null);
+    assert.equal(result, null);
+  });
   it('should parse GraphSON int32, float and double to Number from GraphSON', function () {
     const reader = new GraphSONReader();
     [

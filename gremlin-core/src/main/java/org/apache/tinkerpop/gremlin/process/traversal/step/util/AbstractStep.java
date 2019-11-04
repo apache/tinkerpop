@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -126,7 +127,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
             while (true) {
                 if (Thread.interrupted()) throw new TraversalInterruptedException();
                 final Traverser.Admin<E> traverser = this.processNextStart();
-                if (null != traverser.get() && 0 != traverser.bulk())
+                if (traverser.bulk() > 0)
                     return this.prepareTraversalForNextStep(traverser);
             }
         }
@@ -141,7 +142,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
                 while (true) {
                     if (Thread.interrupted()) throw new TraversalInterruptedException();
                     this.nextEnd = this.processNextStart();
-                    if (null != this.nextEnd.get() && 0 != this.nextEnd.bulk())
+                    if (this.nextEnd.bulk() > 0)
                         return true;
                     else
                         this.nextEnd = null;

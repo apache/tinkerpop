@@ -85,11 +85,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
         reason = "Local traversals may not traverse past the local star-graph on GraphComputer")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectTest",
-        method = "g_VX1X_injectXg_VX4XX_out_name",
-        reason = "The inject() step is not supported by GraphComputer")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectTest",
-        method = "g_VX1X_out_injectXv2X_name",
+        method = "*",
         reason = "The inject() step is not supported by GraphComputer")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.branch.LocalTest",

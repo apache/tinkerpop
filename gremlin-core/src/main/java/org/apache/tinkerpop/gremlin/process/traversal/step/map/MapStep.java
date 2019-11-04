@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -34,10 +35,23 @@ public abstract class MapStep<S, E> extends AbstractStep<S, E> {
     @Override
     protected Traverser.Admin<E> processNextStart() {
         final Traverser.Admin<S> traverser = this.starts.next();
-        return traverser.split(this.map(traverser), this);
+        final E obj = this.map(traverser);
+
+        // maybe looks tricky, but it's just a play on Java generics without having to tear apart every MapStep
+        // instance. basically just want to respect the fact that a subclass can return an EmptyTraverser from
+        // map() and if so, just return that empty.
+        return isEmptyTraverser(obj) ? EmptyTraverser.instance() : traverser.split(obj, this);
     }
 
     protected abstract E map(final Traverser.Admin<S> traverser);
+
+    /**
+     * Determines if the value returned from {@link #map(Traverser.Admin)} should be representative of an
+     * {@link EmptyTraverser}. Such traversers will effectively be filtered out by the traversal.
+     */
+    protected boolean isEmptyTraverser(E obj) {
+        return false;
+    }
 
 }
 

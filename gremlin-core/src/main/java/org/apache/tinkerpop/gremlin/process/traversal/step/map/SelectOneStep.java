@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -55,6 +55,11 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     protected E map(final Traverser.Admin<S> traverser) {
         final E end = this.getNullableScopeValue(this.pop, this.selectKey, traverser);
         return null != end ? TraversalUtil.applyNullable((S) end, this.selectTraversal) : null;
+    }
+
+    @Override
+    protected boolean isEmptyTraverser(final E obj) {
+        return null == obj;
     }
 
     @Override

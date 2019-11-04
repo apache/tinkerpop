@@ -289,6 +289,10 @@ class TestGraphSONReader(object):
         assert isinstance(c, SingleChar)
         assert chr(76) == c
 
+    def test_null(self):
+        c = self.graphson_reader.readObject(json.dumps(None))
+        assert c is None
+
 
 class TestGraphSONWriter(object):
     graphson_writer = GraphSONWriter()

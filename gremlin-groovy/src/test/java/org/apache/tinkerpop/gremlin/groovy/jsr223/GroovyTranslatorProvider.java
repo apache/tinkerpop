@@ -207,10 +207,6 @@ import org.apache.tinkerpop.gremlin.util.TinkerGraphProvider;
         method = "shouldNeverPropagateANoBulkTraverser",
         reason = "Reason requires investigation")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest",
-        method = "shouldNeverPropagateANullValuedTraverser",
-        reason = "Reason requires investigation")
-@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ReadTest",
         method = "*",
         reason = "read and write tests don't translate locally well because of calling iterate() inside read()/write() add a none()")

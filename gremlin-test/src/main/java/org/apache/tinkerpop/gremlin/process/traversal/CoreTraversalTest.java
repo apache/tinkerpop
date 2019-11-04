@@ -78,18 +78,6 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith
-    public void shouldNeverPropagateANullValuedTraverser() {
-        try {
-            assertFalse(g.V().map(t -> null).hasNext());
-            assertEquals(0, g.V().map(t -> null).toList().size());
-            g.V().map(t -> null).sideEffect(t -> fail("this should not have happened")).iterate();
-        } catch (VerificationException e) {
-            // its okay if lambdas can't be serialized by the test suite
-        }
-    }
-
-    @Test
     @LoadGraphWith(MODERN)
     public void shouldFilterOnIterate() {
         final Traversal<Vertex,String> traversal = g.V().out().out().<String>values("name").aggregate("x").iterate();

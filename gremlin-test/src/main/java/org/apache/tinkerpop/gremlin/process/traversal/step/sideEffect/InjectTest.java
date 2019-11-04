@@ -48,6 +48,8 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_VX1X_injectXg_VX4XX_out_name(final Object v1Id, final Object v4Id);
 
+    public abstract Traversal<Integer, Integer> get_g_injectXnull_1_3_nullX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_out_injectXv2X_name() {
@@ -85,6 +87,13 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    public void g_injectXnull_1_3_nullX() {
+        final Traversal<Integer, Integer> traversal = get_g_injectXnull_1_3_nullX();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(null, 1, 3, null), traversal);
+    }
+
+    @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_injectXg_VX4XX_out_name() {
         final Traversal<Vertex, String> traversal = get_g_VX1X_injectXg_VX4XX_out_name(convertToVertexId("marko"), convertToVertexId("josh"));
@@ -107,6 +116,11 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_VX1X_injectXg_VX4XX_out_name(final Object v1Id, final Object v4Id) {
             return g.V(v1Id).inject(g.V(v4Id).next()).out().values("name");
+        }
+
+        @Override
+        public Traversal<Integer, Integer> get_g_injectXnull_1_3_nullX() {
+            return g.inject(null, 1, 3, null);
         }
     }
 }

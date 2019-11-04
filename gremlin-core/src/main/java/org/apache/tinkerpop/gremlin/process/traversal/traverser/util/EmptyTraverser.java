@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.traverser.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyPath;
@@ -30,12 +31,18 @@ import java.util.Set;
 import java.util.function.Function;
 
 /**
+ * A {@link Traverser} with no bulk which effectively means that it will no longer be propagated through a
+ * {@link Traversal}.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
 
     private static final EmptyTraverser INSTANCE = new EmptyTraverser();
 
+    /**
+     * The empty {@link Traverser} instance.
+     */
     public static <R> EmptyTraverser<R> instance() {
         return INSTANCE;
     }
@@ -95,7 +102,7 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public void setBulk(long count) {
+    public void setBulk(final long count) {
 
     }
 

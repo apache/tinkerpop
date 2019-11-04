@@ -66,3 +66,17 @@ Feature: Step - inject()
       | lop   |
       | vadas |
       | josh  |
+
+  Scenario: g_injectXnull_1_3_nullX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(null, 1, 3, null)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | null |
+      | d[1].i |
+      | d[3].i |
+      | null |

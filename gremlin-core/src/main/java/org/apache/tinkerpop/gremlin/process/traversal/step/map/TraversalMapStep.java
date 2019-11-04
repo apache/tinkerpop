@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -46,6 +47,11 @@ public final class TraversalMapStep<S, E> extends MapStep<S, E> implements Trave
     protected E map(final Traverser.Admin<S> traverser) {
         final Iterator<E> iterator = TraversalUtil.applyAll(traverser, this.mapTraversal);
         return iterator.hasNext() ? iterator.next() : null;
+    }
+
+    @Override
+    protected boolean isEmptyTraverser(final E obj) {
+        return null == obj;
     }
 
     @Override

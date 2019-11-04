@@ -43,13 +43,17 @@ public class OrderTest {
     @Parameterized.Parameters(name = "{0}.test({1},{2})")
     public static Iterable<Object[]> data() throws ParseException {
         return new ArrayList<>(Arrays.asList(new Object[][]{
+                {Order.asc, Arrays.asList("a", "c", null, "d"), Arrays.asList(null, "a", "c", "d")},
                 {Order.asc, Arrays.asList("b", "a", "c", "d"), Arrays.asList("a", "b", "c", "d")},
                 {Order.desc, Arrays.asList("b", "a", "c", "d"), Arrays.asList("d", "c", "b", "a")},
+                {Order.desc, Arrays.asList("c", "a", null, "d"), Arrays.asList("d", "c", "a", null)},
                 {Order.asc, Arrays.asList(formatter.parse("1-Jan-2018"), formatter.parse("1-Jan-2020"), formatter.parse("1-Jan-2008")),
                             Arrays.asList(formatter.parse("1-Jan-2008"), formatter.parse("1-Jan-2018"), formatter.parse("1-Jan-2020"))},
                 {Order.desc, Arrays.asList(formatter.parse("1-Jan-2018"), formatter.parse("1-Jan-2020"), formatter.parse("1-Jan-2008")),
                              Arrays.asList(formatter.parse("1-Jan-2020"), formatter.parse("1-Jan-2018"), formatter.parse("1-Jan-2008"))},
+                {Order.desc, Arrays.asList(100L, 1L, null, -1L, 0L), Arrays.asList(100L, 1L, 0L, -1L, null)},
                 {Order.desc, Arrays.asList(100L, 1L, -1L, 0L), Arrays.asList(100L, 1L, 0L, -1L)},
+                {Order.asc, Arrays.asList(100L, 1L, null, -1L, 0L), Arrays.asList(null, -1L, 0L, 1L, 100L)},
                 {Order.asc, Arrays.asList(100.1f, 1.1f, -1.1f, 0.1f), Arrays.asList(-1.1f, 0.1f, 1.1f, 100.1f)},
                 {Order.desc, Arrays.asList(100.1f, 1.1f, -1.1f, 0.1f), Arrays.asList(100.1f, 1.1f, 0.1f, -1.1f)},
                 {Order.asc, Arrays.asList(100.1d, 1.1d, -1.1d, 0.1d), Arrays.asList(-1.1d, 0.1d, 1.1d, 100.1d)},

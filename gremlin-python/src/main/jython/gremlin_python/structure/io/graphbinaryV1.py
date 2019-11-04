@@ -156,6 +156,10 @@ class GraphBinaryWriter(object):
         if to_extend is None:
             to_extend = bytearray()
 
+        if obj is None:
+            to_extend.extend(NULL_BYTES)
+            return
+
         try:
             t = type(obj)
             
