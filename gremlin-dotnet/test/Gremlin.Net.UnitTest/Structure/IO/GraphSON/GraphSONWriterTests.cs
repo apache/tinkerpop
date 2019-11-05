@@ -282,12 +282,12 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         public void ShouldSerializeGList(int version)
         {
             var writer = CreateGraphSONWriter(version);
-            var list = new List<object> {5, 6};
+            var list = new List<object> {5, 6, null};
 
             var serializedGraphSON = writer.WriteObject(list);
 
             var expectedGraphSON = "{\"@type\":\"g:List\",\"@value\":[{\"@type\":\"g:Int32\",\"@value\":5}," +
-                                   "{\"@type\":\"g:Int32\",\"@value\":6}]}";
+                                   "{\"@type\":\"g:Int32\",\"@value\":6},null]}";
             Assert.Equal(expectedGraphSON, serializedGraphSON);
         }
 

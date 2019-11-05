@@ -260,13 +260,13 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         [Theory, MemberData(nameof(Versions))]
         public void ShouldDeserializeList(int version)
         {
-            var serializedValue = "[{\"@type\":\"g:Int32\",\"@value\":5},{\"@type\":\"g:Int32\",\"@value\":6}]";
+            var serializedValue = "[{\"@type\":\"g:Int32\",\"@value\":5},{\"@type\":\"g:Int32\",\"@value\":6},null]";
             var reader = CreateStandardGraphSONReader(version);
 
             var jObject = JArray.Parse(serializedValue);
             var deserializedValue = reader.ToObject(jObject);
 
-            Assert.Equal(new List<object> {5, 6}, deserializedValue);
+            Assert.Equal(new List<object> {5, 6, null}, deserializedValue);
         }
 
         [Theory, MemberData(nameof(Versions))]
