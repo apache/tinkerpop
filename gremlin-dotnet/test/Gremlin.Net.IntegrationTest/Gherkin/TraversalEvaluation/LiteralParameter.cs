@@ -29,10 +29,15 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
     /// <summary>
     /// Represents a literal (number / boolean) that is allowed as a gremlin parameter.
     /// </summary>
-    public class LiteralParameter<T> : ITokenParameter, IEquatable<LiteralParameter<T>> where T : struct
+    public class LiteralParameter<T> : ITokenParameter, IEquatable<LiteralParameter<T>>
     {
         public bool Equals(LiteralParameter<T> other)
         {
+            if (Value == null)
+            {
+                return other.Value == null;
+            }
+
             return Value.Equals(other.Value);
         }
 
@@ -46,7 +51,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 
         public override int GetHashCode()
         {
-            return Value.GetHashCode();
+            return Value?.GetHashCode() ?? 0;
         }
 
         public T Value { get; }
@@ -79,7 +84,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
 
     internal static class LiteralParameter
     {
-        public static LiteralParameter<TType> Create<TType>(TType value) where TType : struct
+        public static LiteralParameter<TType> Create<TType>(TType value)
         {
             return new LiteralParameter<TType>(value);
         }
