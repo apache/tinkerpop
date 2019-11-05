@@ -682,6 +682,15 @@ public interface Graph extends AutoCloseable, Host {
             public static final String FEATURE_ANY_IDS = "AnyIds";
             public static final String FEATURE_ADD_PROPERTY = "AddProperty";
             public static final String FEATURE_REMOVE_PROPERTY = "RemoveProperty";
+            public static final String FEATURE_NULL_PROPERTY_VALUES = "NullPropertyValues";
+
+            /**
+             * Determines if an {@link Element} allows properties with {@code null} property values.
+             */
+            @FeatureDescriptor(name = FEATURE_NULL_PROPERTY_VALUES)
+            public default boolean supportsNullPropertyValues() {
+                return true;
+            }
 
             /**
              * Determines if an {@link Element} allows properties to be added.  This feature is set independently from
@@ -816,6 +825,15 @@ public interface Graph extends AutoCloseable, Host {
             public static final String FEATURE_UUID_IDS = "UuidIds";
             public static final String FEATURE_CUSTOM_IDS = "CustomIds";
             public static final String FEATURE_ANY_IDS = "AnyIds";
+            public static final String FEATURE_NULL_PROPERTY_VALUES = "NullPropertyValues";
+
+            /**
+             * Determines if meta-properties allow for {@code null} property values.
+             */
+            @FeatureDescriptor(name = FEATURE_NULL_PROPERTY_VALUES)
+            public default boolean supportsNullPropertyValues() {
+                return true;
+            }
 
             /**
              * Determines if a {@link VertexProperty} allows properties to be removed.

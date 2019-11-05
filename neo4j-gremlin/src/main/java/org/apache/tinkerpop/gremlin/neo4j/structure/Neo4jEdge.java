@@ -114,7 +114,7 @@ public final class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<N
 
     @Override
     public <V> Property<V> property(final String key, final V value) {
-        ElementHelper.validateProperty(key, value);
+        ElementHelper.validateProperty(false, key, value);
         this.graph.tx().readWrite();
         try {
             this.baseElement.setProperty(key, value);

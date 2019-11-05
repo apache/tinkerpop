@@ -72,6 +72,34 @@ Feature: Step - addE()
     And the graph should return 4 for count of "g.V(v1Id).bothE()"
     And the graph should return 1 for count of "g.V(v1Id).inE().has(\"weight\", 2.0)"
 
+  Scenario: g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX_propertyXweight_nullX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
+        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
+        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
+        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
+        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
+        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
+        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
+        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      """
+    And using the parameter v1Id defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(v1Id).as("a").out("created").addE("createdBy").to("a").property("weight", null)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 7 for count of "g.E()"
+    And the graph should return 4 for count of "g.V(v1Id).bothE()"
+    And the graph should return 1 for count of "g.V(v1Id).inE().has(\"weight\", null)"
+
   Scenario: g_V_aggregateXxX_asXaX_selectXxX_unfold_addEXexistsWithX_toXaX_propertyXtime_nowX
     Given the empty graph
     And the graph initializer of

@@ -56,7 +56,7 @@ public final class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVe
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
         if (null == inVertex) throw Graph.Exceptions.argumentCanNotBeNull("inVertex");
         ElementHelper.validateLabel(label);
-        ElementHelper.legalPropertyKeyValueArray(keyValues);
+        ElementHelper.legalPropertyKeyValueArray(false, keyValues);
         if (ElementHelper.getIdValue(keyValues).isPresent())
             throw Edge.Exceptions.userSuppliedIdsNotSupported();
 
@@ -91,7 +91,7 @@ public final class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVe
 
     @Override
     public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
-        ElementHelper.validateProperty(key, value);
+        ElementHelper.validateProperty(false, key, value);
         if (ElementHelper.getIdValue(keyValues).isPresent())
             throw Vertex.Exceptions.userSuppliedIdsNotSupported();
         this.graph.tx().readWrite();

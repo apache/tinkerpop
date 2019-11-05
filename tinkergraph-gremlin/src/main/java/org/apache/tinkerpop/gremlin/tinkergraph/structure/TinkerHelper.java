@@ -49,7 +49,7 @@ public final class TinkerHelper {
 
     protected static Edge addEdge(final TinkerGraph graph, final TinkerVertex outVertex, final TinkerVertex inVertex, final String label, final Object... keyValues) {
         ElementHelper.validateLabel(label);
-        ElementHelper.legalPropertyKeyValueArray(keyValues);
+        ElementHelper.legalPropertyKeyValueArray(graph.features().edge().supportsNullPropertyValues(), keyValues);
 
         Object idValue = graph.edgeIdManager.convert(ElementHelper.getIdValue(keyValues).orElse(null));
 

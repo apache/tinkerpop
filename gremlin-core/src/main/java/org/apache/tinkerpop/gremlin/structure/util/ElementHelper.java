@@ -87,13 +87,14 @@ public final class ElementHelper {
      * Determines whether the property key/value for the specified thing can be legally set. This is typically used as
      * a pre-condition check prior to setting a property.
      *
+     * @param allowNullValue true if {@code null} is allowed as a value to the property
      * @param key   the key of the property
-     * @param value the value of the property
+     * @param value the value of the property\
      * @throws IllegalArgumentException whether the key/value pair is legal and if not, a clear reason exception
      *                                  message is provided
      */
-    public static void validateProperty(final String key, final Object value) throws IllegalArgumentException {
-        if (null == value)
+    public static void validateProperty(final boolean allowNullValue, final String key, final Object value) throws IllegalArgumentException {
+        if (!allowNullValue && null == value)
             throw Property.Exceptions.propertyValueCanNotBeNull();
         if (null == key)
             throw Property.Exceptions.propertyKeyCanNotBeNull();
@@ -107,17 +108,18 @@ public final class ElementHelper {
      * Determines whether a list of key/values are legal, ensuring that there are an even number of values submitted
      * and that the key values in the list of arguments are {@link String} or {@link Element} objects.
      *
+     * @param allowNullValues true if {@code null} is allowed as a value to the property
      * @param propertyKeyValues a list of key/value pairs
      * @throws IllegalArgumentException if something in the pairs is illegal
      */
-    public static void legalPropertyKeyValueArray(final Object... propertyKeyValues) throws IllegalArgumentException {
+    public static void legalPropertyKeyValueArray(final boolean allowNullValues, final Object... propertyKeyValues) throws IllegalArgumentException {
         if (propertyKeyValues.length % 2 != 0)
             throw Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo();
         for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
             if (!(propertyKeyValues[i] instanceof String) && !(propertyKeyValues[i] instanceof T))
                 throw Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices();
 
-            if (null == propertyKeyValues[i + 1]) {
+            if (!allowNullValues && null == propertyKeyValues[i + 1]) {
                 throw Property.Exceptions.propertyValueCanNotBeNull();
             }
         }

@@ -226,13 +226,24 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                                 newArguments[i] = varArgs;
                                 break;
                             } else {
-                                if (i < argumentsCopy.length &&
-                                        (parameters[i].getType().isAssignableFrom(argumentsCopy[i].getClass()) ||
+                                // try to detect the right method by comparing the type of the parameter to the type
+                                // of the argument. doesn't always work so well because of null arguments which don't
+                                // bring their type in bytecode and rely on position. this doesn't seem to happen often
+                                // ...luckily...because method signatures tend to be sufficiently unique and do not
+                                // encourage whacky use - like g.V().has(null, null) is clearly invalid so we don't
+                                // even need to try to sort that out. on the other hand g.V().has('name',null) which
+                                // is valid hits like four different possible overloads, but we can rely on the most
+                                // generic one which takes Object as the second parameter. that seems to work in this
+                                // case, but it's a shame this isn't nicer. seems like nicer would mean a heavy
+                                // overhaul to Gremlin or to GLVs/bytecode and/or to serialization mechanisms
+                                if (i < argumentsCopy.length && ((null == argumentsCopy[i] && parameters[i].getType() == Object.class) ||
+                                        (argumentsCopy[i] != null && (
+                                        parameters[i].getType().isAssignableFrom(argumentsCopy[i].getClass()) ||
                                                 (parameters[i].getType().isPrimitive() &&
                                                         (Number.class.isAssignableFrom(argumentsCopy[i].getClass()) ||
                                                                 argumentsCopy[i].getClass().equals(Boolean.class) ||
                                                                 argumentsCopy[i].getClass().equals(Byte.class) ||
-                                                                argumentsCopy[i].getClass().equals(Character.class))))) {
+                                                                argumentsCopy[i].getClass().equals(Character.class))))))) {
                                     newArguments[i] = argumentsCopy[i];
                                 } else {
                                     found = false;

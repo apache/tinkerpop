@@ -56,7 +56,7 @@ public class ElementHelperTest {
     @Test
     public void shouldValidatePropertyAndNotAllowNullValue() {
         try {
-            ElementHelper.validateProperty("test", null);
+            ElementHelper.validateProperty(false,"test", null);
             fail("Should fail as property value cannot be null");
         } catch (IllegalArgumentException iae) {
             assertEquals(Property.Exceptions.propertyValueCanNotBeNull().getMessage(), iae.getMessage());
@@ -64,9 +64,14 @@ public class ElementHelperTest {
     }
 
     @Test
+    public void shouldValidatePropertyAndAllowNullValue() {
+        ElementHelper.validateProperty(true,"test", null);
+    }
+
+    @Test
     public void shouldValidatePropertyAndNotAllowNullKey() {
         try {
-            ElementHelper.validateProperty(null, "test");
+            ElementHelper.validateProperty(false,null, "test");
             fail("Should fail as property key cannot be null");
         } catch (IllegalArgumentException iae) {
             assertEquals(Property.Exceptions.propertyKeyCanNotBeNull().getMessage(), iae.getMessage());
@@ -76,7 +81,7 @@ public class ElementHelperTest {
     @Test
     public void shouldValidatePropertyAndNotAllowEmptyKey() {
         try {
-            ElementHelper.validateProperty("", "test");
+            ElementHelper.validateProperty(false,"", "test");
             fail("Should fail as property key cannot be empty");
         } catch (IllegalArgumentException iae) {
             assertEquals(Property.Exceptions.propertyKeyCanNotBeEmpty().getMessage(), iae.getMessage());
@@ -87,7 +92,7 @@ public class ElementHelperTest {
     public void shouldValidatePropertyAndNotAllowHiddenKey() {
         final String key = Graph.Hidden.hide("key");
         try {
-            ElementHelper.validateProperty(key, "test");
+            ElementHelper.validateProperty(false, key, "test");
             fail("Should fail as property key cannot be hidden");
         } catch (IllegalArgumentException iae) {
             assertEquals(Property.Exceptions.propertyKeyCanNotBeAHiddenKey(key).getMessage(), iae.getMessage());
@@ -96,13 +101,13 @@ public class ElementHelperTest {
 
     @Test
     public void shouldHaveValidProperty() {
-        ElementHelper.validateProperty("aKey", "value");
+        ElementHelper.validateProperty(false,"aKey", "value");
     }
 
     @Test
     public void shouldAllowEvenNumberOfKeyValues() {
         try {
-            ElementHelper.legalPropertyKeyValueArray("aKey", "test", "no-value-for-this-one");
+            ElementHelper.legalPropertyKeyValueArray(false,"aKey", "test", "no-value-for-this-one");
             fail("Should fail as there is an odd number of key-values");
         } catch (IllegalArgumentException iae) {
             assertEquals(Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo().getMessage(), iae.getMessage());
@@ -112,7 +117,7 @@ public class ElementHelperTest {
     @Test
     public void shouldNotAllowEvenNumberOfKeyValuesAndInvalidKeys() {
         try {
-            ElementHelper.legalPropertyKeyValueArray("aKey", "test", "value-for-this-one", 1, 1, "none");
+            ElementHelper.legalPropertyKeyValueArray(false,"aKey", "test", "value-for-this-one", 1, 1, "none");
             fail("Should fail as there is an even number of key-values, but a bad key");
         } catch (IllegalArgumentException iae) {
             assertEquals(Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices().getMessage(), iae.getMessage());
@@ -121,13 +126,13 @@ public class ElementHelperTest {
 
     @Test
     public void shouldAllowEvenNumberOfKeyValuesAndValidKeys() {
-        ElementHelper.legalPropertyKeyValueArray("aKey", "test", "value-for-this-one", 1, "1", "none");
+        ElementHelper.legalPropertyKeyValueArray(false,"aKey", "test", "value-for-this-one", 1, "1", "none");
     }
 
     @Test
     public void shouldNotAllowEvenNumberOfKeyValuesAndInvalidValues() {
         try {
-            ElementHelper.legalPropertyKeyValueArray("aKey", "test", "value-for-this-one", 1, "1", null);
+            ElementHelper.legalPropertyKeyValueArray(false,"aKey", "test", "value-for-this-one", 1, "1", null);
         } catch (IllegalArgumentException iae) {
             assertEquals(Property.Exceptions.propertyValueCanNotBeNull().getMessage(), iae.getMessage());
         }

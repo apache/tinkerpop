@@ -37,7 +37,7 @@ public final class VertexComputeKey implements Serializable {
     private VertexComputeKey(final String key, final boolean isTransient) {
         this.key = key;
         this.isTransient = isTransient;
-        ElementHelper.validateProperty(key, key);
+        ElementHelper.validateProperty(true, key, key);
     }
 
     public String getKey() {

@@ -79,7 +79,7 @@ public final class TinkerGraphComputerView {
     }
 
     public <V> Property<V> addProperty(final TinkerVertex vertex, final String key, final V value) {
-        ElementHelper.validateProperty(key, value);
+        ElementHelper.validateProperty(true, key, value);
         if (isComputeKey(key)) {
             final TinkerVertexProperty<V> property = new TinkerVertexProperty<V>((TinkerVertex) vertex, key, value) {
                 @Override

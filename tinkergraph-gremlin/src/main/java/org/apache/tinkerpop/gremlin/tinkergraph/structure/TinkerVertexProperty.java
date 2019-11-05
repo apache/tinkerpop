@@ -45,6 +45,7 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
     private final TinkerVertex vertex;
     private final String key;
     private final V value;
+    private final boolean allowNullPropertyValues;
 
     /**
      * This constructor will not validate the ID type against the {@link Graph}.  It will always just use a
@@ -53,10 +54,11 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
      */
     public TinkerVertexProperty(final TinkerVertex vertex, final String key, final V value, final Object... propertyKeyValues) {
         super(((TinkerGraph) vertex.graph()).vertexPropertyIdManager.getNextId((TinkerGraph) vertex.graph()), key);
+        this.allowNullPropertyValues = vertex.graph().features().vertex().properties().supportsNullPropertyValues();
         this.vertex = vertex;
         this.key = key;
         this.value = value;
-        ElementHelper.legalPropertyKeyValueArray(propertyKeyValues);
+        ElementHelper.legalPropertyKeyValueArray(allowNullPropertyValues, propertyKeyValues);
         ElementHelper.attachProperties(this, propertyKeyValues);
     }
 
@@ -66,10 +68,11 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
      */
     public TinkerVertexProperty(final Object id, final TinkerVertex vertex, final String key, final V value, final Object... propertyKeyValues) {
         super(id, key);
+        this.allowNullPropertyValues = vertex.graph().features().vertex().properties().supportsNullPropertyValues();
         this.vertex = vertex;
         this.key = key;
         this.value = value;
-        ElementHelper.legalPropertyKeyValueArray(propertyKeyValues);
+        ElementHelper.legalPropertyKeyValueArray(allowNullPropertyValues, propertyKeyValues);
         ElementHelper.attachProperties(this, propertyKeyValues);
     }
 

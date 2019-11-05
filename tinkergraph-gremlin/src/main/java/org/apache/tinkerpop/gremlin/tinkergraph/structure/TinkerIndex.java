@@ -49,7 +49,7 @@ final class TinkerIndex<T extends Element> {
     protected void put(final String key, final Object value, final T element) {
         Map<Object, Set<T>> keyMap = this.index.get(key);
         if (null == keyMap) {
-            this.index.putIfAbsent(key, new ConcurrentHashMap<Object, Set<T>>());
+            this.index.putIfAbsent(key, new ConcurrentHashMap<>());
             keyMap = this.index.get(key);
         }
         Set<T> objects = keyMap.get(value);
@@ -65,7 +65,7 @@ final class TinkerIndex<T extends Element> {
         if (null == keyMap) {
             return Collections.emptyList();
         } else {
-            Set<T> set = keyMap.get(value);
+            Set<T> set = keyMap.get(indexable(value));
             if (null == set)
                 return Collections.emptyList();
             else
@@ -78,7 +78,7 @@ final class TinkerIndex<T extends Element> {
         if (null == keyMap) {
             return 0;
         } else {
-            Set<T> set = keyMap.get(value);
+            final Set<T> set = keyMap.get(indexable(value));
             if (null == set)
                 return 0;
             else
@@ -89,7 +89,7 @@ final class TinkerIndex<T extends Element> {
     public void remove(final String key, final Object value, final T element) {
         final Map<Object, Set<T>> keyMap = this.index.get(key);
         if (null != keyMap) {
-            Set<T> objects = keyMap.get(value);
+            final Set<T> objects = keyMap.get(indexable(value));
             if (null != objects) {
                 objects.remove(element);
                 if (objects.size() == 0) {
@@ -111,15 +111,9 @@ final class TinkerIndex<T extends Element> {
 
     public void autoUpdate(final String key, final Object newValue, final Object oldValue, final T element) {
         if (this.indexedKeys.contains(key)) {
-            if (oldValue != null)
-                this.remove(key, oldValue, element);
+            this.remove(key, oldValue, element);
             this.put(key, newValue, element);
         }
-    }
-
-    public void autoRemove(final String key, final Object oldValue, final T element) {
-        if (this.indexedKeys.contains(key))
-            this.remove(key, oldValue, element);
     }
 
     public void createKeyIndex(final String key) {
@@ -133,8 +127,8 @@ final class TinkerIndex<T extends Element> {
         this.indexedKeys.add(key);
 
         (Vertex.class.isAssignableFrom(this.indexClass) ?
-                this.graph.vertices.values().<T>parallelStream() :
-                this.graph.edges.values().<T>parallelStream())
+                this.graph.vertices.values().parallelStream() :
+                this.graph.edges.values().parallelStream())
                 .map(e -> new Object[]{((T) e).property(key), e})
                 .filter(a -> ((Property) a[0]).isPresent())
                 .forEach(a -> this.put(key, ((Property) a[0]).value(), (T) a[1]));
@@ -147,7 +141,35 @@ final class TinkerIndex<T extends Element> {
         this.indexedKeys.remove(key);
     }
 
+    /**
+     * Provides a way for an index to have a {@code null} value as {@code ConcurrentHashMap} will not allow a
+     * {@code null} key.
+     */
+    public static Object indexable(final Object obj) {
+        return null == obj ? IndexedNull.instance() : obj;
+    }
+
     public Set<String> getIndexedKeys() {
         return this.indexedKeys;
+    }
+
+    public static final class IndexedNull {
+        private static final IndexedNull inst = new IndexedNull();
+
+        private IndexedNull() {}
+
+        static IndexedNull instance() {
+            return inst;
+        }
+
+        @Override
+        public int hashCode() {
+            return 751912123;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            return o instanceof IndexedNull;
+        }
     }
 }

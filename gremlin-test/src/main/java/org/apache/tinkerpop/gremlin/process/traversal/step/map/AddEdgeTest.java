@@ -46,6 +46,7 @@ import static org.apache.tinkerpop.gremlin.structure.Column.keys;
 import static org.apache.tinkerpop.gremlin.structure.Column.values;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -57,6 +58,8 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Edge> get_g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX(final Object v1Id);
 
     public abstract Traversal<Vertex, Edge> get_g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX_propertyXweight_2X(final Object v1Id);
+
+    public abstract Traversal<Vertex, Edge> get_g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX_propertyXweight_nullX(final Object v1Id);
 
     public abstract Traversal<Vertex, Edge> get_g_V_aggregateXxX_asXaX_selectXxX_unfold_addEXexistsWithX_toXaX_propertyXtime_nowX();
 
@@ -108,6 +111,28 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
             final Edge edge = traversal.next();
             assertEquals("createdBy", edge.label());
             assertEquals(2.0d, g.E(edge).<Double>values("weight").next(), 0.00001d);
+            assertEquals(1, g.E(edge).properties().count().next().intValue());
+            count++;
+
+
+        }
+        assertEquals(1, count);
+        assertEquals(7, IteratorUtils.count(g.E()));
+        assertEquals(6, IteratorUtils.count(g.V()));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_NULL_PROPERTY_VALUES)
+    public void g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX_propertyXweight_nullX() {
+        final Traversal<Vertex, Edge> traversal = get_g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX_propertyXweight_nullX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        int count = 0;
+        while (traversal.hasNext()) {
+            final Edge edge = traversal.next();
+            assertEquals("createdBy", edge.label());
+            assertNull(g.E(edge).<Double>values("weight").next());
             assertEquals(1, g.E(edge).properties().count().next().intValue());
             count++;
 
@@ -303,6 +328,11 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Edge> get_g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX_propertyXweight_2X(final Object v1Id) {
             return g.V(v1Id).as("a").out("created").addE("createdBy").to("a").property("weight", 2.0d);
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX_propertyXweight_nullX(final Object v1Id) {
+            return g.V(v1Id).as("a").out("created").addE("createdBy").to("a").property("weight", null);
         }
 
         @Override

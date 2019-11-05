@@ -46,10 +46,12 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
     protected Map<String, Set<Edge>> outEdges;
     protected Map<String, Set<Edge>> inEdges;
     private final TinkerGraph graph;
+    private boolean allowNullPropertyValues;
 
     protected TinkerVertex(final Object id, final String label, final TinkerGraph graph) {
         super(id, label);
         this.graph = graph;
+        this.allowNullPropertyValues = graph.features().vertex().supportsNullPropertyValues();
     }
 
     @Override
@@ -83,8 +85,8 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
     @Override
     public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
         if (this.removed) throw elementAlreadyRemoved(Vertex.class, id);
-        ElementHelper.legalPropertyKeyValueArray(keyValues);
-        ElementHelper.validateProperty(key, value);
+        ElementHelper.legalPropertyKeyValueArray(allowNullPropertyValues, keyValues);
+        ElementHelper.validateProperty(allowNullPropertyValues, key, value);
         final Optional<Object> optionalId = ElementHelper.getIdValue(keyValues);
         final Optional<VertexProperty<V>> optionalVertexProperty = ElementHelper.stageVertexProperty(this, cardinality, key, value, keyValues);
         if (optionalVertexProperty.isPresent()) return optionalVertexProperty.get();
