@@ -60,7 +60,6 @@ org.apache.commons.configuration.*
 
 to
 
-
 [source,text]
 ----
 org.apache.commons.configuration2.*
@@ -73,10 +72,61 @@ upgrade information can be found in the link:https://commons.apache.org/proper/c
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2185[TINKERPOP-2185]
 
-==== addV() and null
+==== Use of null
 
-There was a bit of inconsistency in the handling of `null` in calls to `property()` depending on the type of mutation
-being executed demonstrated as follows in earlier versions:
+Gremlin has traditionally disallowed `null` as a value in traversals and not always in consistent ways:
+
+[source,text]
+----
+gremlin> g.inject(1, null, null, 2, null)
+java.lang.NullPointerException
+Type ':help' or ':h' for help.
+Display stack trace? [yN]n
+gremlin> g.V().has('person','name','marko').property('age', null)
+The AddPropertyStep does not have a provided value: AddPropertyStep({key=[age]})
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+gremlin> g.addV("person").property("name", 'stephen').property("age", null)
+==>v[13]
+gremlin> g.V().has('person','name','stephen').elementMap()
+==>[id:13,label:person,name:stephen]
+gremlin> g.V().constant(null)
+gremlin>
+----
+
+Note how `null` can produce exception behavior or act as a filter. For 3.5.0, TinkerPop has not only made `null` usage
+consistent, but has also made it an allowable value within a `Traversal`:
+
+[source,text]
+----
+gremlin> g.inject(1, null, null, 2, null)
+==>1
+==>null
+==>null
+==>null
+==>2
+gremlin> g.addV("person").property("name", 'stephen').property("age", null)
+==>v[13]
+gremlin> g.V().has('person','name','stephen').elementMap()
+==>[id:13,label:person,name:stephen,age:null]
+gremlin> g.V().has('person','age',null)
+==>v[13]
+gremlin> g.V().constant(null)
+==>null
+==>null
+==>null
+==>null
+==>null
+==>null
+----
+
+Note that the above examples use TinkerGraph which now supports `null` as a property value (though it can be configured
+to work in the prior fashion) and all graphs may not support this feature (for example, Neo4j does not). Please be
+sure to check the new `supportsNullPropertyValues()` feature (or their documentation) to determine if the `Graph`
+implementation allows `null` in this same fashion.
+
+As a final consideration, there was a bit of inconsistency in the handling of `null` in calls to `property()`
+depending on the type of mutation being executed demonstrated as follows in earlier versions:
 
 [source,text]
 ----
@@ -91,7 +141,8 @@ gremlin> g.V(13).properties()
 ==>vp[z->2]
 ----
 
-In this release, this behavior has been altered to become consistent as follows:
+In this release, this behavior has been altered to become consistent. First, assuming `null` is not supported as a
+property value:
 
 [source,text]
 ----
@@ -105,7 +156,18 @@ Type ':help' or ':h' for help.
 Display stack trace? [yN]
 ----
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2099[TINKERPOP-2099]
+Then, assuming `null` is supported as a property value:
+
+[source,text]
+----
+gremlin> g.V(1).property("x", 1).property("y", null).property("z", 2)
+==>v[1]
+gremlin> g.addV().property("x", 1).property("y", null).property("z", 2)
+==>v[15]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2235[TINKERPOP-2235],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2099[TINKERPOP-2099]
 
 ==== Remote SideEffects
 

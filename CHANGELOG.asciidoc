@@ -25,6 +25,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-4-3, 3.4.3>>.
 
+* Allowed the possibility for the user of `null` in Gremlin.
+* Added a `Graph.Feature` for `supportsNullPropertyValues`.
+* Modified TinkerGraph to support `null` property values and can be configured to disable that feature.
 * Modified `null` handling in mutations to be consistent for a new `Vertex` as well as update to an existing one.
 * Upgraded to Apache Commons Configuration2.
 * Renamed `StoreStep` to `AggregateLocalStep`.
