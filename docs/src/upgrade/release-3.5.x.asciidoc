@@ -166,6 +166,11 @@ gremlin> g.addV().property("x", 1).property("y", null).property("z", 2)
 ==>v[15]
 ----
 
+In conclusion, this change in greater support of `null` may affect the behavior of existing traversals written in past
+versions of TinkerPop as it is no longer possible to rely on `null` to expect a filtering action for traversers.
+Please review existing Gremlin carefully to ensure that there are no unintended consequences of this change and that
+there are no opportunities to improve existing logic to take greater advantage of this expansion of `null` semantics.
+
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2235[TINKERPOP-2235],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2099[TINKERPOP-2099]
 
