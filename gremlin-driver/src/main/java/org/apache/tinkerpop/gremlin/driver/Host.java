@@ -46,7 +46,6 @@ public final class Host {
     ScheduledFuture<?> retryThread = null;
 
     Host(final InetSocketAddress address, final Cluster cluster) {
-        assert(!address.isUnresolved());
         this.cluster = cluster;
         this.address = address;
         this.hostUri = makeUriFromAddress(address, cluster.getPath(), cluster.connectionPoolSettings().enableSsl);
@@ -98,7 +97,7 @@ public final class Host {
     private static URI makeUriFromAddress(final InetSocketAddress addy, final String path, final boolean ssl) {
         try {
             final String scheme = ssl ? "wss" : "ws";
-            return new URI(scheme, null, addy.getAddress().getHostAddress(), addy.getPort(), path, null, null);
+            return new URI(scheme, null, addy.getHostName(), addy.getPort(), path, null, null);
         } catch (URISyntaxException use) {
             throw new RuntimeException(String.format("URI for host could not be constructed from: %s", addy), use);
         }
