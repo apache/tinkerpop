@@ -98,7 +98,8 @@ public class InlineFilterStrategyTest {
                 {filter(has("age", gt(10)).as("b")).as("a"), has("age", gt(10)).as("b", "a"), Collections.emptyList()},
                 {filter(has("age", gt(10)).as("a")), has("age", gt(10)).as("a"), Collections.emptyList()},
                 {filter(and(has("age", gt(10)).as("a"), has("name", "marko"))), addHas(__.start(), "age", gt(10), "name", eq("marko")).as("a"), Collections.emptyList()},
-                {filter(out("created").and().out("knows").or().in("knows")), filter(or(and(out("created"), out("knows")), __.in("knows"))), Collections.singletonList(ConnectiveStrategy.instance())},
+                {filter(out("created").and().out("knows").or().in("knows")), or(and(out("created"), out("knows")), __.in("knows")), Collections.singletonList(ConnectiveStrategy.instance())},
+                {filter(out("created").and().out("knows").or().in("knows")).and(hasLabel("person")), or(and(out("created"), out("knows")), __.in("knows")).hasLabel("person"), Collections.singletonList(ConnectiveStrategy.instance())},
                 //
                 {or(has("name", "marko"), has("age", 32)), or(has("name", "marko"), has("age", 32)), Collections.emptyList()},
                 {or(has("name", "marko"), has("name", "bob")), has("name", eq("marko").or(eq("bob"))), Collections.emptyList()},

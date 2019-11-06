@@ -125,7 +125,7 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         // using a hidden label marker to denote whether the traversal should not be processed by this strategy
-        if ((traversal.getParent() instanceof EmptyStep || traversal.getParent() instanceof VertexProgramStep) &&
+        if ((traversal.isRoot() || traversal.getParent() instanceof VertexProgramStep) &&
                 TraversalHelper.hasStepOfAssignableClassRecursively(INVALIDATING_STEP_CLASSES, traversal))
             TraversalHelper.applyTraversalRecursively(t -> t.getStartStep().addLabel(MARKER), traversal);
         if (traversal.getStartStep().getLabels().contains(MARKER)) {

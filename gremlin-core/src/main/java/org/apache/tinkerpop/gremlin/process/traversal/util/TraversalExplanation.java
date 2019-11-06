@@ -51,7 +51,7 @@ public class TraversalExplanation extends AbstractExplanation implements Seriali
 
     public TraversalExplanation(final Traversal.Admin<?, ?> traversal) {
         this.traversal = traversal.clone();
-        TraversalStrategies mutatingStrategies = new DefaultTraversalStrategies();
+        final TraversalStrategies mutatingStrategies = new DefaultTraversalStrategies();
         for (final TraversalStrategy strategy : this.traversal.getStrategies().toList()) {
             final Traversal.Admin<?, ?> mutatingTraversal = this.traversal.clone();
             mutatingStrategies.addStrategies(strategy);

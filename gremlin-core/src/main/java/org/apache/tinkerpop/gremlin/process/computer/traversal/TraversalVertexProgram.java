@@ -368,7 +368,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     public void workerIterationEnd(final Memory memory) {
         // store profile metrics in proper ProfileStep metrics
         if (this.profile) {
-            List<ProfileStep> profileSteps = TraversalHelper.getStepsOfAssignableClassRecursively(ProfileStep.class, this.traversal.get());
+            final List<ProfileStep> profileSteps = TraversalHelper.getStepsOfAssignableClassRecursively(ProfileStep.class, this.traversal.get());
             // guess the profile step to store data
             int profileStepIndex = memory.getIteration();
             // if we guess wrongly write timing into last step

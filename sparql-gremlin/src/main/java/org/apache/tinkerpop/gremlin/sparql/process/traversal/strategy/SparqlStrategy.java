@@ -65,7 +65,7 @@ public class SparqlStrategy extends AbstractTraversalStrategy<TraversalStrategy.
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!(traversal.getParent() instanceof EmptyStep))
+        if (!(traversal.isRoot()))
             return;
 
         // assumes that the traversal starts with the single inject step that holds the sparql query

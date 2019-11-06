@@ -40,6 +40,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalFlatMapS
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -98,7 +99,26 @@ public final class MessagePassingReductionStrategy extends AbstractTraversalStra
                         !(computerTraversal.getStartStep().getNextStep() instanceof Barrier) &&
                         TraversalHelper.hasStepOfAssignableClassRecursively(Arrays.asList(VertexStep.class, EdgeVertexStep.class), computerTraversal) &&
                         TraversalHelper.isLocalStarGraph(computerTraversal)) {
-                    final Step barrier = (Step) TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, computerTraversal).orElse(null);
+                    Step barrier = (Step) TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, computerTraversal).orElse(null);
+
+                    // if the barrier isn't present gotta check for uncapped profile() which can happen if you do
+                    // profile("metrics") - see below for more worries
+                    if (null == barrier) {
+                        final ProfileSideEffectStep pses = TraversalHelper.getFirstStepOfAssignableClass(ProfileSideEffectStep.class, computerTraversal).orElse(null);
+                        if (pses != null)
+                            barrier = pses.getPreviousStep();
+                    }
+
+                    // if the barrier is a profile() then we'll mess stuff up if we wrap that in a local() as in:
+                    //    local(..., ProfileSideEffectStep)
+                    // which won't compute right on OLAP (or anything??). By stepping back we cut things off at
+                    // just before the ProfileSideEffectStep to go inside the local() so that ProfileSideEffectStep
+                    // shows up just after it
+                    //
+                    // why does this strategy need to know so much about profile!?!
+                    if (barrier != null && barrier.getPreviousStep() instanceof ProfileSideEffectStep)
+                        barrier = barrier.getPreviousStep().getPreviousStep();
+
                     if (MessagePassingReductionStrategy.insertElementId(barrier)) // out().count() -> out().id().count()
                         TraversalHelper.insertBeforeStep(new IdStep(computerTraversal), barrier, computerTraversal);
                     if (!(MessagePassingReductionStrategy.endsWithElement(null == barrier ? computerTraversal.getEndStep() : barrier))) {

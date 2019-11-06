@@ -317,27 +317,27 @@ public abstract class ComplexTest extends AbstractGremlinProcessTest {
             return g.withoutStrategies(ComputerVerificationStrategy.class, PathRetractionStrategy.class).
                     V().as("v").both().as("v").
                     project("src", "tgt", "p").
-                    by(select(first, "v")).
-                    by(select(last, "v")).
-                    by(select(all, "v")).as("triple").
+                      by(select(first, "v")).
+                      by(select(last, "v")).
+                      by(select(all, "v")).as("triple").
                     group("x").
-                    by(select("src", "tgt")).
-                    by(select("p").fold()).select("tgt").barrier().
+                      by(select("src", "tgt")).
+                      by(select("p").fold()).select("tgt").barrier().
                     repeat(both().as("v").
                             project("src", "tgt", "p").
-                            by(select(first, "v")).
-                            by(select(last, "v")).
-                            by(select(all, "v")).as("t").
+                              by(select(first, "v")).
+                              by(select(last, "v")).
+                              by(select(all, "v")).as("t").
                             filter(select(all, "p").count(local).as("l").
-                                    select(last, "t").select(all, "p").dedup(local).count(local).where(eq("l"))).
+                                   select(last, "t").select(all, "p").dedup(local).count(local).where(eq("l"))).
                             select(last, "t").
                             not(select(all, "p").as("p").count(local).as("l").
-                                    select(all, "x").unfold().filter(select(keys).where(eq("t")).by(select("src", "tgt"))).
-                                    filter(select(values).unfold().or(count(local).where(lt("l")), where(eq("p"))))).
+                                select(all, "x").unfold().filter(select(keys).where(eq("t")).by(select("src", "tgt"))).
+                                filter(select(values).unfold().or(count(local).where(lt("l")), where(eq("p"))))).
                             barrier().
                             group("x").
-                            by(select("src", "tgt")).
-                            by(select(all, "p").fold()).select("tgt").barrier()).
+                              by(select("src", "tgt")).
+                              by(select(all, "p").fold()).select("tgt").barrier()).
                     cap("x").select(values).unfold().unfold().map(unfold().id().fold());
         }
 

@@ -44,7 +44,7 @@ public final class SideEffectStrategy extends AbstractTraversalStrategy<Traversa
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getParent() instanceof EmptyStep) {
+        if (traversal.isRoot()) {
             this.sideEffects.forEach(triplet -> traversal.getSideEffects().register(triplet.getValue0(), triplet.getValue1(), triplet.getValue2()));
         }
     }

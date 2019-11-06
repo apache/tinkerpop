@@ -18,12 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -89,8 +91,6 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         steps.addAll(traversal.getSteps());
     }
 
-    // TODO: clean up unused or redundant constructors
-
     public DefaultTraversal() {
         this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class), new Bytecode());
     }
@@ -111,7 +111,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     @Override
     public TraverserGenerator getTraverserGenerator() {
         if (null == this.generator)
-            this.generator = (this.parent instanceof EmptyStep) ?
+            this.generator = isRoot() ?
                     DefaultTraverserGeneratorFactory.instance().getTraverserGenerator(this.getTraverserRequirements()) :
                     TraversalHelper.getRootTraversal(this).getTraverserGenerator();
         return this.generator;
@@ -121,32 +121,52 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     public void applyStrategies() throws IllegalStateException {
         if (this.locked) throw Traversal.Exceptions.traversalIsLocked();
         TraversalHelper.reIdSteps(this.stepPosition, this);
-        this.strategies.applyStrategies(this);
-        boolean hasGraph = null != this.graph;
-        for (int i = 0, j = this.steps.size(); i < j; i++) { // "foreach" can lead to ConcurrentModificationExceptions
-            final Step step = this.steps.get(i);
-            if (step instanceof TraversalParent) {
-                for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
-                    globalChild.setStrategies(this.strategies);
-                    globalChild.setSideEffects(this.sideEffects);
-                    if (hasGraph) globalChild.setGraph(this.graph);
-                    globalChild.applyStrategies();
-                }
-                for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
-                    localChild.setStrategies(this.strategies);
-                    localChild.setSideEffects(this.sideEffects);
-                    if (hasGraph) localChild.setGraph(this.graph);
-                    localChild.applyStrategies();
-                }
+        final boolean hasGraph = null != this.graph;
+
+        // we only want to apply strategies on the top-level step or if we got some graphcomputer stuff going on.
+        // seems like in that case, the "top-level" of the traversal is really held by the VertexProgramStep which
+        // needs to have strategies applied on "pure" copies of the traversal it is holding (i think). it further
+        // seems that we need three recursions over the traversal hierarchy to ensure everything "works", where
+        // strategy application requires top-level strategies and side-effects pushed into each child and then after
+        // application of the strategies we need to call applyStrategies() on all the children to ensure that their
+        // steps get reId'd and traverser requirements are set.
+        if (isRoot() || this.getParent() instanceof VertexProgramStep) {
+
+            // note that prior to applying strategies to children we used to set side-effects and strategies of all
+            // children to that of the parent. under this revised model of strategy application from TINKERPOP-1568
+            // it doesn't appear to be necessary to do that (at least from the perspective of the test suite). by,
+            // moving side-effect setting after actual recursive strategy application we save a loop and by
+            // consequence also fix a problem where strategies might reset something in sideeffects which seems to
+            // happen in TranslationStrategy.
+            final Iterator<TraversalStrategy<?>> strategyIterator = this.strategies.toIterator();
+            while (strategyIterator.hasNext()) {
+                final TraversalStrategy<?> strategy = strategyIterator.next();
+                TraversalHelper.applyTraversalRecursively(strategy::apply, this);
             }
+
+            // don't need to re-apply strategies to "this" - leads to endless recursion in GraphComputer.
+            TraversalHelper.applyTraversalRecursively(t -> {
+                if (hasGraph) t.setGraph(this.graph);
+                if(!(t.isRoot()) && t != this && !t.isLocked()) {
+                    t.setStrategies(new DefaultTraversalStrategies());
+                    t.setSideEffects(this.sideEffects);
+                    t.applyStrategies();
+                }
+            }, this);
         }
+        
         this.finalEndStep = this.getEndStep();
+
         // finalize requirements
-        if (this.getParent() instanceof EmptyStep) {
-            this.requirements = null;
-            this.getTraverserRequirements();
+        if (this.isRoot()) {
+            resetTraverserRequirements();
         }
         this.locked = true;
+    }
+
+    private void resetTraverserRequirements() {
+        this.requirements = null;
+        this.getTraverserRequirements();
     }
 
     @Override
