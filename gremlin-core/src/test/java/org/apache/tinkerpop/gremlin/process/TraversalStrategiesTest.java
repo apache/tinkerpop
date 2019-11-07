@@ -66,10 +66,11 @@ public class TraversalStrategiesTest {
         TestGraph graph = new TestGraph();
         TraversalStrategies strategies = graph.traversal().getStrategies();
         assertFalse(TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList().isEmpty());
-        for (final TraversalStrategy strategy : TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()) {
+        assertTrue(TraversalStrategies.GlobalCache.getStrategies(Graph.class).iterator().hasNext());
+        for (final TraversalStrategy strategy : TraversalStrategies.GlobalCache.getStrategies(Graph.class)) {
             assertTrue(strategies.getStrategy(strategy.getClass()).isPresent());
         }
-        for (final TraversalStrategy strategy : TraversalStrategies.GlobalCache.getStrategies(TestGraphComputer.class).toList()) {
+        for (final TraversalStrategy strategy : TraversalStrategies.GlobalCache.getStrategies(TestGraphComputer.class)) {
             assertFalse(strategies.getStrategy(strategy.getClass()).isPresent());
         }
         assertTrue(strategies.getStrategy(StrategyA.class).isPresent());
@@ -83,10 +84,10 @@ public class TraversalStrategiesTest {
         ///
         graph = new TestGraph();
         strategies = graph.traversal().getStrategies();
-        for (final TraversalStrategy strategy : TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()) {
+        for (final TraversalStrategy strategy : TraversalStrategies.GlobalCache.getStrategies(Graph.class)) {
             assertTrue(strategies.getStrategy(strategy.getClass()).isPresent());
         }
-        for (final TraversalStrategy strategy : TraversalStrategies.GlobalCache.getStrategies(TestGraphComputer.class).toList()) {
+        for (final TraversalStrategy strategy : TraversalStrategies.GlobalCache.getStrategies(TestGraphComputer.class)) {
             assertFalse(strategies.getStrategy(strategy.getClass()).isPresent());
         }
         assertFalse(strategies.getStrategy(StrategyA.class).isPresent());
@@ -98,10 +99,10 @@ public class TraversalStrategiesTest {
         //////////////////////
         strategies = TraversalStrategies.GlobalCache.getStrategies(TestGraphComputer.class);
         assertFalse(TraversalStrategies.GlobalCache.getStrategies(GraphComputer.class).toList().isEmpty());
-        for (final TraversalStrategy strategy : TraversalStrategies.GlobalCache.getStrategies(GraphComputer.class).toList()) {
+        for (final TraversalStrategy strategy : TraversalStrategies.GlobalCache.getStrategies(GraphComputer.class)) {
             assertTrue(strategies.getStrategy(strategy.getClass()).isPresent());
         }
-        for (final TraversalStrategy strategy : TraversalStrategies.GlobalCache.getStrategies(TestGraph.class).toList()) {
+        for (final TraversalStrategy strategy : TraversalStrategies.GlobalCache.getStrategies(TestGraph.class)) {
             assertFalse(strategies.getStrategy(strategy.getClass()).isPresent());
         }
         assertFalse(strategies.getStrategy(StrategyA.class).isPresent());
@@ -112,10 +113,10 @@ public class TraversalStrategiesTest {
         //
         strategies = TraversalStrategies.GlobalCache.getStrategies(TestGraphComputer.class);
         assertFalse(TraversalStrategies.GlobalCache.getStrategies(GraphComputer.class).toList().isEmpty());
-        for (final TraversalStrategy strategy : TraversalStrategies.GlobalCache.getStrategies(GraphComputer.class).toList()) {
+        for (final TraversalStrategy strategy : TraversalStrategies.GlobalCache.getStrategies(GraphComputer.class)) {
             assertTrue(strategies.getStrategy(strategy.getClass()).isPresent());
         }
-        for (final TraversalStrategy strategy : TraversalStrategies.GlobalCache.getStrategies(TestGraph.class).toList()) {
+        for (final TraversalStrategy strategy : TraversalStrategies.GlobalCache.getStrategies(TestGraph.class)) {
             assertFalse(strategies.getStrategy(strategy.getClass()).isPresent());
         }
         assertFalse(strategies.getStrategy(StrategyA.class).isPresent());

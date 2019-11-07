@@ -74,7 +74,7 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
         final Traversal.Admin<?, ?> computerSpecificTraversal = this.computerTraversal.getPure();
         final TraversalStrategies computerSpecificStrategies = this.getTraversal().getStrategies().clone();
 
-        IteratorUtils.filter(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()).toList(),
+        IteratorUtils.filter(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()),
                 s -> s instanceof TraversalStrategy.ProviderOptimizationStrategy).forEach(computerSpecificStrategies::addStrategies);
 
         computerSpecificTraversal.setStrategies(computerSpecificStrategies);

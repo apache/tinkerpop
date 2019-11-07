@@ -42,7 +42,7 @@ public final class EmptyTraversalStrategies implements TraversalStrategies {
 
 
     @Override
-    public Iterator<TraversalStrategy<?>> toIterator() {
+    public Iterator<TraversalStrategy<?>> iterator() {
         return toList().iterator();
     }
 
