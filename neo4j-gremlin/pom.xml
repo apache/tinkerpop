@@ -189,7 +189,7 @@ limitations under the License.
                 <dependency>
                     <groupId>org.apache.lucene</groupId>
                     <artifactId>lucene-core</artifactId>
-                    <version>5.5.0</version>
+                    <version>7.1.0</version>
                     <scope>test</scope>
                 </dependency>
                 <dependency>
