@@ -490,6 +490,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-3-10]]
 === TinkerPop 3.3.10 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Bump to Tornado 5.x for gremlin-python.
 * Deprecated `TraversalStrategies.applyStrategies()`.
 
 [[release-3-3-9]]
