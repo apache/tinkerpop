@@ -42,19 +42,13 @@ class UninstallCommand extends CommandSupport {
         final String module = arguments.size() >= 1 ? arguments.get(0) : null
         if (module == null || module.isEmpty()) return "Specify the name of the module containing plugins to uninstall"
 
-        final String extClassPath = getPathFromDependency(module)
+        final File extClassPath = new File(ConsoleFs.CONSOLE_HOME_DIR, (String) module)
 
-        final File f = new File(extClassPath)
-        if (!f.exists())
+        if (!extClassPath.exists())
             return "There is no module with the name $module to remove - $extClassPath"
         else {
-            f.deleteDir()
+            extClassPath.deleteDir()
             return "Uninstalled $module - restart the console for removal to take effect"
         }
-    }
-
-    private static String getPathFromDependency(final String module) {
-        def extClassPath = ConsoleFs.CONSOLE_HOME_DIR + (String) module
-        return extClassPath
     }
 }

@@ -109,9 +109,6 @@ limitations under the License.
             <url>https://github.com/twilmes</url>
         </contributor>
     </contributors>
-    <prerequisites>
-        <maven>3.3.9</maven>
-    </prerequisites>
     <modules>
         <module>gremlin-shaded</module>
         <module>gremlin-core</module>
@@ -180,7 +177,6 @@ limitations under the License.
             </plugin>
             <plugin>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>1.4.1</version>
                 <executions>
                     <execution>
                         <id>enforce-all</id>
@@ -282,7 +278,7 @@ limitations under the License.
                 <executions>
                     <execution>
                         <!-- source: https://stackoverflow.com/a/39139979/6753576 -->
-                        <!-- sets the only.when.is.snapshot.used property to true if SNAPSHOT was used, 
+                        <!-- sets the only.when.is.snapshot.used property to true if SNAPSHOT was used,
                             to the project version otherwise -->
                         <id>build-helper-regex-is-snapshot-used</id>
                         <phase>validate</phase>
@@ -298,7 +294,7 @@ limitations under the License.
                         </configuration>
                     </execution>
                     <execution>
-                        <!-- sets the only.when.is.prerelease.version property to true if a prerelease version was used, 
+                        <!-- sets the only.when.is.prerelease.version property to true if a prerelease version was used,
                             to the project version otherwise -->
                         <id>build-helper-regex-is-prerelease-version</id>
                         <phase>validate</phase>
@@ -454,6 +450,7 @@ limitations under the License.
                     <configuration>
                         <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true
                         </argLine>
+                        <trimStackTrace>false</trimStackTrace>
                         <excludes>
                             <exclude>**/*IntegrateTest.java</exclude>
                         </excludes>
@@ -552,6 +549,11 @@ limitations under the License.
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-clean-plugin</artifactId>
                     <version>3.1.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>1.4.1</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -1551,7 +1553,7 @@ limitations under the License.
         because it doesn't filter all the files out that we need as it assumes a pure java infrastructure and we
         have all manner of different languages hanging about
         -->
-        
+
         <profile>
             <id>apache-release</id>
             <build>

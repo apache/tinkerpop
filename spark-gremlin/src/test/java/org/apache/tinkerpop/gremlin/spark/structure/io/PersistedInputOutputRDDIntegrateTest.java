@@ -222,7 +222,7 @@ public class PersistedInputOutputRDDIntegrateTest extends AbstractSparkTest {
         final Configuration writeConfiguration = new BaseConfiguration();
         writeConfiguration.setProperty(Graph.GRAPH, TinkerGraph.class.getCanonicalName());
         writeConfiguration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
-        writeConfiguration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, TestHelper.makeTestDataDirectory(PersistedInputOutputRDDIntegrateTest.class) + "testBulkLoaderVertexProgramChain.kryo");
+        writeConfiguration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, TestHelper.makeTestDataFile(PersistedInputOutputRDDIntegrateTest.class, "testBulkLoaderVertexProgramChain.kryo"));
         final Graph bulkLoaderGraph = pageRankGraph.compute(SparkGraphComputer.class).persist(GraphComputer.Persist.VERTEX_PROPERTIES).program(PageRankVertexProgram.build().create(pageRankGraph)).submit().get().graph();
         bulkLoaderGraph.compute(SparkGraphComputer.class)
                 .persist(GraphComputer.Persist.NOTHING)
@@ -239,7 +239,7 @@ public class PersistedInputOutputRDDIntegrateTest extends AbstractSparkTest {
         ////
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();
-        graph.io(IoCore.gryo()).readGraph(TestHelper.makeTestDataDirectory(PersistedInputOutputRDDIntegrateTest.class) + "testBulkLoaderVertexProgramChain.kryo");
+        graph.io(IoCore.gryo()).readGraph(TestHelper.makeTestDataFile(PersistedInputOutputRDDIntegrateTest.class, "testBulkLoaderVertexProgramChain.kryo"));
         assertEquals(6l, g.V().count().next().longValue());
         assertEquals(0l, g.E().count().next().longValue());
         assertEquals("marko", g.V().has("name", "marko").values("name").next());
@@ -264,7 +264,7 @@ public class PersistedInputOutputRDDIntegrateTest extends AbstractSparkTest {
         final Configuration writeConfiguration = new BaseConfiguration();
         writeConfiguration.setProperty(Graph.GRAPH, TinkerGraph.class.getCanonicalName());
         writeConfiguration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
-        writeConfiguration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, TestHelper.makeTestDataDirectory(PersistedInputOutputRDDIntegrateTest.class) + "testBulkLoaderVertexProgramChainWithInputOutputHelperMapping.kryo");
+        writeConfiguration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, TestHelper.makeTestDataFile(PersistedInputOutputRDDIntegrateTest.class, "testBulkLoaderVertexProgramChainWithInputOutputHelperMapping.kryo"));
         final Graph bulkLoaderGraph = pageRankGraph.compute(SparkGraphComputer.class).persist(GraphComputer.Persist.EDGES).program(PageRankVertexProgram.build().create(pageRankGraph)).submit().get().graph();
         bulkLoaderGraph.compute(SparkGraphComputer.class)
                 .persist(GraphComputer.Persist.NOTHING)
@@ -278,7 +278,7 @@ public class PersistedInputOutputRDDIntegrateTest extends AbstractSparkTest {
         ////
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();
-        graph.io(IoCore.gryo()).readGraph(TestHelper.makeTestDataDirectory(PersistedInputOutputRDDIntegrateTest.class) + "testBulkLoaderVertexProgramChainWithInputOutputHelperMapping.kryo");
+        graph.io(IoCore.gryo()).readGraph(TestHelper.makeTestDataFile(PersistedInputOutputRDDIntegrateTest.class, "testBulkLoaderVertexProgramChainWithInputOutputHelperMapping.kryo"));
         assertEquals(6l, g.V().count().next().longValue());
         assertEquals(6l, g.E().count().next().longValue());
         assertEquals("marko", g.V().has("name", "marko").values("name").next());

@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
+import static org.junit.Assert.assertSame;
+
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.junit.Test;
-
-import static org.junit.Assert.assertSame;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

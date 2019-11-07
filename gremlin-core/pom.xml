@@ -113,6 +113,12 @@ limitations under the License.
             <artifactId>compile-testing</artifactId>
             <version>0.10</version>
             <scope>test</scope>
+            <exclusions>
+              <exclusion>
+                <artifactId>tools</artifactId>
+                <groupId>com.sun</groupId>
+              </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
     <build>

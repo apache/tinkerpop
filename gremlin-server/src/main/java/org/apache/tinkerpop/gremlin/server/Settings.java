@@ -467,7 +467,7 @@ public class Settings {
 
         /**
          * The X.509 certificate chain file in PEM format.
-         * 
+         *
          * @deprecated As of release 3.2.10, replaced by {@link #keyStore}
          */
         @Deprecated
@@ -475,7 +475,7 @@ public class Settings {
 
         /**
          * The PKCS#8 private key file in PEM format.
-         * 
+         *
          * @deprecated As of release 3.2.10, replaced by {@link #keyStore}
          */
         @Deprecated
@@ -484,7 +484,7 @@ public class Settings {
         /**
          * The password of the {@link #keyFile}, or {@code null} if it's not
          * password-protected.
-         * 
+         *
          * @deprecated As of release 3.2.10, replaced by {@link #keyStorePassword}
          */
         @Deprecated
@@ -494,7 +494,7 @@ public class Settings {
          * Trusted certificates for verifying the remote endpoint's certificate. The
          * file should contain an X.509 certificate chain in PEM format. {@code null}
          * uses the system default.
-         * 
+         *
          * @deprecated As of release 3.2.10, replaced by {@link #trustStore}
          */
         @Deprecated

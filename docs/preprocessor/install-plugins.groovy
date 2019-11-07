@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.groovy.util.DependencyGrabber
 
 installPlugin = { def artifact ->
   def classLoader = new groovy.lang.GroovyClassLoader()
-  def extensionPath = System.getProperty("user.dir") + System.getProperty("file.separator") + "ext"
+  def extensionPath = new File(System.getProperty("user.dir"), "ext")
   try {
     System.err.print(" * ${artifact.getArtifact()} ... ")
     new DependencyGrabber(classLoader, extensionPath).copyDependenciesToPath(artifact)

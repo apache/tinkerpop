@@ -22,9 +22,7 @@ package org.apache.tinkerpop.gremlin.console
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class ConsoleFs {
-    public static final String FILE_SEP = System.getProperty("file.separator")
-    public static final CONSOLE_HOME_DIR = System.getProperty("tinkerpop.ext", "ext") + FILE_SEP
-
-    public static final String PLUGIN_CONFIG_FILE = CONSOLE_HOME_DIR + "plugins.txt"
-    public static final String HISTORY_FILE = System.getProperty("user.home", ".") + FILE_SEP + ".gremlin_groovy_history"
+    public static final String CONSOLE_HOME_DIR = System.getProperty("tinkerpop.ext", "ext")
+    public static final String PLUGIN_CONFIG_FILE = new File(System.getProperty("tinkerpop.ext", "ext"), "plugins.txt").toString()
+    public static final String HISTORY_FILE = new File(System.getProperty("user.home", "."), ".gremlin_groovy_history").toString()
 }

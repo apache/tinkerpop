@@ -42,6 +42,10 @@ public class FileSystemStorageCheck extends AbstractStorageCheck {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldSupportHeadMethods() throws Exception {
+        // Make sure Spark is shut down before deleting its files and directories,
+        // which are locked under Windows and fail the tests. See FileSystemStorageCheck
+        graph.configuration().setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);
+
         final Storage storage = FileSystemStorage.open(ConfUtil.makeHadoopConfiguration(graph.configuration()));
         final String inputLocation = Constants.getSearchGraphLocation(graph.configuration().getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION), storage).get();
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
@@ -53,6 +57,10 @@ public class FileSystemStorageCheck extends AbstractStorageCheck {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldSupportRemoveAndListMethods() throws Exception {
+        // Make sure Spark is shut down before deleting its files and directories,
+        // which are locked under Windows and fail the tests. See FileSystemStorageCheck
+        graph.configuration().setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);
+
         final Storage storage = FileSystemStorage.open(ConfUtil.makeHadoopConfiguration(graph.configuration()));
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         super.checkRemoveAndListMethods(storage, outputLocation);
@@ -61,6 +69,10 @@ public class FileSystemStorageCheck extends AbstractStorageCheck {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldSupportCopyMethods() throws Exception {
+        // Make sure Spark is shut down before deleting its files and directories,
+        // which are locked under Windows and fail the tests. See FileSystemStorageCheck
+        graph.configuration().setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);
+
         final Storage storage = FileSystemStorage.open(ConfUtil.makeHadoopConfiguration(graph.configuration()));
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         final String newOutputLocation = TestHelper.makeTestDataDirectory(FileSystemStorageCheck.class, "new-location-for-copy");
@@ -73,6 +85,10 @@ public class FileSystemStorageCheck extends AbstractStorageCheck {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldNotHaveResidualDataInStorage() throws Exception {
+        // Make sure Spark is shut down before deleting its files and directories,
+        // which are locked under Windows and fail the tests. See FileSystemStorageCheck
+        graph.configuration().setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);
+
         final Storage storage = FileSystemStorage.open(ConfUtil.makeHadoopConfiguration(graph.configuration()));
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         super.checkResidualDataInStorage(storage, outputLocation);
@@ -80,14 +96,18 @@ public class FileSystemStorageCheck extends AbstractStorageCheck {
 
     @Test
     public void shouldSupportDirectoryFileDistinction() throws Exception {
+        // Make sure Spark is shut down before deleting its files and directories,
+        // which are locked under Windows and fail the tests. See FileSystemStorageCheck
+        graph.configuration().setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);
+
         final Storage storage = FileSystemStorage.open(ConfUtil.makeHadoopConfiguration(graph.configuration()));
         final String directory1 = TestHelper.makeTestDataDirectory(FileSystemStorageCheck.class, "directory1");
         final String directory2 = TestHelper.makeTestDataDirectory(FileSystemStorageCheck.class, "directory2");
         for (int i = 0; i < 10; i++) {
-            new File(directory1 + "/" + "file1-" + i + ".txt.bz").createNewFile();
+            new File(directory1, "file1-" + i + ".txt.bz").createNewFile();
         }
         for (int i = 0; i < 5; i++) {
-            new File(directory2 + "/" + "file2-" + i + ".txt.bz").createNewFile();
+            new File(directory2, "file2-" + i + ".txt.bz").createNewFile();
         }
         super.checkFileDirectoryDistinction(storage, directory1, directory2);
         deleteDirectory(directory1);

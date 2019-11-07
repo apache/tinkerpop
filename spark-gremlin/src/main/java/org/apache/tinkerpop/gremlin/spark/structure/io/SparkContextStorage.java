@@ -36,7 +36,8 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -69,45 +70,114 @@ public final class SparkContextStorage implements Storage {
 
     @Override
     public List<String> ls() {
-        return ls("*");
+        return ls(ROOT_DIRECTORY);
     }
 
     @Override
-    public List<String> ls(final String location) {
+    public List<String> ls(final String pattern) {
         final List<String> rdds = new ArrayList<>();
-        final String wildCardLocation = (location.endsWith("*") ? location : location + "*").replace('\\', '/').replace(".", "\\.").replace("*", ".*");
-        for (final RDD<?> rdd : Spark.getRDDs()) {
-            if (rdd.name().replace('\\', '/').matches(wildCardLocation))
-                rdds.add(rdd.name() + " [" + rdd.getStorageLevel().description() + "]");
-        }
+
+        forEachMatching( pattern, rdd -> rdds.add(rdd.name() + " [" + rdd.getStorageLevel().description() + "]"));
+
         return rdds;
+    }
+
+
+    /**
+     * @param pattern not null {@link Storage} file system pattern
+     * @param action not null processing of each RDD matching the pattern
+     */
+    private static void forEachMatching(final String pattern, Consumer<RDD<?>> action) {
+        final Pattern storagePattern = toRegularExpression(toPattern(Storage.toPath(pattern)));
+
+        for (final RDD<?> rdd : Spark.getRDDs()) {
+            if (storagePattern.matcher(Storage.toPath(rdd.name())).matches() ) {
+                action.accept( rdd );
+            }
+        }
+    }
+
+    /**
+     * @param pattern not null {@link Storage} file system pattern
+     * @return true if there is at least one RDD matching the pattern
+     */
+    private static boolean thereIsMatching(final String pattern) {
+        final Pattern storagePattern = toRegularExpression(toPattern(Storage.toPath(pattern)));
+
+        for (final RDD<?> rdd : Spark.getRDDs()) {
+            if (storagePattern.matcher(Storage.toPath(rdd.name())).matches() ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param location not null path or pattern in the abstract {@link Storage}
+     * @return a pattern abstract {@link Storage} that matches all paths starting with location
+     */
+    private static String toPattern(final String location) {
+        return location.endsWith("*") ? location : location + "*";
+    }
+
+    /**
+     * @param storagePattern not null, not empty pattern in the abstract {@link Storage}
+     * @return non-null regular expression to match local file system paths as strings
+     */
+    private static Pattern toRegularExpression(final String storagePattern) {
+        return Pattern.compile(storagePattern.replace(".", "\\.")
+                                             .replace("?", ".")
+                                             .replace("*", ".*"));
+    }
+
+    /**
+     * @param pattern
+     * @return true if the pattern is actually a path as of the path definition in {@linkplain Storage}
+     *
+     * NOTE: a more precise syntax check is possible
+     */
+    private static boolean isPath(String pattern) {
+      return pattern != null
+             && !pattern.isEmpty()
+             && !pattern.contains( "*" )
+             && !pattern.contains( "?" );
     }
 
     @Override
     public boolean cp(final String sourceLocation, final String targetLocation) {
-        final List<String> rdds = Spark.getRDDs().stream().filter(r -> r.name().startsWith(sourceLocation)).map(RDD::name).collect(Collectors.toList());
+        final Pattern replacementPattern;
+        final List<String> rdds = new ArrayList<>();
+
+        forEachMatching( sourceLocation, rdd -> rdds.add(rdd.name()));
+
         if (rdds.size() == 0)
             return false;
-        for (final String rdd : rdds) {
-            Spark.getRDD(rdd).toJavaRDD().filter(a -> true).setName(rdd.equals(sourceLocation) ? targetLocation : rdd.replace(sourceLocation, targetLocation)).cache().count();
-            // TODO: this should use the original storage level
+
+        replacementPattern = toRegularExpression( sourceLocation );
+        for (final String rddName : rdds) {
+            final String newLocation;
+
+            newLocation = replacementPattern.matcher( rddName ).replaceFirst( targetLocation );
+
+            Spark.getRDD(rddName).toJavaRDD().filter(a -> true)  // a clone of the source RDD
+                 .setName(newLocation)
+                 .cache()
+                 .count();
         }
         return true;
     }
 
     @Override
     public boolean exists(final String location) {
-        return this.ls(location).size() > 0;
+        return thereIsMatching(location);
     }
 
     @Override
-    public boolean rm(final String location) {
+    public boolean rm(final String pattern) {
         final List<String> rdds = new ArrayList<>();
-        final String wildCardLocation = (location.endsWith("*") ? location : location + "*").replace('\\', '/').replace(".", "\\.").replace("*", ".*");
-        for (final RDD<?> rdd : Spark.getRDDs()) {
-            if (rdd.name().replace('\\', '/').matches(wildCardLocation))
-                rdds.add(rdd.name());
-        }
+
+        forEachMatching( pattern, rdd -> rdds.add(rdd.name()));
+
         rdds.forEach(Spark::removeRDD);
         return rdds.size() > 0;
     }
@@ -151,7 +221,6 @@ public final class SparkContextStorage implements Storage {
         return IteratorUtils.map(Spark.getRDD(location).toJavaRDD().take(totalLines).iterator(), Object::toString);
     }
 
-    // TODO: @Override
     public String describe(final String location) {
         return Spark.getRDD(location).toDebugString();
     }

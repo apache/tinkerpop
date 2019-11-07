@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.Comparators;
+import org.apache.tinkerpop.gremlin.util.CoreTestHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,30 +35,28 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
 /**
  * Utility methods for test development.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ *
+ * NOTE: This class duplicates the TestHelper class from gremlin-core. One of them must be removed.
  */
-public final class TestHelper {
+public final class TestHelper extends CoreTestHelper {
     private static final Logger logger = LoggerFactory.getLogger(TestHelper.class);
 
     public static final Random RANDOM;
-    private static final String SEP = File.separator;
-    private static final char URL_SEP = '/';
-    public static final String TEST_DATA_RELATIVE_DIR = "test-case-data";
 
     static {
         final long seed = Long.parseLong(System.getProperty("testSeed", String.valueOf(System.currentTimeMillis())));
@@ -68,121 +67,20 @@ public final class TestHelper {
     private TestHelper() {
     }
 
-    /**
-     * Creates a {@link File} reference that points to a directory relative to the supplied class in the
-     * {@code /target} directory. Each {@code childPath} passed introduces a new sub-directory and all are placed
-     * below the {@link #TEST_DATA_RELATIVE_DIR}.  For example, calling this method with "a", "b", and "c" as the
-     * {@code childPath} arguments would yield a relative directory like: {@code test-case-data/clazz/a/b/c}. It is
-     * a good idea to use the test class for the {@code clazz} argument so that it's easy to find the data if
-     * necessary after test execution.
-     */
-    public static File makeTestDataPath(final Class clazz, final String... childPath) {
-        final File root = getRootOfBuildDirectory(clazz);
-        final List<String> cleanedPaths = Stream.of(childPath).map(TestHelper::cleanPathSegment).collect(Collectors.toList());
+    public static void assertIsUtilityClass(final Class<?> utilityClass) throws Exception {
+        final Constructor constructor = utilityClass.getDeclaredConstructor();
 
-        // use the class name in the directory structure
-        cleanedPaths.add(0, cleanPathSegment(clazz.getSimpleName()));
-
-        final File f = new File(root, TEST_DATA_RELATIVE_DIR + SEP + String.join(SEP, cleanedPaths));
-        if (!f.exists()) f.mkdirs();
-        return f;
+        assertTrue(Modifier.isFinal(utilityClass.getModifiers()));
+        assertTrue(Modifier.isPrivate(constructor.getModifiers()));
+        constructor.setAccessible(true);
+        constructor.newInstance();
     }
-
+    
     public static String convertToRelative(final Class clazz, final File f) {
-        final File root = TestHelper.getRootOfBuildDirectory(clazz).getParentFile().getAbsoluteFile();
-        return root.toURI().relativize(f.getAbsoluteFile().toURI()).toString();
+        final File root = getRootOfBuildDirectory(clazz).getParentFile();
+        return root.toURI().relativize(f.toURI()).toString();
     }
 
-    /**
-     * Internally calls {@link #makeTestDataPath(Class, String...)} but returns the path as a string with the system
-     * separator appended to the end.
-     */
-    public static String makeTestDataDirectory(final Class clazz, final String... childPath) {
-        return makeTestDataPath(clazz, childPath).getAbsolutePath() + SEP;
-    }
-
-    /**
-     * Gets and/or creates the root of the test data directory.  This  method is here as a convenience and should not
-     * be used to store test data.  Use {@link #makeTestDataPath(Class, String...)} instead.
-     */
-    public static File getRootOfBuildDirectory(final Class clazz) {
-        // build.dir gets sets during runs of tests with maven via the surefire configuration in the pom.xml
-        // if that is not set as an environment variable, then the path is computed based on the location of the
-        // requested class.  the computed version at least as far as intellij is concerned comes drops it into
-        // /target/test-classes.  the build.dir had to be added because maven doesn't seem to like a computed path
-        // as it likes to find that path in the .m2 directory and other weird places......
-        final String buildDirectory = System.getProperty("build.dir");
-        final File root = null == buildDirectory ? new File(computePath(clazz)).getParentFile() : new File(buildDirectory);
-        if (!root.exists()) root.mkdirs();
-        return root;
-    }
-
-    private static String computePath(final Class clazz) {
-        final String clsUri = clazz.getName().replace('.', URL_SEP) + ".class";
-        final URL url = clazz.getClassLoader().getResource(clsUri);
-        String clsPath;
-		try {
-			clsPath = new File(url.toURI()).getAbsolutePath();
-		} catch (Exception e) {
-			throw new RuntimeException("Unable to computePath for " + clazz, e);
-		}
-        return clsPath.substring(0, clsPath.length() - clsUri.length());
-    }
-
-    /**
-     * Creates a {@link File} reference in the path returned from {@link TestHelper#makeTestDataPath} in a subdirectory
-     * called {@code temp}.
-     */
-    public static File generateTempFile(final Class clazz, final String fileName, final String fileNameSuffix) throws IOException {
-        final File path = makeTestDataPath(clazz, "temp");
-        if (!path.exists()) path.mkdirs();
-        return File.createTempFile(fileName, fileNameSuffix, path);
-    }
-
-    /**
-     * Copies a file stored as part of a resource to the file system in the path returned from
-     * {@link TestHelper#makeTestDataPath} in a subdirectory called {@code temp/resources}.
-     */
-    public static File generateTempFileFromResource(final Class resourceClass, final String resourceName, final String extension) throws IOException {
-        return generateTempFileFromResource(resourceClass, resourceClass, resourceName, extension);
-    }
-
-    /**
-     * Copies a file stored as part of a resource to the file system in the path returned from
-     * {@link TestHelper#makeTestDataPath} in a subdirectory called {@code temp/resources}.
-     */
-    public static File generateTempFileFromResource(final Class graphClass, final Class resourceClass, final String resourceName, final String extension) throws IOException {
-        final File temp = makeTestDataPath(graphClass, "resources");
-        if (!temp.exists()) temp.mkdirs();
-        final File tempFile = new File(temp, resourceName + extension);
-        final FileOutputStream outputStream = new FileOutputStream(tempFile);
-        int data;
-        final InputStream inputStream = resourceClass.getResourceAsStream(resourceName);
-        while ((data = inputStream.read()) != -1) {
-            outputStream.write(data);
-        }
-        outputStream.close();
-        inputStream.close();
-        return tempFile;
-    }
-
-    /**
-     * Takes a class and converts its package name to a path that can be used to access a resource in that package.
-     */
-    public static String convertPackageToResourcePath(final Class clazz) {
-        final String packageName = clazz.getPackage().getName();
-        return String.format("/%s/", packageName.replaceAll("\\.", "\\/"));
-    }
-
-    /**
-     * Removes characters that aren't acceptable in a file path (mostly for windows).
-     */
-    public static String cleanPathSegment(final String toClean) {
-        final String cleaned = toClean.replaceAll("[.\\\\/:*?\"<>|\\[\\]\\(\\)]", "");
-        if (cleaned.length() == 0)
-            throw new IllegalStateException("Path segment " + toClean + " has not valid characters and is thus empty");
-        return cleaned;
-    }
 
     /**
      * Used at the start of a test to make it one that should only be executed when the {@code assertNonDeterministic}
@@ -197,7 +95,7 @@ public final class TestHelper {
         assumeThat("Set the 'assertNonDeterministic' property to true to execute this test",
                 System.getProperty("assertNonDeterministic"), is("true"));
     }
-
+        
     ///////////////
 
     public static void validateVertexEquality(final Vertex originalVertex, final Vertex otherVertex, boolean testEdges) {
