@@ -20,17 +20,19 @@ package org.apache.tinkerpop.gremlin.driver.ser.binary.types.sample;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import org.apache.tinkerpop.gremlin.driver.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryIo;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.TypeSerializerRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryIo;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
 import org.junit.Test;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Collections;
@@ -46,16 +48,17 @@ import static org.junit.Assert.assertThat;
 public class SamplePersonSerializerTest {
 
     private static final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
+    private static final NettyBufferFactory bufferFactory = new NettyBufferFactory();
 
     @Test
-    public void shouldCustomSerializationWithPerson() throws SerializationException {
+    public void shouldCustomSerializationWithPerson() throws IOException {
         final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1(
                 TypeSerializerRegistry.build().addCustomType(SamplePerson.class, new SamplePersonSerializer()).create());
         assertPerson(serializer);
     }
 
     @Test
-    public void shouldSerializePersonViaIoRegistry() throws SerializationException {
+    public void shouldSerializePersonViaIoRegistry() throws IOException {
         final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1();
         final Map<String,Object> config = new HashMap<>();
         config.put(TOKEN_IO_REGISTRIES, Collections.singletonList(CustomIoRegistry.class.getName()));
@@ -65,7 +68,7 @@ public class SamplePersonSerializerTest {
     }
 
     @Test
-    public void shouldSerializePersonViaCustom() throws SerializationException {
+    public void shouldSerializePersonViaCustom() throws IOException {
         final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1();
         final Map<String,Object> config = new HashMap<>();
         config.put(TOKEN_CUSTOM, Collections.singletonList(String.format("%s;%s",
@@ -76,7 +79,7 @@ public class SamplePersonSerializerTest {
     }
 
     @Test
-    public void readValueAndWriteValueShouldBeSymmetric() throws SerializationException {
+    public void readValueAndWriteValueShouldBeSymmetric() throws IOException {
         final TypeSerializerRegistry registry = TypeSerializerRegistry.build()
                 .addCustomType(SamplePerson.class, new SamplePersonSerializer()).create();
         final GraphBinaryReader reader = new GraphBinaryReader(registry);
@@ -86,7 +89,7 @@ public class SamplePersonSerializerTest {
                 Date.from(LocalDateTime.of(2005, 8, 5, 1, 0).toInstant(ZoneOffset.UTC)));
 
         for (boolean nullable: new boolean[] { true, false }) {
-            final ByteBuf buffer = allocator.buffer();
+            final Buffer buffer = bufferFactory.create(allocator.buffer());
             writer.writeValue(person, buffer, nullable);
             final SamplePerson actual = reader.readValue(buffer, SamplePerson.class, nullable);
 
@@ -95,7 +98,7 @@ public class SamplePersonSerializerTest {
         }
     }
 
-    private void assertPerson(final GraphBinaryMessageSerializerV1 serializer) throws SerializationException {
+    private void assertPerson(final GraphBinaryMessageSerializerV1 serializer) throws IOException {
         final Date birthDate = Date.from(LocalDateTime.of(2010, 4, 29, 5, 30).toInstant(ZoneOffset.UTC));
         final SamplePerson person = new SamplePerson("Olivia", birthDate);
 
