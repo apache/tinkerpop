@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import static org.junit.Assert.assertEquals;
 
@@ -37,7 +38,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class OrderTest {
 
-    private static final SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy");
+    private static final SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
 
     @Parameterized.Parameters(name = "{0}.test({1},{2})")
     public static Iterable<Object[]> data() throws ParseException {
