@@ -19,18 +19,26 @@
 package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
 import io.netty.buffer.ByteBuf;
+import org.apache.tinkerpop.gremlin.driver.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseResult;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatus;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 
 public class ResponseMessageSerializer {
+    private static final NettyBufferFactory bufferFactory = new NettyBufferFactory();
 
-    public ResponseMessage readValue(final ByteBuf buffer, final GraphBinaryReader context) throws SerializationException {
+    public ResponseMessage readValue(final ByteBuf byteBuf, final GraphBinaryReader context) throws SerializationException {
+        // Wrap netty's buffer
+        final Buffer buffer = bufferFactory.create(byteBuf);
         final int version = buffer.readByte() & 0xff;
 
         if (version >>> 7 != 1) {
@@ -39,32 +47,43 @@ public class ResponseMessageSerializer {
             throw new SerializationException("The most significant bit should be set according to the format");
         }
 
-        return ResponseMessage.build(context.readValue(buffer, UUID.class, true))
-                .code(ResponseStatusCode.getFromValue(context.readValue(buffer, Integer.class, false)))
-                .statusMessage(context.readValue(buffer, String.class, true))
-                .statusAttributes(context.readValue(buffer, Map.class, false))
-                .responseMetaData(context.readValue(buffer, Map.class, false))
-                .result(context.read(buffer))
-                .create();
+        try {
+            return ResponseMessage.build(context.readValue(buffer, UUID.class, true))
+                    .code(ResponseStatusCode.getFromValue(context.readValue(buffer, Integer.class, false)))
+                    .statusMessage(context.readValue(buffer, String.class, true))
+                    .statusAttributes(context.readValue(buffer, Map.class, false))
+                    .responseMetaData(context.readValue(buffer, Map.class, false))
+                    .result(context.read(buffer))
+                    .create();
+        } catch (IOException ex) {
+            throw new SerializationException(ex);
+        }
     }
 
-    public void writeValue(final ResponseMessage value, final ByteBuf buffer, final GraphBinaryWriter context) throws SerializationException {
+    public void writeValue(final ResponseMessage value, final ByteBuf byteBuf, final GraphBinaryWriter context) throws SerializationException {
+        // Wrap netty's buffer
+        final Buffer buffer = bufferFactory.create(byteBuf);
+
         final ResponseResult result = value.getResult();
         final ResponseStatus status = value.getStatus();
 
-        // Version
-        buffer.writeByte(GraphBinaryWriter.VERSION_BYTE);
-        // Nullable request id
-        context.writeValue(value.getRequestId(), buffer, true);
-        // Status code
-        context.writeValue(status.getCode().getValue(), buffer, false);
-        // Nullable status message
-        context.writeValue(status.getMessage(), buffer, true);
-        // Status attributes
-        context.writeValue(status.getAttributes(), buffer, false);
-        // Result meta
-        context.writeValue(result.getMeta(), buffer, false);
-        // Fully-qualified value
-        context.write(result.getData(), buffer);
+        try {
+            // Version
+            buffer.writeByte(GraphBinaryWriter.VERSION_BYTE);
+            // Nullable request id
+            context.writeValue(value.getRequestId(), buffer, true);
+            // Status code
+            context.writeValue(status.getCode().getValue(), buffer, false);
+            // Nullable status message
+            context.writeValue(status.getMessage(), buffer, true);
+            // Status attributes
+            context.writeValue(status.getAttributes(), buffer, false);
+            // Result meta
+            context.writeValue(result.getMeta(), buffer, false);
+            // Fully-qualified value
+            context.write(result.getData(), buffer);
+        } catch (IOException ex) {
+            throw new SerializationException(ex);
+        }
     }
 }

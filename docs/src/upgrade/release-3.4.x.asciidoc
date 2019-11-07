@@ -21,6 +21,31 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Avant-Gremlin Construction #3 for Theremin and Flowers*
 
+== TinkerPop 3.4.5
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.4.5/CHANGELOG.asciidoc#release-3-4-5[changelog] for a
+complete list of all the modifications that are part of this release.
+
+=== Upgrading for Providers
+
+==== Graph Driver Providers
+
+===== GraphBinary API Change
+
+In GraphBinary serialization, Java `GraphBinaryReader` and `GraphBinaryWriter`, along with `TypeSerializer<T>`
+interface now take a `Buffer` instance instead of Netty's `ByteBuf`, that way we avoid exposing Netty's API in our own
+public API.
+
+Using our own `Buffer` interface, wrapping Netty's buffer API, allowed us to move `TypeSerializer<T>` implementations,
+the reader and the writer to `org.apache.tinkerpop.gremlin.structure.io.binary` package in `gremlin-core`.
+
+Additionally, `GraphBinaryReader` and `GraphBinaryWriter` methods now throw an java's `IOException`, instead of our
+own `SerializationException`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2305[TINKERPOP-2305]
+
 == TinkerPop 3.4.4
 
 *Release Date: October 14, 2019*

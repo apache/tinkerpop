@@ -18,14 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser.binary;
 
-import io.netty.buffer.ByteBuf;
-import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.sample.SamplePerson;
 import org.apache.tinkerpop.gremlin.driver.ser.binary.types.sample.SamplePersonSerializer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.UUID;
 
 import static junit.framework.TestCase.assertEquals;
@@ -34,7 +39,7 @@ import static junit.framework.TestCase.assertSame;
 public class TypeSerializerRegistryTest {
 
     @Test
-    public void shouldResolveToUserProvidedForInterfaces_1() throws SerializationException {
+    public void shouldResolveToUserProvidedForInterfaces_1() throws IOException {
         final TypeSerializer<VertexProperty> expected = new TestVertexPropertySerializer();
         final TypeSerializerRegistry registry = TypeSerializerRegistry.build()
                 .add(VertexProperty.class, expected).create();
@@ -44,7 +49,7 @@ public class TypeSerializerRegistryTest {
     }
 
     @Test
-    public void shouldResolveToUserProvidedForInterfaces_2() throws SerializationException {
+    public void shouldResolveToUserProvidedForInterfaces_2() throws IOException {
         final TypeSerializer<Property> expected = new TestPropertySerializer();
         final TypeSerializerRegistry registry = TypeSerializerRegistry.build()
                 .add(Property.class, expected).create();
@@ -54,7 +59,7 @@ public class TypeSerializerRegistryTest {
     }
 
     @Test
-    public void shouldResolveToUserProvidedForClasses() throws SerializationException {
+    public void shouldResolveToUserProvidedForClasses() throws Exception {
         final TypeSerializer<UUID> expected = new TestUUIDSerializer();
         final TypeSerializerRegistry registry = TypeSerializerRegistry.build()
                 .add(UUID.class, expected).create();
@@ -64,7 +69,7 @@ public class TypeSerializerRegistryTest {
     }
 
     @Test
-    public void shouldResolveToTheFirstSerializerForInterfaces() throws SerializationException {
+    public void shouldResolveToTheFirstSerializerForInterfaces() throws IOException {
         final TypeSerializer<VertexProperty> expectedForVertexProperty = new TestVertexPropertySerializer();
         final TypeSerializer<Property> expectedForProperty = new TestPropertySerializer();
         final TypeSerializerRegistry registry = TypeSerializerRegistry.build()
@@ -89,7 +94,7 @@ public class TypeSerializerRegistryTest {
         String message = null;
         try {
             registry.getSerializer(SamplePerson.class);
-        } catch (SerializationException ex) {
+        } catch (IOException ex) {
             message = ex.getMessage();
         }
 
@@ -98,7 +103,7 @@ public class TypeSerializerRegistryTest {
     }
 
     @Test
-    public void shouldUseFallbackResolverReturnValue() throws SerializationException {
+    public void shouldUseFallbackResolverReturnValue() throws IOException {
         TypeSerializer expected = new SamplePersonSerializer();
         final int[] called = {0};
         final TypeSerializerRegistry registry = TypeSerializerRegistry.build()
@@ -138,22 +143,22 @@ public class TypeSerializerRegistryTest {
 
     private static abstract class TestBaseTypeSerializer<T> implements TypeSerializer<T> {
         @Override
-        public T read(ByteBuf buffer, GraphBinaryReader context) {
+        public T read(Buffer buffer, GraphBinaryReader context) {
             return null;
         }
 
         @Override
-        public T readValue(ByteBuf buffer, GraphBinaryReader context, boolean nullable) {
+        public T readValue(Buffer buffer, GraphBinaryReader context, boolean nullable) {
             return null;
         }
 
         @Override
-        public void write(T value, ByteBuf buffer, GraphBinaryWriter context) {
+        public void write(T value, Buffer buffer, GraphBinaryWriter context) {
 
         }
 
         @Override
-        public void writeValue(T value, ByteBuf buffer, GraphBinaryWriter context, boolean nullable) {
+        public void writeValue(T value, Buffer buffer, GraphBinaryWriter context, boolean nullable) {
 
         }
     }

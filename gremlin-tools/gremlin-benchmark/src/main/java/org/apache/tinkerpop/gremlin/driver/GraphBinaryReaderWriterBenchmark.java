@@ -18,15 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.tinkerpop.benchmark.util.AbstractBenchmarkBase;
-import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryReader;
-import org.apache.tinkerpop.gremlin.driver.ser.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.driver.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Level;
@@ -49,20 +49,21 @@ public class GraphBinaryReaderWriterBenchmark extends AbstractBenchmarkBase {
     private static GraphBinaryReader reader = new GraphBinaryReader();
     private static GraphBinaryWriter writer = new GraphBinaryWriter();
     private static UnpooledByteBufAllocator allocator = new UnpooledByteBufAllocator(false);
+    private static NettyBufferFactory bufferFactory = new NettyBufferFactory();
 
     @State(Scope.Thread)
     public static class BenchmarkState {
-        public ByteBuf bytecodeBuffer1 = allocator.buffer(2048);
-        public ByteBuf bytecodeBuffer2 = allocator.buffer(2048);
-        public ByteBuf pBuffer1 = allocator.buffer(2048);
+        public Buffer bytecodeBuffer1 = bufferFactory.create(allocator.buffer(2048));
+        public Buffer bytecodeBuffer2 = bufferFactory.create(allocator.buffer(2048));
+        public Buffer pBuffer1 = bufferFactory.create(allocator.buffer(2048));
         public final Bytecode bytecode1 = new Bytecode();
 
-        public ByteBuf bufferWrite = allocator.buffer(2048);
+        public Buffer bufferWrite = bufferFactory.create(allocator.buffer(2048));
 
         public Bytecode bytecode2;
 
         @Setup(Level.Trial)
-        public void doSetup() throws IOException, SerializationException {
+        public void doSetup() throws IOException {
             bytecode1.addStep("V");
             bytecode1.addStep("values", "name");
             bytecode1.addStep("tail", 5);
@@ -102,27 +103,27 @@ public class GraphBinaryReaderWriterBenchmark extends AbstractBenchmarkBase {
     }
 
     @Benchmark
-    public void writeBytecode1(BenchmarkState state) throws SerializationException {
+    public void writeBytecode1(BenchmarkState state) throws IOException {
         writer.writeValue(state.bytecode1, state.bufferWrite, false);
     }
 
     @Benchmark
-    public void writeBytecode2(BenchmarkState state) throws SerializationException {
+    public void writeBytecode2(BenchmarkState state) throws IOException {
         writer.writeValue(state.bytecode2, state.bufferWrite, false);
     }
 
     @Benchmark
-    public void readBytecode1(BenchmarkState state) throws SerializationException {
+    public void readBytecode1(BenchmarkState state) throws IOException {
         reader.readValue(state.bytecodeBuffer1, Bytecode.class, false);
     }
 
     @Benchmark
-    public void readBytecode2(BenchmarkState state) throws SerializationException {
+    public void readBytecode2(BenchmarkState state) throws IOException {
         reader.readValue(state.bytecodeBuffer2, Bytecode.class, false);
     }
 
     @Benchmark
-    public void readP1(BenchmarkState state) throws SerializationException {
+    public void readP1(BenchmarkState state) throws IOException {
         reader.readValue(state.pBuffer1, P.class, false);
     }
 }
