@@ -207,7 +207,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
                 return this.finalEndStep.next();
             }
         } catch (final FastNoSuchElementException e) {
-            throw this.parent instanceof EmptyStep ? new NoSuchElementException() : e;
+            throw this.isRoot() ? new NoSuchElementException() : e;
         }
     }
 
@@ -230,7 +230,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
             // and release the resources.
             CloseableIterator.closeIterator(this);
 
-            throw this.parent instanceof EmptyStep ? new NoSuchElementException() : e;
+            throw this.isRoot() ? new NoSuchElementException() : e;
         }
     }
 
@@ -347,7 +347,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public void setParent(final TraversalParent step) {
-        this.parent = step;
+        this.parent = null == step ? EmptyStep.instance() : step;
     }
 
     @Override

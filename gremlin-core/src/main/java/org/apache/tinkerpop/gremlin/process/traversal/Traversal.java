@@ -480,18 +480,17 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         /**
          * Set the {@link org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent} {@link Step} that is
          * the parent of this traversal. Traversals can be nested and this is the means by which the traversal tree is
-         * connected.
+         * connected. If there is no parent, then it should be a {@link EmptyStep}.
          *
-         * @param step the traversal holder parent step
+         * @param step the traversal holder parent step or {@link EmptyStep} if it has no parent
          */
         public void setParent(final TraversalParent step);
 
         /**
-         * Get the {@link org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent} {@link Step} that is
-         * the parent of this traversal. Traversals can be nested and this is the means by which the traversal tree is
-         * walked.
+         * Get the {@link TraversalParent} {@link Step} that is the parent of this traversal. Traversals can be nested
+         * and this is the means by which the traversal tree is walked.
          *
-         * @return the traversal holder parent step
+         * @return the traversal holder parent step or {@link EmptyStep} if it has no parent.
          */
         public TraversalParent getParent();
 
@@ -499,7 +498,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
          * Determines if the traversal is at the root level.
          */
         public default boolean isRoot() {
-            return null == getParent() || getParent() instanceof EmptyStep;
+            return getParent() instanceof EmptyStep;
         }
 
         /**
