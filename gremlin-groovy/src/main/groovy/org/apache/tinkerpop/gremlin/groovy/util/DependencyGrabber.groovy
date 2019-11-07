@@ -19,12 +19,10 @@
 package org.apache.tinkerpop.gremlin.groovy.util
 
 import groovy.grape.Grape
-import org.apache.commons.lang3.SystemUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import java.nio.file.DirectoryStream
-import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
@@ -45,7 +43,7 @@ class DependencyGrabber {
     private final File extensionDirectory
 
     public DependencyGrabber(final ClassLoader cl, final String extensionDirectory) {
-        this(cl, File(extensionDirectory))
+        this(cl, new File(extensionDirectory))
     }
 
     public DependencyGrabber(final ClassLoader cl, final File extensionDirectory) {
