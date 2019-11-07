@@ -30,6 +30,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
+ * This is a utility class that is for support of various testing activities and is not meant to be used in other
+ * contexts. It is not explicitly in a test package given our dependency hierarchy.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class CoreTestHelper {
