@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
-import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.AssertHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -38,7 +38,7 @@ import static org.mockito.Mockito.when;
 public class ComparatorsTest {
     @Test
     public void shouldBeUtilityClass() throws Exception {
-        TestHelper.assertIsUtilityClass(Comparators.class);
+        AssertHelper.assertIsUtilityClass(Comparators.class);
     }
 
     @Test

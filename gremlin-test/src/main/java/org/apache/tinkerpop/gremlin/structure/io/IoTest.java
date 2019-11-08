@@ -236,7 +236,7 @@ public class IoTest {
         @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
         public void shouldReadGraphMLWithAllSupportedDataTypes() throws IOException {
             final GraphReader reader = GraphMLReader.build().create();
-            try (final InputStream stream = IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "graph-types.xml")) {
+            try (final InputStream stream = getResourceAsStream(GraphMLResourceAccess.class, "graph-types.xml")) {
                 reader.readGraph(stream, graph);
             }
 
@@ -262,7 +262,7 @@ public class IoTest {
         @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
         public void shouldReadGraphMLWithoutStrictOption() throws IOException {
             final GraphReader reader = GraphMLReader.build().strict(false).create();
-            try (final InputStream stream = IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "graph-types-bad.xml")) {
+            try (final InputStream stream = getResourceAsStream(GraphMLResourceAccess.class, "graph-types-bad.xml")) {
                 reader.readGraph(stream, graph);
             }
 
@@ -281,7 +281,7 @@ public class IoTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldReadGraphMLWithoutEdgeIds() throws IOException {
             final GraphReader reader = GraphMLReader.build().strict(false).create();
-            try (final InputStream stream = IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "graph-no-edge-ids.xml")) {
+            try (final InputStream stream = getResourceAsStream(GraphMLResourceAccess.class, "graph-no-edge-ids.xml")) {
                 reader.readGraph(stream, graph);
             }
             assertEquals(1, IteratorUtils.count(graph.edges()));
@@ -334,7 +334,7 @@ public class IoTest {
         @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
         public void shouldReadGraphMLWithStrictOption() throws IOException {
             final GraphReader reader = GraphMLReader.build().strict(true).create();
-            try (final InputStream stream = IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "graph-types-bad.xml")) {
+            try (final InputStream stream = getResourceAsStream(GraphMLResourceAccess.class, "graph-types-bad.xml")) {
                 reader.readGraph(stream, graph);
             }
         }
@@ -355,7 +355,7 @@ public class IoTest {
             try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
                 final GraphMLWriter w = GraphMLWriter.build().normalize(true).create();
                 w.writeGraph(bos, graph);
-                final String expected = streamToString(IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "tinkerpop-classic-normalized.xml"));
+                final String expected = streamToString(getResourceAsStream(GraphMLResourceAccess.class, "tinkerpop-classic-normalized.xml"));
                 assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
             }
         }
@@ -450,7 +450,7 @@ public class IoTest {
         @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
         public void shouldTransformGraphMLV2ToV3ViaXSLT() throws Exception {
             final InputStream stylesheet = Thread.currentThread().getContextClassLoader().getResourceAsStream("tp2-to-tp3-graphml.xslt");
-            final InputStream datafile = IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "tinkerpop-classic-tp2.xml");
+            final InputStream datafile = getResourceAsStream(GraphMLResourceAccess.class, "tinkerpop-classic-tp2.xml");
             final ByteArrayOutputStream output = new ByteArrayOutputStream();
 
             final TransformerFactory tFactory = TransformerFactory.newInstance();
@@ -534,7 +534,7 @@ public class IoTest {
                 final GraphSONWriter w = graph.io(graphson).writer().mapper(mapper).create();
                 w.writeGraph(bos, graph);
 
-                final String expected = streamToString(IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphSONResourceAccess.class) + "tinkerpop-classic-normalized-v1d0.json"));
+                final String expected = streamToString(getResourceAsStream(GraphSONResourceAccess.class, "tinkerpop-classic-normalized-v1d0.json"));
                 assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
             }
         }
@@ -648,7 +648,7 @@ public class IoTest {
         @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
         public void shouldReadLegacyGraphSON() throws IOException {
             final GraphReader reader = LegacyGraphSONReader.build().create();
-            try (final InputStream stream = IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphSONResourceAccess.class) + "tinkerpop-classic-legacy.json")) {
+            try (final InputStream stream = getResourceAsStream(GraphSONResourceAccess.class, "tinkerpop-classic-legacy.json")) {
                 reader.readGraph(stream, graph);
             }
 
@@ -683,7 +683,7 @@ public class IoTest {
                 final GraphSONWriter w = graph.io(graphson).writer().mapper(mapper).create();
                 w.writeGraph(bos, graph);
 
-                final String expected = streamToString(IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphSONResourceAccess.class) + "tinkerpop-classic-normalized-v2d0.json"));
+                final String expected = streamToString(getResourceAsStream(GraphSONResourceAccess.class, "tinkerpop-classic-normalized-v2d0.json"));
                 assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
             }
         }
@@ -806,7 +806,7 @@ public class IoTest {
                 final GraphSONWriter w = graph.io(graphson).writer().mapper(mapper).create();
                 w.writeGraph(bos, graph);
 
-                final String expected = streamToString(IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphSONResourceAccess.class) + "tinkerpop-classic-normalized-v3d0.json"));
+                final String expected = streamToString(getResourceAsStream(GraphSONResourceAccess.class, "tinkerpop-classic-normalized-v3d0.json"));
                 assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
             }
         }
@@ -1436,16 +1436,23 @@ public class IoTest {
         final Source xmlFile = new StreamSource(file);
         final SchemaFactory schemaFactory = SchemaFactory
                 .newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        final Schema schema = schemaFactory.newSchema(IoTest.class.getResource(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "graphml-1.1.xsd"));
+        final Schema schema = schemaFactory.newSchema(new StreamSource(getResourceAsStream(GraphMLResourceAccess.class, "graphml-1.1.xsd")));
         final Validator validator = schema.newValidator();
         validator.validate(xmlFile);
     }
 
     private static void readGraphMLIntoGraph(final Graph g, final String file) throws IOException {
         final GraphReader reader = GraphMLReader.build().create();
-        try (final InputStream stream = IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + file)) {
+        try (final InputStream stream = getResourceAsStream( GraphMLResourceAccess.class, file )) {
             reader.readGraph(stream, g);
         }
+    }
+
+    public static InputStream getResourceAsStream(Class<?> resourceClass, final String file) {
+      return IoTest.class.getResourceAsStream( "/"
+                                               + resourceClass.getPackage().getName().replaceAll("\\.", "/")
+                                               + "/"
+                                               + file);
     }
 
     private static String streamToString(final InputStream in) throws IOException {

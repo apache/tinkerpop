@@ -44,6 +44,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
@@ -148,8 +149,9 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldAliasTraversalSourceVariables":
             case "shouldAliasTraversalSourceVariablesInSession":
                 try {
-                    final String p = TestHelper.generateTempFileFromResource(
-                            GremlinDriverIntegrateTest.class, "generate-shouldRebindTraversalSourceVariables.groovy", "").getAbsolutePath();
+                    final String p = Storage.toPath(TestHelper.generateTempFileFromResource(
+                                                      GremlinDriverIntegrateTest.class,
+                                                      "generate-shouldRebindTraversalSourceVariables.groovy", ""));
                     final Map<String,Object> m = new HashMap<>();
                     m.put("files", Collections.singletonList(p));
                     settings.scriptEngines.get("gremlin-groovy").plugins.put(ScriptFileGremlinPlugin.class.getName(), m);

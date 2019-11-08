@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
-import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.AssertHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 
@@ -31,7 +31,7 @@ import static org.junit.Assert.fail;
 public class GraphVariableHelperTest {
     @Test
     public void shouldBeUtilityClass() throws Exception {
-        TestHelper.assertIsUtilityClass(GraphVariableHelper.class);
+        AssertHelper.assertIsUtilityClass(GraphVariableHelper.class);
     }
 
     @Test

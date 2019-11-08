@@ -22,6 +22,7 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
+import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.TimedInterruptTimeoutException;
 import org.javatuples.Pair;
@@ -88,7 +89,8 @@ public class GremlinExecutorTest {
         try {
             final List<String> groovyScriptResources = Collections.singletonList("GremlinExecutorInit.groovy");
             for (final String fileName : groovyScriptResources) {
-                PATHS.put(fileName, TestHelper.generateTempFileFromResource(GremlinExecutorTest.class, fileName, "").getAbsolutePath());
+                PATHS.put(fileName,
+                          Storage.toPath(TestHelper.generateTempFileFromResource(GremlinExecutorTest.class, fileName, "")));
             }
         } catch (Exception e) {
             e.printStackTrace();

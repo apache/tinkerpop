@@ -41,6 +41,8 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,8 +55,6 @@ public final class FileSystemStorage implements Storage {
 
     private static final String SPACE = " ";
     private static final String D_SPACE = "(D) ";
-    private static final String FORWARD_SLASH = "/";
-    private static final String FORWARD_ASTERISK = "/*";
 
     private final FileSystem fs;
 
@@ -80,7 +80,7 @@ public final class FileSystemStorage implements Storage {
 
     private static String fileStatusString(final FileStatus status) {
         StringBuilder s = new StringBuilder();
-        s.append(status.getPermission()).append(" ");
+        s.append(status.getPermission()).append(SPACE);
         s.append(status.getOwner()).append(SPACE);
         s.append(status.getGroup()).append(SPACE);
         s.append(status.getLen()).append(SPACE);
@@ -91,23 +91,43 @@ public final class FileSystemStorage implements Storage {
     }
 
     private String tryHomeDirectory(final String location) {
-        return location.equals("/") ? this.fs.getHomeDirectory().toString() : location;
+        return location.equals(ROOT_DIRECTORY) ? this.fs.getHomeDirectory().toString() : location;
     }
 
     @Override
     public List<String> ls() {
-        return this.ls("/");
+        return this.ls(ROOT_DIRECTORY);
     }
 
     @Override
-    public List<String> ls(final String location) {
+    public List<String> ls(final String pattern) {
+        return Stream.of(this.listStatuses(pattern)).map(FileSystemStorage::fileStatusString).collect(Collectors.toList());
+    }
+
+    /**
+     * @param pattern refers directory or a set of files
+     * @return a non-null array of the files and directories the pattern refers as of {@link Storage#ls(String)}
+     */
+    private FileStatus[] listStatuses(final String pattern) throws IllegalStateException {
+        final FileStatus[] result;
+        final String actualPattern;
+
+        actualPattern = tryHomeDirectory(pattern);
+
         try {
-            return this.fs.isDirectory(new Path(tryHomeDirectory(location))) ?
-                    Stream.of(this.fs.globStatus(new Path(tryHomeDirectory(location) + "/*"))).map(FileSystemStorage::fileStatusString).collect(Collectors.toList()) :
-                    Stream.of(this.fs.globStatus(new Path(tryHomeDirectory(location) + "*"))).map(FileSystemStorage::fileStatusString).collect(Collectors.toList());
+            if ( fs.isDirectory(new Path(actualPattern)) ) { // a directory path - list its contents
+                if ( actualPattern.endsWith( "/" ) ) {
+                    result = fs.globStatus(new Path(actualPattern + "*"));
+                } else {
+                    result = fs.globStatus(new Path(actualPattern + "/*"));
+                }
+            } else { // a pattern or file path
+                result = fs.globStatus(new Path(actualPattern));
+            }
         } catch (final IOException e) {
-            throw new IllegalStateException(e.getMessage(), e);
+          throw new IllegalStateException(e.getMessage(), e);
         }
+        return result == null ? new FileStatus[0] : result;
     }
 
     public boolean mkdir(final String location) {
@@ -129,25 +149,22 @@ public final class FileSystemStorage implements Storage {
 
     @Override
     public boolean exists(final String location) {
-        try {
-            return this.fs.globStatus(new Path(tryHomeDirectory(location) + "*")).length > 0;
-        } catch (final IOException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+        return this.listStatuses(location).length > 0;
     }
 
     @Override
     public boolean rm(final String location) {
         try {
-            final FileStatus[] statuses = this.fs.globStatus(new Path(tryHomeDirectory(location) + "*"));
-            Stream.of(statuses).forEach(status -> {
-                try {
-                    this.fs.delete(status.getPath(), true);
-                } catch (IOException e) {
-                    throw new IllegalStateException(e.getMessage(), e);
-                }
-            });
-            return statuses.length > 0;
+            final FileStatus[] statuses = this.fs.globStatus(new Path(tryHomeDirectory(location)));
+            return statuses != null
+                   && statuses.length > 0
+                   && Stream.of(statuses).allMatch(status -> {
+                          try {
+                              return this.fs.delete(status.getPath(), true);
+                          } catch (IOException e) {
+                              throw new IllegalStateException(e.getMessage(), e);
+                          }
+                      });
         } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -213,15 +230,22 @@ public final class FileSystemStorage implements Storage {
     }
 
     public void mergeToLocal(final String fromLocation, final String toLocation) {
-        try {
-            final FileSystem local = FileSystem.getLocal(new Configuration());
-            final FSDataOutputStream outA = local.create(new Path(toLocation));
-            for (final Path path : FileSystemStorage.getAllFilePaths(fs, new Path(fromLocation), HiddenFileFilter.instance())) {
-                final FSDataInputStream inA = fs.open(path);
-                IOUtils.copyBytes(inA, outA, 8192);
-                inA.close();
+        try (final FileSystem local = FileSystem.getLocal(new Configuration())) {
+            try (final FSDataOutputStream outA = local.create(new Path(toLocation))) {
+                final Path fromPath;
+
+                if (null == fromLocation || fromLocation.equals(ROOT_DIRECTORY) ) {
+                    fromPath = fs.getHomeDirectory();
+                } else {
+                    fromPath = new Path(fromLocation);
+                }
+
+                for (final Path path : FileSystemStorage.getAllFilePaths(fs, fromPath, HiddenFileFilter.instance())) {
+                    try (final FSDataInputStream inA = fs.open(path) ) {
+                        IOUtils.copyBytes(inA, outA, 8192);
+                    }
+                }
             }
-            outA.close();
         } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -229,16 +253,13 @@ public final class FileSystemStorage implements Storage {
 
 
     private static List<Path> getAllFilePaths(final FileSystem fs, Path path, final PathFilter filter) throws IOException {
-        if (null == path) path = fs.getHomeDirectory();
-        if (path.toString().equals(FORWARD_SLASH)) path = new Path("");
-
         final List<Path> paths = new ArrayList<Path>();
-        if (fs.isFile(path))
+
+        if (fs.isFile(path)) {
             paths.add(path);
-        else {
-            for (final FileStatus status : fs.globStatus(new Path(path + FORWARD_ASTERISK), filter)) {
-                final Path next = status.getPath();
-                paths.addAll(getAllFilePaths(fs, next, filter));
+        } else {
+            for (final FileStatus status : fs.globStatus(new Path(path, "*"), filter)) {
+                paths.addAll(getAllFilePaths(fs, status.getPath(), filter));
             }
         }
         return paths;

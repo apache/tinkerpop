@@ -42,34 +42,45 @@ public class AbstractHadoopGraphComputerTest {
         final String hdfsName = this.getClass().getSimpleName() + "-hdfs";
         final String localName = this.getClass().getSimpleName() + "-local";
         final FileSystem fs = FileSystem.get(new Configuration());
-        if (!new File(System.getProperty("java.io.tmpdir") + "/" + localName).exists())
-            assertTrue(new File(System.getProperty("java.io.tmpdir") + "/" + localName).mkdir());
-        File tempFile1 = new File(System.getProperty("java.io.tmpdir") + "/" + localName + "/test1.txt");
-        File tempFile2 = new File(System.getProperty("java.io.tmpdir") + "/" + localName + "/test2.txt");
-        assertTrue(tempFile1.createNewFile());
-        assertTrue(tempFile2.createNewFile());
-        assertTrue(tempFile1.exists());
-        assertTrue(tempFile2.exists());
-        if (fs.exists(new Path("target/" + hdfsName)))
-            assertTrue(fs.delete(new Path("target/" + hdfsName), true));
-        fs.copyFromLocalFile(true, new Path(tempFile1.getAbsolutePath()), new Path("target/" + hdfsName + "/test1.dat"));
-        fs.copyFromLocalFile(true, new Path(tempFile2.getAbsolutePath()), new Path("target/" + hdfsName + "/test2.dat"));
-        assertTrue(fs.exists(new Path("target/" + hdfsName + "/test1.dat")));
-        assertTrue(fs.exists(new Path("target/" + hdfsName + "/test2.dat")));
-        assertTrue(fs.exists(new Path("target/" + hdfsName)));
-        assertTrue(fs.isDirectory(new Path("target/" + hdfsName)));
+        File path;
+
+        path = new File(new File(System.getProperty("java.io.tmpdir")), localName);
+        if (!path.exists()) {
+            assertTrue(path.mkdir());
+        }
+
+        File tempFile1 = new File(path, "test1.txt");
+        tempFile1.delete();
+        assertTrue("Expected "+tempFile1+" file was created successfully", tempFile1.createNewFile());
+        assertTrue("Expected "+tempFile1+" existed", tempFile1.exists());
+
+        File tempFile2 = new File(path, "test2.txt");
+        tempFile2.delete();
+        assertTrue("Expected "+tempFile2+" file was created successfully", tempFile2.createNewFile());
+        assertTrue("Expected "+tempFile2+" existed", tempFile2.exists());
+
+        if (fs.exists(new Path("target", hdfsName)))
+            assertTrue(fs.delete(new Path("target", hdfsName), true));
+        fs.copyFromLocalFile(true, new Path(tempFile1.toURI()), new Path("target", hdfsName + "/test1.dat"));
+        fs.copyFromLocalFile(true, new Path(tempFile2.toURI()), new Path("target", hdfsName + "/test2.dat"));
+        assertTrue(fs.exists(new Path("target", hdfsName + "/test1.dat")));
+        assertTrue(fs.exists(new Path("target", hdfsName + "/test2.dat")));
+        assertTrue(fs.exists(new Path("target", hdfsName)));
+        assertTrue(fs.isDirectory(new Path("target", hdfsName)));
         assertFalse(tempFile1.exists());
         assertFalse(tempFile2.exists());
-        assertTrue(new File(System.getProperty("java.io.tmpdir") + "/" + localName).exists());
-        assertTrue(new File(System.getProperty("java.io.tmpdir") + "/" + localName).delete());
-        assertTrue(fs.exists(new Path("target/" + hdfsName + "/test1.dat")));
-        assertTrue(fs.exists(new Path("target/" + hdfsName + "/test2.dat")));
-        assertTrue(fs.exists(new Path("target/" + hdfsName)));
-        assertTrue(fs.isDirectory(new Path("target/" + hdfsName)));
+
+        assertTrue("Expected "+path+" directory existed", path.exists());
+        assertTrue("Expected "+path+" directory was deleted", path.delete());
+
+        assertTrue(fs.exists(new Path("target", hdfsName + "/test1.dat")));
+        assertTrue(fs.exists(new Path("target", hdfsName + "/test2.dat")));
+        assertTrue(fs.exists(new Path("target",hdfsName)));
+        assertTrue(fs.isDirectory(new Path("target", hdfsName)));
         /////
         final String hadoopGremlinLibsRemote = "hadoop-gremlin-" + Gremlin.version() + "-libs";
-        final File localDirectory = new File(System.getProperty("java.io.tmpdir") + "/" + hadoopGremlinLibsRemote);
-        final File localLibDirectory = new File(localDirectory.getAbsolutePath() + "/" + hdfsName);
+        final File localDirectory = new File(System.getProperty("java.io.tmpdir"), hadoopGremlinLibsRemote);
+        final File localLibDirectory = new File(localDirectory, hdfsName);
         if (localLibDirectory.exists()) {
             Stream.of(localLibDirectory.listFiles()).forEach(File::delete);
             assertTrue(localLibDirectory.delete());

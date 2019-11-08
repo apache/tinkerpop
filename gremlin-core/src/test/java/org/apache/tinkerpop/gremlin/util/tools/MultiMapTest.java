@@ -18,8 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util.tools;
 
-import org.apache.tinkerpop.gremlin.TestHelper;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.gremlin.AssertHelper;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -39,7 +38,7 @@ public class MultiMapTest {
 
     @Test
     public void shouldBeUtilityClass() throws Exception {
-        TestHelper.assertIsUtilityClass(MultiMap.class);
+        AssertHelper.assertIsUtilityClass(MultiMap.class);
     }
 
     @Test

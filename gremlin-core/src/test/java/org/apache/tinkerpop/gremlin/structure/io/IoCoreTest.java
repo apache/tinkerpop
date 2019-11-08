@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io;
 
-import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.AssertHelper;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
@@ -33,7 +33,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class IoCoreTest {
     @Test
     public void shouldBeUtilityClass() throws Exception {
-        TestHelper.assertIsUtilityClass(IoCore.class);
+        AssertHelper.assertIsUtilityClass(IoCore.class);
     }
 
     @Test
