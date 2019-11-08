@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.jsr223;
 
 import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.junit.Test;
 
 import javax.script.Bindings;
@@ -99,7 +100,7 @@ public class BindingsScriptEngineTest {
 
         final File scriptFile = TestHelper.generateTempFileFromResource(BindingsScriptEngineTest.class, "bindings-init.groovy", ".groovy");
         final List<String> files = new ArrayList<>();
-        files.add(scriptFile.getAbsolutePath());
+        files.add(Storage.toPath(scriptFile));
         manager.addPlugin(ScriptFileGremlinPlugin.build().files(files).create());
 
         final GremlinScriptEngine engine = manager.getEngineByName(ENGINE_TO_TEST);

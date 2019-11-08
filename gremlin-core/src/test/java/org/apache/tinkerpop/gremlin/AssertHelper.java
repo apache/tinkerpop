@@ -16,26 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.util;
+package org.apache.tinkerpop.gremlin;
 
-import org.apache.tinkerpop.gremlin.AssertHelper;
-import org.junit.Test;
+import static org.junit.Assert.assertTrue;
 
-import static org.junit.Assert.assertEquals;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinTest {
-    @Test
-    public void shouldBeUtilityClass() throws Exception {
-        AssertHelper.assertIsUtilityClass(Gremlin.class);
-    }
+public class AssertHelper {
 
-    @Test
-    public void shouldGetVersion() {
-        // the manifests lib should be solid at doing this job - can get by with a
-        // light testing here - this will be good for at least version 3
-        assertEquals('3', Gremlin.version().charAt(0));
+    protected AssertHelper() {}
+    
+    public static void assertIsUtilityClass(final Class<?> utilityClass) throws Exception {
+        final Constructor constructor = utilityClass.getDeclaredConstructor();
+
+        assertTrue(Modifier.isFinal(utilityClass.getModifiers()));
+        assertTrue(Modifier.isPrivate(constructor.getModifiers()));
+        constructor.setAccessible(true);
+        constructor.newInstance();
     }
+        
 }

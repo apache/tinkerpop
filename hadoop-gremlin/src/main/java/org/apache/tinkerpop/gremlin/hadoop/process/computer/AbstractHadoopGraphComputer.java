@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.slf4j.Logger;
@@ -255,15 +256,18 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
             final String hadoopGremlinLibsRemote = "hadoop-gremlin-" + Gremlin.version() + "-libs";
             final Path path = new Path(directory);
             if (Boolean.valueOf(System.getProperty("is.testing", "false")) || (fileSystem.exists(path) && fileSystem.isDirectory(path))) {
-                final File tempDirectory = new File(System.getProperty("java.io.tmpdir") + File.separator + hadoopGremlinLibsRemote);
+                final File tempDirectory = new File(System.getProperty("java.io.tmpdir"), hadoopGremlinLibsRemote);
+
                 assert tempDirectory.exists() || tempDirectory.mkdirs();
-                final String tempPath = tempDirectory.getAbsolutePath() + File.separator + path.getName();
+
+                final Path tempPath = new Path(new Path(tempDirectory.toURI()), path.getName());
+
                 final RemoteIterator<LocatedFileStatus> files = fileSystem.listFiles(path, false);
                 while (files.hasNext()) {
                     final LocatedFileStatus f = files.next();
-                    fileSystem.copyToLocalFile(false, f.getPath(), new Path(tempPath + System.getProperty("file.separator") + f.getPath().getName()), true);
+                    fileSystem.copyToLocalFile(false, f.getPath(), new Path(tempPath, f.getPath().getName()), true);
                 }
-                return new File(tempPath);
+                return new File(tempPath.toUri());
             } else
                 return new File(directory);
         } catch (final IOException e) {

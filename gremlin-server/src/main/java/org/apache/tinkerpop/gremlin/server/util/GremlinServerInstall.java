@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.groovy.util.Artifact;
 import org.apache.tinkerpop.gremlin.groovy.util.DependencyGrabber;
 import groovy.lang.GroovyClassLoader;
 
+import java.io.File;
+
 /**
  * Command line installer for plugins to Gremlin Server.
  *
@@ -47,8 +49,7 @@ public class GremlinServerInstall {
         }
     }
 
-    private static String getExtensionPath() {
-        final String fileSep = System.getProperty("file.separator");
-        return System.getProperty("user.dir") + fileSep + "ext";
+    private static File getExtensionPath() {
+        return new File(System.getProperty("user.dir"), "ext");
     }
 }

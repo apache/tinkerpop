@@ -122,7 +122,7 @@ public class ResponseHandlerContextTest {
 
         writeInvoker.apply(context, ResponseStatusCode.SERVER_ERROR_TIMEOUT);
         assertTrue(recordingAppender.logContainsAny(".*" + request.getRequestId() + ".*"));
-        assertTrue(recordingAppender.logContainsAny(".*" + ResponseStatusCode.SERVER_ERROR_TIMEOUT + "$"));
+        assertTrue(recordingAppender.logContainsAny(".*" + ResponseStatusCode.SERVER_ERROR_TIMEOUT + ".*"));
 
         // ensure there were no other writes to the channel
         Mockito.verify(ctx, Mockito.times(2)).writeAndFlush(Mockito.any());
@@ -135,7 +135,7 @@ public class ResponseHandlerContextTest {
 
         writeInvoker.apply(context, ResponseStatusCode.PARTIAL_CONTENT);
         assertTrue(recordingAppender.logContainsAny(".*" + request.getRequestId() + ".*"));
-        assertTrue(recordingAppender.logContainsAny(".*" + ResponseStatusCode.PARTIAL_CONTENT + "$"));
+        assertTrue(recordingAppender.logContainsAny(".*" + ResponseStatusCode.PARTIAL_CONTENT + ".*"));
 
         // ensure there were no other writes to the channel
         Mockito.verify(ctx, Mockito.times(1)).writeAndFlush(Mockito.any());
@@ -150,7 +150,7 @@ public class ResponseHandlerContextTest {
         context.writeAndFlush(ResponseStatusCode.SUCCESS, frame);
 
         assertTrue(recordingAppender.logContainsAny(".*" + request.getRequestId() + ".*"));
-        assertTrue(recordingAppender.logContainsAny(".*" + ResponseStatusCode.SUCCESS + "$"));
+        assertTrue(recordingAppender.logContainsAny(".*" + ResponseStatusCode.SUCCESS + ".*"));
 
         // ensure there were no other writes to the channel
         Mockito.verify(ctx, Mockito.times(1)).writeAndFlush(Mockito.any());

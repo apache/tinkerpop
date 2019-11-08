@@ -62,7 +62,7 @@ public class OrderLimitStrategyTest {
     }
 
     @Parameterized.Parameters(name = "{0}")
-    public static Iterable<Object> generateTestParameters() {
+    public static Iterable<Object[]> generateTestParameters() {
         return Arrays.asList(new Object[][]{
                 {__.order().limit(1), 1l},
                 {__.out().order().range(7, 15), 15l},

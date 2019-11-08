@@ -431,7 +431,7 @@ public class TinkerGraphTest {
 
     @Test
     public void shouldPersistToGraphML() {
-        final String graphLocation = TestHelper.makeTestDataDirectory(TinkerGraphTest.class) + "shouldPersistToGraphML.xml";
+        final String graphLocation = TestHelper.makeTestDataFile(TinkerGraphTest.class, "shouldPersistToGraphML.xml");
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 
@@ -449,7 +449,7 @@ public class TinkerGraphTest {
 
     @Test
     public void shouldPersistToGraphSON() {
-        final String graphLocation = TestHelper.makeTestDataDirectory(TinkerGraphTest.class) + "shouldPersistToGraphSON.json";
+        final String graphLocation = TestHelper.makeTestDataFile(TinkerGraphTest.class, "shouldPersistToGraphSON.json");
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 
@@ -467,7 +467,7 @@ public class TinkerGraphTest {
 
     @Test
     public void shouldPersistToGryo() {
-        final String graphLocation = TestHelper.makeTestDataDirectory(TinkerGraphTest.class) + "shouldPersistToGryo.kryo";
+        final String graphLocation = TestHelper.makeTestDataFile(TinkerGraphTest.class, "shouldPersistToGryo.kryo");
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 
@@ -485,7 +485,7 @@ public class TinkerGraphTest {
 
     @Test
     public void shouldPersistToGryoAndHandleMultiProperties() {
-        final String graphLocation = TestHelper.makeTestDataDirectory(TinkerGraphTest.class) + "shouldPersistToGryoMulti.kryo";
+        final String graphLocation = TestHelper.makeTestDataFile(TinkerGraphTest.class, "shouldPersistToGryoMulti.kryo");
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 
@@ -505,7 +505,8 @@ public class TinkerGraphTest {
     @Test
     public void shouldPersistWithRelativePath() {
         final String graphLocation = TestHelper.convertToRelative(TinkerGraphTest.class,
-                new File(TestHelper.makeTestDataDirectory(TinkerGraphTest.class)))  + "shouldPersistToGryoRelative.kryo";
+                                                                  TestHelper.makeTestDataPath(TinkerGraphTest.class))
+                                     + "shouldPersistToGryoRelative.kryo";
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 
@@ -523,7 +524,7 @@ public class TinkerGraphTest {
 
     @Test
     public void shouldPersistToAnyGraphFormat() {
-        final String graphLocation = TestHelper.makeTestDataDirectory(TinkerGraphTest.class) + "shouldPersistToAnyGraphFormat.dat";
+        final String graphLocation = TestHelper.makeTestDataFile(TinkerGraphTest.class, "shouldPersistToAnyGraphFormat.dat");
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 

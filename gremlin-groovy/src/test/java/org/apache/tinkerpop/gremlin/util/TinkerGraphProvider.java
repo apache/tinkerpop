@@ -72,9 +72,7 @@ public class TinkerGraphProvider extends AbstractGraphProvider {
                 put(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
             if (requiresPersistence(test, testMethodName)) {
                 put(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
-                final File tempDir = TestHelper.makeTestDataPath(test, "temp");
-                put(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION,
-                        tempDir.getAbsolutePath() + File.separator + testMethodName + ".kryo");
+                put(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, TestHelper.makeTestDataFile(test, "temp", testMethodName + ".kryo"));
             }
         }};
     }

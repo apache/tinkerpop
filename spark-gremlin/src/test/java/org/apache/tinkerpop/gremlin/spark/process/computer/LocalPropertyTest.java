@@ -51,7 +51,7 @@ public class LocalPropertyTest extends AbstractSparkTest {
     @Test
     public void shouldSetThreadLocalProperties() throws Exception {
         final String testName = "ThreadLocalProperties";
-        final String rddName = TestHelper.makeTestDataDirectory(LocalPropertyTest.class) + UUID.randomUUID().toString();
+        final String rddName = TestHelper.makeTestDataDirectory(LocalPropertyTest.class, UUID.randomUUID().toString());
         final Configuration configuration = new BaseConfiguration();
         configuration.setProperty("spark.master", "local[4]");
         configuration.setProperty("spark.serializer", GryoSerializer.class.getCanonicalName());

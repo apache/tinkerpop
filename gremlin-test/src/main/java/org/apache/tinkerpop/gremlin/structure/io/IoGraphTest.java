@@ -106,11 +106,11 @@ public class IoGraphTest extends AbstractGremlinTest {
     public void shouldReadWriteClassicToFileWithHelpers() throws Exception {
         final File f = TestHelper.generateTempFile(this.graph.getClass(), name.getMethodName(), fileExtension);
         try {
-            graph.io(ioBuilderToTest).writeGraph(f.getAbsolutePath());
+            graph.io(ioBuilderToTest).writeGraph(Storage.toPath(f));
 
             final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.CLASSIC);
             final Graph g1 = graphProvider.openTestGraph(configuration);
-            g1.io(ioBuilderToTest).readGraph(f.getAbsolutePath());
+            g1.io(ioBuilderToTest).readGraph(Storage.toPath(f));
 
             IoTest.assertClassicGraph(g1, assertDouble, lossyForId);
 
@@ -171,11 +171,11 @@ public class IoGraphTest extends AbstractGremlinTest {
     public void shouldReadWriteModernToFileWithHelpers() throws Exception {
         final File f = TestHelper.generateTempFile(this.graph.getClass(), name.getMethodName(), fileExtension);
         try {
-            graph.io(ioBuilderToTest).writeGraph(f.getAbsolutePath());
+            graph.io(ioBuilderToTest).writeGraph(Storage.toPath(f));
 
             final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.MODERN);
             final Graph g1 = graphProvider.openTestGraph(configuration);
-            g1.io(ioBuilderToTest).readGraph(f.getAbsolutePath());
+            g1.io(ioBuilderToTest).readGraph(Storage.toPath(f));
 
             // modern uses double natively so always assert as such
             IoTest.assertModernGraph(g1, true, lossyForId);

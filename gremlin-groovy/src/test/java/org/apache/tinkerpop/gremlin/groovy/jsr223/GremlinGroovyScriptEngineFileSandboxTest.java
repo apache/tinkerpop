@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.FileSandboxExtensio
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
@@ -56,7 +57,7 @@ public class GremlinGroovyScriptEngineFileSandboxTest {
         g = graph.traversal();
         if (System.getProperty(FileSandboxExtension.GREMLIN_SERVER_SANDBOX) == null) {
             final File f = TestHelper.generateTempFileFromResource(TinkerGraph.class, GremlinGroovyScriptEngineFileSandboxTest.class, "sandbox.yaml", ".yaml");
-            System.setProperty(FileSandboxExtension.GREMLIN_SERVER_SANDBOX, f.getAbsolutePath());
+            System.setProperty(FileSandboxExtension.GREMLIN_SERVER_SANDBOX, Storage.toPath(f));
         }
     }
 
@@ -68,7 +69,7 @@ public class GremlinGroovyScriptEngineFileSandboxTest {
     @Test
     public void shouldSuccessfullyInstantiateGroovyScriptEngineWithEmptyStaticVariableTyping() throws Exception {
         final File f = TestHelper.generateTempFileFromResource(graph.getClass(), GremlinGroovyScriptEngineFileSandboxTest.class, "sandbox-empty-static-variable-types.yaml", ".yaml");
-        System.setProperty(FileSandboxExtension.GREMLIN_SERVER_SANDBOX, f.getAbsolutePath());
+        System.setProperty(FileSandboxExtension.GREMLIN_SERVER_SANDBOX, Storage.toPath(f));
         final CompileStaticGroovyCustomizer standardSandbox = new CompileStaticGroovyCustomizer(FileSandboxExtension.class.getName());
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox);
         assertEquals(123, engine.eval("java.lang.Math.abs(-123)"));

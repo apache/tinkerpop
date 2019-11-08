@@ -41,6 +41,7 @@ public final class SparkHadoopGraphGryoSerializerProvider extends SparkHadoopGra
         final Map<String, Object> config = super.getBaseConfiguration(graphName, test, testMethodName, loadGraphWith);
         config.put(Constants.SPARK_SERIALIZER, GryoSerializer.class.getCanonicalName());
         config.remove(Constants.SPARK_KRYO_REGISTRATOR);
+
         return config;
     }
 }

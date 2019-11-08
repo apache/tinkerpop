@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoResourceAccess;
 import org.apache.tinkerpop.gremlin.structure.io.script.ScriptResourceAccess;
@@ -38,7 +39,7 @@ import java.util.Random;
  */
 public abstract class AbstractFileGraphProvider extends AbstractGraphProvider {
 
-    protected static final Random RANDOM = new Random();
+    protected static final Random RANDOM = TestHelper.RANDOM;
 
     protected boolean graphSONInput = false;
 
@@ -52,7 +53,8 @@ public abstract class AbstractFileGraphProvider extends AbstractGraphProvider {
                     "tinkerpop-crew-v3d0.kryo",
                     "tinkerpop-sink-v3d0.kryo");
             for (final String fileName : kryoResources) {
-                PATHS.put(fileName, TestHelper.generateTempFileFromResource(GryoResourceAccess.class, fileName, "").getAbsolutePath().replace('\\', '/'));
+                PATHS.put(fileName,
+                        Storage.toPath(TestHelper.generateTempFileFromResource(GryoResourceAccess.class, fileName, "")));
             }
 
             final List<String> graphsonResources = Arrays.asList(
@@ -66,7 +68,8 @@ public abstract class AbstractFileGraphProvider extends AbstractGraphProvider {
                     "tinkerpop-crew-v3d0.json",
                     "tinkerpop-sink-v3d0.json");
             for (final String fileName : graphsonResources) {
-                PATHS.put(fileName, TestHelper.generateTempFileFromResource(GraphSONResourceAccess.class, fileName, "").getAbsolutePath().replace('\\', '/'));
+                PATHS.put(fileName,
+                        Storage.toPath(TestHelper.generateTempFileFromResource(GraphSONResourceAccess.class, fileName, "")));
             }
 
             final List<String> scriptResources = Arrays.asList(
@@ -77,7 +80,8 @@ public abstract class AbstractFileGraphProvider extends AbstractGraphProvider {
                     "script-input-grateful-dead.groovy",
                     "script-output-grateful-dead.groovy");
             for (final String fileName : scriptResources) {
-                PATHS.put(fileName, TestHelper.generateTempFileFromResource(ScriptResourceAccess.class, fileName, "").getAbsolutePath().replace('\\', '/'));
+                PATHS.put(fileName,
+                        Storage.toPath(TestHelper.generateTempFileFromResource(ScriptResourceAccess.class, fileName, "")));
             }
         } catch (Exception e) {
             e.printStackTrace();
