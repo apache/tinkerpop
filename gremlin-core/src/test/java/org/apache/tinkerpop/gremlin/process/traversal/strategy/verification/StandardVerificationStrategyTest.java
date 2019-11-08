@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
-import org.apache.tinkerpop.gremlin.util.CoreTestHelper;
+import org.apache.tinkerpop.gremlin.util.TestSupport;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -44,11 +44,10 @@ import static org.junit.Assert.fail;
 @RunWith(Parameterized.class)
 public class StandardVerificationStrategyTest {
 
-
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() throws Exception {
 
-        CoreTestHelper.generateTempFile(StandardVerificationStrategyTest.class, "shouldBeVerified", ".kryo");
+        TestSupport.generateTempFile(StandardVerificationStrategyTest.class, "shouldBeVerified", ".kryo");
 
         return Arrays.asList(new Object[][]{
                 // traversals that should fail verification

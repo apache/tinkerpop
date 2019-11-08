@@ -28,7 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
-import org.apache.tinkerpop.gremlin.util.CoreTestHelper;
+import org.apache.tinkerpop.gremlin.util.TestSupport;
 import org.junit.Test;
 
 import java.io.File;
@@ -88,7 +88,7 @@ public class GraphFactoryTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionOnIfConfigurationFileIsNotAnActualFile() {
-        GraphFactory.open(CoreTestHelper.makeTestDataDirectory(GraphFactoryTest.class, "path"));
+        GraphFactory.open(TestSupport.makeTestDataDirectory(GraphFactoryTest.class, "path"));
     }
 
     @Test(expected = RuntimeException.class)
@@ -170,7 +170,7 @@ public class GraphFactoryTest {
 
     @Test
     public void shouldOpenViaPropertiesFileConfig() throws IOException {
-        final File confFile = CoreTestHelper.generateTempFileFromResource(GraphFactoryTest.class, "mockgraph.properties", ".properties");
+        final File confFile = TestSupport.generateTempFileFromResource(GraphFactoryTest.class, "mockgraph.properties", ".properties");
         final MockGraph g = (MockGraph) GraphFactory.open(Storage.toPath(confFile));
         assertEquals(MockGraph.class.getName(), g.getConf().getString(Graph.GRAPH));
         assertEquals("it", g.getConf().getString("keep"));
@@ -178,7 +178,7 @@ public class GraphFactoryTest {
 
     @Test
     public void shouldOpenViaPropertiesFileConfigAsDefault() throws IOException {
-        final File confFile = CoreTestHelper.generateTempFileFromResource(GraphFactoryTest.class, "mockgraph.properties", ".notrecognized");
+        final File confFile = TestSupport.generateTempFileFromResource(GraphFactoryTest.class, "mockgraph.properties", ".notrecognized");
         final MockGraph g = (MockGraph) GraphFactory.open(Storage.toPath(confFile));
         assertEquals(MockGraph.class.getName(), g.getConf().getString(Graph.GRAPH));
         assertEquals("it", g.getConf().getString("keep"));
@@ -186,7 +186,7 @@ public class GraphFactoryTest {
 
     @Test
     public void shouldOpenViaXmlFileConfig() throws IOException {
-        final File confFile = CoreTestHelper.generateTempFileFromResource(GraphFactoryTest.class, "mockgraph.xml", ".xml");
+        final File confFile = TestSupport.generateTempFileFromResource(GraphFactoryTest.class, "mockgraph.xml", ".xml");
         final MockGraph g = (MockGraph) GraphFactory.open(Storage.toPath(confFile));
         assertEquals(MockGraph.class.getName(), g.getConf().getString(Graph.GRAPH));
         assertEquals("it", g.getConf().getString("keep"));
@@ -194,7 +194,7 @@ public class GraphFactoryTest {
 
     @Test
     public void shouldOpenViaYamlFileConfig() throws IOException {
-        final File confFile = CoreTestHelper.generateTempFileFromResource(GraphFactoryTest.class, "mockgraph.yaml", ".yaml");
+        final File confFile = TestSupport.generateTempFileFromResource(GraphFactoryTest.class, "mockgraph.yaml", ".yaml");
         final MockGraph g = (MockGraph) GraphFactory.open(Storage.toPath(confFile));
         assertEquals(MockGraph.class.getName(), g.getConf().getString(Graph.GRAPH));
         assertEquals("it", g.getConf().getString("keep"));
@@ -202,7 +202,7 @@ public class GraphFactoryTest {
 
     @Test
     public void shouldOpenViaYmlFileConfig() throws IOException {
-        final File confFile = CoreTestHelper.generateTempFileFromResource(GraphFactoryTest.class, "mockgraph.yaml", ".yml");
+        final File confFile = TestSupport.generateTempFileFromResource(GraphFactoryTest.class, "mockgraph.yaml", ".yml");
         final MockGraph g = (MockGraph) GraphFactory.open(Storage.toPath(confFile));
         assertEquals(MockGraph.class.getName(), g.getConf().getString(Graph.GRAPH));
         assertEquals("it", g.getConf().getString("keep"));
@@ -210,7 +210,7 @@ public class GraphFactoryTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowOnInvalidConfigTypeViaFileConfig() throws IOException {
-        final File confFile = CoreTestHelper.generateTempFileFromResource(GraphFactoryTest.class, "mockgraph-busted.yaml", ".yaml");
+        final File confFile = TestSupport.generateTempFileFromResource(GraphFactoryTest.class, "mockgraph-busted.yaml", ".yaml");
         final MockGraph g = (MockGraph) GraphFactory.open(Storage.toPath(confFile));
         assertEquals(MockGraph.class.getName(), g.getConf().getString(Graph.GRAPH));
         assertEquals("it", g.getConf().getString("keep"));
