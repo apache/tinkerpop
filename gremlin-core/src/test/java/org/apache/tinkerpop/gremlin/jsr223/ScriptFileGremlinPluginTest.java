@@ -19,16 +19,14 @@
 package org.apache.tinkerpop.gremlin.jsr223;
 
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
-import org.apache.tinkerpop.gremlin.util.CoreTestHelper;
+import org.apache.tinkerpop.gremlin.util.TestSupport;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -41,8 +39,8 @@ import static org.junit.Assert.assertEquals;
 public class ScriptFileGremlinPluginTest {
     @Test
     public void shouldOpenViaPropertiesFileConfig() throws IOException {
-        final File scriptFile1 = CoreTestHelper.generateTempFileFromResource(DefaultScriptCustomizerTest.class, "script-customizer-1.groovy", ".groovy");
-        final File scriptFile2 = CoreTestHelper.generateTempFileFromResource(DefaultScriptCustomizerTest.class, "script-customizer-2.groovy", ".groovy");
+        final File scriptFile1 = TestSupport.generateTempFileFromResource(DefaultScriptCustomizerTest.class, "script-customizer-1.groovy", ".groovy");
+        final File scriptFile2 = TestSupport.generateTempFileFromResource(DefaultScriptCustomizerTest.class, "script-customizer-2.groovy", ".groovy");
         final List<String> files = new ArrayList<>();
         files.add(Storage.toPath(scriptFile1));
         files.add(Storage.toPath(scriptFile2));

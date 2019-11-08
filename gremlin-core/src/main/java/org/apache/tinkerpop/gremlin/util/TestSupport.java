@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.util;
 
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,11 +38,11 @@ import java.util.stream.Stream;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class CoreTestHelper {
+public class TestSupport {
 
     public static final String TEST_DATA_RELATIVE_DIR = "test-case-data";
 
-    protected CoreTestHelper() {}
+    protected TestSupport() {}
 
     /**
      * Creates a {@link File} reference that points to a directory relative to the supplied class in the
@@ -55,7 +58,7 @@ public class CoreTestHelper {
      */
     public static File makeTestDataPath(final Class clazz, final String... childPath) {
         final File root = getRootOfBuildDirectory(clazz);
-        final List<String> cleanedPaths = Stream.of(childPath).map(CoreTestHelper::cleanPathSegment).collect(Collectors.toList());
+        final List<String> cleanedPaths = Stream.of(childPath).map(TestSupport::cleanPathSegment).collect(Collectors.toList());
 
         // use the class name in the directory structure
         cleanedPaths.add(0, cleanPathSegment(clazz.getSimpleName()));
@@ -130,7 +133,7 @@ public class CoreTestHelper {
     }
 
     /**
-     * Creates a {@link File} reference in the path returned from {@link TestHelper#makeTestDataPath} in a subdirectory
+     * Creates a {@link File} reference in the path returned from {@link #makeTestDataPath} in a subdirectory
      * called {@code temp}.
      */
     public static File generateTempFile(final Class clazz, final String fileName, final String fileNameSuffix) throws IOException {
@@ -141,7 +144,7 @@ public class CoreTestHelper {
 
     /**
      * Copies a file stored as part of a resource to the file system in the path returned from
-     * {@link TestHelper#makeTestDataPath} in a subdirectory called {@code temp/resources}.
+     * {@link #makeTestDataPath} in a subdirectory called {@code temp/resources}.
      */
     public static File generateTempFileFromResource(final Class resourceClass, final String resourceName, final String extension) throws IOException {
         return generateTempFileFromResource(resourceClass, resourceClass, resourceName, extension);
@@ -149,7 +152,7 @@ public class CoreTestHelper {
 
     /**
      * Copies a file stored as part of a resource to the file system in the path returned from
-     * {@link TestHelper#makeTestDataPath} in a subdirectory called {@code temp/resources}.
+     * {@link #makeTestDataPath} in a subdirectory called {@code temp/resources}.
      */
     public static File generateTempFileFromResource(final Class graphClass, final Class resourceClass, final String resourceName, final String extension) throws IOException {
         final File temp = makeTestDataPath(graphClass, "resources");
