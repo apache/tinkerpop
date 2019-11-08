@@ -59,15 +59,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-4-5]]
 === TinkerPop 3.4.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-* GraphBinary: Introduced our own `Buffer` API as a way to wrap Netty's Buffer API. Moved `GraphBinaryReader`,
-`GraphBinaryWriter` and `TypeSerializer<T>` to gremlin-core.
-
-[[release-3-4-4]]
-=== TinkerPop 3.4.5 (Release Date: NOT OFFICIALLY RELEASED YET)
-
 This release also includes changes from <<release-3-3-10, 3.3.10>>.
 
 * Bump to Netty 4.1.42
+* GraphBinary: Introduced our own `Buffer` API as a way to wrap Netty's Buffer API. Moved `GraphBinaryReader`, `GraphBinaryWriter` and `TypeSerializer<T>` to gremlin-core.
 
 [[release-3-4-4]]
 === TinkerPop 3.4.4 (Release Date: October 14, 2019)
