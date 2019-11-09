@@ -184,7 +184,7 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 new Object[] {"BigDecimalNeg", new BigDecimal("-1234567890987654321.1232132"), null},
 
                 // date+time
-                new Object[] {"Date", DateFormat.getDateInstance(DateFormat.MEDIUM).parse("Jan 12, 1952"), null},
+                new Object[] {"Date", DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.US).parse("Jan 12, 1952"), null},
                 new Object[] {"Timestamp", Timestamp.valueOf("2016-01-15 12:01:02"), null},
                 new Object[] {"Duration", Duration.ofSeconds(213123213, 400), null},
                 new Object[] {"Instant", Instant.ofEpochSecond(213123213, 400), null},
