@@ -167,14 +167,14 @@ Please consider the following example:
 [gremlin-groovy]
 ----
 g = traversal().withRemote('conf/remote-graph.properties')
-g.V().valueMap(true)
+g.V().elementMap()
 g.close()
 ----
 
 [source,java]
 ----
 GraphTraversalSource g = traversal().withRemote("conf/remote-graph.properties");
-List<Map> list = g.V().valueMap(true);
+List<Map> list = g.V().elementMap();
 g.close();
 ----
 
@@ -190,7 +190,7 @@ objects and then re-use them.
 cluster = Cluster.open('conf/remote-objects.yaml')
 client = cluster.connect()
 g = traversal().withRemote(DriverRemoteConnection.using(client, "g"))
-g.V().valueMap(true)
+g.V().elementMap()
 g.close()
 client.close()
 cluster.close()
@@ -736,10 +736,10 @@ In order to add and remove <<traversalstrategy,traversal strategies>> from a tra
 ----
 g = g.withStrategies(SubgraphStrategy(vertices=hasLabel('person'),edges=has('weight',gt(0.5))))
 g.V().name.toList()
-g.V().outE().valueMap().with_(WithOptions.tokens).toList()
+g.V().outE().elementMap().toList()
 g = g.withoutStrategies(SubgraphStrategy)
 g.V().name.toList()
-g.V().outE().valueMap().with_(WithOptions.tokens).toList()
+g.V().outE().elementMap().toList()
 g = g.withComputer(workers=2,vertices=has('name','marko'))
 g.V().name.toList()
 g.V().outE().valueMap().with_(WithOptions.tokens).toList()

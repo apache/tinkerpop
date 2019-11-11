@@ -111,7 +111,7 @@ of one `Vertex` to another:
 ----
 g.V().has('name', 'marko').as('marko').
   out('created').property('creator', select('marko').by('name'))
-g.V().has('name', 'marko').out('created').valueMap()
+g.V().has('name', 'marko').out('created').elementMap()
 ----
 
 In a more complex example of how this might work, consider a situation where the goal is to propagate a value stored on
@@ -142,7 +142,7 @@ g.withSack(a.value('amount')).
   V(a).repeat(outE('drain').sack(mult).by('factor').
               inV().property('amount', sack())).
        until(__.outE('drain').count().is(0)).iterate()
-g.V().valueMap()
+g.V().elementMap()
 ----
 
 The "sack value" gets initialized to the value of tank "a". The traversal iteratively traverses out on the "drain"
@@ -157,7 +157,7 @@ in the modern toy graph by 10:
 ----
 g.withSack(0).V().has("age").
   sack(assign).by("age").sack(sum).by(constant(10)).
-  property("age", sack()).valueMap()
+  property("age", sack()).elementMap()
 ----
 
 In the above case, the sack is initialized to zero and as each vertex is iterated, the "age" is assigned to the sack
@@ -171,5 +171,5 @@ Using the same example, the "weight" property on the incident edges will be used
 ----
 g.withSack(0).V().has("age").
   sack(assign).by("age").sack(sum).by(bothE().values("weight").sum()).
-  property("age", sack()).valueMap()
+  property("age", sack()).elementMap()
 ----

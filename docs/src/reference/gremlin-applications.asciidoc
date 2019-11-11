@@ -1252,7 +1252,7 @@ credentials = graph.traversal(CredentialTraversalSource.class)
 credentials.user("stephen","password")
 credentials.user("daniel","better-password")
 credentials.user("marko","rainbow-dash")
-credentials.users("marko").valueMap()
+credentials.users("marko").elementMap()
 credentials.users().count()
 credentials.users("daniel").drop()
 credentials.users().count()
@@ -1713,7 +1713,7 @@ may still be consumed after the timeout if interruption does not succeed on the 
 possible existence of multi-properties and meta-properties. When returning data from Gremlin Server only return the
 data that is required. For example, if only two properties of a `Vertex` are needed then simply return the two rather
 than returning the entire `Vertex` object itself. Even with an entire `Vertex`, it is typically much faster to issue
-the query as `g.V(1).valueMap().with(WithOptions.tokens)` than `g.V(1)`, as the former returns a `Map` of the same data as a `Vertex`, but
+the query as `g.V(1).elementMap()` than `g.V(1)`, as the former returns a `Map` of the same data as a `Vertex`, but
 without all the associated structure which can slow the response.
 
 [[parameterized-scripts]]
@@ -1849,10 +1849,10 @@ There is no difference if re-written using the best practice of requesting only 
 ----
 Cluster cluster = Cluster.open();
 Client client = cluster.connect();
-ResultSet results = client.submit("g.V().hasLabel('person').valueMap('name').with(WithOptions.tokens)");
+ResultSet results = client.submit("g.V().hasLabel('person').elementMap('name')");
 
 GraphTraversalSource g = traversal().withRemote('conf/remote-graph.properties');
-List<Vertex> results = g.V().hasLabel("person").valueMap('name').with(WithOptions.tokens).toList();
+List<Vertex> results = g.V().hasLabel("person").elementMap('name').toList();
 ----
 
 Both of the above requests return a list of `Map` instances that contain the `id`, `label` and the "name" property.
