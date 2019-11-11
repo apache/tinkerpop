@@ -327,32 +327,44 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
 
     @Test
     public void shouldEnsureSessionBindingsAreThreadSafe() throws Exception {
-        final Cluster cluster = TestClientFactory.build().minInProcessPerConnection(16).maxInProcessPerConnection(64).create();
+        final Cluster cluster = TestClientFactory.build().maxWaitForConnection(90000).
+                minInProcessPerConnection(16).maxInProcessPerConnection(64).create();
         final Client client = cluster.connect(name.getMethodName());
 
-        client.submitAsync("a=100;b=1000;c=10000;null");
-        final int requests = 10000;
-        final List<CompletableFuture<ResultSet>> futures = new ArrayList<>(requests);
-        IntStream.range(0, requests).forEach(i -> {
-            try {
-                futures.add(client.submitAsync("a+b+c"));
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
+        try {
+            client.submit("a=100;b=1000;c=10000;null").all().get();
+            final int requests = 10000;
+            final List<CompletableFuture<ResultSet>> futures = new ArrayList<>(requests);
+            IntStream.range(0, requests).forEach(i -> {
+                try {
+                    futures.add(client.submitAsync("a+b+c"));
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+            });
+
+            System.out.println("shouldEnsureSessionBindingsAreThreadSafe: sent 10000");
+            assertEquals(requests, futures.size());
+
+            System.out.println("shouldEnsureSessionBindingsAreThreadSafe: asserting 10000");
+            int counter = 0;
+            for (CompletableFuture<ResultSet> f : futures) {
+                final Result r = f.get().all().get(30000, TimeUnit.MILLISECONDS).get(0);
+                assertEquals(11100, r.getInt());
+                counter++;
             }
-        });
 
-        assertEquals(requests, futures.size());
+            assertEquals(requests, counter);
+            System.out.println("shouldEnsureSessionBindingsAreThreadSafe: asserted 10000");
 
-        int counter = 0;
-        for(CompletableFuture<ResultSet> f : futures) {
-            final Result r = f.get().all().get(30000, TimeUnit.MILLISECONDS).get(0);
-            assertEquals(11100, r.getInt());
-            counter++;
+        } catch (Exception ex) {
+            fail(ex.getMessage());
+        } finally {
+            System.out.println("shouldEnsureSessionBindingsAreThreadSafe: calling cluster.close");
+            cluster.close();
+            System.out.println("shouldEnsureSessionBindingsAreThreadSafe: called cluster.close");
         }
 
-        assertEquals(requests, counter);
-
-        cluster.close();
     }
 
     @Test
