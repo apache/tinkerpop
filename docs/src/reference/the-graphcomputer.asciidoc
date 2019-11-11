@@ -81,7 +81,7 @@ memory manipulations).
 result = graph.compute().program(PageRankVertexProgram.build().create()).submit().get()
 result.memory().runtime
 g = result.graph().traversal()
-g.V().valueMap()
+g.V().elementMap()
 ----
 
 NOTE: This model of "vertex-centric graph computing" was made popular by Google's
@@ -139,7 +139,7 @@ result = graph.compute().program(PeerPressureVertexProgram.build().create()).map
 result.memory().get('clusterPopulation')
 g = result.graph().traversal()
 g.V().values(PeerPressureVertexProgram.CLUSTER).groupCount().next()
-g.V().valueMap()
+g.V().elementMap()
 ----
 
 If there are numerous statistics desired, then its possible to register as many MapReduce jobs as needed. For
@@ -368,7 +368,7 @@ The above `PageRankVertexProgram` is used as follows.
 result = graph.compute().program(PageRankVertexProgram.build().create()).submit().get()
 result.memory().runtime
 g = result.graph().traversal()
-g.V().valueMap()
+g.V().elementMap()
 ----
 
 Note that `GraphTraversal` provides a <<pagerank-step,`pageRank()`>>-step.
@@ -376,8 +376,8 @@ Note that `GraphTraversal` provides a <<pagerank-step,`pageRank()`>>-step.
 [gremlin-groovy,modern]
 ----
 g = graph.traversal().withComputer()
-g.V().pageRank().valueMap()
-g.V().pageRank().by('pageRank').times(5).order().by('pageRank').valueMap()
+g.V().pageRank().elementMap()
+g.V().pageRank().by('pageRank').times(5).order().by('pageRank').elementMap()
 ----
 
 [[peerpressurevertexprogram]]
@@ -399,8 +399,8 @@ Note that `GraphTraversal` provides a <<peerpressure-step,`peerPressure()`>>-ste
 [gremlin-groovy,modern]
 ----
 g = graph.traversal().withComputer()
-g.V().peerPressure().by('cluster').valueMap()
-g.V().peerPressure().by(outE('knows')).by('cluster').valueMap()
+g.V().peerPressure().by('cluster').elementMap()
+g.V().peerPressure().by(outE('knows')).by('cluster').elementMap()
 ----
 
 [[connectedcomponentvertexprogram]]

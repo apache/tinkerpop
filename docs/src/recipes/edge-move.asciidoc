@@ -28,7 +28,7 @@ follows:
 ----
 g.V().has('name','marko').
   outE().inV().
-  path().by('name').by(valueMap().with(WithOptions.tokens))
+  path().by('name').by(elementMap())
 ----
 
 The "marko" vertex contains a "knows" edge to the "vadas" vertex. The following code shows how to "move" that edge to
@@ -47,7 +47,7 @@ g.V().has('name','marko').as('a').
   select('e1').drop()                                             <4>
 g.V().has('name','marko').
   outE().inV().
-  path().by('name').by(valueMap().with(WithOptions.tokens))
+  path().by('name').by(elementMap())
 ----
 
 <1> Find the edge to "move" and label that as "e1". It will be necessary to reference this later to get the edge

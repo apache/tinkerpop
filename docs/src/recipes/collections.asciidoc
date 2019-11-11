@@ -250,6 +250,10 @@ the vertex itself and its edge count.
 The pattern here is to use `union()` in conjunction with `fold()`. As explained earlier, the `fold()` operation reduces
 the stream from `union()` to a single `List` that is then fed forward to the next step in the traversal.
 
+NOTE: TinkerPop 3.4.4 introduced `elementMap()`-step which essentially replaces much of the transformations described
+below that are applied to the results of `valueMap()`-step. While the direct use of `elementMap()` eliminates the
+need for the transformation, the explanations below are still edifying and worth examining.
+
 Now that `List` patterns have been explained, there can now be some attention on `Map`. One of the most common ways
 to end up with a `Map` is with `valueMap()`:
 
@@ -359,8 +363,10 @@ g.V().
     by(select(values).unfold())
 ----
 
-<1> The `valueMap().with(WithOptions.tokens)` of a `Vertex` can be extended with the "degree" of the `Vertex` by performing a `union()` of
-the two traversals that produce that output (both produce `Map` objects).
+<1> The `valueMap().with(WithOptions.tokens)` of a `Vertex` can be extended with the "degree" of the `Vertex` by
+performing a `union()` of the two traversals that produce that output (both produce `Map` objects). Recall that
+`valueMap().with(WithOptions.tokens)` is replaced by `elementMap()` in 3.4.4 - this examples continues with the "old"
+form for demonstration purposes.
 <2> The `unfold()`-step is used to decompose the `Map` objects into key/value entries that are then constructed back
 into a single new `Map` given the patterns shown earlier. The `Map` objects of both traversals in the `union()` are
 essentially merged together.

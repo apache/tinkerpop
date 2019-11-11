@@ -116,7 +116,7 @@ g.V().hasLabel("student").as("s").
   where(eq("t")).
   group().
     by(select("s").by("name")).
-    by(group().by(select("t").by(valueMap("fromTime","toTime"))).
+    by(group().by(select("t").by(elementMap("fromTime","toTime"))).
                by(select("c").dedup().values("name").fold())).next()
 ----
 
@@ -154,11 +154,11 @@ _In the "crew" graph, find vertices that match on a complete set of multi-proper
 places = ["centreville","dulles"];[]  // will not match as "purcellville" is missing
 g.V().not(has("location", without(places))).
   where(values("location").is(within(places)).count().is(places.size())).
-  valueMap()
+  elementMap()
 places = ["centreville","dulles","purcellville"];[]
 g.V().not(has("location", without(places))).
   where(values("location").is(within(places)).count().is(places.size())).
-  valueMap()
+  elementMap()
 ----
 
 [[appendix-f]]
@@ -235,22 +235,22 @@ g.addV().property("name", "A").as("a").
 g.V().has("name", "A").out("rel").
   union(where(out("occured_at").has("date", gte(20160817))),
         __.not(outE("occured_at")).coalesce(out().hasLabel("dimon"), identity())).
-  valueMap()
+  elementMap()
 // only E has a valid date
 g.V().has("name", "A").out("rel").
   union(where(out("occured_at").has("date", lte(20160817))),
         __.not(outE("occured_at")).coalesce(out().hasLabel("dimon"), identity())).
-  valueMap()
+  elementMap()
 // only D has a valid date
 g.V().has("name", "A").out("rel").
   union(where(out("occured_at").has("date", gt(20160817))),
         __.not(outE("occured_at")).coalesce(out().hasLabel("dimon"), identity())).
-  valueMap()
+  elementMap()
 // neither D nor E have a valid date
 g.V().has("name", "A").out("rel").
   union(where(out("occured_at").has("date", lt(20160817))),
         __.not(outE("occured_at")).coalesce(out().hasLabel("dimon"), identity())).
-  valueMap()
+  elementMap()
 ----
 
 [[appendix-i]]

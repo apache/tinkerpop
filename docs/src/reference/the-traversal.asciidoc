@@ -597,7 +597,7 @@ g.V().hasLabel('person').
       choose(values('name')).
         option('marko', values('age')).
         option('josh', values('name')).
-        option('vadas', valueMap()).
+        option('vadas', elementMap()).
         option('peter', label())
 ----
 
@@ -788,7 +788,7 @@ has been seen or not.
 
 [gremlin-groovy,modern]
 ----
-g.V().valueMap('name').with(WithOptions.tokens)
+g.V().elementMap('name')
 g.V().dedup().by(label).values('name')
 ----
 
@@ -820,7 +820,7 @@ is a filter step because the traversal yields no outgoing objects.
 g.V().outE().drop()
 g.E()
 g.V().properties('name').drop()
-g.V().valueMap()
+g.V().elementMap()
 g.V().drop()
 g.V()
 ----
@@ -1067,9 +1067,9 @@ g.V().hasLabel('person').out().has('name',within('vadas','josh')).
       outE().hasLabel('created')
 g.V().has('age',inside(20,30)).values('age') <1>
 g.V().has('age',outside(20,30)).values('age') <2>
-g.V().has('name',within('josh','marko')).valueMap() <3>
-g.V().has('name',without('josh','marko')).valueMap() <4>
-g.V().has('name',not(within('josh','marko'))).valueMap() <5>
+g.V().has('name',within('josh','marko')).elementMap() <3>
+g.V().has('name',without('josh','marko')).elementMap() <4>
+g.V().has('name',not(within('josh','marko'))).elementMap() <5>
 g.V().properties().hasKey('age').value() <6>
 g.V().hasNot('age').values('name') <7>
 ----
@@ -1906,7 +1906,7 @@ The term `not` is a reserved word in Python, and therefore must be referred to i
 
 [gremlin-groovy,modern]
 ----
-g.V().not(hasLabel('person')).valueMap().with(WithOptions.tokens)
+g.V().not(hasLabel('person')).elementMap()
 g.V().hasLabel('person').
   not(out('created').count().is(gt(1))).values('name')   <1>
 ----
@@ -2075,7 +2075,8 @@ g.V().hasLabel('person').
   pageRank().
     with(PageRank.edges, __.outE('knows')).
     with(PageRank.propertyName, 'friendRank').
-  order().by('friendRank',desc).valueMap('name','friendRank')
+  order().by('friendRank',desc).
+  elementMap('name','friendRank')
 ----
 
 Note the use of the `with()` modulating step which provides configuration options to the algorithm. It takes
@@ -2090,7 +2091,8 @@ g.V().hasLabel('person').
   pageRank().
     with(PageRank.edges, __.outE('knows')).
     with(PageRank.propertyName, 'friendRank').
-  order().by('friendRank',desc).valueMap('name','friendRank').explain()
+  order().by('friendRank',desc).
+  elementMap('name','friendRank').explain()
 ----
 
 *Additional References*
@@ -2349,7 +2351,7 @@ g = graph.traversal().withComputer()
 g.V().hasLabel('person').
   program(PageRankVertexProgram.build().property('rank').create(graph)).
     order().by('rank', asc).
-  valueMap('name', 'rank')
+  elementMap('name', 'rank')
 ----
 
 [[properties-step]]
@@ -3077,7 +3079,7 @@ The `tail()`-step can also be applied with `Scope.local`, in which case it opera
 g.V().as('a').out().as('a').out().as('a').select('a').by(tail(local)).values('name') <1>
 g.V().as('a').out().as('a').out().as('a').select('a').by(unfold().values('name').fold()).tail(local) <2>
 g.V().as('a').out().as('a').out().as('a').select('a').by(unfold().values('name').fold()).tail(local, 2) <3>
-g.V().valueMap().tail(local) <4>
+g.V().elementMap().tail(local) <4>
 ----
 
 <1> Only the most recent name from the "a" step (`List<Vertex>` becomes `Vertex`).
@@ -3998,8 +4000,8 @@ g = graph.traversal().withStrategies(SubgraphStrategy.build().
   vertices(or(hasNot('location'),properties('location').count().is(gt(3)))).
   edges(hasLabel('develops')).
   vertexProperties(or(hasLabel(neq('location')),hasNot('endTime'))).create())
-g.V().valueMap().with(WithOptions.tokens)
-g.E().valueMap().with(WithOptions.tokens)
+g.V().elementMap()
+g.E().elementMap()
 g.V().outE().inV().
   path().
     by('name').

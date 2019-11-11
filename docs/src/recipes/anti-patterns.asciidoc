@@ -86,26 +86,27 @@ g.withSideEffect("relations", relations).
 g
 ----
 
-Obviously, these traversals are more complicated, but the number of steps is known and thus it's the best way to prevent an
-unexpected `StackOverflowError`. Furthermore, shorter traversals reduce the (de)serialization costs when such a traversal is send
-over the wire to a Gremlin Server.
+Obviously, these traversals are more complicated, but the number of steps is known and thus it's the best way to
+prevent an unexpected `StackOverflowError`. Furthermore, shorter traversals reduce the (de)serialization costs when
+such a traversal is send over the wire to a Gremlin Server.
 
 NOTE: Although the example was based on a graph-mutating traversal, the same rules apply for read-only and mixed traversals.
 
 [[unspecified-keys-and-labels]]
 == Unspecified Keys and Labels
 
-Some Gremlin steps have optional arguments that represent keys (e.g. `valueMap()`) or labels (e.g. `out()`). In the prototyping
-phase of a projects it's often convenient to use these steps without any arguments. However, in production code this is bad idea
-and keys and labels should always be specified. Not only does it make the traversal easier to read for others, but it also ensures
-that the application will not break if the schema changes at one point and the queries return completely different results.
+Some Gremlin steps have optional arguments that represent keys (e.g. `elementMap()`, valueMap()`) or labels (e.g.
+`out()`). In the prototyping phase of a projects it's often convenient to use these steps without any arguments.
+However, in production code this is bad idea and keys and labels should always be specified. Not only does it make the
+traversal easier to read for others, but it also ensures that the application will not break if the schema changes at
+one point and the queries return completely different results.
 
 The following code block shows a few examples that are good for prototyping or graph discovery.
 
 [gremlin-groovy,modern]
 ----
 g.V().has("person","name","marko").out()
-g.V().has("person","name","marko").out("created").valueMap()
+g.V().has("person","name","marko").out("created").elementMap()
 g.V().has("software","name","ripple").inE().has("weight", gte(0.5)).outV().properties()
 ----
 
@@ -114,7 +115,7 @@ The next code block shows the same queries, but with specified keys and labels.
 [gremlin-groovy,existing]
 ----
 g.V().has("person","name","marko").out("created","knows")
-g.V().has("person","name","marko").out("created").valueMap("name","lang")
+g.V().has("person","name","marko").out("created").elementMap("name","lang")
 g.V().has("software","name","ripple").inE("created").has("weight", gte(0.5)).outV().
   properties("name","age")
 ----
