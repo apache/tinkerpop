@@ -199,7 +199,6 @@ public class GryoRegistrator implements KryoRegistrator {
         // of the entries are for TinkerPop (and the ordering is significant).
         try {
             m.put(Class.forName("scala.reflect.ClassTag$$anon$1"), new JavaSerializer());
-            m.put(Class.forName("scala.reflect.ManifestFactory$$anon$1"), new JavaSerializer());
             m.put(Class.forName("org.apache.spark.internal.io.FileCommitProtocol$TaskCommitMessage"), new JavaSerializer());
             m.put(Class.forName("org.apache.spark.internal.io.FileCommitProtocol$EmptyTaskCommitMessage$"), new JavaSerializer());
 
