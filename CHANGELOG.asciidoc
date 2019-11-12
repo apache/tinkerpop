@@ -42,7 +42,8 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Refactored `Traversal` semantics to always expect `EmptyStep` as a parent if it is meant to be the root `Traversal`.
 * Configured GraphBinary as the default binary serialization format for the Java Driver.
 * Configured GraphSON 3.0 as the default text serialization format when no serializer can be determined.
-* Upgraded to Neo4j 3.4.11.
+* Bumped to Neo4j 3.4.11.
+* Bumped to Spark 3.0.0.
 * Added a parameterized `TypeTranslator` for use with `GroovyTranslator` that should produce more cache hits.
 * Added support for `TextP` in Neo4j using its string search functions.
 * Changed `TraversalStrategy` application methodology to apply each strategy in turn to each level of the traversal hierarchy starting from root down to children.

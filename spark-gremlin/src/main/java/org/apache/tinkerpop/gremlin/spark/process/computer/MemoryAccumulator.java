@@ -19,37 +19,58 @@
 
 package org.apache.tinkerpop.gremlin.spark.process.computer;
 
-import org.apache.spark.AccumulatorParam;
+import org.apache.spark.util.AccumulatorV2;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class MemoryAccumulator<A> implements AccumulatorParam<ObjectWritable<A>> {
+public final class MemoryAccumulator<A> extends AccumulatorV2<ObjectWritable<A>, ObjectWritable<A>> {
 
     private final MemoryComputeKey<A> memoryComputeKey;
+    private ObjectWritable<A> value;
 
-    public MemoryAccumulator(final MemoryComputeKey<A> memoryComputeKey) {
+    MemoryAccumulator(final MemoryComputeKey<A> memoryComputeKey) {
+        this(memoryComputeKey, ObjectWritable.empty());
+    }
+
+    private MemoryAccumulator(final MemoryComputeKey<A> memoryComputeKey, final ObjectWritable<A> initial) {
         this.memoryComputeKey = memoryComputeKey;
+        this.value = initial;
     }
 
     @Override
-    public ObjectWritable<A> addAccumulator(final ObjectWritable<A> a, final ObjectWritable<A> b) {
-        if (a.isEmpty())
-            return b;
-        if (b.isEmpty())
-            return a;
-        return new ObjectWritable<>(this.memoryComputeKey.getReducer().apply(a.get(), b.get()));
+    public boolean isZero() {
+        return ObjectWritable.empty().equals(value);
     }
 
     @Override
-    public ObjectWritable<A> addInPlace(final ObjectWritable<A> a, final ObjectWritable<A> b) {
-        return this.addAccumulator(a, b);
+    public AccumulatorV2<ObjectWritable<A>, ObjectWritable<A>> copy() {
+        return new MemoryAccumulator<>(this.memoryComputeKey, this.value);
     }
 
     @Override
-    public ObjectWritable<A> zero(final ObjectWritable<A> a) {
-        return ObjectWritable.empty();
+    public void reset() {
+        this.value = ObjectWritable.empty();
+    }
+
+    @Override
+    public void add(final ObjectWritable<A> v) {
+        if (this.value.isEmpty())
+            this.value = v;
+        if (!v.isEmpty())
+            this.value = new ObjectWritable<>(this.memoryComputeKey.getReducer().apply(value.get(), v.get()));
+    }
+
+    @Override
+    public void merge(final AccumulatorV2<ObjectWritable<A>, ObjectWritable<A>> other) {
+        this.add(other.value());
+    }
+
+    @Override
+    public ObjectWritable<A> value() {
+        return this.value;
     }
 }
