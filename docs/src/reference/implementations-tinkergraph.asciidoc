@@ -39,7 +39,7 @@ purposes.
 * Use TinkerGraph as a sandbox to develop and debug complex traversals by simulating data from a larger graph inside
 a TinkerGraph.
 
-Constructing a simple graph using TinkerGraph in Java8 is presented below:
+Constructing a simple graph using TinkerGraph in Java is presented below:
 
 [source,java]
 ----
