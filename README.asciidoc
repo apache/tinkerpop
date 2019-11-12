@@ -29,7 +29,7 @@ Apache TinkerPop™ provides graph computing capabilities for both graph databas
 
 === Building and Testing
 
-TinkerPop uses link:https://maven.apache.org/[Maven] and requires `Java 1.8.0_40+` for proper building and proper operations. To build, execute unit tests and package Gremlin Console/Server run:
+TinkerPop uses link:https://maven.apache.org/[Maven] and requires `Java 11` for proper building and proper operations. To build, execute unit tests and package Gremlin Console/Server run:
 
 [source,bash]
 mvn clean install
