@@ -66,7 +66,7 @@ public final class TinkerMessenger<M> implements Messenger<M> {
                 final MessageScope.Local<M> localMessageScope = (MessageScope.Local<M>) messageScope;
                 final Traversal.Admin<Vertex, Edge> incidentTraversal = TinkerMessenger.setVertexStart(localMessageScope.getIncidentTraversal().get().asAdmin(), this.vertex);
                 final Direction direction = TinkerMessenger.getDirection(incidentTraversal);
-                final Edge[] edge = new Edge[1]; // simulates storage side-effects available in Gremlin, but not Java8 streams
+                final Edge[] edge = new Edge[1]; // simulates storage side-effects available in Gremlin, but not Java streams
                 multiIterator.addIterator(StreamSupport.stream(Spliterators.spliteratorUnknownSize(VertexProgramHelper.reverse(incidentTraversal.asAdmin()), Spliterator.IMMUTABLE | Spliterator.SIZED), false)
                         .map((Edge e) -> {
                             edge[0] = e;
