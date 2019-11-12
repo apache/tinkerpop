@@ -60,7 +60,7 @@ public final class MemoryAccumulator<A> extends AccumulatorV2<ObjectWritable<A>,
     public void add(final ObjectWritable<A> v) {
         if (this.value.isEmpty())
             this.value = v;
-        if (!v.isEmpty())
+        else if (!v.isEmpty())
             this.value = new ObjectWritable<>(this.memoryComputeKey.getReducer().apply(value.get(), v.get()));
     }
 
