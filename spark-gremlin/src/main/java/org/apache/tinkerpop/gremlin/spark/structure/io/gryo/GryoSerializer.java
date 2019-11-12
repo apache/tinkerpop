@@ -138,6 +138,7 @@ public final class GryoSerializer extends Serializer implements Serializable {
                 super.register(GryoIo.class, TorrentBroadcast.class, null);
                 super.register(GryoIo.class, PythonBroadcast.class, null);
                 super.register(GryoIo.class, BoxedUnit.class, null);
+                super.register(GryoIo.class, Class.forName("scala.reflect.ManifestFactory$AnyManifest"), new JavaSerializer());
                 super.register(GryoIo.class, Class.forName("scala.reflect.ClassTag$GenericClassTag"), new JavaSerializer());
                 super.register(GryoIo.class, Class.forName("org.apache.spark.internal.io.FileCommitProtocol$TaskCommitMessage"), new JavaSerializer());
                 super.register(GryoIo.class, Class.forName("org.apache.spark.internal.io.FileCommitProtocol$EmptyTaskCommitMessage$"), new JavaSerializer());
