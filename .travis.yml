@@ -2,9 +2,9 @@ language: java
 os:
   - linux
 jdk:
-  - openjdk8
+  - openjdk11
 sudo: required
-dist: xenial
+dist: bionic
 services:
   - docker
 cache:
