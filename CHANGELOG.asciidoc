@@ -49,6 +49,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Configured GraphSON 3.0 as the default text serialization format when no serializer can be determined.
 * Configured GraphSON 3.0 as the default setting for the `GraphSONMapper`.
 * Bumped to Neo4j 3.4.11.
+* Bumped to Spark 3.0.0.
 * Bumped to Groovy 3.0.3.
 * Added a parameterized `TypeTranslator` for use with `GroovyTranslator` that should produce more cache hits.
 * Added support for `TextP` in Neo4j using its string search functions.
