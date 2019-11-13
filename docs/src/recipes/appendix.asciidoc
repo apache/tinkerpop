@@ -188,13 +188,13 @@ g.withSack(0d).
      project("ab", "ba").
        by(inE("link").where(outV().as("a")).count()).
        by(outE("link").where(inV().as("a")).count()).
-     sack(sum).by(select("ab")).
-     sack(div).by(select("ba")).
+     sack(sum).by("ab").
+     sack(div).by("ba").
      project("a", "b", "#(a,b)", "#(b,a)", "#(a,b) / #(b,a)").
        by(select("a")).
        by(select("b")).
-       by(select("ab")).
-       by(select("ba")).
+       by("ab").
+       by("ba").
        by(sack())
 ----
 
@@ -272,7 +272,7 @@ g.V().as("a").
   map(group().by(label).by(unfold())).as("b").
   select("a","b").
   group().
-    by(select("a")).
+    by("a").
     by(select("b").
          group().
            by(select(keys)).

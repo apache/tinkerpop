@@ -25,6 +25,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-3-10, 3.3.10>>.
 
+* Expanded the use of `by(String)` modulator so that it can work on `Map` as well as `Element`.
+* Improved error messaging for `by(String)` so that it is more clear as to what the problem is
 * Bump to Netty 4.1.42
 * GraphBinary: Introduced our own `Buffer` API as a way to wrap Netty's Buffer API. Moved `GraphBinaryReader`, `GraphBinaryWriter` and `TypeSerializer<T>` to gremlin-core.
 

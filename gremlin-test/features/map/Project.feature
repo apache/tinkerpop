@@ -53,3 +53,19 @@ Feature: Step - project()
       | lop |
       | lop |
       | ripple |
+
+  Scenario: g_V_valueMap_projectXxX_byXselectXnameXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().valueMap().project("x").by(__.select("name"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"x":["marko"]}] |
+      | m[{"x":["josh"]}] |
+      | m[{"x":["vadas"]}] |
+      | m[{"x":["peter"]}] |
+      | m[{"x":["lop"]}] |
+      | m[{"x":["ripple"]}] |

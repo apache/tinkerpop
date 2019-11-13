@@ -34,7 +34,7 @@ g.V().group().by().by(inE().count())                  <2>
 g.V().group().by().by(outE().count())                 <3>
 g.V().project("v","degree").by().by(bothE().count())  <4>
 g.V().project("v","degree").by().by(bothE().count()). <5>
-  order().by(select("degree"), desc).
+  order().by("degree", desc).
   limit(4)
 ----
 

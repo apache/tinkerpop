@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +42,8 @@ public abstract class ProjectTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXpersonX_projectXa_bX_byXoutE_countX_byXageX();
 
     public abstract Traversal<Vertex, String> get_g_V_outXcreatedX_projectXa_bX_byXnameX_byXinXcreatedX_countX_order_byXselectXbX__descX_selectXaX();
+
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_projectXxX_byXselectXnameXX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -67,6 +70,20 @@ public abstract class ProjectTest extends AbstractGremlinProcessTest {
         assertEquals("ripple", names.get(3));
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_valueMap_projectXxX_byXselectXnameXX() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_valueMap_projectXxX_byXselectXnameXX();
+        printTraversalForm(traversal);
+        checkResults(makeMapList(1,
+                "x", Collections.singletonList("marko"),
+                "x", Collections.singletonList("vadas"),
+                "x", Collections.singletonList("lop"),
+                "x", Collections.singletonList("josh"),
+                "x", Collections.singletonList("ripple"),
+                "x", Collections.singletonList("peter")), traversal);
+    }
+
     public static class Traversals extends ProjectTest {
 
         @Override
@@ -77,6 +94,11 @@ public abstract class ProjectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_outXcreatedX_projectXa_bX_byXnameX_byXinXcreatedX_countX_order_byXselectXbX__descX_selectXaX() {
             return g.V().out("created").project("a", "b").by("name").by(__.in("created").count()).order().by(__.select("b"), Order.desc).select("a");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_projectXxX_byXselectXnameXX() {
+            return g.V().valueMap().project("x").by(__.select("name"));
         }
     }
 }

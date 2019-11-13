@@ -38,7 +38,7 @@ g.V().outE().
   project("a","b").                         <1>
     by().by(inV().path().by().by(label)).
   group().                                  <2>
-    by(select("b")).
+    by("b").
     by(select("a").fold()).
   unfold().                                 <3>
   select(values).                           <4>
