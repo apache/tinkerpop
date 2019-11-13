@@ -81,25 +81,32 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
         // if the predicate value is a String.  this allows stuff like: g.V().has(id,lt(10)) to work properly
         if (this.key.equals(T.id.getAccessor()))
             return testingIdString ? testIdAsString(element) : testId(element);
-        else if (this.key.equals(T.label.getAccessor()))
+        if (this.key.equals(T.label.getAccessor()))
             return testLabel(element);
-        else if (element instanceof VertexProperty && this.key.equals(T.value.getAccessor()))
-            return testValue((VertexProperty) element);
-        else if (element instanceof VertexProperty && this.key.equals(T.key.getAccessor()))
-            return testKey((VertexProperty) element);
-        else {
-            if (element instanceof Vertex) {
-                final Iterator<? extends Property> itty = element.properties(this.key);
-                while (itty.hasNext()) {
-                    if (testValue(itty.next()))
-                        return true;
-                }
-                return false;
-            } else {
-                final Property property = element.property(this.key);
-                return property.isPresent() && testValue(property);
+
+        if (element instanceof Vertex) {
+            final Iterator<? extends Property> itty = element.properties(this.key);
+            while (itty.hasNext()) {
+                if (testValue(itty.next()))
+                    return true;
             }
+            return false;
+        } else {
+            final Property property = element.property(this.key);
+            return property.isPresent() && testValue(property);
         }
+    }
+
+    public final boolean test(final Property property) {
+        if (this.key.equals(T.value.getAccessor()))
+            return testValue(property);
+        if (this.key.equals(T.key.getAccessor()))
+            return testKey(property);
+        if (this.key.equals(T.id.getAccessor()) || this.key.equals(T.label.getAccessor())) {
+            if (property instanceof Element)
+                return test((Element) property);
+        }
+        return false;
     }
 
     protected boolean testId(Element element) {
@@ -175,10 +182,16 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
         }
     }
 
-    public static boolean testAll(final Element element, final List<HasContainer> hasContainers) {
+    public static <S> boolean testAll(final S element, final List<HasContainer> hasContainers) {
+        boolean isProperty = element instanceof Property;
         for (final HasContainer hasContainer : hasContainers) {
-            if (!hasContainer.test(element))
-                return false;
+            if (isProperty) {
+                if (!hasContainer.test((Property) element))
+                    return false;
+            } else {
+                if (!hasContainer.test((Element) element))
+                    return false;
+            }
         }
         return true;
     }
