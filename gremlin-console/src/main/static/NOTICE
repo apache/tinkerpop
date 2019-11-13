@@ -48,6 +48,18 @@ JavaTuples 1.2
 Copyright (c) 2010, The JAVATUPLES team (http://www.javatuples.org)
 
 ------------------------------------------------------------------------
+HPPC 0.7.1
+------------------------------------------------------------------------
+HPPC borrowed code, ideas or both from:
+
+ * Apache Lucene, http://lucene.apache.org/
+   (Apache license)
+ * Fastutil, http://fastutil.di.unimi.it/
+   (Apache license)
+ * Koloboke, https://github.com/OpenHFT/Koloboke
+   (Apache license)
+
+------------------------------------------------------------------------
 Netty 4.1.42
 ------------------------------------------------------------------------
 Copyright 2014 The Netty Project
