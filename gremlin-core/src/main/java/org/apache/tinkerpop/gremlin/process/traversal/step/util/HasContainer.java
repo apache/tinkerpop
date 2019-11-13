@@ -84,17 +84,12 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
         if (this.key.equals(T.label.getAccessor()))
             return testLabel(element);
 
-        if (element instanceof Vertex) {
-            final Iterator<? extends Property> itty = element.properties(this.key);
-            while (itty.hasNext()) {
-                if (testValue(itty.next()))
-                    return true;
-            }
-            return false;
-        } else {
-            final Property property = element.property(this.key);
-            return property.isPresent() && testValue(property);
+        final Iterator<? extends Property> itty = element.properties(this.key);
+        while (itty.hasNext()) {
+            if (testValue(itty.next()))
+                return true;
         }
+        return false;
     }
 
     public final boolean test(final Property property) {
@@ -128,7 +123,6 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
     protected boolean testKey(Property property) {
         return this.predicate.test(property.key());
     }
-
 
     public final String toString() {
         return this.key + '.' + this.predicate;
