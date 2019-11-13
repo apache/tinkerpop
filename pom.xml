@@ -349,6 +349,7 @@ limitations under the License.
                         <exclude>.travis.yml</exclude>
                         <exclude>.travis.*.sh</exclude>
                         <exclude>.dockerignore</exclude>
+                        <exclude>.dependabot/**</exclude>
                         <exclude>**/.classpath</exclude>
                         <exclude>**/.project</exclude>
                         <exclude>**/.settings/**</exclude>
