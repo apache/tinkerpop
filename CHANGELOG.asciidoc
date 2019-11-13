@@ -487,6 +487,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Bump to Tornado 5.x for gremlin-python.
 * Deprecated `TraversalStrategies.applyStrategies()`.
+* Reverted: Modified Java driver to use IP address rather than hostname to create connections.
 
 [[release-3-3-9]]
 === TinkerPop 3.3.9 (Release Date: October 14, 2019)
