@@ -44,7 +44,7 @@ import java.util.Date;
 @Fork(AbstractBenchmarkBase.DEFAULT_FORKS)
 public abstract class AbstractBenchmarkBase {
 
-    protected static final int DEFAULT_WARMUP_ITERATIONS = 10;
+    protected static final int DEFAULT_WARMUP_ITERATIONS = 3;
     protected static final int DEFAULT_MEASURE_ITERATIONS = 10;
     protected static final int DEFAULT_FORKS = 2;
     protected static final String DEFAULT_BENCHMARK_DIRECTORY = "./benchmarks/";
