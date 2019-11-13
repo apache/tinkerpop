@@ -54,7 +54,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -965,21 +964,13 @@ public final class Cluster {
         }
 
         /**
-         * Adds an address representing a group of Gremlin Servers, which will be added to the list of servers a
-         * {@link Client} will try to contact to send requests to. The address should be parseable by
-         * {@code InetAddress#getAllByName(String)}. That's the only validation performed at this point.
-         * No connection to the hosts is attempted.
-         * <p/>
-         * Note that if the address argument is a hostname that resolves to multiple {@code INetAddress} objects that
-         * happen to point to the same physical Gremlin Server instance the driver will think that it has more hosts
-         * for it to send requests to than there are in reality. A common situation in which this issue may occur is
-         * when IPv6 addressing is present as {@code InetAddress#getAllByName(String)} will return both the IPv6 and
-         * the IPv4 addresses. In these cases, the issue can be resolved by simply using the IP address directly or
-         * setting the Java system property {@code -Djava.net.preferIPv4Stack=true}.
+         * Adds the address of a Gremlin Server to the list of servers a {@link Client} will try to contact to send
+         * requests to.  The address should be parseable by {@link InetAddress#getByName(String)}.  That's the only
+         * validation performed at this point.  No connection to the host is attempted.
          */
         public Builder addContactPoint(final String address) {
             try {
-                this.addresses.addAll(Arrays.asList(InetAddress.getAllByName(address)));
+                this.addresses.add(InetAddress.getByName(address));
                 return this;
             } catch (UnknownHostException e) {
                 throw new IllegalArgumentException(e.getMessage());
@@ -987,10 +978,9 @@ public final class Cluster {
         }
 
         /**
-         * Add one or more addresses representing groups of Gremlin Servers, which will be added to the list of
-         * servers a {@link Client} will try to contact to send requests to. The address should be parseable by
-         * {@link InetAddress#getByName(String)}. That's the only validation performed at this point.
-         * No connection to the host is attempted.
+         * Add one or more the addresses of a Gremlin Servers to the list of servers a {@link Client} will try to
+         * contact to send requests to.  The address should be parseable by {@link InetAddress#getByName(String)}.
+         * That's the only validation performed at this point.  No connection to the host is attempted.
          */
         public Builder addContactPoints(final String... addresses) {
             for (String address : addresses)
