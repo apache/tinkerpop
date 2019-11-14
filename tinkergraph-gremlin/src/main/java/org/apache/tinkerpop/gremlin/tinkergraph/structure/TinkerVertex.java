@@ -85,9 +85,15 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
     @Override
     public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
         if (this.removed) throw elementAlreadyRemoved(Vertex.class, id);
-        ElementHelper.legalPropertyKeyValueArray(allowNullPropertyValues, keyValues);
-        ElementHelper.validateProperty(allowNullPropertyValues, key, value);
+        ElementHelper.legalPropertyKeyValueArray(keyValues);
+        ElementHelper.validateProperty(key, value);
         final Optional<Object> optionalId = ElementHelper.getIdValue(keyValues);
+
+        if (!allowNullPropertyValues && null == value) {
+            properties(key).forEachRemaining(VertexProperty::remove);
+            return VertexProperty.empty();
+        }
+
         final Optional<VertexProperty<V>> optionalVertexProperty = ElementHelper.stageVertexProperty(this, cardinality, key, value, keyValues);
         if (optionalVertexProperty.isPresent()) return optionalVertexProperty.get();
 

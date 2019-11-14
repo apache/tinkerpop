@@ -54,24 +54,14 @@ public class ElementHelperTest {
     }
 
     @Test
-    public void shouldValidatePropertyAndNotAllowNullValue() {
-        try {
-            ElementHelper.validateProperty(false,"test", null);
-            fail("Should fail as property value cannot be null");
-        } catch (IllegalArgumentException iae) {
-            assertEquals(Property.Exceptions.propertyValueCanNotBeNull().getMessage(), iae.getMessage());
-        }
-    }
-
-    @Test
     public void shouldValidatePropertyAndAllowNullValue() {
-        ElementHelper.validateProperty(true,"test", null);
+        ElementHelper.validateProperty("test", null);
     }
 
     @Test
     public void shouldValidatePropertyAndNotAllowNullKey() {
         try {
-            ElementHelper.validateProperty(false,null, "test");
+            ElementHelper.validateProperty(null, "test");
             fail("Should fail as property key cannot be null");
         } catch (IllegalArgumentException iae) {
             assertEquals(Property.Exceptions.propertyKeyCanNotBeNull().getMessage(), iae.getMessage());
@@ -81,7 +71,7 @@ public class ElementHelperTest {
     @Test
     public void shouldValidatePropertyAndNotAllowEmptyKey() {
         try {
-            ElementHelper.validateProperty(false,"", "test");
+            ElementHelper.validateProperty("", "test");
             fail("Should fail as property key cannot be empty");
         } catch (IllegalArgumentException iae) {
             assertEquals(Property.Exceptions.propertyKeyCanNotBeEmpty().getMessage(), iae.getMessage());
@@ -92,7 +82,7 @@ public class ElementHelperTest {
     public void shouldValidatePropertyAndNotAllowHiddenKey() {
         final String key = Graph.Hidden.hide("key");
         try {
-            ElementHelper.validateProperty(false, key, "test");
+            ElementHelper.validateProperty(key, "test");
             fail("Should fail as property key cannot be hidden");
         } catch (IllegalArgumentException iae) {
             assertEquals(Property.Exceptions.propertyKeyCanNotBeAHiddenKey(key).getMessage(), iae.getMessage());
@@ -101,13 +91,13 @@ public class ElementHelperTest {
 
     @Test
     public void shouldHaveValidProperty() {
-        ElementHelper.validateProperty(false,"aKey", "value");
+        ElementHelper.validateProperty("aKey", "value");
     }
 
     @Test
     public void shouldAllowEvenNumberOfKeyValues() {
         try {
-            ElementHelper.legalPropertyKeyValueArray(false,"aKey", "test", "no-value-for-this-one");
+            ElementHelper.legalPropertyKeyValueArray("aKey", "test", "no-value-for-this-one");
             fail("Should fail as there is an odd number of key-values");
         } catch (IllegalArgumentException iae) {
             assertEquals(Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo().getMessage(), iae.getMessage());
@@ -117,7 +107,7 @@ public class ElementHelperTest {
     @Test
     public void shouldNotAllowEvenNumberOfKeyValuesAndInvalidKeys() {
         try {
-            ElementHelper.legalPropertyKeyValueArray(false,"aKey", "test", "value-for-this-one", 1, 1, "none");
+            ElementHelper.legalPropertyKeyValueArray("aKey", "test", "value-for-this-one", 1, 1, "none");
             fail("Should fail as there is an even number of key-values, but a bad key");
         } catch (IllegalArgumentException iae) {
             assertEquals(Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices().getMessage(), iae.getMessage());
@@ -126,16 +116,7 @@ public class ElementHelperTest {
 
     @Test
     public void shouldAllowEvenNumberOfKeyValuesAndValidKeys() {
-        ElementHelper.legalPropertyKeyValueArray(false,"aKey", "test", "value-for-this-one", 1, "1", "none");
-    }
-
-    @Test
-    public void shouldNotAllowEvenNumberOfKeyValuesAndInvalidValues() {
-        try {
-            ElementHelper.legalPropertyKeyValueArray(false,"aKey", "test", "value-for-this-one", 1, "1", null);
-        } catch (IllegalArgumentException iae) {
-            assertEquals(Property.Exceptions.propertyValueCanNotBeNull().getMessage(), iae.getMessage());
-        }
+        ElementHelper.legalPropertyKeyValueArray("aKey", "test", "value-for-this-one", 1, "1", "none");
     }
 
     @Test
@@ -196,6 +177,15 @@ public class ElementHelperTest {
     @Test
     public void shouldAttachPropertiesButNotLabelsOrId() {
         final Element mockElement = mock(Element.class);
+        final Graph mockGraph = mock(Graph.class);
+        final Graph.Features mockGraphFeatures = mock(Graph.Features.class);
+        final Graph.Features.VertexFeatures mockVertexFeatures = mock(Graph.Features.VertexFeatures.class);
+        final Graph.Features.VertexPropertyFeatures mockVertexPropertyFeatures = mock(Graph.Features.VertexPropertyFeatures.class);
+        when(mockElement.graph()).thenReturn(mockGraph);
+        when(mockGraph.features()).thenReturn(mockGraphFeatures);
+        when(mockGraphFeatures.vertex()).thenReturn(mockVertexFeatures);
+        when(mockVertexFeatures.properties()).thenReturn(mockVertexPropertyFeatures);
+        when(mockVertexPropertyFeatures.supportsNullPropertyValues()).thenReturn(true);
         ElementHelper.attachProperties(mockElement, "test", 123, T.id, 321, T.label, "friends");
         verify(mockElement, times(1)).property("test", 123);
         verify(mockElement, times(0)).property(T.id.getAccessor(), 321);
@@ -205,6 +195,15 @@ public class ElementHelperTest {
     @Test(expected = ClassCastException.class)
     public void shouldFailTryingToAttachPropertiesNonStringKey() {
         final Element mockElement = mock(Element.class);
+        final Graph mockGraph = mock(Graph.class);
+        final Graph.Features mockGraphFeatures = mock(Graph.Features.class);
+        final Graph.Features.VertexFeatures mockVertexFeatures = mock(Graph.Features.VertexFeatures.class);
+        final Graph.Features.VertexPropertyFeatures mockVertexPropertyFeatures = mock(Graph.Features.VertexPropertyFeatures.class);
+        when(mockElement.graph()).thenReturn(mockGraph);
+        when(mockGraph.features()).thenReturn(mockGraphFeatures);
+        when(mockGraphFeatures.vertex()).thenReturn(mockVertexFeatures);
+        when(mockVertexFeatures.properties()).thenReturn(mockVertexPropertyFeatures);
+        when(mockVertexPropertyFeatures.supportsNullPropertyValues()).thenReturn(true);
         ElementHelper.attachProperties(mockElement, "test", 123, 321, "test");
     }
 
@@ -221,6 +220,15 @@ public class ElementHelperTest {
     @Test
     public void shouldAttachPropertiesWithCardinalityButNotLabelsOrId() {
         final Vertex mockElement = mock(Vertex.class);
+        final Graph mockGraph = mock(Graph.class);
+        final Graph.Features mockGraphFeatures = mock(Graph.Features.class);
+        final Graph.Features.VertexFeatures mockVertexFeatures = mock(Graph.Features.VertexFeatures.class);
+        final Graph.Features.VertexPropertyFeatures mockVertexPropertyFeatures = mock(Graph.Features.VertexPropertyFeatures.class);
+        when(mockElement.graph()).thenReturn(mockGraph);
+        when(mockGraph.features()).thenReturn(mockGraphFeatures);
+        when(mockGraphFeatures.vertex()).thenReturn(mockVertexFeatures);
+        when(mockVertexFeatures.properties()).thenReturn(mockVertexPropertyFeatures);
+        when(mockVertexPropertyFeatures.supportsNullPropertyValues()).thenReturn(true);
         ElementHelper.attachProperties(mockElement, VertexProperty.Cardinality.single, "test", 123, T.id, 321, T.label, "friends");
         verify(mockElement, times(1)).property(VertexProperty.Cardinality.single, "test", 123);
         verify(mockElement, times(0)).property(VertexProperty.Cardinality.single, T.id.getAccessor(), 321);
@@ -230,6 +238,15 @@ public class ElementHelperTest {
     @Test(expected = ClassCastException.class)
     public void shouldFailTryingToAttachPropertiesWithCardinalityNonStringKey() {
         final Element mockElement = mock(Vertex.class);
+        final Graph mockGraph = mock(Graph.class);
+        final Graph.Features mockGraphFeatures = mock(Graph.Features.class);
+        final Graph.Features.VertexFeatures mockVertexFeatures = mock(Graph.Features.VertexFeatures.class);
+        final Graph.Features.VertexPropertyFeatures mockVertexPropertyFeatures = mock(Graph.Features.VertexPropertyFeatures.class);
+        when(mockElement.graph()).thenReturn(mockGraph);
+        when(mockGraph.features()).thenReturn(mockGraphFeatures);
+        when(mockGraphFeatures.vertex()).thenReturn(mockVertexFeatures);
+        when(mockVertexFeatures.properties()).thenReturn(mockVertexPropertyFeatures);
+        when(mockVertexPropertyFeatures.supportsNullPropertyValues()).thenReturn(true);
         ElementHelper.attachProperties(mockElement, VertexProperty.Cardinality.single, "test", 123, 321, "test");
     }
 

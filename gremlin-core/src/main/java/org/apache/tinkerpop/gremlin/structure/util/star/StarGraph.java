@@ -95,7 +95,7 @@ public final class StarGraph implements Graph, Serializable {
     @Override
     public Vertex addVertex(final Object... keyValues) {
         if (null == this.starVertex) {
-            ElementHelper.legalPropertyKeyValueArray(true, keyValues);
+            ElementHelper.legalPropertyKeyValueArray(keyValues);
             this.starVertex = new StarVertex(ElementHelper.getIdValue(keyValues).orElse(this.nextId()), ElementHelper.getLabelValue(keyValues).orElse(Vertex.DEFAULT_LABEL));
             ElementHelper.attachProperties(this.starVertex, VertexProperty.Cardinality.list, keyValues); // TODO: is this smart? I say no... cause vertex property ids are not preserved.
             return this.starVertex;
@@ -413,14 +413,14 @@ public final class StarGraph implements Graph, Serializable {
 
         @Override
         public <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
-            ElementHelper.validateProperty(true, key, value);
-            ElementHelper.legalPropertyKeyValueArray(true, keyValues);
+            ElementHelper.validateProperty(key, value);
+            ElementHelper.legalPropertyKeyValueArray(keyValues);
             return this.property(VertexProperty.Cardinality.single, key, value, keyValues);
         }
 
         Edge addOutEdge(final String label, final Vertex inVertex, final Object... keyValues) {
             ElementHelper.validateLabel(label);
-            ElementHelper.legalPropertyKeyValueArray(true, keyValues);
+            ElementHelper.legalPropertyKeyValueArray(keyValues);
             if (null == this.outEdges)
                 this.outEdges = new HashMap<>();
             List<Edge> outE = this.outEdges.get(label);
@@ -436,7 +436,7 @@ public final class StarGraph implements Graph, Serializable {
 
         Edge addInEdge(final String label, final Vertex outVertex, final Object... keyValues) {
             ElementHelper.validateLabel(label);
-            ElementHelper.legalPropertyKeyValueArray(true, keyValues);
+            ElementHelper.legalPropertyKeyValueArray(keyValues);
             if (null == this.inEdges)
                 this.inEdges = new HashMap<>();
             List<Edge> inE = this.inEdges.get(label);
@@ -452,7 +452,7 @@ public final class StarGraph implements Graph, Serializable {
 
         @Override
         public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, V value, final Object... keyValues) {
-            ElementHelper.legalPropertyKeyValueArray(true, keyValues);
+            ElementHelper.legalPropertyKeyValueArray(keyValues);
             if (null == this.vertexProperties)
                 this.vertexProperties = new HashMap<>();
             final List<VertexProperty> list = cardinality.equals(VertexProperty.Cardinality.single) ? new ArrayList<>(1) : this.vertexProperties.getOrDefault(key, new ArrayList<>());
@@ -645,7 +645,7 @@ public final class StarGraph implements Graph, Serializable {
 
         @Override
         public <U> Property<U> property(final String key, final U value) {
-            ElementHelper.validateProperty(true, key, value);
+            ElementHelper.validateProperty(key, value);
             if (null == metaProperties)
                 metaProperties = new HashMap<>();
             Map<String, Object> properties = metaProperties.get(this.id);
@@ -760,7 +760,7 @@ public final class StarGraph implements Graph, Serializable {
 
         @Override
         public <V> Property<V> property(final String key, final V value) {
-            ElementHelper.validateProperty(true, key, value);
+            ElementHelper.validateProperty(key, value);
             if (null == edgeProperties)
                 edgeProperties = new HashMap<>();
             Map<String, Object> properties = edgeProperties.get(this.id);

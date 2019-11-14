@@ -93,7 +93,7 @@ Feature: Step - addV()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"stephen\")"
 
-  Scenario: g_addVXpersonX_propertyXname_nullX
+  Scenario: g_V_hasLabelXpersonX_propertyXname_nullX
     Given the empty graph
     And the graph initializer of
       """
@@ -112,11 +112,11 @@ Feature: Step - addV()
       """
     And the traversal of
       """
-      g.addV("person").property("name", null)
+      g.V().hasLabel("person").property("name", null)
       """
     When iterated to list
-    Then the result should have a count of 1
-    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",null)"
+    Then the result should have a count of 4
+    And the graph should return 2 for count of "g.V().properties(\"name\")"
 
   Scenario: g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenmX
     Given the empty graph

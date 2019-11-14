@@ -105,12 +105,6 @@ gremlin> g.inject(1, null, null, 2, null)
 ==>null
 ==>null
 ==>2
-gremlin> g.addV("person").property("name", 'stephen').property("age", null)
-==>v[13]
-gremlin> g.V().has('person','name','stephen').elementMap()
-==>[id:13,label:person,name:stephen,age:null]
-gremlin> g.V().has('person','age',null)
-==>v[13]
 gremlin> g.V().constant(null)
 ==>null
 ==>null
@@ -120,13 +114,12 @@ gremlin> g.V().constant(null)
 ==>null
 ----
 
-Note that the above examples use TinkerGraph which now supports `null` as a property value (though it can be configured
-to work in the prior fashion) and all graphs may not support this feature (for example, Neo4j does not). Please be
-sure to check the new `supportsNullPropertyValues()` feature (or their documentation) to determine if the `Graph`
-implementation allows `null` in this same fashion.
+TinkerGraph can be configured to support `null` as a property value and all graphs may not support this feature (for
+example, Neo4j does not). Please be sure to check the new `supportsNullPropertyValues()` feature (or the documentation
+of the graph provider) to determine if the `Graph` implementation allows `null` as a property value.
 
-As a final consideration, there was a bit of inconsistency in the handling of `null` in calls to `property()`
-depending on the type of mutation being executed demonstrated as follows in earlier versions:
+With respect to `null` in relation to properties, there was a bit of inconsistency in the handling of `null` in calls
+to `property()` depending on the type of mutation being executed demonstrated as follows in earlier versions:
 
 [source,text]
 ----
@@ -141,29 +134,34 @@ gremlin> g.V(13).properties()
 ==>vp[z->2]
 ----
 
-In this release, this behavior has been altered to become consistent. First, assuming `null` is not supported as a
-property value:
+This behavior has been altered to become consistent. First, assuming `null` is not supported as a property value, the
+setting of a property to `null` should have the behavior of removing the property in the same way in which you might
+do `g.V().properties().drop()`:
 
 [source,text]
 ----
 gremlin> g.V(1).property("x", 1).property("y", null).property("z", 2)
-Property value can not be null
-Type ':help' or ':h' for help.
-Display stack trace? [yN]n
-gremlin> g.addV().property("x", 1).property("y", null).property("z", 2)
-Property value can not be null
-Type ':help' or ':h' for help.
-Display stack trace? [yN]
+==>v[1]
+gremlin> g.V(1).elementMap()
+==>[id:1,label:person,name:marko,x:1,z:2,age:29]
+gremlin> g.V().hasLabel('person').property('age',null).iterate()
+gremlin> g.V().hasLabel('person').elementMap()
+==>[id:1,label:person,name:marko]
+==>[id:2,label:person,name:vadas]
+==>[id:4,label:person,name:josh]
+==>[id:6,label:person,name:peter]
 ----
 
 Then, assuming `null` is supported as a property value:
 
 [source,text]
 ----
-gremlin> g.V(1).property("x", 1).property("y", null).property("z", 2)
-==>v[1]
-gremlin> g.addV().property("x", 1).property("y", null).property("z", 2)
-==>v[15]
+gremlin> g.addV("person").property("name", 'stephen').property("age", null)
+==>v[13]
+gremlin> g.V().has('person','name','stephen').elementMap()
+==>[id:13,label:person,name:stephen,age:null]
+gremlin> g.V().has('person','age',null)
+==>v[13]
 ----
 
 In conclusion, this change in greater support of `null` may affect the behavior of existing traversals written in past

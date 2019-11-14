@@ -685,7 +685,9 @@ public interface Graph extends AutoCloseable, Host {
             public static final String FEATURE_NULL_PROPERTY_VALUES = "NullPropertyValues";
 
             /**
-             * Determines if an {@link Element} allows properties with {@code null} property values.
+             * Determines if an {@link Element} allows properties with {@code null} property values. In the event that
+             * this value is {@code false}, the underlying graph must treat {@code null} as an indication to remove
+             * the property.
              */
             @FeatureDescriptor(name = FEATURE_NULL_PROPERTY_VALUES)
             public default boolean supportsNullPropertyValues() {

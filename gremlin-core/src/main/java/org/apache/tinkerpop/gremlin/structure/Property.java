@@ -139,10 +139,6 @@ public interface Property<V> {
             return new IllegalArgumentException("Property key can not be null");
         }
 
-        public static IllegalArgumentException propertyValueCanNotBeNull() {
-            return new IllegalArgumentException("Property value can not be null");
-        }
-
         public static IllegalArgumentException propertyKeyCanNotBeAHiddenKey(final String key) {
             return new IllegalArgumentException("Property key can not be a hidden key: " + key);
         }

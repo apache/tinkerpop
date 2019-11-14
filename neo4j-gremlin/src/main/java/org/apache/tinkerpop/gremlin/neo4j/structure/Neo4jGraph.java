@@ -127,7 +127,7 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
 
     @Override
     public Vertex addVertex(final Object... keyValues) {
-        ElementHelper.legalPropertyKeyValueArray(false, keyValues);
+        ElementHelper.legalPropertyKeyValueArray(keyValues);
         if (ElementHelper.getIdValue(keyValues).isPresent())
             throw Vertex.Exceptions.userSuppliedIdsNotSupported();
         this.tx().readWrite();

@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -53,13 +52,7 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
      * with {@link TinkerGraphComputerView}.
      */
     public TinkerVertexProperty(final TinkerVertex vertex, final String key, final V value, final Object... propertyKeyValues) {
-        super(((TinkerGraph) vertex.graph()).vertexPropertyIdManager.getNextId((TinkerGraph) vertex.graph()), key);
-        this.allowNullPropertyValues = vertex.graph().features().vertex().properties().supportsNullPropertyValues();
-        this.vertex = vertex;
-        this.key = key;
-        this.value = value;
-        ElementHelper.legalPropertyKeyValueArray(allowNullPropertyValues, propertyKeyValues);
-        ElementHelper.attachProperties(this, propertyKeyValues);
+        this(((TinkerGraph) vertex.graph()).vertexPropertyIdManager.getNextId((TinkerGraph) vertex.graph()), vertex, key, value, propertyKeyValues);
     }
 
     /**
@@ -69,10 +62,13 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
     public TinkerVertexProperty(final Object id, final TinkerVertex vertex, final String key, final V value, final Object... propertyKeyValues) {
         super(id, key);
         this.allowNullPropertyValues = vertex.graph().features().vertex().properties().supportsNullPropertyValues();
+        if (!allowNullPropertyValues && null == value)
+            throw new IllegalArgumentException("value cannot be null as feature supportsNullPropertyValues is false");
+
         this.vertex = vertex;
         this.key = key;
         this.value = value;
-        ElementHelper.legalPropertyKeyValueArray(allowNullPropertyValues, propertyKeyValues);
+        ElementHelper.legalPropertyKeyValueArray(propertyKeyValues);
         ElementHelper.attachProperties(this, propertyKeyValues);
     }
 
@@ -120,6 +116,12 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
     @Override
     public <U> Property<U> property(final String key, final U value) {
         if (this.removed) throw elementAlreadyRemoved(VertexProperty.class, id);
+
+        if ((!allowNullPropertyValues && null == value)) {
+            properties(key).forEachRemaining(Property::remove);
+            return Property.empty();
+        }
+
         final Property<U> property = new TinkerProperty<>(this, key, value);
         if (this.properties == null) this.properties = new HashMap<>();
         this.properties.put(key, property);

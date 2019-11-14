@@ -56,7 +56,13 @@ public final class TinkerEdge extends TinkerElement implements Edge {
     @Override
     public <V> Property<V> property(final String key, final V value) {
         if (this.removed) throw elementAlreadyRemoved(Edge.class, id);
-        ElementHelper.validateProperty(allowNullPropertyValues, key, value);
+        ElementHelper.validateProperty(key, value);
+
+        if (!allowNullPropertyValues && null == value) {
+            properties(key).forEachRemaining(Property::remove);
+            return Property.empty();
+        }
+
         final Property oldProperty = super.property(key);
         final Property<V> newProperty = new TinkerProperty<>(this, key, value);
         if (null == this.properties) this.properties = new HashMap<>();

@@ -72,7 +72,7 @@ Feature: Step - addE()
     And the graph should return 4 for count of "g.V(v1Id).bothE()"
     And the graph should return 1 for count of "g.V(v1Id).inE().has(\"weight\", 2.0)"
 
-  Scenario: g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX_propertyXweight_nullX
+  Scenario: g_V_outE_propertyXweight_nullX
     Given the empty graph
     And the graph initializer of
       """
@@ -89,16 +89,13 @@ Feature: Step - addE()
         addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
         addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
       """
-    And using the parameter v1Id defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).as("a").out("created").addE("createdBy").to("a").property("weight", null)
+      g.V().outE().property("weight", null)
       """
     When iterated to list
-    Then the result should have a count of 1
-    And the graph should return 7 for count of "g.E()"
-    And the graph should return 4 for count of "g.V(v1Id).bothE()"
-    And the graph should return 1 for count of "g.V(v1Id).inE().has(\"weight\", null)"
+    Then the result should have a count of 6
+    And the graph should return 0 for count of "g.E().properties(\"weight\")"
 
   Scenario: g_V_aggregateXxX_asXaX_selectXxX_unfold_addEXexistsWithX_toXaX_propertyXtime_nowX
     Given the empty graph

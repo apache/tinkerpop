@@ -40,6 +40,7 @@ import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
@@ -57,9 +58,6 @@ public class PropertyTest {
     /**
      * Basic tests for the {@link Property} class.
      */
-    @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
-            "propertyValueCanNotBeNull"
-    })
     public static class BasicPropertyTest extends AbstractGremlinTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
@@ -150,25 +148,17 @@ public class PropertyTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NULL_PROPERTY_VALUES, supported = false)
         public void shouldNotAllowNullAddVertex() throws Exception {
-            try {
-                this.graph.addVertex("name", null);
-                fail("Call to addVertex() should have thrown an exception as null is not a supported property value");
-            } catch (Exception ex) {
-                validateException(Property.Exceptions.propertyValueCanNotBeNull(), ex);
-            }
+            final Vertex v = this.graph.addVertex("name", null);
+            assertThat(v.properties("name").hasNext(), is(false));
         }
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NULL_PROPERTY_VALUES, supported = false)
         public void shouldNotAllowNullAddEdge() throws Exception {
-            try {
-                final Vertex v = this.graph.addVertex();
-                v.addEdge("self", v, "name", null);
-                fail("Call to addEdge() should have thrown an exception as null is not a supported property value");
-            } catch (Exception ex) {
-                validateException(Property.Exceptions.propertyValueCanNotBeNull(), ex);
-            }
+            final Vertex v = this.graph.addVertex();
+            final Edge e = v.addEdge("self", v, "name", null);
+            assertThat(e.properties("name").hasNext(), is(false));
         }
 
         @Test
@@ -204,13 +194,10 @@ public class PropertyTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_NULL_PROPERTY_VALUES, supported = false)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
         public void shouldNotAllowNullAddVertexProperty() throws Exception {
-            try {
-                final Vertex v = this.graph.addVertex("person");
-                final VertexProperty vp = v.property("location", "santa fe", "startTime", 1995, "endTime", null);
-                fail("Call to property() should have thrown an exception as null is not a supported property value");
-            } catch (Exception ex) {
-                validateException(Property.Exceptions.propertyValueCanNotBeNull(), ex);
-            }
+            final Vertex v = this.graph.addVertex("person");
+            final VertexProperty vp = v.property("location", "santa fe", "startTime", 1995, "endTime", null);
+            assertEquals(1995, (int) vp.value("startTime"));
+            assertThat(vp.properties("endTime").hasNext(), is(false));
         }
     }
 

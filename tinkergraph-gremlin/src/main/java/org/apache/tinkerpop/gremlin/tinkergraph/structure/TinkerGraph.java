@@ -116,7 +116,7 @@ public final class TinkerGraph implements Graph {
         vertexPropertyIdManager = selectIdManager(configuration, GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, VertexProperty.class);
         defaultVertexPropertyCardinality = VertexProperty.Cardinality.valueOf(
                 configuration.getString(GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.single.name()));
-        allowNullPropertyValues = configuration.getBoolean(GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES, true);
+        allowNullPropertyValues = configuration.getBoolean(GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES, false);
 
         graphLocation = configuration.getString(GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null);
         graphFormat = configuration.getString(GREMLIN_TINKERGRAPH_GRAPH_FORMAT, null);
@@ -161,7 +161,7 @@ public final class TinkerGraph implements Graph {
 
     @Override
     public Vertex addVertex(final Object... keyValues) {
-        ElementHelper.legalPropertyKeyValueArray(allowNullPropertyValues, keyValues);
+        ElementHelper.legalPropertyKeyValueArray(keyValues);
         Object idValue = vertexIdManager.convert(ElementHelper.getIdValue(keyValues).orElse(null));
         final String label = ElementHelper.getLabelValue(keyValues).orElse(Vertex.DEFAULT_LABEL);
 
