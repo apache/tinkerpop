@@ -1196,7 +1196,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldFailOnDeadHost() throws Exception {
-        final Cluster cluster = TestClientFactory.build().create();
+        final Cluster cluster = TestClientFactory.build().maxWaitForConnection(90000).create();
         final Client client = cluster.connect();
 
         // ensure that connection to server is good
@@ -1220,13 +1220,21 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
             // restart server
             this.startServer();
-            // the retry interval is 1 second, wait a bit longer
-            TimeUnit.SECONDS.sleep(5);
 
-            List<Result> results = client.submit("1+1").all().join();
-            assertEquals(1, results.size());
-            assertEquals(2, results.get(0).getInt());
+            // try a bunch of times to reconnect. on slower systems this may simply take longer...looking at you travis
+            for (int ix = 1; ix < 11; ix++) {
+                // the retry interval is 1 second, wait a bit longer
+                TimeUnit.SECONDS.sleep(5);
 
+                try {
+                    final List<Result> results = client.submit("1+1").all().join();
+                    assertEquals(1, results.size());
+                    assertEquals(2, results.get(0).getInt());
+                } catch (Exception ex) {
+                    if (ix == 10)
+                        fail("Should have eventually succeeded");
+                }
+            }
         } finally {
             cluster.close();
         }

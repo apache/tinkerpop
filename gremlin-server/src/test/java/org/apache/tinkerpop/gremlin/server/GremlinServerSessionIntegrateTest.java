@@ -343,10 +343,8 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
                 }
             });
 
-            System.out.println("shouldEnsureSessionBindingsAreThreadSafe: sent 10000");
             assertEquals(requests, futures.size());
 
-            System.out.println("shouldEnsureSessionBindingsAreThreadSafe: asserting 10000");
             int counter = 0;
             for (CompletableFuture<ResultSet> f : futures) {
                 final Result r = f.get().all().get(30000, TimeUnit.MILLISECONDS).get(0);
@@ -355,14 +353,10 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
             }
 
             assertEquals(requests, counter);
-            System.out.println("shouldEnsureSessionBindingsAreThreadSafe: asserted 10000");
-
         } catch (Exception ex) {
             fail(ex.getMessage());
         } finally {
-            System.out.println("shouldEnsureSessionBindingsAreThreadSafe: calling cluster.close");
             cluster.close();
-            System.out.println("shouldEnsureSessionBindingsAreThreadSafe: called cluster.close");
         }
 
     }
