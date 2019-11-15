@@ -41,8 +41,12 @@ jobs:
       name: "javascript"
     - script:
       - "mvn clean install -q -DskipTests"
-      - "travis_wait 60 mvn verify -pl :gremlin-server,:gremlin-console -DskipIntegrationTests=false"
-      name: "gremlin server/console"
+      - "mvn verify -pl :gremlin-server -DskipTests -DskipIntegrationTests=false"
+      name: "gremlin server"
+    - script:
+        - "mvn clean install -q -DskipTests"
+        - "mvn verify -pl :gremlin-console -DskipIntegrationTests=false"
+      name: "gremlin console"
     - script:
       - "mvn clean install -q -DskipTests"
       - "travis_wait 60 mvn verify -pl :spark-gremlin -DskipIntegrationTests=false"

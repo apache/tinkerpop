@@ -114,7 +114,7 @@ public class Krb5Authenticator implements Authenticator {
                 // GSSAPI is the only available mechanism for this authenticator
                 final Map props = new HashMap<String, Object>();
                 final String[] principalParts = principalName.split("/|@");
-                if (principalParts.length < 3) throw new IllegalArgumentException("Use principal name of format 'service/fqdn@kdcrealm' - not this nonsense" + principalName);
+                if (principalParts.length < 3) throw new IllegalArgumentException("Use principal name of format 'service/fqdn@kdcrealm'");
                 saslServer = Sasl.createSaslServer(mechanism, principalParts[0], principalParts[1], props, Krb5SaslAuthenticator.this);
             } catch(Exception e) {
                 logger.error("Creating sasl server failed: ", e);
