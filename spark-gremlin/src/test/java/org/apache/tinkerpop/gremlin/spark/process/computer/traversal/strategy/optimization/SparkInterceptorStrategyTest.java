@@ -69,9 +69,9 @@ public class SparkInterceptorStrategyTest extends AbstractSparkTest {
         ///
         Graph graph = GraphFactory.open(configuration);
         GraphTraversalSource g = graph.traversal().withComputer().withoutStrategies(SparkSingleIterationStrategy.class);
-        assertFalse(g.getStrategies().toList().contains(SparkSingleIterationStrategy.instance()));
+        assertFalse(g.getStrategies().getStrategy(SparkSingleIterationStrategy.class).isPresent());
         assertFalse(g.V().count().explain().toString().contains(SparkSingleIterationStrategy.class.getSimpleName()));
-        assertTrue(g.getStrategies().toList().contains(SparkInterceptorStrategy.instance()));
+        assertTrue(g.getStrategies().getStrategy(SparkInterceptorStrategy.class).isPresent());
         assertTrue(g.V().count().explain().toString().contains(SparkInterceptorStrategy.class.getSimpleName()));
         /// groupCount(m)-test
         Traversal.Admin<Vertex, Long> traversal = g.V().groupCount("m").by(T.label).count().asAdmin();
@@ -97,9 +97,9 @@ public class SparkInterceptorStrategyTest extends AbstractSparkTest {
         ///
         Graph graph = GraphFactory.open(configuration);
         GraphTraversalSource g = graph.traversal().withComputer().withoutStrategies(SparkSingleIterationStrategy.class);
-        assertFalse(g.getStrategies().toList().contains(SparkSingleIterationStrategy.instance()));
+        assertFalse(g.getStrategies().getStrategy(SparkSingleIterationStrategy.class).isPresent());
         assertFalse(g.V().count().explain().toString().contains(SparkSingleIterationStrategy.class.getSimpleName()));
-        assertTrue(g.getStrategies().toList().contains(SparkInterceptorStrategy.instance()));
+        assertTrue(g.getStrategies().getStrategy(SparkInterceptorStrategy.class).isPresent());
         assertTrue(g.V().count().explain().toString().contains(SparkInterceptorStrategy.class.getSimpleName()));
         /// SparkCountInterceptor matches
         test(SparkStarBarrierInterceptor.class, 6l, g.V().count());

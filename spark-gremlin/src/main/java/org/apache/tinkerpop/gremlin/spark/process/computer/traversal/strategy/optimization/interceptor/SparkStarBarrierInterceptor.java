@@ -163,7 +163,7 @@ public final class SparkStarBarrierInterceptor implements SparkVertexProgramInte
         final Step<?, ?> startStep = traversal.getStartStep();
         final Step<?, ?> endStep = traversal.getEndStep();
         // right now this is not supported because of how the SparkStarBarrierInterceptor mutates the traversal prior to local evaluation
-        if (traversal.getStrategies().toList().stream().filter(strategy -> strategy instanceof SubgraphStrategy).findAny().isPresent())
+        if (traversal.getStrategies().getStrategy(SubgraphStrategy.class).isPresent())
             return false;
         if (!startStep.getClass().equals(GraphStep.class) || ((GraphStep) startStep).returnsEdge())
             return false;

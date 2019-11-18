@@ -178,7 +178,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                                 this.traversal.get().getParent().asStep().getNextStep().getNextStep() instanceof ComputerResultStep));
 
         // determine how to store halted traversers
-        final Iterator<?> itty = IteratorUtils.filter(this.traversal.get().getStrategies().toList(), strategy -> strategy instanceof HaltedTraverserStrategy).iterator();
+        final Iterator<?> itty = IteratorUtils.filter(this.traversal.get().getStrategies(), strategy -> strategy instanceof HaltedTraverserStrategy).iterator();
         this.haltedTraverserStrategy = itty.hasNext() ? (HaltedTraverserStrategy) itty.next() : HaltedTraverserStrategy.reference();
 
         // register traversal side-effects in memory

@@ -90,7 +90,7 @@ public class EarlyLimitStrategyProcessTest extends AbstractGremlinProcessTest {
         assumeTrue("The following assertions apply to TinkerGraph only as provider strategies can alter the " +
                         "steps to not comply with expectations", graph.getClass().getSimpleName().equals("TinkerGraph"));
 
-        if (t.asAdmin().getStrategies().toList().stream().anyMatch(s -> s instanceof EarlyLimitStrategy)) {
+        if (t.asAdmin().getStrategies().getStrategy(EarlyLimitStrategy.class).isPresent()) {
             assertEquals(10, metrics.getMetrics().size());
             assertTrue(metrics.getMetrics(5).getName().endsWith("@[d]"));
             assertEquals("RangeGlobalStep(0,1)", metrics.getMetrics(6).getName());

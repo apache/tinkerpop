@@ -49,7 +49,7 @@ public final class RequirementsStrategy extends AbstractTraversalStrategy<Traver
     }
 
     public static void addRequirements(final TraversalStrategies traversalStrategies, final TraverserRequirement... requirements) {
-        RequirementsStrategy strategy = (RequirementsStrategy) traversalStrategies.toList().stream().filter(s -> s instanceof RequirementsStrategy).findAny().orElse(null);
+        RequirementsStrategy strategy = (RequirementsStrategy) traversalStrategies.getStrategy(RequirementsStrategy.class).orElse(null);
         if (null == strategy) {
             strategy = new RequirementsStrategy();
             traversalStrategies.addStrategies(strategy);

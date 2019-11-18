@@ -88,11 +88,11 @@ public class SparkSingleIterationStrategyTest extends AbstractSparkTest {
 
         Graph graph = GraphFactory.open(configuration);
         GraphTraversalSource g = graph.traversal().withComputer().withoutStrategies(SparkInterceptorStrategy.class, MessagePassingReductionStrategy.class);
-        assertFalse(g.getStrategies().toList().contains(SparkInterceptorStrategy.instance()));
+        assertFalse(g.getStrategies().getStrategy(SparkInterceptorStrategy.class).isPresent());
         assertFalse(g.V().count().explain().getStrategyTraversals().stream().filter(pair -> pair.getValue0() instanceof SparkInterceptorStrategy).findAny().isPresent());
-        assertFalse(g.getStrategies().toList().contains(MessagePassingReductionStrategy.instance()));
+        assertFalse(g.getStrategies().getStrategy(MessagePassingReductionStrategy.class).isPresent());
         assertFalse(g.V().count().explain().getStrategyTraversals().stream().filter(pair -> pair.getValue0() instanceof MessagePassingReductionStrategy).findAny().isPresent());
-        assertTrue(g.getStrategies().toList().contains(SparkSingleIterationStrategy.instance()));
+        assertTrue(g.getStrategies().getStrategy(SparkSingleIterationStrategy.class).isPresent());
         assertTrue(g.V().count().explain().getStrategyTraversals().stream().filter(pair -> pair.getValue0() instanceof SparkSingleIterationStrategy).findAny().isPresent());
 
         test(true, g.V().limit(10));
@@ -116,11 +116,11 @@ public class SparkSingleIterationStrategyTest extends AbstractSparkTest {
 
         graph = GraphFactory.open(configuration);
         g = graph.traversal().withComputer().withoutStrategies(SparkInterceptorStrategy.class).withStrategies(MessagePassingReductionStrategy.instance());
-        assertFalse(g.getStrategies().toList().contains(SparkInterceptorStrategy.instance()));
+        assertFalse(g.getStrategies().getStrategy(SparkInterceptorStrategy.class).isPresent());
         assertFalse(g.V().count().explain().getStrategyTraversals().stream().filter(pair -> pair.getValue0() instanceof SparkInterceptorStrategy).findAny().isPresent());
-        assertTrue(g.getStrategies().toList().contains(MessagePassingReductionStrategy.instance()));
+        assertTrue(g.getStrategies().getStrategy(MessagePassingReductionStrategy.class).isPresent());
         assertTrue(g.V().count().explain().getStrategyTraversals().stream().filter(pair -> pair.getValue0() instanceof MessagePassingReductionStrategy).findAny().isPresent());
-        assertTrue(g.getStrategies().toList().contains(SparkSingleIterationStrategy.instance()));
+        assertTrue(g.getStrategies().getStrategy(SparkSingleIterationStrategy.class).isPresent());
         assertTrue(g.V().count().explain().getStrategyTraversals().stream().filter(pair -> pair.getValue0() instanceof SparkSingleIterationStrategy).findAny().isPresent());
 
         test(true, g.V().limit(10));

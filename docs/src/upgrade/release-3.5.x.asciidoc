@@ -240,7 +240,18 @@ relied on the old ordering of application. It may also present an opportunity to
 written to gain some processing benefit to the new order. Please be sure to review any custom strategies carefully
 when upgrading to this version.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1568[TINKERPOP-1568]
+As part of this change, there have been some adjustments to the `Traversal` and `Traversal.Admin` interfaces which have
+helped to clarify coding intent. There is now an `isRoot()` method which determines whether or not the traversal has a
+parent or not. Under revised semantics for 3.5.0, a traversal's parent must be an `EmptyStep` instance and should not
+be `null`. With this change, provider `TraversalStrategy` implementations should be reviewed to evaluate if `isRoot()`
+semantics cause any breaks in logic to existing code.
+
+In addition, `TraversalStrategies` now implements `Iterable` and exposes an `iterator()` method which may be preferred
+over the old `toList()` style construction for getting the list of configured strategies.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1568[TINKERPOP-1568],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2310[TINKERPOP-2310],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2311[TINKERPOP-2311]
 
 ===== AbstractOpProcessor API Change
 

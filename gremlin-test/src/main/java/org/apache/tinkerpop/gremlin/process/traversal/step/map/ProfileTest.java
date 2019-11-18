@@ -55,7 +55,6 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -258,8 +257,8 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
         final TraversalMetrics traversalMetrics = traversal.next();
         validate_g_V_repeat_both_modern_profile(traversalMetrics,
-                traversal.asAdmin().getStrategies().toList().contains(RepeatUnrollStrategy.instance()) &&
-                        !traversal.asAdmin().getStrategies().toList().contains(ComputerVerificationStrategy.instance()));
+                traversal.asAdmin().getStrategies().getStrategy(RepeatUnrollStrategy.class).isPresent() &&
+                        !traversal.asAdmin().getStrategies().getStrategy(ComputerVerificationStrategy.class).isPresent());
     }
 
     @Test
@@ -270,8 +269,8 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         traversal.iterate();
         final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().get(METRICS_KEY);
         validate_g_V_repeat_both_modern_profile(traversalMetrics,
-                traversal.asAdmin().getStrategies().toList().contains(RepeatUnrollStrategy.instance()) &&
-                        !traversal.asAdmin().getStrategies().toList().contains(ComputerVerificationStrategy.instance()));
+                traversal.asAdmin().getStrategies().getStrategy(RepeatUnrollStrategy.class).isPresent() &&
+                        !traversal.asAdmin().getStrategies().getStrategy(ComputerVerificationStrategy.class).isPresent());
     }
 
     private void validate_g_V_repeat_both_modern_profile(final TraversalMetrics traversalMetrics, final boolean withRepeatUnrollStrategy) {
@@ -326,7 +325,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         assertEquals(1, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID).longValue());
         assertEquals(1, metrics.getCount(TraversalMetrics.ELEMENT_COUNT_ID).longValue());
 
-        if (traversal.asAdmin().getStrategies().toList().stream().anyMatch(s -> s instanceof CountStrategy)) {
+        if (traversal.asAdmin().getStrategies().getStrategy(CountStrategy.class).isPresent()) {
             assertEquals("Metrics 1 should have 4 nested metrics.", 4, metrics.getNested().size());
         } else {
             assertEquals("Metrics 1 should have 3 nested metrics.", 3, metrics.getNested().size());

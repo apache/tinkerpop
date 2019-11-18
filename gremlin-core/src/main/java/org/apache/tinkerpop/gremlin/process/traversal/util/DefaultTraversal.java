@@ -138,7 +138,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
             // moving side-effect setting after actual recursive strategy application we save a loop and by
             // consequence also fix a problem where strategies might reset something in sideeffects which seems to
             // happen in TranslationStrategy.
-            final Iterator<TraversalStrategy<?>> strategyIterator = this.strategies.toIterator();
+            final Iterator<TraversalStrategy<?>> strategyIterator = this.strategies.iterator();
             while (strategyIterator.hasNext()) {
                 final TraversalStrategy<?> strategy = strategyIterator.next();
                 TraversalHelper.applyTraversalRecursively(strategy::apply, this);
@@ -207,7 +207,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
                 return this.finalEndStep.next();
             }
         } catch (final FastNoSuchElementException e) {
-            throw this.parent instanceof EmptyStep ? new NoSuchElementException() : e;
+            throw this.isRoot() ? new NoSuchElementException() : e;
         }
     }
 
@@ -230,7 +230,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
             // and release the resources.
             CloseableIterator.closeIterator(this);
 
-            throw this.parent instanceof EmptyStep ? new NoSuchElementException() : e;
+            throw this.isRoot() ? new NoSuchElementException() : e;
         }
     }
 
@@ -347,7 +347,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public void setParent(final TraversalParent step) {
-        this.parent = step;
+        this.parent = null == step ? EmptyStep.instance() : step;
     }
 
     @Override

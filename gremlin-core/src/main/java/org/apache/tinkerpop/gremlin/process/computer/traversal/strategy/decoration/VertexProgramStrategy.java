@@ -162,8 +162,8 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
     }
 
     public static Optional<Computer> getComputer(final TraversalStrategies strategies) {
-        final Optional<TraversalStrategy<?>> optional = strategies.toList().stream().filter(strategy -> strategy instanceof VertexProgramStrategy).findAny();
-        return optional.isPresent() ? Optional.of(((VertexProgramStrategy) optional.get()).computer) : Optional.empty();
+        final Optional<VertexProgramStrategy> optional = strategies.getStrategy(VertexProgramStrategy.class);
+        return optional.isPresent() ? Optional.of(optional.get().computer) : Optional.empty();
     }
 
     public void addGraphComputerStrategies(final TraversalSource traversalSource) {

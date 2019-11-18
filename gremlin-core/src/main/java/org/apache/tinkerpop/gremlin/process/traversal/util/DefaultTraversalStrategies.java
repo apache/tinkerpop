@@ -70,7 +70,7 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     }
 
     @Override
-    public Iterator<TraversalStrategy<?>> toIterator() {
+    public Iterator<TraversalStrategy<?>> iterator() {
         return this.traversalStrategies.iterator();
     }
 

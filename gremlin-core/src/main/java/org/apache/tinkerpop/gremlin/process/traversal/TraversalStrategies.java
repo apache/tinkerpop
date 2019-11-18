@@ -41,6 +41,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.Stan
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.tools.MultiMap;
 
 import java.io.Serializable;
@@ -65,19 +66,22 @@ import java.util.stream.Collectors;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
-public interface TraversalStrategies extends Serializable, Cloneable {
+public interface TraversalStrategies extends Serializable, Cloneable, Iterable<TraversalStrategy<?>> {
 
     static List<Class<? extends TraversalStrategy>> STRATEGY_CATEGORIES = Collections.unmodifiableList(Arrays.asList(TraversalStrategy.DecorationStrategy.class, TraversalStrategy.OptimizationStrategy.class, TraversalStrategy.ProviderOptimizationStrategy.class, TraversalStrategy.FinalizationStrategy.class, TraversalStrategy.VerificationStrategy.class));
 
     /**
-     * Return all the {@link TraversalStrategy} instances associated with this {@link TraversalStrategies}.
+     * Return an immutable list of the {@link TraversalStrategy} instances.
      */
-    public List<TraversalStrategy<?>> toList();
+    public default List<TraversalStrategy<?>> toList() {
+        return Collections.unmodifiableList(IteratorUtils.list(iterator()));
+    }
 
     /**
-     * Return all the {@link TraversalStrategy} instances associated with this {@link TraversalStrategies}.
+     * Return an {@code Iterator} of the {@link TraversalStrategy} instances.
      */
-    public Iterator<TraversalStrategy<?>> toIterator();
+    @Override
+    public Iterator<TraversalStrategy<?>> iterator();
 
     /**
      * Return the {@link TraversalStrategy} instance associated with the provided class.
@@ -87,7 +91,8 @@ public interface TraversalStrategies extends Serializable, Cloneable {
      * @return an optional containing the strategy instance or not
      */
     public default <T extends TraversalStrategy> Optional<T> getStrategy(final Class<T> traversalStrategyClass) {
-        return (Optional) toList().stream().filter(s -> traversalStrategyClass.isAssignableFrom(s.getClass())).findAny();
+        return (Optional<T>) IteratorUtils.stream(iterator()).
+                filter(s -> traversalStrategyClass.isAssignableFrom(s.getClass())).findAny();
     }
 
     /**
