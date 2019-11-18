@@ -116,6 +116,10 @@ public interface Scoping {
     }
 
     public default <S> S getNullableScopeValue(final Pop pop, final String key, final Traverser.Admin<?> traverser) {
+        return getScopeValue(pop, key, traverser, null);
+    }
+
+    public default <S> S getScopeValue(final Pop pop, final String key, final Traverser.Admin<?> traverser, final S valueIfNotFound) {
         final Object object = traverser.get();
         if (object instanceof Map && ((Map<String, S>) object).containsKey(key))
             return ((Map<String, S>) object).get(key);
@@ -127,7 +131,7 @@ public interface Scoping {
         if (path.hasLabel(key))
             return path.get(pop, key);
         ///
-        return null;
+        return valueIfNotFound;
     }
 
     /**

@@ -299,6 +299,9 @@ function toMap(stringMap) {
 }
 
 function parseMapValue(value) {
+  if (value === null)
+    return null;
+
   if (typeof value === 'string') {
     return parseValue.call(this, value);
   }

@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -40,6 +39,7 @@ import java.util.Set;
  */
 public final class SelectOneStep<S, E> extends MapStep<S, E> implements TraversalParent, Scoping, PathProcessor, ByModulating {
 
+    private static final Object NOTHING_SELECTED = new Object();
     private final Pop pop;
     private final String selectKey;
     private Traversal.Admin<S, E> selectTraversal = null;
@@ -53,13 +53,14 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     @Override
     protected E map(final Traverser.Admin<S> traverser) {
-        final E end = this.getNullableScopeValue(this.pop, this.selectKey, traverser);
+        final E end = this.getScopeValue(this.pop, this.selectKey, traverser, (E) NOTHING_SELECTED);
+        if (NOTHING_SELECTED == end) return end;
         return null != end ? TraversalUtil.applyNullable((S) end, this.selectTraversal) : null;
     }
 
     @Override
     protected boolean isEmptyTraverser(final E obj) {
-        return null == obj;
+        return NOTHING_SELECTED == obj;
     }
 
     @Override

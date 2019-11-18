@@ -42,7 +42,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     protected String id = Traverser.Admin.HALT;
     protected Traversal.Admin traversal;
     protected ExpandableStepIterator<S> starts;
-    protected Traverser.Admin<E> nextEnd = null;
+    protected Traverser.Admin<E> nextEnd = EmptyTraverser.instance();
     protected boolean traverserStepIdAndLabelsSetByChild = false;
 
     protected Step<?, S> previousStep = EmptyStep.instance();
@@ -82,7 +82,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     @Override
     public void reset() {
         this.starts.clear();
-        this.nextEnd = null;
+        this.nextEnd = EmptyTraverser.instance();
     }
 
     @Override
@@ -117,11 +117,11 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     @Override
     public Traverser.Admin<E> next() {
-        if (null != this.nextEnd) {
+        if (EmptyTraverser.instance() != this.nextEnd) {
             try {
                 return this.prepareTraversalForNextStep(this.nextEnd);
             } finally {
-                this.nextEnd = null;
+                this.nextEnd = EmptyTraverser.instance();
             }
         } else {
             while (true) {
@@ -135,7 +135,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     @Override
     public boolean hasNext() {
-        if (null != this.nextEnd)
+        if (EmptyTraverser.instance() != this.nextEnd)
             return true;
         else {
             try {
@@ -145,7 +145,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
                     if (this.nextEnd.bulk() > 0)
                         return true;
                     else
-                        this.nextEnd = null;
+                        this.nextEnd = EmptyTraverser.instance();
                 }
             } catch (final NoSuchElementException e) {
                 return false;
@@ -178,7 +178,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
             clone.starts = new ExpandableStepIterator<>(clone);
             clone.previousStep = EmptyStep.instance();
             clone.nextStep = EmptyStep.instance();
-            clone.nextEnd = null;
+            clone.nextEnd = EmptyTraverser.instance();
             clone.traversal = EmptyTraversal.instance();
             clone.labels = new LinkedHashSet<>(this.labels);
             clone.reset();

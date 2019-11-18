@@ -181,6 +181,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                     var rows = table.Rows.ToArray();
                     Assert.Equal("result", rows[0].Cells.First().Value);
                     var expected = rows.Skip(1).Select(x => ParseValue(x.Cells.First().Value, _graphName));
+
                     if (ordered)
                     {
                         Assert.Equal(expected, _result);

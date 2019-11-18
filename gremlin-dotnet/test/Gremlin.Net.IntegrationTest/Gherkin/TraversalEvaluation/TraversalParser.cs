@@ -36,7 +36,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         private static readonly IDictionary<string, Func<GraphTraversalSource, ITraversal>> FixedTranslations = 
             new Dictionary<string, Func<GraphTraversalSource, ITraversal>>
             {
-                { "g.V().fold().count(Scope.local)", g => g.V().Fold().Count(Scope.Local)}
+                { "g.V().fold().count(Scope.local)", g => g.V().Fold().Count(Scope.Local)},
+                { "g.inject(10,20,null,20,10,10).groupCount(\"x\").dedup().as(\"y\").project(\"a\",\"b\").by().by(__.select(\"x\").select(__.select(\"y\")))", 
+                    g => g.Inject<object>(10,20,null,20,10,10).GroupCount("x").Dedup().As("y").Project<object>("a","b").By().By(__.Select<int>("x").Select<object>(__.Select<int>("y")))}
             };
 
         private static readonly Regex RegexNumeric =
@@ -169,7 +171,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                     {
                         if (IsNumeric(methodParameter.ParameterType) && IsNumeric(tokenParameterType))
                         {
-                            // Acount for implicit conversion of numeric values as an exact match 
+                            // Account for implicit conversion of numeric values as an exact match
                             exactMatches++;
                         }
                         else if (!methodParameter.ParameterType.GetTypeInfo().IsAssignableFrom(tokenParameterType))
