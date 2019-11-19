@@ -106,3 +106,19 @@ Feature: Step - map()
       | v[josh] |
       | v[ripple] |
       | v[peter]  |
+
+  Scenario: g_V_mapXconstantXnullXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().map(__.constant(null))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | null |
+      | null |
+      | null |
+      | null |
+      | null |
+      | null |

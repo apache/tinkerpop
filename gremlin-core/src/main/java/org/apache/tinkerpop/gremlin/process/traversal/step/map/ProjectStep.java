@@ -37,7 +37,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ProjectStep<S, E> extends MapStep<S, Map<String, E>> implements TraversalParent, ByModulating {
+public final class ProjectStep<S, E> extends ScalarMapStep<S, Map<String, E>> implements TraversalParent, ByModulating {
 
     private final List<String> projectKeys;
     private TraversalRing<S, E> traversalRing;

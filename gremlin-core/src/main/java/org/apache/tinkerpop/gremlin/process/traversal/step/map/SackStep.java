@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SackStep<S, E> extends MapStep<S, E> {
+public final class SackStep<S, E> extends ScalarMapStep<S, E> {
 
     public SackStep(final Traversal.Admin traversal) {
         super(traversal);

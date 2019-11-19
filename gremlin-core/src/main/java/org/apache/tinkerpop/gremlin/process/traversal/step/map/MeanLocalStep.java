@@ -32,7 +32,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class MeanLocalStep<E extends Number, S extends Iterable<E>> extends MapStep<S, Number> {
+public final class MeanLocalStep<E extends Number, S extends Iterable<E>> extends ScalarMapStep<S, Number> {
 
     public MeanLocalStep(final Traversal.Admin traversal) {
         super(traversal);

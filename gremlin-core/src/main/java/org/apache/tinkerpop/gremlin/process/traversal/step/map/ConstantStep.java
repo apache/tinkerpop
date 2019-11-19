@@ -27,7 +27,7 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
-public class ConstantStep<S, E> extends MapStep<S, E> {
+public class ConstantStep<S, E> extends ScalarMapStep<S, E> {
 
     private final E constant;
 

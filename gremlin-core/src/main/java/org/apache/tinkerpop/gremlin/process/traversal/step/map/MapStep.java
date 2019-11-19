@@ -18,12 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 
 /**
+ * A marker base class that designates an extending {@link Step} as a "Map" step which will transform the object of one
+ * {@link Traverser} into another. In many cases, it may be easier to simply extend from {@link ScalarMapStep} which
+ * has a straightforward implementation pattern.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -32,26 +36,5 @@ public abstract class MapStep<S, E> extends AbstractStep<S, E> {
     public MapStep(final Traversal.Admin traversal) {
         super(traversal);
     }
-
-    @Override
-    protected Traverser.Admin<E> processNextStart() {
-        final Traverser.Admin<S> traverser = this.starts.next();
-        final E obj = this.map(traverser);
-        return isEmptyTraverser(obj) ? EmptyTraverser.instance() : traverser.split(obj, this);
-    }
-
-    protected abstract E map(final Traverser.Admin<S> traverser);
-
-    /**
-     * Determines if the value returned from {@link #map(Traverser.Admin)} should be representative of an
-     * {@link EmptyTraverser}. Such traversers will effectively be filtered out by the traversal. This method works in
-     * conjunction with {@link #map(Traverser.Admin)} in the sense that both work are called in the default
-     * implementation of {@link #processNextStart()} which will call this method after "map()"-ing the traverser to
-     * determine if that step consider the returned value as "empty".
-     */
-    protected boolean isEmptyTraverser(final E obj) {
-        return false;
-    }
-
 }
 

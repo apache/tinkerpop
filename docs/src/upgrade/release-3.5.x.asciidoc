@@ -257,6 +257,46 @@ link:http://tinkerpop.apache.org/docs/3.5.0/upgrade/#_ssl_security[3.2.10 Upgrad
 
 ==== Graph System Providers
 
+===== ScalarMapStep
+
+`MapStep` had a single abstract method that needed to be implemented:
+
+[source,java]
+----
+protected abstract E map(final Traverser.Admin<S> traverser);
+----
+
+This method made it easy to implement new implementations because it hid certain processing logic and made it so that
+the implementer only had to reason about how to take the current object from the `Traverser` and transform it to a
+new value. As 3.5.0 changed semantics around how `null` is processed, this method became a bit of a hindrance to the
+more complex logic which those semantics entailed. Specifically, this method could not easily communicate to underlying
+processing what a `null` might mean - is the `null` the end of the traversal stream or should the `null` be promoted
+down the stream as a value to be processed.
+
+Interestingly, the method that enabled the handling of this more complex decision making already existed in
+`AbstractStep`:
+
+[source,java]
+----
+protected Traverser.Admin<E> processNextStart()
+----
+
+It returns a whole `Traverser` object and forces manual retrieval of the "next" `Traverser`. At this level it becomes
+possible to make choices on `null` and return it if it should be propagated or dismiss it and return an
+`EmptyTraverser`. To better accommodate the `MapStep` which provides the nice helper `map(Traverser)` method as well
+as the more flexible version that doesn't need that infrastructure, `ScalarMapStep` was added to extend `MapStep`. The
+`map(Traverser)` was then moved to `ScalarMapStep` and those steps that could rely on that helper method now extend
+from it. All other steps of this sort still extend `MapStep` and directly implement `processNextStart()`.
+
+Providers will get compile errors if they extended `MapStep`. The easy solution will be to simply modify that code so
+that their step instead extends `ScalarMapStep`. As a secondary task, providers should then examine their step
+implementation to ensure that `null` semantics as presented in 3.5.0 apply properly. If they do not, then it is likely
+that the step should simply implement `MapStep` directly and former `map(Traverser)` logic should be migrated to
+`processNextStart()`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2235[TINKERPOP-2235],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2099[TINKERPOP-2099]
+
 ===== TraversalStrategy Application
 
 The methodology for strategy application has been altered and the change is most easily described by example. Given a

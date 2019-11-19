@@ -32,7 +32,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class SumLocalStep<E extends Number, S extends Iterable<E>> extends MapStep<S, E> {
+public final class SumLocalStep<E extends Number, S extends Iterable<E>> extends ScalarMapStep<S, E> {
 
     public SumLocalStep(final Traversal.Admin traversal) {
         super(traversal);

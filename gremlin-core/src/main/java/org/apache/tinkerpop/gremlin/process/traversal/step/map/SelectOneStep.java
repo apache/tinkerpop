@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -26,12 +27,16 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
@@ -39,7 +44,6 @@ import java.util.Set;
  */
 public final class SelectOneStep<S, E> extends MapStep<S, E> implements TraversalParent, Scoping, PathProcessor, ByModulating {
 
-    private static final Object NOTHING_SELECTED = new Object();
     private final Pop pop;
     private final String selectKey;
     private Traversal.Admin<S, E> selectTraversal = null;
@@ -52,15 +56,39 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     }
 
     @Override
-    protected E map(final Traverser.Admin<S> traverser) {
-        final E end = this.getScopeValue(this.pop, this.selectKey, traverser, (E) NOTHING_SELECTED);
-        if (NOTHING_SELECTED == end) return end;
-        return null != end ? TraversalUtil.applyNullable((S) end, this.selectTraversal) : null;
-    }
+    protected Traverser.Admin<E> processNextStart() throws NoSuchElementException {
+        final Traverser.Admin<S> traverser = this.starts.next();
 
-    @Override
-    protected boolean isEmptyTraverser(final E obj) {
-        return NOTHING_SELECTED == obj;
+        final Object object = traverser.get();
+        if (object instanceof Map && ((Map<String, S>) object).containsKey(this.selectKey)) {
+            final S o = ((Map<String, S>) object).get(this.selectKey);
+            if (null == o) return traverser.split(null, this);
+            final Traverser.Admin<E> outTraverser = traverser.split(TraversalUtil.applyNullable(o, this.selectTraversal), this);
+            if (!(this.getTraversal().getParent() instanceof MatchStep))
+                PathProcessor.processTraverserPathLabels(outTraverser, this.keepLabels);
+            return outTraverser;
+        }
+
+        if (traverser.getSideEffects().exists(this.selectKey)) {
+            final S o = (S) traverser.getSideEffects().get(this.selectKey);
+            if (null == o) return traverser.split(null, this);
+            final Traverser.Admin<E> outTraverser = traverser.split(TraversalUtil.applyNullable(o, this.selectTraversal), this);
+            if (!(this.getTraversal().getParent() instanceof MatchStep))
+                PathProcessor.processTraverserPathLabels(outTraverser, this.keepLabels);
+            return outTraverser;
+        }
+
+        final Path path = traverser.path();
+        if (path.hasLabel(this.selectKey)) {
+            final S o = (S) path.get(pop, this.selectKey);
+            if (null == o) return traverser.split(null, this);
+            final Traverser.Admin<E> outTraverser = traverser.split(TraversalUtil.applyNullable(o, this.selectTraversal), this);
+            if (!(this.getTraversal().getParent() instanceof MatchStep))
+                PathProcessor.processTraverserPathLabels(outTraverser, this.keepLabels);
+            return outTraverser;
+        }
+
+        return EmptyTraverser.instance();
     }
 
     @Override
@@ -132,14 +160,6 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
         return this.keepLabels;
     }
 
-    @Override
-    protected Traverser.Admin<E> processNextStart() {
-        final Traverser.Admin<E> traverser = super.processNextStart();
-        if (!(this.getTraversal().getParent() instanceof MatchStep)) {
-            PathProcessor.processTraverserPathLabels(traverser, this.keepLabels);
-        }
-        return traverser;
-    }
 }
 
 

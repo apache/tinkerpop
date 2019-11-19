@@ -29,10 +29,12 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class TraversalMapStep<S, E> extends MapStep<S, E> implements TraversalParent {
 
@@ -44,14 +46,10 @@ public final class TraversalMapStep<S, E> extends MapStep<S, E> implements Trave
     }
 
     @Override
-    protected E map(final Traverser.Admin<S> traverser) {
+    protected Traverser.Admin<E> processNextStart() throws NoSuchElementException {
+        final Traverser.Admin<S> traverser = this.starts.next();
         final Iterator<E> iterator = TraversalUtil.applyAll(traverser, this.mapTraversal);
-        return iterator.hasNext() ? iterator.next() : null;
-    }
-
-    @Override
-    protected boolean isEmptyTraverser(final E obj) {
-        return null == obj;
+        return  iterator.hasNext() ? traverser.split(iterator.next(), this) : EmptyTraverser.instance();
     }
 
     @Override

@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class RangeLocalStep<S> extends MapStep<S, S> {
+public final class RangeLocalStep<S> extends ScalarMapStep<S, S> {
 
     private final long low;
     private final long high;

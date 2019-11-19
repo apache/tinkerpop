@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class OrderLocalStep<S, C extends Comparable> extends MapStep<S, S> implements ComparatorHolder<S, C>, ByModulating, TraversalParent {
+public final class OrderLocalStep<S, C extends Comparable> extends ScalarMapStep<S, S> implements ComparatorHolder<S, C>, ByModulating, TraversalParent {
 
     private List<Pair<Traversal.Admin<S, C>, Comparator<C>>> comparators = new ArrayList<>();
     private ChainedComparator<S, C> chainedComparator = null;

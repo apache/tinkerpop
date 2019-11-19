@@ -45,7 +45,7 @@ import java.util.Set;
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ElementMapStep<K,E> extends MapStep<Element, Map<K, E>> implements TraversalParent, GraphComputing {
+public class ElementMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>> implements TraversalParent, GraphComputing {
 
     protected final String[] propertyKeys;
     private boolean onGraphComputer = false;

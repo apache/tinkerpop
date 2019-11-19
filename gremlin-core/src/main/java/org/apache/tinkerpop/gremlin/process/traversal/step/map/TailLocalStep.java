@@ -34,7 +34,7 @@ import java.util.Set;
 /**
  * @author Matt Frantz (http://github.com/mhfrantz)
  */
-public final class TailLocalStep<S> extends MapStep<S, S> {
+public final class TailLocalStep<S> extends ScalarMapStep<S, S> {
 
     private final long limit;
 

@@ -33,7 +33,7 @@ import static org.apache.tinkerpop.gremlin.util.NumberHelper.max;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class MaxLocalStep<E extends Comparable, S extends Iterable<E>> extends MapStep<S, E> {
+public final class MaxLocalStep<E extends Comparable, S extends Iterable<E>> extends ScalarMapStep<S, E> {
 
     public MaxLocalStep(final Traversal.Admin traversal) {
         super(traversal);

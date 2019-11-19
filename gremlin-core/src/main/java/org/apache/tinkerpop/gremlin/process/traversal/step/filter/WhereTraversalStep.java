@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ScalarMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
@@ -149,7 +149,7 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
 
     //////////////////////////////
 
-    public static class WhereStartStep<S> extends MapStep<S, Object> implements Scoping {
+    public static class WhereStartStep<S> extends ScalarMapStep<S, Object> implements Scoping {
 
         private String selectKey;
 

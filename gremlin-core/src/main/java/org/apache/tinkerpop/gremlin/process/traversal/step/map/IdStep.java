@@ -29,7 +29,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class IdStep<S extends Element> extends MapStep<S, Object> {
+public final class IdStep<S extends Element> extends ScalarMapStep<S, Object> {
 
     public IdStep(final Traversal.Admin traversal) {
         super(traversal);

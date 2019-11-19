@@ -40,7 +40,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class AddVertexStep<S> extends MapStep<S, Vertex>
+public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
         implements Mutating<Event.VertexAddedEvent>, TraversalParent, Scoping {
 
     private Parameters parameters = new Parameters();

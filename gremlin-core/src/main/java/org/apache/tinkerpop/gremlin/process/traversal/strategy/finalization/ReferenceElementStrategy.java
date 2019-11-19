@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ScalarMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -56,7 +56,7 @@ public final class ReferenceElementStrategy extends AbstractTraversalStrategy<Tr
         return INSTANCE;
     }
 
-    public static class ReferenceElementStep<S, E> extends MapStep<S, E> {
+    public static class ReferenceElementStep<S, E> extends ScalarMapStep<S, E> {
 
         public ReferenceElementStep(final Traversal.Admin traversal) {
             super(traversal);
