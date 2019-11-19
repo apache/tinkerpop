@@ -36,7 +36,8 @@ import java.util.Set;
  */
 public class ImmutablePath implements Path, Serializable, Cloneable {
 
-    private static final ImmutablePath TAIL_PATH = new ImmutablePath(null, null, null);
+    private static final Object END = EmptyPath.instance();
+    private static final ImmutablePath TAIL_PATH = new ImmutablePath(null, END, null);
 
     private ImmutablePath previousPath;
     private Object currentObject;
@@ -59,7 +60,7 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
     }
 
     private final boolean isTail() {
-        return null == this.currentObject;
+        return END.equals(this.currentObject);
     }
 
     @Override
