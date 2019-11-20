@@ -98,8 +98,7 @@ public interface GraphProvider {
      * something that requires a different engine type, like {@link GraphComputer}.
      * <p/>
      * Implementations should apply strategies as necessary to the
-     * {@link org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource} before calling
-     * it's {@code create} method.
+     * {@link GraphTraversalSource} before calling it's {@code create} method.
      */
     public default GraphTraversalSource traversal(final Graph graph, final TraversalStrategy... strategies) {
         return this.traversal(graph).withStrategies(strategies);
@@ -116,7 +115,7 @@ public interface GraphProvider {
     }
 
     /**
-     * Creates a new {@link org.apache.tinkerpop.gremlin.structure.Graph} instance using the default
+     * Creates a new {@link Graph} instance using the default
      * {@code Configuration} from {@link #standardGraphConfiguration(Class, String, LoadGraphWith.GraphData)}.
      */
     default public Graph standardTestGraph(final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
@@ -248,7 +247,7 @@ public interface GraphProvider {
      * <li>{@link Element}</li>
      * <li>{@link DefaultGraphTraversal}</li>
      * <li>{@link Graph}</li>
-     * <li>{@link org.apache.tinkerpop.gremlin.structure.Graph.Variables}</li>
+     * <li>{@link Graph.Variables}</li>
      * <li>{@link GraphTraversal}</li>
      * <li>{@link B_LP_O_P_S_SE_SL_Traverser}</li>
      * <li>{@link Property}</li>
@@ -265,7 +264,7 @@ public interface GraphProvider {
      * <li>{@link Edge}</li>
      * <li>{@link Element}</li>
      * <li>{@link Graph}</li>
-     * <li>{@link org.apache.tinkerpop.gremlin.structure.Graph.Variables}</li>
+     * <li>{@link Graph.Variables}</li>
      * <li>{@link Property}</li>
      * <li>{@link Vertex}</li>
      * <li>{@link VertexProperty}</li>

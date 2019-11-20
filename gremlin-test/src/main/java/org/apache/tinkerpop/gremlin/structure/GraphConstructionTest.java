@@ -31,15 +31,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests that support the creation of {@link org.apache.tinkerpop.gremlin.structure.Graph} instances which occurs via
- * {@link org.apache.tinkerpop.gremlin.structure.util.GraphFactory}.
+ * Tests that support the creation of {@link Graph} instances which occurs via {@link GraphFactory}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphConstructionTest extends AbstractGremlinTest {
     /**
-     * All Gremlin Structure implementations should be constructable through
-     * {@link org.apache.tinkerpop.gremlin.structure.util.GraphFactory}.
+     * All Gremlin Structure implementations should be constructable through {@link GraphFactory}.
      */
     @Test
     public void shouldOpenGraphThroughGraphFactoryViaApacheConfig() throws Exception {

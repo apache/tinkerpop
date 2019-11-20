@@ -29,7 +29,7 @@ import java.util.Map;
 
 /**
  * Base {@link MessageSerializer} that serializers can implement to get some helper methods around configuring a
- * {@link org.apache.tinkerpop.gremlin.structure.io.Mapper.Builder}.
+ * {@link Mapper.Builder}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -39,9 +39,8 @@ public abstract class AbstractMessageSerializer implements MessageSerializer {
     /**
      * Reads a list of fully qualified class names from the value of the {@link #TOKEN_IO_REGISTRIES} configuration
      * key. These classes should equate to {@link IoRegistry} implementations that will be assigned to the
-     * {@link org.apache.tinkerpop.gremlin.structure.io.Mapper.Builder}.  The assumption is that the
-     * {@link IoRegistry} either has a static {@code instance()} method or has a zero-arg constructor from which
-     * it can be instantiated.
+     * {@link Mapper.Builder}.  The assumption is that the {@link IoRegistry} either has a static {@code instance()}
+     * method or has a zero-arg constructor from which it can be instantiated.
      */
     protected void addIoRegistries(final Map<String, Object> config, final Mapper.Builder builder) {
         final List<String> classNameList = getListStringFromConfig(TOKEN_IO_REGISTRIES, config);

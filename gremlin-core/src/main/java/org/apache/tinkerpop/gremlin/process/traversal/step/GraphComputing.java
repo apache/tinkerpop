@@ -18,12 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.finalization.ComputerFinalizationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 
 /**
- * A {@code GraphComputing} step is one that will change its behavior whether its on a {@link org.apache.tinkerpop.gremlin.process.computer.GraphComputer} or not.
- * {@link org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.finalization.ComputerFinalizationStrategy} is responsible for calling the {@link GraphComputing#onGraphComputer()} method.
+ * A {@code GraphComputing} step is one that will change its behavior whether its on a {@link GraphComputer} or not.
+ * {@link ComputerFinalizationStrategy} is responsible for calling the {@link GraphComputing#onGraphComputer()} method.
  * This method is only called for global children steps of a {@link TraversalParent}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -31,7 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 public interface GraphComputing {
 
     /**
-     * The step will be executing on a {@link org.apache.tinkerpop.gremlin.process.computer.GraphComputer}.
+     * The step will be executing on a {@link GraphComputer}.
      */
     public void onGraphComputer();
 

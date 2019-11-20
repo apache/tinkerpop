@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3d0;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +50,7 @@ public final class GraphSONMessageSerializerV3d0 extends AbstractGraphSONMessage
      * Creates a default GraphSONMessageSerializer.
      * <p>
      * By default this will internally instantiate a {@link GraphSONMapper} and register
-     * a {@link GremlinServerModule} and {@link org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3d0} to the mapper.
+     * a {@link GremlinServerModule} and {@link GraphSONXModuleV3d0} to the mapper.
      *
      * @see #GraphSONMessageSerializerV3d0(GraphSONMapper.Builder)
      */

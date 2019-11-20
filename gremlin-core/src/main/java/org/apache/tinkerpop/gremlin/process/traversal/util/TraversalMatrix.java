@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -28,7 +30,7 @@ import java.util.Map;
 /**
  * A TraversalMatrix provides random, non-linear access to the steps of a traversal by their step id.
  * This is useful in situations where traversers becomes detached from their traversal (and step) and later need to be re-attached.
- * A classic use case is {@link org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram} on {@link org.apache.tinkerpop.gremlin.process.computer.GraphComputer}.
+ * A classic use case is {@link TraversalVertexProgram} on {@link GraphComputer}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

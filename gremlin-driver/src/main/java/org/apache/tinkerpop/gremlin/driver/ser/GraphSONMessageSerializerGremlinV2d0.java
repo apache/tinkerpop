@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver.ser;
 
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV2d0;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
 
 import java.nio.ByteBuffer;
@@ -47,7 +48,7 @@ public final class GraphSONMessageSerializerGremlinV2d0 extends AbstractGraphSON
      * Creates a default GraphSONMessageSerializerGremlin.
      * <p>
      * By default this will internally instantiate a {@link GraphSONMapper} and register
-     * a {@link GremlinServerModule} and {@link org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV2d0} to the mapper.
+     * a {@link GremlinServerModule} and {@link GraphSONXModuleV2d0} to the mapper.
      *
      * @see #GraphSONMessageSerializerGremlinV2d0(GraphSONMapper.Builder)
      */

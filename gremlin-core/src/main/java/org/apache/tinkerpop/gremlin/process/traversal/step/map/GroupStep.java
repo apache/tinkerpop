@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LocalBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -70,8 +71,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     /**
      * Determines the first (non-local) barrier step in the provided traversal. This method is used by {@link GroupStep}
-     * and {@link org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStep} to ultimately
-     * determine the reducing bi-operator.
+     * and {@link GroupSideEffectStep} to ultimately determine the reducing bi-operator.
      *
      * @param traversal The traversal to inspect.
      * @return The first non-local barrier step or {@code null} if no such step was found.

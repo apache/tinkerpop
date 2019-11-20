@@ -31,7 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
  * bulked.
  * <p/>
  * Note that internally {@link #nextTraverser()} is called from within a loop (specifically in
- * {@link AbstractStep#next()} that breaks properly when a {@link java.util.NoSuchElementException} is thrown. In other
+ * {@link AbstractStep#next()} that breaks properly when a {@code NoSuchElementException} is thrown. In other
  * words the "results" should be iterated to force that failure.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)

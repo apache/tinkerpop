@@ -1002,7 +1002,7 @@ public class GraphTest extends AbstractGremlinTest {
     }
 
     /**
-     * Create a small {@link org.apache.tinkerpop.gremlin.structure.Graph} and ensure that counts of edges per vertex are correct.
+     * Create a small {@link Graph} and ensure that counts of edges per vertex are correct.
      */
     @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)

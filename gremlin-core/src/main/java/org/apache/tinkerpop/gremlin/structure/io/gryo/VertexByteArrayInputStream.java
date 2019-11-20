@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -44,7 +46,7 @@ public final class VertexByteArrayInputStream extends FilterInputStream {
     }
 
     /**
-     * Read the bytes of the next {@link org.apache.tinkerpop.gremlin.structure.Vertex} in the stream. The returned
+     * Read the bytes of the next {@link Vertex} in the stream. The returned
      * stream can then be passed to {@link GryoReader#readVertex(java.io.InputStream, java.util.function.Function)}.
      */
     public ByteArrayOutputStream readVertexBytes() throws IOException {

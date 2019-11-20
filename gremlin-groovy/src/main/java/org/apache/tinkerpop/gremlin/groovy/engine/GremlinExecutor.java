@@ -22,6 +22,7 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.jsr223.CachedGremlinScriptEngineManager;
+import org.apache.tinkerpop.gremlin.jsr223.ConcurrentBindings;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager;
@@ -360,8 +361,7 @@ public class GremlinExecutor implements AutoCloseable {
     /**
      * {@inheritDoc}
      * <p/>
-     * Executors are only closed if they were not supplied externally in the
-     * {@link org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder}
+     * Executors are only closed if they were not supplied externally in the {@link GremlinExecutor.Builder}
      */
     @Override
     public void close() throws Exception {
@@ -369,8 +369,7 @@ public class GremlinExecutor implements AutoCloseable {
     }
 
     /**
-     * Executors are only closed if they were not supplied externally in the
-     * {@link org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor.Builder}
+     * Executors are only closed if they were not supplied externally in the {@link GremlinExecutor.Builder}
      */
     public CompletableFuture<Void> closeAsync() throws Exception {
         final CompletableFuture<Void> future = new CompletableFuture<>();
@@ -477,7 +476,7 @@ public class GremlinExecutor implements AutoCloseable {
         };
         private BiConsumer<Bindings, Throwable> afterFailure = (b, e) -> {
         };
-        private Bindings globalBindings = new org.apache.tinkerpop.gremlin.jsr223.ConcurrentBindings();
+        private Bindings globalBindings = new ConcurrentBindings();
 
         private Builder() {
         }
@@ -495,11 +494,11 @@ public class GremlinExecutor implements AutoCloseable {
 
         /**
          * Bindings to apply to every script evaluated. Note that the entries of the supplied {@code Bindings} object
-         * will be copied into a newly created {@link org.apache.tinkerpop.gremlin.jsr223.ConcurrentBindings} object
+         * will be copied into a newly created {@link ConcurrentBindings} object
          * at the call of this method.
          */
         public Builder globalBindings(final Bindings bindings) {
-            this.globalBindings = new org.apache.tinkerpop.gremlin.jsr223.ConcurrentBindings(bindings);
+            this.globalBindings = new ConcurrentBindings(bindings);
             return this;
         }
 

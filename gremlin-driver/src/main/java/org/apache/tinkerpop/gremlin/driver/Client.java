@@ -534,8 +534,8 @@ public abstract class Client {
     }
 
     /**
-     * Uses a {@link org.apache.tinkerpop.gremlin.driver.Client.ClusteredClient} that rebinds requests to a
-     * specified {@link Graph} or {@link TraversalSource} instances on the server-side.
+     * Uses a {@link Client.ClusteredClient} that rebinds requests to a specified {@link Graph} or
+     * {@link TraversalSource} instances on the server-side.
      */
     public static class AliasClusteredClient extends Client {
         private final Client client;
@@ -620,7 +620,7 @@ public abstract class Client {
         }
 
         /**
-         * Delegates to the underlying {@link org.apache.tinkerpop.gremlin.driver.Client.ClusteredClient}.
+         * Delegates to the underlying {@link Client.ClusteredClient}.
          */
         @Override
         protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {

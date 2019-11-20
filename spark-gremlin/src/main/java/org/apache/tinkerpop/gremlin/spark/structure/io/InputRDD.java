@@ -19,14 +19,16 @@
 package org.apache.tinkerpop.gremlin.spark.structure.io;
 
 import org.apache.commons.configuration2.Configuration;
+import org.apache.hadoop.mapred.InputFormat;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 import scala.Tuple2;
 
 /**
  * An InputRDD is used to read data from the underlying graph system and yield the respective adjacency list.
- * Note that {@link InputFormatRDD} is a type of InputRDD that simply uses the specified {@link org.apache.hadoop.mapreduce.InputFormat} to generate the respective graphRDD.
+ * Note that {@link InputFormatRDD} is a type of InputRDD that simply uses the specified {@link InputFormat} to generate the respective graphRDD.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -35,7 +37,7 @@ public interface InputRDD {
     /**
      * Read the graphRDD from the underlying graph system.
      *
-     * @param configuration the configuration for the {@link org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer}
+     * @param configuration the configuration for the {@link SparkGraphComputer}
      * @param sparkContext  the Spark context with the requisite methods for generating a {@link JavaPairRDD}
      * @return an adjacency list representation of the underlying graph system.
      */
@@ -45,7 +47,7 @@ public interface InputRDD {
      * Read a memoryRDD from the storage location.
      * The default implementation returns an empty RDD.
      *
-     * @param configuration the configuration for the {@link org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer}
+     * @param configuration the configuration for the {@link SparkGraphComputer}
      * @param memoryKey     the memory key of the memoryRDD
      * @param sparkContext  the Spark context with the requisite methods for generating a {@link JavaPairRDD}
      * @param <K>           the key class of the memoryRDD

@@ -20,8 +20,10 @@ package org.apache.tinkerpop.gremlin.spark.structure.io;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
+import org.apache.tinkerpop.gremlin.process.computer.Memory;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -32,7 +34,7 @@ import java.util.Iterator;
 public interface OutputRDD {
 
     /**
-     * Write the graphRDD to an output location. The {@link Configuration} maintains the specified location via {@link org.apache.tinkerpop.gremlin.hadoop.Constants#GREMLIN_HADOOP_OUTPUT_LOCATION}.
+     * Write the graphRDD to an output location. The {@link Configuration} maintains the specified location via {@link Constants#GREMLIN_HADOOP_OUTPUT_LOCATION}.
      *
      * @param configuration the configuration of the Spark job
      * @param graphRDD      the graphRDD to output
@@ -40,7 +42,7 @@ public interface OutputRDD {
     public void writeGraphRDD(final Configuration configuration, final JavaPairRDD<Object, VertexWritable> graphRDD);
 
     /**
-     * Write the sideEffect memoryRDD to an output location. The {@link Configuration} maintains the specified location via {@link org.apache.tinkerpop.gremlin.hadoop.Constants#GREMLIN_HADOOP_OUTPUT_LOCATION}.
+     * Write the sideEffect memoryRDD to an output location. The {@link Configuration} maintains the specified location via {@link Constants#GREMLIN_HADOOP_OUTPUT_LOCATION}.
      * The default implementation returns an empty iterator.
      *
      * @param configuration the configuration of the Spark job
@@ -48,7 +50,7 @@ public interface OutputRDD {
      * @param memoryRDD     the memoryRDD
      * @param <K>           the key class of the RDD
      * @param <V>           the value class of the RDD
-     * @return the {@link KeyValue} iterator to store in the final resultant {@link org.apache.tinkerpop.gremlin.process.computer.Memory}.
+     * @return the {@link KeyValue} iterator to store in the final resultant {@link Memory}.
      */
     public default <K, V> Iterator<KeyValue<K, V>> writeMemoryRDD(final Configuration configuration, final String memoryKey, final JavaPairRDD<K, V> memoryRDD) {
         return Collections.emptyIterator();

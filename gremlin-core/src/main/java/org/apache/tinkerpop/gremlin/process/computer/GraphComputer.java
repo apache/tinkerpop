@@ -18,16 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer;
 
+import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.concurrent.Future;
 
 /**
- * The {@link GraphComputer} is responsible for the execution of a {@link VertexProgram} and then a set of {@link MapReduce} jobs
- * over the vertices in the {@link org.apache.tinkerpop.gremlin.structure.Graph}. It is up to the {@link GraphComputer} implementation to determine the
- * appropriate memory structures given the computing substrate.
+ * The {@link GraphComputer} is responsible for the execution of a {@link VertexProgram} and then a set of
+ * {@link MapReduce} jobs over the vertices in the {@link Graph}. It is up to the {@link GraphComputer} implementation
+ * to determine the appropriate memory structures given the computing substrate.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
@@ -36,11 +38,13 @@ public interface GraphComputer {
 
     public enum ResultGraph {
         /**
-         * When the computation is complete, the {@link org.apache.tinkerpop.gremlin.structure.Graph} in {@link ComputerResult} is the original graph that spawned the graph computer.
+         * When the computation is complete, the {@link Graph} in {@link ComputerResult} is the original graph that
+         * spawned the graph computer.
          */
         ORIGINAL,
         /**
-         * When the computation is complete, the {@link org.apache.tinkerpop.gremlin.structure.Graph} in {@link ComputerResult} is a new graph cloned from the original graph.
+         * When the computation is complete, the {@link Graph} in {@link ComputerResult} is a new graph cloned from
+         * the original graph.
          */
         NEW
     }
@@ -61,9 +65,9 @@ public interface GraphComputer {
     }
 
     /**
-     * Set the {@link ResultGraph} of the computation.
-     * If this is not set explicitly by the user, then the {@link VertexProgram} can choose the most efficient result for its intended use.
-     * If there is no declared vertex program, then the {@link GraphComputer} defaults to {@link ResultGraph#ORIGINAL}.
+     * Set the {@link ResultGraph} of the computation. If this is not set explicitly by the user, then the
+     * {@link VertexProgram} can choose the most efficient result for its intended use. If there is no declared
+     * vertex program, then the {@link GraphComputer} defaults to {@link ResultGraph#ORIGINAL}.
      *
      * @param resultGraph the type of graph to be returned by {@link ComputerResult#graph}
      * @return the updated GraphComputer with newly set result graph
@@ -71,9 +75,9 @@ public interface GraphComputer {
     public GraphComputer result(final ResultGraph resultGraph);
 
     /**
-     * Set the {@link Persist} level of the computation.
-     * If this is not set explicitly by the user, then the {@link VertexProgram} can choose the most efficient persist for the its intended use.
-     * If there is no declared vertex program, then the {@link GraphComputer} defaults to {@link Persist#NOTHING}.
+     * Set the {@link Persist} level of the computation. If this is not set explicitly by the user, then the\
+     * {@link VertexProgram} can choose the most efficient persist for the its intended use.  If there is no declared
+     * vertex program, then the {@link GraphComputer} defaults to {@link Persist#NOTHING}.
      *
      * @param persist the persistence level of the resultant computation
      * @return the updated GraphComputer with newly set persist
@@ -99,8 +103,9 @@ public interface GraphComputer {
     public GraphComputer mapReduce(final MapReduce mapReduce);
 
     /**
-     * Set the desired number of workers to execute the {@link VertexProgram} and {@link MapReduce} jobs.
-     * This is a recommendation to the underlying {@link GraphComputer} implementation and is allowed to deviate accordingly by the implementation.
+     * Set the desired number of workers to execute the {@link VertexProgram} and {@link MapReduce} jobs. This is a
+     * recommendation to the underlying {@link GraphComputer} implementation and is allowed to deviate accordingly by
+     * the implementation.
      *
      * @param workers the number of workers to execute the submission
      * @return the updated GraphComputer with newly set worker count
@@ -108,9 +113,9 @@ public interface GraphComputer {
     public GraphComputer workers(final int workers);
 
     /**
-     * Add a filter that will limit which vertices are loaded from the graph source.
-     * The provided {@link Traversal} can only check the vertex, its vertex properties, and the vertex property properties.
-     * The loaded graph will only have those vertices that pass through the provided filter.
+     * Add a filter that will limit which vertices are loaded from the graph source. The provided {@link Traversal}
+     * can only check the vertex, its vertex properties, and the vertex property properties. The loaded graph will
+     * only have those vertices that pass through the provided filter.
      *
      * @param vertexFilter the traversal to verify whether or not to load the current vertex
      * @return the updated GraphComputer with newly set vertex filter
@@ -134,8 +139,9 @@ public interface GraphComputer {
      * Set an arbitrary configuration key/value for the underlying {@code Configuration} in the {@link GraphComputer}.
      * Typically, the other fluent methods in {@link GraphComputer} should be used to configure the computation.
      * However, for some custom configuration in the underlying engine, this method should be used.
-     * Different GraphComputer implementations will have different key/values and thus, parameters placed here are generally not universal to all GraphComputer implementations.
-     * The default implementation simply does nothing and returns the {@link GraphComputer} unchanged.
+     * Different GraphComputer implementations will have different key/values and thus, parameters placed here are
+     * generally not universal to all GraphComputer implementations. The default implementation simply does nothing
+     * and returns the {@link GraphComputer} unchanged.
      *
      * @param key   the key of the configuration
      * @param value the value of the configuration
@@ -148,7 +154,7 @@ public interface GraphComputer {
     /**
      * Submit the {@link VertexProgram} and the set of {@link MapReduce} jobs for execution by the {@link GraphComputer}.
      *
-     * @return a {@link Future} denoting a reference to the asynchronous computation and where to get the {@link org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult} when its is complete.
+     * @return a {@link Future} denoting a reference to the asynchronous computation and where to get the {@link DefaultComputerResult} when its is complete.
      */
     public Future<ComputerResult> submit();
 
@@ -212,8 +218,9 @@ public interface GraphComputer {
         }
 
         /**
-         * Supports {@link VertexProgram} and {@link MapReduce} parameters to be direct referenced Java objects (no serialization required).
-         * This is typically true for single machine graph computer engines. For cluster oriented graph computers, this is typically false.
+         * Supports {@link VertexProgram} and {@link MapReduce} parameters to be direct referenced Java objects
+         * (no serialization required). This is typically true for single machine graph computer engines. For cluster
+         * oriented graph computers, this is typically false.
          */
         public default boolean supportsDirectObjects() {
             return true;

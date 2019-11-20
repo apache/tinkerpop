@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.util.event;
 
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -25,11 +26,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 /**
- * Interface for a listener to {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy}
- * change events.
- *
- * Implementations of this interface should be added to the list of listeners on the addListener method on
- * the {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy}.
+ * Interface for a listener to {@link EventStrategy} change events. Implementations of this interface should be added
+ * to the list of listeners on the addListener method on the {@link EventStrategy}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

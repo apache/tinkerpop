@@ -55,7 +55,7 @@ public final class GraphMigrator {
      * @param toGraph   the graph to take data to.
      * @param reader    reads from the graph written by the writer.
      * @param writer    writes the graph to be read by the reader.
-     * @throws java.io.IOException thrown if there is an error in steam between the two graphs.
+     * @throws IOException thrown if there is an error in steam between the two graphs.
      */
     public static void migrateGraph(final Graph fromGraph, final Graph toGraph,
                                     final GraphReader reader, final GraphWriter writer) throws IOException {

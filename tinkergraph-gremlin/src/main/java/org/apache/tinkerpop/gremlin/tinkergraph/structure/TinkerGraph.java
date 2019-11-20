@@ -326,8 +326,7 @@ public final class TinkerGraph implements Graph {
      * Return TinkerGraph feature set.
      * <p/>
      * <b>Reference Implementation Help:</b> Implementers only need to implement features for which there are
-     * negative or instance configured features.  By default, all
-     * {@link org.apache.tinkerpop.gremlin.structure.Graph.Features} return true.
+     * negative or instance configured features.  By default, all {@link Graph.Features} return true.
      */
     @Override
     public Features features() {
@@ -634,8 +633,8 @@ public final class TinkerGraph implements Graph {
         },
 
         /**
-         * Manages identifiers of type {@link java.util.UUID}. Will convert {@code String} values to
-         * {@link java.util.UUID}.
+         * Manages identifiers of type {@code UUID}. Will convert {@code String} values to
+         * {@code UUID}.
          */
         UUID {
             @Override

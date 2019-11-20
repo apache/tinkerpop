@@ -30,8 +30,7 @@ import java.util.List;
 
 /**
  * Logically grouped features used to simplify test annotations.  This annotation can be used in conjunction
- * with {@link org.apache.tinkerpop.gremlin.FeatureRequirement} and features automatically added by
- * {@link org.apache.tinkerpop.gremlin.LoadGraphWith}.
+ * with {@link FeatureRequirement} and features automatically added by {@link LoadGraphWith}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

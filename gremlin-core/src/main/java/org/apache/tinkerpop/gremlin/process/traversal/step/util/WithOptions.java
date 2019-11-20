@@ -19,7 +19,12 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.IndexStep;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 /**
  * Configuration options to be passed to the {@link GraphTraversal#with(String, Object)}.
@@ -43,23 +48,22 @@ public class WithOptions {
     public static int none = 0;
 
     /**
-     * Include ids (affects all {@link org.apache.tinkerpop.gremlin.structure.Element} value maps).
+     * Include ids (affects all {@link Element} value maps).
      */
     public static int ids = 1;
 
     /**
-     * Include labels (affects all {@link org.apache.tinkerpop.gremlin.structure.Vertex} and
-     * {@link org.apache.tinkerpop.gremlin.structure.Edge} value maps).
+     * Include labels (affects all {@link Vertex} and {@link Edge} value maps).
      */
     public static int labels = 2;
 
     /**
-     * Include keys (affects all {@link org.apache.tinkerpop.gremlin.structure.VertexProperty} value maps).
+     * Include keys (affects all {@link VertexProperty} value maps).
      */
     public static int keys = 4;
 
     /**
-     * Include keys (affects all {@link org.apache.tinkerpop.gremlin.structure.VertexProperty} value maps).
+     * Include keys (affects all {@link VertexProperty} value maps).
      */
     public static int values = 8;
 
@@ -73,7 +77,7 @@ public class WithOptions {
     //
 
     /**
-     * Configures the indexer to be used in {@link org.apache.tinkerpop.gremlin.process.traversal.step.map.IndexStep}.
+     * Configures the indexer to be used in {@link IndexStep}.
      */
     public static final String indexer = Graph.Hidden.hide("tinkerpop.index.indexer");
 
@@ -83,7 +87,7 @@ public class WithOptions {
     public static int list = 0;
 
     /**
-     * Index items using a {@link java.util.LinkedHashMap}.
+     * Index items using a {@code LinkedHashMap}.
      */
     public static int map = 1;
 }

@@ -164,7 +164,7 @@ public final class GraphMLWriter implements GraphWriter {
      * Write the data in a Graph to a GraphML OutputStream.
      *
      * @param outputStream the GraphML OutputStream to write the Graph data to
-     * @throws java.io.IOException thrown if there is an error generating the GraphML data
+     * @throws IOException thrown if there is an error generating the GraphML data
      */
     @Override
     public void writeGraph(final OutputStream outputStream, final Graph g) throws IOException {

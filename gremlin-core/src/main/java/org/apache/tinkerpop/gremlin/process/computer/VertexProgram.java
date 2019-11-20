@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.computer;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -128,9 +129,8 @@ public interface VertexProgram<M> extends Cloneable {
     }
 
     /**
-     * The {@link org.apache.tinkerpop.gremlin.structure.Element} properties that will be mutated during the computation.
-     * All properties in the graph are readable, but only the keys specified here are writable.
-     * The default is an empty set.
+     * The {@link Element} properties that will be mutated during the computation. All properties in the graph are
+     * readable, but only the keys specified here are writable. The default is an empty set.
      *
      * @return the set of element keys that will be mutated during the vertex program's execution
      */

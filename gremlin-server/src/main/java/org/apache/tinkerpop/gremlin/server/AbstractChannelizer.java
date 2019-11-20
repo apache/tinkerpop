@@ -24,6 +24,8 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV2d0;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
@@ -68,8 +70,8 @@ import java.util.stream.Stream;
  * Gremlin scripts).
  * <p/>
  * Implementers need only worry about determining how incoming data is converted to a
- * {@link org.apache.tinkerpop.gremlin.driver.message.RequestMessage} and outgoing data is converted from a
- * {@link org.apache.tinkerpop.gremlin.driver.message.ResponseMessage} to whatever expected format is needed by the pipeline.
+ * {@link RequestMessage} and outgoing data is converted from a  {@link ResponseMessage} to whatever expected format is
+ * needed by the pipeline.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

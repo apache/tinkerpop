@@ -18,9 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;
 
+import org.apache.tinkerpop.shaded.kryo.Kryo;
+
 /**
- * A minimal {@link org.apache.tinkerpop.shaded.kryo.Kryo}-like abstraction.
- * See that class for method documentation.
+ * A minimal {@link Kryo}-like abstraction.  See that class for method documentation.
  *
  * @param <I> this interface's complementary InputShim
  * @param <O> this interface's complementary OutputShim

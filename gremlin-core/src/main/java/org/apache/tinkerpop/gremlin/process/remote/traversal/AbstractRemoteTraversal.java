@@ -45,8 +45,8 @@ import java.util.Set;
 public abstract class AbstractRemoteTraversal<S,E> implements RemoteTraversal<S,E> {
 
     /**
-     * Note that internally {@link #nextTraverser()} is called from within a loop (specifically in
-     * {@link AbstractStep#next()} that breaks properly when a {@link java.util.NoSuchElementException} is thrown. In
+     * Note that internally {@code #nextTraverser()} is called from within a loop (specifically in
+     * {@link AbstractStep#next()} that breaks properly when a {@code NoSuchElementException} is thrown. In
      * other words the "results" should be iterated to force that failure.
      */
     @Override

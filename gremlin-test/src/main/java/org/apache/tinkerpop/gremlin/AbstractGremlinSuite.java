@@ -54,9 +54,8 @@ public abstract class AbstractGremlinSuite extends Suite {
      * Indicates that this suite is for testing a gremlin flavor and is therefore not responsible for validating
      * the suite against what the {@link Graph} implementation opts-in for. This setting will let Gremlin flavor
      * developers run their test cases against a {@link Graph} without the need for the {@link Graph} to supply
-     * an {@link org.apache.tinkerpop.gremlin.structure.Graph.OptIn} annotation.  Not having that annotation is a
-     * likely case for flavors while they are under development and a
-     * {@link org.apache.tinkerpop.gremlin.structure.Graph.OptIn} is not possible.
+     * an {@link Graph.OptIn} annotation.  Not having that annotation is a likely case for flavors while they are
+     * under development and a {@link Graph.OptIn} is not possible.
      */
     private final boolean gremlinFlavorSuite;
 
@@ -69,10 +68,8 @@ public abstract class AbstractGremlinSuite extends Suite {
      * @param testsToEnforce      The list of tests to "enforce" such that a check is made to ensure that in this list,
      *                            there exists an implementation in the testsToExecute (use {@code null} for no
      *                            enforcement).
-     * @param gremlinFlavorSuite  Ignore validation of {@link org.apache.tinkerpop.gremlin.structure.Graph.OptIn}
-     *                            annotations which is typically reserved for structure tests
-     * @param traversalEngineType The {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine.Type} to
-     *                            enforce on this suite
+     * @param gremlinFlavorSuite  Ignore validation of {@link Graph.OptIn} annotations which is typically reserved for structure tests
+     * @param traversalEngineType The {@link TraversalEngine.Type} to enforce on this suite
      */
     public AbstractGremlinSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute,
                                 final Class<?>[] testsToEnforce, final boolean gremlinFlavorSuite,
@@ -262,7 +259,7 @@ public abstract class AbstractGremlinSuite extends Suite {
     }
 
     /**
-     * Filter for tests in the suite which is controlled by the {@link org.apache.tinkerpop.gremlin.structure.Graph.OptOut} annotation.
+     * Filter for tests in the suite which is controlled by the {@link Graph.OptOut} annotation.
      */
     public static class OptOutTestFilter extends Filter {
 
