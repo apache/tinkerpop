@@ -58,8 +58,7 @@ import java.util.function.Supplier;
 import static com.codahale.metrics.MetricRegistry.name;
 
 /**
- * A base {@link org.apache.tinkerpop.gremlin.server.OpProcessor} implementation that helps with operations that deal
- * with script evaluation functions.
+ * A base {@link OpProcessor} implementation that helps with operations that deal with script evaluation functions.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

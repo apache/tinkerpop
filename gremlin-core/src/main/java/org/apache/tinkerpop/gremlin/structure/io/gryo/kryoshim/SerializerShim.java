@@ -18,9 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;
 
+import org.apache.tinkerpop.gremlin.util.Serializer;
+
 /**
- * A minimal {@link org.apache.tinkerpop.shaded.kryo.Serializer}-like abstraction.
- * See that class for method documentation.
+ * A minimal {@link Serializer}-like abstraction. See that class for method documentation.
  *
  * @param <T> the class this serializer reads/writes from/to bytes.
  */

@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 import java.util.NoSuchElementException;
 
 /**
- * Retrieve a singleton, fast {@link java.util.NoSuchElementException} without a stack trace.
+ * Retrieve a singleton, fast {@code NoSuchElementException} without a stack trace.
  */
 public final class FastNoSuchElementException extends NoSuchElementException {
 
@@ -32,7 +32,7 @@ public final class FastNoSuchElementException extends NoSuchElementException {
     }
 
     /**
-     * Retrieve a singleton, fast {@link NoSuchElementException} without a stack trace.
+     * Retrieve a singleton, fast {@code NoSuchElementException} without a stack trace.
      */
     public static NoSuchElementException instance() {
         return INSTANCE;

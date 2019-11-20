@@ -23,6 +23,8 @@ import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 /**
@@ -39,8 +41,7 @@ public interface VertexComputing {
 
     /**
      * Get the {@link Computer} for generating the {@link GraphComputer}.
-     * Inferences on the state of the {@link org.apache.tinkerpop.gremlin.process.traversal.Step}
-     * within the {@link org.apache.tinkerpop.gremlin.process.traversal.Traversal} can be use applied here.
+     * Inferences on the state of the {@link Step} within the {@link Traversal} can be use applied here.
      *
      * @return the computer specification for generating the graph computer.
      */

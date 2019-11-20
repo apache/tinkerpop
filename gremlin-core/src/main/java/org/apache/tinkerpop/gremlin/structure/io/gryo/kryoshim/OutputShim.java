@@ -18,9 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;
 
+import org.apache.tinkerpop.shaded.kryo.io.Output;
+
 /**
- * A minimal {@link org.apache.tinkerpop.shaded.kryo.io.Output}-like abstraction.
- * See that class for method documentation.
+ * A minimal {@link Output}-like abstraction. See that class for method documentation.
  */
 public interface OutputShim {
 

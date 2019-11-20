@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
@@ -33,7 +34,7 @@ import java.util.Optional;
  * Every {@link TraversalSource} should be provided a {@link TraversalEngine.Builder} so it can construct an engine for each spawned {@link Traversal}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
- * @deprecated As of release 3.2.0, replaced by {@link org.apache.tinkerpop.gremlin.process.computer.Computer}.
+ * @deprecated As of release 3.2.0, replaced by {@link Computer}.
  */
 @Deprecated
 public interface TraversalEngine extends Serializable {

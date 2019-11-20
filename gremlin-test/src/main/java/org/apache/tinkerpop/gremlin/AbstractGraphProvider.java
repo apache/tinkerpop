@@ -61,7 +61,7 @@ public abstract class AbstractGraphProvider implements GraphProvider {
      * @param test           the test class
      * @param testMethodName the name of the test method
      * @param loadGraphWith  the data set to load and will be null if no data is to be loaded
-     * @return a configuration {@link java.util.Map} that should be unique per the {@code graphName}
+     * @return a configuration {@code Map} that should be unique per the {@code graphName}
      */
     public abstract Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test,
                                                              final String testMethodName, final LoadGraphWith.GraphData loadGraphWith);

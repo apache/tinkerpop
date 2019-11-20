@@ -77,7 +77,7 @@ public abstract class AbstractOpProcessor implements OpProcessor {
     /**
      * Provides a generic way of iterating a result set back to the client. Implementers should respect the
      * {@link Settings#serializedResponseTimeout} configuration and break the serialization process if
-     * it begins to take too long to do so, throwing a {@link java.util.concurrent.TimeoutException} in such
+     * it begins to take too long to do so, throwing a {@code TimeoutException} in such
      * cases.
      *
      * @param context The Gremlin Server {@link Context} which enforces that only a single final response is

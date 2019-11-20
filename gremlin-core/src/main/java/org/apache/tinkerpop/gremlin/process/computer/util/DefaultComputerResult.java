@@ -19,13 +19,15 @@
 package org.apache.tinkerpop.gremlin.process.computer.util;
 
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 /**
- * The result of the {@link org.apache.tinkerpop.gremlin.process.computer.GraphComputer}'s computation. This is returned in a {@link java.util.concurrent.Future} by GraphComputer.submit().
- * A GraphComputer computation yields two things: an updated view of the computed on {@link Graph} and any computational sideEffects called {@link org.apache.tinkerpop.gremlin.process.computer.Memory}.
+ * The result of the {@link GraphComputer}'s computation. This is returned in a {@code Future} by
+ * {@link GraphComputer#submit()}. A {@link GraphComputer} computation yields two things: an updated view of the
+ * computed on {@link Graph} and any computational sideEffects called {@link Memory}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

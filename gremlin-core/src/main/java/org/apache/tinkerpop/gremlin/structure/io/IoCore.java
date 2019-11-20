@@ -33,21 +33,21 @@ public final class IoCore {
     private IoCore() {}
 
     /**
-     * Creates a basic GraphML-based {@link org.apache.tinkerpop.gremlin.structure.io.Io.Builder}.
+     * Creates a basic GraphML-based {@link Io.Builder}.
      */
     public static Io.Builder<GraphMLIo> graphml() {
         return GraphMLIo.build();
     }
 
     /**
-     * Creates a basic GraphSON-based {@link org.apache.tinkerpop.gremlin.structure.io.Io.Builder}.
+     * Creates a basic GraphSON-based {@link Io.Builder}.
      */
     public static Io.Builder<GraphSONIo> graphson() {
         return GraphSONIo.build();
     }
 
     /**
-     * Creates a basic Gryo-based {@link org.apache.tinkerpop.gremlin.structure.io.Io.Builder}.
+     * Creates a basic Gryo-based {@link Io.Builder}.
      */
     public static Io.Builder<GryoIo> gryo() {
         return GryoIo.build();

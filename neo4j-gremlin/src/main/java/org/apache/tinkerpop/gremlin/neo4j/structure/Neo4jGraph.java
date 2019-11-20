@@ -140,7 +140,7 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
      * Open a new {@link Neo4jGraph} instance.
      *
      * @param configuration the configuration for the instance
-     * @return a newly opened {@link org.apache.tinkerpop.gremlin.structure.Graph}
+     * @return a newly opened {@link Graph}
      */
     public static Neo4jGraph open(final Configuration configuration) {
         if (null == configuration) throw Graph.Exceptions.argumentCanNotBeNull("configuration");

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
 import java.io.Serializable;
@@ -106,8 +107,8 @@ public interface Step<S, E> extends Iterator<Traverser.Admin<E>>, Serializable, 
 
     /**
      * Cloning is used to duplicate steps for the purpose of traversal optimization and OLTP replication.
-     * When cloning a step, it is important that the steps, the cloned step is equivalent to the state of the step when reset() is called.
-     * Moreover, the previous and next steps should be set to {@link org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep}.
+     * When cloning a step, it is important that the steps, the cloned step is equivalent to the state of the step
+     * when {@link #reset()} is called. Moreover, the previous and next steps should be set to {@link EmptyStep}.
      *
      * @return The cloned step
      */
@@ -153,8 +154,8 @@ public interface Step<S, E> extends Iterator<Traverser.Admin<E>>, Serializable, 
     public String getId();
 
     /**
-     * Provide the necessary {@link org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement} that must be met by the traverser in order for the step to function properly.
-     * The provided default implements returns an empty set.
+     * Provide the necessary {@link TraverserRequirement} that must be met by the traverser in order for the step to
+     * function properly. The provided default implements returns an empty set.
      *
      * @return the set of requirements
      */

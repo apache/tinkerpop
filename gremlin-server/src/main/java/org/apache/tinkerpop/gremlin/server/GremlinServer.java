@@ -220,7 +220,7 @@ public class GremlinServer {
 
     /**
      * Stop Gremlin Server and free the port binding. Note that multiple calls to this method will return the
-     * same instance of the {@link java.util.concurrent.CompletableFuture}.
+     * same instance of the {@code CompletableFuture}.
      */
     public synchronized CompletableFuture<Void> stop() {
         if (serverStopped != null) {

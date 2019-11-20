@@ -41,7 +41,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
- * Utility class supporting common functions for {@link org.apache.tinkerpop.gremlin.structure.Element}.
+ * Utility class supporting common functions for {@link Element}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -105,7 +105,7 @@ public final class ElementHelper {
 
     /**
      * Determines whether a list of key/values are legal, ensuring that there are an even number of values submitted
-     * and that the key values in the list of arguments are {@link String} or {@link org.apache.tinkerpop.gremlin.structure.Element} objects.
+     * and that the key values in the list of arguments are {@link String} or {@link Element} objects.
      *
      * @param propertyKeyValues a list of key/value pairs
      * @throws IllegalArgumentException if something in the pairs is illegal
@@ -268,7 +268,7 @@ public final class ElementHelper {
     }
 
     /**
-     * Assign key/value pairs as properties to an {@link org.apache.tinkerpop.gremlin.structure.Element}.  If the value of {@link T#id} or
+     * Assign key/value pairs as properties to an {@link Element}.  If the value of {@link T#id} or
      * {@link T#label} is in the set of pairs, then they are ignored.
      *
      * @param element           the graph element to assign the {@code propertyKeyValues}
@@ -287,9 +287,9 @@ public final class ElementHelper {
     }
 
     /**
-     * Assign key/value pairs as properties to an {@link org.apache.tinkerpop.gremlin.structure.Vertex}.  If the value of {@link T#id} or
+     * Assign key/value pairs as properties to an {@link Vertex}.  If the value of {@link T#id} or
      * {@link T#label} is in the set of pairs, then they are ignored.
-     * The {@link org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality} of the key is determined from the {@link org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures}.
+     * The {@link VertexProperty.Cardinality} of the key is determined from the {@link Graph.Features.VertexFeatures}.
      *
      * @param vertex            the graph vertex to assign the {@code propertyKeyValues}
      * @param propertyKeyValues the key/value pairs to assign to the {@code element}
@@ -307,7 +307,7 @@ public final class ElementHelper {
     }
 
     /**
-     * Assign key/value pairs as properties to a {@link org.apache.tinkerpop.gremlin.structure.Vertex}.
+     * Assign key/value pairs as properties to a {@link Vertex}.
      * If the value of {@link T#id} or {@link T#label} is in the set of pairs, then they are ignored.
      *
      * @param vertex            the vertex to attach the properties to
@@ -386,11 +386,11 @@ public final class ElementHelper {
     }
 
     /**
-     * A standard method for determining if two {@link org.apache.tinkerpop.gremlin.structure.Element} objects are equal. This method should be used by any
+     * A standard method for determining if two {@link Element} objects are equal. This method should be used by any
      * {@link Object#equals(Object)} implementation to ensure consistent behavior. This method is used for Vertex, Edge, and VertexProperty.
      *
-     * @param a The first {@link org.apache.tinkerpop.gremlin.structure.Element}
-     * @param b The second {@link org.apache.tinkerpop.gremlin.structure.Element} (as an {@link Object})
+     * @param a The first {@link Element}
+     * @param b The second {@link Element} (as an {@link Object})
      * @return true if elements and equal and false otherwise
      */
     public static boolean areEqual(final Element a, final Object b) {
@@ -419,11 +419,11 @@ public final class ElementHelper {
     }
 
     /**
-     * A standard method for determining if two {@link org.apache.tinkerpop.gremlin.structure.VertexProperty} objects are equal. This method should be used by any
+     * A standard method for determining if two {@link VertexProperty} objects are equal. This method should be used by any
      * {@link Object#equals(Object)} implementation to ensure consistent behavior.
      *
-     * @param a the first {@link org.apache.tinkerpop.gremlin.structure.VertexProperty}
-     * @param b the second {@link org.apache.tinkerpop.gremlin.structure.VertexProperty}
+     * @param a the first {@link VertexProperty}
+     * @param b the second {@link VertexProperty}
      * @return true if equal and false otherwise
      */
     public static boolean areEqual(final VertexProperty a, final Object b) {
@@ -431,10 +431,10 @@ public final class ElementHelper {
     }
 
     /**
-     * Simply tests if the value returned from {@link org.apache.tinkerpop.gremlin.structure.Element#id()} are {@code equal()}.
+     * Simply tests if the value returned from {@link Element#id()} are {@code equal()}.
      *
-     * @param a the first {@link org.apache.tinkerpop.gremlin.structure.Element}
-     * @param b the second {@link org.apache.tinkerpop.gremlin.structure.Element}
+     * @param a the first {@link Element}
+     * @param b the second {@link Element}
      * @return true if ids are equal and false otherwise
      */
     public static boolean haveEqualIds(final Element a, final Element b) {
@@ -453,7 +453,7 @@ public final class ElementHelper {
 
     /**
      * If two {@link Property} instances are equal, then they must have the same hash codes. This methods ensures consistent hashCode values.
-     * For {@link VertexProperty} use {@link ElementHelper#hashCode(org.apache.tinkerpop.gremlin.structure.Element)}.
+     * For {@link VertexProperty} use {@link ElementHelper#hashCode(Element)}.
      *
      * @param property the property to get the hashCode for
      * @return the hash code of the property
@@ -463,11 +463,11 @@ public final class ElementHelper {
     }
 
     /**
-     * A standard method for determining if two {@link org.apache.tinkerpop.gremlin.structure.Property} objects are equal. This method should be used by any
+     * A standard method for determining if two {@link Property} objects are equal. This method should be used by any
      * {@link Object#equals(Object)} implementation to ensure consistent behavior.
      *
-     * @param a the first {@link org.apache.tinkerpop.gremlin.structure.Property}
-     * @param b the second {@link org.apache.tinkerpop.gremlin.structure.Property}
+     * @param a the first {@link Property}
+     * @param b the second {@link Property}
      * @return true if equal and false otherwise
      */
     public static boolean areEqual(final Property a, final Object b) {

@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.server.channel;
 
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import org.apache.tinkerpop.gremlin.server.AbstractChannelizer;
+import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.Settings;
@@ -41,8 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A {@link org.apache.tinkerpop.gremlin.server.Channelizer} that exposes a WebSocket-based Gremlin endpoint with a custom
- * sub-protocol.
+ * A {@link Channelizer} that exposes a WebSocket-based Gremlin endpoint with a custom sub-protocol.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

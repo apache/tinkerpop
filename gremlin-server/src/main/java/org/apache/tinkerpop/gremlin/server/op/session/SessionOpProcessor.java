@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
+import org.apache.tinkerpop.gremlin.server.OpProcessor;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.handler.StateKey;
 import org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
@@ -47,9 +48,8 @@ import java.util.function.Supplier;
 import static com.codahale.metrics.MetricRegistry.name;
 
 /**
- * Simple {@link org.apache.tinkerpop.gremlin.server.OpProcessor} implementation that handles
- * {@code ScriptEngine} script evaluation in the context of a session. Note that this processor will
- * also take a "close" op to kill the session and rollback any incomplete transactions.
+ * Simple {@link OpProcessor} implementation that handles {@code ScriptEngine} script evaluation in the context of
+ * a session. Note that this processor will  also take a "close" op to kill the session and rollback any incomplete transactions.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

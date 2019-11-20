@@ -83,21 +83,21 @@ public final class StringFactory {
     }
 
     /**
-     * Construct the representation for a {@link org.apache.tinkerpop.gremlin.structure.Vertex}.
+     * Construct the representation for a {@link Vertex}.
      */
     public static String vertexString(final Vertex vertex) {
         return V + L_BRACKET + vertex.id() + R_BRACKET;
     }
 
     /**
-     * Construct the representation for a {@link org.apache.tinkerpop.gremlin.structure.Edge}.
+     * Construct the representation for a {@link Edge}.
      */
     public static String edgeString(final Edge edge) {
         return E + L_BRACKET + edge.id() + R_BRACKET + L_BRACKET + edge.outVertex().id() + DASH + edge.label() + ARROW + edge.inVertex().id() + R_BRACKET;
     }
 
     /**
-     * Construct the representation for a {@link org.apache.tinkerpop.gremlin.structure.Property} or {@link org.apache.tinkerpop.gremlin.structure.VertexProperty}.
+     * Construct the representation for a {@link Property} or {@link VertexProperty}.
      */
     public static String propertyString(final Property property) {
         if (property instanceof VertexProperty) {
@@ -112,7 +112,7 @@ public final class StringFactory {
     }
 
     /**
-     * Construct the representation for a {@link org.apache.tinkerpop.gremlin.structure.Graph}.
+     * Construct the representation for a {@link Graph}.
      *
      * @param internalString a mapper {@link String} that appends to the end of the standard representation
      */

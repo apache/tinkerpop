@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
@@ -128,7 +129,7 @@ public interface Graph extends AutoCloseable, Host {
 
     /**
      * Declare the {@link GraphComputer} to use for OLAP operations on the graph.
-     * If the graph does not support graph computer then an {@link java.lang.UnsupportedOperationException} is thrown.
+     * If the graph does not support graph computer then an {@code UnsupportedOperationException} is thrown.
      *
      * @param graphComputerClass The graph computer class to use.
      * @return A graph computer for processing this graph
@@ -162,8 +163,7 @@ public interface Graph extends AutoCloseable, Host {
 
     /**
      * Generate a reusable {@link GraphTraversalSource} instance.
-     * The {@link GraphTraversalSource} provides methods for creating
-     * {@link org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal} instances.
+     * The {@link GraphTraversalSource} provides methods for creating {@link GraphTraversal} instances.
      *
      * @return A graph traversal source
      */
@@ -295,14 +295,14 @@ public interface Graph extends AutoCloseable, Host {
     /**
      * Construct a particular {@link Io} implementation for reading and writing the {@code Graph} and other data.
      * End-users will "select" the {@link Io} implementation that they want to use by supplying the
-     * {@link org.apache.tinkerpop.gremlin.structure.io.Io.Builder} that constructs it.  In this way, {@code Graph}
-     * vendors can supply their {@link IoRegistry} to that builder thus allowing for custom serializers to be
-     * auto-configured into the {@link Io} instance.  Registering custom serializers is particularly useful for those
-     * graphs that have complex types for {@link Element} identifiers.
+     * {@link Io.Builder} that constructs it.  In this way, {@code Graph} vendors can supply their {@link IoRegistry}
+     * to that builder thus allowing for custom serializers to be auto-configured into the {@link Io} instance.
+     * Registering custom serializers is particularly useful for those  graphs that have complex types for
+     * {@link Element} identifiers.
      * </p>
      * For those graphs that do not need to register any custom serializers, the default implementation should suffice.
      * If the default is overridden, take care to register the current graph via the
-     * {@link org.apache.tinkerpop.gremlin.structure.io.Io.Builder#graph(Graph)} method.
+     * {@link Io.Builder#graph(Graph)} method.
      */
     public default <I extends Io> I io(final Io.Builder<I> builder) {
         return (I) builder.graph(this).create();
@@ -317,9 +317,8 @@ public interface Graph extends AutoCloseable, Host {
     public Variables variables();
 
     /**
-     * Get the {@link org.apache.commons.configuration.Configuration} associated with the construction of this graph.
-     * Whatever configuration was passed to {@link GraphFactory#open(org.apache.commons.configuration.Configuration)}
-     * is what should be returned by this method.
+     * Get the {@code Configuration} associated with the construction of this graph.  Whatever configuration was
+     * passed to {@link GraphFactory#open(Configuration)} is what should be returned by this method.
      *
      * @return the configuration used during graph construction.
      */
@@ -873,14 +872,13 @@ public interface Graph extends AutoCloseable, Host {
         }
 
         /**
-         * Features for {@link org.apache.tinkerpop.gremlin.structure.Graph.Variables}.
+         * Features for {@link Graph.Variables}.
          */
         public interface VariableFeatures extends DataTypeFeatures {
             public static final String FEATURE_VARIABLES = "Variables";
 
             /**
-             * If any of the features on {@link org.apache.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures} is
-             * true then this value must be true.
+             * If any of the features on {@link VariableFeatures} is {@code true} then this value must be {@code true}.
              */
             @FeatureDescriptor(name = FEATURE_VARIABLES)
             public default boolean supportsVariables() {

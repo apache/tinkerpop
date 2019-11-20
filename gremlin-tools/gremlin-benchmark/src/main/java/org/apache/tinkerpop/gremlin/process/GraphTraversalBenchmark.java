@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.openjdk.jmh.annotations.Benchmark;
 
 import java.util.List;
@@ -33,8 +34,7 @@ import java.util.Map;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 
 /**
- * Runs a traversal benchmarks against a {@link org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph} loaded
- * with the Grateful Dead data set.
+ * Runs a traversal benchmarks against a {@link TinkerGraph} loaded with the Grateful Dead data set.
  *
  * @author Ted Wilmes (http://twilmes.org)
  */

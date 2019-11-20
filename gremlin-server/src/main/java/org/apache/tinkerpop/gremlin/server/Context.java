@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.tinkerpop.gremlin.server.handler.Frame;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,7 +84,7 @@ public class Context {
     }
 
     /**
-     * Gets the set of {@link org.apache.tinkerpop.gremlin.structure.Graph} objects configured in Gremlin Server.
+     * Gets the set of {@link Graph} objects configured in Gremlin Server.
      */
     public GraphManager getGraphManager() {
         return graphManager;

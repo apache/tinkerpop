@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.util.NumberHelper;
 import java.util.function.BiPredicate;
 
 /**
- * {@link Compare} is a {@link java.util.function.BiPredicate} that determines whether the first argument is {@code ==}, {@code !=},
+ * {@code Compare} is a {@code BiPredicate} that determines whether the first argument is {@code ==}, {@code !=},
  * {@code >}, {@code >=}, {@code <}, {@code <=} to the second argument.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)

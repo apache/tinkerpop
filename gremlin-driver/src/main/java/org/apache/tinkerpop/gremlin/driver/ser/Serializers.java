@@ -41,8 +41,7 @@ public enum Serializers {
 
     /**
      * Default serializer for results returned from Gremlin Server. This implementation must be of type
-     * {@link org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer} so that it can be compatible with text-based
-     * websocket messages.
+     * {@link MessageTextSerializer} so that it can be compatible with text-based websocket messages.
      *
      * @deprecated As of release 3.3.5, not replaced, simply specify the exact version of the serializer to use.
      */
@@ -51,8 +50,7 @@ public enum Serializers {
 
     /**
      * Default serializer for requests received by Gremlin Server. This implementation must be of type
-     * {@link org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer} so that it can be compatible with text-based
-     * websocket messages.
+     * {@link MessageTextSerializer} so that it can be compatible with text-based websocket messages.
      *
      * @deprecated As of release 3.3.5, not replaced, simply specify the exact version of the serializer to use.
      */

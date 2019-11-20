@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
 /**
- * Utility class supporting common functions for {@link org.apache.tinkerpop.gremlin.structure.Graph}.
+ * Utility class supporting common functions for {@link Graph}.
  */
 public final class GraphHelper {
 

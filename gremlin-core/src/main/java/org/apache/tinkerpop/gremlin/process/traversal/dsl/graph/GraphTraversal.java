@@ -2057,8 +2057,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     /**
      * Sets a {@link Property} value and related meta properties if supplied, if supported by the {@link Graph}
      * and if the {@link Element} is a {@link VertexProperty}.  This method is the long-hand version of
-     * {@link #property(Object, Object, Object...)} with the difference that the
-     * {@link org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality} can be supplied.
+     * {@link #property(Object, Object, Object...)} with the difference that the {@link VertexProperty.Cardinality}
+     * can be supplied.
      * <p/>
      * Generally speaking, this method will append an {@link AddPropertyStep} to the {@link Traversal} but when
      * possible, this method will attempt to fold key/value pairs into an {@link AddVertexStep}, {@link AddEdgeStep} or
@@ -2127,8 +2127,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     /**
      * Sets the key and value of a {@link Property}. If the {@link Element} is a {@link VertexProperty} and the
      * {@link Graph} supports it, meta properties can be set.  Use of this method assumes that the
-     * {@link org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality} is defaulted to {@code null} which
-     * means that the default cardinality for the {@link Graph} will be used.
+     * {@link VertexProperty.Cardinality} is defaulted to {@code null} which  means that the default cardinality for
+     * the {@link Graph} will be used.
      * <p/>
      * This method is effectively calls
      * {@link #property(org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality, Object, Object, Object...)}

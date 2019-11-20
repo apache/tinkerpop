@@ -80,7 +80,7 @@ public final class Constants {
 
     /**
      * @param location not null, not empty UNIX-formatted file system path
-     * @return not empty UNIX-formatted file system path to the graph in the location, still compatible with Windows and java.io.File
+     * @return not empty UNIX-formatted file system path to the graph in the location, still compatible with Windows and {@code File}
      */
     public static String getGraphLocation(final String location) {
         return location.endsWith("/") ? location + Constants.HIDDEN_G : location + "/" + Constants.HIDDEN_G;
@@ -89,7 +89,7 @@ public final class Constants {
     /**
      * @param location not null, not empty UNIX-formatted file system path
      * @param memoryKey not null, not empty
-     * @return not empty UNIX-formatted file system path to the memory in the location, still compatible with Windows and java.io.File
+     * @return not empty UNIX-formatted file system path to the memory in the location, still compatible with Windows and {@code File}
      */
     public static String getMemoryLocation(final String location, final String memoryKey) {
         return location.endsWith("/") ? location + memoryKey : location + "/" + memoryKey;

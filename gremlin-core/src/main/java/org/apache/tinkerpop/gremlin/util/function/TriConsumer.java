@@ -22,7 +22,7 @@ import java.util.Objects;
 
 /**
  * Represents an operation that accepts two input arguments and returns no result. This is the tri-arity
- * specialization of {@link java.util.function.Consumer}. Unlike most other functional interfaces, {@link TriConsumer}
+ * specialization of {@code Consumer}. Unlike most other functional interfaces, {@code TriConsumer}
  * is expected to operate via side-effects.
  * <p/>
  * This is a functional interface whose functional method is {@link #accept(Object, Object, Object)}.

@@ -98,8 +98,7 @@ public interface GraphProvider {
      * something that requires a different engine type, like {@link GraphComputer}.
      * <p/>
      * Implementations should apply strategies as necessary to the
-     * {@link org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource} before calling
-     * it's {@code create} method.
+     * {@link GraphTraversalSource} before calling it's {@code create} method.
      */
     public default GraphTraversalSource traversal(final Graph graph, final TraversalStrategy... strategies) {
         return this.traversal(graph).withStrategies(strategies);
@@ -116,7 +115,7 @@ public interface GraphProvider {
     }
 
     /**
-     * Creates a new {@link org.apache.tinkerpop.gremlin.structure.Graph} instance using the default
+     * Creates a new {@link Graph} instance using the default
      * {@code org.apache.commons.configuration.Configuration} from
      * {@link #standardGraphConfiguration(Class, String, LoadGraphWith.GraphData)}.
      */
@@ -125,7 +124,7 @@ public interface GraphProvider {
     }
 
     /**
-     * Creates a new {@link Graph} instance from the {@link org.apache.commons.configuration.Configuration} object using {@link GraphFactory}.
+     * Creates a new {@link Graph} instance from the {@code Configuration} object using {@link GraphFactory}.
      * The assumption here is that the {@code Configuration} has been created by one of the
      * {@link #newGraphConfiguration(String, Class, String, LoadGraphWith.GraphData)} methods and has therefore
      * already been modified by the implementation as necessary for {@link Graph} creation.
@@ -249,7 +248,7 @@ public interface GraphProvider {
      * <li>{@link Element}</li>
      * <li>{@link DefaultGraphTraversal}</li>
      * <li>{@link Graph}</li>
-     * <li>{@link org.apache.tinkerpop.gremlin.structure.Graph.Variables}</li>
+     * <li>{@link Graph.Variables}</li>
      * <li>{@link GraphTraversal}</li>
      * <li>{@link B_LP_O_P_S_SE_SL_Traverser}</li>
      * <li>{@link Property}</li>
@@ -266,7 +265,7 @@ public interface GraphProvider {
      * <li>{@link Edge}</li>
      * <li>{@link Element}</li>
      * <li>{@link Graph}</li>
-     * <li>{@link org.apache.tinkerpop.gremlin.structure.Graph.Variables}</li>
+     * <li>{@link Graph.Variables}</li>
      * <li>{@link Property}</li>
      * <li>{@link Vertex}</li>
      * <li>{@link VertexProperty}</li>
