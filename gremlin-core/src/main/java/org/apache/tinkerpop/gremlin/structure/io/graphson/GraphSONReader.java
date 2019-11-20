@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -63,8 +64,8 @@ import java.util.stream.Stream;
  * This implementation only supports JSON data types and is therefore lossy with respect to data types (e.g. a
  * float will become a double, element IDs may not be retrieved in the format they were serialized, etc.).
  * {@link Edge} and {@link Vertex} objects are serialized to {@code Map} instances.  If an
- * {@link org.apache.tinkerpop.gremlin.structure.Element} is used as a key, it is coerced to its identifier.  Other complex
- * objects are converted via {@link Object#toString()} unless there is a mapper serializer supplied.
+ * {@link Element} is used as a key, it is coerced to its identifier.  Other complex  objects are converted via
+ * {@link Object#toString()} unless there is a mapper serializer supplied.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

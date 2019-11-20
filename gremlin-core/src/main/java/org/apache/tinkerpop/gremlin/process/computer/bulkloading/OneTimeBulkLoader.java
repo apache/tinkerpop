@@ -28,11 +28,9 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 /**
- * {@link org.apache.tinkerpop.gremlin.process.computer.bulkloading.OneTimeBulkLoader} is a
- * {@link org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoader} implementation that should be used
- * for initial bulk loads. In contrast to {@link org.apache.tinkerpop.gremlin.process.computer.bulkloading.IncrementalBulkLoader}
- * it doesn't store temporary identifiers in the write graph nor does it attempt to find existing elements, instead it
- * only clones each element from the source graph.
+ * {@link OneTimeBulkLoader} is a {@link BulkLoader} implementation that should be used for initial bulk loads. In
+ * contrast to {@link IncrementalBulkLoader} it doesn't store temporary identifiers in the write graph nor does it
+ * attempt to find existing elements, instead it  only clones each element from the source graph.
  *
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @deprecated As of release 3.2.10, not directly replaced - consider graph provider specific bulk loading methods

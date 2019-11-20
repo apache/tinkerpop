@@ -26,7 +26,7 @@ import java.util.function.Supplier;
 
 /**
  * A {@link Property} denotes a key/value pair associated with an {@link Edge}. A property is much like a Java8
- * {@link java.util.Optional} in that a property can be not present (i.e. empty). The key of a property is always a
+ * {@code Optional} in that a property can be not present (i.e. empty). The key of a property is always a
  * String and the value of a property is an arbitrary Java object. Each underlying graph engine will typically have
  * constraints on what Java objects are allowed to be used as values.
  *

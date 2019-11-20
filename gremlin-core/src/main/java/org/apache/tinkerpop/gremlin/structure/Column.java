@@ -28,7 +28,8 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * Column references a particular type of column in a complex data structure such as a {@link java.util.Map}, a {@link java.util.Map.Entry}, or a {@link org.apache.tinkerpop.gremlin.process.traversal.Path}.
+ * Column references a particular type of column in a complex data structure such as a {@code Map}, a
+ * {@code Map.Entry}, or a {@link Path}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

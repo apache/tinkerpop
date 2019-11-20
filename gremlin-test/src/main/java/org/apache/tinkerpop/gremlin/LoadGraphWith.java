@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -73,7 +74,7 @@ public @interface LoadGraphWith {
         MODERN,
 
         /**
-         * Load "The Crew" TinkerPop3 toy graph which includes {@link org.apache.tinkerpop.gremlin.structure.VertexProperty} data.
+         * Load "The Crew" TinkerPop3 toy graph which includes {@link VertexProperty} data.
          */
         CREW,
 

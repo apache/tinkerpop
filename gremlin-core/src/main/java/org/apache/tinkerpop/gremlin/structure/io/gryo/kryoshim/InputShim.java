@@ -18,9 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;
 
+import org.apache.tinkerpop.shaded.kryo.io.Input;
+
 /**
- * A minimal {@link org.apache.tinkerpop.shaded.kryo.io.Input}-like abstraction.
- * See that class for method documentation.
+ * A minimal {@link Input}-like abstraction.  See that class for method documentation.
  */
 public interface InputShim {
 

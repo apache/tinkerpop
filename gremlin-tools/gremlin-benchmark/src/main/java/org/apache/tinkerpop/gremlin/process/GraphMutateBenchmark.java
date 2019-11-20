@@ -19,8 +19,10 @@
 package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.benchmark.util.AbstractGraphMutateBenchmark;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -34,8 +36,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * {@code GraphMutateBenchmark} benchmarks {@link org.apache.tinkerpop.gremlin.process.traversal.Traversal} and
- * {@link org.apache.tinkerpop.gremlin.structure.Graph} mutation methods.
+ * {@code GraphMutateBenchmark} benchmarks {@link Traversal} and  {@link Graph} mutation methods.
  *
  * @author Ted Wilmes (http://twilmes.org)
  * @author Stephen Mallette (http://stephen.genoprime.com)

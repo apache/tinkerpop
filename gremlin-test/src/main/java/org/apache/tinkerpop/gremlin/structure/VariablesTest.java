@@ -41,7 +41,7 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 
 /**
- * Gremlin Test Suite for {@link org.apache.tinkerpop.gremlin.structure.Graph.Variables} operations.
+ * Gremlin Test Suite for {@link Graph.Variables} operations.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -50,8 +50,7 @@ import static org.junit.Assume.assumeThat;
 public class VariablesTest {
 
     /**
-     * Basic tests to ensure that {@link org.apache.tinkerpop.gremlin.structure.Graph.Variables} have
-     * appropriate {@link String} representations.
+     * Basic tests to ensure that {@link Graph.Variables} have appropriate {@link String} representations.
      */
     public static class StringRepresentationTest extends AbstractGremlinTest {
         @Test
@@ -68,7 +67,7 @@ public class VariablesTest {
     }
 
     /**
-     * Test exceptions around {@link org.apache.tinkerpop.gremlin.structure.Graph.Variables}.
+     * Test exceptions around {@link Graph.Variables}.
      */
     @RunWith(Parameterized.class)
     @ExceptionCoverage(exceptionClass = Graph.Variables.Exceptions.class, methods = {
@@ -110,8 +109,8 @@ public class VariablesTest {
     }
 
     /**
-     * Ensure that the {@link org.apache.tinkerpop.gremlin.structure.Graph.Variables#asMap()} method returns some basics.
-     * Other tests will enforce that all types are properly covered in {@link org.apache.tinkerpop.gremlin.structure.Graph.Variables}.
+     * Ensure that the {@link Graph.Variables#asMap()} method returns some basics. Other tests will enforce that all
+     * types are properly covered in {@link Graph.Variables}.
      */
     public static class VariableAsMapTest extends AbstractGremlinTest {
         @Test
@@ -202,10 +201,10 @@ public class VariablesTest {
     }
 
     /**
-     * Tests for feature support on {@link org.apache.tinkerpop.gremlin.structure.Graph.Variables}.  The tests validate if
-     * {@link org.apache.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures} should be turned on or off and if the
-     * enabled features are properly supported by the implementation.  Note that these tests are run in a separate
-     * test class as they are "parameterized" tests.
+     * Tests for feature support on {@link Graph.Variables}.  The tests validate if
+     * {@link Graph.Features.VariableFeatures} should be turned on or off and if the enabled features are properly
+     * supported by the implementation.  Note that these tests are run in a separate test class as they are
+     * "parameterized" tests.
      */
     @RunWith(Parameterized.class)
     public static class GraphVariablesFeatureSupportTest extends AbstractGremlinTest {

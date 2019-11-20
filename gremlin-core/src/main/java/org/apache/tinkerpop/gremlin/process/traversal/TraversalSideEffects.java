@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
+
 import java.io.Serializable;
 import java.util.Optional;
 import java.util.Set;
@@ -47,7 +49,7 @@ public interface TraversalSideEffects extends Cloneable, Serializable, AutoClose
     /**
      * Get the sideEffect associated with the provided key.
      * If the sideEffect contains an object for the key, return it.
-     * Else if the sideEffect has a registered {@link java.util.function.Supplier} for that key, generate the object, store the object in the sideEffects, and return it.
+     * Else if the sideEffect has a registered {@code Supplier} for that key, generate the object, store the object in the sideEffects, and return it.
      *
      * @param key the key to get the value for
      * @param <V> the type of the value to retrieve
@@ -75,8 +77,8 @@ public interface TraversalSideEffects extends Cloneable, Serializable, AutoClose
     public void remove(final String key);
 
     /**
-     * The keys of the sideEffect which includes registered {@link java.util.function.Supplier} keys.
-     * In essence, that which is possible to get().
+     * The keys of the sideEffect which includes registered {@code Supplier} keys. In essence, that which is possible
+     * to {@link #get(String)}.
      *
      * @return the keys of the sideEffect
      */
@@ -130,7 +132,7 @@ public interface TraversalSideEffects extends Cloneable, Serializable, AutoClose
     public <V> BinaryOperator<V> getReducer(final String key) throws IllegalArgumentException;
 
     /**
-     * Get the supplier associated with the side-effect key. If no supplier was registered, then {@link org.apache.tinkerpop.gremlin.util.function.ConstantSupplier} is provided.
+     * Get the supplier associated with the side-effect key. If no supplier was registered, then {@link ConstantSupplier} is provided.
      *
      * @param key the key of the side-effect
      * @param <V> the type of the side-effect value

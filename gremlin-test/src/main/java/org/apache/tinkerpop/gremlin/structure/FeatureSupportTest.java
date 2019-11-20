@@ -79,7 +79,7 @@ public class FeatureSupportTest {
     }
 
     /**
-     * Feature checks that test {@link org.apache.tinkerpop.gremlin.structure.Graph} functionality to determine if a feature should be on when it is marked
+     * Feature checks that test {@link Graph} functionality to determine if a feature should be on when it is marked
      * as not supported.
      */
     @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
@@ -101,8 +101,8 @@ public class FeatureSupportTest {
         }
 
         /**
-         * A {@link org.apache.tinkerpop.gremlin.structure.Graph} that does not support {@link org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures#FEATURE_COMPUTER} must call
-         * {@link org.apache.tinkerpop.gremlin.structure.Graph.Exceptions#graphComputerNotSupported()}.
+         * A {@link Graph} that does not support {@link Graph.Features.GraphFeatures#FEATURE_COMPUTER} must call
+         * {@link Graph.Exceptions#graphComputerNotSupported()}.
          */
         @Test
         @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_COMPUTER, supported = false)
@@ -116,8 +116,8 @@ public class FeatureSupportTest {
         }
 
         /**
-         * A {@link org.apache.tinkerpop.gremlin.structure.Graph} that does not support {@link org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures#FEATURE_TRANSACTIONS} must call
-         * {@link org.apache.tinkerpop.gremlin.structure.Graph.Exceptions#transactionsNotSupported()}.
+         * A {@link Graph} that does not support {@link Graph.Features.GraphFeatures#FEATURE_TRANSACTIONS} must call
+         * {@link Graph.Exceptions#transactionsNotSupported()}.
          */
         @Test
         @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_TRANSACTIONS, supported = false)
@@ -131,8 +131,8 @@ public class FeatureSupportTest {
         }
 
         /**
-         * A {@link org.apache.tinkerpop.gremlin.structure.Graph} that does not support {@link org.apache.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures#FEATURE_VARIABLES} must call
-         * {@link org.apache.tinkerpop.gremlin.structure.Graph.Exceptions#variablesNotSupported()}.
+         * A {@link Graph} that does not support {@link Graph.Features.VariableFeatures#FEATURE_VARIABLES} must call
+         * {@link Graph.Exceptions#variablesNotSupported()}.
          */
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = FEATURE_VARIABLES, supported = false)
@@ -159,7 +159,7 @@ public class FeatureSupportTest {
     }
 
     /**
-     * Feature checks that test {@link org.apache.tinkerpop.gremlin.structure.Vertex} functionality to determine if a feature
+     * Feature checks that test {@link Vertex} functionality to determine if a feature
      * should be on when it is marked as not supported.
      */
     @ExceptionCoverage(exceptionClass = Vertex.Exceptions.class, methods = {
@@ -371,7 +371,7 @@ public class FeatureSupportTest {
     }
 
     /**
-     * Feature checks that test {@link org.apache.tinkerpop.gremlin.structure.Edge} functionality to determine if a feature
+     * Feature checks that test {@link Edge} functionality to determine if a feature
      * should be on when it is marked as not supported.
      */
     @ExceptionCoverage(exceptionClass = Vertex.Exceptions.class, methods = {
@@ -606,7 +606,7 @@ public class FeatureSupportTest {
     }
 
     /**
-     * Feature checks that test {@link org.apache.tinkerpop.gremlin.structure.Element} {@link org.apache.tinkerpop.gremlin.structure.Property} functionality to determine if a feature should be on
+     * Feature checks that test {@link Element} {@link Property} functionality to determine if a feature should be on
      * when it is marked as not supported.
      */
     @RunWith(Parameterized.class)
@@ -663,7 +663,7 @@ public class FeatureSupportTest {
     }
 
     /**
-     * Feature checks that tests if {@link org.apache.tinkerpop.gremlin.structure.Graph.Variables}
+     * Feature checks that tests if {@link Graph.Variables}
      * functionality to determine if a feature should be on when it is marked as not supported.
      */
     @RunWith(Parameterized.class)

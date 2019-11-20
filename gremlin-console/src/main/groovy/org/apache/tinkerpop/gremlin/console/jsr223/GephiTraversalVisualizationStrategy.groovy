@@ -39,7 +39,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 import java.util.stream.Collectors
 
 /**
- * A strategy that works in conjuction with the {@link org.apache.tinkerpop.gremlin.console.plugin.GephiRemoteAcceptor} to automatically inject visualization
+ * A strategy that works in conjunction with the {@link GephiRemoteAcceptor} to automatically inject visualization
  * steps after "vertex" steps to show the vertices traversed for a step.  If the traversal was evaluated in the
  * console normally then the visualization strategy will not be applied.  It must be {@code :submit} to the
  * console for the strategy to be applied.

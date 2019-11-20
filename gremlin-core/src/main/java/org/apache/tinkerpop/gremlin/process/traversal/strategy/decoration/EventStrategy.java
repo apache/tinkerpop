@@ -51,7 +51,7 @@ import java.util.List;
  * A strategy that raises events when {@link Mutating} steps are encountered and successfully executed.
  * <p/>
  * Note that this implementation requires a {@link Graph} on the {@link Traversal} instance.  If that is not present
- * an {@link java.lang.IllegalStateException} will be thrown.
+ * an {@code IllegalStateException} will be thrown.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

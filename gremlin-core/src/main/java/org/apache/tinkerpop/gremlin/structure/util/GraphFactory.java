@@ -30,8 +30,7 @@ import java.io.File;
 import java.util.Map;
 
 /**
- * Factory to construct new {@link org.apache.tinkerpop.gremlin.structure.Graph} instances from a
- * {@code Configuration} object or properties file.
+ * Factory to construct new {@link Graph} instances from a {@code Configuration} object or properties file.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -42,10 +41,10 @@ public final class GraphFactory {
     /**
      * Open a graph.  See each {@link Graph} instance for its configuration options.
      *
-     * @param configuration A configuration object that specifies the minimally required properties for a                        I
+     * @param configuration A configuration object that specifies the minimally required properties for a
      *                      {@link Graph} instance. This minimum is determined by the
      *                      {@link Graph} instance itself.
-     * @return A {@link org.apache.tinkerpop.gremlin.structure.Graph} instance.
+     * @return A {@link Graph} instance.
      * @throws IllegalArgumentException if {@code configuration}
      */
     public static Graph open(final Configuration configuration) {
@@ -94,9 +93,9 @@ public final class GraphFactory {
      * {@code GraphFactory} depends on.
      *
      * @param configurationFile The location of a configuration file that specifies the minimally required properties
-     *                          for a {@link org.apache.tinkerpop.gremlin.structure.Graph} instance. This minimum is determined by the {@link org.apache.tinkerpop.gremlin.structure.Graph} instance
+     *                          for a {@link Graph} instance. This minimum is determined by the {@link Graph} instance
      *                          itself.
-     * @return A {@link org.apache.tinkerpop.gremlin.structure.Graph} instance.
+     * @return A {@link Graph} instance.
      * @throws IllegalArgumentException if {@code configurationFile} is null
      */
     public static Graph open(final String configurationFile) {
@@ -105,10 +104,10 @@ public final class GraphFactory {
     }
 
     /**
-     * Open a graph. See each {@link org.apache.tinkerpop.gremlin.structure.Graph} instance for its configuration options.
+     * Open a graph. See each {@link Graph} instance for its configuration options.
      *
-     * @param configuration A {@link java.util.Map} based configuration that will be converted to an {@link org.apache.commons.configuration.Configuration} object
-     *                      via {@link org.apache.commons.configuration.MapConfiguration} and passed to the appropriate overload.
+     * @param configuration A {@code Map} based configuration that will be converted to an {@code Configuration} object
+     *                      via {@code MapConfiguration} and passed to the appropriate overload.
      * @return A Graph instance.
      */
     public static Graph open(final Map configuration) {

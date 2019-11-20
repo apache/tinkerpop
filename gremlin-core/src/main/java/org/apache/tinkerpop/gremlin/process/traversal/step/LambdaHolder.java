@@ -18,9 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+
 /**
- * This is a marker interface stating that the {@link org.apache.tinkerpop.gremlin.process.traversal.Step} contains a
- * lambda/anonymous function. This information is typically used by a {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy}
+ * This is a marker interface stating that the {@link Step} contains a
+ * lambda/anonymous function. This information is typically used by a {@link TraversalStrategy}
  * in a verification stage as lambdas are not serializable and thus, can not be propagated over the network.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)

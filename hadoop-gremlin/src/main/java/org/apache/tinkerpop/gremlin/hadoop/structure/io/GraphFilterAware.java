@@ -21,14 +21,15 @@ package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 
 /**
- * An input graph class is {@code GraphFilterAware} if it can filter out vertices and edges as its loading the graph from the
- * source data. Any input class that is {@code GraphFilterAware} must be able to fully handle both vertex and edge filtering.
- * It is assumed that if the input class is {@code GraphFilterAware}, then the respective
- * {@link org.apache.tinkerpop.gremlin.process.computer.GraphComputer} will not perform any filtering on the loaded graph.
+ * An input graph class is {@code GraphFilterAware} if it can filter out vertices and edges as its loading the graph
+ * from the source data. Any input class that is {@code GraphFilterAware} must be able to fully handle both vertex and
+ * edge filtering. It is assumed that if the input class is {@code GraphFilterAware}, then the respective
+ * {@link GraphComputer} will not perform any filtering on the loaded graph.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

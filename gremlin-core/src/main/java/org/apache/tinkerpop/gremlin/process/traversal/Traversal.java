@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.RemoteStep
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
@@ -313,8 +314,8 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         public Bytecode getBytecode();
 
         /**
-         * Add an iterator of {@link Traverser.Admin} objects to the head/start of the traversal.
-         * Users should typically not need to call this method. For dynamic inject of data, they should use {@link org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep}.
+         * Add an iterator of {@link Traverser.Admin} objects to the head/start of the traversal. Users should
+         * typically not need to call this method. For dynamic inject of data, they should use {@link InjectStep}.
          *
          * @param starts an iterators of traversers
          */
@@ -324,8 +325,8 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         }
 
         /**
-         * Add a single {@link Traverser.Admin} object to the head of the traversal.
-         * Users should typically not need to call this method. For dynamic inject of data, they should use {@link org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep}.
+         * Add a single {@link Traverser.Admin} object to the head of the traversal. Users should typically not need
+         * to call this method. For dynamic inject of data, they should use {@link InjectStep}.
          *
          * @param start a traverser to add to the traversal
          */
@@ -420,8 +421,8 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         public void applyStrategies() throws IllegalStateException;
 
         /**
-         * Get the {@link TraverserGenerator} associated with this traversal.
-         * The traversal generator creates {@link Traverser} instances that are respective of the traversal's {@link org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement}.
+         * Get the {@link TraverserGenerator} associated with this traversal. The traversal generator creates
+         * {@link Traverser} instances that are respective of the traversal's {@link TraverserRequirement}.
          *
          * @return the generator of traversers
          */
@@ -476,7 +477,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         public TraversalStrategies getStrategies();
 
         /**
-         * Set the {@link org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent} {@link Step} that is the parent of this traversal.
+         * Set the {@link TraversalParent} {@link Step} that is the parent of this traversal.
          * Traversals can be nested and this is the means by which the traversal tree is connected.
          *
          * @param step the traversal holder parent step
@@ -484,7 +485,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         public void setParent(final TraversalParent step);
 
         /**
-         * Get the {@link org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent} {@link Step} that is the parent of this traversal.
+         * Get the {@link TraversalParent} {@link Step} that is the parent of this traversal.
          * Traversals can be nested and this is the means by which the traversal tree is walked.
          *
          * @return the traversal holder parent step

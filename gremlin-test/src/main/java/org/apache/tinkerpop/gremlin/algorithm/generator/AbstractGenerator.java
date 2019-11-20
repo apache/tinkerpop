@@ -46,9 +46,9 @@ public abstract class AbstractGenerator implements Generator {
      * not supplied then the system clock is used to generate a seed.
      *
      * @param label           Label for the generated edges
-     * @param edgeProcessor   {@link java.util.function.Consumer} to use for annotating newly generated edges.
-     * @param vertexProcessor {@link java.util.function.Consumer} to use for annotating process vertices.
-     * @param seedGenerator   A {@link java.util.function.Supplier} function to provide seeds to {@link java.util.Random}
+     * @param edgeProcessor   {@code Consumer} to use for annotating newly generated edges.
+     * @param vertexProcessor {@code Consumer} to use for annotating process vertices.
+     * @param seedGenerator   A {@code Supplier} function to provide seeds to {@link java.util.Random}
      */
     AbstractGenerator(final Graph g, final String label, final Optional<Consumer<Edge>> edgeProcessor,
                       final Optional<BiConsumer<Vertex, Map<String, Object>>> vertexProcessor,

@@ -21,8 +21,9 @@ package org.apache.tinkerpop.gremlin.process.computer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 /**
- * The result of the {@link GraphComputer}'s computation. This is returned in a {@link java.util.concurrent.Future} by {@link GraphComputer#submit}.
- * A GraphComputer computation yields two things: an updated view of the computed on {@link Graph} and any computational sideEffects called {@link Memory}.
+ * The result of the {@link GraphComputer}'s computation. This is returned in a {@code Future} by
+ * {@link GraphComputer#submit}. A GraphComputer computation yields two things: an updated view of the computed on
+ * {@link Graph} and any computational sideEffects called {@link Memory}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
