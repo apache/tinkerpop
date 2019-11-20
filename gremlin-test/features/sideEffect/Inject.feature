@@ -93,3 +93,15 @@ Feature: Step - inject()
       | m[{"a":"d[10].i", "b":"d[3].l"}] |
       | m[{"a":"d[20].i", "b":"d[2].l"}] |
       | m[{"a":null, "b":"d[1].l"}] |
+
+  Scenario: g_injectXname_marko_age_nullX_selectXname_ageX
+    Given the empty graph
+    And using the parameter m defined as "m[{\"name\":\"marko\", \"age\":null}]"
+    And the traversal of
+      """
+      g.inject(m).select("name","age")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"name":"marko", "age":null}] |

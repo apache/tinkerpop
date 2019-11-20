@@ -164,7 +164,7 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
                 ((WhereEndStep) this.getTraversal().getEndStep()).processStartTraverser(traverser);
             else if (this.getTraversal().getEndStep() instanceof ProfileStep && this.getTraversal().getEndStep().getPreviousStep() instanceof WhereEndStep)     // TOTAL SUCKY HACK!
                 ((WhereEndStep) this.getTraversal().getEndStep().getPreviousStep()).processStartTraverser(traverser);
-            return null == this.selectKey ? traverser.get() : this.getScopeValue(Pop.last, this.selectKey, traverser);
+            return null == this.selectKey ? traverser.get() : this.getSafeScopeValue(Pop.last, this.selectKey, traverser);
         }
 
         @Override
@@ -199,7 +199,7 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
 
         public void processStartTraverser(final Traverser.Admin traverser) {
             if (null != this.matchKey)
-                this.matchValue = this.getScopeValue(Pop.last, this.matchKey, traverser);
+                this.matchValue = this.getSafeScopeValue(Pop.last, this.matchKey, traverser);
         }
 
         @Override

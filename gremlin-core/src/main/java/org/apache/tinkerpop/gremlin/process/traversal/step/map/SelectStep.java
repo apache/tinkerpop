@@ -66,16 +66,17 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     protected Traverser.Admin<Map<String, E>> processNextStart() throws NoSuchElementException {
         final Traverser.Admin<S> traverser = this.starts.next();
         final Map<String, E> bindings = new LinkedHashMap<>(this.selectKeys.size(), 1.0f);
-        for (final String selectKey : this.selectKeys) {
-            final E end = this.getNullableScopeValue(this.pop, selectKey, traverser);
-            if (null != end)
+        try {
+            for (final String selectKey : this.selectKeys) {
+                final E end = this.getScopeValue(this.pop, selectKey, traverser);
                 bindings.put(selectKey, TraversalUtil.applyNullable(end, this.traversalRing.next()));
-            else {
-                this.traversalRing.reset();
-                return EmptyTraverser.instance();
             }
+        } catch (KeyNotFoundException nfe) {
+            return EmptyTraverser.instance();
+        } finally {
+            this.traversalRing.reset();
         }
-        this.traversalRing.reset();
+
         return PathProcessor.processTraverserPathLabels(traverser.split(bindings, this), this.keepLabels);
     }
 

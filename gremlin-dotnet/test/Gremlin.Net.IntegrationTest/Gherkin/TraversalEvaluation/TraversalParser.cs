@@ -38,7 +38,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             {
                 { "g.V().fold().count(Scope.local)", g => g.V().Fold().Count(Scope.Local)},
                 { "g.inject(10,20,null,20,10,10).groupCount(\"x\").dedup().as(\"y\").project(\"a\",\"b\").by().by(__.select(\"x\").select(__.select(\"y\")))", 
-                    g => g.Inject<object>(10,20,null,20,10,10).GroupCount("x").Dedup().As("y").Project<object>("a","b").By().By(__.Select<int>("x").Select<object>(__.Select<int>("y")))}
+                    g => g.Inject<object>(10,20,null,20,10,10).GroupCount("x").Dedup().As("y").Project<object>("a","b").By().By(__.Select<int>("x").Select<object>(__.Select<int>("y")))},
+                { "g.inject(m).select(\"name\",\"age\")", g => g.Inject(new Dictionary<string,object>() {{"name", "marko"}, {"age", null}}).Select<object>("name", "age") }
             };
 
         private static readonly Regex RegexNumeric =
