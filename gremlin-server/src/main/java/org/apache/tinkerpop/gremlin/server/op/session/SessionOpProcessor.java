@@ -124,7 +124,6 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
     /**
      * Session based requests accept a "close" operator in addition to "eval". A close will trigger the session to be
      * killed and any uncommitted transaction to be rolled-back.
-     * @return
      */
     @Override
     public Optional<ThrowingConsumer<Context>> selectOther(final RequestMessage requestMessage) throws OpProcessorException {

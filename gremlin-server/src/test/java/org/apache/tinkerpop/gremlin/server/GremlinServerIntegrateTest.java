@@ -18,12 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import io.netty.handler.ssl.ClientAuth;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.SslProvider;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-import io.netty.handler.ssl.util.SelfSignedCertificate;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -172,73 +166,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldBatchResultsByTwos":
                 settings.resultIterationBatchSize = 2;
                 break;
-            case "shouldEnableSsl":
-            case "shouldEnableSslButFailIfClientConnectsWithoutIt":
-                settings.ssl = new Settings.SslSettings();
-                settings.ssl.enabled = true;
-                settings.ssl.keyStore = JKS_SERVER_KEY;
-                settings.ssl.keyStorePassword = KEY_PASS;
-                settings.ssl.keyStoreType = KEYSTORE_TYPE_JKS;
-                break;
-            case "shouldEnableSslWithSslContextProgrammaticallySpecified":
-                settings.ssl = new Settings.SslSettings();
-                settings.ssl.enabled = true;
-                settings.ssl.overrideSslContext(createServerSslContext());
-                break;
-            case "shouldEnableSslAndClientCertificateAuthWithPkcs12":
-                settings.ssl = new Settings.SslSettings();
-                settings.ssl.enabled = true;
-                settings.ssl.needClientAuth = ClientAuth.REQUIRE;
-                settings.ssl.keyStore = P12_SERVER_KEY;
-                settings.ssl.keyStorePassword = KEY_PASS;
-                settings.ssl.keyStoreType = KEYSTORE_TYPE_PKCS12;
-                settings.ssl.trustStore = P12_SERVER_TRUST;
-                settings.ssl.trustStorePassword = KEY_PASS;
-                break;
-            case "shouldEnableSslAndClientCertificateAuth":
-                settings.ssl = new Settings.SslSettings();
-                settings.ssl.enabled = true;
-                settings.ssl.needClientAuth = ClientAuth.REQUIRE;
-                settings.ssl.keyStore = JKS_SERVER_KEY;
-                settings.ssl.keyStorePassword = KEY_PASS;
-                settings.ssl.keyStoreType = KEYSTORE_TYPE_JKS;
-                settings.ssl.trustStore = JKS_SERVER_TRUST;
-                settings.ssl.trustStorePassword = KEY_PASS;
-                break;
-            case "shouldEnableSslAndClientCertificateAuthAndFailWithoutCert":
-                settings.ssl = new Settings.SslSettings();
-                settings.ssl.enabled = true;
-                settings.ssl.needClientAuth = ClientAuth.REQUIRE;
-                settings.ssl.keyStore = JKS_SERVER_KEY;
-                settings.ssl.keyStorePassword = KEY_PASS;
-                settings.ssl.keyStoreType = KEYSTORE_TYPE_JKS;
-                settings.ssl.trustStore = JKS_SERVER_TRUST;
-                settings.ssl.trustStorePassword = KEY_PASS;
-                break;
-            case "shouldEnableSslAndClientCertificateAuthAndFailWithoutTrustedClientCert":
-                settings.ssl = new Settings.SslSettings();
-                settings.ssl.enabled = true;
-                settings.ssl.needClientAuth = ClientAuth.REQUIRE;
-                settings.ssl.keyStore = JKS_SERVER_KEY;
-                settings.ssl.keyStorePassword = KEY_PASS;
-                settings.ssl.keyStoreType = KEYSTORE_TYPE_JKS;
-                break;
-            case "shouldEnableSslAndFailIfProtocolsDontMatch":
-                settings.ssl = new Settings.SslSettings();
-                settings.ssl.enabled = true;
-                settings.ssl.keyStore = JKS_SERVER_KEY;
-                settings.ssl.keyStorePassword = KEY_PASS;
-                settings.ssl.keyStoreType = KEYSTORE_TYPE_JKS;
-                settings.ssl.sslEnabledProtocols = Arrays.asList("TLSv1.1");
-                break;
-            case "shouldEnableSslAndFailIfCiphersDontMatch":
-                settings.ssl = new Settings.SslSettings();
-                settings.ssl.enabled = true;
-                settings.ssl.keyStore = JKS_SERVER_KEY;
-                settings.ssl.keyStorePassword = KEY_PASS;
-                settings.ssl.keyStoreType = KEYSTORE_TYPE_JKS;
-                settings.ssl.sslCipherSuites = Arrays.asList("TLS_DHE_RSA_WITH_AES_128_CBC_SHA");
-                break;
             case "shouldUseSimpleSandbox":
                 settings.scriptEngines.get("gremlin-groovy").plugins.put(GroovyCompilerGremlinPlugin.class.getName(), getScriptEngineConfForSimpleSandbox());
                 // remove the script because it isn't used in the test but also because it's not CompileStatic ready
@@ -275,18 +202,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         return settings;
-    }
-
-    private static SslContext createServerSslContext() {
-        final SslProvider provider = SslProvider.JDK;
-
-        try {
-            // this is not good for production - just testing
-            final SelfSignedCertificate ssc = new SelfSignedCertificate();
-            return SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).sslProvider(provider).build();
-        } catch (Exception ce) {
-            throw new RuntimeException("Couldn't setup self-signed certificate for test");
-        }
     }
 
     private static Map<String, Object> getScriptEngineConfForSimpleSandbox() {
@@ -533,147 +448,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("The above should not have executed in any successful way as sandboxing is enabled");
         } catch (Exception ex) {
             assertThat(ex.getCause().getMessage(), containsString("[Static type checking] - Not authorized to call this method: java.lang.System#exit(int)"));
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldEnableSsl() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_SERVER_KEY).keyStorePassword(KEY_PASS).sslSkipCertValidation(true).create();
-        final Client client = cluster.connect();
-
-        try {
-            // this should return "nothing" - there should be no exception
-            assertEquals("test", client.submit("'test'").one().getString());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldEnableSslWithSslContextProgrammaticallySpecified() throws Exception {
-        // just for testing - this is not good for production use
-        final SslContextBuilder builder = SslContextBuilder.forClient();
-        builder.trustManager(InsecureTrustManagerFactory.INSTANCE);
-        builder.sslProvider(SslProvider.JDK);
-
-        final Cluster cluster = TestClientFactory.build().enableSsl(true).sslContext(builder.build()).create();
-        final Client client = cluster.connect();
-
-        try {
-            // this should return "nothing" - there should be no exception
-            assertEquals("test", client.submit("'test'").one().getString());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldEnableSslButFailIfClientConnectsWithoutIt() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(false).create();
-        final Client client = cluster.connect();
-
-        try {
-            client.submit("'test'").one();
-            fail("Should throw exception because ssl is enabled on the server but not on client");
-        } catch(Exception x) {
-            final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldEnableSslAndClientCertificateAuthWithPkcs12() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(P12_CLIENT_KEY).keyStorePassword(KEY_PASS)
-                .keyStoreType(KEYSTORE_TYPE_PKCS12).trustStore(P12_CLIENT_TRUST).trustStorePassword(KEY_PASS).create();
-        final Client client = cluster.connect();
-
-        try {
-            assertEquals("test", client.submit("'test'").one().getString());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldEnableSslAndClientCertificateAuth() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_CLIENT_KEY).keyStorePassword(KEY_PASS)
-                .keyStoreType(KEYSTORE_TYPE_JKS).trustStore(JKS_CLIENT_TRUST).trustStorePassword(KEY_PASS).create();
-        final Client client = cluster.connect();
-
-        try {
-            assertEquals("test", client.submit("'test'").one().getString());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldEnableSslAndClientCertificateAuthAndFailWithoutCert() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_SERVER_KEY).keyStorePassword(KEY_PASS)
-                .keyStoreType(KEYSTORE_TYPE_JKS).sslSkipCertValidation(true).create();
-        final Client client = cluster.connect();
-
-        try {
-            client.submit("'test'").one();
-            fail("Should throw exception because ssl client auth is enabled on the server but client does not have a cert");
-        } catch (Exception x) {
-            final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldEnableSslAndClientCertificateAuthAndFailWithoutTrustedClientCert() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_CLIENT_KEY).keyStorePassword(KEY_PASS)
-                .keyStoreType(KEYSTORE_TYPE_JKS).trustStore(JKS_CLIENT_TRUST).trustStorePassword(KEY_PASS).create();
-        final Client client = cluster.connect();
-
-        try {
-            client.submit("'test'").one();
-            fail("Should throw exception because ssl client auth is enabled on the server but does not trust client's cert");
-        } catch (Exception x) {
-            final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldEnableSslAndFailIfProtocolsDontMatch() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_SERVER_KEY).keyStorePassword(KEY_PASS)
-                .sslSkipCertValidation(true).sslEnabledProtocols(Arrays.asList("TLSv1.2")).create();
-        final Client client = cluster.connect();
-
-        try {
-            client.submit("'test'").one();
-            fail("Should throw exception because ssl client requires TLSv1.2 whereas server supports only TLSv1.1");
-        } catch (Exception x) {
-            final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldEnableSslAndFailIfCiphersDontMatch() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_SERVER_KEY).keyStorePassword(KEY_PASS)
-                .sslSkipCertValidation(true).sslCipherSuites(Arrays.asList("SSL_RSA_WITH_RC4_128_SHA")).create();
-        final Client client = cluster.connect();
-
-        try {
-            client.submit("'test'").one();
-            fail("Should throw exception because ssl client requires TLSv1.2 whereas server supports only TLSv1.1");
-        } catch (Exception x) {
-            final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
         } finally {
             cluster.close();
         }
@@ -1088,13 +862,21 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
             // restart server
             this.startServer();
-            // the retry interval is 1 second, wait a bit longer
-            TimeUnit.SECONDS.sleep(5);
 
-            List<Result> results = client.submit("1+1").all().join();
-            assertEquals(1, results.size());
-            assertEquals(2, results.get(0).getInt());
+            // try a bunch of times to reconnect. on slower systems this may simply take longer...looking at you travis
+            for (int ix = 1; ix < 11; ix++) {
+                // the retry interval is 1 second, wait a bit longer
+                TimeUnit.SECONDS.sleep(5);
 
+                try {
+                    final List<Result> results = client.submit("1+1").all().join();
+                    assertEquals(1, results.size());
+                    assertEquals(2, results.get(0).getInt());
+                } catch (Exception ex) {
+                    if (ix == 10)
+                        fail("Should have eventually succeeded");
+                }
+            }
         } finally {
             cluster.close();
         }

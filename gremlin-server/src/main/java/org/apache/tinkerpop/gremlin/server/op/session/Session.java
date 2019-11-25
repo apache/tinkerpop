@@ -34,6 +34,7 @@ import javax.script.Bindings;
 import javax.script.SimpleBindings;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -155,7 +156,12 @@ public class Session {
      * session kill will mean.
      */
     public void manualKill(final boolean force) {
-        kill.get().cancel(true);
+        // seems there is a situation where kill can get nulled. seems to only happen in travis as a result of test
+        // runs and i'm guessing it has something to do with a combination of shutdown and session close though i'm
+        // not sure why. perhaps this "fix" just masks up a deeper problem but as i reason on it now, it seems mostly
+        // bound to shutdown situations which basically means the forced end of the session anyway, so perhaps the
+        // root cause isn't something that needs immediate chasing (at least until it can be shown otherwise anyway)
+        Optional.ofNullable(kill.get()).ifPresent(f -> f.cancel(true));
         kill(force);
     }
 
