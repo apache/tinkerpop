@@ -22,9 +22,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Element;
 
+import java.util.Map;
 import java.util.Objects;
 
 /**
+ * More efficiently extracts a value from an {@link Element} or {@code Map} to avoid strategy application costs. Note
+ * that as of 3.4.5 this class is now poorly named as it was originally designed to work with {@link Element} only.
+ * In future 3.5.0 this class will likely be renamed but to ensure that we get this revised functionality for
+ * {@code Map} without introducing a breaking change this name will remain the same.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class ElementValueTraversal<V> extends AbstractLambdaTraversal<Element, V> {
@@ -48,7 +54,23 @@ public final class ElementValueTraversal<V> extends AbstractLambdaTraversal<Elem
 
     @Override
     public void addStart(final Traverser.Admin<Element> start) {
-        this.value = null == this.bypassTraversal ? start.get().value(this.propertyKey) : TraversalUtil.apply(start, this.bypassTraversal);
+        if (null == this.bypassTraversal) {
+            // playing a game of type erasure here.....technically we can process either Map or Element here in this
+            // case after 3.4.5. and obviously users get weird errors along those lines here anyway. will fix up the
+            // generics in 3.5.0 when we can take some breaking changes. seemed like this feature would make Gremlin
+            // a lot nicer and given the small footprint of the change this seemed like a good hack to take.
+            final Object o = start.get();
+            if (o instanceof Element)
+                this.value = ((Element) o).value(propertyKey);
+            else if (o instanceof Map)
+                this.value = (V) ((Map) o).get(propertyKey);
+            else
+                throw new IllegalStateException(String.format(
+                        "The by(\"%s\") modulator can only be applied to a traverser that is an Element or a Map - it is being applied to [%s] a %s class instead",
+                        propertyKey, o, o.getClass().getSimpleName()));
+        } else {
+            this.value = TraversalUtil.apply(start, this.bypassTraversal);
+        }
     }
 
     public String getPropertyKey() {

@@ -37,6 +37,72 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.5/CHANGELOG.asciidoc#release-3-4-5[changelog] for a
 complete list of all the modifications that are part of this release.
 
+=== Upgrading for Users
+
+==== by(String) Modulator
+
+It is quite common to use the `by(String)` modulator when doing some for of selection operation where the `String` is
+the key to the value of the current `Traverser`, demonstrated as follows:
+
+[source,text]
+----
+gremlin> g.V().project('name').by('name')
+==>[name:marko]
+==>[name:vadas]
+==>[name:lop]
+==>[name:josh]
+==>[name:ripple]
+==>[name:peter]
+gremlin> g.V().order().by('name').values('name')
+==>josh
+==>lop
+==>marko
+==>peter
+==>ripple
+==>vadas
+----
+
+Of course, this approach usually only works when the current `Traverser` is an `Element`. If it is not an element, the
+error is swift and severe:
+
+[source,text]
+----
+gremlin> g.V().valueMap().project('x').by('name')
+java.util.LinkedHashMap cannot be cast to org.apache.tinkerpop.gremlin.structure.Element
+Type ':help' or ':h' for help.
+Display stack trace? [yN]n
+----
+
+and while it is perhaps straightforward to see the problem in the above example, it is not always clear exactly where
+the mistake is. The above example is the typical misuse of `by(String)` and comes when one tries to treat a `Map` the
+same way as an `Element` (which is quite reasonable).
+
+In 3.4.5, the issue of using `by(String)` on a `Map` and the error messaging have been resolved as follows:
+
+[source,text]
+----
+gremlin> g.V().valueMap().project('x').by('name')
+==>[x:[marko]]
+==>[x:[vadas]]
+==>[x:[lop]]
+==>[x:[josh]]
+==>[x:[ripple]]
+==>[x:[peter]]
+gremlin> g.V().elementMap().order().by('name')
+==>[id:4,label:person,name:josh,age:32]
+==>[id:3,label:software,name:lop,lang:java]
+==>[id:1,label:person,name:marko,age:29]
+==>[id:6,label:person,name:peter,age:35]
+==>[id:5,label:software,name:ripple,lang:java]
+==>[id:2,label:person,name:vadas,age:27]
+gremlin> g.V().values('name').project('x').by('name')
+The by("name") modulator can only be applied to a traverser that is an Element or a Map - it is being applied to [marko] a String class instead
+Type ':help' or ':h' for help.
+Display stack trace? [yN]n
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2314[TINKERPOP-2314]
+
 === Upgrading for Providers
 
 ==== Graph Driver Providers
