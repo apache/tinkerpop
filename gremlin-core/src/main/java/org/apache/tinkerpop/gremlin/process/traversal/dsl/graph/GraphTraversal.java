@@ -2191,8 +2191,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * {@link VertexProperty.Cardinality} is defaulted to {@code null} which  means that the default cardinality for
      * the {@link Graph} will be used.
      * <p/>
-     * This method is effectively calls
-     * {@link #property(org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality, Object, Object, Object...)}
+     * This method is effectively calls {@link #property(VertexProperty.Cardinality, Object, Object, Object...)}
      * as {@code property(null, key, value, keyValues}.
      *
      * @param key       the key for the property
@@ -2204,8 +2203,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, E> property(final Object key, final Object value, final Object... keyValues) {
         return key instanceof VertexProperty.Cardinality ?
-                this.property((VertexProperty.Cardinality) key, value, keyValues[0],
-                        keyValues.length > 1 ?
+                this.property((VertexProperty.Cardinality) key, value, null == keyValues ? null : keyValues[0],
+                        keyValues != null && keyValues.length > 1 ?
                                 Arrays.copyOfRange(keyValues, 1, keyValues.length) :
                                 new Object[]{}) :
                 this.property(null, key, value, keyValues);

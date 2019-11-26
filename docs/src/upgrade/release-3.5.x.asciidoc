@@ -363,15 +363,24 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-2311[TINKERPOP-2311]
 Graph providers should take note of the changes to `null` semantics described in the "users" section of these upgrade
 notes. As `null` is now acceptable as a `Traverser` object, this change may affect custom steps. Further note that
 `null` now works more consistently with mutation steps and graph providers may need to include additional logic to
-deal with those possible conditions. Please see the console session below which uses TinkerGraph to demonstrate the
-current behavioral expectations:
+deal with those possible conditions. Please see the console sessions below which uses TinkerGraph to demonstrate the
+current behavioral expectations.
 
 [source,text]
 ----
+gremlin> g.getGraph().features().vertex().supportsNullPropertyValues()
+==>false
 gremlin> g.addV(null).property(id, null).property('name',null)
 ==>v[0]
 gremlin> g.V().elementMap()
 ==>[id:0,label:vertex]
+...
+gremlin> g.getGraph().features().vertex().supportsNullPropertyValues()
+==>true
+gremlin> g.addV(null).property(id, null).property('name',null)
+==>v[0]
+gremlin> g.V().elementMap()
+==>[id:0,label:vertex,name:null]
 ----
 
 In the above example, `addV()` defaults to `Vertex.DEFAULT_LABEL`, the `id` is generated and setting the "name"
@@ -380,14 +389,25 @@ to `null` TinkerGraph will remove the property key all together:
 
 [source,text]
 ----
-gremlin> g.V().property('name','stephen')
+gremlin> g.getGraph().features().vertex().supportsNullPropertyValues()
+==>false
+gremlin> g.addV().property('name','stephen')
 ==>v[0]
 gremlin> g.V().elementMap()
 ==>[id:0,label:vertex,name:stephen]
-gremlin> g.V().property('name',null)
+gremlin> g.V().has('vertex','name','stephen').property('name',null)
 ==>v[0]
 gremlin> g.V().elementMap()
 ==>[id:0,label:vertex]
+...
+gremlin> g.getGraph().features().vertex().supportsNullPropertyValues()
+==>true
+gremlin> g.addV().property('name','stephen')
+==>v[2]
+gremlin> g.V().has('vertex','name','stephen').property('name',null)
+==>v[2]
+gremlin> g.V().elementMap()
+==>[id:2,label:vertex,name:null]
 ----
 
 The above examples point out the default operations of TinkerGraph, but it can be configured to actually accept the
@@ -413,20 +433,85 @@ TinkerGraph is being used here):
 
 [source,text]
 ----
-gremlin> g.V(0L).as('a').addE('knows').to('a').property(id,null).property('weight',null)
-==>e[1][0-knows->0]
+gremlin> g.getGraph().features().vertex().supportsNullPropertyValues()
+==>false
+gremlin> g.addV().property('name','stephen')
+==>v[0]
+gremlin> g.V().has('vertex','name','stephen').as('a').addE('knows').to('a').property(id,null).property('weight',null)
+==>e[2][0-knows->0]
 gremlin> g.E().elementMap()
-==>[id:1,label:knows,IN:[id:0,label:vertex],OUT:[id:0,label:vertex]]
-gremlin> g.V(0L).as('a').addE('knows').to('a').property('weight',0.5)
-==>e[3][0-knows->0]
+==>[id:2,label:knows,IN:[id:0,label:vertex],OUT:[id:0,label:vertex]]
+gremlin> g.E().property('weight',0.5)
+==>e[2][0-knows->0]
 gremlin> g.E().elementMap()
-==>[id:3,label:knows,IN:[id:0,label:vertex],OUT:[id:0,label:vertex],weight:0.5]
+==>[id:2,label:knows,IN:[id:0,label:vertex],OUT:[id:0,label:vertex],weight:0.5]
 gremlin> g.E().property('weight',null)
-==>e[3][0-knows->0]
+==>e[2][0-knows->0]
 gremlin> g.E().elementMap()
-==>[id:3,label:knows,IN:[id:0,label:vertex],OUT:[id:0,label:vertex]]
+==>[id:2,label:knows,IN:[id:0,label:vertex],OUT:[id:0,label:vertex]]
+...
+gremlin> g.getGraph().features().vertex().supportsNullPropertyValues()
+==>true
+gremlin> g.addV().property('name','stephen')
+==>v[8]
+gremlin> g.V().has('vertex','name','stephen').as('a').addE('knows').to('a').property(id,null).property('weight',null)
+==>e[10][8-knows->8]
+gremlin> g.E().elementMap()
+==>[id:10,label:knows,IN:[id:8,label:vertex],OUT:[id:8,label:vertex],weight:null]
+gremlin> g.E().property('weight',0.5)
+==>e[10][8-knows->8]
+gremlin> g.E().elementMap()
+==>[id:10,label:knows,IN:[id:8,label:vertex],OUT:[id:8,label:vertex],weight:0.5]
+gremlin> g.E().property('weight',null)
+==>e[10][8-knows->8]
+gremlin> g.E().elementMap()
+==>[id:10,label:knows,IN:[id:8,label:vertex],OUT:[id:8,label:vertex],weight:null]
 ----
 
+Graphs that support multi/meta-properties have some issues to consider as well as demonstrated with TinkerGraph:
+
+[source,text]
+----
+gremlin> g.getGraph().features().vertex().supportsNullPropertyValues()
+==>false
+gremlin> g.addV().property(list,'foo',"x").property(list,"foo", null).property(list,'foo','bar')
+==>v[0]
+gremlin> g.V().elementMap()
+==>[id:0,label:vertex,foo:bar]
+gremlin> g.V().valueMap()
+==>[foo:[x,bar]]
+gremlin> g.V().property('foo',null)
+==>v[0]
+gremlin> g.V().valueMap(true)
+==>[id:0,label:vertex]
+...
+gremlin> g.addV().property(list,'foo','bar','x',1,'y',null)
+==>v[0]
+gremlin> g.V().properties('foo').valueMap(true)
+==>[id:1,key:foo,value:bar,x:1]
+gremlin> g.V().properties('foo').property('x',null)
+==>vp[foo->bar]
+gremlin> g.V().properties('foo').valueMap(true)
+==>[id:1,key:foo,value:bar]
+...
+gremlin> g.getGraph().features().vertex().supportsNullPropertyValues()
+==>false
+gremlin> g.addV().property(list,'foo',"x").property(list,"foo", null).property(list,'foo','bar')
+==>v[11]
+gremlin> g.V().elementMap()
+==>[id:11,label:vertex,foo:bar]
+gremlin> g.V().valueMap()
+==>[foo:[x,null,bar]]
+...
+gremlin> g.addV().property(list,'foo','bar','x',1,'y',null)
+==>v[0]
+gremlin> g.V().properties('foo').valueMap(true)
+==>[id:1,key:foo,value:bar,x:1,y:null]
+gremlin> g.V().properties('foo').property('x',null)
+==>vp[foo->bar]
+gremlin> g.V().properties('foo').valueMap(true)
+==>[id:1,key:foo,value:bar,x:null,y:null]
+----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2235[TINKERPOP-2235],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2099[TINKERPOP-2099]

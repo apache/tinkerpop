@@ -89,8 +89,12 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
         ElementHelper.validateProperty(key, value);
         final Optional<Object> optionalId = ElementHelper.getIdValue(keyValues);
 
+        // if we don't allow null property values and the value is null then the key can be removed but only if the
+        // cardinality is single. if it is list/set then we can just ignore the null.
         if (!allowNullPropertyValues && null == value) {
-            properties(key).forEachRemaining(VertexProperty::remove);
+            final VertexProperty.Cardinality card = null == cardinality ? graph.features().vertex().getCardinality(key) : cardinality;
+            if (VertexProperty.Cardinality.single == card)
+                properties(key).forEachRemaining(VertexProperty::remove);
             return VertexProperty.empty();
         }
 

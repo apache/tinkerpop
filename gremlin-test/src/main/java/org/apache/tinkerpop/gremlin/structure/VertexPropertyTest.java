@@ -111,7 +111,8 @@ public class VertexPropertyTest extends AbstractGremlinTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
-        public void shouldHandleListVertexProperties() {
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NULL_PROPERTY_VALUES, supported = false)
+        public void shouldHandleListVertexPropertiesWithoutNullPropertyValues() {
             final Vertex v = graph.addVertex("name", "marko", "age", 34);
             tryCommit(graph, g -> {
                 assertEquals("marko", v.property("name").value());
@@ -167,6 +168,95 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                     }
                 });
 
+                assertVertexEdgeCounts(graph, 1, 0);
+            });
+
+            // null property values are not supported so the value should not be added as set or list cardinality,
+            // but single will remove it
+            assertEquals(VertexProperty.empty(), v.property(VertexProperty.Cardinality.list, "name", null));
+            tryCommit(graph, g -> {
+                assertEquals(3, IteratorUtils.count(v.properties("name")));
+                assertEquals(4, IteratorUtils.count(v.properties()));
+                assertVertexEdgeCounts(graph, 1, 0);
+            });
+            assertEquals(VertexProperty.empty(), v.property(VertexProperty.Cardinality.single, "name", null));
+            tryCommit(graph, g -> {
+                assertEquals(0, IteratorUtils.count(v.properties("name")));
+                assertEquals(1, IteratorUtils.count(v.properties()));
+                assertVertexEdgeCounts(graph, 1, 0);
+            });
+        }
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NULL_PROPERTY_VALUES)
+        public void shouldHandleListVertexPropertiesWithNullPropertyValues() {
+            final Vertex v = graph.addVertex("name", "marko", "age", 34);
+            tryCommit(graph, g -> {
+                assertEquals("marko", v.property("name").value());
+                assertEquals("marko", v.value("name"));
+                assertEquals(34, v.property("age").value());
+                assertEquals(34, v.<Integer>value("age").intValue());
+                assertEquals(1, IteratorUtils.count(v.properties("name")));
+                assertEquals(2, IteratorUtils.count(v.properties()));
+                assertVertexEdgeCounts(graph, 1, 0);
+            });
+
+            final VertexProperty<String> property = v.property(VertexProperty.Cardinality.list, "name", "marko a. rodriguez");
+            tryCommit(graph, g -> assertEquals(v, property.element()));
+
+            try {
+                v.property("name");
+                fail("This should throw a: " + Vertex.Exceptions.multiplePropertiesExistForProvidedKey("name"));
+            } catch (final Exception e) {
+                validateException(Vertex.Exceptions.multiplePropertiesExistForProvidedKey("name"), e);
+            }
+
+            assertTrue(IteratorUtils.list(v.values("name")).contains("marko"));
+            assertTrue(IteratorUtils.list(v.values("name")).contains("marko a. rodriguez"));
+            assertEquals(3, IteratorUtils.count(v.properties()));
+            assertEquals(2, IteratorUtils.count(v.properties("name")));
+            assertVertexEdgeCounts(graph, 1, 0);
+
+            assertEquals(v, v.property(VertexProperty.Cardinality.list, "name", "mrodriguez").element());
+            tryCommit(graph, g -> {
+                assertEquals(3, IteratorUtils.count(v.properties("name")));
+                assertEquals(4, IteratorUtils.count(v.properties()));
+                assertVertexEdgeCounts(graph, 1, 0);
+            });
+
+            v.<String>properties("name").forEachRemaining(meta -> {
+                meta.property("counter", meta.value().length());
+            });
+
+            tryCommit(graph, g -> {
+                v.properties().forEachRemaining(meta -> {
+                    assertEquals(meta.key(), meta.label());
+                    assertTrue(meta.isPresent());
+                    assertEquals(v, meta.element());
+                    if (meta.key().equals("age")) {
+                        assertEquals(meta.value(), 34);
+                        assertEquals(0, IteratorUtils.count(meta.properties()));
+                    }
+                    if (meta.key().equals("name")) {
+                        assertEquals(((String) meta.value()).length(), meta.<Integer>value("counter").intValue());
+                        assertEquals(1, IteratorUtils.count(meta.properties()));
+                        assertEquals(1, meta.keys().size());
+                        assertTrue(meta.keys().contains("counter"));
+                    }
+                });
+
+                assertVertexEdgeCounts(graph, 1, 0);
+            });
+
+            // null property values are supported so the value should be added
+            assertEquals(v, v.property(VertexProperty.Cardinality.list, "name", null).element());
+            tryCommit(graph, g -> {
+                assertEquals(4, IteratorUtils.count(v.properties("name")));
+                assertEquals(5, IteratorUtils.count(v.properties()));
                 assertVertexEdgeCounts(graph, 1, 0);
             });
         }
