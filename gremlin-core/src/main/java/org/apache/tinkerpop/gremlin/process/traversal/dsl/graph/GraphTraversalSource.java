@@ -297,7 +297,8 @@ public class GraphTraversalSource implements TraversalSource {
 
 
     /**
-     * Spawns a {@link GraphTraversal} by adding a vertex with the specified label.
+     * Spawns a {@link GraphTraversal} by adding a vertex with the specified label. If the {@code label} is
+     * {@code null} then it will default to {@link Vertex#DEFAULT_LABEL}.
      */
     public GraphTraversal<Vertex, Vertex> addV(final String label) {
         final GraphTraversalSource clone = this.clone();
@@ -307,7 +308,8 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     /**
-     * Spawns a {@link GraphTraversal} by adding a vertex with the label as determined by a {@link Traversal}.
+     * Spawns a {@link GraphTraversal} by adding a vertex with the label as determined by a {@link Traversal}. If the
+     * {@code vertexLabelTraversal} is {@code null} then it will default to {@link Vertex#DEFAULT_LABEL}.
      */
     public GraphTraversal<Vertex, Vertex> addV(final Traversal<?, String> vertexLabelTraversal) {
         final GraphTraversalSource clone = this.clone();

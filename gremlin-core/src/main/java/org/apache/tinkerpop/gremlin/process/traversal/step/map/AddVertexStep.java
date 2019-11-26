@@ -53,7 +53,7 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
 
     public AddVertexStep(final Traversal.Admin traversal, final Traversal.Admin<S,String> vertexLabelTraversal) {
         super(traversal);
-        this.parameters.set(this, T.label, vertexLabelTraversal);
+        this.parameters.set(this, T.label, null == vertexLabelTraversal ? Vertex.DEFAULT_LABEL : vertexLabelTraversal);
     }
 
     @Override
