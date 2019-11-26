@@ -1046,7 +1046,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, Vertex> addV(final Traversal<?, String> vertexLabelTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.addV, vertexLabelTraversal);
-        return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), vertexLabelTraversal.asAdmin()));
+        return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), null == vertexLabelTraversal ? null : vertexLabelTraversal.asAdmin()));
     }
 
     /**
@@ -1083,7 +1083,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, Edge> addE(final Traversal<?, String> edgeLabelTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.addE, edgeLabelTraversal);
-        return this.asAdmin().addStep(new AddEdgeStep<>(this.asAdmin(), edgeLabelTraversal.asAdmin()));
+        return this.asAdmin().addStep(new AddEdgeStep<>(this.asAdmin(), null == edgeLabelTraversal ? null : edgeLabelTraversal.asAdmin()));
     }
 
     /**

@@ -394,6 +394,40 @@ The above examples point out the default operations of TinkerGraph, but it can b
 `null` as a property value and it is up to graph providers to decided how they wish to treat a `null` property value.
 Providers should use the new `supportsNullPropertyValues()` feature to indicate to users how `null` is handled.
 
+For edges, the `label` still cannot be defaulted and must be specified, therefore:
+
+[source,text]
+----
+gremlin> g.V(0L).as('a').addE(null).to('a')
+Label can not be null
+Type ':help' or ':h' for help.
+Display stack trace? [yN]n
+gremlin> g.V(0L).as('a').addE(constant(null)).to('a')
+Label can not be null
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+----
+
+Also, edges have similar behavior to vertices when it comes to setting properties (again, the default configuration for
+TinkerGraph is being used here):
+
+[source,text]
+----
+gremlin> g.V(0L).as('a').addE('knows').to('a').property(id,null).property('weight',null)
+==>e[1][0-knows->0]
+gremlin> g.E().elementMap()
+==>[id:1,label:knows,IN:[id:0,label:vertex],OUT:[id:0,label:vertex]]
+gremlin> g.V(0L).as('a').addE('knows').to('a').property('weight',0.5)
+==>e[3][0-knows->0]
+gremlin> g.E().elementMap()
+==>[id:3,label:knows,IN:[id:0,label:vertex],OUT:[id:0,label:vertex],weight:0.5]
+gremlin> g.E().property('weight',null)
+==>e[3][0-knows->0]
+gremlin> g.E().elementMap()
+==>[id:3,label:knows,IN:[id:0,label:vertex],OUT:[id:0,label:vertex]]
+----
+
+
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2235[TINKERPOP-2235],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2099[TINKERPOP-2099]
 
