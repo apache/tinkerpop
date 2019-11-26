@@ -46,6 +46,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -838,7 +839,7 @@ public final class StarGraph implements Graph, Serializable {
     public final class StarOutEdge extends StarEdge {
 
         private StarOutEdge(final Object id, final String label, final Object otherId) {
-            super(id, label, otherId);
+            super(new StarEdgeId(id, otherId), label, otherId);
         }
 
         @Override
@@ -855,7 +856,7 @@ public final class StarGraph implements Graph, Serializable {
     public final class StarInEdge extends StarEdge {
 
         private StarInEdge(final Object id, final String label, final Object otherId) {
-            super(id, label, otherId);
+            super(new StarEdgeId(otherId, id), label, otherId);
         }
 
         @Override
@@ -866,6 +867,32 @@ public final class StarGraph implements Graph, Serializable {
         @Override
         public Vertex inVertex() {
             return starVertex;
+        }
+    }
+
+    public final class StarEdgeId {
+
+        private final Object outVertexId;
+        private final Object inVertexId;
+
+        public StarEdgeId(Object outVertexId, Object inVertexId) {
+            this.outVertexId = outVertexId;
+            this.inVertexId = inVertexId;
+        }
+
+        @Override
+        public boolean equals(final Object other) {
+            if (!(other instanceof StarEdgeId)) {
+                return false;
+            }
+            StarEdgeId otherId = (StarEdgeId) other;
+            return Objects.equals(this.outVertexId, otherId.outVertexId) &&
+                   Objects.equals(this.inVertexId, otherId.inVertexId);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.outVertexId, this.inVertexId);
         }
     }
 
