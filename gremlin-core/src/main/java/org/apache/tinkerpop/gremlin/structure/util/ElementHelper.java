@@ -122,12 +122,11 @@ public final class ElementHelper {
      *
      * @param keyValues a list of key/value pairs
      * @return the value associated with {@link T#id}
-     * @throws NullPointerException if the value for the {@link T#id} key is {@code null}
      */
     public static Optional<Object> getIdValue(final Object... keyValues) {
         for (int i = 0; i < keyValues.length; i = i + 2) {
             if (keyValues[i].equals(T.id))
-                return Optional.of(keyValues[i + 1]);
+                return Optional.ofNullable(keyValues[i + 1]);
         }
         return Optional.empty();
     }

@@ -44,6 +44,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -59,6 +60,8 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXname_stephenX();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasLabelXpersonX_propertyXname_nullX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_addVXnullX_propertyXid_nullX();
 
     public abstract Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenmX();
 
@@ -95,7 +98,6 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         assertEquals(7, IteratorUtils.count(g.V()));
     }
 
-
     @Test
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
@@ -113,6 +115,20 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         assertEquals(6, count);
         assertEquals(12, IteratorUtils.count(g.V()));
 
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
+    public void g_addVXnullX_propertyXid_nullX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_addVXnullX_propertyXid_nullX();
+        printTraversalForm(traversal);
+
+        final Vertex vertex = traversal.next();
+        assertEquals(Vertex.DEFAULT_LABEL, vertex.label());
+
+        // should generate an id for the null value
+        assertNotNull(vertex.id());
     }
 
     @Test
@@ -380,6 +396,12 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         @Override
         public Traversal<Vertex, Map<Object, Object>> get_g_V_asXaX_hasXname_markoX_outXcreatedX_asXbX_addVXselectXaX_labelX_propertyXtest_selectXbX_labelX_valueMap_withXtokensX() {
             return g.V().as("a").has("name", "marko").out("created").as("b").addV(select("a").label()).property("test", select("b").label()).valueMap().with(WithOptions.tokens);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_addVXnullX_propertyXid_nullX() {
+            // testing Traversal but should work the same for String
+            return g.addV((Traversal.Admin<?, String>) null).property(T.id, null);
         }
     }
 }

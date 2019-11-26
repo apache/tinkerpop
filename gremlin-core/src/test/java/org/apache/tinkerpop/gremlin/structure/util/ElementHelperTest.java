@@ -134,9 +134,9 @@ public class ElementHelperTest {
         assertFalse(ElementHelper.getIdValue("test", 321, "xyz", 123l, "testagain", "that").isPresent());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void shouldNotFindAnIdValueBecauseItIsNull() {
-        ElementHelper.getIdValue("test", 321, T.id, null, "testagain", "that");
+        assertEquals("default", ElementHelper.getIdValue("test", 321, T.id, null, "testagain", "that").orElse("default"));
     }
 
     @Test

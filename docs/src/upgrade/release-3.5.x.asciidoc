@@ -358,6 +358,45 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1568[TINKERPOP-1568],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2310[TINKERPOP-2310],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2311[TINKERPOP-2311]
 
+===== Null Semantics
+
+Graph providers should take note of the changes to `null` semantics described in the "users" section of these upgrade
+notes. As `null` is now acceptable as a `Traverser` object, this change may affect custom steps. Further note that
+`null` now works more consistently with mutation steps and graph providers may need to include additional logic to
+deal with those possible conditions. Please see the console session below which uses TinkerGraph to demonstrate the
+current behavioral expectations:
+
+[source,text]
+----
+gremlin> g.addV(null).property(id, null).property('name',null)
+==>v[0]
+gremlin> g.V().elementMap()
+==>[id:0,label:vertex]
+----
+
+In the above example, `addV()` defaults to `Vertex.DEFAULT_LABEL`, the `id` is generated and setting the "name"
+property to `null` results in the value not being set. If the property value is set to an actual value and then set
+to `null` TinkerGraph will remove the property key all together:
+
+[source,text]
+----
+gremlin> g.V().property('name','stephen')
+==>v[0]
+gremlin> g.V().elementMap()
+==>[id:0,label:vertex,name:stephen]
+gremlin> g.V().property('name',null)
+==>v[0]
+gremlin> g.V().elementMap()
+==>[id:0,label:vertex]
+----
+
+The above examples point out the default operations of TinkerGraph, but it can be configured to actually accept the
+`null` as a property value and it is up to graph providers to decided how they wish to treat a `null` property value.
+Providers should use the new `supportsNullPropertyValues()` feature to indicate to users how `null` is handled.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2235[TINKERPOP-2235],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2099[TINKERPOP-2099]
+
 ===== AbstractOpProcessor API Change
 
 The `generateMetaData()` method was removed as it was deprecated in a previous version. There already was a preferred
@@ -372,6 +411,8 @@ Note that `StoreStep` has been renamed to `AggregateLocalStep` and `AggregateSte
 that rely on the old step names.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2254[TINKERPOP-2254]
+
+==== Graph Driver Providers
 
 ===== TraversalOpProcessor Side-effects
 
