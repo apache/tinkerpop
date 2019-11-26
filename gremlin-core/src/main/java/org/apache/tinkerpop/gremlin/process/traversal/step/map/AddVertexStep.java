@@ -73,7 +73,20 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
 
     @Override
     public void configure(final Object... keyValues) {
-        this.parameters.set(this, keyValues);
+        if (keyValues[0] == T.label && this.parameters.contains(T.label)) {
+            if (this.parameters.contains(T.label, Vertex.DEFAULT_LABEL)) {
+                this.parameters.remove(T.label);
+                this.parameters.set(this, keyValues);
+            } else {
+                throw new IllegalArgumentException(String.format("Vertex T.label has already been set to [%s] and cannot be overridden with [%s]",
+                        this.parameters.getRaw().get(T.label).get(0), keyValues[1]));
+            }
+        } else if (keyValues[0] == T.id && this.parameters.contains(T.id)) {
+            throw new IllegalArgumentException(String.format("Vertex T.id has already been set to [%s] and cannot be overridden with [%s]",
+                    this.parameters.getRaw().get(T.id).get(0), keyValues[1]));
+        } else {
+            this.parameters.set(this, keyValues);
+        }
     }
 
     @Override

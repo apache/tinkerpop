@@ -87,7 +87,6 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
         if (this.removed) throw elementAlreadyRemoved(Vertex.class, id);
         ElementHelper.legalPropertyKeyValueArray(keyValues);
         ElementHelper.validateProperty(key, value);
-        final Optional<Object> optionalId = ElementHelper.getIdValue(keyValues);
 
         // if we don't allow null property values and the value is null then the key can be removed but only if the
         // cardinality is single. if it is list/set then we can just ignore the null.
@@ -98,6 +97,7 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
             return VertexProperty.empty();
         }
 
+        final Optional<Object> optionalId = ElementHelper.getIdValue(keyValues);
         final Optional<VertexProperty<V>> optionalVertexProperty = ElementHelper.stageVertexProperty(this, cardinality, key, value, keyValues);
         if (optionalVertexProperty.isPresent()) return optionalVertexProperty.get();
 

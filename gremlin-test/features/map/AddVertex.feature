@@ -421,3 +421,13 @@ Feature: Step - addV()
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().hasLabel(\"vertex\")"
+
+  Scenario: g_addV_propertyXlabel_personX
+    Given the empty graph
+    And the traversal of
+      """
+      g.addV().property(T.label, "person")
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().hasLabel(\"person\")"

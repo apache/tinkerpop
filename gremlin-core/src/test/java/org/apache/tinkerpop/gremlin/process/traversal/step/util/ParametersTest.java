@@ -221,11 +221,27 @@ public class ParametersTest {
     }
 
     @Test
+    public void shouldContainKeyValue() {
+        final Parameters parameters = new Parameters();
+        parameters.set(null, "a", "axe", "b", "bat", "c", "cat");
+
+        assertThat(parameters.contains("b", "bat"), is(true));
+    }
+
+    @Test
     public void shouldNotContainKey() {
         final Parameters parameters = new Parameters();
         parameters.set(null, "a", "axe", "b", "bat", "c", "cat");
 
         assertThat(parameters.contains("z"), is(false));
+    }
+
+    @Test
+    public void shouldNotContainKeyAndValue() {
+        final Parameters parameters = new Parameters();
+        parameters.set(null, "a", "axe", "b", "bat", "c", "cat");
+
+        assertThat(parameters.contains("b", "mat"), is(false));
     }
 
     @Test

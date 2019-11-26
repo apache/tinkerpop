@@ -63,6 +63,8 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_addVXnullX_propertyXid_nullX();
 
+    public abstract Traversal<Vertex, Vertex> get_g_addV_propertyXlabel_personX();
+
     public abstract Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenmX();
 
     public abstract Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenm_since_2010X();
@@ -129,6 +131,17 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
 
         // should generate an id for the null value
         assertNotNull(vertex.id());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
+    public void g_addV_propertyXlabel_personX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_addV_propertyXlabel_personX();
+        printTraversalForm(traversal);
+
+        final Vertex vertex = traversal.next();
+        assertEquals("person", vertex.label());
     }
 
     @Test
@@ -402,6 +415,11 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         public Traversal<Vertex, Vertex> get_g_addVXnullX_propertyXid_nullX() {
             // testing Traversal but should work the same for String
             return g.addV((Traversal.Admin<?, String>) null).property(T.id, null);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_addV_propertyXlabel_personX() {
+            return g.addV().property(T.label, "person");
         }
     }
 }
