@@ -95,8 +95,14 @@ public class DetachedPropertyTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    public void shouldNotBeEqualPropertiesAsThereIsDifferentId() {
-        assertFalse(DetachedFactory.detach(g.E(convertToEdgeId("marko", "created", "lop")).next().property("weight")).equals(DetachedFactory.detach(g.E(convertToEdgeId("josh", "created", "lop")).next().property("weight"))));
+    public void shouldBeEqualPropertiesWithSameKeyValueAndDifferentElement() {
+        assertTrue(DetachedFactory.detach(g.E(convertToEdgeId("marko", "created", "lop")).next().property("weight")).equals(DetachedFactory.detach(g.E(convertToEdgeId("josh", "created", "lop")).next().property("weight"))));
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldNotBeEqualPropertiesAsThereIsDifferentValue() {
+        assertFalse(DetachedFactory.detach(g.E(convertToEdgeId("marko", "created", "lop")).next().property("weight")).equals(DetachedFactory.detach(g.E(convertToEdgeId("peter", "created", "lop")).next().property("weight"))));
     }
 
     @Test
@@ -105,7 +111,7 @@ public class DetachedPropertyTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldNotBeEqualPropertiesAsThereIsDifferentKey() {
         final Object joshCreatedLopEdgeId = convertToEdgeId("josh", "created", "lop");
-        final Edge e = g.V(convertToVertexId("josh")).next().addEdge("created", g.V(convertToVertexId("lop")).next(), "weight", 0.4d);
-        assertFalse(DetachedFactory.detach(e.property("weight")).equals(DetachedFactory.detach(g.E(joshCreatedLopEdgeId).next().property("weight"))));
+        final Edge e = g.V(convertToVertexId("josh")).next().addEdge("created", g.V(convertToVertexId("lop")).next(), "double", 0.4d);
+        assertFalse(DetachedFactory.detach(e.property("double")).equals(DetachedFactory.detach(g.E(joshCreatedLopEdgeId).next().property("weight"))));
     }
 }
