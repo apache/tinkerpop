@@ -40,7 +40,7 @@ import java.util.function.Function;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class IndexStep<S, E> extends MapStep<S, E> implements TraversalParent, Configuring {
+public class IndexStep<S, E> extends ScalarMapStep<S, E> implements TraversalParent, Configuring {
 
     private final static IllegalArgumentException INVALID_CONFIGURATION_EXCEPTION =
             new IllegalArgumentException("WithOptions.indexer requires a single Integer argument (possible " + "" +

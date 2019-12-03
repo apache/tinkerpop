@@ -417,6 +417,11 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
             }
 
             @Override
+            public boolean supportsNullPropertyValues() {
+                return false;
+            }
+
+            @Override
             public boolean supportsUserSuppliedIds() {
                 return false;
             }
@@ -445,6 +450,11 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
         public class Neo4jVertexPropertyFeatures implements VertexPropertyFeatures {
 
             Neo4jVertexPropertyFeatures() {
+            }
+
+            @Override
+            public boolean supportsNullPropertyValues() {
+                return false;
             }
 
             @Override

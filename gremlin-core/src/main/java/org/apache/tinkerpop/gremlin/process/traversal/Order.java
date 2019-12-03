@@ -54,11 +54,13 @@ public enum Order implements Comparator<Object> {
      * @since 3.3.4
      */
     asc {
+        private final Comparator<Comparable> ascendingComparator = Comparator.nullsFirst(Comparator.<Comparable>naturalOrder());
+
         @Override
         public int compare(final Object first, final Object second) {
             return first instanceof Number && second instanceof Number
                     ? NumberHelper.compare((Number) first, (Number) second)
-                    : Comparator.<Comparable>naturalOrder().compare((Comparable) first, (Comparable) second);
+                    : ascendingComparator.compare((Comparable) first, (Comparable) second);
         }
 
         @Override
@@ -73,11 +75,13 @@ public enum Order implements Comparator<Object> {
      * @since 3.3.4
      */
     desc {
+        private final Comparator<Comparable> descendingComparator = Comparator.nullsLast(Comparator.<Comparable>reverseOrder());
+
         @Override
         public int compare(final Object first, final Object second) {
             return first instanceof Number && second instanceof Number
                     ? NumberHelper.compare((Number) second, (Number) first)
-                    : Comparator.<Comparable>reverseOrder().compare((Comparable) first, (Comparable) second);
+                    : descendingComparator.compare((Comparable) first, (Comparable) second);
         }
 
         @Override

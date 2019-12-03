@@ -21,6 +21,8 @@
 
 #endregion
 
+using System;
+
 namespace Gremlin.Net.Process.Traversal
 {
     /// <summary>
@@ -48,5 +50,14 @@ namespace Gremlin.Net.Process.Traversal
         ///     Gets the arguments.
         /// </summary>
         public dynamic[] Arguments { get; }
+
+        /// <summary>
+        ///     String representation of the <see cref="Instruction"/>.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return OperatorName + " [" + String.Join(",", Arguments) + "]";
+        }
     }
 }

@@ -25,6 +25,7 @@ import java.util.Iterator;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -41,6 +42,21 @@ public class ArrayIteratorTest {
         assertEquals("test1", itty.next());
         assertEquals("test2", itty.next());
         assertEquals("test3", itty.next());
+
+        assertFalse(itty.hasNext());
+    }
+
+    @Test
+    public void shouldIterateAnArrayWithNull() {
+        final String[] arr = new String[3];
+        arr[0] = "test1";
+        arr[1] = "test2";
+        arr[2] = null;
+
+        final Iterator<String> itty = new ArrayIterator<>(arr);
+        assertEquals("test1", itty.next());
+        assertEquals("test2", itty.next());
+        assertNull(itty.next());
 
         assertFalse(itty.hasNext());
     }

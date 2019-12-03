@@ -33,7 +33,7 @@ import static org.apache.tinkerpop.gremlin.util.NumberHelper.min;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class MinLocalStep<E extends Comparable, S extends Iterable<E>> extends MapStep<S, E> {
+public final class MinLocalStep<E extends Comparable, S extends Iterable<E>> extends ScalarMapStep<S, E> {
 
     public MinLocalStep(final Traversal.Admin traversal) {
         super(traversal);

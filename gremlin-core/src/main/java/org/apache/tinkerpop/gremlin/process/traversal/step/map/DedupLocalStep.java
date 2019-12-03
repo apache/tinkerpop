@@ -29,7 +29,7 @@ import java.util.Set;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class DedupLocalStep<E, S extends Iterable<E>> extends MapStep<S, Set<E>> {
+public final class DedupLocalStep<E, S extends Iterable<E>> extends ScalarMapStep<S, Set<E>> {
 
     public DedupLocalStep(final Traversal.Admin traversal) {
         super(traversal);

@@ -116,6 +116,12 @@ namespace Gremlin.Net.Process.Traversal
                 if (variable != null)
                     return new Binding(variable, ConvertArgument(argument, false));
             }
+
+            if (null == argument)
+            {
+                return null;
+            }
+            
             if (IsDictionaryType(argument.GetType()))
             {
                 var dict = new Dictionary<object, object>();

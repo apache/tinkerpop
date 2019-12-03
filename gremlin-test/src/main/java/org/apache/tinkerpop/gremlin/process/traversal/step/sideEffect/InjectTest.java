@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -47,6 +48,12 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Path> get_g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id);
 
     public abstract Traversal<Vertex, String> get_g_VX1X_injectXg_VX4XX_out_name(final Object v1Id, final Object v4Id);
+
+    public abstract Traversal<Integer, Integer> get_g_injectXnull_1_3_nullX();
+
+    public abstract Traversal<Integer, Map<String, Object>> get_g_injectX10_20_null_20_10_10X_groupCountXxX_dedup_asXyX_projectXa_bX_by_byXselectXxX_selectXselectXyXXX();
+
+    public abstract Traversal<Map<String,Object>, Map<String, Object>> get_g_injectXname_marko_age_nullX_selectXname_ageX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -85,6 +92,30 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    public void g_injectXnull_1_3_nullX() {
+        final Traversal<Integer, Integer> traversal = get_g_injectXnull_1_3_nullX();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(null, 1, 3, null), traversal);
+    }
+
+    @Test
+    public void g_injectX10_20_null_20_10_10X_groupCountXxX_dedup_asXyX_projectXa_bX_by_byXselectXxX_selectXselectXyXXX() {
+        final Traversal<Integer, Map<String, Object>> traversal = get_g_injectX10_20_null_20_10_10X_groupCountXxX_dedup_asXyX_projectXa_bX_by_byXselectXxX_selectXselectXyXXX();
+        printTraversalForm(traversal);
+        checkResults(makeMapList(2,
+                "a", 10, "b", 3L,
+                    "a", 20, "b", 2L,
+                    "a", null, "b", 1L), traversal);
+    }
+
+    @Test
+    public void g_injectXname_marko_age_nullX_selectXname_ageX() {
+        final Traversal<Map<String, Object>, Map<String, Object>> traversal = get_g_injectXname_marko_age_nullX_selectXname_ageX();
+        printTraversalForm(traversal);
+        checkResults(makeMapList(2, "name", "marko", "age", null), traversal);
+    }
+
+    @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_injectXg_VX4XX_out_name() {
         final Traversal<Vertex, String> traversal = get_g_VX1X_injectXg_VX4XX_out_name(convertToVertexId("marko"), convertToVertexId("josh"));
@@ -107,6 +138,28 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_VX1X_injectXg_VX4XX_out_name(final Object v1Id, final Object v4Id) {
             return g.V(v1Id).inject(g.V(v4Id).next()).out().values("name");
+        }
+
+        @Override
+        public Traversal<Integer, Integer> get_g_injectXnull_1_3_nullX() {
+            return g.inject(null, 1, 3, null);
+        }
+
+        @Override
+        public Traversal<Integer, Map<String, Object>> get_g_injectX10_20_null_20_10_10X_groupCountXxX_dedup_asXyX_projectXa_bX_by_byXselectXxX_selectXselectXyXXX() {
+            return g.inject(10,20,null,20,10,10).groupCount("x").
+                     dedup().as("y").
+                     project("a","b").
+                       by().
+                       by(__.select("x").select(__.select("y")));
+        }
+
+        @Override
+        public Traversal<Map<String, Object>, Map<String, Object>> get_g_injectXname_marko_age_nullX_selectXname_ageX() {
+            final Map<String,Object> m = new HashMap<>();
+            m.put("name", "marko");
+            m.put("age", null);
+            return g.inject(m).select("name","age");
         }
     }
 }

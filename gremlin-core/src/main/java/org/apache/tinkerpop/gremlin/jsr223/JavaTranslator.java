@@ -214,7 +214,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                         for (int i = 0; i < parameters.length; i++) {
                             if (parameters[i].isVarArgs()) {
                                 final Class<?> parameterClass = parameters[i].getType().getComponentType();
-                                if (argumentsCopy.length > i && !parameterClass.isAssignableFrom(argumentsCopy[i].getClass())) {
+                                if (argumentsCopy.length > i && argumentsCopy[i] != null && !parameterClass.isAssignableFrom(argumentsCopy[i].getClass())) {
                                     found = false;
                                     break;
                                 }
@@ -226,13 +226,34 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                                 newArguments[i] = varArgs;
                                 break;
                             } else {
-                                if (i < argumentsCopy.length &&
-                                        (parameters[i].getType().isAssignableFrom(argumentsCopy[i].getClass()) ||
+                                // try to detect the right method by comparing the type of the parameter to the type
+                                // of the argument. doesn't always work so well because of null arguments which don't
+                                // bring their type in bytecode and rely on position. this doesn't seem to happen often
+                                // ...luckily...because method signatures tend to be sufficiently unique and do not
+                                // encourage whacky use - like g.V().has(null, null) is clearly invalid so we don't
+                                // even need to try to sort that out. on the other hand g.V().has('name',null) which
+                                // is valid hits like four different possible overloads, but we can rely on the most
+                                // generic one which takes Object as the second parameter. that seems to work in this
+                                // case, but it's a shame this isn't nicer. seems like nicer would mean a heavy
+                                // overhaul to Gremlin or to GLVs/bytecode and/or to serialization mechanisms.
+                                //
+                                // the check where argumentsCopy[i] is null could be accompanied by a type check for
+                                // allowable signatures like:
+                                // null == argumentsCopy[i] && parameters[i].getType() == Object.class
+                                // but that doesn't seem helpful. perhaps this approach is fine as long as we ensure
+                                // consistency of null calls to all overloads. in other words addV(String) must behave
+                                // the same as addV(Traversal) if null is used as the argument. so far, that seems to
+                                // be the case. if we find that is not happening we either fix that specific
+                                // inconsistency, start special casing those method finds here, or as mentioned above
+                                // do something far more drastic that doesn't involve reflection.
+                                if (i < argumentsCopy.length && (null == argumentsCopy[i] ||
+                                        (argumentsCopy[i] != null && (
+                                        parameters[i].getType().isAssignableFrom(argumentsCopy[i].getClass()) ||
                                                 (parameters[i].getType().isPrimitive() &&
                                                         (Number.class.isAssignableFrom(argumentsCopy[i].getClass()) ||
                                                                 argumentsCopy[i].getClass().equals(Boolean.class) ||
                                                                 argumentsCopy[i].getClass().equals(Byte.class) ||
-                                                                argumentsCopy[i].getClass().equals(Character.class))))) {
+                                                                argumentsCopy[i].getClass().equals(Character.class))))))) {
                                     newArguments[i] = argumentsCopy[i];
                                 } else {
                                     found = false;

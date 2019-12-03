@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversalSideEff
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -203,16 +204,16 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
 
     @Override
     public int hashCode() {
-        return this.t.hashCode();
+        return Objects.hashCode(this.t);
     }
 
     @Override
     public boolean equals(final Object object) {
-        return object instanceof AbstractTraverser && ((AbstractTraverser) object).get().equals(this.t);
+        return object instanceof AbstractTraverser && Objects.equals(this.t, ((AbstractTraverser) object).t);
     }
 
     @Override
     public String toString() {
-        return this.t.toString();
+        return Objects.toString(this.t);
     }
 }

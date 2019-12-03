@@ -50,6 +50,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inject
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -66,24 +67,50 @@ import static org.junit.Assert.fail;
 public class CoreTraversalTest extends AbstractGremlinProcessTest {
 
     @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NULL_PROPERTY_VALUES)
+    public void g_addVXpersonX_propertyXname_nullX() {
+        final Traversal<Vertex, Vertex> traversal = g.addV("person").property("name", null);
+        printTraversalForm(traversal);
+        final Vertex nulled = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals("person", nulled.label());
+        assertNull(nulled.value("name"));
+        assertEquals(1, IteratorUtils.count(nulled.properties()));
+        assertEquals(7, IteratorUtils.count(g.V()));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_NULL_PROPERTY_VALUES)
+    public void g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX_propertyXweight_nullX() {
+        final Traversal<Vertex, Edge> traversal = g.V(convertToVertexId("marko")).as("a").out("created").addE("createdBy").to("a").property("weight", null);
+        printTraversalForm(traversal);
+        int count = 0;
+        while (traversal.hasNext()) {
+            final Edge edge = traversal.next();
+            assertEquals("createdBy", edge.label());
+            assertNull(g.E(edge).<Double>values("weight").next());
+            assertEquals(1, g.E(edge).properties().count().next().intValue());
+            count++;
+
+
+        }
+        assertEquals(1, count);
+        assertEquals(7, IteratorUtils.count(g.E()));
+        assertEquals(6, IteratorUtils.count(g.V()));
+    }
+
+    @Test
     @LoadGraphWith
     public void shouldNeverPropagateANoBulkTraverser() {
         try {
             assertFalse(g.V().dedup().sideEffect(t -> t.asAdmin().setBulk(0)).hasNext());
             assertEquals(0, g.V().dedup().sideEffect(t -> t.asAdmin().setBulk(0)).toList().size());
             g.V().dedup().sideEffect(t -> t.asAdmin().setBulk(0)).sideEffect(t -> fail("this should not have happened")).iterate();
-        } catch (VerificationException e) {
-            // its okay if lambdas can't be serialized by the test suite
-        }
-    }
-
-    @Test
-    @LoadGraphWith
-    public void shouldNeverPropagateANullValuedTraverser() {
-        try {
-            assertFalse(g.V().map(t -> null).hasNext());
-            assertEquals(0, g.V().map(t -> null).toList().size());
-            g.V().map(t -> null).sideEffect(t -> fail("this should not have happened")).iterate();
         } catch (VerificationException e) {
             // its okay if lambdas can't be serialized by the test suite
         }

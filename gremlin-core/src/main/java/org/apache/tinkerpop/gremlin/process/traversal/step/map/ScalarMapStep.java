@@ -20,28 +20,25 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.structure.Element;
-
-import java.util.Collections;
-import java.util.Set;
 
 /**
+ * A type of {@link MapStep} class which will transform the object of one {@link Traverser} into another. This class
+ * simply requires the implementation of the {@link #map(Traverser.Admin)} method to extract the object of the given
+ * {@link Traverser} and return the transformation of that object as {@code E}.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class LabelStep<S extends Element> extends ScalarMapStep<S, String> {
-
-    public LabelStep(final Traversal.Admin traversal) {
+public abstract class ScalarMapStep<S, E> extends MapStep<S,E> {
+    public ScalarMapStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
     @Override
-    protected String map(final Traverser.Admin<S> traverser) {
-        return traverser.get().label();
+    protected Traverser.Admin<E> processNextStart() {
+        final Traverser.Admin<S> traverser = this.starts.next();
+        return traverser.split(this.map(traverser), this);
     }
 
-    @Override
-    public Set<TraverserRequirement> getRequirements() {
-        return Collections.singleton(TraverserRequirement.OBJECT);
-    }
+    protected abstract E map(final Traverser.Admin<S> traverser);
 }

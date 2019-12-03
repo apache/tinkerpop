@@ -34,7 +34,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EdgeOtherVertexStep extends MapStep<Edge, Vertex> implements Configuring {
+public class EdgeOtherVertexStep extends ScalarMapStep<Edge, Vertex> implements Configuring {
     protected Parameters parameters = new Parameters();
 
     public EdgeOtherVertexStep(final Traversal.Admin traversal) {

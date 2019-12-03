@@ -32,7 +32,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class CountLocalStep<S> extends MapStep<S, Long> {
+public final class CountLocalStep<S> extends ScalarMapStep<S, Long> {
 
     public CountLocalStep(final Traversal.Admin traversal) {
         super(traversal);

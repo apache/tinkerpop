@@ -44,6 +44,8 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 import static org.apache.tinkerpop.gremlin.structure.Column.keys;
 import static org.apache.tinkerpop.gremlin.structure.Column.values;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -57,6 +59,8 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Edge> get_g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX(final Object v1Id);
 
     public abstract Traversal<Vertex, Edge> get_g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX_propertyXweight_2X(final Object v1Id);
+
+    public abstract Traversal<Vertex, Edge> get_g_V_outE_propertyXweight_nullX();
 
     public abstract Traversal<Vertex, Edge> get_g_V_aggregateXxX_asXaX_selectXxX_unfold_addEXexistsWithX_toXaX_propertyXtime_nowX();
 
@@ -116,6 +120,15 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         assertEquals(1, count);
         assertEquals(7, IteratorUtils.count(g.E()));
         assertEquals(6, IteratorUtils.count(g.V()));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NULL_PROPERTY_VALUES, supported = false)
+    public void g_V_outE_propertyXweight_nullX() {
+        final Traversal<Vertex, Edge> traversal = get_g_V_outE_propertyXweight_nullX();
+        printTraversalForm(traversal);
+        traversal.forEachRemaining(e -> assertThat(e.properties("weight").hasNext(), is(false)));
     }
 
     @Test
@@ -303,6 +316,11 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Edge> get_g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX_propertyXweight_2X(final Object v1Id) {
             return g.V(v1Id).as("a").out("created").addE("createdBy").to("a").property("weight", 2.0d);
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_V_outE_propertyXweight_nullX() {
+            return g.V().outE().property("weight", null);
         }
 
         @Override

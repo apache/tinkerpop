@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class LoopsStep<S> extends MapStep<S, Integer> {
+public final class LoopsStep<S> extends ScalarMapStep<S, Integer> {
 
     private String loopName;
 

@@ -19,7 +19,6 @@ Feature: Step - constant()
 
   Scenario: g_V_constantX123X
     Given the modern graph
-    And using the parameter v1Id defined as "v[marko].id"
     And the traversal of
       """
       g.V().constant(123)
@@ -33,6 +32,22 @@ Feature: Step - constant()
       | d[123].i |
       | d[123].i |
       | d[123].i |
+
+  Scenario: g_V_constantXnullX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().constant(null)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | null |
+      | null |
+      | null |
+      | null |
+      | null |
+      | null |
 
   Scenario: g_V_chooseXhasLabelXpersonX_valuesXnameX_constantXinhumanXX
     Given the modern graph

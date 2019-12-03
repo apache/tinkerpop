@@ -18,26 +18,23 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 
 /**
+ * A marker base class that designates an extending {@link Step} as a "Map" step which will transform the object of one
+ * {@link Traverser} into another. In many cases, it may be easier to simply extend from {@link ScalarMapStep} which
+ * has a straightforward implementation pattern.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class MapStep<S, E> extends AbstractStep<S, E> {
 
     public MapStep(final Traversal.Admin traversal) {
         super(traversal);
     }
-
-    @Override
-    protected Traverser.Admin<E> processNextStart() {
-        final Traverser.Admin<S> traverser = this.starts.next();
-        return traverser.split(this.map(traverser), this);
-    }
-
-    protected abstract E map(final Traverser.Admin<S> traverser);
-
 }
 

@@ -83,6 +83,7 @@ public final class TinkerGraph implements Graph {
     public static final String GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY = "gremlin.tinkergraph.defaultVertexPropertyCardinality";
     public static final String GREMLIN_TINKERGRAPH_GRAPH_LOCATION = "gremlin.tinkergraph.graphLocation";
     public static final String GREMLIN_TINKERGRAPH_GRAPH_FORMAT = "gremlin.tinkergraph.graphFormat";
+    public static final String GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES = "gremlin.tinkergraph.allowNullPropertyValues";
 
     private final TinkerGraphFeatures features = new TinkerGraphFeatures();
 
@@ -99,6 +100,7 @@ public final class TinkerGraph implements Graph {
     protected final IdManager<?> edgeIdManager;
     protected final IdManager<?> vertexPropertyIdManager;
     protected final VertexProperty.Cardinality defaultVertexPropertyCardinality;
+    protected final boolean allowNullPropertyValues;
 
     private final Configuration configuration;
     private final String graphLocation;
@@ -114,6 +116,7 @@ public final class TinkerGraph implements Graph {
         vertexPropertyIdManager = selectIdManager(configuration, GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, VertexProperty.class);
         defaultVertexPropertyCardinality = VertexProperty.Cardinality.valueOf(
                 configuration.getString(GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.single.name()));
+        allowNullPropertyValues = configuration.getBoolean(GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES, false);
 
         graphLocation = configuration.getString(GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null);
         graphFormat = configuration.getString(GREMLIN_TINKERGRAPH_GRAPH_FORMAT, null);
@@ -385,6 +388,11 @@ public final class TinkerGraph implements Graph {
         }
 
         @Override
+        public boolean supportsNullPropertyValues() {
+            return allowNullPropertyValues;
+        }
+
+        @Override
         public Features.VertexPropertyFeatures properties() {
             return vertexPropertyFeatures;
         }
@@ -408,6 +416,11 @@ public final class TinkerGraph implements Graph {
     public class TinkerGraphEdgeFeatures implements Features.EdgeFeatures {
 
         private TinkerGraphEdgeFeatures() {
+        }
+
+        @Override
+        public boolean supportsNullPropertyValues() {
+            return allowNullPropertyValues;
         }
 
         @Override
@@ -446,6 +459,11 @@ public final class TinkerGraph implements Graph {
     public class TinkerGraphVertexPropertyFeatures implements Features.VertexPropertyFeatures {
 
         private TinkerGraphVertexPropertyFeatures() {
+        }
+
+        @Override
+        public boolean supportsNullPropertyValues() {
+            return allowNullPropertyValues;
         }
 
         @Override

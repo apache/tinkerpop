@@ -74,6 +74,17 @@ public final class Parameters implements Cloneable, Serializable {
     }
 
     /**
+     * Checks for existence of a key and value in a parameter set.
+     *
+     * @param key the key to check
+     * @param value the value to check
+     * @return {@code true} if the key and value are present and {@code false} otherwise
+     */
+    public boolean contains(final Object key, final Object value) {
+        return this.contains(key) && this.parameters.get(key).contains(value);
+    }
+
+    /**
      * Renames a key in the parameter set.
      *
      * @param oldKey the key to rename

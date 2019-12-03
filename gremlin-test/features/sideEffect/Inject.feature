@@ -66,3 +66,42 @@ Feature: Step - inject()
       | lop   |
       | vadas |
       | josh  |
+
+  Scenario: g_injectXnull_1_3_nullX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(null, 1, 3, null)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | null |
+      | d[1].i |
+      | d[3].i |
+      | null |
+
+  Scenario: g_injectX10_20_null_20_10_10X_groupCountXxX_dedup_asXyX_projectXa_bX_by_byXselectXxX_selectXselectXyXXX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(10,20,null,20,10,10).groupCount("x").dedup().as("y").project("a","b").by().by(__.select("x").select(__.select("y")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"d[10].i", "b":"d[3].l"}] |
+      | m[{"a":"d[20].i", "b":"d[2].l"}] |
+      | m[{"a":null, "b":"d[1].l"}] |
+
+  Scenario: g_injectXname_marko_age_nullX_selectXname_ageX
+    Given the empty graph
+    And using the parameter m defined as "m[{\"name\":\"marko\", \"age\":null}]"
+    And the traversal of
+      """
+      g.inject(m).select("name","age")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"name":"marko", "age":null}] |

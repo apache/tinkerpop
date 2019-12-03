@@ -43,11 +43,13 @@ public final class TinkerEdge extends TinkerElement implements Edge {
     protected Map<String, Property> properties;
     protected final Vertex inVertex;
     protected final Vertex outVertex;
+    private final boolean allowNullPropertyValues;
 
     protected TinkerEdge(final Object id, final Vertex outVertex, final String label, final Vertex inVertex) {
         super(id, label);
         this.outVertex = outVertex;
         this.inVertex = inVertex;
+        this.allowNullPropertyValues = outVertex.graph().features().edge().supportsNullPropertyValues();
         TinkerHelper.autoUpdateIndex(this, T.label.getAccessor(), this.label, null);
     }
 
@@ -55,6 +57,12 @@ public final class TinkerEdge extends TinkerElement implements Edge {
     public <V> Property<V> property(final String key, final V value) {
         if (this.removed) throw elementAlreadyRemoved(Edge.class, id);
         ElementHelper.validateProperty(key, value);
+
+        if (!allowNullPropertyValues && null == value) {
+            properties(key).forEachRemaining(Property::remove);
+            return Property.empty();
+        }
+
         final Property oldProperty = super.property(key);
         final Property<V> newProperty = new TinkerProperty<>(this, key, value);
         if (null == this.properties) this.properties = new HashMap<>();

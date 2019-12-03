@@ -44,7 +44,7 @@ import java.util.regex.Pattern;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MathStep<S> extends MapStep<S, Double> implements ByModulating, TraversalParent, Scoping, PathProcessor {
+public final class MathStep<S> extends ScalarMapStep<S, Double> implements ByModulating, TraversalParent, Scoping, PathProcessor {
 
     private static final String CURRENT = "_";
     private final String equation;

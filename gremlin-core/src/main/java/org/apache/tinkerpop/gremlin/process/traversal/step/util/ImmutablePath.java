@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -35,7 +36,8 @@ import java.util.Set;
  */
 public class ImmutablePath implements Path, Serializable, Cloneable {
 
-    private static final ImmutablePath TAIL_PATH = new ImmutablePath(null, null, null);
+    private static final Object END = EmptyPath.instance();
+    private static final ImmutablePath TAIL_PATH = new ImmutablePath(null, END, null);
 
     private ImmutablePath previousPath;
     private Object currentObject;
@@ -58,7 +60,7 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
     }
 
     private final boolean isTail() {
-        return null == this.currentObject;
+        return END.equals(this.currentObject);
     }
 
     @Override
@@ -230,7 +232,7 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
         while (true) {
             if (currentPath.isTail())
                 break;
-            hashCodes[index] = currentPath.currentObject.hashCode();
+            hashCodes[index] = Objects.hashCode(currentPath.currentObject);
             currentPath = currentPath.previousPath;
             index--;
         }

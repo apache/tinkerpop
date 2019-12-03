@@ -38,6 +38,7 @@ regex_or = re.compile(r"([(.,\s])or\(")
 regex_with = re.compile(r"([(.,\s])with\(")
 regex_true = re.compile(r"(true)")
 regex_false = re.compile(r"(false)")
+regex_null = re.compile(r"(null)")
 
 outV = __.outV
 label = __.label
@@ -182,6 +183,8 @@ def _convert(val, ctx):
         return T[val[2:-1]]
     elif isinstance(val, str) and re.match("^D\[.*\]$", val):           # parse instance of Direction enum
         return Direction[val[2:-1]]
+    elif isinstance(val, str) and re.match("^null$", val):              # parse null to None
+        return None
     else:
         return val
 
@@ -247,7 +250,8 @@ def _translate(traversal_):
     replaced = regex_in.sub(r"\1in_(", replaced)
     replaced = regex_with.sub(r"\1with_(", replaced)
     replaced = regex_true.sub(r"True", replaced)
-    return regex_false.sub(r"False", replaced)
+    replaced = regex_false.sub(r"False", replaced)
+    return regex_null.sub(r"None", replaced)
 
 
 def _make_traversal(g, traversal_string, params):

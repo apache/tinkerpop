@@ -36,7 +36,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
         private static readonly IDictionary<string, Func<GraphTraversalSource, ITraversal>> FixedTranslations = 
             new Dictionary<string, Func<GraphTraversalSource, ITraversal>>
             {
-                { "g.V().fold().count(Scope.local)", g => g.V().Fold().Count(Scope.Local)}
+                { "g.V().fold().count(Scope.local)", g => g.V().Fold().Count(Scope.Local)},
+                { "g.inject(10,20,null,20,10,10).groupCount(\"x\").dedup().as(\"y\").project(\"a\",\"b\").by().by(__.select(\"x\").select(__.select(\"y\")))", 
+                    g => g.Inject<object>(10,20,null,20,10,10).GroupCount("x").Dedup().As("y").Project<object>("a","b").By().By(__.Select<int>("x").Select<object>(__.Select<int>("y")))},
+                { "g.inject(m).select(\"name\",\"age\")", g => g.Inject(new Dictionary<string,object>() {{"name", "marko"}, {"age", null}}).Select<object>("name", "age") }
             };
 
         private static readonly Regex RegexNumeric =
@@ -169,7 +172,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                     {
                         if (IsNumeric(methodParameter.ParameterType) && IsNumeric(tokenParameterType))
                         {
-                            // Acount for implicit conversion of numeric values as an exact match 
+                            // Account for implicit conversion of numeric values as an exact match
                             exactMatches++;
                         }
                         else if (!methodParameter.ParameterType.GetTypeInfo().IsAssignableFrom(tokenParameterType))
@@ -233,6 +236,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             var paramsInfo = method.GetParameters();
             var parameters = new object[paramsInfo.Length];
             genericParameterTypes = new Dictionary<string, Type>();
+
             for (var i = 0; i < paramsInfo.Length; i++)
             {
                 var info = paramsInfo[i];
@@ -246,15 +250,18 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                         // We've provided a value for parameter of a generic type, we can infer the
                         // type of the generic argument based on the parameter.
                         // For example, in the case of `Constant<E2>(E2 value)`
-                        // if we have the type of value we have the type of E2. 
+                        // if we have the type of value we have the type of E2.
                         genericParameterTypes.Add(info.ParameterType.Name, tokenParameter.GetParameterType());
                     }
                     else if (IsParamsArray(info) && info.ParameterType.GetElementType().IsGenericParameter)
                     {
                         // Its a method where the type parameter comes from an params Array
                         // e.g., Inject<S>(params S[] value)
-                        genericParameterTypes.Add(info.ParameterType.GetElementType().Name,
-                            tokenParameter.GetParameterType());
+                        var type = tokenParameter.GetParameterType();
+                        genericParameterTypes.Add(info.ParameterType.GetElementType().Name, type);
+
+                        // Use a placeholder value
+                        value = type.IsValueType ? Activator.CreateInstance(type) : new object();
                     }
 
                     if (info.ParameterType != tokenParameter.GetParameterType() && IsNumeric(info.ParameterType) &&
@@ -270,7 +277,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                     // For `params type[] value` we should provide an empty array
                     if (value == null)
                     {
-                        // An empty array
                         value = Array.CreateInstance(info.ParameterType.GetElementType(), 0);
                     }
                     else if (!value.GetType().IsArray)
@@ -286,8 +292,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
                         }
 
                         var arr = Array.CreateInstance(elementType, token.Parameters.Count - i);
-                        arr.SetValue(value, 0);
-                        for (var j = 1; j < token.Parameters.Count - i; j++)
+                        for (var j = 0; j < token.Parameters.Count - i; j++)
                         {
                             arr.SetValue(token.Parameters[i + j].GetValue(), j);
                         }
@@ -448,6 +453,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation
             {
                 i += parameterText.Length - 1;
                 return LiteralParameter.Create(Convert.ToBoolean(parameterText));
+            }
+            if (parameterText == "null")
+            {
+                i += parameterText.Length - 1;
+                return LiteralParameter.Create<object>(null);
             }
             if (RegexIO.IsMatch(parameterText))
             {

@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.deco
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ScalarMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -54,7 +54,7 @@ public class OptionsStrategyTest {
 
     private static void assertOptions(final GraphTraversalSource optionedG) {
         GraphTraversal t = optionedG.inject(1);
-        t = t.asAdmin().addStep(new MapStep<Object, Object>(t.asAdmin()) {
+        t = t.asAdmin().addStep(new ScalarMapStep<Object, Object>(t.asAdmin()) {
             @Override
             protected Object map(final Traverser.Admin<Object> traverser) {
                 final OptionsStrategy strategy = traversal.asAdmin().getStrategies().getStrategy(OptionsStrategy.class).get();

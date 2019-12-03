@@ -38,7 +38,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class PathStep<S> extends MapStep<S, Path> implements TraversalParent, PathProcessor, ByModulating, FromToModulating {
+public final class PathStep<S> extends ScalarMapStep<S, Path> implements TraversalParent, PathProcessor, ByModulating, FromToModulating {
 
     private TraversalRing<Object, Object> traversalRing;
     private Set<String> keepLabels;

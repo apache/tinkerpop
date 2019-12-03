@@ -134,7 +134,9 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
             final Object[] newArgs = new Object[args.length];
 
             for (int i = 0; i < args.length; i++) {
-                if (args[i].equals("knows"))
+                if (args[i] == null)
+                    newArgs[i] = null;
+                else if (args[i].equals("knows"))
                     newArgs[i] = new Bytecode.Binding<>("a", "knows");
                 else if (args[i].equals("created"))
                     newArgs[i] = new Bytecode.Binding<>("b", "created");

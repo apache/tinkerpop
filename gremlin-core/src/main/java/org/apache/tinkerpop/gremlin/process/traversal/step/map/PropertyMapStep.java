@@ -49,7 +49,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class PropertyMapStep<K,E> extends MapStep<Element, Map<K, E>>
+public class PropertyMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>>
         implements TraversalParent, ByModulating, Configuring {
 
     protected final String[] propertyKeys;

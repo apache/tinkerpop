@@ -40,7 +40,9 @@ import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 
@@ -141,6 +143,62 @@ public class PropertyTest {
                 fail("Removing an edge property that was already removed should not throw an exception");
             }
         }
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NULL_PROPERTY_VALUES, supported = false)
+        public void shouldNotAllowNullAddVertex() throws Exception {
+            final Vertex v = this.graph.addVertex("name", null);
+            assertThat(v.properties("name").hasNext(), is(false));
+        }
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NULL_PROPERTY_VALUES, supported = false)
+        public void shouldNotAllowNullAddEdge() throws Exception {
+            final Vertex v = this.graph.addVertex();
+            final Edge e = v.addEdge("self", v, "name", null);
+            assertThat(e.properties("name").hasNext(), is(false));
+        }
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NULL_PROPERTY_VALUES)
+        public void shouldAllowNullAddVertex() throws Exception {
+            final Vertex v = this.graph.addVertex("name", null);
+            assertNull(v.value("name"));
+        }
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_NULL_PROPERTY_VALUES)
+        public void shouldAllowNullAddEdge() throws Exception {
+            final Vertex v = this.graph.addVertex();
+            final Edge e = v.addEdge("self", v, "name", null);
+            assertNull(e.value("name"));
+        }
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_NULL_PROPERTY_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+        public void shouldAllowNullAddVertexProperty() throws Exception {
+            final Vertex v = this.graph.addVertex("person");
+            final VertexProperty vp = v.property("location", "santa fe", "startTime", 1995, "endTime", null);
+            assertEquals(1995, (int) vp.value("startTime"));
+            assertNull(vp.value("endTime"));
+        }
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_NULL_PROPERTY_VALUES, supported = false)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+        public void shouldNotAllowNullAddVertexProperty() throws Exception {
+            final Vertex v = this.graph.addVertex("person");
+            final VertexProperty vp = v.property("location", "santa fe", "startTime", 1995, "endTime", null);
+            assertEquals(1995, (int) vp.value("startTime"));
+            assertThat(vp.properties("endTime").hasNext(), is(false));
+        }
     }
 
     /**
@@ -153,7 +211,6 @@ public class PropertyTest {
             "providedKeyValuesMustHaveALegalKeyOnEvenIndices"
     })
     @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
-            "propertyValueCanNotBeNull",
             "propertyKeyCanNotBeEmpty"
     })
     public static class PropertyValidationOnAddExceptionConsistencyTest extends AbstractGremlinTest {
@@ -164,7 +221,6 @@ public class PropertyTest {
                     {"providedKeyValuesMustBeAMultipleOfTwo", new Object[]{"odd", "number", "arguments"}, Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
                     {"providedKeyValuesMustBeAMultipleOfTwo", new Object[]{"odd"}, Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
                     {"providedKeyValuesMustHaveALegalKeyOnEvenIndices", new Object[]{"odd", "number", 123, "test"}, Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices()},
-                    {"propertyValueCanNotBeNull", new Object[]{"odd", null}, Property.Exceptions.propertyValueCanNotBeNull()},
                     {"providedKeyValuesMustHaveALegalKeyOnEvenIndices", new Object[]{null, "val"}, Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices()},
                     {"propertyKeyCanNotBeEmpty", new Object[]{"", "val"}, Property.Exceptions.propertyKeyCanNotBeEmpty()}});
         }
@@ -245,13 +301,11 @@ public class PropertyTest {
 
 
     /**
-     * Checks that properties added to an {@link Element} are validated in a
-     * consistent way when they are set after {@link Vertex} or {@link Edge} construction by throwing an
-     * appropriate exception.
+     * Checks that properties added to an {@link Element} are validated in a consistent way when they are set after
+     * {@link Vertex} or {@link Edge} construction by throwing an appropriate exception.
      */
     @RunWith(Parameterized.class)
     @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
-            "propertyValueCanNotBeNull",
             "propertyKeyCanNotBeNull",
             "propertyKeyCanNotBeEmpty",
             "propertyKeyCanNotBeAHiddenKey"
@@ -261,7 +315,6 @@ public class PropertyTest {
         @Parameterized.Parameters(name = "expect({0})")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
-                    {"propertyValueCanNotBeNull", "k", null, Property.Exceptions.propertyValueCanNotBeNull()},
                     {"propertyKeyCanNotBeNull", null, "v", Property.Exceptions.propertyKeyCanNotBeNull()},
                     {"propertyKeyCanNotBeEmpty", "", "v", Property.Exceptions.propertyKeyCanNotBeEmpty()},
                     {"propertyKeyCanNotBeAHiddenKey", Graph.Hidden.hide("systemKey"), "value", Property.Exceptions.propertyKeyCanNotBeAHiddenKey(Graph.Hidden.hide("systemKey"))}});

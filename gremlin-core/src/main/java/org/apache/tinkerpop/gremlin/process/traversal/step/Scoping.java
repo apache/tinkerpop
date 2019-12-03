@@ -109,34 +109,54 @@ public interface Scoping {
 
     public enum Variable {START, END}
 
-    public default <S> S getScopeValue(final Pop pop, final String key, final Traverser.Admin<?> traverser) throws IllegalArgumentException {
+    /**
+     * Finds the object with the specified key for the current traverser and throws an exception if the key cannot
+     * be found.
+     *
+     * @throws KeyNotFoundException if the key does not exist
+     */
+    public default <S> S getScopeValue(final Pop pop, final Object key, final Traverser.Admin<?> traverser) throws KeyNotFoundException {
         final Object object = traverser.get();
-        if (object instanceof Map && ((Map<String, S>) object).containsKey(key))
-            return ((Map<String, S>) object).get(key);
-        ///
-        if (traverser.getSideEffects().exists(key))
-            return traverser.getSideEffects().get(key);
-        ///
-        final Path path = traverser.path();
-        if (path.hasLabel(key))
-            return path.get(pop, key);
-        ///
-        throw new IllegalArgumentException("Neither the sideEffects, map, nor path has a " + key + "-key: " + this);
+        if (object instanceof Map && ((Map) object).containsKey(key))
+            return (S) ((Map) object).get(key);
+
+        if (key instanceof String) {
+            final String k = (String) key;
+            if (traverser.getSideEffects().exists(k))
+                return traverser.getSideEffects().get(k);
+
+            final Path path = traverser.path();
+            if (path.hasLabel(k))
+                return null == pop ? path.get(k) : path.get(pop, k);
+        }
+
+        throw new KeyNotFoundException(key, this);
     }
 
+    /**
+     * Calls {@link #getScopeValue(Pop, Object, Traverser.Admin)} but throws an unchecked {@code IllegalStateException}
+     * if the key cannot be found.
+     */
+    public default <S> S getSafeScopeValue(final Pop pop, final Object key, final Traverser.Admin<?> traverser) {
+        try {
+            return getScopeValue(pop, key, traverser);
+        } catch (KeyNotFoundException nfe) {
+            throw new IllegalArgumentException(nfe.getMessage(), nfe);
+        }
+    }
+
+    /**
+     * Calls {@link #getScopeValue(Pop, Object, Traverser.Admin)} and returns {@code null} if the key is not found.
+     * Use this method with caution as {@code null} has one of two meanings as a return value. It could be that the
+     * key was found and its value was {@code null} or it might mean that the key was not found and {@code null} was
+     * simply returned.
+     */
     public default <S> S getNullableScopeValue(final Pop pop, final String key, final Traverser.Admin<?> traverser) {
-        final Object object = traverser.get();
-        if (object instanceof Map && ((Map<String, S>) object).containsKey(key))
-            return ((Map<String, S>) object).get(key);
-        ///
-        if (traverser.getSideEffects().exists(key))
-            return traverser.getSideEffects().get(key);
-        ///
-        final Path path = traverser.path();
-        if (path.hasLabel(key))
-            return path.get(pop, key);
-        ///
-        return null;
+        try {
+            return getScopeValue(pop, key, traverser);
+        } catch (KeyNotFoundException nfe) {
+            return null;
+        }
     }
 
     /**
@@ -145,4 +165,24 @@ public interface Scoping {
      * @return the accessed labels of the scoping step
      */
     public Set<String> getScopeKeys();
+
+    public static class KeyNotFoundException extends Exception {
+
+        private final Object key;
+        private final Scoping step;
+
+        public KeyNotFoundException(final Object key, final Scoping current) {
+            super("Neither the map, sideEffects, nor path has a " + key + "-key: " + current);
+            this.key = key;
+            this.step = current;
+        }
+
+        public Object getKey() {
+            return key;
+        }
+
+        public Scoping getStep() {
+            return step;
+        }
+    }
 }

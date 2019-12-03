@@ -18,14 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -33,14 +34,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class TraversalSelectStep<S, E> extends MapStep<S, E> implements TraversalParent, PathProcessor, ByModulating {
+public final class TraversalSelectStep<S, E> extends MapStep<S, E> implements TraversalParent, PathProcessor, ByModulating, Scoping {
 
     private final Pop pop;
     private Traversal.Admin<S, E> keyTraversal;
@@ -54,26 +53,35 @@ public final class TraversalSelectStep<S, E> extends MapStep<S, E> implements Tr
     }
 
     @Override
-    protected E map(final Traverser.Admin<S> traverser) {
-        E end = null;
+    protected Traverser.Admin<E> processNextStart() {
+        final Traverser.Admin<S> traverser = this.starts.next();
         final Iterator<E> keyIterator = TraversalUtil.applyAll(traverser, this.keyTraversal);
         if (keyIterator.hasNext()) {
             final E key = keyIterator.next();
-            final Object object = traverser.get();
-            if (object instanceof Map && ((Map) object).containsKey(key))
-                end = (E) ((Map) object).get(key);
-            else if (key instanceof String) {
-                final String skey = (String) key;
-                if (traverser.getSideEffects().exists(skey)) {
-                    end = traverser.getSideEffects().get((String) key);
-                } else {
-                    final Path path = traverser.path();
-                    if (path.hasLabel(skey))
-                        end = null == pop ? path.get(skey) : path.get(pop, skey);
+            try {
+                final E end = getScopeValue(pop, key, traverser);
+                final Traverser.Admin<E> outTraverser = traverser.split(null == end ? null : TraversalUtil.applyNullable(end, this.selectTraversal), this);
+                if (!(this.getTraversal().getParent() instanceof MatchStep)) {
+                    PathProcessor.processTraverserPathLabels(outTraverser, this.keepLabels);
                 }
+                return outTraverser;
+            } catch (KeyNotFoundException nfe) {
+                return EmptyTraverser.instance();
             }
+        } else {
+            return EmptyTraverser.instance();
         }
-        return null != end ? TraversalUtil.applyNullable(end, this.selectTraversal) : null;
+    }
+
+    @Override
+    public Set<String> getScopeKeys() {
+        // can't return scope keys here because they aren't known prior to traversal execution and this method is
+        // used at strategy application time. not getting any test failures as a result of returning empty. assuming
+        // that strategies don't use Scoping in a way that requires the keys to be known and if they aren't doesn't
+        // hose the whole traversal. in the worst case, strategies will hopefully just leave steps alone rather than
+        // make their own assumptions that the step is not selecting anything. if that is happening somehow we might
+        // need to modify Scoping to better suite this runtime evaluation of the key.
+        return Collections.emptySet();
     }
 
     @Override
@@ -130,11 +138,6 @@ public final class TraversalSelectStep<S, E> extends MapStep<S, E> implements Tr
                 TraverserRequirement.PATH);
     }
 
-    //@Override
-    //public Set<String> getScopeKeys() {
-    //    return Collections.singleton(this.selectKey);
-    //}
-
     public Pop getPop() {
         return this.pop;
     }
@@ -147,15 +150,6 @@ public final class TraversalSelectStep<S, E> extends MapStep<S, E> implements Tr
     @Override
     public Set<String> getKeepLabels() {
         return this.keepLabels;
-    }
-
-    @Override
-    protected Traverser.Admin<E> processNextStart() {
-        final Traverser.Admin<E> traverser = super.processNextStart();
-        if (!(this.getTraversal().getParent() instanceof MatchStep)) {
-            PathProcessor.processTraverserPathLabels(traverser, this.keepLabels);
-        }
-        return traverser;
     }
 }
 

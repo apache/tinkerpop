@@ -93,6 +93,31 @@ Feature: Step - addV()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"stephen\")"
 
+  Scenario: g_V_hasLabelXpersonX_propertyXname_nullX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).as("marko").
+        addV("person").property(T.id, 2).property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property(T.id, 4).property("name","josh").property("age", 32).as("josh").
+        addV("software").property(T.id, 5).property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property(T.id, 6).property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property(T.id, 7).property("weight", 0.5).
+        addE("knows").from("marko").to("josh").property(T.id, 8).property("weight", 1.0).
+        addE("created").from("marko").to("lop").property(T.id, 9).property("weight", 0.4).
+        addE("created").from("josh").to("ripple").property(T.id, 10).property("weight", 1.0).
+        addE("created").from("josh").to("lop").property(T.id, 11).property("weight", 0.4).
+        addE("created").from("peter").to("lop").property(T.id, 12).property("weight", 0.2)
+      """
+    And the traversal of
+      """
+      g.V().hasLabel("person").property("name", null)
+      """
+    When iterated to list
+    Then the result should have a count of 4
+    And the graph should return 2 for count of "g.V().properties(\"name\")"
+
   Scenario: g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenmX
     Given the empty graph
     And the graph initializer of
@@ -387,3 +412,22 @@ Feature: Step - addV()
       | result |
       | name |
 
+  Scenario: g_addVXnullX_propertyXid_nullX
+    Given the empty graph
+    And the traversal of
+      """
+      g.addV(null).property(T.id, null)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().hasLabel(\"vertex\")"
+
+  Scenario: g_addV_propertyXlabel_personX
+    Given the empty graph
+    And the traversal of
+      """
+      g.addV().property(T.label, "person")
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().hasLabel(\"person\")"

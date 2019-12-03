@@ -34,6 +34,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -184,10 +185,10 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
         }
 
         for (int i = 0; i < actualList.size(); i++) {
-            if (!actualList.get(i).getKey().equals(expectedList.get(i).getKey())) {
+            if (!Objects.equals(actualList.get(i).getKey(), expectedList.get(i).getKey())) {
                 return false;
             }
-            if (!actualList.get(i).getValue().equals(expectedList.get(i).getValue())) {
+            if (!Objects.equals(actualList.get(i).getValue(), expectedList.get(i).getValue())) {
                 return false;
             }
         }

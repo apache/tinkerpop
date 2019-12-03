@@ -63,7 +63,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {@"s\[(.*)\]", ToSet},
                 {@"m\[(.+)\]", ToMap},
                 {@"c\[(.+)\]", ToLambda},
-                {@"t\[(.+)\]", ToT}
+                {@"t\[(.+)\]", ToT},
+                {"null", (_, __) => null}
             }.ToDictionary(kv => new Regex("^" + kv.Key + "$", RegexOptions.Compiled), kv => kv.Value);
 
         private static readonly IDictionary<char, Func<string, object>> NumericParsers =
@@ -180,6 +181,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                     var rows = table.Rows.ToArray();
                     Assert.Equal("result", rows[0].Cells.First().Value);
                     var expected = rows.Skip(1).Select(x => ParseValue(x.Cells.First().Value, _graphName));
+
                     if (ordered)
                     {
                         Assert.Equal(expected, _result);

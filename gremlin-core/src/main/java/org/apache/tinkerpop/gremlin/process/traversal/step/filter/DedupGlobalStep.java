@@ -74,7 +74,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
             return this.duplicateSet.add(TraversalUtil.applyNullable(traverser, this.dedupTraversal));
         } else {
             final List<Object> objects = new ArrayList<>(this.dedupLabels.size());
-            this.dedupLabels.forEach(label -> objects.add(TraversalUtil.applyNullable((S) this.getScopeValue(Pop.last, label, traverser), this.dedupTraversal)));
+            this.dedupLabels.forEach(label -> objects.add(TraversalUtil.applyNullable((S) this.getSafeScopeValue(Pop.last, label, traverser), this.dedupTraversal)));
             return this.duplicateSet.add(objects);
         }
     }
@@ -189,7 +189,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
             if (null != this.dedupLabels) {
                 object = new ArrayList<>(this.dedupLabels.size());
                 for (final String label : this.dedupLabels) {
-                    ((List) object).add(TraversalUtil.applyNullable((S) this.getScopeValue(Pop.last, label, traverser), this.dedupTraversal));
+                    ((List) object).add(TraversalUtil.applyNullable((S) this.getSafeScopeValue(Pop.last, label, traverser), this.dedupTraversal));
                 }
             } else {
                 object = TraversalUtil.applyNullable(traverser, this.dedupTraversal);

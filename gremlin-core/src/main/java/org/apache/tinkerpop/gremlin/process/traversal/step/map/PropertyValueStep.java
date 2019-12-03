@@ -29,7 +29,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class PropertyValueStep<E> extends MapStep<Property<E>, E> {
+public final class PropertyValueStep<E> extends ScalarMapStep<Property<E>, E> {
 
     public PropertyValueStep(final Traversal.Admin traversal) {
         super(traversal);

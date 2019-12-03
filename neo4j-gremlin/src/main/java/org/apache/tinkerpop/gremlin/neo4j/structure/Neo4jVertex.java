@@ -98,6 +98,12 @@ public final class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVe
 
         if (cardinality != VertexProperty.Cardinality.single)
             throw VertexProperty.Exceptions.multiPropertiesNotSupported();
+
+        if (null == value) {
+            properties(key).forEachRemaining(VertexProperty::remove);
+            return VertexProperty.empty();
+        }
+
         if (keyValues.length > 0)
             throw VertexProperty.Exceptions.metaPropertiesNotSupported();
         try {

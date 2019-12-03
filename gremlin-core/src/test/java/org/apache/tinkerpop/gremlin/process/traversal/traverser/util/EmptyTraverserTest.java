@@ -16,31 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.map;
+package org.apache.tinkerpop.gremlin.process.traversal.traverser.util;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.junit.Test;
 
-import java.util.Collections;
-import java.util.Set;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 
-/**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
- */
-public final class SackStep<S, E> extends ScalarMapStep<S, E> {
+public class EmptyTraverserTest {
 
-    public SackStep(final Traversal.Admin traversal) {
-        super(traversal);
+    @Test
+    public void shouldHaveSameInstance() {
+        assertSame(EmptyTraverser.instance(), EmptyTraverser.instance());
     }
 
-    @Override
-    protected E map(final Traverser.Admin<S> traverser) {
-        return traverser.sack();
-    }
-
-    @Override
-    public Set<TraverserRequirement> getRequirements() {
-        return Collections.singleton(TraverserRequirement.SACK);
+    @Test
+    public void shouldHaveZeroBulk() {
+        assertEquals(0, EmptyTraverser.instance().bulk());
     }
 }

@@ -223,6 +223,10 @@ function parseRow(row) {
 }
 
 function parseValue(stringValue) {
+
+  if(stringValue === "null")
+    return null;
+
   let extractedValue = null;
   let parser = null;
   for (let item of parsers) {
@@ -234,6 +238,7 @@ function parseValue(stringValue) {
       break;
     }
   }
+
   return parser !== null ? parser.call(this, extractedValue) : stringValue;
 }
 
@@ -279,7 +284,7 @@ function toT(value) {
 }
 
 function toDirection(value) {
-    return direction[value.toLowerCase()];
+  return direction[value.toLowerCase()];
 }
 
 function toArray(stringList) {
@@ -294,6 +299,9 @@ function toMap(stringMap) {
 }
 
 function parseMapValue(value) {
+  if (value === null)
+    return null;
+
   if (typeof value === 'string') {
     return parseValue.call(this, value);
   }

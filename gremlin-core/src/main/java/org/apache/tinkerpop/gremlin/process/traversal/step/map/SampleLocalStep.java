@@ -36,7 +36,7 @@ import java.util.Set;
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SampleLocalStep<S> extends MapStep<S, S> {
+public final class SampleLocalStep<S> extends ScalarMapStep<S, S> {
 
     private static final Random RANDOM = new Random();
 

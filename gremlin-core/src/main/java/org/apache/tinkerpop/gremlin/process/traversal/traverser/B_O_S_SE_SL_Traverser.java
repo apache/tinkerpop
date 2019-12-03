@@ -136,7 +136,7 @@ public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
 
     protected final boolean equals(final B_O_S_SE_SL_Traverser other) {
         return super.equals(other) && other.loops == this.loops
-                && (this.loopName != null ? this.loopName.equals(other.loopName) : other.loopName == null)
+                && Objects.equals(this.loopName, other.loopName)
                 && !carriesUnmergeableSack();
     }
 

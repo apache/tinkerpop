@@ -54,13 +54,8 @@ public class ElementHelperTest {
     }
 
     @Test
-    public void shouldValidatePropertyAndNotAllowNullValue() {
-        try {
-            ElementHelper.validateProperty("test", null);
-            fail("Should fail as property value cannot be null");
-        } catch (IllegalArgumentException iae) {
-            assertEquals(Property.Exceptions.propertyValueCanNotBeNull().getMessage(), iae.getMessage());
-        }
+    public void shouldValidatePropertyAndAllowNullValue() {
+        ElementHelper.validateProperty("test", null);
     }
 
     @Test
@@ -125,15 +120,6 @@ public class ElementHelperTest {
     }
 
     @Test
-    public void shouldNotAllowEvenNumberOfKeyValuesAndInvalidValues() {
-        try {
-            ElementHelper.legalPropertyKeyValueArray("aKey", "test", "value-for-this-one", 1, "1", null);
-        } catch (IllegalArgumentException iae) {
-            assertEquals(Property.Exceptions.propertyValueCanNotBeNull().getMessage(), iae.getMessage());
-        }
-    }
-
-    @Test
     public void shouldFindTheIdValueAlone() {
         assertEquals(123l, ElementHelper.getIdValue(T.id, 123l).get());
     }
@@ -148,9 +134,9 @@ public class ElementHelperTest {
         assertFalse(ElementHelper.getIdValue("test", 321, "xyz", 123l, "testagain", "that").isPresent());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void shouldNotFindAnIdValueBecauseItIsNull() {
-        ElementHelper.getIdValue("test", 321, T.id, null, "testagain", "that");
+        assertEquals("default", ElementHelper.getIdValue("test", 321, T.id, null, "testagain", "that").orElse("default"));
     }
 
     @Test
@@ -191,6 +177,15 @@ public class ElementHelperTest {
     @Test
     public void shouldAttachPropertiesButNotLabelsOrId() {
         final Element mockElement = mock(Element.class);
+        final Graph mockGraph = mock(Graph.class);
+        final Graph.Features mockGraphFeatures = mock(Graph.Features.class);
+        final Graph.Features.VertexFeatures mockVertexFeatures = mock(Graph.Features.VertexFeatures.class);
+        final Graph.Features.VertexPropertyFeatures mockVertexPropertyFeatures = mock(Graph.Features.VertexPropertyFeatures.class);
+        when(mockElement.graph()).thenReturn(mockGraph);
+        when(mockGraph.features()).thenReturn(mockGraphFeatures);
+        when(mockGraphFeatures.vertex()).thenReturn(mockVertexFeatures);
+        when(mockVertexFeatures.properties()).thenReturn(mockVertexPropertyFeatures);
+        when(mockVertexPropertyFeatures.supportsNullPropertyValues()).thenReturn(true);
         ElementHelper.attachProperties(mockElement, "test", 123, T.id, 321, T.label, "friends");
         verify(mockElement, times(1)).property("test", 123);
         verify(mockElement, times(0)).property(T.id.getAccessor(), 321);
@@ -200,6 +195,15 @@ public class ElementHelperTest {
     @Test(expected = ClassCastException.class)
     public void shouldFailTryingToAttachPropertiesNonStringKey() {
         final Element mockElement = mock(Element.class);
+        final Graph mockGraph = mock(Graph.class);
+        final Graph.Features mockGraphFeatures = mock(Graph.Features.class);
+        final Graph.Features.VertexFeatures mockVertexFeatures = mock(Graph.Features.VertexFeatures.class);
+        final Graph.Features.VertexPropertyFeatures mockVertexPropertyFeatures = mock(Graph.Features.VertexPropertyFeatures.class);
+        when(mockElement.graph()).thenReturn(mockGraph);
+        when(mockGraph.features()).thenReturn(mockGraphFeatures);
+        when(mockGraphFeatures.vertex()).thenReturn(mockVertexFeatures);
+        when(mockVertexFeatures.properties()).thenReturn(mockVertexPropertyFeatures);
+        when(mockVertexPropertyFeatures.supportsNullPropertyValues()).thenReturn(true);
         ElementHelper.attachProperties(mockElement, "test", 123, 321, "test");
     }
 
@@ -216,6 +220,15 @@ public class ElementHelperTest {
     @Test
     public void shouldAttachPropertiesWithCardinalityButNotLabelsOrId() {
         final Vertex mockElement = mock(Vertex.class);
+        final Graph mockGraph = mock(Graph.class);
+        final Graph.Features mockGraphFeatures = mock(Graph.Features.class);
+        final Graph.Features.VertexFeatures mockVertexFeatures = mock(Graph.Features.VertexFeatures.class);
+        final Graph.Features.VertexPropertyFeatures mockVertexPropertyFeatures = mock(Graph.Features.VertexPropertyFeatures.class);
+        when(mockElement.graph()).thenReturn(mockGraph);
+        when(mockGraph.features()).thenReturn(mockGraphFeatures);
+        when(mockGraphFeatures.vertex()).thenReturn(mockVertexFeatures);
+        when(mockVertexFeatures.properties()).thenReturn(mockVertexPropertyFeatures);
+        when(mockVertexPropertyFeatures.supportsNullPropertyValues()).thenReturn(true);
         ElementHelper.attachProperties(mockElement, VertexProperty.Cardinality.single, "test", 123, T.id, 321, T.label, "friends");
         verify(mockElement, times(1)).property(VertexProperty.Cardinality.single, "test", 123);
         verify(mockElement, times(0)).property(VertexProperty.Cardinality.single, T.id.getAccessor(), 321);
@@ -225,6 +238,15 @@ public class ElementHelperTest {
     @Test(expected = ClassCastException.class)
     public void shouldFailTryingToAttachPropertiesWithCardinalityNonStringKey() {
         final Element mockElement = mock(Vertex.class);
+        final Graph mockGraph = mock(Graph.class);
+        final Graph.Features mockGraphFeatures = mock(Graph.Features.class);
+        final Graph.Features.VertexFeatures mockVertexFeatures = mock(Graph.Features.VertexFeatures.class);
+        final Graph.Features.VertexPropertyFeatures mockVertexPropertyFeatures = mock(Graph.Features.VertexPropertyFeatures.class);
+        when(mockElement.graph()).thenReturn(mockGraph);
+        when(mockGraph.features()).thenReturn(mockGraphFeatures);
+        when(mockGraphFeatures.vertex()).thenReturn(mockVertexFeatures);
+        when(mockVertexFeatures.properties()).thenReturn(mockVertexPropertyFeatures);
+        when(mockVertexPropertyFeatures.supportsNullPropertyValues()).thenReturn(true);
         ElementHelper.attachProperties(mockElement, VertexProperty.Cardinality.single, "test", 123, 321, "test");
     }
 

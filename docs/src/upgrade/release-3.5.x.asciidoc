@@ -60,7 +60,6 @@ org.apache.commons.configuration.*
 
 to
 
-
 [source,text]
 ----
 org.apache.commons.configuration2.*
@@ -73,10 +72,54 @@ upgrade information can be found in the link:https://commons.apache.org/proper/c
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2185[TINKERPOP-2185]
 
-==== addV() and null
+==== Use of null
 
-There was a bit of inconsistency in the handling of `null` in calls to `property()` depending on the type of mutation
-being executed demonstrated as follows in earlier versions:
+Gremlin has traditionally disallowed `null` as a value in traversals and not always in consistent ways:
+
+[source,text]
+----
+gremlin> g.inject(1, null, null, 2, null)
+java.lang.NullPointerException
+Type ':help' or ':h' for help.
+Display stack trace? [yN]n
+gremlin> g.V().has('person','name','marko').property('age', null)
+The AddPropertyStep does not have a provided value: AddPropertyStep({key=[age]})
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+gremlin> g.addV("person").property("name", 'stephen').property("age", null)
+==>v[13]
+gremlin> g.V().has('person','name','stephen').elementMap()
+==>[id:13,label:person,name:stephen]
+gremlin> g.V().constant(null)
+gremlin>
+----
+
+Note how `null` can produce exception behavior or act as a filter. For 3.5.0, TinkerPop has not only made `null` usage
+consistent, but has also made it an allowable value within a `Traversal`:
+
+[source,text]
+----
+gremlin> g.inject(1, null, null, 2, null)
+==>1
+==>null
+==>null
+==>null
+==>2
+gremlin> g.V().constant(null)
+==>null
+==>null
+==>null
+==>null
+==>null
+==>null
+----
+
+TinkerGraph can be configured to support `null` as a property value and all graphs may not support this feature (for
+example, Neo4j does not). Please be sure to check the new `supportsNullPropertyValues()` feature (or the documentation
+of the graph provider) to determine if the `Graph` implementation allows `null` as a property value.
+
+With respect to `null` in relation to properties, there was a bit of inconsistency in the handling of `null` in calls
+to `property()` depending on the type of mutation being executed demonstrated as follows in earlier versions:
 
 [source,text]
 ----
@@ -91,21 +134,43 @@ gremlin> g.V(13).properties()
 ==>vp[z->2]
 ----
 
-In this release, this behavior has been altered to become consistent as follows:
+This behavior has been altered to become consistent. First, assuming `null` is not supported as a property value, the
+setting of a property to `null` should have the behavior of removing the property in the same way in which you might
+do `g.V().properties().drop()`:
 
 [source,text]
 ----
 gremlin> g.V(1).property("x", 1).property("y", null).property("z", 2)
-Property value can not be null
-Type ':help' or ':h' for help.
-Display stack trace? [yN]n
-gremlin> g.addV().property("x", 1).property("y", null).property("z", 2)
-Property value can not be null
-Type ':help' or ':h' for help.
-Display stack trace? [yN]
+==>v[1]
+gremlin> g.V(1).elementMap()
+==>[id:1,label:person,name:marko,x:1,z:2,age:29]
+gremlin> g.V().hasLabel('person').property('age',null).iterate()
+gremlin> g.V().hasLabel('person').elementMap()
+==>[id:1,label:person,name:marko]
+==>[id:2,label:person,name:vadas]
+==>[id:4,label:person,name:josh]
+==>[id:6,label:person,name:peter]
 ----
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2099[TINKERPOP-2099]
+Then, assuming `null` is supported as a property value:
+
+[source,text]
+----
+gremlin> g.addV("person").property("name", 'stephen').property("age", null)
+==>v[13]
+gremlin> g.V().has('person','name','stephen').elementMap()
+==>[id:13,label:person,name:stephen,age:null]
+gremlin> g.V().has('person','age',null)
+==>v[13]
+----
+
+In conclusion, this change in greater support of `null` may affect the behavior of existing traversals written in past
+versions of TinkerPop as it is no longer possible to rely on `null` to expect a filtering action for traversers.
+Please review existing Gremlin carefully to ensure that there are no unintended consequences of this change and that
+there are no opportunities to improve existing logic to take greater advantage of this expansion of `null` semantics.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2235[TINKERPOP-2235],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2099[TINKERPOP-2099]
 
 ==== Remote SideEffects
 
@@ -192,6 +257,46 @@ link:http://tinkerpop.apache.org/docs/3.5.0/upgrade/#_ssl_security[3.2.10 Upgrad
 
 ==== Graph System Providers
 
+===== ScalarMapStep
+
+`MapStep` had a single abstract method that needed to be implemented:
+
+[source,java]
+----
+protected abstract E map(final Traverser.Admin<S> traverser);
+----
+
+This method made it easy to implement new implementations because it hid certain processing logic and made it so that
+the implementer only had to reason about how to take the current object from the `Traverser` and transform it to a
+new value. As 3.5.0 changed semantics around how `null` is processed, this method became a bit of a hindrance to the
+more complex logic which those semantics entailed. Specifically, this method could not easily communicate to underlying
+processing what a `null` might mean - is the `null` the end of the traversal stream or should the `null` be promoted
+down the stream as a value to be processed.
+
+Interestingly, the method that enabled the handling of this more complex decision making already existed in
+`AbstractStep`:
+
+[source,java]
+----
+protected Traverser.Admin<E> processNextStart()
+----
+
+It returns a whole `Traverser` object and forces manual retrieval of the "next" `Traverser`. At this level it becomes
+possible to make choices on `null` and return it if it should be propagated or dismiss it and return an
+`EmptyTraverser`. To better accommodate the `MapStep` which provides the nice helper `map(Traverser)` method as well
+as the more flexible version that doesn't need that infrastructure, `ScalarMapStep` was added to extend `MapStep`. The
+`map(Traverser)` was then moved to `ScalarMapStep` and those steps that could rely on that helper method now extend
+from it. All other steps of this sort still extend `MapStep` and directly implement `processNextStart()`.
+
+Providers will get compile errors if they extended `MapStep`. The easy solution will be to simply modify that code so
+that their step instead extends `ScalarMapStep`. As a secondary task, providers should then examine their step
+implementation to ensure that `null` semantics as presented in 3.5.0 apply properly. If they do not, then it is likely
+that the step should simply implement `MapStep` directly and former `map(Traverser)` logic should be migrated to
+`processNextStart()`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2235[TINKERPOP-2235],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2099[TINKERPOP-2099]
+
 ===== TraversalStrategy Application
 
 The methodology for strategy application has been altered and the change is most easily described by example. Given a
@@ -253,6 +358,164 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1568[TINKERPOP-1568],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2310[TINKERPOP-2310],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2311[TINKERPOP-2311]
 
+===== Null Semantics
+
+Graph providers should take note of the changes to `null` semantics described in the "users" section of these upgrade
+notes. As `null` is now acceptable as a `Traverser` object, this change may affect custom steps. Further note that
+`null` now works more consistently with mutation steps and graph providers may need to include additional logic to
+deal with those possible conditions. Please see the console sessions below which uses TinkerGraph to demonstrate the
+current behavioral expectations.
+
+[source,text]
+----
+gremlin> g.getGraph().features().vertex().supportsNullPropertyValues()
+==>false
+gremlin> g.addV(null).property(id, null).property('name',null)
+==>v[0]
+gremlin> g.V().elementMap()
+==>[id:0,label:vertex]
+...
+gremlin> g.getGraph().features().vertex().supportsNullPropertyValues()
+==>true
+gremlin> g.addV(null).property(id, null).property('name',null)
+==>v[0]
+gremlin> g.V().elementMap()
+==>[id:0,label:vertex,name:null]
+----
+
+In the above example, `addV()` defaults to `Vertex.DEFAULT_LABEL`, the `id` is generated and setting the "name"
+property to `null` results in the value not being set. If the property value is set to an actual value and then set
+to `null` TinkerGraph will remove the property key all together:
+
+[source,text]
+----
+gremlin> g.getGraph().features().vertex().supportsNullPropertyValues()
+==>false
+gremlin> g.addV().property('name','stephen')
+==>v[0]
+gremlin> g.V().elementMap()
+==>[id:0,label:vertex,name:stephen]
+gremlin> g.V().has('vertex','name','stephen').property('name',null)
+==>v[0]
+gremlin> g.V().elementMap()
+==>[id:0,label:vertex]
+...
+gremlin> g.getGraph().features().vertex().supportsNullPropertyValues()
+==>true
+gremlin> g.addV().property('name','stephen')
+==>v[2]
+gremlin> g.V().has('vertex','name','stephen').property('name',null)
+==>v[2]
+gremlin> g.V().elementMap()
+==>[id:2,label:vertex,name:null]
+----
+
+The above examples point out the default operations of TinkerGraph, but it can be configured to actually accept the
+`null` as a property value and it is up to graph providers to decided how they wish to treat a `null` property value.
+Providers should use the new `supportsNullPropertyValues()` feature to indicate to users how `null` is handled.
+
+For edges, the `label` still cannot be defaulted and must be specified, therefore:
+
+[source,text]
+----
+gremlin> g.V(0L).as('a').addE(null).to('a')
+Label can not be null
+Type ':help' or ':h' for help.
+Display stack trace? [yN]n
+gremlin> g.V(0L).as('a').addE(constant(null)).to('a')
+Label can not be null
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+----
+
+Also, edges have similar behavior to vertices when it comes to setting properties (again, the default configuration for
+TinkerGraph is being used here):
+
+[source,text]
+----
+gremlin> g.getGraph().features().vertex().supportsNullPropertyValues()
+==>false
+gremlin> g.addV().property('name','stephen')
+==>v[0]
+gremlin> g.V().has('vertex','name','stephen').as('a').addE('knows').to('a').property(id,null).property('weight',null)
+==>e[2][0-knows->0]
+gremlin> g.E().elementMap()
+==>[id:2,label:knows,IN:[id:0,label:vertex],OUT:[id:0,label:vertex]]
+gremlin> g.E().property('weight',0.5)
+==>e[2][0-knows->0]
+gremlin> g.E().elementMap()
+==>[id:2,label:knows,IN:[id:0,label:vertex],OUT:[id:0,label:vertex],weight:0.5]
+gremlin> g.E().property('weight',null)
+==>e[2][0-knows->0]
+gremlin> g.E().elementMap()
+==>[id:2,label:knows,IN:[id:0,label:vertex],OUT:[id:0,label:vertex]]
+...
+gremlin> g.getGraph().features().vertex().supportsNullPropertyValues()
+==>true
+gremlin> g.addV().property('name','stephen')
+==>v[8]
+gremlin> g.V().has('vertex','name','stephen').as('a').addE('knows').to('a').property(id,null).property('weight',null)
+==>e[10][8-knows->8]
+gremlin> g.E().elementMap()
+==>[id:10,label:knows,IN:[id:8,label:vertex],OUT:[id:8,label:vertex],weight:null]
+gremlin> g.E().property('weight',0.5)
+==>e[10][8-knows->8]
+gremlin> g.E().elementMap()
+==>[id:10,label:knows,IN:[id:8,label:vertex],OUT:[id:8,label:vertex],weight:0.5]
+gremlin> g.E().property('weight',null)
+==>e[10][8-knows->8]
+gremlin> g.E().elementMap()
+==>[id:10,label:knows,IN:[id:8,label:vertex],OUT:[id:8,label:vertex],weight:null]
+----
+
+Graphs that support multi/meta-properties have some issues to consider as well as demonstrated with TinkerGraph:
+
+[source,text]
+----
+gremlin> g.getGraph().features().vertex().supportsNullPropertyValues()
+==>false
+gremlin> g.addV().property(list,'foo',"x").property(list,"foo", null).property(list,'foo','bar')
+==>v[0]
+gremlin> g.V().elementMap()
+==>[id:0,label:vertex,foo:bar]
+gremlin> g.V().valueMap()
+==>[foo:[x,bar]]
+gremlin> g.V().property('foo',null)
+==>v[0]
+gremlin> g.V().valueMap(true)
+==>[id:0,label:vertex]
+...
+gremlin> g.addV().property(list,'foo','bar','x',1,'y',null)
+==>v[0]
+gremlin> g.V().properties('foo').valueMap(true)
+==>[id:1,key:foo,value:bar,x:1]
+gremlin> g.V().properties('foo').property('x',null)
+==>vp[foo->bar]
+gremlin> g.V().properties('foo').valueMap(true)
+==>[id:1,key:foo,value:bar]
+...
+gremlin> g.getGraph().features().vertex().supportsNullPropertyValues()
+==>false
+gremlin> g.addV().property(list,'foo',"x").property(list,"foo", null).property(list,'foo','bar')
+==>v[11]
+gremlin> g.V().elementMap()
+==>[id:11,label:vertex,foo:bar]
+gremlin> g.V().valueMap()
+==>[foo:[x,null,bar]]
+...
+gremlin> g.addV().property(list,'foo','bar','x',1,'y',null)
+==>v[0]
+gremlin> g.V().properties('foo').valueMap(true)
+==>[id:1,key:foo,value:bar,x:1,y:null]
+gremlin> g.V().properties('foo').property('x',null)
+==>vp[foo->bar]
+gremlin> g.V().properties('foo').valueMap(true)
+==>[id:1,key:foo,value:bar,x:null,y:null]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2235[TINKERPOP-2235],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2099[TINKERPOP-2099]
+
 ===== AbstractOpProcessor API Change
 
 The `generateMetaData()` method was removed as it was deprecated in a previous version. There already was a preferred
@@ -267,6 +530,8 @@ Note that `StoreStep` has been renamed to `AggregateLocalStep` and `AggregateSte
 that rely on the old step names.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2254[TINKERPOP-2254]
+
+==== Graph Driver Providers
 
 ===== TraversalOpProcessor Side-effects
 

@@ -79,7 +79,7 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
         if (predicate instanceof ConnectiveP)
             ((ConnectiveP<Object>) predicate).getPredicates().forEach(p -> this.setPredicateValues(p, traverser, selectKeysIterator));
         else
-            predicate.setValue(TraversalUtil.applyNullable((S) this.getScopeValue(Pop.last, selectKeysIterator.next(), traverser), this.traversalRing.next()));
+            predicate.setValue(TraversalUtil.applyNullable((S) this.getSafeScopeValue(Pop.last, selectKeysIterator.next(), traverser), this.traversalRing.next()));
     }
 
     public Optional<P<?>> getPredicate() {
@@ -99,7 +99,7 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
     protected boolean filter(final Traverser.Admin<S> traverser) {
         final Object value = null == this.startKey ?
                 TraversalUtil.applyNullable(traverser, this.traversalRing.next()) :
-                TraversalUtil.applyNullable((S) this.getScopeValue(Pop.last, this.startKey, traverser), this.traversalRing.next());
+                TraversalUtil.applyNullable((S) this.getSafeScopeValue(Pop.last, this.startKey, traverser), this.traversalRing.next());
         this.setPredicateValues(this.predicate, traverser, this.selectKeys.iterator());
         this.traversalRing.reset();
         return this.predicate.test(value);

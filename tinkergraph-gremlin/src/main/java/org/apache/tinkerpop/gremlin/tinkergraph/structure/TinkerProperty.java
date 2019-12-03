@@ -54,9 +54,12 @@ public final class TinkerProperty<V> implements Property<V> {
         return this.value;
     }
 
+    /**
+     * The existence of this object implies the property is present, thus even a {@code null} value means "present".
+     */
     @Override
     public boolean isPresent() {
-        return null != this.value;
+        return true;
     }
 
     @Override

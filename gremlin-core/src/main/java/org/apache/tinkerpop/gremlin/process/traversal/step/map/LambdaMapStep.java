@@ -28,7 +28,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LambdaMapStep<S, E> extends MapStep<S, E> implements LambdaHolder {
+public final class LambdaMapStep<S, E> extends ScalarMapStep<S, E> implements LambdaHolder {
 
     private final Function<Traverser<S>, E> function;
 

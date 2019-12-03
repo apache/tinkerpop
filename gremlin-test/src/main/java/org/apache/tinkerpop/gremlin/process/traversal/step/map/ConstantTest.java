@@ -46,15 +46,23 @@ public abstract class ConstantTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Integer> get_g_V_constantX123X();
 
+    public abstract Traversal<Vertex, Void> get_g_V_constantXnullX();
+
     public abstract Traversal<Vertex, String> get_g_V_chooseXhasLabelXpersonX_valuesXnameX_constantXinhumanXX();
 
-    /** Scenario: Trivial use case from GraphTraversal */
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_constantX123X() {
         final Traversal<Vertex, Integer> traversal = get_g_V_constantX123X();
         printTraversalForm(traversal);
         assertEquals(Arrays.asList(123, 123, 123, 123, 123, 123), traversal.toList());
+    }
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_constantXnullX() {
+        final Traversal<Vertex, Void> traversal = get_g_V_constantXnullX();
+        printTraversalForm(traversal);
+        assertEquals(Arrays.asList(null, null, null, null, null, null), traversal.toList());
     }
 
     /** Scenario: Anonymous traversal within choose */
@@ -71,6 +79,11 @@ public abstract class ConstantTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Integer> get_g_V_constantX123X() {
             return g.V().constant(123);
+        }
+
+        @Override
+        public Traversal<Vertex, Void> get_g_V_constantXnullX() {
+            return g.V().constant(null);
         }
 
         @Override

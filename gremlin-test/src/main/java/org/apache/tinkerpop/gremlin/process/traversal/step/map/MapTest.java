@@ -31,9 +31,11 @@ import org.junit.runner.RunWith;
 import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.constant;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -52,6 +54,8 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_withPath_V_asXaX_out_out_mapXa_name_it_nameX();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_mapXselectXaXX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_mapXconstantXnullXX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -139,6 +143,19 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
         assertEquals(6, counter);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_mapXconstantXnullXX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_mapXconstantXnullXX();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            assertNull(traversal.next());
+        }
+        assertEquals(6, counter);
+    }
+
     public static class Traversals extends MapTest {
         @Override
         public Traversal<Vertex, String> get_g_VX1X_mapXnameX(final Object v1Id) {
@@ -168,6 +185,11 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_mapXselectXaXX() {
             return g.V().as("a").map(select("a"));
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_mapXconstantXnullXX() {
+            return g.V().map(constant(null));
         }
     }
 }

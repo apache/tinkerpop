@@ -88,13 +88,11 @@ public final class ElementHelper {
      * a pre-condition check prior to setting a property.
      *
      * @param key   the key of the property
-     * @param value the value of the property
+     * @param value the value of the property\
      * @throws IllegalArgumentException whether the key/value pair is legal and if not, a clear reason exception
      *                                  message is provided
      */
     public static void validateProperty(final String key, final Object value) throws IllegalArgumentException {
-        if (null == value)
-            throw Property.Exceptions.propertyValueCanNotBeNull();
         if (null == key)
             throw Property.Exceptions.propertyKeyCanNotBeNull();
         if (key.isEmpty())
@@ -105,7 +103,7 @@ public final class ElementHelper {
 
     /**
      * Determines whether a list of key/values are legal, ensuring that there are an even number of values submitted
-     * and that the key values in the list of arguments are {@link String} or {@link Element} objects.
+     * and that the keys in the list of arguments are {@link String} or {@link T} objects.
      *
      * @param propertyKeyValues a list of key/value pairs
      * @throws IllegalArgumentException if something in the pairs is illegal
@@ -116,10 +114,6 @@ public final class ElementHelper {
         for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
             if (!(propertyKeyValues[i] instanceof String) && !(propertyKeyValues[i] instanceof T))
                 throw Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices();
-
-            if (null == propertyKeyValues[i + 1]) {
-                throw Property.Exceptions.propertyValueCanNotBeNull();
-            }
         }
     }
 
@@ -128,12 +122,11 @@ public final class ElementHelper {
      *
      * @param keyValues a list of key/value pairs
      * @return the value associated with {@link T#id}
-     * @throws NullPointerException if the value for the {@link T#id} key is {@code null}
      */
     public static Optional<Object> getIdValue(final Object... keyValues) {
         for (int i = 0; i < keyValues.length; i = i + 2) {
             if (keyValues[i].equals(T.id))
-                return Optional.of(keyValues[i + 1]);
+                return Optional.ofNullable(keyValues[i + 1]);
         }
         return Optional.empty();
     }
@@ -280,16 +273,24 @@ public final class ElementHelper {
         if (null == element)
             throw Graph.Exceptions.argumentCanNotBeNull("element");
 
+        final boolean allowNullPropertyValues = element instanceof Vertex ?
+                element.graph().features().vertex().supportsNullPropertyValues() : element instanceof Edge ?
+                element.graph().features().edge().supportsNullPropertyValues() :
+                element.graph().features().vertex().properties().supportsNullPropertyValues();
+
         for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
             if (!propertyKeyValues[i].equals(T.id) && !propertyKeyValues[i].equals(T.label))
-                element.property((String) propertyKeyValues[i], propertyKeyValues[i + 1]);
+                if (!allowNullPropertyValues && null == propertyKeyValues[i + 1])
+                    element.properties(((String) propertyKeyValues[i])).forEachRemaining(Property::remove);
+                else
+                    element.property((String) propertyKeyValues[i], propertyKeyValues[i + 1]);
         }
     }
 
     /**
-     * Assign key/value pairs as properties to an {@link Vertex}.  If the value of {@link T#id} or
-     * {@link T#label} is in the set of pairs, then they are ignored.
-     * The {@link VertexProperty.Cardinality} of the key is determined from the {@link Graph.Features.VertexFeatures}.
+     * Assign key/value pairs as properties to an {@link Vertex}.  If the value of {@link T#id} or {@link T#label} is
+     * in the set of pairs, then they are ignored. The {@link VertexProperty.Cardinality} of the key is determined from
+     * the {@link Graph.Features.VertexFeatures}.
      *
      * @param vertex            the graph vertex to assign the {@code propertyKeyValues}
      * @param propertyKeyValues the key/value pairs to assign to the {@code element}
@@ -300,15 +301,20 @@ public final class ElementHelper {
         if (null == vertex)
             throw Graph.Exceptions.argumentCanNotBeNull("vertex");
 
+        final boolean allowNullPropertyValues = vertex.graph().features().vertex().supportsNullPropertyValues();
+
         for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
             if (!propertyKeyValues[i].equals(T.id) && !propertyKeyValues[i].equals(T.label))
-                vertex.property(vertex.graph().features().vertex().getCardinality((String) propertyKeyValues[i]), (String) propertyKeyValues[i], propertyKeyValues[i + 1]);
+                if (!allowNullPropertyValues && null == propertyKeyValues[i + 1])
+                    vertex.properties(((String) propertyKeyValues[i])).forEachRemaining(VertexProperty::remove);
+                else
+                    vertex.property(vertex.graph().features().vertex().getCardinality((String) propertyKeyValues[i]), (String) propertyKeyValues[i], propertyKeyValues[i + 1]);
         }
     }
 
     /**
-     * Assign key/value pairs as properties to a {@link Vertex}.
-     * If the value of {@link T#id} or {@link T#label} is in the set of pairs, then they are ignored.
+     * Assign key/value pairs as properties to a {@link Vertex}. If the value of {@link T#id} or {@link T#label} is
+     * in the set of pairs, then they are ignored.
      *
      * @param vertex            the vertex to attach the properties to
      * @param cardinality       the cardinality of the key value pair settings
@@ -316,18 +322,24 @@ public final class ElementHelper {
      * @throws ClassCastException       if the value of the key is not a {@link String}
      * @throws IllegalArgumentException if the value of {@code element} is null
      */
-    public static void attachProperties(final Vertex vertex, final VertexProperty.Cardinality cardinality, final Object... propertyKeyValues) {
+    public static void attachProperties(final Vertex vertex, final VertexProperty.Cardinality cardinality,
+                                        final Object... propertyKeyValues) {
         if (null == vertex)
             throw Graph.Exceptions.argumentCanNotBeNull("vertex");
 
+        final boolean allowNullPropertyValues = vertex.graph().features().vertex().supportsNullPropertyValues();
+
         for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
             if (!propertyKeyValues[i].equals(T.id) && !propertyKeyValues[i].equals(T.label))
-                vertex.property(cardinality, (String) propertyKeyValues[i], propertyKeyValues[i + 1]);
+                if (!allowNullPropertyValues && null == propertyKeyValues[i + 1])
+                    vertex.properties(((String) propertyKeyValues[i])).forEachRemaining(VertexProperty::remove);
+                else
+                    vertex.property(cardinality, (String) propertyKeyValues[i], propertyKeyValues[i + 1]);
         }
     }
 
     /**
-     * This is a helper method for dealing with vertex property cardinality and typically used in {@link Vertex#property(org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality, String, Object, Object...)}.
+     * This is a helper method for dealing with vertex property cardinality and typically used in {@link Vertex#property(VertexProperty.Cardinality, String, Object, Object...)}.
      * If the cardinality is list, simply return {@link Optional#empty}.
      * If the cardinality is single, delete all existing properties of the provided key and return {@link Optional#empty}.
      * If the cardinality is set, find one that has the same key/value and attached the properties to it and return it. Else, if no equal value is found, return {@link Optional#empty}.
@@ -340,7 +352,9 @@ public final class ElementHelper {
      * @param <V>         the type of the vertex property value
      * @return a vertex property if it has been found in set with equal value
      */
-    public static <V> Optional<VertexProperty<V>> stageVertexProperty(final Vertex vertex, final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
+    public static <V> Optional<VertexProperty<V>> stageVertexProperty(final Vertex vertex,
+                                                                      final VertexProperty.Cardinality cardinality,
+                                                                      final String key, final V value, final Object... keyValues) {
         if (cardinality.equals(VertexProperty.Cardinality.single))
             vertex.properties(key).forEachRemaining(VertexProperty::remove);
         else if (cardinality.equals(VertexProperty.Cardinality.set)) {
@@ -387,7 +401,8 @@ public final class ElementHelper {
 
     /**
      * A standard method for determining if two {@link Element} objects are equal. This method should be used by any
-     * {@link Object#equals(Object)} implementation to ensure consistent behavior. This method is used for Vertex, Edge, and VertexProperty.
+     * {@link Object#equals(Object)} implementation to ensure consistent behavior. This method is used for Vertex,
+     * Edge, and VertexProperty.
      *
      * @param a The first {@link Element}
      * @param b The second {@link Element} (as an {@link Object})

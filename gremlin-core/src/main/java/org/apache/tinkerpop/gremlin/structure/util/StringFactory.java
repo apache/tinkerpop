@@ -49,6 +49,7 @@ import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -255,6 +256,6 @@ public final class StringFactory {
     }
 
     public static String pathString(final Path path) {
-        return PATH + L_BRACKET + String.join(", ", IteratorUtils.map(path, Object::toString)) + R_BRACKET;
+        return PATH + L_BRACKET + String.join(", ", IteratorUtils.map(path, Objects::toString)) + R_BRACKET;
     }
 }

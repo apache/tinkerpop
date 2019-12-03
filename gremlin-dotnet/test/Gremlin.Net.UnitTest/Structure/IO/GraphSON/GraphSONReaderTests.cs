@@ -120,7 +120,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         [Theory, MemberData(nameof(Versions))]
         public void ShouldDeserializeDictionary(int version)
         {
-            var serializedDict = "{\"age\":[{\"@type\":\"g:Int32\",\"@value\":29}],\"name\":[\"marko\"]}";
+            var serializedDict = "{\"age\":[{\"@type\":\"g:Int32\",\"@value\":29}],\"name\":[\"marko\"],\"gender\": null}";
             var reader = CreateStandardGraphSONReader(version);
 
             var jObject = JObject.Parse(serializedDict);
@@ -129,7 +129,8 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var expectedDict = new Dictionary<string, dynamic>
             {
                 {"age", new List<object> {29}},
-                {"name", new List<object> {"marko"}}
+                {"name", new List<object> {"marko"}},
+                {"gender", null}
             };
             Assert.Equal(expectedDict, deserializedDict);
         }
@@ -260,13 +261,13 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         [Theory, MemberData(nameof(Versions))]
         public void ShouldDeserializeList(int version)
         {
-            var serializedValue = "[{\"@type\":\"g:Int32\",\"@value\":5},{\"@type\":\"g:Int32\",\"@value\":6}]";
+            var serializedValue = "[{\"@type\":\"g:Int32\",\"@value\":5},{\"@type\":\"g:Int32\",\"@value\":6},null]";
             var reader = CreateStandardGraphSONReader(version);
 
             var jObject = JArray.Parse(serializedValue);
             var deserializedValue = reader.ToObject(jObject);
 
-            Assert.Equal(new List<object> {5, 6}, deserializedValue);
+            Assert.Equal(new List<object> {5, 6, null}, deserializedValue);
         }
 
         [Theory, MemberData(nameof(Versions))]
