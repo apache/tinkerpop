@@ -15,17 +15,18 @@
 # specific language governing permissions and limitations
 # under the License.
 
-FROM ubuntu:trusty
+FROM ubuntu:xenial
 
 LABEL maintainer="Daniel Kuppitz <me@gremlin.guru>"
 
 RUN apt-get update
 RUN apt-get -y install software-properties-common python-software-properties apt-transport-https curl dpkg
 RUN add-apt-repository ppa:openjdk-r/ppa
-RUN sh -c 'curl -s https://packages.microsoft.com/config/ubuntu/14.04/packages-microsoft-prod.deb -o packages-microsoft-prod.deb'
+RUN sh -c 'curl -s https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb -o packages-microsoft-prod.deb'
 RUN sh -c 'dpkg -i packages-microsoft-prod.deb'
-RUN sh -c 'echo "deb https://download.mono-project.com/repo/ubuntu stable-trusty main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list'
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+RUN apt-get install apt-transport-https ca-certificates
+RUN sh -c 'echo "deb https://download.mono-project.com/repo/ubuntu stable-xenial main" | tee /etc/apt/sources.list.d/mono-official-stable.list'
 RUN apt-get update
 RUN apt-get install -y openjdk-8-jdk gawk git maven openssh-server subversion zip
 RUN apt-get install -y --force-yes dotnet-sdk-2.2 python python-dev python3-dev python-pip build-essential mono-devel
