@@ -19,6 +19,7 @@
 
 import json
 import re
+from gremlin_python.statics import long
 from gremlin_python.structure.graph import Path
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import __
@@ -97,7 +98,7 @@ def iterate_the_traversal(step):
     if step.context.ignore:
         return
     
-    step.context.result = map(lambda x: _convert_results(x), step.context.traversal.toList())
+    step.context.result = list(map(lambda x: _convert_results(x), step.context.traversal.toList()))
 
 
 @when("iterated next")
@@ -105,7 +106,7 @@ def next_the_traversal(step):
     if step.context.ignore:
         return
 
-    step.context.result = map(lambda x: _convert_results(x), step.context.traversal.next())
+    step.context.result = list(map(lambda x: _convert_results(x), step.context.traversal.next()))
 
 
 @then("the result should be {characterized_as:w}")
@@ -137,7 +138,7 @@ def assert_side_effects(step, count, traversal_string):
 
 @then("the result should have a count of {count:d}")
 def assert_count(step, count):
-    assert_that(len(step.context.result), equal_to(count))
+    assert_that(len(list(step.context.result)), equal_to(count))
 
 
 @then("nothing should happen because")
@@ -152,8 +153,6 @@ def _convert(val, ctx):
         for key, value in val.items():
             n[_convert(key, ctx)] = _convert(value, ctx)
         return n
-    elif isinstance(val, unicode):                                      # convert annoying python 2.x unicode nonsense
-        return _convert(val.encode('utf-8'), ctx)
     elif isinstance(val, str) and re.match("^l\[.*\]$", val):           # parse list
         return [] if val == "l[]" else list(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
     elif isinstance(val, str) and re.match("^s\[.*\]$", val):           # parse set
@@ -201,7 +200,7 @@ def __find_cached_element(ctx, graph_name, identifier, element_type):
 def _convert_results(val):
     if isinstance(val, Path):
         # kill out labels as they aren't in the assertion logic
-        return Path([set([])], map(lambda p: p.encode("utf-8") if isinstance(p, unicode) else p, val.objects))
+        return Path([set([])], val.objects)
     else:
         return val
 

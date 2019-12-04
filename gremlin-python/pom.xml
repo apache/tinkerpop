@@ -304,20 +304,6 @@ limitations under the License.
                                         <copy todir="${project.build.directory}/python3">
                                             <fileset dir="src/main/jython"/>
                                         </copy>
-                                        <copy todir="${project.build.directory}/python2">
-                                            <fileset dir="src/main/jython"/>
-                                        </copy>
-                                        <copy todir="${project.build.directory}/python-packaged">
-                                            <fileset dir="src/main/jython"/>
-                                        </copy>
-                                        <exec dir="${project.build.directory}/python2" executable="virtualenv"
-                                              failonerror="true">
-                                            <arg line="--python=python2 env"/>
-                                        </exec>
-                                        <exec dir="${project.build.directory}/python2" executable="env/bin/pip"
-                                              failonerror="true">
-                                            <arg line="install wheel radish-bdd PyHamcrest aenum isodate"/>
-                                        </exec>
                                         <exec dir="${project.build.directory}/python3" executable="virtualenv"
                                               failonerror="true">
                                             <arg line="--python=python3 env"/>
@@ -326,6 +312,9 @@ limitations under the License.
                                               failonerror="true">
                                             <arg line="install wheel radish-bdd PyHamcrest aenum isodate"/>
                                         </exec>
+                                        <copy todir="${project.build.directory}/python-packaged">
+                                            <fileset dir="src/main/jython"/>
+                                        </copy>
                                         <exec dir="${project.build.directory}/python-packaged" executable="virtualenv"
                                               failonerror="true">
                                             <arg line="--python=python3 env"/>
@@ -335,23 +324,6 @@ limitations under the License.
                                             <arg line="install wheel"/>
                                         </exec>
                                     </tasks>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>native-python2-build</id>
-                                <phase>compile</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <target>
-                                        <exec executable="env/bin/python" dir="${project.build.directory}/python2"
-                                              failonerror="true">
-                                            <env key="PYTHONPATH" value=""/>
-                                            <!-- oddly the "build-lib" needs to be in place or else docs won't generate -->
-                                            <arg line="setup.py build --build-lib ${project.build.outputDirectory}/Lib"/>
-                                        </exec>
-                                    </target>
                                 </configuration>
                             </execution>
                             <execution>
@@ -400,43 +372,6 @@ limitations under the License.
                             test phase doesn't have a pre/post event like integration-test does.
                             -->
                             <execution>
-                                <id>native-python2-test</id>
-                                <phase>integration-test</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipTests}</skip>
-                                    <target>
-                                        <exec executable="env/bin/python" dir="${project.build.directory}/python2"
-                                              failonerror="true">
-                                            <env key="PYTHONPATH" value=""/>
-                                            <arg line="setup.py test"/>
-                                        </exec>
-                                        <!-- radish seems to like all dependencies in place -->
-                                        <exec executable="env/bin/python" dir="${project.build.directory}/python2"
-                                              failonerror="true">
-                                            <env key="PYTHONPATH" value=""/>
-                                            <arg line="setup.py install"/>
-                                        </exec>
-                                        <!-- run for graphson 3.0 -->
-                                        <exec executable="env/bin/radish" dir="${project.build.directory}/python2"
-                                              failonerror="true">
-                                            <env key="PYTHONPATH" value=""/>
-                                            <env key="PYTHONIOENCODING" value="utf-8:surrogateescape"/>
-                                            <arg line="-f dots -e -t -b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/ --user-data=&quot;serializer=application/vnd.gremlin-v3.0+json&quot;"/> <!-- -no-line-jump -->
-                                        </exec>
-                                        <!-- run for graphbinary 1.0 -->
-                                        <exec executable="env/bin/radish" dir="${project.build.directory}/python2"
-                                              failonerror="true">
-                                            <env key="PYTHONPATH" value=""/>
-                                            <env key="PYTHONIOENCODING" value="utf-8:surrogateescape"/>
-                                            <arg line="-f dots -e -t -b ${project.build.directory}/python2/radish ${project.basedir}/../gremlin-test/features/ --user-data=&quot;serializer=application/vnd.graphbinary-v1.0&quot;"/> <!-- -no-line-jump -->
-                                        </exec>
-                                    </target>
-                                </configuration>
-                            </execution>
-                            <execution>
                                 <id>native-python3-test</id>
                                 <phase>integration-test</phase>
                                 <goals>
@@ -449,6 +384,26 @@ limitations under the License.
                                               failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
                                             <arg line="setup.py test"/>
+                                        </exec>
+                                        <!-- radish seems to like all dependencies in place -->
+                                        <exec executable="env/bin/python" dir="${project.build.directory}/python3"
+                                              failonerror="true">
+                                            <env key="PYTHONPATH" value=""/>
+                                            <arg line="setup.py install"/>
+                                        </exec>
+                                        <!-- run for graphson 3.0 -->
+                                        <exec executable="env/bin/radish" dir="${project.build.directory}/python3"
+                                              failonerror="true">
+                                            <env key="PYTHONPATH" value=""/>
+                                            <env key="PYTHONIOENCODING" value="utf-8:surrogateescape"/>
+                                            <arg line="-f dots -e -t -b ${project.build.directory}/python3/radish ${project.basedir}/../gremlin-test/features/ --user-data=&quot;serializer=application/vnd.gremlin-v3.0+json&quot;"/> <!-- -no-line-jump -->
+                                        </exec>
+                                        <!-- run for graphbinary 1.0 -->
+                                        <exec executable="env/bin/radish" dir="${project.build.directory}/python3"
+                                              failonerror="true">
+                                            <env key="PYTHONPATH" value=""/>
+                                            <env key="PYTHONIOENCODING" value="utf-8:surrogateescape"/>
+                                            <arg line="-f dots -e -t -b ${project.build.directory}/python3/radish ${project.basedir}/../gremlin-test/features/ --user-data=&quot;serializer=application/vnd.graphbinary-v1.0&quot;"/> <!-- -no-line-jump -->
                                         </exec>
                                     </target>
                                 </configuration>

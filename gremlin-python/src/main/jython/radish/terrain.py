@@ -79,7 +79,7 @@ def close_traversal_source(scenario):
 
 @after.all
 def close_static_traversal_source(features, marker):
-    for key, value in world.cache.iteritems():
+    for key, value in world.cache.items():
         value["remote_conn"].close()
 
 

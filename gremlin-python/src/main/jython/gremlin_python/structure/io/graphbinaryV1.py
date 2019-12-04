@@ -162,10 +162,6 @@ class GraphBinaryWriter(object):
 
         try:
             t = type(obj)
-            
-            # coerce unicode to str so the serializer will be found properly in the cache...better way?
-            if not six.PY3:
-                t = str if isinstance(obj, unicode) else t
             return self.serializers[t].dictify(obj, self, to_extend)
         except KeyError:
             for key, serializer in self.serializers.items():

@@ -77,15 +77,14 @@ def test_odd_bits(remote_connection):
         finally:
             g.V(vid).drop().iterate()
 
-        if six.PY3:
-            char_upper = str.__new__(SingleChar, chr(57344))
-            resp = g.addV('test_vertex').property('char_upper', char_upper).toList()
-            vid = resp[0].id
-            try:
-                v = g.V(vid).values('char_upper').toList()[0]
-                assert v == char_upper
-            finally:
-                g.V(vid).drop().iterate()
+        char_upper = str.__new__(SingleChar, chr(57344))
+        resp = g.addV('test_vertex').property('char_upper', char_upper).toList()
+        vid = resp[0].id
+        try:
+            v = g.V(vid).values('char_upper').toList()[0]
+            assert v == char_upper
+        finally:
+            g.V(vid).drop().iterate()
                 
         dur = datetime.timedelta(seconds=1000, microseconds=1000)
         resp = g.addV('test_vertex').property('dur', dur).toList()

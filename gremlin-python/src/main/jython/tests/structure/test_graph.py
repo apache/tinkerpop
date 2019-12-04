@@ -19,8 +19,6 @@
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-import six
-
 from gremlin_python.statics import long
 from gremlin_python.structure.graph import Edge
 from gremlin_python.structure.graph import Property
@@ -62,8 +60,6 @@ class TestGraph(object):
         assert Vertex(1) == property.element
         assert isinstance(property.value, int)
         assert property == Property("age", 29, Vertex(1))
-        if not six.PY3:
-            assert property != Property("age", long(29), Vertex(1))
         #
         for i in [vertex, edge, vertex_property, property]:
             for j in [vertex, edge, vertex_property, property]:

@@ -51,7 +51,7 @@ install_requires = [
     'isodate>=0.6.0'
 ]
 
-if sys.version_info < (3,2):
+if sys.version_info < (3, 2):
     install_requires += ['futures>=3.0.5']
 
 setup(
@@ -81,7 +81,6 @@ setup(
         "Intended Audience :: Developers",
         "License :: OSI Approved :: Apache Software License",
         "Natural Language :: English",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
     ]

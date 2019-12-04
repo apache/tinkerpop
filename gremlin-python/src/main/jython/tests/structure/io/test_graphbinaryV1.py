@@ -26,8 +26,6 @@ from decimal import *
 
 from mock import Mock
 
-import six
-
 from gremlin_python.statics import timestamp, long, SingleByte, SingleChar, ByteBufferType
 from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Graph, Path
 from gremlin_python.structure.io.graphbinaryV1 import GraphBinaryWriter, GraphBinaryReader, DataType
@@ -212,10 +210,9 @@ class TestGraphSONWriter(object):
         output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
         assert x == output
 
-        if six.PY3:
-            x = str.__new__(SingleChar, chr(57344))
-            output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
-            assert x == output
+        x = str.__new__(SingleChar, chr(57344))
+        output = self.graphbinary_reader.readObject(self.graphbinary_writer.writeObject(x))
+        assert x == output
 
     def test_duration(self):
         x = datetime.timedelta(seconds=1000, microseconds=1000)

@@ -18,32 +18,21 @@
 #
 
 from types import FunctionType
-
-import six
 from aenum import Enum
 
 
-if six.PY3:
-    class long(int): pass
-    FloatType = float
-    IntType = int
-    LongType = long
-    TypeType = type
-    ListType = list
-    DictType = dict
-    SetType = set
-    ByteBufferType = bytes
-else:
-    long = long
-    SetType = set
-    ByteBufferType = bytearray
-    from types import FloatType
-    from types import IntType
-    from types import LongType
-    from types import TypeType
-    from types import ListType
-    from types import DictType
-    from types import TypeType
+class long(int):
+    pass
+
+
+FloatType = float
+IntType = int
+LongType = long
+TypeType = type
+ListType = list
+DictType = dict
+SetType = set
+ByteBufferType = bytes
 
 
 class timestamp(float):

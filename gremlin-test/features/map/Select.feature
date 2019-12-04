@@ -185,9 +185,10 @@ Feature: Step - select()
 
   Scenario: g_V_chooseXoutE_count_isX0X__asXaX__asXbXX_chooseXselectXaX__selectXaX__selectXbXX
     Given the modern graph
+    And using the parameter zero defined as "d[0].l"
     And the traversal of
       """
-      g.V().choose(__.outE().count().is(0L),
+      g.V().choose(__.outE().count().is(zero),
                    __.as("a"),
                    __.as("b")).
             choose(__.select("a"),
