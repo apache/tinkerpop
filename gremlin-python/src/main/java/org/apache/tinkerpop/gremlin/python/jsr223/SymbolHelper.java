@@ -23,8 +23,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * @deprecated As of release 3.3.10, not replaced - see TINKERPOP-2317
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@Deprecated
 public final class SymbolHelper {
 
     private final static Map<String, String> TO_PYTHON_MAP = new HashMap<>();

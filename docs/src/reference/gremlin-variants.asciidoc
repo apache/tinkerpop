@@ -105,10 +105,10 @@ Gremlin-Python users will typically make use of the following classes.
 >>> from gremlin_python.process.strategies import *
 >>> from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 
-In Gremlin-Python there exists `GraphTraversalSource`, `GraphTraversal`, and `__` which mirror the respective classes in Gremlin-Java.
-The `GraphTraversalSource` requires a driver in order to communicate with <<gremlin-server,GremlinServer>> (or any
-<<connecting-via-remotegraph,`RemoteConnection`>>-enabled server). The `gremlin_python.driver.driver_remote_connection`
-is provided with Apache TinkerPop's Gremlin-Python distribution.
+In Gremlin-Python there exists `GraphTraversalSource`, `GraphTraversal`, and `__` which mirror the respective classes
+in Gremlin-Java. The `GraphTraversalSource` requires a driver in order to communicate with
+<<gremlin-server,GremlinServer>> (or any <<connecting-via-remotegraph,`RemoteConnection`>>-enabled server). The
+`gremlin_python.driver.driver_remote_connection` is provided with Apache TinkerPop's Gremlin-Python distribution.
 
 IMPORTANT: For developers wishing to provide another *driver implementation*, be sure to extend `RemoteConnection` in
 `gremlin_python.driver` so it can then be used by Gremlin-Python's `GraphTraversal`.
@@ -162,9 +162,9 @@ provided to the `DriverRemoteConnection` corresponds to the name of a `GraphTrav
 >>> g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
 
 When a traversal from the `GraphTraversalSource` is iterated, the traversal's `Bytecode` is sent over the wire
-via the registered `RemoteConnection`. The bytecode is used to construct the equivalent traversal at the remote traversal source.
-Moreover, typically the bytecode is analyzed to determine which language the bytecode should be translated to. If the traversal
-does not contain lambdas, the remote location (e.g. Gremlin Server) will typically
+via the registered `RemoteConnection`. The bytecode is used to construct the equivalent traversal at the remote
+traversal source. Moreover, typically the bytecode is analyzed to determine which language the bytecode should be
+translated to. If the traversal does not contain lambdas, the remote location (e.g. Gremlin Server) will typically
 use Gremlin-Java. If it has lambdas written in Groovy, it will use Gremlin-Groovy (e.g. `GremlinGroovyScriptEngine`).
 Likewise, if it has lambdas represented in Python, it will use Gremlin-Python (e.g. `GremlinJythonScriptEngine`).
 
@@ -187,7 +187,6 @@ to the `DriverRemoteConnection` constructor.
 
 [source,python]
 g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g',headers={'Header':'Value'}))
-
 
 === Gremlin-Python Sugar
 
@@ -236,8 +235,8 @@ With statics loaded its possible to represent the above traversal as below.
 g.V().hasLabel('person').has('age',gt(30)).order().by('age',desc).toList()
 ----
 
-Finally, statics includes all the `+__+`-methods and thus, anonymous traversals like `+__.out()+` can be expressed as below.
-That is, without the `+__+`-prefix.
+Finally, statics includes all the `+__+`-methods and thus, anonymous traversals like `+__.out()+` can be expressed as
+below. That is, without the `+__+`-prefix.
 
 [gremlin-python,modern]
 ----
@@ -246,12 +245,13 @@ g.V().repeat(out()).times(2).name.fold().toList()
 
 === Bindings
 
-When a traversal bytecode is sent over a `RemoteConnection` (e.g. Gremlin Server), it will be translated, compiled, and then executed.
-If the same traversal is sent again, translation and compilation can be skipped as the previously compiled version should be cached.
-Many traversals are unique up to some parameterization. For instance, `g.V(1).out('created').name` is considered different
-from `g.V(4).out('created').name'` as they have different script "string" representations. However, `g.V(x).out('created').name` with bindings of `{x : 1}` and
-`{x : 4}` are considered the same. If a traversal is going to be executed repeatedly, but with different parameters, then bindings should be used.
-In Gremlin-Python, bindings are 2-tuples and used as follows.
+When a traversal bytecode is sent over a `RemoteConnection` (e.g. Gremlin Server), it will be translated, compiled,
+and then executed. If the same traversal is sent again, translation and compilation can be skipped as the previously
+compiled version should be cached. Many traversals are unique up to some parameterization. For instance,
+`g.V(1).out('created').name` is considered different from `g.V(4).out('created').name'` as they have different script
+"string" representations. However, `g.V(x).out('created').name` with bindings of `{x : 1}` and `{x : 4}` are considered
+the same. If a traversal is going to be executed repeatedly, but with different parameters, then bindings should be
+used. In Gremlin-Python, bindings are 2-tuples and used as follows.
 
 [gremlin-python,modern]
 ----
@@ -286,10 +286,10 @@ re-construction machine-side.
 
 Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
 most languages do not support lambda introspection and thus, code analysis. In Gremlin-Python,
-a link:https://docs.python.org/2/reference/expressions.html#lambda[Python lambda] should be represented as a zero-arg callable
-that returns a string representation of a lambda. The default lambda language is `gremlin-python` and can be changed via
-`gremlin_python.statics.default_lambda_language`. When the lambda is represented in `Bytecode` its language is encoded
-such that the remote connection host can infer which translator and ultimate execution engine to use.
+a link:https://docs.python.org/2/reference/expressions.html#lambda[Python lambda] should be represented as a zero-arg
+callable that returns a string representation of a lambda. The default lambda language is `gremlin-python` and can be
+changed via `gremlin_python.statics.default_lambda_language`. When the lambda is represented in `Bytecode` its language
+is encoded such that the remote connection host can infer which translator and ultimate execution engine to use.
 
 [gremlin-python,modern]
 ----
@@ -315,6 +315,9 @@ g.V().out().map(lambda: "x: len(x.get().value('name'))").sum().toList()         
 TIP: When running into situations where Groovy cannot properly discern a method signature based on the `Lambda`
 instance created, it will help to fully define the closure in the lambda expression - so rather than
 `lambda: ("it.get().value("name')","gremlin-groovy")`, prefer `lambda: ("x -> x.get().value("name"),"gremlin-groovy")`.
+
+WARNING: Jython support has been deprecated as for 3.3.10 and will be removed in 3.5.0. Gremlin-Python will at that
+point default to Groovy for lambda processing and Python lambdas will not be supported.
 
 === Limitations
 

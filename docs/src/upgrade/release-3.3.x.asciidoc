@@ -21,6 +21,23 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Gremlin Symphony #40 in G Minor*
 
+== TinkerPop 3.3.10
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.3.10/CHANGELOG.asciidoc#release-3-3-10[changelog] for a complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+==== Deprecated Jython Support
+
+Jython support in `gremlin-python` has been deprecated to focus on native Python 3.x support for 3.5.0 where Jython
+support will be wholly removed. This change does mean that TinkerPop will no longer support the ability to submit
+lambdas as native Python scripts. They will need to be submitted as Groovy and the library will be defaulted to do as
+such.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2322[TINKERPOP-2322]
+
 == TinkerPop 3.3.9
 
 *Release Date: October 14, 2019*

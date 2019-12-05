@@ -34,8 +34,11 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * @deprecated As of release 3.3.10, not replaced - see TINKERPOP-2317
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@Deprecated
 public class GremlinJythonScriptEngineFactory extends PyScriptEngineFactory implements GremlinScriptEngineFactory {
 
     private static final String GREMLIN_JYTHON = "gremlin-jython";
