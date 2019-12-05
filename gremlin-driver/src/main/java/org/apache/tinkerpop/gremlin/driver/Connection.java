@@ -36,27 +36,7 @@ import java.util.concurrent.CompletableFuture;
  * @see ConnectionPool
  */
 public interface Connection {
-    /**
-     * @deprecated As of release 3.5.0, replaced by {@link ConnectionPool#DEFAULT_MAX_POOL_SIZE}. For backward
-     * compatibility it is still used to approximate the amount of parallelism required. In future versions, the
-     * approximation logic will be removed and dependency on this parameter will be completely eliminated.
-     * To disable the dependency on this parameter right now, explicitly set the value of
-     * {@link Settings.ConnectionPoolSettings#maxInProcessPerConnection} and {@link Settings.ConnectionPoolSettings#maxSimultaneousUsagePerConnection}
-     * to 0.
-     *
-     * @see ConnectionPoolImpl#calculateMaxPoolSize(Settings.ConnectionPoolSettings) for approximation
-     * logic.
-     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
-     */
-    @Deprecated
-    int DEFAULT_MAX_IN_PROCESS = 4;
 
-    /**
-     * @deprecated As of release 3.5.0, not replaced, this setting is ignored.
-     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-2205">TINKERPOP-2205</a>
-     */
-    @Deprecated
-    int DEFAULT_MIN_IN_PROCESS = 1;
     int DEFAULT_MAX_WAIT_FOR_CONNECTION = 3000;
     int DEFAULT_MAX_WAIT_FOR_SESSION_CLOSE = 3000;
     int DEFAULT_MAX_CONTENT_LENGTH = 65536;
