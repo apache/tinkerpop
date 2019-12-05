@@ -44,9 +44,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * @deprecated As of release 3.3.10, not replaced - see TINKERPOP-2317
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@Deprecated
 public class GremlinJythonScriptEngine implements GremlinScriptEngine {
 
     private final PyScriptEngine pyScriptEngine;

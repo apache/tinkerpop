@@ -784,6 +784,9 @@ TIP: When running into situations where Groovy cannot properly discern a method 
 instance created, it will help to fully define the closure in the lambda expression - so rather than
 `lambda: ("it.get().value("name')","gremlin-groovy")`, prefer `lambda: ("x -> x.get().value("name"),"gremlin-groovy")`.
 
+WARNING: Jython support has been deprecated as for 3.3.10 and will be removed in 3.5.0. Gremlin-Python will at that
+point default to Groovy for lambda processing and Python lambdas will not be supported.
+
 Finally, Gremlin `Bytecode` that includes lambdas requires that the traversal be processed by the
 `ScriptEngine`. To avoid continued recompilation costs, it supports the encoding of bindings, which allow a remote
 engine to to cache traversals that will be reused over and over again save that some parameterization may change. Thus,

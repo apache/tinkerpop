@@ -24,9 +24,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategy
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
 /**
+ * @deprecated As of release 3.3.10, not replaced - see TINKERPOP-2317
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@Deprecated
 public final class JythonTranslator extends PythonTranslator {
 
     private JythonTranslator(final String traversalSource, final boolean importStatics) {
