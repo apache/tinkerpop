@@ -183,7 +183,10 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2269[TINKERPOP-2269]
 ==== Python 2.x Support
 
 The gremlinpython module no longer supports Python 2.x. Users must use Python 3 going forward. For the most part, from
-a user's perspective, there are no specific API changes to consider as a result of this change.
+a user's perspective, there are no specific API changes to consider as a result of this change. It is also worth
+noting that Jython support has been removed and that `gremlin-python` no longer produces a JVM-based artifact. This
+change means that the `GremlinJythonScriptEngine` no longer exists and there is no way to write native Python lambdas.
+All lambdas should be written using `gremlin-groovy` if they are needed.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2317[TINKERPOP-2317]
 

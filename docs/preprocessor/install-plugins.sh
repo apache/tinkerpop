@@ -52,9 +52,6 @@ while [ ${i} -lt ${pluginsCount} ]; do
   ((i++))
 done
 
-echo "installPlugin(new Artifact(\"org.apache.tinkerpop\", \"gremlin-python\", \"${TP_VERSION}\"))" >> ${INSTALL_FILE}
-echo "gremlin-python" >> ${TMP_DIR}/plugins.dir
-
 echo "System.exit(0)" >> ${INSTALL_FILE}
 echo -ne " * tinkerpop-sugar ... "
 

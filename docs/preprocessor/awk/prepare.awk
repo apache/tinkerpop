@@ -72,9 +72,6 @@ function remove_callouts(code) {
   split(b, l, ",")
   lang = l[1]
   switch (lang) {
-    case "python":
-      c = "#"
-      break
     default:
       c = "//"
       break

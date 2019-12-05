@@ -683,9 +683,10 @@ from gremlin_python.process.traversal import WithOptions
 
 These can be used analogously to how they are used in Gremlin-Java.
 
-[gremlin-python,modern]
+[source,python]
 ----
-g.V().hasLabel('person').has('age',P.gt(30)).order().by('age',Order.desc).toList()
+>>> g.V().hasLabel('person').has('age',P.gt(30)).order().by('age',Order.desc).toList()
+[v[6], v[4]]
 ----
 
 Moreover, by importing the `statics` of Gremlin-Python, the class prefixes can be omitted.
@@ -697,17 +698,19 @@ Moreover, by importing the `statics` of Gremlin-Python, the class prefixes can b
 
 With statics loaded its possible to represent the above traversal as below.
 
-[gremlin-python,modern]
+[source,python]
 ----
-g.V().hasLabel('person').has('age',gt(30)).order().by('age',desc).toList()
+>>> g.V().hasLabel('person').has('age',gt(30)).order().by('age',desc).toList()
+[v[6], v[4]]
 ----
 
 Finally, statics includes all the `+__+`-methods and thus, anonymous traversals like `+__.out()+` can be expressed as below.
 That is, without the `+__+`-prefix.
 
-[gremlin-python,modern]
+[source,python]
 ----
-g.V().repeat(out()).times(2).name.fold().toList()
+>>> g.V().repeat(out()).times(2).name.fold().toList()
+[['ripple', 'lop']]
 ----
 
 === Configuration
@@ -732,17 +735,23 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 In order to add and remove <<traversalstrategy,traversal strategies>> from a traversal source, Gremlin-Python has a
 `TraversalStrategy` class along with a collection of subclasses that mirror the standard Gremlin-Java strategies.
 
-[gremlin-python,modern]
+[source,python]
 ----
-g = g.withStrategies(SubgraphStrategy(vertices=hasLabel('person'),edges=has('weight',gt(0.5))))
-g.V().name.toList()
-g.V().outE().elementMap().toList()
-g = g.withoutStrategies(SubgraphStrategy)
-g.V().name.toList()
-g.V().outE().elementMap().toList()
-g = g.withComputer(workers=2,vertices=has('name','marko'))
-g.V().name.toList()
-g.V().outE().valueMap().with_(WithOptions.tokens).toList()
+>>> g = g.withStrategies(SubgraphStrategy(vertices=hasLabel('person'),edges=has('weight',gt(0.5))))
+>>> g.V().name.toList()
+['marko', 'vadas', 'josh', 'peter']
+>>> g.V().outE().elementMap().toList()
+[{<T.id: 1>: 8, <T.label: 4>: 'knows', <Direction.IN: 2>: {<T.id: 1>: 4, <T.label: 4>: 'person'}, <Direction.OUT: 3>: {<T.id: 1>: 1, <T.label: 4>: 'person'}, 'weight': 1.0}]
+>>> g = g.withoutStrategies(SubgraphStrategy)
+>>> g.V().name.toList()
+['marko', 'vadas', 'lop', 'josh', 'ripple', 'peter']
+>>> g.V().outE().elementMap().toList()
+[{<T.id: 1>: 9, <T.label: 4>: 'created', <Direction.IN: 2>: {<T.id: 1>: 3, <T.label: 4>: 'software'}, <Direction.OUT: 3>: {<T.id: 1>: 1, <T.label: 4>: 'person'}, 'weight': 0.4}, {<T.id: 1>: 7, <T.label: 4>: 'knows', <Direction.IN: 2>: {<T.id: 1>: 2, <T.label: 4>: 'person'}, <Direction.OUT: 3>: {<T.id: 1>: 1, <T.label: 4>: 'person'}, 'weight': 0.5}, {<T.id: 1>: 8, <T.label: 4>: 'knows', <Direction.IN: 2>: {<T.id: 1>: 4, <T.label: 4>: 'person'}, <Direction.OUT: 3>: {<T.id: 1>: 1, <T.label: 4>: 'person'}, 'weight': 1.0}, {<T.id: 1>: 10, <T.label: 4>: 'created', <Direction.IN: 2>: {<T.id: 1>: 5, <T.label: 4>: 'software'}, <Direction.OUT: 3>: {<T.id: 1>: 4, <T.label: 4>: 'person'}, 'weight': 1.0}, {<T.id: 1>: 11, <T.label: 4>: 'created', <Direction.IN: 2>: {<T.id: 1>: 3, <T.label: 4>: 'software'}, <Direction.OUT: 3>: {<T.id: 1>: 4, <T.label: 4>: 'person'}, 'weight': 0.4}, {<T.id: 1>: 12, <T.label: 4>: 'created', <Direction.IN: 2>: {<T.id: 1>: 3, <T.label: 4>: 'software'}, <Direction.OUT: 3>: {<T.id: 1>: 6, <T.label: 4>: 'person'}, 'weight': 0.2}]
+>>> g = g.withComputer(workers=2,vertices=has('name','marko'))
+>>> g.V().name.toList()
+['marko']
+>>> g.V().outE().valueMap().with_(WithOptions.tokens).toList()
+[{<T.id: 1>: 9, <T.label: 4>: 'created', 'weight': 0.4}, {<T.id: 1>: 7, <T.label: 4>: 'knows', 'weight': 0.5}, {<T.id: 1>: 8, <T.label: 4>: 'knows', 'weight': 1.0}]
 ----
 
 NOTE: Many of the `TraversalStrategy` classes in Gremlin-Python are proxies to the respective strategy on
@@ -755,94 +764,34 @@ re-construction machine-side.
 Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
 most languages do not support lambda introspection and thus, code analysis. In Gremlin-Python,
 a link:https://docs.python.org/2/reference/expressions.html#lambda[Python lambda] should be represented as a zero-arg
-callable that returns a string representation of a lambda. The default lambda language is `gremlin-python` and can be
-changed via `gremlin_python.statics.default_lambda_language`. When the lambda is represented in `Bytecode` its language
-is encoded such that the remote connection host can infer which translator and ultimate execution engine to use.
+callable that returns a string representation of a lambda. The lambda should be written as a `Gremlin-Groovy`string.
+When the lambda is represented in `Bytecode` its language is encoded such that the remote connection host can infer
+which translator and ultimate execution engine to use.
 
-[gremlin-python,modern]
+[source,python]
 ----
-g.V().out().map(lambda: "lambda x: len(x.get().value('name'))").sum().toList()                     <1>
-statics.default_lambda_language                                                                    <2>
-g.V().out().map(lambda: ("it.get().value('name').length()", "gremlin-groovy")).sum().toList()      <3>
-statics.default_lambda_language = 'gremlin-groovy'                                                 <4>
-g.V().out().map(lambda: "it.get().value('name').length()").sum().toList()                          <5>
-g.V().out().map(lambda: ("lambda x: len(x.get().value('name'))", "gremlin-python")).sum().toList() <6>
-statics.default_lambda_language = 'gremlin-python'                                                 <7>
-g.V().out().map(lambda: "x: len(x.get().value('name'))").sum().toList()                            <8>
+>>> g.V().out().map(lambda: "it.get().value('name').length()").sum().toList()
+[24]
 ----
-
-<1> A zero-arg lambda yields a string representation of a lambda in Gremlin-Python.
-<2> The default lambda language is currently Gremlin-Python.
-<3> A zero-arg lambda yields a 2-tuple where the second element is the language of the lambda (Gremlin-Groovy).
-<4> The default lambda language can be statically changed.
-<5> A zero-arg lambda yields a string representation of a closure in Gremlin-Groovy.
-<6> A zero-arg lambda yields a 2-tuple where the second element is the language of the lambda (Gremlin-Python).
-<7> The default lambda language is changed back to Gremlin-Python.
-<8> If the `lambda`-prefix is not provided, then it is appended automatically in order to give a more natural look to the expression.
 
 TIP: When running into situations where Groovy cannot properly discern a method signature based on the `Lambda`
 instance created, it will help to fully define the closure in the lambda expression - so rather than
 `lambda: ("it.get().value("name')","gremlin-groovy")`, prefer `lambda: ("x -> x.get().value("name"),"gremlin-groovy")`.
-
-WARNING: Jython support has been deprecated as for 3.3.10 and will be removed in 3.5.0. Gremlin-Python will at that
-point default to Groovy for lambda processing and Python lambdas will not be supported.
 
 Finally, Gremlin `Bytecode` that includes lambdas requires that the traversal be processed by the
 `ScriptEngine`. To avoid continued recompilation costs, it supports the encoding of bindings, which allow a remote
 engine to to cache traversals that will be reused over and over again save that some parameterization may change. Thus,
 instead of translating, compiling, and then executing each submitted bytecode, it is possible to simply execute.
 
-[gremlin-python,modern]
+[source,python]
 ----
-g.V(Bindings.of('id',1)).out('created').map(lambda: ("it.get().value('name').length()", "gremlin-groovy")).sum().toList()
-g.V(Bindings.of('id',4)).out('created').map(lambda: ("it.get().value('name').length()", "gremlin-groovy")).sum().toList()
-----
-
-==== Native Python Lambdas
-
-To process lambdas in Python, the `GremlinJythonScriptEngine` must be enabled on the remote end. If that remote is
-Gremlin Server, then these instructions can help configuration it. As an example, the
-`conf/gremlin-server-modern-py.yaml` configuration maintains a `GremlinJythonScriptEngine`.
-
-[source,bash]
-----
-$ bin/gremlin-server.sh install org.apache.tinkerpop gremlin-python x.y.z
-$ bin/gremlin-server.sh conf/gremlin-server-modern-py.yaml
-[INFO] GremlinServer -
-       \,,,/
-       (o o)
----oOOo-(3)-oOOo---
-
-[INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-modern-py.yaml
-[INFO] MetricManager - Configured Metrics Slf4jReporter configured with interval=180000ms and loggerName=org.apache.tinkerpop.gremlin.server.Settings$Slf4jReporterMetrics
-[INFO] GraphManager - Graph [graph] was successfully configured via [conf/tinkergraph-empty.properties].
-[INFO] ServerGremlinExecutor - Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*
-[INFO] ScriptEngines - Loaded gremlin-jython ScriptEngine
-[INFO] ScriptEngines - Loaded gremlin-python ScriptEngine
-[INFO] ScriptEngines - Loaded gremlin-groovy ScriptEngine
-[INFO] GremlinExecutor - Initialized gremlin-groovy ScriptEngine with scripts/generate-modern.groovy
-[INFO] ServerGremlinExecutor - Initialized GremlinExecutor and configured ScriptEngines.
-[INFO] ServerGremlinExecutor - A GraphTraversalSource is now bound to [g] with graphtraversalsource[tinkergraph[vertices:0 edges:0], standard]
-[INFO] OpLoader - Adding the standard OpProcessor.
-[INFO] OpLoader - Adding the session OpProcessor.
-[INFO] OpLoader - Adding the traversal OpProcessor.
-[INFO] TraversalOpProcessor - Initialized cache for TraversalOpProcessor with size 1000 and expiration time of 600000 ms
-[INFO] GremlinServer - Executing start up LifeCycleHook
-[INFO] Logger$info - Loading 'modern' graph data.
-[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v3.0+json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0
-[INFO] AbstractChannelizer - Configured application/json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0
-[INFO] AbstractChannelizer - Configured application/vnd.graphbinary-v1.0 with org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1
-[INFO] AbstractChannelizer - Configured application/vnd.graphbinary-v1.0-stringd with org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1
-[INFO] GremlinServer$1 - Gremlin Server configured with worker thread pool of 1, gremlin pool of 8 and boss thread pool of 1.
-[INFO] GremlinServer$1 - Channel started at port 8182.
+>>> g.V(Bindings.of('x',1)).out('created').map(lambda: "it.get().value('name').length()").sum().toList()
+[3]
+>>> g.V(Bindings.of('x',4)).out('created').map(lambda: "it.get().value('name').length()").sum().toList()
+[9]
 ----
 
-NOTE: The command to use `install` need only be executed once to gather `gremlin-python` dependencies into Gremlin Servers'
-path. Future starts of Gremlin Server will not require that command.
-
-WARNING: As explained throughout the documentation, when possible <<a-note-on-lambdas,avoid>> lambdas. If lambdas
-must be used, then consider submitting Groovy lambdas as opposed to Python-based ones. The `GremlinGroovyScriptEngine`
-is far more featured and performant than its Jython sibling and will likely yield better results.
+WARNING: As explained throughout the documentation, when possible <<a-note-on-lambdas,avoid>> lambdas.
 
 === Submitting Scripts
 
@@ -974,11 +923,14 @@ social.persons().filter(__.createdAtLeast(2)).count()
 Python supports meta-programming and operator overloading. There are three uses of these techniques in Gremlin-Python
 that makes traversals a bit more concise.
 
-[gremlin-python,modern]
+[source,python]
 ----
-g.V().both()[1:3].toList()
-g.V().both()[1].toList()
-g.V().both().name.toList()
+>>> g.V().both()[1:3].toList()
+[v[2], v[4]]
+>>> g.V().both()[1].toList()
+[v[2]]
+>>> g.V().both().name.toList()
+['lop', 'lop', 'lop', 'vadas', 'josh', 'josh', 'josh', 'marko', 'marko', 'marko', 'peter', 'ripple']
 ----
 
 [[gremlin-python-differences]]
@@ -1005,7 +957,7 @@ does not support that at a language level. Gremlin that returns such results wil
 === Application Examples
 
 The TinkerPop source code contains a simple Python script that shows a basic example of how gremlinpython works. It
-can be found in GitHub link:https://github.com/apache/tinkerpop/tree/xx.yy.zz/gremlin-python/src/main/jython/example.py[here]
+can be found in GitHub link:https://github.com/apache/tinkerpop/tree/xx.yy.zz/gremlin-python/src/main/python/example.py[here]
 and is designed to work best with a running <<gremlin-server,Gremlin Server>> configured with the default
 `conf/gremlin-server.yaml` file as included with the standard release packaging.
 
