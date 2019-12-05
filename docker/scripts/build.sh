@@ -107,7 +107,7 @@ if [ ! -z "${BUILD_USER_DOCS}" ]; then
   ln -s .. target/docs/htmlsingle/docs/${VERSION}
 
   # start a simple HTTP server
-  IP=$(ifconfig | grep -o 'inet addr:[0-9.]*' | cut -f2 -d ':' | head -n1)
+  IP=$(ip -4 address show | grep -Pv '\blo\b' | grep -o 'inet [0-9.]*' | cut -f2 -d ' ' | head -n1)
   cd target/docs/htmlsingle/
   if [ -z "${BUILD_JAVA_DOCS}" ]; then
     echo -e "\nUser Docs can be viewed under http://${IP}/\n"
@@ -122,9 +122,9 @@ if [ ! -z "${BUILD_USER_DOCS}" ]; then
 
 elif [ ! -z "${BUILD_JAVA_DOCS}" ]; then
 
-  IP=$(ifconfig | grep -o 'inet addr:[0-9.]*' | cut -f2 -d ':' | head -n1)
+  IP=$(ip -4 address show | grep -Pv '\blo\b' | grep -o 'inet [0-9.]*' | cut -f2 -d ' ' | head -n1)
   echo -e "\nJava Docs can be viewed under http://${IP}/\n"
-  cd target/docs/htmlsingle/
+  cd target/site/apidocs/full/
   python -m SimpleHTTPServer 80
 
 fi
