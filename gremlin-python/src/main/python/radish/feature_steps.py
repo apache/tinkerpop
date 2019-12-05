@@ -153,36 +153,36 @@ def _convert(val, ctx):
         for key, value in val.items():
             n[_convert(key, ctx)] = _convert(value, ctx)
         return n
-    elif isinstance(val, str) and re.match("^l\[.*\]$", val):           # parse list
+    elif isinstance(val, str) and re.match(r"^l\[.*\]$", val):           # parse list
         return [] if val == "l[]" else list(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
-    elif isinstance(val, str) and re.match("^s\[.*\]$", val):           # parse set
+    elif isinstance(val, str) and re.match(r"^s\[.*\]$", val):           # parse set
         return set() if val == "s[]" else set(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
-    elif isinstance(val, str) and re.match("^d\[.*\]\.[ilfdm]$", val):  # parse numeric
+    elif isinstance(val, str) and re.match(r"^d\[.*\]\.[ilfdm]$", val):  # parse numeric
         return float(val[2:-3]) if val[2:-3].__contains__(".") else long(val[2:-3])
-    elif isinstance(val, str) and re.match("^v\[.*\]\.id$", val):       # parse vertex id
+    elif isinstance(val, str) and re.match(r"^v\[.*\]\.id$", val):       # parse vertex id
         return __find_cached_element(ctx, graph_name, val[2:-4], "v").id
-    elif isinstance(val, str) and re.match("^v\[.*\]\.sid$", val):      # parse vertex id as string
+    elif isinstance(val, str) and re.match(r"^v\[.*\]\.sid$", val):      # parse vertex id as string
         return str(__find_cached_element(ctx, graph_name, val[2:-5], "v").id)
-    elif isinstance(val, str) and re.match("^v\[.*\]$", val):           # parse vertex
+    elif isinstance(val, str) and re.match(r"^v\[.*\]$", val):           # parse vertex
         return __find_cached_element(ctx, graph_name, val[2:-1], "v")
-    elif isinstance(val, str) and re.match("^e\[.*\]\.id$", val):       # parse edge id
+    elif isinstance(val, str) and re.match(r"^e\[.*\]\.id$", val):       # parse edge id
         return __find_cached_element(ctx, graph_name, val[2:-4], "e").id
-    elif isinstance(val, str) and re.match("^e\[.*\]\.sid$", val):      # parse edge id as string
+    elif isinstance(val, str) and re.match(r"^e\[.*\]\.sid$", val):      # parse edge id as string
         return str(__find_cached_element(ctx, graph_name, val[2:-5], "e").id)
-    elif isinstance(val, str) and re.match("^e\[.*\]$", val):           # parse edge
+    elif isinstance(val, str) and re.match(r"^e\[.*\]$", val):           # parse edge
         return __find_cached_element(ctx, graph_name, val[2:-1], "e")
-    elif isinstance(val, str) and re.match("^m\[.*\]$", val):           # parse json as a map
+    elif isinstance(val, str) and re.match(r"^m\[.*\]$", val):           # parse json as a map
         return _convert(json.loads(val[2:-1]), ctx)
-    elif isinstance(val, str) and re.match("^p\[.*\]$", val):           # parse path
+    elif isinstance(val, str) and re.match(r"^p\[.*\]$", val):           # parse path
         path_objects = list(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
         return Path([set([])], path_objects)
-    elif isinstance(val, str) and re.match("^c\[.*\]$", val):           # parse lambda/closure
+    elif isinstance(val, str) and re.match(r"^c\[.*\]$", val):           # parse lambda/closure
         return lambda: (val[2:-1], "gremlin-groovy")
-    elif isinstance(val, str) and re.match("^t\[.*\]$", val):           # parse instance of T enum
+    elif isinstance(val, str) and re.match(r"^t\[.*\]$", val):           # parse instance of T enum
         return T[val[2:-1]]
-    elif isinstance(val, str) and re.match("^D\[.*\]$", val):           # parse instance of Direction enum
+    elif isinstance(val, str) and re.match(r"^D\[.*\]$", val):           # parse instance of Direction enum
         return Direction[val[2:-1]]
-    elif isinstance(val, str) and re.match("^null$", val):              # parse null to None
+    elif isinstance(val, str) and re.match(r"^null$", val):              # parse null to None
         return None
     else:
         return val

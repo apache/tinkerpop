@@ -43,10 +43,6 @@ settings.graphs.crew = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.p
 settings.graphs.grateful = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
 settings.graphs.sink = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
 settings.scriptEngines["gremlin-groovy"].plugins["org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin"].files = [gremlinServerDir + "/src/test/scripts/generate-all.groovy"]
-if (Boolean.parseBoolean(python)) {
-    settings.scriptEngines["gremlin-python"] = new Settings.ScriptEngineSettings()
-    settings.scriptEngines["gremlin-jython"] = new Settings.ScriptEngineSettings()
-}
 settings.port = 45940
 
 def server = new GremlinServer(settings)
@@ -72,10 +68,6 @@ settingsSecure.graphs.crew = gremlinServerDir + "/src/test/scripts/tinkergraph-e
 settingsSecure.graphs.grateful = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
 settingsSecure.graphs.sink = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
 settingsSecure.scriptEngines["gremlin-groovy"].plugins["org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin"].files = [gremlinServerDir + "/src/test/scripts/generate-all.groovy"]
-if (Boolean.parseBoolean(python)) {
-    settingsSecure.scriptEngines["gremlin-python"] = new Settings.ScriptEngineSettings()
-    settingsSecure.scriptEngines["gremlin-jython"] = new Settings.ScriptEngineSettings()
-}
 settingsSecure.port = 45941
 settingsSecure.authentication.authenticator = "org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator"
 settingsSecure.authentication.config = [credentialsDb: projectBaseDir + "/target/tinkergraph-credentials.properties"]

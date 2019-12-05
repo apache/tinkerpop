@@ -810,11 +810,7 @@ class LambdaSerializer(_GraphBinaryTypeIO):
         script_cleaned = script
         script_args = -1
 
-        if language == "gremlin-jython" or language == "gremlin-python":
-            if not script.strip().startswith("lambda"):
-                script_cleaned = "lambda " + script
-            script_args = six.get_function_code(eval(script_cleaned)).co_argcount
-        elif language == "gremlin-groovy" and "->" in script:
+        if language == "gremlin-groovy" and "->" in script:
             # if the user has explicitly added parameters to the groovy closure then we can easily detect one or two
             # arg lambdas - if we can't detect 1 or 2 then we just go with "unknown"
             args = script[0:script.find("->")]

@@ -98,10 +98,6 @@ limitations under the License.
                                     <value>${skipTests}</value>
                                 </property>
                                 <property>
-                                    <name>python</name>
-                                    <value>false</value>
-                                </property>
-                                <property>
                                     <name>gremlinServerDir</name>
                                     <value>${gremlin.server.dir}</value>
                                 </property>

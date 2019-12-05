@@ -75,7 +75,7 @@ class GremlinType(object):
 
 staticMethods = {}
 staticEnums = {}
-default_lambda_language = "gremlin-python"
+default_lambda_language = "gremlin-groovy"
 
 
 def add_static(key, value):

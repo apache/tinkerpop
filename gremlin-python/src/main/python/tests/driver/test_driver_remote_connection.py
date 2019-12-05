@@ -153,7 +153,7 @@ class TestDriverRemoteConnection(object):
         assert 4 == g.V().count().next()
         assert 0 == g.E().count().next()
         assert 1 == g.V().label().dedup().count().next()
-        assert 4 == g.V().filter(lambda: ("lambda x: True", "gremlin-python")).count().next()
+        assert 4 == g.V().filter(lambda: ("x -> true", "gremlin-groovy")).count().next()
         assert "person" == g.V().label().dedup().next()
         #
         g = traversal().withRemote(remote_connection). \

@@ -1,3 +1,4 @@
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -14,6 +15,8 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+#
+
 import calendar
 import datetime
 import json
@@ -21,7 +24,6 @@ import uuid
 import math
 from collections import OrderedDict
 from decimal import *
-import logging
 from datetime import timedelta
 
 import six
@@ -29,11 +31,9 @@ from aenum import Enum
 from isodate import parse_duration, duration_isoformat
 
 from gremlin_python import statics
-from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, DictType, ListType, SetType, SingleByte, ByteBufferType, SingleChar
-from gremlin_python.process.traversal import Binding, Bytecode, Direction, P, TextP, Traversal, Traverser, TraversalStrategy, T
+from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, SingleByte, ByteBufferType, SingleChar
+from gremlin_python.process.traversal import Binding, Bytecode, P, TextP, Traversal, Traverser, TraversalStrategy
 from gremlin_python.structure.graph import Edge, Property, Vertex, VertexProperty, Path
-
-log = logging.getLogger(__name__)
 
 # When we fall back to a superclass's serializer, we iterate over this map.
 # We want that iteration order to be consistent, so we use an OrderedDict,
@@ -94,12 +94,11 @@ class GraphSONWriter(object):
                 if isinstance(obj, key):
                     return serializer.dictify(obj, self)
 
-        if isinstance(obj, dict):
-            return dict((self.toDict(k), self.toDict(v)) for k, v in obj.items())
-        elif isinstance(obj, set):
-            return set([self.toDict(o) for o in obj])
-        elif isinstance(obj, list):
+        # list and map are treated as normal json objs (could be isolated serializers)
+        if isinstance(obj, (list, set)):
             return [self.toDict(o) for o in obj]
+        elif isinstance(obj, dict):
+            return dict((self.toDict(k), self.toDict(v)) for k, v in obj.items())
         else:
             return obj
 
@@ -126,9 +125,8 @@ class GraphSONReader(object):
                 return self.deserializers[obj[GraphSONUtil.TYPE_KEY]].objectify(obj[GraphSONUtil.VALUE_KEY], self)
             except KeyError:
                 pass
+            # list and map are treated as normal json objs (could be isolated deserializers)
             return dict((self.toObject(k), self.toObject(v)) for k, v in obj.items())
-        elif isinstance(obj, set):
-            return set([self.toObject(o) for o in obj])
         elif isinstance(obj, list):
             return [self.toObject(o) for o in obj]
         else:
@@ -176,7 +174,6 @@ class _BytecodeSerializer(_GraphSONTypeIO):
         if bytecode.step_instructions:
             out["step"] = cls._dictify_instructions(bytecode.step_instructions, writer)
         return GraphSONUtil.typedValue("Bytecode", out)
-
 
 class TraversalSerializer(_BytecodeSerializer):
     python_type = Traversal
@@ -249,10 +246,7 @@ class TraversalStrategySerializer(_GraphSONTypeIO):
 
     @classmethod
     def dictify(cls, strategy, writer):
-        configuration = {}
-        for key in strategy.configuration:
-            configuration[key] = writer.toDict(strategy.configuration[key])
-        return GraphSONUtil.typedValue(strategy.strategy_name, configuration)
+        return GraphSONUtil.typedValue(strategy.strategy_name, writer.toDict(strategy.configuration))
 
 
 class TraverserIO(_GraphSONTypeIO):
@@ -321,12 +315,7 @@ class LambdaSerializer(_GraphSONTypeIO):
         language = statics.default_lambda_language if isinstance(lambda_result, str) else lambda_result[1]
         out = {"script": script,
                "language": language}
-        if language == "gremlin-jython" or language == "gremlin-python":
-            if not script.strip().startswith("lambda"):
-                script = "lambda " + script
-                out["script"] = script
-            out["arguments"] = six.get_function_code(eval(out["script"])).co_argcount
-        elif language == "gremlin-groovy" and "->" in script:
+        if language == "gremlin-groovy" and "->" in script:
             # if the user has explicitly added parameters to the groovy closure then we can easily detect one or two
             # arg lambdas - if we can't detect 1 or 2 then we just go with "unknown"
             args = script[0:script.find("->")]
@@ -412,99 +401,6 @@ class _NumberIO(_GraphSONTypeIO):
     @classmethod
     def objectify(cls, v, _):
         return cls.python_type(v)
-
-
-class ListIO(_GraphSONTypeIO):
-    python_type = ListType
-    graphson_type = "g:List"
-
-    @classmethod
-    def dictify(cls, l, writer):
-        new_list = []
-        for obj in l:
-            new_list.append(writer.toDict(obj))
-        return GraphSONUtil.typedValue("List", new_list)
-
-    @classmethod
-    def objectify(cls, l, reader):
-        new_list = []
-        for obj in l:
-            new_list.append(reader.toObject(obj))
-        return new_list
-
-
-class SetIO(_GraphSONTypeIO):
-    python_type = SetType
-    graphson_type = "g:Set"
-
-    @classmethod
-    def dictify(cls, s, writer):
-        new_list = []
-        for obj in s:
-            new_list.append(writer.toDict(obj))
-        return GraphSONUtil.typedValue("Set", new_list)
-
-    @classmethod
-    def objectify(cls, s, reader):
-        """
-        By default, returns a python set
-
-        In case Java returns numeric values of different types which
-        python don't recognize, coerce and return a list.
-        See comments of TINKERPOP-1844 for more details
-        """
-        new_list = [reader.toObject(obj) for obj in s]
-        new_set = set(new_list)
-        if len(new_list) != len(new_set):
-            log.warning("Coercing g:Set to list due to java numeric values. "
-                        "See TINKERPOP-1844 for more details.")
-            return new_list
-
-        return new_set
-
-
-class MapType(_GraphSONTypeIO):
-    python_type = DictType
-    graphson_type = "g:Map"
-
-    @classmethod
-    def dictify(cls, d, writer):
-        l = []
-        for key in d:
-            l.append(writer.toDict(key))
-            l.append(writer.toDict(d[key]))
-        return GraphSONUtil.typedValue("Map", l)
-
-    @classmethod
-    def objectify(cls, l, reader):
-        new_dict = {}
-        if len(l) > 0:
-            x = 0
-            while x < len(l):
-                new_dict[reader.toObject(l[x])] = reader.toObject(l[x + 1])
-                x = x + 2
-        return new_dict
-
-
-class BulkSetIO(_GraphSONTypeIO):
-    graphson_type = "g:BulkSet"
-
-    @classmethod
-    def objectify(cls, l, reader):
-        new_list = []
-
-        # this approach basically mimics what currently existed in 3.3.4 and prior versions where BulkSet is
-        # basically just coerced to list. the limitation here is that if the value of a bulk exceeds the size of
-        # a list (into the long space) then stuff won't work nice.
-        if len(l) > 0:
-            x = 0
-            while x < len(l):
-                obj = reader.toObject(l[x])
-                bulk = reader.toObject(l[x + 1])
-                for y in range(bulk):
-                    new_list.append(obj)
-                x = x + 2
-        return new_list
 
 
 class FloatIO(_NumberIO):
@@ -703,29 +599,9 @@ class PathDeserializer(_GraphSONTypeIO):
 
     @classmethod
     def objectify(cls, d, reader):
-        return Path(reader.toObject(d["labels"]), reader.toObject(d["objects"]))
-
-
-class TDeserializer(_GraphSONTypeIO):
-    graphson_type = "g:T"
-
-    @classmethod
-    def objectify(cls, d, reader):
-        return T[d]
-
-
-class DirectionIO(_GraphSONTypeIO):
-    graphson_type = "g:Direction"
-    graphson_base_type = "Direction"
-    python_type = Direction
-
-    @classmethod
-    def dictify(cls, d, writer):
-        return GraphSONUtil.typedValue(cls.graphson_base_type, d.name, "g")
-
-    @classmethod
-    def objectify(cls, d, reader):
-        return Direction[d]
+        labels = [set(label) for label in d["labels"]]
+        objects = [reader.toObject(o) for o in d["objects"]]
+        return Path(labels, objects)
 
 
 class TraversalMetricsDeserializer(_GraphSONTypeIO):

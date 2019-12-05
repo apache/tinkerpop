@@ -25,42 +25,6 @@ limitations under the License.
     </parent>
     <artifactId>gremlin-python</artifactId>
     <name>Apache TinkerPop :: Gremlin Python</name>
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>gremlin-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.python</groupId>
-            <artifactId>jython-standalone</artifactId>
-            <version>2.7.1</version>
-        </dependency>
-        <!-- TESTING -->
-        <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>tinkergraph-gremlin</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>gremlin-test</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>gremlin-server</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
     <properties>
         <!-- provides a way to convert maven.test.skip value to skipTests for use in skipping python tests -->
         <maven.test.skip>false</maven.test.skip>
@@ -70,177 +34,42 @@ limitations under the License.
     <build>
         <directory>${basedir}/target</directory>
         <finalName>${project.artifactId}-${project.version}</finalName>
-        <resources>
-            <resource>
-                <directory>src/main/resources
-                </directory>
-            </resource>
-        </resources>
-        <testResources>
-            <testResource>
-                <directory>${basedir}/src/test/resources
-                </directory>
-            </testResource>
-        </testResources>
         <plugins>
+            <!--
+            there is no point to building/deploying the jvm stuff - there is no java source really - just poms
+            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-clean-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
-                    <filesets>
-                        <!-- SOURCE DIRECTORIES -->
-                        <fileset>
-                            <directory>${basedir}/src/main/jython/gremlin_python</directory>
-                            <includes>
-                                <include>**/*.pyc</include>
-                                <include>**/*.class</include>
-                            </includes>
-                            <excludes>
-                                <exclude>**/*.py</exclude>
-                            </excludes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                        <fileset>
-                            <directory>${basedir}/src/main/jython/gremlin_python/driver</directory>
-                            <includes>
-                                <include>**/*.pyc</include>
-                                <include>**/*.class</include>
-                            </includes>
-                            <excludes>
-                                <exclude>**/*.py</exclude>
-                            </excludes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                        <fileset>
-                            <directory>${basedir}/src/main/jython/gremlin_python/process</directory>
-                            <includes>
-                                <include>**/*.pyc</include>
-                                <include>**/*.class</include>
-                            </includes>
-                            <excludes>
-                                <exclude>**/*.py</exclude>
-                            </excludes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                        <fileset>
-                            <directory>${basedir}/src/main/jython/gremlin_python/structure</directory>
-                            <includes>
-                                <include>**/*.pyc</include>
-                                <include>**/*.class</include>
-                            </includes>
-                            <excludes>
-                                <exclude>**/*.py</exclude>
-                            </excludes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                        <fileset>
-                            <directory>${basedir}/src/main/jython/gremlin_python/structure/io</directory>
-                            <includes>
-                                <include>**/*.pyc</include>
-                                <include>**/*.class</include>
-                            </includes>
-                            <excludes>
-                                <exclude>**/*.py</exclude>
-                            </excludes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                        <!-- TEST DIRECTORIES -->
-                        <fileset>
-                            <directory>${basedir}/src/main/jython/tests</directory>
-                            <includes>
-                                <include>**/*.pyc</include>
-                                <include>**/*.class</include>
-                            </includes>
-                            <excludes>
-                                <exclude>**/*.py</exclude>
-                            </excludes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                        <fileset>
-                            <directory>${basedir}/src/main/jython/tests/driver</directory>
-                            <includes>
-                                <include>**/*.pyc</include>
-                                <include>**/*.class</include>
-                            </includes>
-                            <excludes>
-                                <exclude>**/*.py</exclude>
-                            </excludes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                        <fileset>
-                            <directory>${basedir}/src/main/jython/tests/process</directory>
-                            <includes>
-                                <include>**/*.pyc</include>
-                                <include>**/*.class</include>
-                            </includes>
-                            <excludes>
-                                <exclude>**/*.py</exclude>
-                            </excludes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                        <fileset>
-                            <directory>${basedir}/src/main/jython/tests/structure</directory>
-                            <includes>
-                                <include>**/*.pyc</include>
-                                <include>**/*.class</include>
-                            </includes>
-                            <excludes>
-                                <exclude>**/*.py</exclude>
-                            </excludes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                        <fileset>
-                            <directory>${basedir}/src/main/jython/tests/structure/io</directory>
-                            <includes>
-                                <include>**/*.pyc</include>
-                                <include>**/*.class</include>
-                            </includes>
-                            <excludes>
-                                <exclude>**/*.py</exclude>
-                            </excludes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                    </filesets>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <configuration>
+                    <skipSource>true</skipSource>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
                 </configuration>
             </plugin>
         </plugins>
     </build>
 
     <profiles>
-        <!-- This default profile works around the issue where the glv-python profile which is expected to run all tests
-             can't override the exclusions defined below. -->
-        <profile>
-            <id>glv-python-standard</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <!-- excludes python related tests that require python itself installed on the system - run with the
-                         python profile if glVPython is present -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <systemPropertyVariables>
-                                <python.home>${project.build.outputDirectory}</python.home>
-                            </systemPropertyVariables>
-                            <excludes>
-                                <exclude>**/jsr223/Python*Test.java</exclude>
-                                <exclude>**/graphson/GraphSON*Test.java</exclude>
-                            </excludes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
         <!-- activates the building of python components and requires that python be installed on the system -->
         <profile>
             <id>glv-python</id>
@@ -251,18 +80,7 @@ limitations under the License.
                 </file>
             </activation>
             <build>
-
-                <!-- don't exclude any tests as python is assumed to be installed on this system -->
                 <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <systemPropertyVariables>
-                                <python.home>${project.build.outputDirectory}</python.home>
-                            </systemPropertyVariables>
-                        </configuration>
-                    </plugin>
                     <!-- need to create python-reports directory at this point or else pytest can't write the report to it -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -281,7 +99,7 @@ limitations under the License.
                                     </target>
                                 </configuration>
                             </execution>
-                            <!-- copy files in jython directory to target/py and run virtual env to sandbox python.
+                            <!-- copy files in python directory to target/py and run virtual env to sandbox python.
                                  there is no need to "activate" the virtualenv because all calls to python occur
                                  directly from bin/ -->
                             <execution>
@@ -293,16 +111,15 @@ limitations under the License.
                                 <configuration>
                                     <tasks>
                                         <!-- seems like we need a few different copies of the same source. all the
-                                             different python/jython stuff doesn't seem to want to share. we use
-                                             /python for basic tests and stuff, /jython for jython compilation with
-                                             the jython plugin, /python-packaged for distribution tasks. some of the
-                                             problem seems to stem from the python lifecycle not binding perfectly well
-                                             to the maven lifecycle (integration tests seems to cause troubles
-                                             specifically). note that the commands to install wheel are largely for
-                                             safety in case someone is using an older version of virtualenv (which
-                                             doesn't install wheel by default) -->
+                                             different python stuff doesn't seem to want to share. we use
+                                             /python3 for basic tests and stuff and /python-packaged for distribution
+                                             tasks. some of the problem seems to stem from the python lifecycle not
+                                             binding perfectly well to the maven lifecycle (integration tests seems to
+                                             cause troubles specifically). note that the commands to install wheel are
+                                             largely for safety in case someone is using an older version of virtualenv
+                                             (which doesn't install wheel by default) -->
                                         <copy todir="${project.build.directory}/python3">
-                                            <fileset dir="src/main/jython"/>
+                                            <fileset dir="src/main/python"/>
                                         </copy>
                                         <exec dir="${project.build.directory}/python3" executable="virtualenv"
                                               failonerror="true">
@@ -313,7 +130,7 @@ limitations under the License.
                                             <arg line="install wheel radish-bdd PyHamcrest aenum isodate"/>
                                         </exec>
                                         <copy todir="${project.build.directory}/python-packaged">
-                                            <fileset dir="src/main/jython"/>
+                                            <fileset dir="src/main/python"/>
                                         </copy>
                                         <exec dir="${project.build.directory}/python-packaged" executable="virtualenv"
                                               failonerror="true">
@@ -415,6 +232,11 @@ limitations under the License.
                         <artifactId>gmavenplus-plugin</artifactId>
                         <dependencies>
                             <dependency>
+                                <groupId>org.apache.tinkerpop</groupId>
+                                <artifactId>gremlin-server</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                            <dependency>
                                 <groupId>org.codehaus.groovy</groupId>
                                 <artifactId>groovy-all</artifactId>
                                 <version>${groovy.version}</version>
@@ -458,10 +280,6 @@ limitations under the License.
                                         <property>
                                             <name>skipTests</name>
                                             <value>${skipTests}</value>
-                                        </property>
-                                        <property>
-                                            <name>python</name>
-                                            <value>true</value>
                                         </property>
                                         <property>
                                             <name>gremlinServerDir</name>
@@ -528,19 +346,6 @@ limitations under the License.
             </activation>
             <build>
                 <plugins>
-                    <!--
-                    pypi doesn't have a staging area like sonatype so the deploy to pypi is done out of the normal
-                    release band. it is performed after successful VOTE in which case, the maven artifacts should
-                    not be deployed again - hence the plugin is disabled. deployment to pypi uses the antrun plugin
-                    below with twine so disabling the plugin has no effect on the pypi deployment.
-                    -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <configuration>
-                            <skip>true</skip>
-                        </configuration>
-                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>

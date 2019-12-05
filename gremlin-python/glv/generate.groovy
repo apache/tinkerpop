@@ -122,9 +122,9 @@ def binding = ["enums": CoreImports.getClassImports()
 
 def engine = new groovy.text.GStringTemplateEngine()
 def traversalTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/TraversalSource.template")).make(binding)
-def traversalFile = new File("${projectBaseDir}/src/main/jython/gremlin_python/process/traversal.py")
+def traversalFile = new File("${projectBaseDir}/src/main/python/gremlin_python/process/traversal.py")
 traversalFile.newWriter().withWriter{ it << traversalTemplate }
 
 def graphTraversalTemplate = engine.createTemplate(new File("${projectBaseDir}/glv/GraphTraversalSource.template")).make(binding)
-def graphTraversalFile = new File("${projectBaseDir}/src/main/jython/gremlin_python/process/graph_traversal.py")
+def graphTraversalFile = new File("${projectBaseDir}/src/main/python/gremlin_python/process/graph_traversal.py")
 graphTraversalFile.newWriter().withWriter{ it << graphTraversalTemplate }
