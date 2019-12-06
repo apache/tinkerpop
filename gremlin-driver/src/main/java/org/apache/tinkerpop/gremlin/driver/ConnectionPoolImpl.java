@@ -106,19 +106,22 @@ public class ConnectionPoolImpl implements ConnectionPool {
             public void channelReleased(final Channel ch) {
                 // Note: Any operation performed here might have direct impact on the performance of the
                 // client since, this method is called with every new request.
-                logger.debug("Channel released: {}", ch);
+                if (logger.isDebugEnabled())
+                    logger.debug("Channel released: {}", ch);
             }
 
             @Override
             public void channelAcquired(final Channel ch) {
                 // Note: Any operation performed here might have direct impact on the performance of the
                 // client since, this method is called with every new request.
-                logger.debug("Channel acquired: {}", ch);
+                if (logger.isDebugEnabled())
+                    logger.debug("Channel acquired: {}", ch);
             }
 
             @Override
             public void channelCreated(final Channel ch) {
-                logger.debug("Channel created: {}", ch);
+                if (logger.isDebugEnabled())
+                    logger.debug("Channel created: {}", ch);
                 // Guaranteed that it is a socket channel because we set b.channel as SocketChannel
                 final SocketChannel sch = (SocketChannel) ch;
                 ((Channelizer.AbstractChannelizer) channelizer).initChannel(sch);
@@ -127,7 +130,8 @@ public class ConnectionPoolImpl implements ConnectionPool {
 
         this.channelPool = createChannelPool(b, cluster.connectionPoolSettings(), handler);
 
-        logger.debug("Initialized {} successfully.", this);
+        if (logger.isDebugEnabled())
+            logger.debug("Initialized {} successfully.", this);
     }
 
     private FixedChannelPool createChannelPool(final Bootstrap b,

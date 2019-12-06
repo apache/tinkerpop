@@ -199,7 +199,8 @@ public abstract class Client {
         if (initialized)
             return this;
 
-        logger.debug("Initializing client on cluster [{}]", cluster);
+        if (logger.isDebugEnabled())
+            logger.debug("Initializing client on cluster [{}]", cluster);
 
         cluster.init();
         initializeImplementation();
@@ -337,11 +338,11 @@ public abstract class Client {
         // need to call buildMessage() right away to get client specific configurations, that way request specific
         // ones can override as needed
         final RequestMessage.Builder request = buildMessage(RequestMessage.build(Tokens.OPS_EVAL))
-                .add(Tokens.ARGS_GREMLIN, gremlin)
-                .add(Tokens.ARGS_BATCH_SIZE, batchSize);
+                .addArg(Tokens.ARGS_GREMLIN, gremlin)
+                .addArg(Tokens.ARGS_BATCH_SIZE, batchSize);
 
         // apply settings if they were made available
-        options.getTimeout().ifPresent(timeout -> request.add(Tokens.ARGS_EVAL_TIMEOUT, timeout));
+        options.getTimeout().ifPresent(timeout -> request.addArg(Tokens.ARGS_EVAL_TIMEOUT, timeout));
         options.getParameters().ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, params));
         options.getAliases().ifPresent(aliases -> request.addArg(Tokens.ARGS_ALIASES, aliases));
         options.getOverrideRequestId().ifPresent(request::overrideRequestId);
@@ -379,7 +380,9 @@ public abstract class Client {
                         }
                     } else {
                         conn.write(msg, future);
-                        logger.debug("Submitted {} to - {}", msg, conn);
+
+                        if (logger.isDebugEnabled())
+                            logger.debug("Submitted {} to - {}", msg, conn);
                     }
                 }, this.cluster.executor());
         return future;
@@ -589,8 +592,8 @@ public abstract class Client {
                                                                                   .addArg(Tokens.ARGS_GREMLIN, bytecode));
 
                 // apply settings if they were made available
-                options.getBatchSize().ifPresent(batchSize -> request.add(Tokens.ARGS_BATCH_SIZE, batchSize));
-                options.getTimeout().ifPresent(timeout -> request.add(Tokens.ARGS_EVAL_TIMEOUT, timeout));
+                options.getBatchSize().ifPresent(batchSize -> request.addArg(Tokens.ARGS_BATCH_SIZE, batchSize));
+                options.getTimeout().ifPresent(timeout -> request.addArg(Tokens.ARGS_EVAL_TIMEOUT, timeout));
                 options.getOverrideRequestId().ifPresent(request::overrideRequestId);
                 options.getUserAgent().ifPresent(userAgent -> request.add(Tokens.ARGS_USER_AGENT, userAgent));
 

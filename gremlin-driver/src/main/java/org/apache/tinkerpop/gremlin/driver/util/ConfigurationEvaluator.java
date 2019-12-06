@@ -34,21 +34,20 @@ public class ConfigurationEvaluator {
 
     private final List<Integer> workerPoolSizeRange = Arrays.asList(1,2,3,4,8,16,32);
     private final List<Integer> nioPoolSizeRange = Arrays.asList(1,2,4);
-    private final List<Integer> parallelismSizeRange = Arrays.asList(1,2,4,8,16,32);
+    private final List<Integer> maxConnectionPoolSizeRange = Arrays.asList(64, 128, 256, 512, 1024);
 
     public Stream<String[]> generate(final String [] args) throws Exception {
         final Set<String> configsTried = new HashSet<>();
 
         // get ready for the some serious brute-force action here
         for (int ir = 0; ir < nioPoolSizeRange.size(); ir++) {
-            for (int is = 0; is < parallelismSizeRange.size(); is++) {
+            for (int is = 0; is < maxConnectionPoolSizeRange.size(); is++) {
                 for (int it = 0; it < workerPoolSizeRange.size(); it++) {
                     final String s = String.join(",", String.valueOf(ir), String.valueOf(is), String.valueOf(it));
                     if (!configsTried.contains(s)) {
                         final Object[] argsToProfiler =
                                 Stream.of("nioPoolSize", nioPoolSizeRange.get(ir).toString(),
-                                          "parallelism", parallelismSizeRange.get(is).toString(),
-                                          "maxConnectionPoolSize", "15000",
+                                          "maxConnectionPoolSize", maxConnectionPoolSizeRange.get(is).toString(),
                                           "workerPoolSize", workerPoolSizeRange.get(it).toString(),
                                           "noExit", Boolean.TRUE.toString()).toArray();
 

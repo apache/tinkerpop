@@ -40,7 +40,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.IntStream;
 
 /**
  * An internal application used to test out configuration parameters for Gremlin Driver against Gremlin Server.
@@ -96,22 +95,21 @@ public class ProfilingApplication {
         try {
             final CountDownLatch latch = new CountDownLatch(requests);
             final AtomicInteger inFlight = new AtomicInteger(0);
+            final AtomicInteger count = new AtomicInteger(0);
             client.init();
 
             final long start = System.nanoTime();
-            IntStream.range(0, requests).forEach(i -> {
-                final String s = exercise ? chooseScript() : script;
 
+            while (count.get() < requests) {
                 // control number of requests in flight for testing purposes or else we'll timeout without enough
                 // connections to service all this stuff.
-                while (inFlight.intValue() >= cluster.maxConnectionPoolSize()) {
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(10L);
-                    } catch (Exception ex) {
-                        // wait wait wait
-                    }
+                if (inFlight.intValue() >= cluster.maxConnectionPoolSize()) {
+                    continue;
                 }
 
+                final String s = exercise ? chooseScript() : script;
+
+                count.incrementAndGet();
                 inFlight.incrementAndGet();
                 client.submitAsync(s).thenAcceptAsync(r -> {
                     try {
@@ -125,7 +123,7 @@ public class ProfilingApplication {
                         latch.countDown();
                     }
                 }, executor);
-            });
+            }
 
             // finish once all requests are accounted for
             latch.await();
@@ -152,9 +150,9 @@ public class ProfilingApplication {
     public static void main(final String[] args) {
         final Map<String,Object> options = ElementHelper.asMap(args);
         final boolean noExit = Boolean.parseBoolean(options.getOrDefault("noExit", "false").toString());
-        final int parallelism = Integer.parseInt(options.getOrDefault("parallelism", "16").toString());
+        final int profilerPoolSize = Integer.parseInt(options.getOrDefault("profiler-pool", "2").toString());
         final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("profiler-%d").build();
-        final ExecutorService executor = Executors.newFixedThreadPool(parallelism, threadFactory);
+        final ExecutorService executor = Executors.newFixedThreadPool(profilerPoolSize, threadFactory);
 
         final String host = options.getOrDefault("host", "localhost").toString();
         final int minExpectedRps = Integer.parseInt(options.getOrDefault("minExpectedRps", "200").toString());
@@ -237,7 +235,7 @@ public class ProfilingApplication {
             System.out.println(String.format("avg req/sec: %s", averageRequestPerSecond));
             if (f != null) {
                 try (final PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(f, true)))) {
-                    writer.println(String.join("\t", String.valueOf(parallelism), String.valueOf(nioPoolSize), String.valueOf(maxConnectionPoolSize), String.valueOf(workerPoolSize), String.valueOf(averageRequestPerSecond)));
+                    writer.println(String.join("\t", String.valueOf(profilerPoolSize), String.valueOf(nioPoolSize), String.valueOf(maxConnectionPoolSize), String.valueOf(workerPoolSize), String.valueOf(averageRequestPerSecond)));
                 }
             }
 

@@ -933,7 +933,7 @@ public final class Cluster {
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-worker-%d").build());
             this.executor.setRemoveOnCancelPolicy(true);
 
-            validationRequest = () -> RequestMessage.build(Tokens.OPS_EVAL).add(Tokens.ARGS_GREMLIN, builder.validationRequest);
+            validationRequest = () -> RequestMessage.build(Tokens.OPS_EVAL).addArg(Tokens.ARGS_GREMLIN, builder.validationRequest);
         }
 
         private void validateBuilder(final Builder builder) {
