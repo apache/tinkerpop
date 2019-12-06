@@ -407,8 +407,6 @@ public class ClientSingleRequestConnectionIntegrateTest extends AbstractGremlinS
     @Test
     public void testAbruptClose() throws InterruptedException {
         final Cluster cluster = this.createClusterWithXNumOfConnection(50);
-
-
         final Client.ClusteredClient client = cluster.connect();
 
         final int requests = 50;

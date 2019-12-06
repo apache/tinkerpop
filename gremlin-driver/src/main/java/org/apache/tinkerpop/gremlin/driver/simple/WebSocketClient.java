@@ -20,7 +20,9 @@ package org.apache.tinkerpop.gremlin.driver.simple;
 
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.http.EmptyHttpHeaders;
+import io.netty.util.concurrent.GlobalEventExecutor;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinRequestEncoder;
@@ -67,7 +69,8 @@ public class WebSocketClient extends AbstractClient {
             final WebSocketClientHandler wsHandler =
                     new WebSocketClientHandler(
                             WebSocketClientHandshakerFactory.newHandshaker(
-                                    uri, WebSocketVersion.V13, null, false, EmptyHttpHeaders.INSTANCE, 65536));
+                                    uri, WebSocketVersion.V13, null, false, EmptyHttpHeaders.INSTANCE, 65536),
+                            new DefaultChannelGroup(GlobalEventExecutor.INSTANCE));
             final MessageSerializer serializer = new GraphBinaryMessageSerializerV1();
             b.channel(NioSocketChannel.class)
                     .handler(new ChannelInitializer<SocketChannel>() {

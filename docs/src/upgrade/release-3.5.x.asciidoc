@@ -275,9 +275,10 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.neo4j.structure.trait.NoMultiNoMetaNeo4jTrait`
 ** `org.apache.tinkerpop.gremlin.neo4j.structure.trait.Neo4jTrait`
 
-Certain elements of the API were not or could not be deprecated in prior versions and were simply renamed for this
-release:
+Certain elements of the API were not or could not be deprecated in prior versions and were simply renamed or removed
+for this release:
 
+* `org.apache.tinkerpop.gremlin.driver.handler.WebSocketIdleEventHandler`
 * `org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode#SERVER_ERROR_SCRIPT_EVALUATION` became `SERVER_ERROR_EVALUATION`
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2080[TINKERPOP-2080],

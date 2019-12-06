@@ -44,8 +44,6 @@ public class WebsocketCloseHandler extends ChannelOutboundHandlerAdapter {
         }
     }
 
-
-
     @Override
     public void handlerAdded(final ChannelHandlerContext ctx) throws Exception {
         ctx.channel().attr(CLOSE_WS_SENT).setIfAbsent(Boolean.FALSE);

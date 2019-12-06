@@ -23,6 +23,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
@@ -31,6 +32,8 @@ import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +45,11 @@ public final class WebSocketClientHandler extends SimpleChannelInboundHandler<Ob
     private static final Logger logger = LoggerFactory.getLogger(WebSocketClientHandler.class);
     private final WebSocketClientHandshaker handshaker;
     private ChannelPromise handshakeFuture;
+    private final ChannelGroup activeChannels;
 
-    public WebSocketClientHandler(final WebSocketClientHandshaker handshaker) {
+    public WebSocketClientHandler(final WebSocketClientHandshaker handshaker, final ChannelGroup activeChannels) {
         this.handshaker = handshaker;
+        this.activeChannels = activeChannels;
     }
 
     public ChannelFuture handshakeFuture() {
@@ -62,6 +67,8 @@ public final class WebSocketClientHandler extends SimpleChannelInboundHandler<Ob
                 if (!f.isSuccess()) {
                     if (!handshakeFuture.isDone()) handshakeFuture.setFailure(f.cause());
                     ctx.fireExceptionCaught(f.cause());
+                } else {
+                    activeChannels.add(ctx.channel());
                 }
         });
     }
@@ -95,6 +102,19 @@ public final class WebSocketClientHandler extends SimpleChannelInboundHandler<Ob
         } else if (frame instanceof CloseWebSocketFrame)
             ch.close();
 
+    }
+
+    @Override
+    public void userEventTriggered(final ChannelHandlerContext ctx, final Object event) throws Exception {
+        if (event instanceof IdleStateEvent) {
+            final IdleStateEvent e = (IdleStateEvent) event;
+            if (e.state() == IdleState.READER_IDLE) {
+                logger.warn("Server " + ctx.channel() + " has been idle for too long.");
+            } else if (e.state() == IdleState.WRITER_IDLE || e.state() == IdleState.ALL_IDLE) {
+                logger.info("Sending ping frame to the server");
+                ctx.writeAndFlush(new PingWebSocketFrame());
+            }
+        }
     }
 
     @Override

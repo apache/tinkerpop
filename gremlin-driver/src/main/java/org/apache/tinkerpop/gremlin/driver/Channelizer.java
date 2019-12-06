@@ -35,7 +35,6 @@ import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.timeout.IdleStateHandler;
 
-import org.apache.tinkerpop.gremlin.driver.handler.WebSocketIdleEventHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.WebsocketCloseHandler;
 
 import java.util.Optional;
@@ -171,7 +170,6 @@ public interface Channelizer extends ChannelHandler {
 
         private WebSocketGremlinRequestEncoder webSocketGremlinRequestEncoder;
         private WebSocketGremlinResponseDecoder webSocketGremlinResponseDecoder;
-        private WebSocketIdleEventHandler webSocketIdleEventHandler;
 
         @Override
         public void init(Connection connection) {
@@ -183,7 +181,6 @@ public interface Channelizer extends ChannelHandler {
             super.init(connpool);
             webSocketGremlinRequestEncoder = new WebSocketGremlinRequestEncoder(true, cluster.getSerializer());
             webSocketGremlinResponseDecoder = new WebSocketGremlinResponseDecoder(cluster.getSerializer());
-            webSocketIdleEventHandler = new WebSocketIdleEventHandler(connpool.getActiveChannels());
         }
 
         /**
@@ -215,13 +212,13 @@ public interface Channelizer extends ChannelHandler {
             // TODO: Replace WebSocketClientHandler with Netty's WebSocketClientProtocolHandler
             final WebSocketClientHandler handler = new WebSocketClientHandler(
                     WebSocketClientHandshakerFactory.newHandshaker(
-                            connectionPool.getHost().getHostUri(), WebSocketVersion.V13, null, false, EmptyHttpHeaders.INSTANCE, maxContentLength));
+                            connectionPool.getHost().getHostUri(), WebSocketVersion.V13, null, false, EmptyHttpHeaders.INSTANCE, maxContentLength),
+                    connectionPool.getActiveChannels());
 
             int keepAliveInterval = toIntExact(TimeUnit.SECONDS.convert(cluster.connectionPoolSettings().keepAliveInterval, TimeUnit.MILLISECONDS));
             pipeline.addLast("http-codec", new HttpClientCodec());
             pipeline.addLast("aggregator", new HttpObjectAggregator(maxContentLength));
             pipeline.addLast("netty-idle-state-Handler", new IdleStateHandler(0, keepAliveInterval, 0));
-            pipeline.addLast("ws-idle-handler", webSocketIdleEventHandler);
             pipeline.addLast("ws-client-handler", handler);
             pipeline.addLast("ws-close-handler", new WebsocketCloseHandler());
             pipeline.addLast("gremlin-encoder", webSocketGremlinRequestEncoder);
