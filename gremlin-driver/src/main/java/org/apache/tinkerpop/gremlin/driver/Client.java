@@ -565,6 +565,8 @@ public abstract class Client {
                 // apply settings if they were made available
                 options.getBatchSize().ifPresent(batchSize -> request.add(Tokens.ARGS_BATCH_SIZE, batchSize));
                 options.getTimeout().ifPresent(timeout -> request.add(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT, timeout));
+                options.getOverrideRequestId().ifPresent(request::overrideRequestId);
+                options.getUserAgent().ifPresent(userAgent -> request.add(Tokens.ARGS_USER_AGENT, userAgent));
 
                 return submitAsync(request.create());
             } catch (Exception ex) {

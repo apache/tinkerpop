@@ -71,6 +71,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -1631,6 +1632,32 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         verify(client).submitAsync(Mockito.any(Bytecode.class), requestOptionsCaptor.capture());
         RequestOptions requestOptions = requestOptionsCaptor.getValue();
         assertEquals("test", requestOptions.getUserAgent().get());
+
+        ArgumentCaptor<RequestMessage> requestMessageCaptor = ArgumentCaptor.forClass(RequestMessage.class);
+        verify(client).submitAsync(requestMessageCaptor.capture());
+        RequestMessage requestMessage = requestMessageCaptor.getValue();
+        assertEquals("test", requestMessage.getArgs().getOrDefault(Tokens.ARGS_USER_AGENT, null));
+    }
+
+    @Test
+    public void shouldSendRequestIdBytecode() {
+        final UUID overrideRequestId = UUID.randomUUID();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3D0).create();
+        final Client client = Mockito.spy(cluster.connect().alias("g"));
+        Mockito.when(client.alias("g")).thenReturn(client);
+        GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(DriverRemoteConnection.using(client));
+        g.with(Tokens.REQUEST_ID, overrideRequestId).V().iterate();
+        cluster.close();
+        ArgumentCaptor<RequestOptions> requestOptionsCaptor = ArgumentCaptor.forClass(RequestOptions.class);
+        verify(client).submitAsync(Mockito.any(Bytecode.class), requestOptionsCaptor.capture());
+        RequestOptions requestOptions = requestOptionsCaptor.getValue();
+        assertTrue(requestOptions.getOverrideRequestId().isPresent());
+        assertEquals(overrideRequestId, requestOptions.getOverrideRequestId().get());
+
+        ArgumentCaptor<RequestMessage> requestMessageCaptor = ArgumentCaptor.forClass(RequestMessage.class);
+        verify(client).submitAsync(requestMessageCaptor.capture());
+        RequestMessage requestMessage = requestMessageCaptor.getValue();
+        assertEquals(overrideRequestId, requestMessage.getRequestId());
     }
 
     private void assertFutureTimeout(final CompletableFuture<List<Result>> futureFirst) {

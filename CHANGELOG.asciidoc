@@ -31,6 +31,7 @@ This release also includes changes from <<release-3-3-10, 3.3.10>>.
 * Introduced internal `Buffer` API as a way to wrap Netty's Buffer API and moved `GraphBinaryReader`, `GraphBinaryWriter` and `TypeSerializer<T>` to `gremlin-core`.
 * Unified the behavior of property comparison: only compare key&value.
 * Supported `hasKey()` and `hasValue()` step for edge property and meta property, like `g.E().properties().hasKey('xx')`.
+* Client sends overrideRequestId and userAgent to Server when they are present in requestOptions with a bytecode query request.
 
 [[release-3-4-4]]
 === TinkerPop 3.4.4 (Release Date: October 14, 2019)
