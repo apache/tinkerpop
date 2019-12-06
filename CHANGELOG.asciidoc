@@ -31,8 +31,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Added a `Graph.Feature` for `supportsNullPropertyValues`.
 * Refactored `MapStep` to move its logic to `ScalarMapStep` so that the old behavior could be preserved while allow other implementations to have more flexibility.
 * Modified TinkerGraph to support `null` property values and can be configured to disable that feature.
-* Refactored the Java driver to use one connection per request.
-* Refactored functionality of `WebSocketIdleEventHandler` into the `WebSocketClientHandler`.
+* Refactored the Java driver to use one connection per request with many internal API changes.
 * Modified `null` handling in mutations to be consistent for a new `Vertex` as well as update to an existing one.
 * Removed support for Python 2.x in gremlinpython.
 * Upgraded to Apache Commons Configuration2.

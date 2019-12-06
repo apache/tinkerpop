@@ -52,55 +52,13 @@ import static java.lang.Math.toIntExact;
  */
 public interface Channelizer extends ChannelHandler {
 
-    /**
-     * Initializes the {@code Channelizer}. Called just after construction.
-     * @param connection
-     *
-     * @deprecated As of release 3.4.3, replaced by {@link #init(ConnectionPool)}.
-     */
-    @Deprecated
-    public void init(final Connection connection);
-
     public default void init(final ConnectionPool connectionPool) { throw new UnsupportedOperationException(); }
-
-    /**
-     * Called on {@link Connection#close()} to perform an {@code Channelizer} specific functions.  Note that the
-     * {@link Connection} already calls {@code Channel.close()} so there is no need to call that method here.
-     * An implementation will typically use this method to send a {@code Channelizer} specific message to the
-     * server to notify of shutdown coming from the client side (e.g. a "close" websocket frame).
-     */
-    public void close(final Channel channel);
-
-    /**
-     * Create a message for the driver to use as a "keep-alive" for the connectionPool. This method will only be used if
-     * {@link #supportsKeepAlive()} is {@code true}.
-     */
-    public default Object createKeepAliveMessage() {
-        return null;
-    }
-
-    /**
-     * Determines if the channelizer supports a method for keeping the connectionPool to the server alive.
-     */
-    public default boolean supportsKeepAlive() {
-        return false;
-    }
-
-    /**
-     * Called after the channel connects. The {@code Channelizer} may need to perform some functions, such as a
-     * handshake.
-     *
-     * @deprecated As of release 3.4.3, replaced by {@link #connected(Channel)}.
-     */
-    @Deprecated
-    public default void connected() {
-    }
 
     public default void connected(final Channel ch) {
     }
 
     /**
-     * Base implementation of the client side {@link Channelizer}.
+     * Base implementation of the client side {@code Channelizer}.
      */
     abstract class AbstractChannelizer extends ChannelInitializer<SocketChannel> implements Channelizer {
         protected ConnectionPool connectionPool;
@@ -115,20 +73,6 @@ public interface Channelizer extends ChannelHandler {
         }
 
         public abstract void configure(final ChannelPipeline pipeline);
-
-        public void finalize(final ChannelPipeline pipeline) {
-            // do nothing
-        }
-
-        @Override
-        public void close(final Channel channel) {
-            // do nothing
-        }
-
-        @Override
-        public void init(final Connection connection) {
-            // do nothing
-        }
 
         @Override
         public void init(final ConnectionPool connPool) {
@@ -172,25 +116,10 @@ public interface Channelizer extends ChannelHandler {
         private WebSocketGremlinResponseDecoder webSocketGremlinResponseDecoder;
 
         @Override
-        public void init(Connection connection) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public void init(final ConnectionPool connpool) {
             super.init(connpool);
             webSocketGremlinRequestEncoder = new WebSocketGremlinRequestEncoder(true, cluster.getSerializer());
             webSocketGremlinResponseDecoder = new WebSocketGremlinResponseDecoder(cluster.getSerializer());
-        }
-
-        /**
-         * Keep-alive is supported through the ping/pong websocket protocol.
-         *
-         * @see <a href=https://tools.ietf.org/html/rfc6455#section-5.5.2>IETF RFC 6455</a>
-         */
-        @Override
-        public boolean supportsKeepAlive() {
-            return true;
         }
 
         @Override

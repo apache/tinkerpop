@@ -278,6 +278,11 @@ The following deprecated classes, methods or fields have been removed in this ve
 Certain elements of the API were not or could not be deprecated in prior versions and were simply renamed or removed
 for this release:
 
+* `org.apache.tinkerpop.gremlin.driver.Channelizer#init(Connection)`
+* `org.apache.tinkerpop.gremlin.driver.Channelizer#close()`
+* `org.apache.tinkerpop.gremlin.driver.Channelizer#connected()`
+* `org.apache.tinkerpop.gremlin.driver.Channelizer#createKeepAliveMessage()`
+* `org.apache.tinkerpop.gremlin.driver.Channelizer#supportsKeepAlive()`
 * `org.apache.tinkerpop.gremlin.driver.handler.WebSocketIdleEventHandler`
 * `org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode#SERVER_ERROR_SCRIPT_EVALUATION` became `SERVER_ERROR_EVALUATION`
 
