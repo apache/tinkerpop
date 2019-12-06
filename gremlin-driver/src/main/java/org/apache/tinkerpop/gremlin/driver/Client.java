@@ -535,7 +535,7 @@ public abstract class Client {
         protected void initializeImplementation() {
             cluster.allHosts().forEach(host -> {
                 try {
-                    final ConnectionPool connectionPool = ConnectionPoolImpl.create(host, cluster);
+                    final ConnectionPool connectionPool = DefaultConnectionPool.create(host, cluster);
                     hostConnectionPools.put(host, connectionPool);
 
                     // added a new host to the cluster so let the load-balancer know
@@ -754,7 +754,7 @@ public abstract class Client {
             if (hosts.isEmpty()) throw new IllegalStateException("No available host in the cluster");
             Collections.shuffle(hosts);
             final Host host = hosts.get(0);
-            connectionPool = ConnectionPoolImpl.create(host, cluster);
+            connectionPool = DefaultConnectionPool.create(host, cluster);
         }
 
         @Override

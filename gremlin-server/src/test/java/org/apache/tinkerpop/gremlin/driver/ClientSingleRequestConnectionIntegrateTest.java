@@ -72,7 +72,7 @@ public class ClientSingleRequestConnectionIntegrateTest extends AbstractGremlinS
         }
 
         if (name.getMethodName().equals("testGracefulClose") || name.getMethodName().equals("testAbruptClose")) {
-            final org.apache.log4j.Logger connectionPoolLogger = org.apache.log4j.Logger.getLogger(ConnectionPoolImpl.class);
+            final org.apache.log4j.Logger connectionPoolLogger = org.apache.log4j.Logger.getLogger(DefaultConnectionPool.class);
             previousLogLevel = connectionPoolLogger.getLevel();
             connectionPoolLogger.setLevel(Level.INFO);
         }
@@ -95,7 +95,7 @@ public class ClientSingleRequestConnectionIntegrateTest extends AbstractGremlinS
         }
 
         if (name.getMethodName().equals("testGracefulClose") || name.getMethodName().equals("testAbruptClose")) {
-            final org.apache.log4j.Logger connectionLogger = org.apache.log4j.Logger.getLogger(ConnectionPoolImpl.class);
+            final org.apache.log4j.Logger connectionLogger = org.apache.log4j.Logger.getLogger(DefaultConnectionPool.class);
             connectionLogger.setLevel(previousLogLevel);
         }
 

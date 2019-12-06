@@ -43,8 +43,8 @@ import java.util.concurrent.atomic.AtomicReference;
  * Connection pool combines two entities. One is the underlying Netty channel pool and another is
  * the Connection whose lifetime is synonymous with a request.
  */
-public class ConnectionPoolImpl implements ConnectionPool {
-    private static final Logger logger = LoggerFactory.getLogger(ConnectionPoolImpl.class);
+public class DefaultConnectionPool implements ConnectionPool {
+    private static final Logger logger = LoggerFactory.getLogger(DefaultConnectionPool.class);
     private final Host host;
     private final Cluster cluster;
     private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>(null);
@@ -71,7 +71,7 @@ public class ConnectionPoolImpl implements ConnectionPool {
      * @return A connection pool which has initialized its internal implementation.
      */
     public static ConnectionPool create(final Host host, final Cluster cluster) {
-        final ConnectionPoolImpl connPool = new ConnectionPoolImpl(host, cluster);
+        final DefaultConnectionPool connPool = new DefaultConnectionPool(host, cluster);
         connPool.init();
 
         logger.info("Created {}", connPool);
@@ -79,7 +79,7 @@ public class ConnectionPoolImpl implements ConnectionPool {
         return connPool;
     }
 
-    private ConnectionPoolImpl(final Host host, final Cluster cluster) {
+    private DefaultConnectionPool(final Host host, final Cluster cluster) {
         this.host = host;
         this.cluster = cluster;
         this.activeChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
