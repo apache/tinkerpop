@@ -42,7 +42,6 @@ public abstract class AbstractClient implements SimpleClient {
 
     public AbstractClient(final String threadPattern) {
         final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern(threadPattern).build();
-        // TODO: Use Epoll if available
         group = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(), threadFactory);
     }
 

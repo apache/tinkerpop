@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.pool.ChannelHealthChecker;
@@ -98,8 +100,11 @@ public class DefaultConnectionPool implements ConnectionPool {
 
         final Bootstrap b = cluster.getFactory().createBootstrap();
         b.remoteAddress(host.getHostUri().getHost(), host.getHostUri().getPort());
-        // TODO: Use Epoll if available
-        b.channel(NioSocketChannel.class);
+
+        if (Epoll.isAvailable())
+            b.channel(EpollSocketChannel.class);
+        else
+            b.channel(NioSocketChannel.class);
 
         final ChannelPoolHandler handler = new ChannelPoolHandler() {
             @Override

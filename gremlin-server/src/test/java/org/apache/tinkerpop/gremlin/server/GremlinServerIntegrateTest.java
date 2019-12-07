@@ -825,7 +825,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
             // went with two possible error messages here as i think that there is some either non-deterministic
             // behavior around the error message or it's environmentally dependent (e.g. different jdk, versions, etc)
-            assertThat(root.getMessage(), Matchers.anyOf(is("Connection to server is no longer active"), is("Connection reset by peer")));
+            assertThat(root.getMessage(), Matchers.anyOf(containsString("Connection to server is no longer active"), containsString("Connection reset by peer")));
 
             // validate that we can still send messages to the server
             assertEquals(2, client.submit("1+1").all().join().get(0).getInt());

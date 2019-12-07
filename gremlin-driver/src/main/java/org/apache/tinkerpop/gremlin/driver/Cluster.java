@@ -22,6 +22,8 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
@@ -854,8 +856,11 @@ public final class Cluster {
 
         public Factory(final int nioPoolSize) {
             final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-driver-loop-%d").build();
-            // TODO: Enable epoll if available.
-            group = new NioEventLoopGroup(nioPoolSize, threadFactory);
+
+            if (Epoll.isAvailable())
+                group = new EpollEventLoopGroup(nioPoolSize, threadFactory);
+            else
+                group = new NioEventLoopGroup(nioPoolSize, threadFactory);
         }
 
         Bootstrap createBootstrap() {
