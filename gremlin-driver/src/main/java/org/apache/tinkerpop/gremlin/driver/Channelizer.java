@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.handler.codec.http.EmptyHttpHeaders;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
@@ -162,15 +163,18 @@ public interface Channelizer extends ChannelHandler {
         @Override
         public void connected(final Channel ch) {
             try {
-                // block for a few seconds - if the handshake takes longer than there's gotta be issues with that
-                // server. more than likely, SSL is enabled on the server, but the client forgot to enable it or
-                // perhaps the server is not configured for websockets.
-                ((WebSocketClientHandler)(ch.pipeline().get("ws-client-handler"))).handshakeFuture().addListener( f -> {
-                    if (!f.isSuccess()) {
-                        throw new ConnectionException(connectionPool.getHost().getHostUri(),
-                                                                           "Could not complete websocket handshake - ensure that client protocol matches server", f.cause());
-                    }
-                }).get(1500, TimeUnit.MILLISECONDS);
+                // be sure the handshake is done - if the handshake takes longer than the specified time there's
+                // gotta be issues with that  server. a common problem where this comes up: SSL is enabled on the
+                // server, but the client forgot to enable it or perhaps the server is not configured for websockets.
+                final ChannelFuture handshakeFuture = ((WebSocketClientHandler)(ch.pipeline().get("ws-client-handler"))).handshakeFuture();
+                if (!handshakeFuture.isDone()) {
+                    handshakeFuture.addListener(f -> {
+                        if (!f.isSuccess()) {
+                            throw new ConnectionException(connectionPool.getHost().getHostUri(),
+                                    "Could not complete websocket handshake - ensure that client protocol matches server", f.cause());
+                        }
+                    }).get(3000, TimeUnit.MILLISECONDS);
+                }
             } catch (ExecutionException ex) {
                 throw new RuntimeException(ex.getCause());
             } catch (InterruptedException | TimeoutException ex) {

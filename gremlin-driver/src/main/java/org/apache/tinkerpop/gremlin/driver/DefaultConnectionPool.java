@@ -220,8 +220,6 @@ public class DefaultConnectionPool implements ConnectionPool {
 
         // Get a channel, verify handshake is done and then attach it to a connectionPool
         final Channel ch = this.channelPool.acquire().syncUninterruptibly().getNow();
-
-        // TODO: This call is un-necessary on every channel acquire, since handshake is done once.
         channelizer.connected(ch);
 
         return new SingleRequestConnection(ch, this);
