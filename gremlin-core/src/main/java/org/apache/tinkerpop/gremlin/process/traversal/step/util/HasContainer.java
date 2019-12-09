@@ -19,12 +19,9 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
@@ -175,7 +172,7 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
     }
 
     public static <S> boolean testAll(final S element, final List<HasContainer> hasContainers) {
-        boolean isProperty = element instanceof Property;
+        final boolean isProperty = element instanceof Property;
         for (final HasContainer hasContainer : hasContainers) {
             if (isProperty) {
                 if (!hasContainer.test((Property) element))

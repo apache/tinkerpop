@@ -96,9 +96,11 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2314[TINKERPOP-2314]
 
 ==== hasKey() Step and hasValue() Step
 
-Previously, hasKey() Step and hasValue() Step is only supported applying to vertex property. In order to support more general scenarios, these two steps are currently allowed to be applied to edge property and meta property.
+Previously, `hasKey()`-step and `hasValue()`-step only applied to vertex properties. In order to support more
+generalized scenarios, the behavior of these steps were modified to allow them to be applied to both edge properties
+and meta-properties.
 
-Old behavior of hasKey() / hasValue() with edge property and meta property:
+The original behavior is demonstrated as follows:
 
 [source,groovy]
 ----
@@ -106,21 +108,17 @@ gremlin> graph = TinkerFactory.createTheCrew()
 ==>tinkergraph[vertices:6 edges:14]
 gremlin> g = graph.traversal()
 ==>graphtraversalsource[tinkergraph[vertices:6 edges:14], standard]
-
 gremlin> g.E().properties().hasKey('since')
-TinkerProperty cannot be cast to Element
-
+==>TinkerProperty cannot be cast to Element
 gremlin> g.V().properties("location").properties().hasKey("startTime")
-TinkerProperty cannot be cast to Element
-
+==>TinkerProperty cannot be cast to Element
 gremlin> g.E().properties().hasValue(2010)
-TinkerProperty cannot be cast to Element
-
+==>TinkerProperty cannot be cast to Element
 gremlin> g.V().properties("location").properties().hasValue(2005)
-TinkerProperty cannot be cast to Element
+==>TinkerProperty cannot be cast to Element
 ----
 
-New behavior of hasKey() with edge property:
+The new behavior of `hasKey()` with edge property can be seen as:
 
 [source,groovy]
 ----
@@ -132,7 +130,7 @@ gremlin> g.E().properties().hasKey('since')
 ==>p[since->2012]
 ----
 
-New behavior of hasKey() with meta property:
+Similar behavior of for `hasKey()` can be seen with meta-properties:
 
 [source,groovy]
 ----
@@ -153,7 +151,7 @@ gremlin> g.V().properties().hasKey('location').properties().hasKey('startTime')
 ==>p[startTime->2009]
 ----
 
-New behavior of hasValue() with edge property:
+The new behavior for `hasValue()` with edge property is as follows:
 
 [source,groovy]
 ----
@@ -162,7 +160,7 @@ gremlin> g.E().properties().hasValue(2010)
 ==>p[since->2010]
 ----
 
-New behavior of hasValue() with meta property:
+and similarly with `hasValue()` for meta-properties:
 
 [source,groovy]
 ----
@@ -175,24 +173,23 @@ gremlin> g.V().properties().hasKey('location').properties().hasValue(2005)
 
 link:https://issues.apache.org/jira/browse/TINKERPOP-1733[TINKERPOP-1733]
 
-==== Properties comparison regardless of parent elements
+==== Properties Equality
 
-Unify the behavior of property comparison: two properties are equal only if their key&value are equal, even if their parent elements are not equal. It makes sense when comparing properties regardless of parent elements, just focus on the property itself, it would be more uniform and concise.
-The benefit of this change is that the behavior of property comparison and `dedup()`-step are predictable, and it will not affect the result whether a property detaches the parent element.
-Note: The "property" here refer to edge property and meta property, excluding vertex property.
+There was some inconsistency in terms of `Property` equality in earlier versions of Gremlin. Equality is now
+defined as follows: two properties are equal only if their key and value are equal, even if their parent elements are
+not equal. It makes sense when comparing properties regardless of parent elements to just focus on the property itself
+as it yields more uniform and concise results to reason about. The benefit of this change is that the behavior of
+property comparison and `dedup()`-step are predictable, and it will not affect the result if the property is detached
+from the parent element.
 
-Old behavior:
+NOTE: The "property" here refer to edge properties and meta-properties, thus excluding vertex property.
+
+The old behavior can be shown using "The Crew" toy graph as follows:
 
 [source,groovy]
 ----
-gremlin> graph = TinkerFactory.createTheCrew()
-==>tinkergraph[vertices:6 edges:14]
-gremlin> g = graph.traversal()
-==>graphtraversalsource[tinkergraph[vertices:6 edges:14], standard]
-
 gremlin> g.E().properties().count()
 ==>13
-
 gremlin> g.E().properties()
 ==>p[since->2009]
 ==>p[since->2010]
@@ -207,10 +204,8 @@ gremlin> g.E().properties()
 ==>p[skill->3]
 ==>p[skill->5]
 ==>p[skill->3]
-
 gremlin> g.E().properties().dedup().count()
 ==>13
-
 gremlin> g.E().dedup().properties()
 ==>p[since->2009]
 ==>p[since->2010]
@@ -227,13 +222,12 @@ gremlin> g.E().dedup().properties()
 ==>p[skill->3]
 ----
 
-New behavior:
+The new more consistent behavior is demonstrated below:
 
 [source,groovy]
 ----
 gremlin> g.E().properties().count()
 ==>13
-
 gremlin> g.E().properties()
 ==>p[since->2009]
 ==>p[since->2010]
@@ -248,10 +242,8 @@ gremlin> g.E().properties()
 ==>p[skill->3]
 ==>p[skill->5]
 ==>p[skill->3]
-
 gremlin> g.E().properties().dedup().count()
 ==>7
-
 gremlin> g.E().properties().dedup()
 ==>p[since->2009]
 ==>p[since->2010]
