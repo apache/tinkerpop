@@ -22,6 +22,8 @@ import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.http.EmptyHttpHeaders;
+import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
+import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
@@ -66,11 +68,13 @@ public class WebSocketClient extends AbstractClient {
             throw new IllegalArgumentException("Unsupported protocol: " + protocol);
 
         try {
-            final WebSocketClientHandler wsHandler =
-                    new WebSocketClientHandler(
-                            WebSocketClientHandshakerFactory.newHandshaker(
-                                    uri, WebSocketVersion.V13, null, false, EmptyHttpHeaders.INSTANCE, 65536),
-                            new DefaultChannelGroup(GlobalEventExecutor.INSTANCE));
+            final WebSocketClientHandshaker handshaker = WebSocketClientHandshakerFactory.newHandshaker(
+                    uri, WebSocketVersion.V13, null, false,
+                    EmptyHttpHeaders.INSTANCE, 65536);
+            final WebSocketClientProtocolHandler nettyWsHandler = new WebSocketClientProtocolHandler(
+                    handshaker, true, false, 9000);
+            final WebSocketClientHandler wsHandler = new WebSocketClientHandler(new DefaultChannelGroup(GlobalEventExecutor.INSTANCE));
+
             final MessageSerializer serializer = new GraphBinaryMessageSerializerV1();
             b.channel(NioSocketChannel.class)
                     .handler(new ChannelInitializer<SocketChannel>() {
@@ -80,6 +84,7 @@ public class WebSocketClient extends AbstractClient {
                             p.addLast(
                                     new HttpClientCodec(),
                                     new HttpObjectAggregator(65536),
+                                    nettyWsHandler,
                                     wsHandler,
                                     new WebSocketGremlinRequestEncoder(true, serializer),
                                     new WebSocketGremlinResponseDecoder(serializer),

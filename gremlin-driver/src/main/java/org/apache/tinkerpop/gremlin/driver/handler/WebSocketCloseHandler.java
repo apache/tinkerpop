@@ -32,7 +32,7 @@ import io.netty.util.AttributeKey;
  * <p>
  * This handler is also idempotent and sends out the CloseFrame only once.
  */
-public class WebsocketCloseHandler extends ChannelOutboundHandlerAdapter {
+public class WebSocketCloseHandler extends ChannelOutboundHandlerAdapter {
     private static final AttributeKey<Boolean> CLOSE_WS_SENT = AttributeKey.newInstance("closeWebSocketSent");
 
     @Override

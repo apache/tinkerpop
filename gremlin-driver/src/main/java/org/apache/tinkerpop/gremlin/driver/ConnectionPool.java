@@ -31,7 +31,7 @@ import java.util.concurrent.TimeoutException;
  * requests to a specific server. It is also the gatekeeper for the number of simultaneous requests
  * to the server.
  *
- * More specifically, it associates a Netty {@link Channel} with a {@link Connection}.
+ * More specifically, it associates a Netty {@code Channel} with a {@link Connection}.
  *
  * A typical workflow for the lifetime of a Gremlin request would be as follows:
  * 1. Connection pool is set up attached to a host on initialization.
@@ -65,7 +65,8 @@ public interface ConnectionPool {
     /**
      * Release the connection and associated resources (like channel) so that the resources can be re-used.
      */
-    CompletableFuture<Void> releaseConnection(Connection conn);
+    CompletableFuture<Void> releaseConnection(final Connection conn);
+
     /**
      * Close the connection pool and all associated resources gracefully.
      * This method should be made idempotent and thread safe.
@@ -73,10 +74,12 @@ public interface ConnectionPool {
     CompletableFuture<Void> closeAsync();
 
     ScheduledExecutorService executor();
+
     /**
      * @return {@link Host} associated with the connection pool
      */
     Host getHost();
+
     /**
      * @return {@link Cluster} containing the {@link Host}
      */

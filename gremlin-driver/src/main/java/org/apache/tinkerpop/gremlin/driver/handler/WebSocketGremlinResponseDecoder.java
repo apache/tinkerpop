@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver.handler;
 
-import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import io.netty.channel.ChannelHandler;

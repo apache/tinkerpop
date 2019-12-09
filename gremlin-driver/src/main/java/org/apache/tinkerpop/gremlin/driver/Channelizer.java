@@ -22,6 +22,7 @@ import io.netty.channel.Channel;
 import io.netty.handler.codec.http.EmptyHttpHeaders;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
+import org.apache.tinkerpop.gremlin.driver.handler.WebSocketCloseHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinRequestEncoder;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinResponseDecoder;
 import io.netty.channel.ChannelHandler;
@@ -30,12 +31,12 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
+import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.timeout.IdleStateHandler;
-
-import org.apache.tinkerpop.gremlin.driver.handler.WebsocketCloseHandler;
 
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -138,18 +139,21 @@ public interface Channelizer extends ChannelHandler {
                 throw new IllegalStateException("To use wss scheme ensure that enableSsl is set to true in configuration");
 
             final int maxContentLength = cluster.connectionPoolSettings().maxContentLength;
-            // TODO: Replace WebSocketClientHandler with Netty's WebSocketClientProtocolHandler
-            final WebSocketClientHandler handler = new WebSocketClientHandler(
-                    WebSocketClientHandshakerFactory.newHandshaker(
-                            connectionPool.getHost().getHostUri(), WebSocketVersion.V13, null, false, EmptyHttpHeaders.INSTANCE, maxContentLength),
-                    connectionPool.getActiveChannels());
 
-            int keepAliveInterval = toIntExact(TimeUnit.SECONDS.convert(cluster.connectionPoolSettings().keepAliveInterval, TimeUnit.MILLISECONDS));
+            final WebSocketClientHandshaker handshaker = WebSocketClientHandshakerFactory.newHandshaker(
+                    connectionPool.getHost().getHostUri(), WebSocketVersion.V13, null, false,
+                    EmptyHttpHeaders.INSTANCE, maxContentLength);
+            final WebSocketClientProtocolHandler nettyWsHandler = new WebSocketClientProtocolHandler(
+                    handshaker, true, false, 9000);
+            final WebSocketClientHandler handler = new WebSocketClientHandler(connectionPool.getActiveChannels());
+
+            final int keepAliveInterval = toIntExact(TimeUnit.SECONDS.convert(cluster.connectionPoolSettings().keepAliveInterval, TimeUnit.MILLISECONDS));
             pipeline.addLast("http-codec", new HttpClientCodec());
             pipeline.addLast("aggregator", new HttpObjectAggregator(maxContentLength));
             pipeline.addLast("netty-idle-state-Handler", new IdleStateHandler(0, keepAliveInterval, 0));
+            pipeline.addLast("netty-ws-handler", nettyWsHandler);
             pipeline.addLast("ws-client-handler", handler);
-            pipeline.addLast("ws-close-handler", new WebsocketCloseHandler());
+            pipeline.addLast("ws-close-handler", new WebSocketCloseHandler());
             pipeline.addLast("gremlin-encoder", webSocketGremlinRequestEncoder);
             pipeline.addLast("gremlin-decoder", webSocketGremlinResponseDecoder);
         }

@@ -18,23 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.driver.handler;
 
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
-import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
+import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
-import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,12 +39,10 @@ import org.slf4j.LoggerFactory;
  */
 public final class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
     private static final Logger logger = LoggerFactory.getLogger(WebSocketClientHandler.class);
-    private final WebSocketClientHandshaker handshaker;
     private ChannelPromise handshakeFuture;
     private final ChannelGroup activeChannels;
 
-    public WebSocketClientHandler(final WebSocketClientHandshaker handshaker, final ChannelGroup activeChannels) {
-        this.handshaker = handshaker;
+    public WebSocketClientHandler(final ChannelGroup activeChannels) {
         this.activeChannels = activeChannels;
     }
 
@@ -62,46 +56,15 @@ public final class WebSocketClientHandler extends SimpleChannelInboundHandler<Ob
     }
 
     @Override
-    public void channelActive(final ChannelHandlerContext ctx) throws Exception {
-        handshaker.handshake(ctx.channel()).addListener(f -> {
-                if (!f.isSuccess()) {
-                    if (!handshakeFuture.isDone()) handshakeFuture.setFailure(f.cause());
-                    ctx.fireExceptionCaught(f.cause());
-                } else {
-                    activeChannels.add(ctx.channel());
-                }
-        });
-    }
-
-    @Override
     protected void channelRead0(final ChannelHandlerContext ctx, final Object msg) throws Exception {
-        final Channel ch = ctx.channel();
-        if (!handshaker.isHandshakeComplete()) {
-            // web socket client connected
-            handshaker.finishHandshake(ch, (FullHttpResponse) msg);
-            handshakeFuture.setSuccess();
-            return;
-        }
-
-        if (msg instanceof FullHttpResponse) {
-            final FullHttpResponse response = (FullHttpResponse) msg;
-            throw new Exception("Unexpected FullHttpResponse (getStatus=" + response.status() + ", content="
-                    + response.content().toString(CharsetUtil.UTF_8) + ')');
-        }
-
-        // a close frame doesn't mean much here.  errors raised from closed channels will mark the host as dead
         final WebSocketFrame frame = (WebSocketFrame) msg;
         if (frame instanceof TextWebSocketFrame) {
             ctx.fireChannelRead(frame.retain(2));
-        } else if (frame instanceof PingWebSocketFrame) {
-            ctx.writeAndFlush(new PongWebSocketFrame());
-        }else if (frame instanceof PongWebSocketFrame) {
-            logger.debug("Received response from keep-alive request");
         } else if (frame instanceof BinaryWebSocketFrame) {
             ctx.fireChannelRead(frame.retain(2));
-        } else if (frame instanceof CloseWebSocketFrame)
-            ch.close();
-
+        } else if (frame instanceof PongWebSocketFrame) {
+            logger.debug("Received response from keep-alive request");
+        }
     }
 
     @Override
@@ -114,6 +77,9 @@ public final class WebSocketClientHandler extends SimpleChannelInboundHandler<Ob
                 logger.info("Sending ping frame to the server");
                 ctx.writeAndFlush(new PingWebSocketFrame());
             }
+        } else if (event == WebSocketClientProtocolHandler.ClientHandshakeStateEvent.HANDSHAKE_COMPLETE) {
+            handshakeFuture.setSuccess();
+            activeChannels.add(ctx.channel());
         }
     }
 
