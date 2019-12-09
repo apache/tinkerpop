@@ -105,6 +105,10 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Integer> get_g_V_both_properties_dedup_hasKeyXageX_hasValueXgtX30XX_value();
 
+    public abstract Traversal<Vertex, Double> get_g_V_bothE_properties_dedup_hasKeyXweightX_value();
+
+    public abstract Traversal<Vertex, Double> get_g_V_bothE_properties_dedup_hasKeyXweightX_hasValueXltX0d3XX_value();
+
     public abstract Traversal<Vertex, String> get_g_V_hasNotXageX_name();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasIdX1X_hasIdX2X(final Object v1Id, final Object v2Id);
@@ -478,6 +482,22 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_bothE_properties_dedup_hasKeyXweightX_value() {
+        final Traversal<Vertex, Double> traversal = get_g_V_bothE_properties_dedup_hasKeyXweightX_value();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(0.5, 1.0, 0.4, 0.2), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_bothE_properties_dedup_hasKeyXweightX_hasValueXltX0d3XX_value() {
+        final Traversal<Vertex, Double> traversal = get_g_V_bothE_properties_dedup_hasKeyXweightX_hasValueXltX0d3XX_value();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(0.2), traversal);
+    }
+
+    @Test
     @LoadGraphWith
     public void g_V_hasNotXageX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_hasNotXageX_name();
@@ -781,6 +801,16 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Integer> get_g_V_both_properties_dedup_hasKeyXageX_hasValueXgtX30XX_value() {
             return g.V().both().properties().dedup().hasKey("age").hasValue(P.gt(30)).value();
+        }
+
+        @Override
+        public Traversal<Vertex, Double> get_g_V_bothE_properties_dedup_hasKeyXweightX_value() {
+            return g.V().bothE().properties().dedup().hasKey("weight").value();
+        }
+
+        @Override
+        public Traversal<Vertex, Double> get_g_V_bothE_properties_dedup_hasKeyXweightX_hasValueXltX0d3XX_value() {
+            return g.V().bothE().properties().dedup().hasKey("weight").hasValue(P.lt(0.3)).value();
         }
 
         @Override

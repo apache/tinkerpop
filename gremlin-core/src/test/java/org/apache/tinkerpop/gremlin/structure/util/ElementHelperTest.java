@@ -277,8 +277,8 @@ public class ElementHelperTest {
     }
 
     @Test
-    public void shouldDetermineElementsAreNotEqualWhenBothNull() {
-        assertFalse(ElementHelper.areEqual((Element) null, null));
+    public void shouldDetermineElementsAreEqualWhenBothNull() {
+        assertTrue(ElementHelper.areEqual((Element) null, null));
     }
 
     @Test
@@ -312,8 +312,8 @@ public class ElementHelperTest {
     }
 
     @Test
-    public void shouldDeterminePropertiesAreNotEqualBecauseBothAreNull() {
-        assertFalse(ElementHelper.areEqual((Property) null, null));
+    public void shouldDeterminePropertiesAreEqualBecauseBothAreNull() {
+        assertTrue(ElementHelper.areEqual((Property) null, null));
     }
 
     @Test
@@ -384,7 +384,7 @@ public class ElementHelperTest {
     }
 
     @Test
-    public void shouldDeterminePropertiesAreNotEqualWhenElementsAreDifferent() {
+    public void shouldDeterminePropertiesAreEqualWhenElementsAreDifferent() {
         final Property mockPropertyA = mock(Property.class);
         final Property mockPropertyB = mock(Property.class);
         final Element mockElement = mock(Element.class);
@@ -398,7 +398,7 @@ public class ElementHelperTest {
         when(mockPropertyA.value()).thenReturn("v");
         when(mockPropertyB.value()).thenReturn("v");
 
-        assertFalse(ElementHelper.areEqual(mockPropertyA, mockPropertyB));
+        assertTrue(ElementHelper.areEqual(mockPropertyA, mockPropertyB));
     }
 
     @Test

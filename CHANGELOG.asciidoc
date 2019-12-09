@@ -29,6 +29,8 @@ This release also includes changes from <<release-3-3-10, 3.3.10>>.
 * Improved error messaging for `by(String)` so that it is more clear as to what the problem is
 * Bump to Netty 4.1.42
 * GraphBinary: Introduced our own `Buffer` API as a way to wrap Netty's Buffer API. Moved `GraphBinaryReader`, `GraphBinaryWriter` and `TypeSerializer<T>` to gremlin-core.
+* TINKERPOP-2318 Unify the behavior of property comparison: only compare key&value.
+* TINKERPOP-1733 Support hasKey() and hasValue() step for edge property and meta property, like `g.E().properties().hasKey('xx')`.
 
 [[release-3-4-4]]
 === TinkerPop 3.4.4 (Release Date: October 14, 2019)

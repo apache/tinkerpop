@@ -408,19 +408,6 @@ Feature: Step - has()
       | v[josh] |
       | v[peter] |
 
-  Scenario: g_V_both_dedup_properties_hasKeyXageX_value
-    Given the modern graph
-    And the traversal of
-    """
-    g.V().both().properties().dedup().hasKey("age").value()
-    """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[29].i |
-      | d[27].i |
-      | d[32].i |
-      | d[35].i |
   Scenario: g_V_hasXage_withinX27X_count
     Given the modern graph
     And the traversal of
@@ -465,6 +452,19 @@ Feature: Step - has()
       | result |
       | d[2].l |
 
+  Scenario: g_V_both_dedup_properties_hasKeyXageX_value
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().both().properties().dedup().hasKey("age").value()
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+      | d[27].i |
+      | d[32].i |
+      | d[35].i |
 
   Scenario: g_V_both_dedup_properties_hasKeyXageX_hasValueXgtX30XX_value
     Given the modern graph
@@ -478,6 +478,32 @@ Feature: Step - has()
       | result |
       | d[32].i |
       | d[35].i |
+
+  Scenario: g_V_bothE_properties_dedup_hasKeyXweightX_value
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().bothE().properties().dedup().hasKey("weight").value()
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0.5].d |
+      | d[1.0].d |
+      | d[0.4].d |
+      | d[0.2].d |
+
+  Scenario: g_V_bothE_properties_dedup_hasKeyXweightX_hasValueXltX0d3XX_value
+    Given the modern graph
+    And using the parameter d0d3 defined as "d[0.3].d"
+    And the traversal of
+    """
+    g.V().bothE().properties().dedup().hasKey("weight").hasValue(P.lt(0.3)).value()
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0.2].d |
 
   Scenario: g_V_hasNotXageX_name
     Given the modern graph
