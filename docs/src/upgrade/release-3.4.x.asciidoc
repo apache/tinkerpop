@@ -103,6 +103,168 @@ Display stack trace? [yN]n
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2314[TINKERPOP-2314]
 
+==== hasKey() Step and hasValue() Step
+
+Previously, `hasKey()`-step and `hasValue()`-step only applied to vertex properties. In order to support more
+generalized scenarios, the behavior of these steps were modified to allow them to be applied to both edge properties
+and meta-properties.
+
+The original behavior is demonstrated as follows:
+
+[source,groovy]
+----
+gremlin> graph = TinkerFactory.createTheCrew()
+==>tinkergraph[vertices:6 edges:14]
+gremlin> g = graph.traversal()
+==>graphtraversalsource[tinkergraph[vertices:6 edges:14], standard]
+gremlin> g.E().properties().hasKey('since')
+==>TinkerProperty cannot be cast to Element
+gremlin> g.V().properties("location").properties().hasKey("startTime")
+==>TinkerProperty cannot be cast to Element
+gremlin> g.E().properties().hasValue(2010)
+==>TinkerProperty cannot be cast to Element
+gremlin> g.V().properties("location").properties().hasValue(2005)
+==>TinkerProperty cannot be cast to Element
+----
+
+The new behavior of `hasKey()` with edge property can be seen as:
+
+[source,groovy]
+----
+gremlin> g.E().properties().hasKey('since')
+==>p[since->2009]
+==>p[since->2010]
+==>p[since->2010]
+==>p[since->2011]
+==>p[since->2012]
+----
+
+Similar behavior of for `hasKey()` can be seen with meta-properties:
+
+[source,groovy]
+----
+gremlin> g.V().properties().hasKey('location').properties().hasKey('startTime')
+==>p[startTime->1997]
+==>p[startTime->2001]
+==>p[startTime->2004]
+==>p[startTime->2004]
+==>p[startTime->2005]
+==>p[startTime->2005]
+==>p[startTime->1990]
+==>p[startTime->2000]
+==>p[startTime->2006]
+==>p[startTime->2007]
+==>p[startTime->2011]
+==>p[startTime->2014]
+==>p[startTime->1982]
+==>p[startTime->2009]
+----
+
+The new behavior for `hasValue()` with edge property is as follows:
+
+[source,groovy]
+----
+gremlin> g.E().properties().hasValue(2010)
+==>p[since->2010]
+==>p[since->2010]
+----
+
+and similarly with `hasValue()` for meta-properties:
+
+[source,groovy]
+----
+gremlin> g.V().properties().hasKey('location').properties().hasValue(2005)
+==>p[endTime->2005]
+==>p[endTime->2005]
+==>p[startTime->2005]
+==>p[startTime->2005]
+----
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-1733[TINKERPOP-1733]
+
+==== Properties Equality
+
+There was some inconsistency in terms of `Property` equality in earlier versions of Gremlin. Equality is now
+defined as follows: two properties are equal only if their key and value are equal, even if their parent elements are
+not equal. It makes sense when comparing properties regardless of parent elements to just focus on the property itself
+as it yields more uniform and concise results to reason about. The benefit of this change is that the behavior of
+property comparison and `dedup()`-step are predictable, and it will not affect the result if the property is detached
+from the parent element.
+
+NOTE: The "property" here refer to edge properties and meta-properties, thus excluding vertex property.
+
+The old behavior can be shown using "The Crew" toy graph as follows:
+
+[source,groovy]
+----
+gremlin> g.E().properties().count()
+==>13
+gremlin> g.E().properties()
+==>p[since->2009]
+==>p[since->2010]
+==>p[skill->4]
+==>p[skill->5]
+==>p[since->2010]
+==>p[since->2011]
+==>p[skill->5]
+==>p[skill->4]
+==>p[since->2012]
+==>p[skill->3]
+==>p[skill->3]
+==>p[skill->5]
+==>p[skill->3]
+gremlin> g.E().properties().dedup().count()
+==>13
+gremlin> g.E().dedup().properties()
+==>p[since->2009]
+==>p[since->2010]
+==>p[skill->4]
+==>p[skill->5]
+==>p[since->2010]
+==>p[since->2011]
+==>p[skill->5]
+==>p[skill->4]
+==>p[since->2012]
+==>p[skill->3]
+==>p[skill->3]
+==>p[skill->5]
+==>p[skill->3]
+----
+
+The new more consistent behavior is demonstrated below:
+
+[source,groovy]
+----
+gremlin> g.E().properties().count()
+==>13
+gremlin> g.E().properties()
+==>p[since->2009]
+==>p[since->2010]
+==>p[skill->4]
+==>p[skill->5]
+==>p[since->2010]
+==>p[since->2011]
+==>p[skill->5]
+==>p[skill->4]
+==>p[since->2012]
+==>p[skill->3]
+==>p[skill->3]
+==>p[skill->5]
+==>p[skill->3]
+gremlin> g.E().properties().dedup().count()
+==>7
+gremlin> g.E().properties().dedup()
+==>p[since->2009]
+==>p[since->2010]
+==>p[skill->4]
+==>p[skill->5]
+==>p[since->2011]
+==>p[since->2012]
+==>p[skill->3]
+----
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-2318[TINKERPOP-2318]
+
 === Upgrading for Providers
 
 ==== Graph Driver Providers
