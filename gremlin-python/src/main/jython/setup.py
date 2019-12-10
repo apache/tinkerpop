@@ -71,10 +71,10 @@ setup(
         'pytest-runner',
     ],
     tests_require=[
-        'pytest==4.6.4',
-        'mock',
+        'pytest>=4.6.4,<5.0.0',
+        'mock>=3.0.5',
         'radish-bdd==0.8.6',
-        'PyHamcrest'
+        'PyHamcrest>=1.9.0'
     ],
     install_requires=install_requires,
     classifiers=[
