@@ -47,6 +47,7 @@ import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -246,13 +247,22 @@ public final class Cluster {
 
     /**
      * Create a {@code Cluster} using a YAML-based configuration file.
+     * First try to read the file from the file system and then from resources.
      */
     public static Cluster open(final String configurationFile) throws Exception {
-        final File file = new File(configurationFile);
-        if (!file.exists())
-            throw new IllegalArgumentException(String.format("Configuration file at %s does not exist", configurationFile));
+        final File systemFile = new File(configurationFile);
+        if (!systemFile.exists()) {
+            final ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
+            final URL resource = currentClassLoader.getResource(configurationFile);
+            final File resourceFile = new File(resource.getFile());
+            if (!resourceFile.exists()) {
+                throw new IllegalArgumentException(String.format("Configuration file at %s does not exist", configurationFile));
+            }
 
-        return build(file).create();
+            return build(resourceFile).create();
+        }
+
+        return build(systemFile).create();
     }
 
     public void close() {

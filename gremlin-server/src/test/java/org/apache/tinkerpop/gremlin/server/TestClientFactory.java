@@ -33,6 +33,7 @@ public final class TestClientFactory {
     public static final URI WEBSOCKET_URI = URI.create("ws://localhost:" + PORT + "/gremlin");
     public static final URI NIO_URI = URI.create("gs://localhost:" + PORT);
     public static final String HTTP = "http://localhost:" + PORT;
+    public static final String RESOURCE_PATH = "conf/remote-objects.yaml";
 
     public static Cluster.Builder build() {
         return Cluster.build("localhost").port(45940);
