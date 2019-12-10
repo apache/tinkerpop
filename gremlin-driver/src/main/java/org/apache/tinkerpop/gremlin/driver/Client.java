@@ -781,7 +781,24 @@ public abstract class Client {
             final RequestMessage closeMessage = buildMessage(RequestMessage.build(Tokens.OPS_CLOSE)
                                                                            .addArg(Tokens.ARGS_FORCE, forceClose)).create();
 
-            final CompletableFuture<Void> sessionClose = submitAsync(closeMessage).thenCompose(s -> connectionPool.closeAsync());
+            final CompletableFuture<Void> sessionClose = CompletableFuture.supplyAsync(() -> {
+                try {
+                    // block this up until we get a response from the server or an exception. it might not be accurate
+                    // to wait for maxWaitForSessionClose because we wait that long for this future in calls to close()
+                    // but in either case we don't want to wait longer than that so perhaps this is still a sensible
+                    // wait time - or at least better than something hardcoded. this wait will just expire a bit after
+                    // the close() call's expiration....at least i think that's right.
+                    submitAsync(closeMessage).get(
+                            cluster.connectionPoolSettings().maxWaitForSessionClose, TimeUnit.MILLISECONDS).all().get();
+                } catch (Exception ignored) {
+                    // ignored - if the close message doesn't get to the server it's not a real worry. the server will
+                    // eventually kill the session
+                } finally {
+                    connectionPool.closeAsync();
+                }
+                return null;
+            }, cluster.executor());
+
             closing.set(sessionClose);
 
             return sessionClose;
@@ -802,6 +819,8 @@ public abstract class Client {
                         this.getSessionId());
                 logger.warn(msg, ex);
             } finally {
+                // a bit of an insurance policy for closing down the client side as we do already call this
+                // in closeAsync()
                 connectionPool.closeAsync().join();
             }
         }
