@@ -29,6 +29,12 @@ public class ConnectionException extends Exception {
     private URI uri;
     private InetSocketAddress address;
 
+    public ConnectionException(final URI uri, final String message) {
+        super(message);
+        this.uri = uri;
+        this.address = null;
+    }
+
     public ConnectionException(final URI uri, final InetSocketAddress addy, final String message) {
         super(message);
         this.address = addy;

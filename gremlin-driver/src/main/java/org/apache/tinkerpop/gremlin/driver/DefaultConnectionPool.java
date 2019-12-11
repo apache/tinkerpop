@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.group.ChannelGroup;
@@ -32,12 +33,15 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.concurrent.Promise;
 
+import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
+import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.ConnectException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -214,9 +218,8 @@ public class DefaultConnectionPool implements ConnectionPool {
 
     @Override
     public Connection prepareConnection() throws TimeoutException, ConnectException {
-        if (closeFuture.get() != null) {
+        if (closeFuture.get() != null)
             throw new RuntimeException(this + " is closing. Cannot borrow connection.");
-        }
 
         // Get a channel, verify handshake is done and then attach it to a connectionPool
         final Channel ch = this.channelPool.acquire().syncUninterruptibly().getNow();

@@ -72,8 +72,8 @@ public class WebSocketClient extends AbstractClient {
                     uri, WebSocketVersion.V13, null, false,
                     EmptyHttpHeaders.INSTANCE, 65536);
             final WebSocketClientProtocolHandler nettyWsHandler = new WebSocketClientProtocolHandler(
-                    handshaker, true, false, 9000);
-            final WebSocketClientHandler wsHandler = new WebSocketClientHandler(new DefaultChannelGroup(GlobalEventExecutor.INSTANCE));
+                    handshaker, true, false, 30000);
+            final WebSocketClientHandler wsHandler = new WebSocketClientHandler(uri, new DefaultChannelGroup(GlobalEventExecutor.INSTANCE));
 
             final MessageSerializer serializer = new GraphBinaryMessageSerializerV1();
             b.channel(NioSocketChannel.class)

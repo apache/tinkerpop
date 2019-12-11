@@ -57,10 +57,9 @@ public class SingleRequestConnection implements Connection {
     static final AttributeKey<ResultQueue> RESULT_QUEUE_ATTRIBUTE_KEY = AttributeKey.newInstance("resultQueueFuture");
 
     SingleRequestConnection(final Channel channel, final ConnectionPool pool) {
-        /* A channel is attached with a request only when the channel is active. This is the responsibility
-         * of channelpool to ensure that the channel attached to this connection is healthy. Something is fishy
-         * if this is not true, hence, IllegalState.
-         */
+        // A channel is attached with a request only when the channel is active. This is the responsibility
+        // of channelpool to ensure that the channel attached to this connection is healthy. Something is fishy
+        // if this is not true, hence, IllegalState.
         if (!channel.isActive()) {
             throw new IllegalStateException("Channel " + channel + " is not active.");
         }
@@ -150,9 +149,8 @@ public class SingleRequestConnection implements Connection {
      */
     @Override
     public ChannelPromise write(final RequestMessage requestMessage, final CompletableFuture<ResultSet> resultQueueSetup) {
-        if (this.resultFuture != null) {
+        if (this.resultFuture != null)
             throw new IllegalStateException("This " + this + " is already in use. Cannot reuse it for request " + requestMessage);
-        }
 
         this.resultFuture = resultQueueSetup;
 

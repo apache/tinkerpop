@@ -32,8 +32,11 @@ import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.ReferenceCountUtil;
+import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.URI;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -42,10 +45,12 @@ public final class WebSocketClientHandler extends SimpleChannelInboundHandler<Ob
     private static final Logger logger = LoggerFactory.getLogger(WebSocketClientHandler.class);
     private ChannelPromise handshakeFuture;
     private final ChannelGroup activeChannels;
+    private final URI host;
 
-    public WebSocketClientHandler(final ChannelGroup activeChannels) {
+    public WebSocketClientHandler(final URI host, final ChannelGroup activeChannels) {
         super(false);
         this.activeChannels = activeChannels;
+        this.host = host;
     }
 
     public ChannelFuture handshakeFuture() {
@@ -75,6 +80,9 @@ public final class WebSocketClientHandler extends SimpleChannelInboundHandler<Ob
         if (event == WebSocketClientProtocolHandler.ClientHandshakeStateEvent.HANDSHAKE_COMPLETE) {
             handshakeFuture.setSuccess();
             activeChannels.add(ctx.channel());
+        } else if (event == WebSocketClientProtocolHandler.ClientHandshakeStateEvent.HANDSHAKE_TIMEOUT) {
+            handshakeFuture.setFailure(new ConnectionException(host,
+                    "Timed out while performing websocket handshake - ensure that client protocol matches server"));
         } else if (event instanceof IdleStateEvent) {
             final IdleStateEvent e = (IdleStateEvent) event;
             if (e.state() == IdleState.READER_IDLE) {

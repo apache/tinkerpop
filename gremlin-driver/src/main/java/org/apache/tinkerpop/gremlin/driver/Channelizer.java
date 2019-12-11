@@ -140,13 +140,18 @@ public interface Channelizer extends ChannelHandler {
                 throw new IllegalStateException("To use wss scheme ensure that enableSsl is set to true in configuration");
 
             final int maxContentLength = cluster.connectionPoolSettings().maxContentLength;
+            final long maxWaitForConnection = cluster.connectionPoolSettings().maxWaitForConnection;
 
+            // seems ok to use the maxWaitForConnection as the top end for the handshake because the wait for the
+            // handshake is going just get interrupted by the wait for the overall connection. no point to adding
+            // another setting specific to the handshake to complicate things.
             final WebSocketClientHandshaker handshaker = WebSocketClientHandshakerFactory.newHandshaker(
                     connectionPool.getHost().getHostUri(), WebSocketVersion.V13, null, false,
                     EmptyHttpHeaders.INSTANCE, maxContentLength);
             final WebSocketClientProtocolHandler nettyWsHandler = new WebSocketClientProtocolHandler(
-                    handshaker, true, false, 9000);
-            final WebSocketClientHandler handler = new WebSocketClientHandler(connectionPool.getActiveChannels());
+                    handshaker, true, false, maxWaitForConnection);
+            final WebSocketClientHandler handler = new WebSocketClientHandler(
+                    connectionPool.getHost().getHostUri(), connectionPool.getActiveChannels());
 
             final int keepAliveInterval = toIntExact(TimeUnit.SECONDS.convert(cluster.connectionPoolSettings().keepAliveInterval, TimeUnit.MILLISECONDS));
             pipeline.addLast("http-codec", new HttpClientCodec());
@@ -158,7 +163,6 @@ public interface Channelizer extends ChannelHandler {
             pipeline.addLast("gremlin-encoder", webSocketGremlinRequestEncoder);
             pipeline.addLast("gremlin-decoder", webSocketGremlinResponseDecoder);
         }
-
 
         @Override
         public void connected(final Channel ch) {
@@ -173,11 +177,9 @@ public interface Channelizer extends ChannelHandler {
                             throw new ConnectionException(connectionPool.getHost().getHostUri(),
                                     "Could not complete websocket handshake - ensure that client protocol matches server", f.cause());
                         }
-                    }).get(3000, TimeUnit.MILLISECONDS);
+                    }).sync();
                 }
-            } catch (ExecutionException ex) {
-                throw new RuntimeException(ex.getCause());
-            } catch (InterruptedException | TimeoutException ex) {
+            }  catch (InterruptedException ex) {
                 // catching the InterruptedException will reset the interrupted flag. This is intentional.
                 throw new RuntimeException(new ConnectionException(connectionPool.getHost().getHostUri(),
                                                                    "Timed out while performing websocket handshake - ensure that client protocol matches server", ex.getCause()));

@@ -288,9 +288,8 @@ final class Settings {
         public int maxSize = ConnectionPool.DEFAULT_MAX_POOL_SIZE;
 
         /**
-         * Length of time in milliseconds to wait on an idle connection before sending a keep-alive request. This
-         * setting is only relevant to {@link Channelizer} implementations that return {@code true} for
-         * {@link Channelizer#supportsKeepAlive()}. Set to zero to disable this feature.
+         * Length of time in milliseconds to wait on an idle connection before sending a keep-alive request. Set to
+         * zero to disable this feature.
          */
         public long keepAliveInterval = Connection.DEFAULT_KEEP_ALIVE_INTERVAL;
 
