@@ -28,14 +28,16 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.util.CharsetUtil;
+import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.3.10, not replaced, use {@link WebSocketClient}.
  */
+@Deprecated
 public final class NioGremlinRequestEncoder extends MessageToByteEncoder<Object> {
-    private static final Logger logger = LoggerFactory.getLogger(WebSocketGremlinRequestEncoder.class);
     private boolean binaryEncoding = false;
 
     private final MessageSerializer serializer;

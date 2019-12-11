@@ -37,6 +37,7 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.ssl.SslContext;
+import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -225,7 +226,10 @@ public interface Channelizer extends ChannelHandler {
 
     /**
      * NIO {@link Channelizer} implementation.
+     *
+     * @deprecated As of release 3.3.10, not replaced, use {@link WebSocketClient}.
      */
+    @Deprecated
     public final class NioChannelizer extends AbstractChannelizer {
         @Override
         public void init(final Connection connection) {
