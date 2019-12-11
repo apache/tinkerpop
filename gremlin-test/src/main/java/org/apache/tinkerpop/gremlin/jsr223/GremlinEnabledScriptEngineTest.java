@@ -38,7 +38,6 @@ import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineSuite.ENGINE_TO_TEST;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeThat;
@@ -163,12 +162,9 @@ public class GremlinEnabledScriptEngineTest {
     }
 
     private static GraphTraversal<Vertex, Long> getTraversalWithLambda(final GraphTraversalSource g) {
-        assumeThat("This test is not enabled for this ScriptEngine: " + ENGINE_TO_TEST, ENGINE_TO_TEST,
-                anyOf(is("gremlin-python"), is("gremlin-jython"), is("gremlin-groovy")));
+        assumeThat("This test is not enabled for this ScriptEngine: " + ENGINE_TO_TEST, ENGINE_TO_TEST, is("gremlin-groovy"));
         if (ENGINE_TO_TEST.equals("gremlin-groovy"))
             return g.V().out("created").map(Lambda.function("{x -> x.get().values('name')}")).count();
-        else if (ENGINE_TO_TEST.equals("gremlin-python") || ENGINE_TO_TEST.equals("gremlin-jython"))
-            return g.V().out("created").map(Lambda.function("x : x.get().values('name')")).count();
         else
             throw new RuntimeException("The " + ENGINE_TO_TEST + " ScriptEngine is not supported by this test");
     }

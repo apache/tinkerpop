@@ -42,13 +42,15 @@ Feature: Step - branch()
 
   Scenario: g_V_branchXlabel_isXpersonX_countX_optionX1__ageX_optionX0__langX_optionX0__nameX
     Given the modern graph
+    And using the parameter one defined as "d[1].l"
+    And using the parameter zero defined as "d[0].l"
     And the traversal of
       """
       g.V().
         branch(__.label().is("person").count()).
-          option(1L, __.values("age")).
-          option(0L, __.values("lang")).
-          option(0L, __.values("name"))
+          option(one, __.values("age")).
+          option(zero, __.values("lang")).
+          option(zero, __.values("name"))
       """
     When iterated to list
     Then the result should be unordered
@@ -64,13 +66,15 @@ Feature: Step - branch()
 
   Scenario: g_V_branchXlabel_isXpersonX_countX_optionX1__ageX_optionX0__langX_optionX0__nameX_optionXany__labelX
     Given the modern graph
+    And using the parameter one defined as "d[1].l"
+    And using the parameter zero defined as "d[0].l"
     And the traversal of
       """
       g.V().
         branch(__.label().is("person").count()).
-          option(1L, __.values("age")).
-          option(0L, __.values("lang")).
-          option(0L, __.values("name")).
+          option(one, __.values("age")).
+          option(zero, __.values("lang")).
+          option(zero, __.values("name")).
           option(Pick.any, __.label())
       """
     When iterated to list

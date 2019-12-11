@@ -111,9 +111,6 @@ BEGIN {
       }
       tabs[i] = lang
       switch (lang) {
-        case "python":
-          c = "#"
-          break
         default:
           c = "//"
           break

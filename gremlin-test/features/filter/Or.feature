@@ -19,9 +19,10 @@ Feature: Step - or()
 
   Scenario: g_V_orXhasXage_gt_27X__outE_count_gte_2X_name
     Given the modern graph
+    And using the parameter two defined as "d[2].l"
     And the traversal of
       """
-      g.V().or(__.has("age", P.gt(27)), __.outE().count().is(P.gte(2l))).values("name")
+      g.V().or(__.has("age", P.gt(27)), __.outE().count().is(P.gte(two))).values("name")
       """
     When iterated to list
     Then the result should be unordered

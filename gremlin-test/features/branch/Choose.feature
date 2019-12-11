@@ -19,11 +19,13 @@ Feature: Step - choose()
 
   Scenario: g_V_chooseXout_countX_optionX2L_nameX_optionX3L_ageX
     Given the modern graph
+    And using the parameter two defined as "d[2].l"
+    And using the parameter three defined as "d[3].l"
     And the traversal of
       """
       g.V().choose(__.out().count()).
-        option(2L, __.values("name")).
-        option(3L, __.values("age"))
+        option(two, __.values("name")).
+        option(three, __.values("age"))
       """
     When iterated to list
     Then the result should be unordered

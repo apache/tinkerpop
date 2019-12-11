@@ -180,6 +180,16 @@ formerly held the cache for these side-effects, no longer have any effect and ca
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2269[TINKERPOP-2269]
 
+==== Python 2.x Support
+
+The gremlinpython module no longer supports Python 2.x. Users must use Python 3 going forward. For the most part, from
+a user's perspective, there are no specific API changes to consider as a result of this change. It is also worth
+noting that Jython support has been removed and that `gremlin-python` no longer produces a JVM-based artifact. This
+change means that the `GremlinJythonScriptEngine` no longer exists and there is no way to write native Python lambdas.
+All lambdas should be written using `gremlin-groovy` if they are needed.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2317[TINKERPOP-2317]
+
 ==== Deprecation Removal
 
 The following deprecated classes, methods or fields have been removed in this version:
@@ -217,6 +227,8 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.driver.Cluster.Builder#trustCertificateChainFile(String)`
 ** `org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteTraversalSideEffects`
 ** `org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteTraversal#getSideEffects()`
+* `gremlin-python`
+** `org.apache.tinkerpop.gremlin.python.jsr223.*`
 * `gremlin-server`
 ** `org.apache.tinkerpop.gremlin.server.Settings.scriptEvaluationTimeout`
 ** `org.apache.tinkerpop.gremlin.server.Settings.SslSettings.keyCertChainFile`
