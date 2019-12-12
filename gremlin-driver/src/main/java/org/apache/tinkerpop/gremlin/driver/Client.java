@@ -781,23 +781,26 @@ public abstract class Client {
             final RequestMessage closeMessage = buildMessage(RequestMessage.build(Tokens.OPS_CLOSE)
                                                                            .addArg(Tokens.ARGS_FORCE, forceClose)).create();
 
-            closing.set(CompletableFuture.supplyAsync(() -> {
+            // need to submit from here because after the future is set to closing we can't send anymore messages.
+            final CompletableFuture<ResultSet> closeRequestFuture = submitAsync(closeMessage);
+
+            closing.set(CompletableFuture.runAsync(() -> {
                 try {
                     // block this up until we get a response from the server or an exception. it might not be accurate
                     // to wait for maxWaitForSessionClose because we wait that long for this future in calls to close()
                     // but in either case we don't want to wait longer than that so perhaps this is still a sensible
                     // wait time - or at least better than something hardcoded. this wait will just expire a bit after
                     // the close() call's expiration....at least i think that's right.
-                    submitAsync(closeMessage).get(
+                    closeRequestFuture.get(
                             cluster.connectionPoolSettings().maxWaitForSessionClose, TimeUnit.MILLISECONDS).all().get();
-                } catch (Exception ignored) {
+                } catch (Exception ex) {
                     // ignored - if the close message doesn't get to the server it's not a real worry. the server will
                     // eventually kill the session
+                    logger.warn("Session close request failed for [" + this.sessionId + "]- the server will close the session once it has been determined to be idle or during shutdown", ex);
                 } finally {
                     connectionPool.closeAsync();
                 }
-                return null;
-            }, cluster.executor()));
+            }));
 
             return closing.get();
         }

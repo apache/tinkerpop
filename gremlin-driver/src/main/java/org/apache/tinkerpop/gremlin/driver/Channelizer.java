@@ -168,21 +168,27 @@ public interface Channelizer extends ChannelHandler {
         public void connected(final Channel ch) {
             try {
                 // be sure the handshake is done - if the handshake takes longer than the specified time there's
-                // gotta be issues with that  server. a common problem where this comes up: SSL is enabled on the
+                // gotta be issues with that server. a common problem where this comes up: SSL is enabled on the
                 // server, but the client forgot to enable it or perhaps the server is not configured for websockets.
-                final ChannelFuture handshakeFuture = ((WebSocketClientHandler)(ch.pipeline().get("ws-client-handler"))).handshakeFuture();
+                // we see this because a normal websocket handshake is sent to the server and it can't be decoded by
+                // SSL and no response get sent back so the handshake has no idea what to do. used the
+                // maxWaitForConnection here in the same way it was used as the netty websocket handshaker timeout.
+                // the wait for the overall connection should trigger before this.
+                final ChannelFuture handshakeFuture = ((WebSocketClientHandler) (ch.pipeline().get("ws-client-handler"))).handshakeFuture();
                 if (!handshakeFuture.isDone()) {
                     handshakeFuture.addListener(f -> {
                         if (!f.isSuccess()) {
                             throw new ConnectionException(connectionPool.getHost().getHostUri(),
                                     "Could not complete websocket handshake - ensure that client protocol matches server", f.cause());
                         }
-                    }).sync();
+                    }).get(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
                 }
-            }  catch (InterruptedException ex) {
+            } catch (ExecutionException ex) {
+                throw new RuntimeException(ex);
+            } catch (InterruptedException | TimeoutException ex) {
                 // catching the InterruptedException will reset the interrupted flag. This is intentional.
                 throw new RuntimeException(new ConnectionException(connectionPool.getHost().getHostUri(),
-                                                                   "Timed out while performing websocket handshake - ensure that client protocol matches server", ex.getCause()));
+                      "Timed out while performing websocket handshake - ensure that client protocol matches server", ex.getCause()));
             }
         }
     }

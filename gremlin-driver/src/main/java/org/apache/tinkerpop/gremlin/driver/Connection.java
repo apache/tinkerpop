@@ -37,7 +37,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface Connection {
 
-    int DEFAULT_MAX_WAIT_FOR_CONNECTION = 3000;
+    int DEFAULT_MAX_WAIT_FOR_CONNECTION = 30000;
     int DEFAULT_MAX_WAIT_FOR_SESSION_CLOSE = 3000;
     int DEFAULT_MAX_CONTENT_LENGTH = 65536;
     int DEFAULT_RECONNECT_INTERVAL = 1000;

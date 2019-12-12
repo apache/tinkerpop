@@ -38,6 +38,10 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+/**
+ * Tests we know will fail have Shorten the wait for a connection settings as there is really no need to wait the full
+ * time just to get a failure.
+ */
 public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrationTest {
 
     /**
@@ -122,7 +126,6 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
         }
     }
 
-
     @Test
     public void shouldEnableSsl() {
         final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_SERVER_KEY).keyStorePassword(KEY_PASS).sslSkipCertValidation(true).create();
@@ -156,7 +159,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldEnableSslButFailIfClientConnectsWithoutIt() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(false).create();
+        final Cluster cluster = TestClientFactory.build().enableSsl(false).maxWaitForConnection(3000).create();
         final Client client = cluster.connect();
 
         try {
@@ -199,7 +202,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
     @Test
     public void shouldEnableSslAndClientCertificateAuthAndFailWithoutCert() {
         final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_SERVER_KEY).keyStorePassword(KEY_PASS)
-                .keyStoreType(KEYSTORE_TYPE_JKS).sslSkipCertValidation(true).create();
+                .keyStoreType(KEYSTORE_TYPE_JKS).sslSkipCertValidation(true).maxWaitForConnection(3000).create();
         final Client client = cluster.connect();
 
         try {
@@ -216,7 +219,8 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
     @Test
     public void shouldEnableSslAndClientCertificateAuthAndFailWithoutTrustedClientCert() {
         final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_CLIENT_KEY).keyStorePassword(KEY_PASS)
-                .keyStoreType(KEYSTORE_TYPE_JKS).trustStore(JKS_CLIENT_TRUST).trustStorePassword(KEY_PASS).create();
+                .keyStoreType(KEYSTORE_TYPE_JKS).trustStore(JKS_CLIENT_TRUST).trustStorePassword(KEY_PASS)
+                .maxWaitForConnection(3000).create();
         final Client client = cluster.connect();
 
         try {
@@ -233,7 +237,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
     @Test
     public void shouldEnableSslAndFailIfProtocolsDontMatch() {
         final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_SERVER_KEY).keyStorePassword(KEY_PASS)
-                .sslSkipCertValidation(true).sslEnabledProtocols(Arrays.asList("TLSv1.2")).create();
+                .sslSkipCertValidation(true).sslEnabledProtocols(Arrays.asList("TLSv1.2")).maxWaitForConnection(3000).create();
         final Client client = cluster.connect();
 
         try {
@@ -250,7 +254,8 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
     @Test
     public void shouldEnableSslAndFailIfCiphersDontMatch() {
         final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_SERVER_KEY).keyStorePassword(KEY_PASS)
-                .sslSkipCertValidation(true).sslCipherSuites(Arrays.asList("SSL_RSA_WITH_RC4_128_SHA")).create();
+                .sslSkipCertValidation(true).sslCipherSuites(Arrays.asList("SSL_RSA_WITH_RC4_128_SHA"))
+                .maxWaitForConnection(3000).create();
         final Client client = cluster.connect();
 
         try {

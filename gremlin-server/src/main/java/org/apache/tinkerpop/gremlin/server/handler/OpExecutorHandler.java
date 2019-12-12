@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.handler;
 
+import io.netty.handler.ssl.NotSslRecordException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
@@ -80,6 +81,15 @@ public class OpExecutorHandler extends SimpleChannelInboundHandler<Pair<RequestM
                     .statusMessage(ex.getMessage()).create());
         } finally {
             ReferenceCountUtil.release(objects);
+        }
+    }
+
+    @Override
+    public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) throws Exception {
+        // basic catch all for server exceptions
+        logger.error(cause.getMessage(), cause);
+        if (cause.getCause() instanceof NotSslRecordException) {
+            ctx.close();
         }
     }
 }
