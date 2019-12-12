@@ -1300,8 +1300,8 @@ limitations under the License.
                                          build for the "full" javadocs -->
                                     <additionalDependencies>
                                         <additionalDependency>
-                                            <groupId>commons-configuration</groupId>
-                                            <artifactId>commons-configuration</artifactId>
+                                            <groupId>org.apache.commons</groupId>
+                                            <artifactId>commons-configuration2</artifactId>
                                             <version>${commons.configuration.version}</version>
                                         </additionalDependency>
                                         <additionalDependency>
