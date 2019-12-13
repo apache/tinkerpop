@@ -27,6 +27,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Deprecated `TraversalStrategies.applyStrategies()`.
 * Deprecated Jython support in `gremlin-python`.
 * Reverted: Modified Java driver to use IP address rather than hostname to create connections.
+* Allow custom XMLInputFactory to be used with GraphMLReader.
 
 [[release-3-3-9]]
 === TinkerPop 3.3.9 (Release Date: October 14, 2019)
