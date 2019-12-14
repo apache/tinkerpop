@@ -1645,4 +1645,10 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(root.getMessage(), startsWith("Evaluation exceeded the configured 'evaluationTimeout' threshold of 250 ms"));
         }
     }
+
+    @Test
+    public void shouldClusterReadFileFromResources() throws Exception {
+        final Cluster cluster = Cluster.open(TestClientFactory.RESOURCE_PATH);
+        assertTrue(cluster != null);
+    }
 }

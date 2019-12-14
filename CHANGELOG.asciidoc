@@ -535,6 +535,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-3-10]]
 === TinkerPop 3.3.10 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Made `Cluster` be able to open configuration file on resources directory.
 * Bump to Tornado 5.x for gremlin-python.
 * Deprecated `TraversalStrategies.applyStrategies()`.
 * Deprecated Jython support in `gremlin-python`.
