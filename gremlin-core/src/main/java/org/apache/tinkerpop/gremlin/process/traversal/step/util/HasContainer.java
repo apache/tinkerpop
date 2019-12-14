@@ -171,7 +171,7 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
         }
     }
 
-    public static <S> boolean testAll(final S element, final List<HasContainer> hasContainers) {
+    public static boolean testAll(final Object element, final List<HasContainer> hasContainers) {
         final boolean isProperty = element instanceof Property;
         for (final HasContainer hasContainer : hasContainers) {
             if (isProperty) {
