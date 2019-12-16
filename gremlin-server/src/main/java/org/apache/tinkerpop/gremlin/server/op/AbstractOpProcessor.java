@@ -146,7 +146,13 @@ public abstract class AbstractOpProcessor implements OpProcessor {
 
             // send back a page of results if batch size is met or if it's the end of the results being iterated.
             // also check writeability of the channel to prevent OOME for slow clients.
-            if (nettyContext.channel().isWritable()) {
+            //
+            // clients might decide to close the Netty channel to the server with a CloseWebsocketFrame after errors
+            // like CorruptedFrameException. On the server, although the channel gets closed, there might be some
+            // executor threads waiting for watermark to clear which will not clear in these cases since client has
+            // already given up on these requests. This leads to these executors waiting for the client to consume
+            // results till the timeout. checking for isActive() should help prevent that.
+            if (nettyContext.channel().isActive() && nettyContext.channel().isWritable()) {
                 if (forceFlush || aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
                     final ResponseStatusCode code = itty.hasNext() ? ResponseStatusCode.PARTIAL_CONTENT : ResponseStatusCode.SUCCESS;
 
