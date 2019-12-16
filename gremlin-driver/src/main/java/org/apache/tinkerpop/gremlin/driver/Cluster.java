@@ -1091,6 +1091,13 @@ public final class Cluster {
 
             if (builder.workerPoolSize < 1)
                 throw new IllegalArgumentException("workerPoolSize must be greater than zero");
+
+            try {
+                Class.forName(builder.channelizer);
+            } catch (Exception ex) {
+                throw new IllegalArgumentException("The channelizer specified [" + builder.channelizer +
+                        "] could not be instantiated - it should be the fully qualified classname of a Channelizer implementation available on the classpath", ex);
+            }
         }
 
         synchronized void init() {
