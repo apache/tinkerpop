@@ -201,6 +201,14 @@ class GraphTraversal extends Traversal {
   constructor(graph, traversalStrategies, bytecode) {
     super(graph, traversalStrategies, bytecode);
   }
+
+  /**
+   * Copy a traversal so as to reset and re-use it.
+   */
+  clone() {
+    return new GraphTraversal(this.graph, this.traversalStrategies, this.getBytecode());
+  }
+
   
   /**
    * Graph traversal V method.
