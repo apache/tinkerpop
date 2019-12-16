@@ -276,17 +276,8 @@ final class Connection {
         }
     }
 
-    /*
-     * In the event of an IOException (typically means that the Connection might have been closed from the server side
-     * - this is typical in situations like when a request is sent that exceeds maxContentLength and the server closes
-     * the channel on its side) or other exceptions that indicate a non-recoverable state for the Connection object
-     * (a netty CorruptedFrameException is a good example of that), the Connection cannot simply be returned to the
-     * pool as future uses will end with refusal from the server and make it appear as a dead host as the write will
-     * not succeed. Instead, the Connection needs to be replaced in these scenarios which destroys the dead channel
-     * on the client and allows a new one to be reconstructed.
-     */
     private void handleConnectionCleanupOnError(final Connection thisConnection, final Throwable t) {
-        if (thisConnection.isDead() || t instanceof IOException || t instanceof CodecException) {
+        if (thisConnection.isDead()) {
             if (pool != null) pool.replaceConnection(thisConnection);
         } else {
             thisConnection.returnToPool();
