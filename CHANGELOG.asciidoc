@@ -23,6 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-3-10]]
 === TinkerPop 3.3.10 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Improved error messaging for a `Cluster` with a bad `Channelizer` configuration in the Java driver.
 * Made `Cluster` be able to open configuration file on resources directory.
 * Bump to Tornado 5.x for gremlin-python.
 * Deprecated `TraversalStrategies.applyStrategies()`.
