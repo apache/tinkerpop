@@ -962,7 +962,8 @@ as the API for the endpoint is very similar to Rexster's link:https://github.com
 
 Gremlin Server provides for a single HTTP endpoint - a Gremlin evaluator - which allows the submission of a Gremlin
 script as a request.  For each request, it returns a response containing the serialized results of that script.
-To enable this endpoint, Gremlin Server needs to be configured with the `HttpChannelizer`, which replaces the default. The `WsAndHttpChannelizer` may also be configured to enable both WebSockets and the REST endpoint.
+To enable this endpoint, Gremlin Server needs to be configured with the `HttpChannelizer`, which replaces the default.
+The `WsAndHttpChannelizer` may also be configured to enable both WebSockets and the REST endpoint.
 `WebSocketChannelizer`, in the configuration file:
 
 [source,yaml]
@@ -1908,6 +1909,10 @@ image:gremlin-handdrawn.png[width=120,float=right] Tuning Gremlin Server for a p
 
 * Gremlin Server defaults to a very modest maximum heap size.  Consider increasing this value for non-trivial uses.
 Maximum heap size (`-Xmx`) is defined with the `JAVA_OPTIONS` setting in `gremlin-server.conf`.
+* If Gremlin Server is processing scripts or lambdas in bytecode requests, consider fine tuning the JVM's handling of
+the metaspace size. Consider modifying the `-XX:MetaspaceSize`,`-XX:MaxMetaspaceSize`, and related settings given the
+expected workload. More discussion on this topic can be found in the <<parameterized-scripts,Parameterized Scripts>>
+Section below.
 * When configuring the size of `threadPoolWorker` start with the default of `1` and increment by one as needed to a
 maximum of `2*number of cores`.
 * The "right" size of the `gremlinPool` setting is somewhat dependent on the type of scripts that will be processed
@@ -1942,6 +1947,9 @@ all scripts that are passed to it.  The cache is keyed based on the a hash of th
 where `x` is passed as a parameter from the client, there will be no additional compilation cost for future requests
 on that script.  Compilation of a script should be considered "expensive" and avoided when possible.
 
+IMPORTANT: The parameterized script of `g.V(x)` is keyed in the cache differently than `g.V(y)` or even `g.V( x )`.
+Scripts must be exact string matches for recompilation to be avoided.
+
 [source,java]
 ----
 Cluster cluster = Cluster.open();
@@ -1957,6 +1965,51 @@ The more parameters that are used in a script the more expensive the compilation
 section. It controls the maximum number of parameters that can be passed to the server for script evaluation purposes.
 Use of this setting can prevent accidental long run compilations, which individually are not terribly oppressive to
 the server, but taken as a group under high concurrency would be considered detrimental.
+
+Scripts create classes which get loaded to the JVM metaspace and to a `Class` cache. For those using script
+parameterization, a typical application should not generate an overabundance of pressure on these two components of
+Gremlin Server's memory footprint. On the other hand, it's not too hard to imagine a situation where problems might
+emerge:
+
+* An application use case makes parameterization impossible and therefore all scripts are unique.
+* There is a bug in an applications parameterization code that is actually instead producing unique scripts.
+* A long running Gremln Server takes lots of non-parameterized scripts from Gremlin Console or similar tools.
+
+In these sorts of cases, Gremlin Server's performance can be affected adversely as without some additional configuration
+the metaspace will grow indefinitely (possibly along with the general heap) triggering longer and more frequent rounds
+of garbage collection (GC). Some tuning of JVM settings can help abate this issue.
+
+As a first guard against this problem consider setting the `-XX:SoftRefLRUPolicyMSPerMB` to release soft references
+earlier. The `ScriptEngine` cache for created `Class` objects uses soft references and if the workload expectation is
+such that cache hits will be low there is little need to keep such references around.
+
+Perhaps the more important guards are related to the JVM metaspace. Start by setting the initial size of this space
+with `-XX:MetaspaceSize`. When this value is exceeded it will trigger a GC round - it is essentially a threshold for
+GC. The grow of this value can be capped with `-XX:MaxMetaspaceSize` (this value is unlimited by default). In an ideal
+situation (i.e. parameterization), the `-XX:MetaspaceSize` should have a large enough setting so as to avoid early GC
+rounds for metaspace, but outside of an ideal world (i.e. non-parameterization) it may not be smart to make this number
+too large. Making the setting too large (and thus the `-XX:MaxMetaspaceSize` even larger) may trigger longer GC rounds
+when they inevitably arrive.
+
+In addition to those two metaspace settings it may also be useful to consider the following additional options:
+
+* `MinMetaspaceFreeRatio` - When the percentage for committed space available for class metadata is less than this
+value, then the threshold of metaspace GC will be raised, but only if the incremental size of the threshold meets the
+requirement set by `MinMetaspaceExpansion`. A larger number should make the metaspace grow more aggressively.
+* `MaxMetaspaceFreeRatio` - When the percentage for committed space available for class metadata is more than this
+value, then the threshold of metaspace GC will be lowered, but only if the incremental size of the threshold meets the
+requirement set by `MaxMetaspaceExpansion`. A larger number should reduce the chance of the metaspace shrinking.
+* `MinMetaspaceExpansion` - The minimum size by which the metaspace is expanded after a metaspace GC round.
+* `MaxMetaspaceExpansion`` - If the incremental size exceeds `MinMetaspaceExpansion` but less than
+`MaxMetaspaceExpansion`, then the incremental size is `MaxMetaspaceExpansion`. If the incremental size exceeds
+`MaxMetaspaceExpansion`, then the incremental size is `MinMetaspaceExpansion` plus the original incremental size.
+
+There really aren't any general guidelines for how to initially set these values. Using profiling tools to examine GC
+trends is likely the best way to understand how a particular workload is affecting the metaspace and its relation to
+GC. Getting these settings "right" however will help ensure much more predictable Gremlin Server operations.
+
+IMPORTANT: A lambda used in a bytecode-based request will be treated as a script, so issues related to raw script-based
+requests apply equally well to lambda-bytecode requests.
 
 ==== Properties of Elements
 
