@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
  * configured in Gremlin Server with the {@code channelizer} setting in the configuration file.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @see org.apache.tinkerpop.gremlin.server.AbstractChannelizer
+ * @see AbstractChannelizer
  */
 public interface Channelizer extends ChannelHandler {
 
