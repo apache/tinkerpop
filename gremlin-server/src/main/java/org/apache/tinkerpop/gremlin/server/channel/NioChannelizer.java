@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.channel;
 
+import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
 import org.apache.tinkerpop.gremlin.server.AbstractChannelizer;
 import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
@@ -36,7 +37,9 @@ import org.slf4j.LoggerFactory;
  * A {@link Channelizer} that exposes an NIO-based Gremlin endpoint with a custom protocol.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.3.10, not replaced, use {@link WebSocketClient}.
  */
+@Deprecated
 public class NioChannelizer extends AbstractChannelizer {
     private static final Logger logger = LoggerFactory.getLogger(NioChannelizer.class);
 

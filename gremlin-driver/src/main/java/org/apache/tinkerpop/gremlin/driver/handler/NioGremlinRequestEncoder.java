@@ -27,10 +27,13 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.util.CharsetUtil;
+import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.3.10, not replaced, use {@link WebSocketClient}.
  */
+@Deprecated
 public final class NioGremlinRequestEncoder extends MessageToByteEncoder<Object> {
     private boolean binaryEncoding;
 

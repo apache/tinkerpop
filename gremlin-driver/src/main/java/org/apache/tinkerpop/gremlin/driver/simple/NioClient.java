@@ -39,7 +39,9 @@ import java.net.URI;
  * A simple, non-thread safe Gremlin Server client using NIO.  Typical use is for testing and demonstration.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.3.10, not replaced, use {@link WebSocketClient}.
  */
+@Deprecated
 public class NioClient extends AbstractClient {
     private final Channel channel;
 

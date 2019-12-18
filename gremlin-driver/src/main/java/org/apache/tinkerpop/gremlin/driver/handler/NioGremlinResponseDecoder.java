@@ -22,12 +22,15 @@ import io.netty.handler.codec.ReplayingDecoder;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
 
 import java.util.List;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.3.10, not replaced, use {@link WebSocketClient}.
  */
+@Deprecated
 public final class NioGremlinResponseDecoder extends ReplayingDecoder<NioGremlinResponseDecoder.DecoderState> {
     private final MessageSerializer serializer;
     private int messageLength;

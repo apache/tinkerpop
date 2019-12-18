@@ -23,12 +23,15 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.util.CharsetUtil;
+import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
 
 /**
  * Encodes {@code ByteBuf} and {@code String} values to bytes to be written over NIO.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.3.10, not replaced, use {@link WebSocketClient}.
  */
+@Deprecated
 @ChannelHandler.Sharable
 public class NioGremlinResponseFrameEncoder extends MessageToByteEncoder<Frame> {
     @Override

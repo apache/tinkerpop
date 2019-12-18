@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +34,10 @@ import java.util.Map;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ *
+ * @deprecated As of release 3.3.10, not replaced, use {@link WebSocketClient}.
  */
+@Deprecated
 public class NioGremlinBinaryRequestDecoder extends ReplayingDecoder<NioGremlinBinaryRequestDecoder.DecoderState> {
     private static final Logger logger = LoggerFactory.getLogger(NioGremlinBinaryRequestDecoder.class);
     private final Map<String, MessageSerializer> serializers;
