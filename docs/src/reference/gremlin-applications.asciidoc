@@ -2077,6 +2077,9 @@ List<Vertex> results = g.V().hasLabel("person").valueMap(true,'name').toList();
 
 Both of the above requests return a list of `Map` instances that contain the `id`, `label` and the "name" property.
 
+NOTE: For those interested, please see link:https://lists.apache.org/thread.html/e959e85d4f8b3d46d281f2742a6e574c7d27c54bfc52f802f7c04af3%40%3Cdev.tinkerpop.apache.org%3E[this post]
+to the TinkerPop dev list which outlines the full history of this issue and related concerns.
+
 [[gremlin-server-cache]]
 ==== Cache Management
 
