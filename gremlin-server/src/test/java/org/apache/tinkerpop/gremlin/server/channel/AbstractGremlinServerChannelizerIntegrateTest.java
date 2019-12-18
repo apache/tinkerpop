@@ -22,7 +22,6 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.tinkerpop.gremlin.driver.AuthProperties;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.server.AbstractGremlinServerIntegrationTest;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.TestClientFactory;
@@ -61,8 +60,6 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
     protected static final String WSS = "wss";
     protected static final String WS_AND_HTTP = "wsAndHttp";
     protected static final String WSS_AND_HTTPS = "wssAndHttps";
-    protected static final String NIO = "nio";
-    protected static final String NIO_SECURE = "nioSecure";
 
     public abstract String getProtocol();
     public abstract String getSecureProtocol();
@@ -160,10 +157,7 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
         private CloseableHttpClient httpClient = null;
         private Cluster wsCluster = null;
         private Cluster.Builder wsBuilder = null;
-        private Cluster nioCluster = null;
-        private Cluster.Builder nioBuilder = null;
         private Client wsClient = null;
-        private Client.ClusteredClient nioClient = null;
         private boolean secure = false;
 
 
@@ -191,13 +185,6 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
                     httpClient = createSslHttpClient();
                     secure = true;
                     this.wsBuilder = TestClientFactory.build();
-                    break;
-                case NIO:
-                    this.nioBuilder = TestClientFactory.build();
-                    break;
-                case NIO_SECURE:
-                    this.nioBuilder = TestClientFactory.build();
-                    secure = true;
                     break;
             }
         }
@@ -228,9 +215,6 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
             if (wsCluster != null) {
                 wsCluster.close();
             }
-            if (nioCluster != null) {
-                nioCluster.close();
-            }
         }
 
         public void sendAndAssertUnauthorized(final String gremlin, final String username, final String password) throws Exception {
@@ -249,15 +233,6 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
                     assertEquals("Username and/or password are incorrect", e.getCause().getMessage());
                 }
             }
-            if (nioBuilder != null) {
-                setNioClient(username, password);
-                try {
-                    nioClient.submit(gremlin);
-                } catch(Exception e) {
-                    assertEquals("Username and/or password are incorrect", e.getCause().getMessage());
-                }
-            }
-
         }
 
         public void sendAndAssert(final String gremlin, final Object result, final String username, final String password) throws Exception {
@@ -274,24 +249,6 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
             if (wsBuilder != null) {
                 setWsClient(username, password);
                 assertEquals(result, wsClient.submit(gremlin).all().get().get(0).getInt());
-            }
-            if (nioClient != null) {
-                assertEquals(result, nioClient.submit(gremlin).all().get().get(0).getInt());
-            }
-        }
-
-        private void setNioClient(final String username, final String password) {
-            nioBuilder.channelizer(Channelizer.NioChannelizer.class.getName());
-            if (username != null && password != null) {
-                final AuthProperties authProps = new AuthProperties()
-                                                .with(Property.USERNAME, username)
-                                                .with(Property.PASSWORD, password);
-
-                nioCluster = nioBuilder.enableSsl(secure).sslSkipCertValidation(true).authProperties(authProps).create();
-                nioClient = nioCluster.connect();
-            } else {
-                nioCluster = nioBuilder.enableSsl(secure).create();
-                nioClient = nioCluster.connect();
             }
         }
 

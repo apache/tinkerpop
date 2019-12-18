@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.driver.simple.NioClient;
 import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
 
 import java.net.URI;
@@ -31,7 +30,6 @@ public final class TestClientFactory {
 
     public static final int PORT = 45940;
     public static final URI WEBSOCKET_URI = URI.create("ws://localhost:" + PORT + "/gremlin");
-    public static final URI NIO_URI = URI.create("gs://localhost:" + PORT);
     public static final String HTTP = "http://localhost:" + PORT;
     public static final String RESOURCE_PATH = "conf/remote-objects.yaml";
 
@@ -45,10 +43,6 @@ public final class TestClientFactory {
 
     public static WebSocketClient createWebSocketClient() {
         return new WebSocketClient(WEBSOCKET_URI);
-    }
-
-    public static NioClient createNioClient() {
-        return new NioClient(NIO_URI);
     }
 
     public static String createURLString() {

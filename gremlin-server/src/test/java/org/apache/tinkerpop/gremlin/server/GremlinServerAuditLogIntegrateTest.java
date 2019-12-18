@@ -32,7 +32,6 @@ import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
-import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
@@ -42,15 +41,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static org.apache.log4j.Level.INFO;
@@ -135,11 +129,6 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
                 authSettings.enableAuditLog = AUDIT_LOG_DISABLED;
             case "shouldAuditLogWithKrb5Authenticator":
             case "shouldAuditLogTwoClientsWithKrb5Authenticator":
-                authConfig.put("keytab", kdcServer.serviceKeytabFile.getAbsolutePath());
-                authConfig.put("principal", kdcServer.serverPrincipal);
-                break;
-            case "shouldAuditLogWithNioTransport":
-                settings.channelizer = NioChannelizer.class.getName();
                 authConfig.put("keytab", kdcServer.serviceKeytabFile.getAbsolutePath());
                 authConfig.put("principal", kdcServer.serverPrincipal);
                 break;
@@ -275,38 +264,6 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
                 item.getMessage().toString().matches("User with address .*? requested: 1\\+2")));
         assertFalse(log.stream().anyMatch(item -> item.getLevel() == INFO &&
             item.getMessage().toString().matches("User with address .*? requested: 1\\+3")));
-    }
-
-    @Test
-    public void shouldAuditLogWithNioTransport() throws Exception {
-        final Cluster cluster = TestClientFactory.build().channelizer(Channelizer.NioChannelizer.class.getName())
-                .jaasEntry(TESTCONSOLE).protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
-        final Client client = cluster.connect();
-        try {
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
-            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
-        } finally {
-            cluster.close();
-        }
-
-        // wait for logger to flush - (don't think there is a way to detect this)
-        stopServer();
-        Thread.sleep(1000);
-
-        final List<LoggingEvent> log = recordingAppender.getEvents();
-        final Stream<LoggingEvent> auditEvents = log.stream().filter(event -> event.getLoggerName().equals(AUDIT_LOGGER_NAME));
-        final LoggingEvent authEvent = auditEvents
-                .filter(event -> event.getMessage().toString().contains("Krb5Authenticator")).iterator().next();
-        final String authMsg = authEvent.getMessage().toString();
-        assertTrue(authEvent.getLevel() == INFO &&
-                authMsg.matches(String.format("User %s with address .*? authenticated by Krb5Authenticator", kdcServer.clientPrincipalName)));
-        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User with address .*? requested: 1\\+1")));
-        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User with address .*? requested: 1\\+2")));
-        assertTrue(log.stream().anyMatch(item -> item.getLevel() == INFO &&
-                item.getMessage().toString().matches("User with address .*? requested: 1\\+3")));
     }
 
     @Test

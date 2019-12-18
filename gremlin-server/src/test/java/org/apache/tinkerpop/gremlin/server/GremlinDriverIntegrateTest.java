@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.server;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.log4j.Level;
 import org.apache.tinkerpop.gremlin.TestHelper;
-import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.RequestOptions;
@@ -42,7 +41,6 @@ import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
@@ -159,9 +157,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
-                break;
-            case "shouldWorkOverNioTransport":
-                settings.channelizer = NioChannelizer.class.getName();
                 break;
             case "shouldFailWithBadClientSideSerialization":
                 final List<String> custom = Arrays.asList(
@@ -561,24 +556,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldWaitForAllResultsToArrive() throws Exception {
         final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect();
-
-        final AtomicInteger checked = new AtomicInteger(0);
-        final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
-        while (!results.allItemsAvailable()) {
-            assertTrue(results.getAvailableItemCount() < 10);
-            checked.incrementAndGet();
-            Thread.sleep(100);
-        }
-
-        assertTrue(checked.get() > 0);
-        assertEquals(9, results.getAvailableItemCount());
-        cluster.close();
-    }
-
-    @Test
-    public void shouldWorkOverNioTransport() throws Exception {
-        final Cluster cluster = TestClientFactory.build().channelizer(Channelizer.NioChannelizer.class.getName()).create();
         final Client client = cluster.connect();
 
         final AtomicInteger checked = new AtomicInteger(0);

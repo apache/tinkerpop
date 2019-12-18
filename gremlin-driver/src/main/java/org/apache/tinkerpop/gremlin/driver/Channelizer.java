@@ -23,8 +23,6 @@ import io.netty.handler.codec.http.EmptyHttpHeaders;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
-import org.apache.tinkerpop.gremlin.driver.handler.NioGremlinRequestEncoder;
-import org.apache.tinkerpop.gremlin.driver.handler.NioGremlinResponseDecoder;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinRequestEncoder;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinResponseDecoder;
@@ -37,7 +35,6 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.ssl.SslContext;
-import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -221,25 +218,6 @@ public interface Channelizer extends ChannelHandler {
                 throw new RuntimeException(new ConnectionException(connection.getUri(),
                         "Could not complete websocket handshake - ensure that client protocol matches server", ex));
             }
-        }
-    }
-
-    /**
-     * NIO {@link Channelizer} implementation.
-     *
-     * @deprecated As of release 3.3.10, not replaced, use {@link WebSocketClient}.
-     */
-    @Deprecated
-    public final class NioChannelizer extends AbstractChannelizer {
-        @Override
-        public void init(final Connection connection) {
-            super.init(connection);
-        }
-
-        @Override
-        public void configure(ChannelPipeline pipeline) {
-            pipeline.addLast("gremlin-decoder", new NioGremlinResponseDecoder(cluster.getSerializer()));
-            pipeline.addLast("gremlin-encoder", new NioGremlinRequestEncoder(true, cluster.getSerializer()));
         }
     }
 }

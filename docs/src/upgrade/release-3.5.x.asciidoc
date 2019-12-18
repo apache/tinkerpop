@@ -225,8 +225,11 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.driver.Cluster.Builder#keyFile(String)`
 ** `org.apache.tinkerpop.gremlin.driver.Cluster.Builder#keyPassword(String)`
 ** `org.apache.tinkerpop.gremlin.driver.Cluster.Builder#trustCertificateChainFile(String)`
+** `org.apache.tinkerpop.gremlin.driver.handler.NioGremlinRequestEncoder`
+** `org.apache.tinkerpop.gremlin.driver.handler.NioGremlinResponseDecoder`
 ** `org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteTraversalSideEffects`
 ** `org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteTraversal#getSideEffects()`
+** `org.apache.tinkerpop.gremlin.driver.simple.NioClient`
 * `gremlin-python`
 ** `org.apache.tinkerpop.gremlin.python.jsr223.*`
 * `gremlin-server`
@@ -236,6 +239,9 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.server.Settings.SslSettings.keyPassword`
 ** `org.apache.tinkerpop.gremlin.server.Settings.SslSettings.trustCertificateChainFile`
 ** `org.apache.tinkerpop.gremlin.server.ResponseHandlerContext`
+** `org.apache.tinkerpop.gremlin.server.channel.NioChannelizer`
+** `org.apache.tinkerpop.gremlin.server.handler.NioGremlinBinaryRequestDecoder`
+** `org.apache.tinkerpop.gremlin.server.handler.NioGremlinResponseFrameEncoder`
 ** `org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor.evalOpInternal(ResponseHandlerContext, Supplier, BindingSupplier)`
 ** `org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor.generateMetaData(ChannelHandlerContext, RequestMessage, ResponseStatusCode, Iterator)`
 ** `org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor.handleIterator(ResponseHandlerContext, Iterator)`

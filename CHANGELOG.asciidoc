@@ -50,6 +50,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Removed Gryo serialization configurations from Gremlin Server sample configurations and default configurations.
 * Removed previously deprecated `TraversalStrategies.applyStrategies()`.
 * Removed previously deprecated `scriptEvaluationTimeout`.
+* Removed previously deprecated `NioChannelizer` and related classes.
 * Removed previously deprecated remote traversal side-effects.
 * Removed previously deprecated `Serializers.DEFAULT_RESULT_SERIALIZER` and `Serializers.DEFAULT_REQUEST_SERIALIZER`.
 * Removed previously deprecated `decr` and `incr` from `Order`.
