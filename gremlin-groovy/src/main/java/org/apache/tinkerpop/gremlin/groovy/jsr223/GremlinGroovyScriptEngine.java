@@ -562,7 +562,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
      * Gets the total number of times the cache lookup method returned a cached or uncached value.
      */
     public long getClassCacheRequestCount() {
-        return classMap.stats().missCount();
+        return classMap.stats().missCount() + classMap.stats().hitCount();
     }
 
     /**
