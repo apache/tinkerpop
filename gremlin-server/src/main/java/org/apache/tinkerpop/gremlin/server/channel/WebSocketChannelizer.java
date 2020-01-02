@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.channel;
 
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig;
 import org.apache.tinkerpop.gremlin.server.AbstractChannelizer;
 import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
@@ -95,8 +96,12 @@ public class WebSocketChannelizer extends AbstractChannelizer {
 
         pipeline.addLast(PIPELINE_HTTP_RESPONSE_ENCODER, new HttpResponseEncoder());
 
+        // setting closeOnProtocolViolation to false prevents causing all the other requests using the same channel
+        // to fail when a single request causes a protocol violation.
+        final WebSocketDecoderConfig wsDecoderConfig = WebSocketDecoderConfig.newBuilder().
+                closeOnProtocolViolation(false).allowExtensions(false).maxFramePayloadLength(settings.maxContentLength).build();
         pipeline.addLast(PIPELINE_REQUEST_HANDLER, new WebSocketServerProtocolHandler(GREMLIN_ENDPOINT,
-                null, false, settings.maxContentLength));
+                null, false, false, 10000L, wsDecoderConfig));
 
         if (logger.isDebugEnabled())
             pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));
