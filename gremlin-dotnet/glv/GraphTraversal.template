@@ -80,5 +80,13 @@ namespace Gremlin.Net.Process.Traversal
             return Wrap<$method.t1, $method.t2>(this);
         }
 <% } %>
+
+        /// <summary>
+        /// Make a copy of a traversal that is reset for iteration.
+        /// </summary>
+        public GraphTraversal<S, E> Clone()
+        {
+            return new GraphTraversal<S, E>(this.TraversalStrategies, this.Bytecode);
+        }
     }
 }

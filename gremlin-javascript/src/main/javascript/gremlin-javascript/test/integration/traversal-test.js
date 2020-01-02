@@ -79,6 +79,20 @@ describe('Traversal', function () {
       });
     });
   });
+  describe('#clone()', function () {
+    it('should reset a traversal when cloned', function () {
+      var g = traversal().withRemote(connection);
+      var t = g.V().count();
+      return t.next().then(function (item1) {
+            assert.ok(item1);
+            assert.strictEqual(item1.value, 6);
+            t.clone().next().then(function (item2) {
+              assert.ok(item2);
+              assert.strictEqual(item2.value, 6);
+            });
+      });
+    });
+  });
   describe('#next()', function () {
     it('should submit the traversal and return an iterator', function () {
       var g = traversal().withRemote(connection);
