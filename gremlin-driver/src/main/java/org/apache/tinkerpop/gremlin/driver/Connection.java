@@ -113,6 +113,8 @@ final class Connection {
             channelizer.connected();
 
             logger.info("Created new connection for {}", uri);
+
+            scheduleKeepAlive();
         } catch (Exception ie) {
             logger.debug("Error opening connection on {}", uri);
             throw new ConnectionException(uri, "Could not open connection", ie);
@@ -244,6 +246,13 @@ final class Connection {
                 });
         channel.writeAndFlush(requestMessage, requestPromise);
 
+        scheduleKeepAlive();
+
+        return requestPromise;
+    }
+
+    private void scheduleKeepAlive() {
+        final Connection thisConnection = this;
         // try to keep the connection alive if the channel allows such things - websockets will
         if (channelizer.supportsKeepAlive() && keepAliveInterval > 0) {
 
@@ -263,8 +272,6 @@ final class Connection {
             // through on the connection
             if (oldKeepAliveFuture != null) oldKeepAliveFuture.cancel(true);
         }
-
-        return requestPromise;
     }
 
     public void returnToPool() {
