@@ -141,6 +141,9 @@ class GraphTraversal(Traversal):
     def __getattr__(self, key):
         return self.values(key)
 
+    def clone(self):
+        return GraphTraversal(self.graph, self.traversal_strategies, self.bytecode)
+
     def V(self, *args):
         self.bytecode.add_step("V", *args)
         return self

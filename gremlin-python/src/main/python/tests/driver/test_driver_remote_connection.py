@@ -188,3 +188,10 @@ class TestDriverRemoteConnection(object):
             assert False
         except GremlinServerError as gse:
             assert gse.status_code == 500
+
+    def test_clone(self, remote_connection):
+        g = traversal().withRemote(remote_connection)
+        t = g.V().count()
+        assert 6 == t.next()
+        assert 6 == t.clone().next()
+        assert 6 == t.clone().next()

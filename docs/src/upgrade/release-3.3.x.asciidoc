@@ -29,6 +29,36 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.3.10/CHANGELOG.as
 
 === Upgrading for Users
 
+==== Traversal Clone
+
+Once a traversal has been executed (i.e. iterated) it's internal state is such that it cannot be re-used:
+
+[source,text]
+----
+gremlin> t = g.V().count()
+==>6
+gremlin> t
+gremlin>
+----
+
+To re-use a traversal it must be copied with `clone()` as follows:
+
+[source,text]
+----
+gremlin> t = g.V().count()
+==>6
+gremlin> t.clone()
+==>6
+gremlin> t.clone()
+==>6
+----
+
+The ability to `clone()` has been exclusive to Java and was a missing component of other supported languages like
+Python, Javascript and .NET. This feature has now been added for all the language variants making the ability to
+re-use traversals consistent in all ecosystems.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2315[TINKERPOP-2315]
+
 ==== Deprecated Jython Support
 
 Jython support in `gremlin-python` has been deprecated to focus on native Python 3.x support for 3.5.0 where Jython
