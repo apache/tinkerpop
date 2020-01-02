@@ -295,3 +295,11 @@ class TestDriverRemoteConnection(object):
         assert results
         results = t.side_effects.close()
         assert not results
+
+    def test_clone(self, remote_connection):
+        g = traversal().withRemote(remote_connection)
+        t = g.V().count()
+        assert 6 == t.next()
+        assert 6 == t.clone().next()
+        assert 6 == t.clone().next()
+
