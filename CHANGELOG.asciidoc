@@ -502,6 +502,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed a bug in the `ClassCacheRequestCount` metric for `GremlinGroovyScriptEngine` which wasn't including the cache hit count, only the misses.
 * Improved Gremlin Server executor thread handling on client close requests.
 * Reverted: Modified Java driver to use IP address rather than hostname to create connections.
+* Allow custom XMLInputFactory to be used with GraphMLReader.
 
 [[release-3-3-9]]
 === TinkerPop 3.3.9 (Release Date: October 14, 2019)
