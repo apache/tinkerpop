@@ -500,6 +500,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Deprecated Jython support in `gremlin-python`.
 * Deprecated `NioChannelizer` and related classes in `gremlin-driver` and `gremlin-server`.
 * Fixed a bug in the `ClassCacheRequestCount` metric for `GremlinGroovyScriptEngine` which wasn't including the cache hit count, only the misses.
+* Improved Gremlin Server executor thread handling on client close requests.
 * Reverted: Modified Java driver to use IP address rather than hostname to create connections.
 
 [[release-3-3-9]]
