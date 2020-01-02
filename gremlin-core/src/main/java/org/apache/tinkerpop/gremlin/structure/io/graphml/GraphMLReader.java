@@ -56,18 +56,19 @@ import java.util.stream.Stream;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class GraphMLReader implements GraphReader {
-    private final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 
     private final String edgeLabelKey;
     private final String vertexLabelKey;
     private final long batchSize;
     private final boolean strict;
+    private final XMLInputFactory inputFactory;
 
     private GraphMLReader(final Builder builder) {
         this.edgeLabelKey = builder.edgeLabelKey;
         this.batchSize = builder.batchSize;
         this.vertexLabelKey = builder.vertexLabelKey;
         this.strict = builder.strict;
+        this.inputFactory = builder.inputFactory;
     }
 
     @Override
@@ -343,6 +344,7 @@ public final class GraphMLReader implements GraphReader {
         private String vertexLabelKey = GraphMLTokens.LABEL_V;
         private boolean strict = true;
         private long batchSize = 10000;
+        private XMLInputFactory inputFactory;
 
         private Builder() {
         }
@@ -381,7 +383,18 @@ public final class GraphMLReader implements GraphReader {
             return this;
         }
 
+        /**
+         * the key to use as the inputFactory when a caller wants to pass XMLInputFactory with its own configuration.
+         */
+        public Builder xmlInputFactory(final XMLInputFactory inputFactory) {
+            this.inputFactory = inputFactory;
+            return this;
+        }
+
         public GraphMLReader create() {
+            if (this.inputFactory == null) {
+                this.inputFactory = XMLInputFactory.newInstance();
+            }
             return new GraphMLReader(this);
         }
     }
