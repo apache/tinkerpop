@@ -1288,7 +1288,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public void reduce(final NullObject key, final Iterator<Integer> values, final ReduceEmitter<NullObject, Integer> emitter) {
             emitter.emit(3);
-            if (WORKER_START.size() == 2) {
+            if (IteratorUtils.count(WORKER_START) == 2) {
                 assertEquals(2, countTrue(WORKER_START));
                 assertTrue(WORKER_START.contains(Stage.MAP) && WORKER_START.contains(Stage.REDUCE));
             } else {
