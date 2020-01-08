@@ -29,7 +29,7 @@ import java.util.Iterator;
  * <p/>
  * Diagrammatically:
  * <pre>
- * ---inEdges---> vertex ---outEdges--->.
+ * ---inEdges---&gt; vertex ---outEdges---&gt;.
  * </pre>
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)

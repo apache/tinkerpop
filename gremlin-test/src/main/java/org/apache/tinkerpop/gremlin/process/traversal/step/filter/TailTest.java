@@ -147,7 +147,7 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
     }
 
     /**
-     * Scenario: Local scope, List input, N>1
+     * Scenario: Local scope, List input, N&gt;1
      */
     @Test
     @LoadGraphWith(MODERN)
@@ -202,7 +202,7 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
     }
 
     /**
-     * Scenario: Local scope, Map input, N>1
+     * Scenario: Local scope, Map input, N&gt;1
      */
     @Test
     @LoadGraphWith(MODERN)

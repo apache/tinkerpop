@@ -2633,13 +2633,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Indexes all items of the current collection. The indexing format can be configured using the {@link GraphTraversal#with(String, Object)}
      * and {@link org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions#indexer}.
      *
-     * Indexed as list: ["a","b","c"] => [["a",0],["b",1],["c",2]]
-     * Indexed as map:  ["a","b","c"] => {0:"a",1:"b",2:"c"}
+     * Indexed as list: ["a","b","c"] =&gt; [["a",0],["b",1],["c",2]]
+     * Indexed as map:  ["a","b","c"] =&gt; {0:"a",1:"b",2:"c"}
      *
      * If the current object is not a collection, this step will map the object to a single item collection/map:
      *
-     * Indexed as list: "a" => ["a",0]
-     * Indexed as map:  "a" => {0:"a"}
+     * Indexed as list: "a" =&gt; ["a",0]
+     * Indexed as map:  "a" =&gt; {0:"a"}
      *
      * @return the traversal with an appended {@link IndexStep}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#index-step" target="_blank">Reference Documentation - Index Step</a>
