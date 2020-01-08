@@ -28,21 +28,22 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E03280
 RUN apt-get install apt-transport-https ca-certificates
 RUN sh -c 'echo "deb https://download.mono-project.com/repo/ubuntu stable-xenial main" | tee /etc/apt/sources.list.d/mono-official-stable.list'
 RUN apt-get update
-RUN apt-get install -y openjdk-8-jdk gawk git maven openssh-server subversion zip
+
+# include both java 8/11 so that we can use the same docker image for future builds on that version of the jdk as we do
+# for the older release branches. the java version to use is just controlled by JAVA_HOME hardcoded below
+RUN apt-get install -y openjdk-8-jdk openjdk-11-jdk gawk git maven openssh-server subversion zip
 RUN apt-get install -y --force-yes dotnet-sdk-2.2 python python-dev python3-dev python-pip build-essential mono-devel
 RUN pip install virtualenv virtualenvwrapper
 RUN pip install --upgrade pip
 RUN rm -rf /var/lib/apt/lists/* /var/cache/openjdk-8-jdk
+RUN rm -rf /var/lib/apt/lists/* /var/cache/openjdk-11-jdk
 
 RUN sed -i 's@PermitRootLogin without-password@PermitRootLogin yes@' /etc/ssh/sshd_config
 RUN sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuuid.so@g' /etc/pam.d/sshd
 RUN ssh-keygen -t rsa -f ~/.ssh/id_rsa -N '' \
     && cat ~/.ssh/id_rsa.pub > ~/.ssh/authorized_keys
 
-ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
-
 RUN sed -i 's/.*"$PS1".*/# \0/' ~/.bashrc
-RUN echo "export JAVA_HOME=${JAVA_HOME}" >> ~/.bashrc
 
 RUN echo "Host *" >> ~/.ssh/config
 RUN echo "  UserKnownHostsFile /dev/null" >> ~/.ssh/config
