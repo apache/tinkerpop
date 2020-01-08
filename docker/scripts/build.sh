@@ -76,7 +76,7 @@ if [ -r "settings.xml" ]; then
   cp settings.xml ~/.m2/
 fi
 
-export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 
 mvn clean install process-resources --batch-mode ${TINKERPOP_BUILD_OPTIONS} || exit 1
 [ -z "${BUILD_JAVA_DOCS}" ] || mvn process-resources -Djavadoc || exit 1
