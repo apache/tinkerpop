@@ -39,18 +39,18 @@ If adding comments sections, please "sign" comments with initials and reference 
 
 image:tp4-think.png[]
 
-Development of 4.x occurs on the `tp4` branch. This branch was created as an orphan branch and therefore has no
-history tied to any other branch in the repo including master. As such, there is no need to merge/rebase `tp4`. When
-it comes time to promote `tp4` to `master` the procedure for doing so will be to:
+Development of 4.x occurs on the `4.0-dev` branch. This branch was created as an orphan branch and therefore has no
+history tied to any other branch in the repo including master. As such, there is no need to merge/rebase `4.0-dev`. When
+it comes time to promote `4.0-dev` to `master` the procedure for doing so will be to:
 
-1. Create a `tp3` branch from `master`
+1. Create a `3.x-master` branch from `master`
 1. Delete all content from `master` in one commit
-1. Rebase `tp4` on `master`
-1. Merge `tp4` to `master` and push
+1. Rebase `4.0-dev` on `master`
+1. Merge `4.0-dev` to `master` and push
 
-From this point 3.x development will occur on `tp3` and 4.x development occurs on `master` (with the same version
-branching as we have now, e.g `tp33`, `tp41`, etc.) The `tp3` branch changes will likely still merge to `master`, but
-will all merge as no-op changes.
+From this point 3.x development will occur on `3.x-master` and 4.x development occurs on `master` (with the same version
+branching as we have now, e.g `3.3-dev`, `4.1-dev`, etc.) The `3.x-master` branch changes will likely still merge to
+`master`, but will all merge as no-op changes.
 
 == The Main Features
 
