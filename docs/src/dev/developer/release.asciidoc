@@ -195,7 +195,7 @@ current release was under development as this new release will have those change
 .. Update the link to `CHANGELOG.asciidoc` - this link may already be correct but will not exist until the repository is tagged.
 . Update homepage with references in `/site` to latest distribution and to other internal links elsewhere on the page.
 .. This step should only be performed by the release manager for the newest line of code (i.e. if release 3.3.x, 3.2.x and 3.1.x,
-then only do this step for 3.3.x (tp33 branch), and update the site for all releases).
+then only do this step for 3.3.x (`3.3-dev` branch), and update the site for all releases).
 .. Update the `template/header-footer.html`.
 .. Update `index.html`.
 .. Update link:http://tinkerpop.apache.org/downloads.html[Downloads] page, when moving "Current Releases" to "Archived

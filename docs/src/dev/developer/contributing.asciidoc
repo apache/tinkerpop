@@ -191,7 +191,7 @@ link:https://github.com/apache/tinkerpop[GitHub repository] if not already done.
 . Make changes in the fork
 .. It is typically best to create a branch for the changes. Consider naming that branch after the JIRA issue number
 to easily track what that branch is for.
-.. Consider which release branch (e.g. `master`, `tp33` - consult the
+.. Consider which release branch (e.g. `master`, `3.3-dev` - consult the
 link:http://tinkerpop.apache.org/docs/x.y.z/dev/developer/#branches[Branches Section] for more information) to create
 the development branch from in the first place. In other words, is the change to be targeted at a specific TinkerPop
 version (e.g. a patch to an older version)? When in doubt, please ask on dev@tinkerpop.apache.org.

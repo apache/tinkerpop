@@ -92,15 +92,17 @@ distinguished from other changes in the release notes.
 
 TinkerPop has several release branches:
 
-* `tp30` - 3.0.x (no longer maintained)
-* `tp31` - 3.1.x (no longer maintained)
-* `tp32` - 3.2.x (major bug fixes only)
-* `tp33` - 3.3.x (current development)
-* `tp34` - 3.4.x (current development)
+* `3.0-dev` - 3.0.x (no longer maintained)
+* `3.1-dev` - 3.1.x (no longer maintained)
+* `3.2-dev` - 3.2.x (no longer maintained)
+* `3.3-dev` - 3.3.x (major bug fixes only)
+* `3.4-dev` - 3.4.x (current development)
 * `master` - 3.5.x (future development)
+* `4.0-dev` - 4.0.x (future development)
 
-Changes to `tp32` should merge to `tp33` and then `tp33` to `master`. Please read more about this process in the
-<<pull-requests, Pull Requests>> section.
+Changes to `3.3-dev` should merge to `3.4-dev` and then `3.4-dev` to `master`. Please read more about this process in
+the <<pull-requests, Pull Requests>> section. Note that `4.0-dev` is rebased on `master` and currently behaves as a
+fresh repository as all 3.x content was removed.
 
 Other branches may be created for collaborating on features or for RFC's that other developers may want to inspect.
 It is suggested that the JIRA issue ID be used as the prefix, since that triggers certain automation, and it provides a
@@ -528,7 +530,7 @@ When the committer chooses CTR, it is considered good form to include something 
 that CTR was invoked and the reason for doing so.  For example, "Invoking CTR as this change encompasses minor
 adjustments to text formatting." CTR based commits will still require manual merging through all release branches.
 Merges should occur in reverse order, starting with the latest release version first (e.g. if the fix is going to
-3.2.x then the change should be merged in the following order `master`, `tp33`, `tp32`).
+3.3.x then the change should be merged in the following order `master`, `3.4-dev`, `3.3-dev`).
 
 [[pull-requests]]
 === Pull Requests
@@ -555,21 +557,21 @@ this process is best handled by multiple pull requests: one to each release bran
 
 While merges can be handled manually with `git` commands, it is typically best to use the GitHub UI itself and the
 "Merge Pull Request" button instead. Branches should be merged in reverse order, starting with the latest release
-version first (e.g. if the fix is going to 3.2.x then the change should be merged in the following order `master`,
-`tp33`, `tp32`).
+version first (e.g. if the fix is going to 3.3.x then the change should be merged in the following order `master`,
+3.4-dev`, `3.3-dev`).
 
 As an example, consider a situation where there is a feature branch named "TINKERPOP-1234" that contains a fix for
-the `tp32` branch:
+the `3.4-dev` branch:
 
 [source,bash]
 ----
-`git checkout -b TINKERPOP-1234 tp32`
+`git checkout -b TINKERPOP-1234 3.4-dev`
 // do a bunch of stuff to implement TINKERPOP-1234 and commit/push
 git checkout -b <TINKERPOP-1234-master> master
 git merge TINKERPOP-1234
 ----
 
-At this point, there are two branches, with the same set of commits going to `tp32` and `master`. Voting will occur
+At this point, there are two branches, with the same set of commits going to `3.4-dev` and `master`. Voting will occur
 on both pull requests. After a successful vote, it is time to merge. If there are no conflicts, then simply `git merge`
 both pull requests to their respective branches. If there are conflicts, then there is some added work to do - time to
 rebase:
@@ -577,7 +579,7 @@ rebase:
 [source,bash]
 ----
 git checkout TINKERPOP-1234
-git rebase origin/tp32
+git rebase origin/3.4-dev
 ----
 
 Depending on the conflict, it might be a good idea to re-test before going any further, otherwise:
