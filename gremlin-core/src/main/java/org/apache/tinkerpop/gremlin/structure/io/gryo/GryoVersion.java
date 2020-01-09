@@ -564,7 +564,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 167));
             add(GryoTypeReg.of(EdgeLabelVerificationStrategy.class, 189));
             add(GryoTypeReg.of(ReservedKeysVerificationStrategy.class, 190));   // ***LAST ID***
-            // skip 171, 172 to sync with tp33
+            // skip 171, 172 to sync with the 3.3.x
             add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));
         }};
     }
