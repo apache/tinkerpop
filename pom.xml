@@ -146,7 +146,7 @@ limitations under the License.
         <url>https://github.com/apache/tinkerpop</url>
     </scm>
     <properties>
-        <commons.configuration.version>2.5</commons.configuration.version>
+        <commons.configuration.version>2.6</commons.configuration.version>
         <commons.lang.version>2.6</commons.lang.version>
         <commons.lang3.version>3.8.1</commons.lang3.version>
         <groovy.version>2.5.7</groovy.version>
