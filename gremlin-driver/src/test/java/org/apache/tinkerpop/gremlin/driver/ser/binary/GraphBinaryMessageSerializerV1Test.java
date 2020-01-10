@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
 import org.junit.Test;
-import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,6 +34,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.tinkerpop.gremlin.driver.MockitoHamcrestMatcherAdapter.reflectionEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
@@ -54,7 +54,7 @@ public class GraphBinaryMessageSerializerV1Test {
         final int mimeLen = buffer.readByte();
         buffer.readBytes(new byte[mimeLen]);
         final RequestMessage deserialized = serializer.deserializeRequest(buffer);
-        assertThat(request, new ReflectionEquals(deserialized));
+        assertThat(request, reflectionEquals(deserialized));
     }
 
     @Test
@@ -68,7 +68,7 @@ public class GraphBinaryMessageSerializerV1Test {
         final int mimeLen = buffer.readByte();
         buffer.readBytes(new byte[mimeLen]);
         final RequestMessage deserialized = serializer.deserializeRequest(buffer);
-        assertThat(request, new ReflectionEquals(deserialized));
+        assertThat(request, reflectionEquals(deserialized));
     }
 
     @Test
@@ -82,7 +82,7 @@ public class GraphBinaryMessageSerializerV1Test {
         final int mimeLen = buffer.readByte();
         buffer.readBytes(new byte[mimeLen]);
         final RequestMessage deserialized = serializer.deserializeRequest(buffer);
-        assertThat(request, new ReflectionEquals(deserialized));
+        assertThat(request, reflectionEquals(deserialized));
     }
 
     @Test

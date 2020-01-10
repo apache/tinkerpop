@@ -61,7 +61,6 @@ import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -86,6 +85,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+import static org.apache.tinkerpop.gremlin.driver.MockitoHamcrestMatcherAdapter.reflectionEquals;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -265,19 +265,19 @@ public class GraphBinaryReaderWriterRoundTripTest {
                 new Object[] {"BulkSet", bulkSet, null},
                 new Object[] {"Tree", tree, null},
                 new Object[] {"EmptyMetrics", new MutableMetrics("idEmpty", "nameEmpty"), (Consumer<Metrics>) m -> {
-                    assertThat(m, new ReflectionEquals(new MutableMetrics("idEmpty", "nameEmpty")));
+                    assertThat(m, reflectionEquals(new MutableMetrics("idEmpty", "nameEmpty")));
                 }},
                 new Object[] {"Metrics", metrics, (Consumer<Metrics>) m -> {
-                    assertThat(m, new ReflectionEquals(metrics, "nested", "counts"));
+                    assertThat(m, reflectionEquals(metrics, "nested", "counts"));
                     assertEquals(new ArrayList(metrics.getCounts().values()), new ArrayList(m.getCounts().values()));
-                    assertThat(m.getNested(), new ReflectionEquals(metrics.getNested()));
+                    assertThat(m.getNested(), reflectionEquals(metrics.getNested()));
                 }},
                 new Object[] {"EmptyTraversalMetrics", emptyTraversalMetrics, (Consumer<TraversalMetrics>) m -> {
-                    assertThat(m, new ReflectionEquals(emptyTraversalMetrics));
+                    assertThat(m, reflectionEquals(emptyTraversalMetrics));
                 }},
                 new Object[] {"TraversalMetrics", traversalMetrics, (Consumer<TraversalMetrics>) m -> {
                     assertEquals(m.toString(), traversalMetrics.toString());
-                    assertThat(m, new ReflectionEquals(traversalMetrics, "stepIndexedMetrics", "positionIndexedMetrics"));
+                    assertThat(m, reflectionEquals(traversalMetrics, "stepIndexedMetrics", "positionIndexedMetrics"));
                 }},
 
                 // collections
