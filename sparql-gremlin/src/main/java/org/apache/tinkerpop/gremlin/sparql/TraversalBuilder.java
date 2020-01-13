@@ -75,7 +75,7 @@ class TraversalBuilder {
                     return traversal.properties(propertyName).as(object.getName());
                 } else {
                     return object.isConcrete()
-                            ? traversal.values(propertyName).is(object.getLiteralValue())
+                            ? traversal.has(propertyName, object.getLiteralValue())
                             : traversal.values(propertyName).as(object.getName());
                 }
         }
