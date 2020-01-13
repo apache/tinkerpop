@@ -47,67 +47,155 @@ class WhereTraversalBuilder {
     /**
      * Converts a general {@code Expr} to an anonymous {@link GraphTraversal}.
      */
-    static GraphTraversal<?, ?> transform(final Expr expression) {
-        if (expression instanceof E_Equals) return transform((E_Equals) expression);
-        if (expression instanceof E_NotEquals) return transform((E_NotEquals) expression);
-        if (expression instanceof E_LessThan) return transform((E_LessThan) expression);
-        if (expression instanceof E_LessThanOrEqual) return transform((E_LessThanOrEqual) expression);
-        if (expression instanceof E_GreaterThan) return transform((E_GreaterThan) expression);
-        if (expression instanceof E_GreaterThanOrEqual) return transform((E_GreaterThanOrEqual) expression);
-        if (expression instanceof E_LogicalAnd) return transform((E_LogicalAnd) expression);
-        if (expression instanceof E_LogicalOr) return transform((E_LogicalOr) expression);
-        if (expression instanceof E_Exists) return transform((E_Exists) expression);
-        if (expression instanceof E_NotExists) return transform((E_NotExists) expression);
+    public static GraphTraversal<?, ?> transform(final Expr expression, List<Triple> triples) {
+        if (expression instanceof E_Equals) return transform((E_Equals) expression, triples);
+        if (expression instanceof E_NotEquals) return transform((E_NotEquals) expression, triples);
+        if (expression instanceof E_LessThan) return transform((E_LessThan) expression, triples);
+        if (expression instanceof E_LessThanOrEqual) return transform((E_LessThanOrEqual) expression, triples);
+        if (expression instanceof E_GreaterThan) return transform((E_GreaterThan) expression, triples);
+        if (expression instanceof E_GreaterThanOrEqual) return transform((E_GreaterThanOrEqual) expression, triples);
+        if (expression instanceof E_LogicalAnd) return transform((E_LogicalAnd) expression, triples);
+        if (expression instanceof E_LogicalOr) return transform((E_LogicalOr) expression, triples);
+        if (expression instanceof E_Exists) return transform((E_Exists) expression, triples);
+        if (expression instanceof E_NotExists) return transform((E_NotExists) expression, triples);
         throw new IllegalStateException(String.format("Unhandled expression: %s", expression));
     }
 
-    private static GraphTraversal<?, ?> transform(final E_Equals expression) {
-        final Object value = expression.getArg2().getConstant().getNode().getLiteralValue();
-        return __.as(expression.getArg1().getVarName()).is(P.eq(value));
+   public static GraphTraversal<?, ?> transform(final E_Equals e, List<Triple> triples) {
+        GraphTraversal traversal = null;
+        //---MODIFIED FOR BETTER INDICES USE
+        //For the index optimization you have to find the original BGP where the Filter expression is applied, so you can create a new
+        //concise BGP easy to optimize for indexes 
+        for(final Triple triple : triples){
+            String object = triple.getObject().getName().toString();
+            String subject = triple.getSubject().getName().toString();
+            String uri = Prefixes.getURIValue(triple.getPredicate().getURI());
+            String arg1 = e.getArg1().getExprVar().getVarName();
+            
+            final Object value =  e.getArg2().getConstant().getNode().getLiteralValue();
+
+            if (object.equals(arg1)){
+                traversal = __.as(subject).has(uri, P.eq(value));
+                System.out.println(traversal.toString());
+            }
+        }
+        return traversal;
+    }
+ public static GraphTraversal<?, ?> transform( final E_NotEquals e, List<Triple> triples) {
+ GraphTraversal traversal = null;
+        for(final Triple triple : triples){
+            String object = triple.getObject().getName().toString();
+            String subject = triple.getSubject().getName().toString();
+            String uri = Prefixes.getURIValue(triple.getPredicate().getURI());
+            String arg1 = e.getArg1().getExprVar().getVarName();
+            
+            final Object value =  e.getArg2().getConstant().getNode().getLiteralValue();
+
+            if (object.equals(arg1)){
+                traversal = __.as(subject).has(uri, P.neq(value));
+                System.out.println(traversal.toString());
+            }
+        }
+        return traversal;
     }
 
-    private static GraphTraversal<?, ?> transform(final E_NotEquals expression) {
-        final Object value = expression.getArg2().getConstant().getNode().getLiteralValue();
-        return __.as(expression.getArg1().getVarName()).is(P.neq(value));
+    public static GraphTraversal<?, ?> transform( final E_LessThan e, List<Triple> triples) {
+ GraphTraversal traversal = null;
+        for(final Triple triple : triples){
+            String object = triple.getObject().getName().toString();
+            String subject = triple.getSubject().getName().toString();
+            String uri = Prefixes.getURIValue(triple.getPredicate().getURI());
+            String arg1 = e.getArg1().getExprVar().getVarName();
+            
+            final Object value =  e.getArg2().getConstant().getNode().getLiteralValue();
+
+            if (object.equals(arg1)){
+                traversal = __.as(subject).has(uri, P.lt(value));
+                System.out.println(traversal.toString());
+            }
+        }
+        return traversal;
     }
 
-    private static GraphTraversal<?, ?> transform(final E_LessThan expression) {
-    	final Object value = expression.getArg2().getConstant().getNode().getLiteralValue();
-        return __.as(expression.getArg1().getVarName()).is(P.lt(value));
+    public static GraphTraversal<?, ?> transform(final E_LessThanOrEqual e, List<Triple> triples) {
+ GraphTraversal traversal = null;
+        for(final Triple triple : triples){
+            String object = triple.getObject().getName().toString();
+            String subject = triple.getSubject().getName().toString();
+            String uri = Prefixes.getURIValue(triple.getPredicate().getURI());
+            String arg1 = e.getArg1().getExprVar().getVarName();
+            
+            final Object value =  e.getArg2().getConstant().getNode().getLiteralValue();
+
+            if (object.equals(arg1)){
+                traversal = __.as(subject).has(uri, P.lte(value));
+                System.out.println(traversal.toString());
+            }
+        }
+        return traversal;
     }
 
-    private static GraphTraversal<?, ?> transform(final E_LessThanOrEqual expression) {
-        final Object value = expression.getArg2().getConstant().getNode().getLiteralValue();
-        return __.as(expression.getArg1().getVarName()).is(P.lte(value));
+    public static GraphTraversal<?, ?> transform(final E_GreaterThan e, List<Triple> triples) {
+ GraphTraversal traversal = null;
+        for(final Triple triple : triples){
+            String object = triple.getObject().getName().toString();
+            String subject = triple.getSubject().getName().toString();
+            String uri = Prefixes.getURIValue(triple.getPredicate().getURI());
+            String arg1 = e.getArg1().getExprVar().getVarName();
+            
+            final Object value =  e.getArg2().getConstant().getNode().getLiteralValue();
+
+            if (object.equals(arg1)){
+                traversal = __.as(subject).has(uri, P.gt(value));
+                System.out.println(traversal.toString());
+            }
+        }
+        return traversal;
     }
 
-    private static GraphTraversal<?, ?> transform(final E_GreaterThan expression) {
-        final Object value = expression.getArg2().getConstant().getNode().getLiteralValue();
-        return __.as(expression.getArg1().getVarName()).is(P.gt(value));
+    public static GraphTraversal<?, ?> transform(final E_GreaterThanOrEqual e, List<Triple> triples) {
+ GraphTraversal traversal = null;
+        for(final Triple triple : triples){
+            String object = triple.getObject().getName().toString();
+            String subject = triple.getSubject().getName().toString();
+            String uri = Prefixes.getURIValue(triple.getPredicate().getURI());
+            String arg1 = e.getArg1().getExprVar().getVarName();
+            
+            final Object value =  e.getArg2().getConstant().getNode().getLiteralValue();
+
+            if (object.equals(arg1)){
+                traversal = __.as(subject).has(uri, P.gte(value));
+                System.out.println(traversal.toString());
+            }
+        }
+        return traversal;
     }
 
-    private static GraphTraversal<?, ?> transform(final E_GreaterThanOrEqual expression) {
-        final Object value = expression.getArg2().getConstant().getNode().getLiteralValue();
-        return __.as(expression.getArg1().getVarName()).is(P.gte(value));
-    }
 
-    private static GraphTraversal<?, ?> transform(final E_LogicalAnd expression) {
+
+  public static int getStrLength(final Triple triple, final E_StrLength expression){
+    	
+    	return expression.getArg().toString().length();
+    	
+    }
+    public static GraphTraversal<?, ?> transform(final E_LogicalAnd expression, List<Triple> triples) {
+        
         return __.and(
-                transform(expression.getArg1()),
-                transform(expression.getArg2()));
+                transform(expression.getArg1(),triples),
+                transform(expression.getArg2(),triples));
     }
 
-    private static GraphTraversal<?, ?> transform(final E_LogicalOr expression) {
+    public static GraphTraversal<?, ?> transform(final E_LogicalOr expression, List<Triple> triples) {
         return __.or(
-                transform(expression.getArg1()),
-                transform(expression.getArg2()));
+                transform(expression.getArg1(),triples),
+                transform(expression.getArg2(),triples));
     }
 
-    private static GraphTraversal<?, ?> transform(final E_Exists expression) {
+    public static GraphTraversal<?, ?> transform(final E_Exists expression, List<Triple> triples) {
         final OpBGP opBGP = (OpBGP) expression.getGraphPattern();
-        final List<Triple> triples = opBGP.getPattern().getList();
-        if (triples.size() != 1) throw new IllegalStateException("Unhandled EXISTS pattern");
-        final GraphTraversal<?, ?> traversal = TraversalBuilder.transform(triples.get(0));
+        final List<Triple> this_triples = opBGP.getPattern().getList();
+        if ( this_triples.size() != 1) throw new IllegalStateException("Unhandled EXISTS pattern");
+        final GraphTraversal<?, ?> traversal = TraversalBuilder.transform( this_triples.get(0));
         final Step endStep = traversal.asAdmin().getEndStep();
         final String label = (String) endStep.getLabels().iterator().next();
         endStep.removeLabel(label);
@@ -115,11 +203,11 @@ class WhereTraversalBuilder {
     }
     
 
-    private static GraphTraversal<?, ?> transform(final E_NotExists expression) {
+    public static GraphTraversal<?, ?> transform(final E_NotExists expression, List<Triple> triples) {
         final OpBGP opBGP = (OpBGP) expression.getGraphPattern();
-        final List<Triple> triples = opBGP.getPattern().getList();
-        if (triples.size() != 1) throw new IllegalStateException("Unhandled NOT EXISTS pattern");
-        final GraphTraversal<?, ?> traversal = TraversalBuilder.transform(triples.get(0));
+        final List<Triple>  this_triples = opBGP.getPattern().getList();
+        if ( this_triples.size() != 1) throw new IllegalStateException("Unhandled NOT EXISTS pattern");
+        final GraphTraversal<?, ?> traversal = TraversalBuilder.transform( this_triples.get(0));
         final Step endStep = traversal.asAdmin().getEndStep();
         final String label = (String) endStep.getLabels().iterator().next();
         endStep.removeLabel(label);
