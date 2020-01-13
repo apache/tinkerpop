@@ -61,6 +61,7 @@ public class SparqlToGremlinCompiler {
     private List<Traversal> traversalList = new ArrayList<>();
             List<Traversal> optionalTraversals = new ArrayList<Traversal>();
             List<String> optionalVariable = new ArrayList<String>();
+            List<Triple> triples = new ArrayList<Triple>();
             boolean optionalFlag = false;
 
     private SparqlToGremlinCompiler(final GraphTraversal<Vertex, ?> traversal) {
@@ -239,6 +240,7 @@ public class SparqlToGremlinCompiler {
          */
         @Override
         public void visit(final OpBGP opBGP) {
+        triples = opBGP.getPattern().getList();
         if(optionalFlag)
             {
                 opBGP.getPattern().getList().forEach(triple -> optionalTraversals.add(TraversalBuilder.transform(triple)));
@@ -257,8 +259,7 @@ public class SparqlToGremlinCompiler {
             Traversal traversal;
             for (Expr expr : opFilter.getExprs().getList()) {
                 if (expr != null) {
-                    traversal = __.where(WhereTraversalBuilder.transform(expr));
-                    traversalList.add(traversal);
+                    traversalList.add(WhereTraversalBuilder.transform(expr, triples));
                 }
             }
         }
