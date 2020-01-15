@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
@@ -92,6 +93,10 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Long> get_g_V_repeatXdedupX_timesX2X_count();
 
     public abstract Traversal<Vertex, Long> get_g_V_bothE_properties_dedup_count();
+
+    public abstract Traversal<Vertex, Long> get_g_V_both_properties_dedup_count();
+
+    public abstract Traversal<Vertex, Long> get_g_V_both_properties_properties_dedup_count();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -319,7 +324,26 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
     public void g_V_bothE_properties_dedup_count() {
         final Traversal<Vertex, Long> traversal = get_g_V_bothE_properties_dedup_count();
         printTraversalForm(traversal);
-        assertEquals(6L, traversal.next().longValue());
+        assertEquals(4L, traversal.next().longValue());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_both_properties_dedup_count() {
+        // vertex properties behave like Element with their dedup() so 12 is the right number there
+        final Traversal<Vertex, Long> traversal = get_g_V_both_properties_dedup_count();
+        printTraversalForm(traversal);
+        assertEquals(12L, traversal.next().longValue());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(CREW)
+    public void g_V_both_properties_properties_dedup_count() {
+        final Traversal<Vertex, Long> traversal = get_g_V_both_properties_properties_dedup_count();
+        printTraversalForm(traversal);
+        assertEquals(21L, traversal.next().longValue());
         assertFalse(traversal.hasNext());
     }
 
@@ -407,6 +431,16 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_bothE_properties_dedup_count() {
             return g.V().bothE().properties().dedup().count();
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_both_properties_dedup_count() {
+            return g.V().both().properties().dedup().count();
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_both_properties_properties_dedup_count() {
+            return g.V().both().properties().properties().dedup().count();
         }
     }
 }

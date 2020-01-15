@@ -244,4 +244,26 @@ Feature: Step - dedup()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[6].l |
+      | d[4].l |
+
+  Scenario: g_V_both_properties_dedup_count
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().both().properties().dedup().count()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[12].l |
+
+  Scenario: g_V_both_properties_properties_dedup_count
+    Given the crew graph
+    And the traversal of
+      """
+      g.V().both().properties().properties().dedup().count()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[21].l |
