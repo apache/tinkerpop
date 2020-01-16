@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ColumnTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.FunctionTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
@@ -47,7 +47,7 @@ public interface ByModulating {
     }
 
     public default void modulateBy(final String string) throws UnsupportedOperationException {
-        this.modulateBy(new ElementValueTraversal(string));
+        this.modulateBy(new ValueTraversal(string));
     }
 
     public default void modulateBy(final T token) throws UnsupportedOperationException {
@@ -74,7 +74,7 @@ public interface ByModulating {
     }
 
     public default void modulateBy(final String key, final Comparator comparator) {
-        this.modulateBy(new ElementValueTraversal<>(key), comparator);
+        this.modulateBy(new ValueTraversal<>(key), comparator);
     }
 
     public default void modulateBy(final Comparator comparator) {

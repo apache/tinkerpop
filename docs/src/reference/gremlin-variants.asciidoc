@@ -1135,6 +1135,28 @@ and then it can be called from the application as follows:
 include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsDslTests.cs[tags=dslExamples]
 ----
 
+[[gremlin-dotnet-differences]]
+=== Differences
+
+Gremlin allows for `Map` instances to include `null` keys, but `null` keys in C# `Dictionary` instances are not allowed.
+It is therefore necessary to rewrite a traversal such as:
+
+[source,javascript]
+----
+g.V().groupCount().by('age')
+----
+
+where "age" is not a valid key for all vertices in a way that will remove the need for a `null` to be returned.
+
+[source,javascript]
+----
+g.V().has('age').groupCount().by('age')
+g.V().hasLabel('person').groupCount().by('age')
+----
+
+Either of the above two options accomplishes the desired goal as both prevent `groupCount()` from having to process
+the possibility of `null`.
+
 anchor:gremlin-dotnet-template[]
 [[dotnet-application-examples]]
 === Application Examples
@@ -1323,3 +1345,39 @@ In situations where Javascript reserved words and global functions overlap with 
 bits of conflicting Gremlin get an underscore appended as a suffix:
 
 *Steps* - <<from-step,from_()>>, <<in-step,in_()>>, <<with-step,with_()>>
+
+Gremlin allows for `Map` instances to include `null` keys, but `null` keys in Javascript have some interesting behavior
+as in:
+
+[source,text]
+----
+> var a = { null: 'something', 'b': 'else' };
+> JSON.stringify(a)
+'{"null":"something","b":"else"}'
+> JSON.parse(JSON.stringify(a))
+{ null: 'something', b: 'else' }
+> a[null]
+'something'
+> a['null']
+'something'
+----
+
+This behavior needs to be considered when using Gremlin to return such results. A typical situation where this might
+happen is with `group()` or `groupCount()` as in:
+
+[source,javascript]
+----
+g.V().groupCount().by('age')
+----
+
+where "age" is not a valid key for all vertices. In these cases, it will return `null` for that key and group on that.
+It may bet better in Javascript to filter away those vertices to avoid the return of `null` in the returned `Map`:
+
+[source,javascript]
+----
+g.V().has('age').groupCount().by('age')
+g.V().hasLabel('person').groupCount().by('age')
+----
+
+Either of the above two options accomplishes the desired goal as both prevent `groupCount()` from having to process
+the possibility of `null`.

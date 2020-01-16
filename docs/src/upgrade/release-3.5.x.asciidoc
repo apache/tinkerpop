@@ -164,6 +164,27 @@ gremlin> g.V().has('person','age',null)
 ==>v[13]
 ----
 
+The above described changes also has an effect on steps like `group()` and `groupCount()` which formerly produced
+exceptions when keys could not be found:
+
+[source,text]
+----
+gremlin> g.V().group().by('age')
+The property does not exist as the key has no associated value for the provided element: v[3]:age
+Type ':help' or ':h' for help.
+Display stack trace? [yN]n
+----
+
+The solution was to filter away vertices that did not have the available key so that such steps would work properly
+or to write a more complex `by()` modulator to better handle the possibility of a missing key. With the latest changes
+however none of that is necessary unless desired:
+
+[source,text]
+----
+gremlin> g.V().groupCount().by('age')
+==>[null:2,32:1,35:1,27:1,29:1]
+----
+
 In conclusion, this change in greater support of `null` may affect the behavior of existing traversals written in past
 versions of TinkerPop as it is no longer possible to rely on `null` to expect a filtering action for traversers.
 Please review existing Gremlin carefully to ensure that there are no unintended consequences of this change and that

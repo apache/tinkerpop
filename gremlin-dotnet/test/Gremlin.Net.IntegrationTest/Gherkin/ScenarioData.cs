@@ -104,14 +104,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
         private static IDictionary<string, Vertex> GetVertices(GraphTraversalSource g)
         {
-            try
+            // Property name might not exist and C# doesn't support "null" keys in Dictionary
+            if (g.V().Count().Next() == g.V().Has("name").Count().Next())
             {
                 return g.V().Group<string, object>().By("name").By(__.Tail<Vertex>()).Next()
                     .ToDictionary(kv => kv.Key, kv => (Vertex) kv.Value);
             }
-            catch (ResponseException)
+            else
             {
-                // Property name might not exist
                 return EmptyVertices;
             }
         }
