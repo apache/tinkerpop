@@ -45,14 +45,14 @@ from gremlin_python import __version__
 version = __version__.version
 
 install_requires = [
-    'aenum>=1.4.5',
+    'aenum>=1.4.5,<3.0.0',
     'tornado>=4.4.1,<6.0',
-    'six>=1.10.0',
-    'isodate>=0.6.0'
+    'six>=1.10.0,<2.0.0',
+    'isodate>=0.6.0,<1.0.0'
 ]
 
 if sys.version_info < (3,2):
-    install_requires += ['futures>=3.0.5']
+    install_requires += ['futures>=3.0.5,<4.0.0']
 
 setup(
     name='gremlinpython',
@@ -72,9 +72,9 @@ setup(
     ],
     tests_require=[
         'pytest>=4.6.4,<5.0.0',
-        'mock>=3.0.5',
+        'mock>=3.0.5,<4.0.0',
         'radish-bdd==0.8.6',
-        'PyHamcrest>=1.9.0'
+        'PyHamcrest>=1.9.0,<2.0.0'
     ],
     install_requires=install_requires,
     classifiers=[
