@@ -3,9 +3,6 @@ os:
   - linux
 jdk:
   - openjdk8
-python:
-  - "2.7.15"
-  - "3.6.7"
 sudo: required
 dist: xenial
 services:
@@ -13,14 +10,20 @@ services:
 cache:
   directories:
     - $HOME/mvn-home
+addons:
+  apt:
+    sources:
+      - deadsnakes
 
 install:
   # install maven 3.3.9 if it is not in cache already
   - bash .travis.install-maven.sh "3.3.9" "${HOME}/mvn-home"
   - export M2_HOME=${HOME}/mvn-home
   - export PATH=${HOME}/mvn-home/bin:${PATH}
-  # visual check that we have the correct maven version installed
+  # visual check that we have the correct maven/python versions installed
   - mvn -version
+  - python2 --version
+  - python3 --version
 
 before_install:
   - wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
@@ -30,6 +33,9 @@ before_install:
   - sudo apt install apt-transport-https
   - sudo apt update
   - sudo apt install dotnet-sdk-2.2
+  - sudo apt install python3.6
+  - sudo rm /usr/bin/python3
+  - sudo ln -s python3.6 /usr/bin/python3
 
 jobs:
   include:
