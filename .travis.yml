@@ -3,6 +3,9 @@ os:
   - linux
 jdk:
   - openjdk8
+python:
+  - "2.7.15"
+  - "3.6.7"
 sudo: required
 dist: xenial
 services:
