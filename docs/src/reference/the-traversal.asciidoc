@@ -2430,6 +2430,17 @@ link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/grem
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#range-org.apache.tinkerpop.gremlin.process.traversal.Scope-long-long-++[`range(Scope,long,long)`],
 link:++http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`]
 
+[[read-step]]
+=== Read Step
+
+The `read()`-step is not really a "step" but a step modulator in that it modifies the functionality of the `io()`-step.
+More specifically, it tells the `io()`-step that it is expected to use its configuration to read data from some
+location. Please see the <<io-step,documentation>> for `io()`-step for more complete details on usage.
+
+*Additional References*
+
+link:++http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#read--[`read()`]
+
 [[repeat-step]]
 === Repeat Step
 
@@ -3483,6 +3494,17 @@ The term `with` is a reserved word in Javascript, and therefore must be referred
 ====
 The term `with` is a reserved word in Python, and therefore must be referred to in Gremlin with `with_()`.
 ====
+
+[[write-step]]
+=== Write Step
+
+The `write()`-step is not really a "step" but a step modulator in that it modifies the functionality of the `io()`-step.
+More specifically, it tells the `io()`-step that it is expected to use its configuration to write data to some
+location. Please see the <<io-step,documentation>> for `io()`-step for more complete details on usage.
+
+*Additional References*
+
+link:++http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#write--[`write()`]
 
 [[a-note-on-predicates]]
 == A Note on Predicates
