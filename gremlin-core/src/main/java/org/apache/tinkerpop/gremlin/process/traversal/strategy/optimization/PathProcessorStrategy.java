@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -37,6 +38,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentitySt
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,6 +68,7 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
 
     private static final boolean IS_TESTING = Boolean.valueOf(System.getProperty("is.testing", "false"));
 
+    private static final String MARKER = Graph.Hidden.hide("gremlin.pathProcessor");
     private static final Set<Class> INVALIDATING_STEP_CLASSES = new HashSet<>(Arrays.asList(PathStep.class, TreeStep.class, LambdaHolder.class));
 
     private PathProcessorStrategy() {
@@ -83,10 +86,15 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!TraversalHelper.onGraphComputer(traversal) ||
-                !TraversalHelper.isGlobalChild(traversal) ||
-                TraversalHelper.hasStepOfAssignableClassRecursively(INVALIDATING_STEP_CLASSES, TraversalHelper.getRootTraversal(traversal))) // TODO: use the MARKER model when that PR is merged
+        // using a hidden label marker to denote whether the traversal should not be processed by this strategy
+        if ((traversal.getParent() instanceof EmptyStep || traversal.getParent() instanceof VertexProgramStep) &&
+                TraversalHelper.hasStepOfAssignableClassRecursively(INVALIDATING_STEP_CLASSES, traversal))
+            TraversalHelper.applyTraversalRecursively(t -> t.getStartStep().addLabel(MARKER), traversal);
+
+        if (traversal.getStartStep().getLabels().contains(MARKER)) {
+            traversal.getStartStep().removeLabel(MARKER);
             return;
+        }
 
         // process where(as("a").out()...) => select("a").where(out()...)
         final List<WhereTraversalStep> whereTraversalSteps = TraversalHelper.getStepsOfClass(WhereTraversalStep.class, traversal);
