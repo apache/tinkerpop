@@ -27,6 +27,7 @@ from gremlin_python.driver.driver_remote_connection import (
     DriverRemoteConnection)
 from gremlin_python.process.traversal import Traverser
 from gremlin_python.process.traversal import TraversalStrategy
+from gremlin_python.process.traversal import Bindings
 from gremlin_python.process.traversal import P
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.anonymous_traversal import traversal
@@ -96,7 +97,7 @@ class TestDriverRemoteConnection(object):
         assert 1 == results
         # #
         # test binding in P
-        results = g.V().has('person', 'age', ('x', lt(30))).count().next()
+        results = g.V().has('person', 'age', Bindings.of('x', lt(30))).count().next()
         assert 2 == results
 
 
