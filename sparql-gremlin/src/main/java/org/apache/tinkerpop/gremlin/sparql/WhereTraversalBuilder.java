@@ -33,7 +33,9 @@ import org.apache.jena.sparql.expr.E_LogicalAnd;
 import org.apache.jena.sparql.expr.E_LogicalOr;
 import org.apache.jena.sparql.expr.E_NotEquals;
 import org.apache.jena.sparql.expr.E_NotExists;
+import org.apache.jena.sparql.expr.E_StrLength;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -63,12 +65,24 @@ class WhereTraversalBuilder {
 
    public static GraphTraversal<?, ?> transform(final E_Equals e, List<Triple> triples) {
         GraphTraversal traversal = null;
-        //---MODIFIED FOR BETTER INDICES USE
-        //For the index optimization you have to find the original BGP where the Filter expression is applied, so you can create a new
-        //concise BGP easy to optimize for indexes 
-        for(final Triple triple : triples){
-            String object = triple.getObject().getName().toString();
-            String subject = triple.getSubject().getName().toString();
+         for(final Triple triple : triples){
+
+            String subject = "";
+            if( triple.getSubject().isVariable()) {        
+	            subject = triple.getSubject().getName().toString();
+        	}
+        	else {
+        		subject = triple.getSubject().getLiteralValue().toString();
+        	}
+
+            String object = "";
+            if( triple.getObject().isVariable()) {        
+	            object = triple.getObject().getName().toString();
+        	}
+        	else {
+        		object = triple.getObject().getLiteralValue().toString();
+        	}
+
             String uri = Prefixes.getURIValue(triple.getPredicate().getURI());
             String arg1 = e.getArg1().getExprVar().getVarName();
             
@@ -76,24 +90,37 @@ class WhereTraversalBuilder {
 
             if (object.equals(arg1)){
                 traversal = __.as(subject).has(uri, P.eq(value));
-                System.out.println(traversal.toString());
             }
         }
         return traversal;
     }
  public static GraphTraversal<?, ?> transform( final E_NotEquals e, List<Triple> triples) {
- GraphTraversal traversal = null;
-        for(final Triple triple : triples){
-            String object = triple.getObject().getName().toString();
-            String subject = triple.getSubject().getName().toString();
+        GraphTraversal traversal = null;
+         for(final Triple triple : triples){
+
+            String subject = "";
+            if( triple.getSubject().isVariable()) {        
+	            subject = triple.getSubject().getName().toString();
+        	}
+        	else {
+        		subject = triple.getSubject().getLiteralValue().toString();
+        	}
+
+            String object = "";
+            if( triple.getObject().isVariable()) {        
+	            object = triple.getObject().getName().toString();
+        	}
+        	else {
+        		object = triple.getObject().getLiteralValue().toString();
+        	}
+
             String uri = Prefixes.getURIValue(triple.getPredicate().getURI());
             String arg1 = e.getArg1().getExprVar().getVarName();
             
             final Object value =  e.getArg2().getConstant().getNode().getLiteralValue();
 
             if (object.equals(arg1)){
-                traversal = __.as(subject).has(uri, P.neq(value));
-                System.out.println(traversal.toString());
+                traversal = __.as(subject).has(uri, P.neq(value));  
             }
         }
         return traversal;
@@ -101,9 +128,24 @@ class WhereTraversalBuilder {
 
     public static GraphTraversal<?, ?> transform( final E_LessThan e, List<Triple> triples) {
  GraphTraversal traversal = null;
-        for(final Triple triple : triples){
-            String object = triple.getObject().getName().toString();
-            String subject = triple.getSubject().getName().toString();
+         for(final Triple triple : triples){
+
+            String subject = "";
+            if( triple.getSubject().isVariable()) {        
+	            subject = triple.getSubject().getName().toString();
+        	}
+        	else {
+        		subject = triple.getSubject().getLiteralValue().toString();
+        	}
+
+            String object = "";
+            if( triple.getObject().isVariable()) {        
+	            object = triple.getObject().getName().toString();
+        	}
+        	else {
+        		object = triple.getObject().getLiteralValue().toString();
+        	}
+
             String uri = Prefixes.getURIValue(triple.getPredicate().getURI());
             String arg1 = e.getArg1().getExprVar().getVarName();
             
@@ -111,17 +153,31 @@ class WhereTraversalBuilder {
 
             if (object.equals(arg1)){
                 traversal = __.as(subject).has(uri, P.lt(value));
-                System.out.println(traversal.toString());
             }
         }
         return traversal;
     }
 
     public static GraphTraversal<?, ?> transform(final E_LessThanOrEqual e, List<Triple> triples) {
- GraphTraversal traversal = null;
-        for(final Triple triple : triples){
-            String object = triple.getObject().getName().toString();
-            String subject = triple.getSubject().getName().toString();
+GraphTraversal traversal = null;
+         for(final Triple triple : triples){
+
+            String subject = "";
+            if( triple.getSubject().isVariable()) {        
+	            subject = triple.getSubject().getName().toString();
+        	}
+        	else {
+        		subject = triple.getSubject().getLiteralValue().toString();
+        	}
+
+            String object = "";
+            if( triple.getObject().isVariable()) {        
+	            object = triple.getObject().getName().toString();
+        	}
+        	else {
+        		object = triple.getObject().getLiteralValue().toString();
+        	}
+
             String uri = Prefixes.getURIValue(triple.getPredicate().getURI());
             String arg1 = e.getArg1().getExprVar().getVarName();
             
@@ -129,17 +185,31 @@ class WhereTraversalBuilder {
 
             if (object.equals(arg1)){
                 traversal = __.as(subject).has(uri, P.lte(value));
-                System.out.println(traversal.toString());
             }
         }
         return traversal;
     }
 
     public static GraphTraversal<?, ?> transform(final E_GreaterThan e, List<Triple> triples) {
- GraphTraversal traversal = null;
-        for(final Triple triple : triples){
-            String object = triple.getObject().getName().toString();
-            String subject = triple.getSubject().getName().toString();
+        GraphTraversal traversal = null;
+         for(final Triple triple : triples){
+
+            String subject = "";
+            if( triple.getSubject().isVariable()) {        
+	            subject = triple.getSubject().getName().toString();
+        	}
+        	else {
+        		subject = triple.getSubject().getLiteralValue().toString();
+        	}
+
+            String object = "";
+            if( triple.getObject().isVariable()) {        
+	            object = triple.getObject().getName().toString();
+        	}
+        	else {
+        		object = triple.getObject().getLiteralValue().toString();
+        	}
+
             String uri = Prefixes.getURIValue(triple.getPredicate().getURI());
             String arg1 = e.getArg1().getExprVar().getVarName();
             
@@ -147,17 +217,31 @@ class WhereTraversalBuilder {
 
             if (object.equals(arg1)){
                 traversal = __.as(subject).has(uri, P.gt(value));
-                System.out.println(traversal.toString());
             }
         }
         return traversal;
     }
 
     public static GraphTraversal<?, ?> transform(final E_GreaterThanOrEqual e, List<Triple> triples) {
- GraphTraversal traversal = null;
-        for(final Triple triple : triples){
-            String object = triple.getObject().getName().toString();
-            String subject = triple.getSubject().getName().toString();
+         GraphTraversal traversal = null;
+         for(final Triple triple : triples){
+
+            String subject = "";
+            if( triple.getSubject().isVariable()) {        
+	            subject = triple.getSubject().getName().toString();
+        	}
+        	else {
+        		subject = triple.getSubject().getLiteralValue().toString();
+        	}
+
+            String object = "";
+            if( triple.getObject().isVariable()) {        
+	            object = triple.getObject().getName().toString();
+        	}
+        	else {
+        		object = triple.getObject().getLiteralValue().toString();
+        	}
+
             String uri = Prefixes.getURIValue(triple.getPredicate().getURI());
             String arg1 = e.getArg1().getExprVar().getVarName();
             
@@ -165,7 +249,6 @@ class WhereTraversalBuilder {
 
             if (object.equals(arg1)){
                 traversal = __.as(subject).has(uri, P.gte(value));
-                System.out.println(traversal.toString());
             }
         }
         return traversal;

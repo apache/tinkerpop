@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.SortCondition;
@@ -276,7 +277,7 @@ public class SparqlToGremlinCompiler {
                 for (Expr expr : opLeftJoin.getExprs().getList()) {
                     if (expr != null) {
                         if (optionalFlag)
-                            optionalTraversals.add(__.where(WhereTraversalBuilder.transform(expr)));
+                            optionalTraversals.add(WhereTraversalBuilder.transform(expr, triples));
                     }
                 }
             }
