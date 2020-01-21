@@ -314,6 +314,11 @@ limitations under the License.
                                               failonerror="true">
                                             <arg line="--python=python2 env"/>
                                         </exec>
+                                        <!-- pip 20 doesn't work with python 2 it seems -->
+                                        <exec dir="${project.build.directory}/python2" executable="env/bin/python"
+                                              failonerror="true">
+                                            <arg line="-m pip install pip&gt;=19.3.1,&lt;20.0.0"/>
+                                        </exec>
                                         <exec dir="${project.build.directory}/python2" executable="env/bin/pip"
                                               failonerror="true">
                                             <arg line="install wheel radish-bdd PyHamcrest aenum isodate"/>
@@ -408,6 +413,11 @@ limitations under the License.
                                 <configuration>
                                     <skip>${skipTests}</skip>
                                     <target>
+                                        <!-- setup.py seems to have troubles with the recently published zipp 1.0.0 -->
+                                        <exec dir="${project.build.directory}/python2" executable="env/bin/python"
+                                              failonerror="true">
+                                            <arg line="-m pip install zipp&gt;=0.5.0,&lt;1.0.0"/>
+                                        </exec>
                                         <exec executable="env/bin/python" dir="${project.build.directory}/python2"
                                               failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
