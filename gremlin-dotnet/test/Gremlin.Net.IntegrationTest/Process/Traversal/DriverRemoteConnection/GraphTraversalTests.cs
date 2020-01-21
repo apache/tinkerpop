@@ -47,6 +47,18 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         }
 
         [Fact]
+        public void g_V_Has_Count()
+        {
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+
+            var b = Bindings.Instance;
+            var count = g.V().Has("person", "age", b.Of("x", P.Lt(30))).Count().Next();
+
+            Assert.Equal(2, count);
+        }
+
+        [Fact]
         public void g_V_Count_Clone()
         {
             var connection = _connectionFactory.CreateRemoteConnection();

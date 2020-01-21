@@ -27,6 +27,7 @@ from gremlin_python.driver.driver_remote_connection import (
     DriverRemoteConnection)
 from gremlin_python.process.traversal import Traverser
 from gremlin_python.process.traversal import TraversalStrategy
+from gremlin_python.process.traversal import Bindings
 from gremlin_python.process.traversal import P
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.anonymous_traversal import traversal
@@ -94,6 +95,11 @@ class TestDriverRemoteConnection(object):
         results = g.V().filter_(__.values('age').sum_().and_(
             __.max_().is_(gt(0)), __.min_().is_(gt(0)))).range_(0, 1).id_().next()
         assert 1 == results
+        # #
+        # test binding in P
+        results = g.V().has('person', 'age', Bindings.of('x', lt(30))).count().next()
+        assert 2 == results
+
 
     def test_lambda_traversals(self, remote_connection):
         statics.load_statics(globals())
