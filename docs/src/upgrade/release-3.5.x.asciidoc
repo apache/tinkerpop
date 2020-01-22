@@ -190,6 +190,16 @@ All lambdas should be written using `gremlin-groovy` if they are needed.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2317[TINKERPOP-2317]
 
+==== Neo4j Changes
+
+There were two key changes to the neo4j-gremlin module:
+
+* The underlying Neo4j version moved from the 3.2.x line to 3.4.x line. Please see the
+link:https://neo4j.com/guides/upgrade-archive/[Neo4j Upgrade FAQ] for more information as features and
+configuration options may have changed.
+* Experimental support for multi/meta-properties in Neo4j which were previously deprecated have now been permanently
+removed.
+
 ==== Deprecation Removal
 
 The following deprecated classes, methods or fields have been removed in this version:
@@ -253,7 +263,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 * `neo4j-gremlin`
 ** `org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph#getTrait()`
 ** `org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph#CONFIG_META_PROPERTIES`
-** `org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph#CONFIG_MULTI_PROPERTIES `
+** `org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph#CONFIG_MULTI_PROPERTIES`
 ** `org.apache.tinkerpop.gremlin.neo4j.structure.trait.MultiMetaNeo4jTrait`
 ** `org.apache.tinkerpop.gremlin.neo4j.structure.trait.NoMultiNoMetaNeo4jTrait`
 ** `org.apache.tinkerpop.gremlin.neo4j.structure.trait.Neo4jTrait`
