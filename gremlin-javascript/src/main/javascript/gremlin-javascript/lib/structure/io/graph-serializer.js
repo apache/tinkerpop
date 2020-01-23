@@ -25,24 +25,27 @@
 const typeSerializers = require('./type-serializers');
 
 /**
- * GraphSON Writer
+ * GraphSON2 writer.
  */
-class GraphSONWriter {
+class GraphSON2Writer {
+
   /**
    * @param {Object} [options]
-   * @param {Object} options.serializers An object used as an associative array with GraphSON 2 type name as keys and
+   * @param {Object} [options.serializers] An object used as an associative array with GraphSON 2 type name as keys and
    * serializer instances as values, ie: { 'g:Int64': longSerializer }.
    * @constructor
    */
   constructor(options) {
     this._options = options || {};
     // Create instance of the default serializers
-    this._serializers = serializers.map(serializerConstructor => {
+    this._serializers = this.getDefaultSerializers().map(serializerConstructor => {
       const s = new serializerConstructor();
       s.writer = this;
       return s;
     });
+
     const customSerializers = this._options.serializers || {};
+
     Object.keys(customSerializers).forEach(key => {
       const s = customSerializers[key];
       if (!s.serialize) {
@@ -52,6 +55,14 @@ class GraphSONWriter {
       // Insert custom serializers first
       this._serializers.unshift(s);
     });
+  }
+
+  /**
+   * Gets the default serializers to be used.
+   * @returns {Array}
+   */
+  getDefaultSerializers() {
+    return graphSON2Serializers;
   }
 
   adaptObject(value) {
@@ -89,7 +100,19 @@ class GraphSONWriter {
   }
 }
 
-class GraphSONReader {
+/**
+ * GraphSON3 writer.
+ */
+class GraphSON3Writer extends GraphSON2Writer {
+  getDefaultSerializers() {
+    return graphSON3Serializers;
+  }
+}
+
+/**
+ * GraphSON2 reader.
+ */
+class GraphSON2Reader {
   /**
    * GraphSON Reader
    * @param {Object} [options]
@@ -100,12 +123,15 @@ class GraphSONReader {
   constructor(options) {
     this._options = options || {};
     this._deserializers = {};
-    Object.keys(deserializers).forEach(typeName => {
-      const serializerConstructor = deserializers[typeName];
+
+    const defaultDeserializers = this.getDefaultDeserializers();
+    Object.keys(defaultDeserializers).forEach(typeName => {
+      const serializerConstructor = defaultDeserializers[typeName];
       const s = new serializerConstructor();
       s.reader = this;
       this._deserializers[typeName] = s;
     });
+
     if (this._options.serializers) {
       const customSerializers = this._options.serializers || {};
       Object.keys(customSerializers).forEach(key => {
@@ -117,6 +143,14 @@ class GraphSONReader {
         this._deserializers[key] = s;
       });
     }
+  }
+
+  /**
+   * Gets the default deserializers as an associative array.
+   * @returns {Object}
+   */
+  getDefaultDeserializers() {
+    return graphSON2Deserializers;
   }
 
   read(obj) {
@@ -155,7 +189,16 @@ class GraphSONReader {
   }
 }
 
-const deserializers = {
+/**
+ * GraphSON3 reader.
+ */
+class GraphSON3Reader extends GraphSON2Reader {
+  getDefaultDeserializers() {
+    return graphSON3Deserializers;
+  }
+}
+
+const graphSON2Deserializers = {
   'g:Traverser': typeSerializers.TraverserSerializer,
   'g:TraversalStrategy': typeSerializers.TraversalStrategySerializer,
   'g:Int32':  typeSerializers.NumberSerializer,
@@ -168,13 +211,16 @@ const deserializers = {
   'g:VertexProperty': typeSerializers.VertexPropertySerializer,
   'g:Property': typeSerializers.PropertySerializer,
   'g:Path': typeSerializers.Path3Serializer,
-  'g:T': typeSerializers.TSerializer,
+  'g:T': typeSerializers.TSerializer
+};
+
+const graphSON3Deserializers = Object.assign({}, graphSON2Deserializers, {
   'g:List': typeSerializers.ListSerializer,
   'g:Set': typeSerializers.SetSerializer,
   'g:Map': typeSerializers.MapSerializer
-};
+});
 
-const serializers = [
+const graphSON2Serializers = [
   typeSerializers.NumberSerializer,
   typeSerializers.DateSerializer,
   typeSerializers.BytecodeSerializer,
@@ -185,12 +231,20 @@ const serializers = [
   typeSerializers.EnumSerializer,
   typeSerializers.VertexSerializer,
   typeSerializers.EdgeSerializer,
-  typeSerializers.LongSerializer,
-  typeSerializers.ListSerializer,
-  typeSerializers.MapSerializer
+  typeSerializers.LongSerializer
 ];
 
+const graphSON3Serializers = graphSON2Serializers.concat([
+  typeSerializers.ListSerializer,
+  typeSerializers.SetSerializer,
+  typeSerializers.MapSerializer
+]);
+
 module.exports = {
-  GraphSONWriter,
-  GraphSONReader
+  GraphSON3Writer,
+  GraphSON3Reader,
+  GraphSON2Writer,
+  GraphSON2Reader,
+  GraphSONWriter: GraphSON3Writer,
+  GraphSONReader: GraphSON3Reader
 };

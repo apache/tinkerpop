@@ -80,10 +80,7 @@ module.exports = {
     AnonymousTraversalSource
   },
   structure: {
-    io: {
-      GraphSONReader: gs.GraphSONReader,
-      GraphSONWriter: gs.GraphSONWriter
-    },
+    io: gs,
     Edge: graph.Edge,
     Graph: graph.Graph,
     Path: graph.Path,
