@@ -32,8 +32,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -196,8 +198,19 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
             }
             if (!map.containsKey(object)) {
                 traverser.setBulk(1L);
-                // traverser.detach();
-                traverser.set(DetachedFactory.detach(traverser.get(), true)); // TODO: detect required detachment accordingly
+
+                // DetachedProperty and DetachedVertexProperty both have a transient for the Host element. that causes
+                // trouble for olap which ends up requiring the Host later. can't change the transient without some
+                // consequences: (1) we break gryo formatting and io tests start failing (2) storing the element with
+                // the property has the potential to bloat detached Element instances as it basically stores that data
+                // twice. Not sure if it's smart to change that at least in 3.4.x and not without some considerable
+                // thought as to what might be major changes. To work around the problem we will detach properties as
+                // references so that the parent element goes with it. Also, given TINKERPOP-2318 property comparisons
+                // have changed in such a way that allows this to work properly
+                if (traverser.get() instanceof Property)
+                    traverser.set(ReferenceFactory.detach(traverser.get()));
+                else
+                    traverser.set(DetachedFactory.detach(traverser.get(), true));
                 map.put(object, traverser);
             }
         }

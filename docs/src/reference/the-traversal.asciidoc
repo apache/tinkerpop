@@ -779,9 +779,12 @@ traverser's bulk is greater than 1, then it is set to 1 before being emitted.
 g.V().values('lang')
 g.V().values('lang').dedup()
 g.V(1).repeat(bothE('created').dedup().otherV()).emit().path() <1>
+g.V().bothE().properties().dedup() <2>
 ----
 
 <1> Traverse all `created` edges, but don't touch any edge twice.
+<2> Note that `Property` instances will compare on key and value, whereas a `VertexProperty` will also include its
+element as it is a first-class citizen.
 
 If a by-step modulation is provided to `dedup()`, then the object is processed accordingly prior to determining if it
 has been seen or not.
