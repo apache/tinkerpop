@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
@@ -98,7 +98,7 @@ public final class TraversalHelper {
 
     private static char isLocalStarGraph(final Traversal.Admin<?, ?> traversal, char state) {
         if (state == 'u' &&
-                (traversal instanceof ElementValueTraversal ||
+                (traversal instanceof ValueTraversal ||
                         (traversal instanceof TokenTraversal && !((TokenTraversal) traversal).getToken().equals(T.id))))
             return 'x';
         for (final Step step : traversal.getSteps()) {

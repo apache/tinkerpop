@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
@@ -82,7 +82,7 @@ public class PathProcessorStrategyTest {
                 {__.select("a"), __.select("a"), Collections.emptyList()},
                 {__.select("a").by(), __.select("a").by(), Collections.emptyList()},
                 {__.select("a").by(__.outE().count()), __.select("a").map(__.outE().count()), Collections.emptyList()},
-                {__.select("a").by("name"), __.select("a").map(new ElementValueTraversal<>("name")), Collections.emptyList()},
+                {__.select("a").by("name"), __.select("a").map(new ValueTraversal<>("name")), Collections.emptyList()},
                 {__.select("a").out(), __.select("a").out(), Collections.emptyList()},
                 {__.select(Pop.all, "a").by(__.values("name")), __.select(Pop.all, "a").by(__.values("name")), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
                 {__.select(Pop.last, "a").by(__.values("name")), __.select(Pop.last, "a").map(__.values("name")), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
@@ -91,11 +91,11 @@ public class PathProcessorStrategyTest {
                 {__.select("a", "b"), __.select("a", "b"), Collections.emptyList()},
                 {__.select("a", "b").by(), __.select("a", "b").by(), Collections.emptyList()},
                 {__.select("a", "b", "c").by(), __.select("a", "b", "c").by(), Collections.emptyList()},
-                {__.select("a", "b").by().by("age"), __.select("b").map(new ElementValueTraversal<>("age")).as("b").select("a").map(new IdentityTraversal<>()).as("a").select(Pop.last, "a", "b"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
-                {__.select("a", "b").by("name").by("age"), __.select("b").map(new ElementValueTraversal<>("age")).as("b").select("a").map(new ElementValueTraversal<>("name")).as("a").select(Pop.last, "a", "b"), Collections.emptyList()},
-                {__.select("a", "b", "c").by("name").by(__.outE().count()), __.select("c").map(new ElementValueTraversal<>("name")).as("c").select("b").map(__.outE().count()).as("b").select("a").map(new ElementValueTraversal<>("name")).as("a").select(Pop.last, "a", "b", "c"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
-                {__.select(Pop.first, "a", "b").by("name").by("age"), __.select(Pop.first, "b").map(new ElementValueTraversal<>("age")).as("b").select(Pop.first, "a").map(new ElementValueTraversal<>("name")).as("a").select(Pop.last, "a", "b"), Collections.emptyList()},
-                {__.select(Pop.last, "a", "b").by("name").by("age"), __.select(Pop.last, "b").map(new ElementValueTraversal<>("age")).as("b").select(Pop.last, "a").map(new ElementValueTraversal<>("name")).as("a").select(Pop.last, "a", "b"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                {__.select("a", "b").by().by("age"), __.select("b").map(new ValueTraversal<>("age")).as("b").select("a").map(new IdentityTraversal<>()).as("a").select(Pop.last, "a", "b"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                {__.select("a", "b").by("name").by("age"), __.select("b").map(new ValueTraversal<>("age")).as("b").select("a").map(new ValueTraversal<>("name")).as("a").select(Pop.last, "a", "b"), Collections.emptyList()},
+                {__.select("a", "b", "c").by("name").by(__.outE().count()), __.select("c").map(new ValueTraversal<>("name")).as("c").select("b").map(__.outE().count()).as("b").select("a").map(new ValueTraversal<>("name")).as("a").select(Pop.last, "a", "b", "c"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                {__.select(Pop.first, "a", "b").by("name").by("age"), __.select(Pop.first, "b").map(new ValueTraversal<>("age")).as("b").select(Pop.first, "a").map(new ValueTraversal<>("name")).as("a").select(Pop.last, "a", "b"), Collections.emptyList()},
+                {__.select(Pop.last, "a", "b").by("name").by("age"), __.select(Pop.last, "b").map(new ValueTraversal<>("age")).as("b").select(Pop.last, "a").map(new ValueTraversal<>("name")).as("a").select(Pop.last, "a", "b"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
                 {__.select(Pop.all, "a", "b").by("name").by("age"), __.select(Pop.all, "a", "b").by("name").by("age"), Collections.emptyList()},
                 {__.select(Pop.mixed, "a", "b").by("name").by("age"), __.select(Pop.mixed, "a", "b").by("name").by("age"), Collections.emptyList()},
                 // where(as("a")...)

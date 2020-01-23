@@ -50,12 +50,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
     
     public enum IgnoreReason
     {
-        /// <summary>
-        /// Deserialization of g:T on GraphSON3 is not supported.
-        /// </summary>
-        TraversalTDeserializationNotSupported,
-        ReceivedDataDoesntMatchExpected,
         NoReason,
-        EmbeddedListAssertion
+
+        /// <summary>
+        /// C# does not allow a `null` value to be used as a key.
+        /// </summary>
+        NullKeysInMapNotSupported
     }
 }

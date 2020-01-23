@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -49,7 +49,7 @@ public interface PathProcessor {
                 } else if (traversal instanceof TokenTraversal && ((TokenTraversal) traversal).getToken().equals(T.label)) {
                     if (max.compareTo(ElementRequirement.LABEL) < 0)
                         max = ElementRequirement.LABEL;
-                } else if (traversal instanceof ElementValueTraversal) {
+                } else if (traversal instanceof ValueTraversal) {
                     if (max.compareTo(ElementRequirement.PROPERTIES) < 0)
                         max = ElementRequirement.PROPERTIES;
                 } else {

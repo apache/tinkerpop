@@ -58,6 +58,7 @@ const parsers = [
 ].map(x => [ new RegExp('^' + x[0] + '$'), x[1] ]);
 
 const ignoreReason = {
+  nullKeysInMapNotSupportedWell: "Javascript does not nicely support 'null' as a key in Map instances",
   setNotSupported: "There is no Set support in gremlin-javascript",
   needsFurtherInvestigation: '',
 };
@@ -66,6 +67,7 @@ const ignoredScenarios = {
   // An associative array containing the scenario name as key, for example:
   'g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX': new IgnoreError(ignoreReason.setNotSupported),
   'g_withSideEffectXa_setX_V_both_name_aggregateXlocal_aX_capXaX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_group_byXageX': new IgnoreError(ignoreReason.nullKeysInMapNotSupportedWell),
 };
 
 defineSupportCode(function(methods) {

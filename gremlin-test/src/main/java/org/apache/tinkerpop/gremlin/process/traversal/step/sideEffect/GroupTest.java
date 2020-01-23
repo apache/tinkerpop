@@ -59,6 +59,8 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_group_byXnameX();
 
+    public abstract Traversal<Vertex, Map<Integer, Collection<Vertex>>> get_g_V_group_byXageX();
+
     public abstract Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_group_byXnameX_by();
 
     public abstract Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_groupXaX_byXnameX_capXaX();
@@ -110,6 +112,24 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         checkSideEffects(traversal.asAdmin().getSideEffects());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_group_byXageX() {
+        final Traversal<Vertex, Map<Integer, Collection<Vertex>>> traversal = get_g_V_group_byXageX();
+        printTraversalForm(traversal);
+
+        final Map<Integer, Collection<Vertex>> map = traversal.next();
+        assertEquals(5, map.size());
+        map.forEach((key, values) -> {
+            if (null == key)
+                assertEquals(2, values.size());
+            else
+                assertEquals(1, values.size());
+        });
+        assertFalse(traversal.hasNext());
+
+        checkSideEffects(traversal.asAdmin().getSideEffects());
+    }
 
     @Test
     @LoadGraphWith(MODERN)
@@ -129,7 +149,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class);
     }
 
-    private void assertCommonA(Traversal<Vertex, Map<String, Collection<Vertex>>> traversal) {
+    private void assertCommonA(final Traversal<Vertex, Map<String, Collection<Vertex>>> traversal) {
         final Map<String, Collection<Vertex>> map = traversal.next();
         assertEquals(6, map.size());
         map.forEach((key, values) -> {
@@ -504,6 +524,11 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_group_byXnameX() {
             return g.V().<String, Collection<Vertex>>group().by("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<Integer, Collection<Vertex>>> get_g_V_group_byXageX() {
+            return g.V().<Integer, Collection<Vertex>>group().by("age");
         }
 
         @Override

@@ -28,6 +28,17 @@ Feature: Step - group()
       | result |
       | m[{"ripple":"l[v[ripple]]", "peter":"l[v[peter]]", "vadas":"l[v[vadas]]", "josh": "l[v[josh]]", "lop":"l[v[lop]]", "marko":"l[v[marko]]"}] |
 
+  Scenario: g_V_group_byXageX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().group().by("age")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"null":"l[v[lop],v[ripple]]", "d[35].i":"l[v[peter]]", "d[27].i":"l[v[vadas]]", "d[32].i": "l[v[josh]]", "d[29].i":"l[v[marko]]"}] |
+
   Scenario: g_V_group_byXnameX_by
     Given the modern graph
     And the traversal of
