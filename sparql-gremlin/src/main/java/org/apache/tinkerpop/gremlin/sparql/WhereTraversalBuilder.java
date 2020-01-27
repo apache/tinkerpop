@@ -89,7 +89,7 @@ class WhereTraversalBuilder {
             final Object value =  e.getArg2().getConstant().getNode().getLiteralValue();
 
             if (object.equals(arg1)){
-                traversal = __.as(subject).has(uri, P.eq(value));
+               return __.as(subject).has(uri, P.eq(value));
             }
         }
         return traversal;
@@ -120,7 +120,7 @@ class WhereTraversalBuilder {
             final Object value =  e.getArg2().getConstant().getNode().getLiteralValue();
 
             if (object.equals(arg1)){
-                traversal = __.as(subject).has(uri, P.neq(value));  
+                return __.as(subject).has(uri, P.neq(value));  
             }
         }
         return traversal;
@@ -152,7 +152,7 @@ class WhereTraversalBuilder {
             final Object value =  e.getArg2().getConstant().getNode().getLiteralValue();
 
             if (object.equals(arg1)){
-                traversal = __.as(subject).has(uri, P.lt(value));
+               return __.as(subject).has(uri, P.lt(value));
             }
         }
         return traversal;
@@ -184,7 +184,7 @@ GraphTraversal traversal = null;
             final Object value =  e.getArg2().getConstant().getNode().getLiteralValue();
 
             if (object.equals(arg1)){
-                traversal = __.as(subject).has(uri, P.lte(value));
+                return __.as(subject).has(uri, P.lte(value));
             }
         }
         return traversal;
@@ -216,7 +216,7 @@ GraphTraversal traversal = null;
             final Object value =  e.getArg2().getConstant().getNode().getLiteralValue();
 
             if (object.equals(arg1)){
-                traversal = __.as(subject).has(uri, P.gt(value));
+                return __.as(subject).has(uri, P.gt(value));
             }
         }
         return traversal;
@@ -248,7 +248,7 @@ GraphTraversal traversal = null;
             final Object value =  e.getArg2().getConstant().getNode().getLiteralValue();
 
             if (object.equals(arg1)){
-                traversal = __.as(subject).has(uri, P.gte(value));
+                return __.as(subject).has(uri, P.gte(value));
             }
         }
         return traversal;
