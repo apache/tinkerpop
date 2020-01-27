@@ -59,6 +59,12 @@ describe('API', function () {
     assert.ok(glvModule.structure.io);
     assert.strictEqual(typeof glvModule.structure.io.GraphSONReader, 'function');
     assert.strictEqual(typeof glvModule.structure.io.GraphSONWriter, 'function');
+    validateConstructor(glvModule.structure.io, 'GraphSON2Reader');
+    validateConstructor(glvModule.structure.io, 'GraphSON2Writer');
+    validateConstructor(glvModule.structure.io, 'GraphSON3Reader');
+    validateConstructor(glvModule.structure.io, 'GraphSON3Writer');
+    assert.strictEqual(glvModule.structure.io.GraphSONReader, glvModule.structure.io.GraphSON3Reader);
+    assert.strictEqual(glvModule.structure.io.GraphSONWriter, glvModule.structure.io.GraphSON3Writer);
     assert.strictEqual(typeof glvModule.structure.Edge, 'function');
     assert.strictEqual(typeof glvModule.structure.Graph, 'function');
     assert.strictEqual(typeof glvModule.structure.Path, 'function');

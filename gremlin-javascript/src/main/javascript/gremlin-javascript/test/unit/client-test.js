@@ -36,7 +36,7 @@ describe('Client', function () {
       }
     };
 
-    const customClient = new Client('localhost:8182', {traversalSource: 'g'});
+    const customClient = new Client('ws://localhost:8182', {traversalSource: 'g'});
     customClient._connection = connectionMock;
     customClient.submit(query)
   });
@@ -51,7 +51,7 @@ describe('Client', function () {
       }
     };
 
-    const customClient = new Client('localhost:8182', {traversalSource: 'g', processor: customOpProcessor});
+    const customClient = new Client('ws://localhost:8182', {traversalSource: 'g', processor: customOpProcessor});
     customClient._connection = connectionMock;
     customClient.submit(query)
   });
