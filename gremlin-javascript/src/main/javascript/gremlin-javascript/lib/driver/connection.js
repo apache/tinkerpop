@@ -38,6 +38,7 @@ const responseStatusCode = {
 };
 
 const defaultMimeType = 'application/vnd.gremlin-v3.0+json';
+const graphSON2MimeType = 'application/vnd.gremlin-v2.0+json';
 
 const pingIntervalDelay = 60 * 1000;
 const pongTimeoutDelay = 30 * 1000;
@@ -73,22 +74,22 @@ class Connection extends EventEmitter {
     this.url = url;
     this.options = options = options || {};
 
+    /**
+     * Gets the MIME type.
+     * @type {String}
+     */
+    this.mimeType = options.mimeType || defaultMimeType;
+
     // A map containing the request id and the handler
     this._responseHandlers = {};
-    this._reader = options.reader || new serializer.GraphSONReader();
-    this._writer = options.writer || new serializer.GraphSONWriter();
+    this._reader = options.reader || this._getDefaultReader(this.mimeType);
+    this._writer = options.writer || this._getDefaultWriter(this.mimeType);
     this._openPromise = null;
     this._openCallback = null;
     this._closePromise = null;
     this._closeCallback = null;
     this._pingInterval = null;
     this._pongTimeout = null;
-
-    /**
-     * Gets the MIME type.
-     * @type {String}
-     */
-    this.mimeType = options.mimeType || defaultMimeType;
 
     this._header = String.fromCharCode(this.mimeType.length) + this.mimeType;
     this.isOpen = false;
@@ -167,6 +168,18 @@ class Connection extends EventEmitter {
       const message = Buffer.from(this._header + JSON.stringify(this._getRequest(requestId, bytecode, op, args, processor)));
       this._ws.send(message);
     }));
+  }
+
+  _getDefaultReader(mimeType) {
+    return mimeType === graphSON2MimeType
+      ? new serializer.GraphSON2Reader()
+      : new serializer.GraphSONReader();
+  }
+
+  _getDefaultWriter(mimeType) {
+    return mimeType === graphSON2MimeType
+      ? new serializer.GraphSON2Writer()
+      : new serializer.GraphSONWriter();
   }
 
   _getRequest(id, bytecode, op, args, processor) {
