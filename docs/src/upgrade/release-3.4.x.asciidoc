@@ -263,7 +263,16 @@ gremlin> g.E().properties().dedup()
 ==>p[skill->3]
 ----
 
-link:https://issues.apache.org/jira/browse/TINKERPOP-2318[TINKERPOP-2318]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2318[TINKERPOP-2318]
+
+==== SPARQL and Indices
+
+SPARQL queries translated to Gremlin by `sparql-gremlin` did not always translate to traversals that were easily
+optimized by providers to use indices. Some new improvements have altered the query translation process to generate
+Gremlin that is more readily recognized by standard `TraversalStrategy` implementations which should in turn make index
+usage commonplace across providers.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2325[TINKERPOP-2325]
 
 === Upgrading for Providers
 
