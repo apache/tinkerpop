@@ -34,7 +34,7 @@ const traversal = require('../../lib/process/anonymous-traversal').traversal;
 const Path = graphModule.Path;
 const __ = graphTraversalModule.statics;
 const t = traversalModule.t;
-const direction = traversalModule.direction
+const direction = traversalModule.direction;
 
 // Determines whether the feature maps (m[]), are deserialized as objects (true) or maps (false).
 // Use false for GraphSON3.
@@ -66,6 +66,8 @@ const ignoredScenarios = {
   // An associative array containing the scenario name as key, for example:
   'g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX': new IgnoreError(ignoreReason.setNotSupported),
   'g_withSideEffectXa_setX_V_both_name_aggregateXlocal_aX_capXaX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_shortestPath_edgesIncluded': new IgnoreError(ignoreReason.needsFurtherInvestigation),
+  'g_V_shortestPath_edgesIncluded_edgesXoutEX': new IgnoreError(ignoreReason.needsFurtherInvestigation)
 };
 
 defineSupportCode(function(methods) {

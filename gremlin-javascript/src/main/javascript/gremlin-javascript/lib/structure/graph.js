@@ -65,7 +65,7 @@ class Vertex extends Element {
   }
 
   toString() {
-    return 'v[' + this.id + ']';
+    return `v[${this.id}]`;
   }
 }
 
@@ -85,7 +85,10 @@ class Edge extends Element {
   }
 
   toString() {
-    return 'e[' + this.id + '][' + this.outV.id + '-' + this.label + '->' + this.inV.id + ']';
+    const outVId = this.outV ? this.outV.id : '?';
+    const inVId = this.inV ? this.inV.id : '?';
+
+    return `e[${this.id}][${outVId}-${this.label}->${inVId}]`;
   }
 }
 
@@ -98,7 +101,7 @@ class VertexProperty extends Element {
   }
 
   toString() {
-    return 'vp[' + this.label + '->' + this.value.substr(0, 20) + ']';
+    return `vp[${this.label}->${summarize(this.value)}]`;
   }
 }
 
@@ -109,7 +112,7 @@ class Property {
   }
 
   toString() {
-    return 'p[' + this.key + '->' + this.value.substr(0, 20) + ']';
+    return `p[${this.key}->${summarize(this.value)}]`;
   }
 
   equals(other) {
@@ -130,7 +133,7 @@ class Path {
   }
 
   toString() {
-    return 'path[' + this.objects.join(", ") +  ']';
+    return `path[${(this.objects || []).join(", ")}]`;
   }
 
   equals(other) {
@@ -165,11 +168,20 @@ function areEqual(obj1, obj2) {
   return false;
 }
 
+function summarize(value) {
+  if (value === null || value === undefined) {
+    return value;
+  }
+
+  const strValue = value.toString();
+  return strValue.length > 20 ? strValue.substr(0, 20) : strValue;
+}
+
 module.exports = {
-  Edge: Edge,
-  Graph: Graph,
-  Path: Path,
-  Property: Property,
-  Vertex: Vertex,
-  VertexProperty: VertexProperty
+  Edge,
+  Graph,
+  Path,
+  Property,
+  Vertex,
+  VertexProperty
 };

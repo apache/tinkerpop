@@ -315,9 +315,9 @@ class EdgeSerializer extends TypeSerializer {
     const value = obj[valueKey];
     return new g.Edge(
       this.reader.read(value['id']),
-      this.reader.read(value['outV']),
+      new g.Vertex(this.reader.read(value['outV']), this.reader.read(value['outVLabel'])),
       value['label'],
-      this.reader.read(value['inV']),
+      new g.Vertex(this.reader.read(value['inV']), this.reader.read(value['inVLabel'])),
       this.reader.read(value['properties'])
     );
   }
