@@ -41,6 +41,63 @@ when submitting a pull request. Consider setting up the full environment.
 NOTE: For those using Windows, efforts have been made to keep the build OS independent, but, in practice, it is likely
 that TinkerPop's build system will only allow for a minimum build at best.
 
+[[groovy-environment]]
+=== Groovy Environment
+
+Groovy is not used in the standard build, but when generating documentation it does require the loading of a Gremlin
+Console instance. The Gremlin Console is Groovy-based and the documentation bootstrapping loads TinkerPop plugins
+which requires proper configuration of Graph/Ivy dependency loaders as described in the
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-applications[Gremlin Applications Section] of the
+Reference Documentation.
+
+The base configuration described in that link may need to be modified if there is a desire to work with the Gremlin
+Console (for documentation generation or just general testing) in a way that utilizes SNAPSHOT releases in the
+Apache Snapshots Repository. In that case, the `grapeConfig.xml` will need to include a resolver for that repository
+and the basic Ivy configuration will look as follows:
+
+[source,xml]
+----
+<ivysettings>
+  <settings defaultResolver="downloadGrapes"/>
+  <resolvers>
+    <chain name="downloadGrapes" returnFirst="true">
+      <filesystem name="cachedGrapes">
+        <ivy pattern="${user.home}/.groovy/grapes/[organisation]/[module]/ivy-[revision].xml"/>
+        <artifact pattern="${user.home}/.groovy/grapes/[organisation]/[module]/[type]s/[artifact]-[revision](-[classifier]).[ext]"/>
+      </filesystem>
+      <ibiblio name="localm2" root="${user.home.url}/.m2/repository/" checkmodified="true" changingPattern=".*" changingMatcher="regexp" m2compatible="true"/>
+      <ibiblio name="jcenter" root="https://jcenter.bintray.com/" m2compatible="true"/>
+      <ibiblio name="ibiblio" m2compatible="true"/>
+      <ibiblio name="apache-snapshots" root="http://repository.apache.org/snapshots/" m2compatible="true"/>
+    </chain>
+  </resolvers>
+</ivysettings>
+----
+
+The above configuration is just a modification of the default. Perhaps the most lean common configuration might just
+be:
+
+[source,xml]
+----
+<ivysettings>
+  <settings defaultResolver="downloadGrapes"/>
+  <resolvers>
+    <chain name="downloadGrapes">
+      <ibiblio name="local" root="file:${user.home}/.m2/repository/" m2compatible="true"/>
+      <ibiblio name="central" root="https://repo1.maven.org/maven2/" m2compatible="true"/>
+    </chain>
+  </resolvers>
+</ivysettings>
+----
+
+In the above case, the configuration largely relies on the standard Maven builds to create a well cached `.m2`
+directory. Under typical development circumstances, SNAPSHOT will find themselves deployed there locally and that
+is all that will be required for Grape to do its work.
+
+As a final word, it is important to take note of the order used for these references as Grape will check them in the order
+they are specified and depending on that order, an artifact other than the one expected may be used which is typically
+an issue when working with SNAPSHOT dependencies.
+
 [[documentation-environment]]
 === Documentation Environment
 
