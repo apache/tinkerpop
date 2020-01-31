@@ -136,6 +136,20 @@ public class SparqlTraversalSourceTest {
     }
 
     @Test
+    public void shouldFilterMulti() {
+        final List<String> names = (List<String>) g.sparql(  "SELECT DISTINCT ?name\n" +
+                "WHERE {\n" +
+                "?person v:label \"person\" .\n" +
+                "?person v:age ?age .\n" +
+                "?person e:created ?project .\n" +
+                "?project v:name ?name .\n" +
+                "?project v:lang ?lang .\n" +
+                "FILTER (?age > 30  && ?lang = \"java\") }").toList();
+
+        assertThat(names, containsInAnyOrder("ripple", "lop"));
+    }
+
+    @Test
     public void shouldDistinct() {
         final List<?> x = g.sparql(
                 "SELECT DISTINCT ?name\n" +
