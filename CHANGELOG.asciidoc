@@ -69,7 +69,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
 [[release-3-4-5]]
-=== TinkerPop 3.4.5 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.4.5 (Release Date: February 3, 2020)
 
 This release also includes changes from <<release-3-3-10, 3.3.10>>.
 
@@ -82,6 +82,31 @@ This release also includes changes from <<release-3-3-10, 3.3.10>>.
 * Unified the behavior of property comparison: only compare key&value.
 * Supported `hasKey()` and `hasValue()` step for edge property and meta property, like `g.E().properties().hasKey('xx')`.
 * Modified driver to send `overrideRequestId` and `userAgent` to server when they are present in `RequestOptions` for bytecode requests.
+
+==== Bugs
+
+* TINKERPOP-2175 Executor thread is not returned on channel close
+* TINKERPOP-2266 Keep alive not started at connection creation
+* TINKERPOP-2274 Test of TinkerGraph Gremlin fail on Windows and non EN locale
+* TINKERPOP-2318 Edge properties dedup() not work with spark-gremlin *(breaking)*
+* TINKERPOP-2332 JavaScript GLV: structure element toString() should internally call toString()
+* TINKERPOP-2333 JavaScript GLV: GraphSON2/3 Edge deserialization is invalid
+
+==== Improvements
+
+* TINKERPOP-1733 hasKey, hasValues should work on Element and Property
+* TINKERPOP-2262 Improve Netty protocol handling
+* TINKERPOP-2305 GraphBinary: Wrap Buffer API
+* TINKERPOP-2307 Add better error message for badly configured Channelizer
+* TINKERPOP-2309 Bump gremlinpython to Tornado 5.x
+* TINKERPOP-2314 Employ by(String) for Map when possible and improve errors around incorrect types
+* TINKERPOP-2315 Implement some form of clone() or reset() for Traversal in GLVs
+* TINKERPOP-2320 [SECURITY] XMLInputFactory initialization in GraphMLReader introduces
+* TINKERPOP-2322 Deprecate Jython support
+* TINKERPOP-2324 Deprecate the raw NIO support in the Java driver
+* TINKERPOP-2325 Generate traversals that will better yield index lookups with SPARQL
+* TINKERPOP-2329 JavaScript GLV: Update websocket library dependency
+* TINKERPOP-2330 JavaScript GLV should expose GraphSON2Writer and GraphSONReader
 
 [[release-3-4-4]]
 === TinkerPop 3.4.4 (Release Date: October 14, 2019)
