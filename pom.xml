@@ -411,6 +411,7 @@ limitations under the License.
                         <exclude>**/npm-debug.log</exclude>
                         <exclude>**/_site/**</exclude>
                         <exclude>**/.pytest_cache/**</exclude>
+                        <exclude>**/docfx/**</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
