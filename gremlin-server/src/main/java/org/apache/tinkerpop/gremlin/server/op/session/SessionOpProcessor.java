@@ -124,10 +124,13 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
     /**
      * Session based requests accept a "close" operator in addition to "eval". A close will trigger the session to be
      * killed and any uncommitted transaction to be rolled-back.
-     * @return
      */
     @Override
     public Optional<ThrowingConsumer<Context>> selectOther(final RequestMessage requestMessage) throws OpProcessorException {
+        // deprecated the "close" message at 3.3.11 - should probably leave this check for the "close" token so that
+        // if older versions of the driver connect they won't get an error. can basically just write back a NO_CONTENT
+        // for the immediate term in 3.5.0 and then for some future version remove support for the message completely
+        // and thus disallow older driver versions from connecting at all.
         if (requestMessage.getOp().equals(Tokens.OPS_CLOSE)) {
             // this must be an in-session request
             if (!requestMessage.optionalArgs(Tokens.ARGS_SESSION).isPresent()) {

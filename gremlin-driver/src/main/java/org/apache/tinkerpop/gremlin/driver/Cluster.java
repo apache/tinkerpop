@@ -399,9 +399,18 @@ public final class Cluster {
 
     /**
      * Gets how long a session will stay open assuming the current connection actually is configured for their use.
+     *
+     * @deprecated As of release 3.3.11, replaced in essence by {@link #getMaxWaitForClose()}.
      */
     public int getMaxWaitForSessionClose() {
         return manager.connectionPoolSettings.maxWaitForSessionClose;
+    }
+
+    /**
+     * Gets how long a connection will wait for all pending messages to be returned from the server before closing.
+     */
+    public int getMaxWaitForClose() {
+        return manager.connectionPoolSettings.maxWaitForClose;
     }
 
     /**
@@ -577,6 +586,7 @@ public final class Cluster {
         private int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
         private int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
         private int maxWaitForSessionClose = Connection.MAX_WAIT_FOR_SESSION_CLOSE;
+        private int maxWaitForClose = Connection.MAX_WAIT_FOR_CLOSE;
         private int maxContentLength = Connection.MAX_CONTENT_LENGTH;
         private int reconnectInterval = Connection.RECONNECT_INTERVAL;
         private int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
@@ -893,8 +903,28 @@ public final class Cluster {
          * If the connection is using a "session" this setting represents the amount of time in milliseconds to wait
          * for that session to close before timing out where the default value is 3000. Note that the server will
          * eventually clean up dead sessions itself on expiration of the session or during shutdown.
+         *
+         * @deprecated As of release 3.3.11, replaced in essence by {@link #maxWaitForClose(int)} though behavior
+         * described here is still maintained.
          */
+        @Deprecated
         public Builder maxWaitForSessionClose(final int maxWait) {
+            this.maxWaitForSessionClose = maxWait;
+            return this;
+        }
+
+        /**
+         * The amount of time in milliseconds to wait the connection to close before timing out where the default
+         * value is 3000. This timeout allows for a delay to occur in waiting for remaining messages that may still
+         * be returning from the server while a {@link Client#close()} is called.
+         * <p/>
+         * This setting is related to {@link #maxWaitForSessionClose} to some degree. This setting refers to a wait
+         * for standard requests (i.e. queries) but the {@link #maxWaitForSessionClose} refers to a wait for the
+         * "session close" message that occurs after all standard requests have returned (or timed out). There is
+         * generally no need to set {@link #maxWaitForSessionClose} if the server is on 3.3.11 or later as the close
+         * of the connection will trigger the close of the session and the release of resources.
+         */
+        public Builder maxWaitForClose(final int maxWait) {
             this.maxWaitForSessionClose = maxWait;
             return this;
         }
@@ -1084,6 +1114,7 @@ public final class Cluster {
             connectionPoolSettings.minSize = builder.minConnectionPoolSize;
             connectionPoolSettings.maxWaitForConnection = builder.maxWaitForConnection;
             connectionPoolSettings.maxWaitForSessionClose = builder.maxWaitForSessionClose;
+            connectionPoolSettings.maxWaitForClose = builder.maxWaitForClose;
             connectionPoolSettings.maxContentLength = builder.maxContentLength;
             connectionPoolSettings.reconnectInterval = builder.reconnectInterval;
             connectionPoolSettings.resultIterationBatchSize = builder.resultIterationBatchSize;
@@ -1155,6 +1186,9 @@ public final class Cluster {
 
             if (builder.maxWaitForSessionClose < 1)
                 throw new IllegalArgumentException("maxWaitForSessionClose must be greater than zero");
+
+            if (builder.maxWaitForClose < 1)
+                throw new IllegalArgumentException("maxWaitForClose must be greater than zero");
 
             if (builder.maxContentLength < 1)
                 throw new IllegalArgumentException("maxContentLength must be greater than zero");

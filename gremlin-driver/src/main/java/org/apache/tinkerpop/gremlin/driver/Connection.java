@@ -63,6 +63,7 @@ final class Connection {
     public static final int MIN_IN_PROCESS = 1;
     public static final int MAX_WAIT_FOR_CONNECTION = 3000;
     public static final int MAX_WAIT_FOR_SESSION_CLOSE = 3000;
+    public static final int MAX_WAIT_FOR_CLOSE = 3000;
     public static final int MAX_CONTENT_LENGTH = 65536;
 
     public static final int RECONNECT_INTERVAL = 1000;
@@ -184,7 +185,7 @@ final class Connection {
                 shutdown(future);
         } else {
             // there may be some pending requests. schedule a job to wait for those to complete and then shutdown
-            new CheckForPending(future).runUntilDone(cluster.executor(), 1000, TimeUnit.MILLISECONDS);
+            new CheckForPending(future).runUntilDone(cluster.executor());
         }
 
         return future;
@@ -320,7 +321,14 @@ final class Connection {
         if (shutdownInitiated.compareAndSet(false, true)) {
             final String connectionInfo = this.getConnectionInfo();
 
-            // maybe this should be delegated back to the Client implementation??? kinda weird to instanceof here.....
+            // this block of code that "closes" the session is deprecated as of 3.3.11 - this message is going to be
+            // removed at 3.5.0. we will instead bind session closing to the close of the channel itself and not have
+            // this secondary operation here which really only acts as a means for clearing resources in a functioning
+            // session. "functioning" in this context means that the session is not locked up with a long running
+            // operation which will delay this close execution which ideally should be more immediate, as in the user
+            // is annoyed that a long run operation is happening and they want an immediate cancellation. that's the
+            // most likely use case. we also get the nice benefit that this if/then code just goes away as the
+            // Connection really shouldn't care about the specific Client implementation.
             if (client instanceof Client.SessionedClient) {
                 final boolean forceClose = client.getSettings().getSession().get().isForceClosed();
                 final RequestMessage closeMessage = client.buildMessage(
@@ -333,7 +341,7 @@ final class Connection {
                     // make sure we get a response here to validate that things closed as expected.  on error, we'll let
                     // the server try to clean up on its own.  the primary error here should probably be related to
                     // protocol issues which should not be something a user has to fuss with.
-                    closed.join().all().get(cluster.connectionPoolSettings().maxWaitForSessionClose, TimeUnit.MILLISECONDS);
+                    closed.join().all().get(cluster.getMaxWaitForSessionClose(), TimeUnit.MILLISECONDS);
                 } catch (TimeoutException ex) {
                     final String msg = String.format(
                             "Timeout while trying to close connection on %s - force closing - server will close session on shutdown or expiration.",
@@ -382,16 +390,18 @@ final class Connection {
     private final class CheckForPending implements Runnable {
         private volatile ScheduledFuture<?> self;
         private final CompletableFuture<Void> future;
+        private long checkUntil = System.currentTimeMillis();
 
         CheckForPending(final CompletableFuture<Void> future) {
             this.future = future;
+            checkUntil = checkUntil + cluster.getMaxWaitForClose();
         }
 
         @Override
         public void run() {
             logger.info("Checking for pending messages to complete before close on {}", this);
 
-            if (isOkToClose()) {
+            if (isOkToClose() || System.currentTimeMillis() > checkUntil) {
                 shutdown(future);
                 boolean interrupted = false;
                 try {
@@ -411,8 +421,8 @@ final class Connection {
             }
         }
 
-        void runUntilDone(final ScheduledExecutorService executor, final long period, final TimeUnit unit) {
-            self = executor.scheduleAtFixedRate(this, period, period, unit);
+        void runUntilDone(final ScheduledExecutorService executor) {
+            self = executor.scheduleAtFixedRate(this, 1000, 1000, TimeUnit.MILLISECONDS);
         }
     }
 }

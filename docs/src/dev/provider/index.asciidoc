@@ -1061,6 +1061,12 @@ Gremlin Server are deployed, session state is not shared among them.
 !`close` !Close the specified session. Will return a `NO CONTENT` message as confirmation of the close being completed.
 |=========================================================
 
+NOTE: The "close" message is deprecated as of 3.3.11 as servers at this version are required to automatically interrupt
+running processes on the close of the connection and release resources such as sessions. Servers wishing to be
+compatible with older versions of the driver need only send back a `NO_CONTENT` for this message. Drivers wishing to
+be compatible with servers prior to 3.3.11 may continue to send the message on calls to `close()` otherwise such code
+can be removed.
+
 **`authentication` operation arguments**
 
 [width="100%",cols="2,2,9",options="header"]

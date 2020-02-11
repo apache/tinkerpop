@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.op.session;
 
+import io.netty.channel.Channel;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
@@ -68,6 +69,7 @@ public class Session {
     private final long configuredSessionTimeout;
     private final long configuredPerGraphCloseTimeout;
     private final boolean globalFunctionCacheEnabled;
+    private final Channel boundChannel;
 
     private AtomicBoolean killing = new AtomicBoolean(false);
     private AtomicReference<ScheduledFuture> kill = new AtomicReference<>();
@@ -110,6 +112,16 @@ public class Session {
         this.gremlinExecutor = initializeGremlinExecutor().create();
 
         settings.scriptEngines.keySet().forEach(this::registerMetrics);
+
+        boundChannel = context.getChannelHandlerContext().channel();
+        boundChannel.closeFuture().addListener(future -> manualKill(true));
+    }
+
+    /**
+     * Determines if the supplied {@code Channel} object is the same as the one bound to the {@code Session}.
+     */
+    public boolean isBoundTo(final Channel channel) {
+        return channel == boundChannel;
     }
 
     public GremlinExecutor getGremlinExecutor() {
