@@ -30,6 +30,18 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== drop() Properties
+
+In 3.4.5 the equality of the `Property` object changed to allow language features like `dedup()` to work more
+consistently. An unnoticed side-effect of that change was that calling `drop()` on properties that had the same values
+would not properly remove all their instances. This problem affected edge and meta property instances but not the
+properties of vertices as their equality definitions had not changed.
+
+This issue is now resolved with the side-effect being that the inclusion of `drop()` will disable `LazyBarrierStrategy`
+which prevents automatic bulking. In most common cases, the impact of that optimization loss should be minimal and
+could be added back manually with `barrier()` steps in the appropriate places.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2338[TINKERPOP-2338]
 
 == TinkerPop 3.4.5
 

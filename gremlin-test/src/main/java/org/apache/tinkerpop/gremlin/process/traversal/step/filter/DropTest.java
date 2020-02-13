@@ -26,12 +26,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -47,6 +49,10 @@ public abstract class DropTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Edge> get_g_V_outE_drop();
 
     public abstract Traversal<Vertex, VertexProperty> get_g_V_properties_drop();
+
+    public abstract Traversal<Vertex, ? extends Property<Object>> get_g_V_properties_propertiesXstartTimeX_drop();
+
+    public abstract Traversal<Edge, ? extends Property<Object>> get_g_E_propertiesXweightX_drop();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -82,6 +88,27 @@ public abstract class DropTest extends AbstractGremlinTest {
         g.V().forEachRemaining(vertex -> assertEquals(0, IteratorUtils.count(vertex.properties())));
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_REMOVE_PROPERTY)
+    public void g_E_propertiesXweightX_drop() {
+        final Traversal<Edge, ? extends Property<Object>> traversal = get_g_E_propertiesXweightX_drop();
+        printTraversalForm(traversal);
+        assertFalse(traversal.hasNext());
+        g.E().forEachRemaining(edge -> assertEquals(0, IteratorUtils.count(edge.properties())));
+    }
+
+
+    @Test
+    @LoadGraphWith(CREW)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_REMOVE_PROPERTY)
+    public void g_V_properties_propertiesXstartTimeX_drop() {
+        final Traversal<Vertex, ? extends Property<Object>> traversal = get_g_V_properties_propertiesXstartTimeX_drop();
+        printTraversalForm(traversal);
+        assertFalse(traversal.hasNext());
+        g.V().forEachRemaining(vertex -> assertEquals(0, IteratorUtils.count(IteratorUtils.flatMap(vertex.properties("location"), vp -> vp.properties("startTime")))));
+    }
+
 
     public static class Traversals extends DropTest {
 
@@ -98,6 +125,16 @@ public abstract class DropTest extends AbstractGremlinTest {
         @Override
         public Traversal<Vertex, VertexProperty> get_g_V_properties_drop() {
             return (Traversal) g.V().properties().drop();
+        }
+
+        @Override
+        public Traversal<Edge, ? extends Property<Object>> get_g_E_propertiesXweightX_drop() {
+            return g.E().properties("weight").drop();
+        }
+
+        @Override
+        public Traversal<Vertex, ? extends Property<Object>> get_g_V_properties_propertiesXstartTimeX_drop() {
+            return g.V().properties().properties("startTime").drop();
         }
     }
 }
