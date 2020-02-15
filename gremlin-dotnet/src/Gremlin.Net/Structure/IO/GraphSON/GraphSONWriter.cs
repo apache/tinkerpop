@@ -114,7 +114,10 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         public dynamic ToDict(dynamic objectData)
         {
             var type = objectData.GetType();
-            if (TryGetSerializerFor(out IGraphSONSerializer serializer, type))
+
+            IGraphSONSerializer serializer = TryGetSerializerFor(type);
+
+            if (serializer != null)
                 return serializer.Dictify(objectData, this);
             if (IsDictionaryType(type))
                 return DictToGraphSONDict(objectData);
@@ -123,21 +126,18 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             return objectData;
         }
 
-        private bool TryGetSerializerFor(out IGraphSONSerializer serializer, Type type)
+        private IGraphSONSerializer TryGetSerializerFor(Type type)
         {
             if (Serializers.ContainsKey(type))
             {
-                serializer = Serializers[type];
-                return true;
+                return Serializers[type];
             }
             foreach (var supportedType in Serializers.Keys)
                 if (supportedType.IsAssignableFrom(type))
                 {
-                    serializer = Serializers[supportedType];
-                    return true;
+                    return Serializers[supportedType];
                 }
-            serializer = null;
-            return false;
+            return null;
         }
 
         private bool IsDictionaryType(Type type)
