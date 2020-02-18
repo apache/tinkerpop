@@ -458,7 +458,7 @@ this release those settings become available via `with()` step on the `Traversal
 [source,java]
 ----
 GraphTraversalSource g = traversal().withRemote(conf);
-List<Vertex> vertices = g.with(RemoteConnection.PER_REQUEST_TIMEOUT, 500).V().out("knows").toList()
+List<Vertex> vertices = g.with(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT, 500L).V().out("knows").toList()
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2211[TINKERPOP-2211]
