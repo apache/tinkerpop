@@ -45,7 +45,9 @@ import java.io.IOException;
  */
 public enum GraphBinaryCompatibility implements Compatibility {
     V1_3_4_3("3.4.3", "1.0", "v1"),
-    V1_3_4_4("3.4.4", "1.0", "v1");
+    V1_3_4_4("3.4.4", "1.0", "v1"),
+    V1_3_4_5("3.4.5", "1.0", "v1"),
+    V1_3_4_6("3.4.6", "1.0", "v1");
 
     private static final String SEP = File.separator;
 
