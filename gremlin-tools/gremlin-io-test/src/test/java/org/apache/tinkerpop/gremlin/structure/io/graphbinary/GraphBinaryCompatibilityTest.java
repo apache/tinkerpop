@@ -46,7 +46,9 @@ public class GraphBinaryCompatibilityTest extends AbstractTypedCompatibilityTest
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {GraphBinaryCompatibility.V1_3_4_4, readerV1, writerV1 },
-                {GraphBinaryCompatibility.V1_3_4_4, readerV1, writerV1 }
+                {GraphBinaryCompatibility.V1_3_4_4, readerV1, writerV1 },
+                {GraphBinaryCompatibility.V1_3_4_5, readerV1, writerV1 },
+                {GraphBinaryCompatibility.V1_3_4_6, readerV1, writerV1 }
         });
     }
 
