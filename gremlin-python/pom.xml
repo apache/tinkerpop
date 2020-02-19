@@ -359,11 +359,17 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <target>
+                                        <!--
+                                        seems like https://github.com/pypa/twine/issues/338 is the reason to stay bound
+                                        to this old version of twine. as long as keyring gets in the way and can't be
+                                        disabled as described then you don't get a prompt for the password on deploy
+                                        to pypi
+                                         -->
                                         <exec dir="${project.build.directory}/python-packaged" executable="env/bin/pip"
                                               failonerror="true">
                                             <arg line="install twine==1.12.1"/>
                                         </exec>
-					<!-- check the dist for errors before deploying -->
+					                    <!-- check the dist for errors before deploying -->
                                         <exec dir="${project.build.directory}/python-packaged" executable="env/bin/twine"
                                               failonerror="true">
                                             <arg line="check dist/*"/>
