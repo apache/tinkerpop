@@ -310,6 +310,19 @@ limitations under the License.
                                         <copy todir="${project.build.directory}/python-packaged">
                                             <fileset dir="src/main/jython"/>
                                         </copy>
+                                        <!-- print versions of python and virtualenv -->
+                                        <exec dir="${project.build.directory}/python2" executable="python2"
+                                              failonerror="true">
+                                            <arg line="--version"/>
+                                        </exec>
+                                        <exec dir="${project.build.directory}/python2" executable="python3"
+                                              failonerror="true">
+                                            <arg line="--version"/>
+                                        </exec>
+                                        <exec dir="${project.build.directory}/python2" executable="virtualenv"
+                                              failonerror="true">
+                                            <arg line="--version"/>
+                                        </exec>
                                         <exec dir="${project.build.directory}/python2" executable="virtualenv"
                                               failonerror="true">
                                             <arg line="--python=python2 env"/>

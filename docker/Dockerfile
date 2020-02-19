@@ -33,8 +33,8 @@ RUN apt-get update
 # for the older release branches. the java version to use is just controlled by JAVA_HOME hardcoded below
 RUN apt-get install -y openjdk-8-jdk openjdk-11-jdk gawk git maven openssh-server subversion zip
 RUN apt-get install -y --force-yes dotnet-sdk-2.2 python python-dev python3-dev python-pip build-essential mono-devel
-RUN pip install virtualenv virtualenvwrapper
 RUN pip install --upgrade pip
+RUN pip install virtualenv virtualenvwrapper
 RUN rm -rf /var/lib/apt/lists/* /var/cache/openjdk-8-jdk
 RUN rm -rf /var/lib/apt/lists/* /var/cache/openjdk-11-jdk
 
