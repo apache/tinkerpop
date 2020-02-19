@@ -46,3 +46,7 @@ exports.getSecureConnectionWithPlainTextSaslAuthenticator = (traversalSource, us
 exports.getClient = function getClient(traversalSource) {
   return new Client(serverUrl, { traversalSource });
 };
+
+exports.getSessionClient = function getSessionClient(traversalSource) {
+  return new Client(serverUrl, { 'traversalSource': traversalSource, 'processor': 'session'});
+};
