@@ -95,14 +95,14 @@ class Connection extends EventEmitter {
     this.isOpen = false;
     this.traversalSource = options.traversalSource || 'g';
     this._authenticator = options.authenticator;
-    this._session = options.session || false;
 
     this._pingEnabled = this.options.pingEnabled === false ? false : true;
     this._pingIntervalDelay = this.options.pingInterval || pingIntervalDelay;
     this._pongTimeoutDelay = this.options.pongTimeout || pongTimeoutDelay;
 
-    if (this._session === true) {
-        this._sessionId = utils.getUuid();
+    if (options.processor === 'session') {
+      this._session = true;
+      this._sessionId = utils.getUuid();
     }
     if (this.options.connectOnStartup !== false) {
       this.open();
@@ -169,19 +169,11 @@ class Connection extends EventEmitter {
         };
       }
 
-      if (this._session === true && op !== 'authentication') {
-        if (bytecode !== null) {
-          reject(new Error('do not support bytecode in session mode'));
+      if (this._session === true) {
+        if (bytecode !== null || args === null) {
+          reject(new Error('only script enabled in session mode'));
           return;
         }
-        if (args === null) {
-          reject(new Error('get nil args in request'));
-          return;
-        }
-
-        const message = Buffer.from(this._header + JSON.stringify(this._getSessionRequest(requestId, null, args)))
-        this._ws.send(message);
-        return;
       }
 
       const message = Buffer.from(this._header + JSON.stringify(this._getRequest(requestId, bytecode, op, args, processor)));
@@ -206,6 +198,10 @@ class Connection extends EventEmitter {
       args = this._adaptArgs(args, true);
     }
 
+    if (this._session === true && op !== 'authentication') {
+      args['session'] = this._sessionId;
+    }
+
     return ({
       'requestId': { '@type': 'g:UUID', '@value': id },
       'op': op || 'bytecode',
@@ -217,22 +213,6 @@ class Connection extends EventEmitter {
       }
     });
   }
-
-   _getSessionRequest(id, op, args) {
-     if (args) {
-       args = this._adaptArgs(args, true);
-     } else {
-       args = {'gremlin': 'session.close()'};
-     }
-     args['session'] = this._sessionId;
- 
-     return ({
-       'requestId': { '@type': 'g:UUID', '@value': id },
-       'op': op || 'eval',
-       'processor': 'session',
-       'args': args
-     });
-   }
 
   _pingHeartbeat() {
 
@@ -401,7 +381,9 @@ class Connection extends EventEmitter {
     if (!this._closePromise) {
       this._closePromise = new Promise(resolve => {
         if (this._session === true) {
-          const message = Buffer.from(this._header + JSON.stringify(this._getSessionRequest(utils.getUuid(), 'close', null)))
+          // session close request, dsl in args as tips and not be executed actually
+          const args = {'gremlin': 'session.close()'};
+          const message = Buffer.from(this._header + JSON.stringify(this._getRequest(utils.getUuid(), null, 'close', args, 'session')));
           this._ws.send(message);
         }
 
