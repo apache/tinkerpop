@@ -48,26 +48,76 @@ describe('Client', function () {
         });
     });
 
-    it('should send script in transaction', async function () {
-        await client.submit("g.tx().open()");
-        const result = await client.submit("g.addV('nodeJs')");
-        await client.submit("g.tx().commit()");
-
-        assert.ok(result);
-        assert.strictEqual(result.length, 1);
-        assert.ok(result.first() instanceof graphModule.Vertex);
+    it('should send script in transaction', function () {
+      return client.submit("g.tx().open()")
+        .then(function (result) {
+          assert.ok(result);
+          //console.log("tx open");
+        }).then(function () {
+          client.submit("g.addV('nodeJs')")
+            .then(function(result) {
+              assert.ok(result);
+              assert.strictEqual(result.length, 1);
+              assert.ok(result.first() instanceof graphModule.Vertex);
+              //console.log("add vertex: %s", JSON.stringify(result));
+            });
+        }).then(function () {
+          client.submit("g.tx().commit()")
+            .then(function(result) {
+              assert.ok(result);
+              //console.log("tx commit");
+            });
+        }).catch(function (err) {
+          client.submit("g.tx().rollback()")
+            .then(function(result) {
+              assert.ok(result);
+              //console.log("tx rollback");
+            });
+        });
     });
 
-    it('should send batch scripts in one transaction', async function () {
-        await client.submit("g.tx().open()");
-        await client.submit("g.V('330007').fold().coalesce(unfold(), addV('nodeJs').property(id, '330007'))");
-        await client.submit("g.V('330008').fold().coalesce(unfold(), addV('nodeJs').property(id, '330008'))");
-        const result = await client.submit("g.addE('nodeJs_E').from(V('330007')).to(V('330008'))");
-        await client.submit("g.tx().commit()");
-
-        assert.ok(result);
-        assert.strictEqual(result.length, 1);
-        assert.ok(result.first() instanceof graphModule.Edge);
+    it('should send batch scripts in one transaction', function () {
+      return client.submit("g.tx().open()")
+        .then(function (result) {
+          assert.ok(result);
+          //console.log("tx open");
+        }).then(function () {
+          client.submit("g.V('330007').fold().coalesce(unfold(), addV('nodeJs').property(id, '330007'))")
+            .then(function (result) {
+              assert.ok(result);
+              assert.strictEqual(result.length, 1);
+              assert.ok(result.first() instanceof graphModule.Vertex);
+              //console.log("add vertex: %s", JSON.stringify(result));
+            });
+        }).then(function () {
+          client.submit("g.V('330008').fold().coalesce(unfold(), addV('nodeJs').property(id, '330008'))")
+            .then(function (result) {
+              assert.ok(result);
+              assert.strictEqual(result.length, 1);
+              assert.ok(result.first() instanceof graphModule.Vertex);
+              //console.log("add vertex: %s", JSON.stringify(result));
+            });
+        }).then(function () {
+          client.submit("g.addE('nodeJs_E').from(V('330007')).to(V('330008'))")
+            .then(function (result) {
+              assert.ok(result);
+              assert.strictEqual(result.length, 1);
+              assert.ok(result.first() instanceof graphModule.Edge);
+              //console.log("add edge: %s", JSON.stringify(result));
+            });
+        }).then(function () {
+          client.submit("g.tx().commit()")
+            .then(function (result) {
+              assert.ok(result);
+              //console.log("tx commit");
+            });
+        }).catch(function (error) {
+          client.submit("g.tx().rollback()")
+            .then(function(result) {
+              assert.ok(result);
+              //console.log("tx rollback");
+            });
+        });
     });
   });
 });
