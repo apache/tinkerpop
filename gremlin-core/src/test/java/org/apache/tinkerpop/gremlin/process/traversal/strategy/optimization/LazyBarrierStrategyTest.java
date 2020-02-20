@@ -100,7 +100,14 @@ public class LazyBarrierStrategyTest {
                 {__.out().as("a").out().as("b").in().where(P.neq("a")).out().select("b").out(), __.out().as("a").out().as("b").in().where(P.neq("a")).barrier(PATH_SIZE).out().select("b").barrier(PATH_SIZE).out(), Collections.singletonList(PathRetractionStrategy.instance())},
                 {__.out().as("a").out().as("b").in().where(P.neq("a")).out().select("b").out().out(), __.out().as("a").out().as("b").in().where(P.neq("a")).barrier(PATH_SIZE).out().select("b").barrier(PATH_SIZE).out().barrier(LAZY_SIZE).out(), Collections.singletonList(PathRetractionStrategy.instance())},
                 {__.V().out().out().groupCount().by(__.out().out().out()).out(), __.V().out().barrier(LAZY_SIZE).out().groupCount().by(__.out().out().barrier(LAZY_SIZE).out()).out(), Collections.emptyList()},
-                {__.V().out().out().groupCount().by(__.out().out().out()).out().as("a"), __.V().out().barrier(LAZY_SIZE).out().groupCount().by(__.out().out().barrier(LAZY_SIZE).out()).out().as("a"), Collections.emptyList()}
+                {__.V().out().out().groupCount().by(__.out().out().out()).out().as("a"), __.V().out().barrier(LAZY_SIZE).out().groupCount().by(__.out().out().barrier(LAZY_SIZE).out()).out().as("a"), Collections.emptyList()},
+                {__.out().drop(), __.out().drop(), Collections.emptyList()},
+                {__.out().properties().drop(), __.out().properties().drop(), Collections.emptyList()},
+                {__.out().properties().properties().drop(), __.out().properties().properties().drop(), Collections.emptyList()},
+                {__.out().out().properties().drop(), __.out().out().properties().drop(), Collections.emptyList()},
+                {__.out().out().values().is(true), __.out().out().barrier(LAZY_SIZE).values().barrier(LAZY_SIZE).is(true), Collections.emptyList()},
+                {__.outE().drop(), __.outE().drop(), Collections.emptyList()},
+                {__.outE().properties().drop(), __.outE().properties().drop(), Collections.emptyList()}
         });
     }
 }

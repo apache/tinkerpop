@@ -42,7 +42,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             {
                 // Add here the name of scenarios to ignore and the reason, e.g.:
                 { "g_V_group_byXageX", IgnoreReason.NullKeysInMapNotSupported }
-                // { "g_V_peerPressure_withXpropertyName_clusterX_withXedges_outEXknowsXX_pageRankX1X_byXrankX_withXedges_outEXknowsX_withXtimes_2X_group_byXclusterX_byXrank_sumX_limitX100X", IgnoreReason.NoReason },
+                //{ "g_V_properties_propertiesXstartTimeX_drop", IgnoreReason.NoReason },
             };
         
         private static class Keywords
