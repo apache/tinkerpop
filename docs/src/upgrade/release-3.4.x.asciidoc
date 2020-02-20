@@ -23,7 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 == TinkerPop 3.4.6
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: February 20, 2020*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.6/CHANGELOG.asciidoc#release-3-4-6[changelog] for a
 complete list of all the modifications that are part of this release.
@@ -49,6 +49,9 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2338[TINKERPOP-2338]
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.5/CHANGELOG.asciidoc#release-3-4-5[changelog] for a
 complete list of all the modifications that are part of this release.
+
+WARNING: A link:https://issues.apache.org/jira/browse/TINKERPOP-2338[bug] was noted in 3.4.5 soon after release and
+was quickly patched. Users and providers should avoid version 3.4.5 and should instead prefer usage of 3.4.6.
 
 === Upgrading for Users
 
