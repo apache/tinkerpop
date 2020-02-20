@@ -23,7 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-4-6]]
 === TinkerPop 3.4.6 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-This release also includes changes from <<release-3-3-11, 3.3.11>>.
+* Fixed bug in `drop()` of properties which was introduced in 3.4.5.
 
 [[release-3-4-5]]
 === TinkerPop 3.4.5 (Release Date: February 3, 2020)

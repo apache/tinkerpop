@@ -41,7 +41,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             new Dictionary<string, IgnoreReason>
             {
                 // Add here the name of scenarios to ignore and the reason, e.g.:
-                // { "g_V_peerPressure_byXclusterX_byXoutEXknowsXX_pageRankX1X_byXrankX_byXoutEXknowsXX_timesX2X_group_byXclusterX_byXrank_sumX_limitX100X", IgnoreReason.NoReason },
+                //{ "g_V_properties_propertiesXstartTimeX_drop", IgnoreReason.NoReason },
             };
         
         private static class Keywords
