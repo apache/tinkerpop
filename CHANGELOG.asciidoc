@@ -69,9 +69,13 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
 [[release-3-4-6]]
-=== TinkerPop 3.4.6 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.4.6 (Release Date: February 20, 2020)
 
 * Fixed bug in `drop()` of properties which was introduced in 3.4.5.
+
+==== Bugs
+
+* TINKERPOP-2338 drop() not removing all edge/meta properties
 
 [[release-3-4-5]]
 === TinkerPop 3.4.5 (Release Date: February 3, 2020)
