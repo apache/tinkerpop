@@ -26,7 +26,7 @@ limitations under the License.
  <div class="container">
     <div class="row">
        <div class="col-sm-10 col-md-10">
-          <a href="http://arxiv.org/abs/1508.03843">Gremlin</a> is the graph traversal language of <a href="http://tinkerpop.apache.org/">Apache TinkerPop</a>.
+          <a href="http://arxiv.org/abs/1508.03843">Gremlin</a> is the graph traversal language of <a href="https://tinkerpop.apache.org/">Apache TinkerPop</a>.
           Gremlin is a <a href="https://en.wikipedia.org/wiki/Functional_programming">functional</a>, <a href="https://en.wikipedia.org/wiki/Dataflow_programming">data-flow</a>
           language that enables users to succinctly express complex traversals on (or queries of) their application's property graph. Every Gremlin traversal is composed of a sequence of (potentially nested) steps. A step
           performs an atomic operation on the data stream. Every step is either a <em>map</em>-step (transforming the objects in the stream), a <em>filter</em>-step (removing objects
@@ -250,14 +250,14 @@ g.V().hasLabel("person").
        </div>
        <div class="col-sm-7 col-md-8">
           A declarative Gremlin traversal does not tell the traversers the order in which to execute their walk, but instead, allows each traverser to select a pattern to execute from a collection
-          of (potentially nested) patterns. The <a href="http://tinkerpop.apache.org/docs/current/reference/#match-step">declarative traversal</a> on the left yields the same result as the imperative traversal above. However, the declarative traversal has the added benefit
+          of (potentially nested) patterns. The <a href="https://tinkerpop.apache.org/docs/current/reference/#match-step">declarative traversal</a> on the left yields the same result as the imperative traversal above. However, the declarative traversal has the added benefit
           that it leverages not only a compile-time query planner (like imperative traversals), but also a runtime query planner that chooses which traversal pattern to execute next based on the
           historic statistics of each pattern -- favoring those patterns which tend to reduce/filter the most data.
        </div>
     </div>
     <br/>
     The user can write their traversals in any way they choose. However, ultimately when their traversal is compiled, and depending on the underlying execution engine
-    (i.e. an OLTP graph database or an OLAP graph processor), the user's traversal is rewritten by a set of <em><a href="http://tinkerpop.apache.org/docs/current/reference/#traversalstrategy">traversal strategies</a></em> which do their best to determine the most optimal execution
+    (i.e. an OLTP graph database or an OLAP graph processor), the user's traversal is rewritten by a set of <em><a href="https://tinkerpop.apache.org/docs/current/reference/#traversalstrategy">traversal strategies</a></em> which do their best to determine the most optimal execution
     plan based on an understanding of graph data access costs as well as the underlying data systems's unique capabilities (e.g. fetch the Gremlin vertex from the graph database's "name"-index).
     Gremlin has been designed to give users flexibility in how they express their queries and graph system providers flexibility in how to efficiently evaluate traversals against their TinkerPop-enabled data system.
  </div>
@@ -277,7 +277,7 @@ g.V().hasLabel("person").
           "programming languages" are not as great as we are taught to believe. Gremlin unifies this divide because traversals can be written in any
           programming language that supports function <a href="https://en.wikipedia.org/wiki/Function_composition">composition</a> and <a href="https://en.wikipedia.org/wiki/Nested_function">nesting</a> (which every major programming language supports). In this way, the user's
           Gremlin traversals are written along side their application code and benefit from the advantages afforded by the host language and its tooling
-          (e.g. type checking, syntax highlighting, dot completion, etc.). Various <a href="http://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/">Gremlin language variants</a> exist including: Gremlin-Java, Gremlin-Groovy, <a href="http://tinkerpop.apache.org/docs/current/reference/#gremlin-python">Gremlin-Python</a>,
+          (e.g. type checking, syntax highlighting, dot completion, etc.). Various <a href="https://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/">Gremlin language variants</a> exist including: Gremlin-Java, Gremlin-Groovy, <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-python">Gremlin-Python</a>,
           <a href="https://github.com/mpollmeier/gremlin-scala">Gremlin-Scala</a>, etc.
        </div>
        <div class="col-md-12">
