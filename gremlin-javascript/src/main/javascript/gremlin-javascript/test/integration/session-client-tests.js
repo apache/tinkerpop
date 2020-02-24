@@ -48,76 +48,32 @@ describe('Client', function () {
         });
     });
 
-    it('should send script in transaction', function () {
-      return client.submit("g.tx().open()")
+    it('should use golbal cache in session', function () {
+      return client.submit("x = [0, 1, 2, 3, 4, 5]")
         .then(function (result) {
           assert.ok(result);
-          //console.log("tx open");
+          assert.strictEqual(result.length, 6);
+          //console.log("x : %s", JSON.stringify(result));
         }).then(function () {
-          client.submit("g.addV('nodeJs')")
+          client.submit("x[2] + 4")
             .then(function(result) {
               assert.ok(result);
               assert.strictEqual(result.length, 1);
-              assert.ok(result.first() instanceof graphModule.Vertex);
-              //console.log("add vertex: %s", JSON.stringify(result));
-            });
-        }).then(function () {
-          client.submit("g.tx().commit()")
-            .then(function(result) {
-              assert.ok(result);
-              //console.log("tx commit");
-            });
-        }).catch(function (err) {
-          client.submit("g.tx().rollback()")
-            .then(function(result) {
-              assert.ok(result);
-              //console.log("tx rollback");
+              assert.strictEqual(result.first(), 6);
+              //console.log("x[2] + 4: %s", JSON.stringify(result));
             });
         });
     });
 
-    it('should send batch scripts in one transaction', function () {
-      return client.submit("g.tx().open()")
+    it('should use bindings and golbal cache variable in session', function () {
+      return client.submit('x[3] + y', { y: 3 })
         .then(function (result) {
           assert.ok(result);
-          //console.log("tx open");
-        }).then(function () {
-          client.submit("g.V('330007').fold().coalesce(unfold(), addV('nodeJs').property(id, '330007'))")
-            .then(function (result) {
-              assert.ok(result);
-              assert.strictEqual(result.length, 1);
-              assert.ok(result.first() instanceof graphModule.Vertex);
-              //console.log("add vertex: %s", JSON.stringify(result));
-            });
-        }).then(function () {
-          client.submit("g.V('330008').fold().coalesce(unfold(), addV('nodeJs').property(id, '330008'))")
-            .then(function (result) {
-              assert.ok(result);
-              assert.strictEqual(result.length, 1);
-              assert.ok(result.first() instanceof graphModule.Vertex);
-              //console.log("add vertex: %s", JSON.stringify(result));
-            });
-        }).then(function () {
-          client.submit("g.addE('nodeJs_E').from(V('330007')).to(V('330008'))")
-            .then(function (result) {
-              assert.ok(result);
-              assert.strictEqual(result.length, 1);
-              assert.ok(result.first() instanceof graphModule.Edge);
-              //console.log("add edge: %s", JSON.stringify(result));
-            });
-        }).then(function () {
-          client.submit("g.tx().commit()")
-            .then(function (result) {
-              assert.ok(result);
-              //console.log("tx commit");
-            });
-        }).catch(function (error) {
-          client.submit("g.tx().rollback()")
-            .then(function(result) {
-              assert.ok(result);
-              //console.log("tx rollback");
-            });
+          assert.strictEqual(result.length, 1);
+          assert.strictEqual(result.first(), 6);
+          //console.log("x[3] + y: %s", JSON.stringify(result));
         });
     });
+
   });
 });
