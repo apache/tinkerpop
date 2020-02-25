@@ -140,7 +140,7 @@ with the `GryoMapper`. There are two ways to do that:
 an optional custom serializer.
 * Add a custom `IoRegistry` implementation with the `addRegistry` method on `GryoMapper.Builder`. The `IoRegistry`
 contains registrations that will be supplied to the `GryoMapper`. There is additional documentation on how this works
-in the link:http://tinkerpop.apache.org/docs/current/dev/provider/#io-implementations[provider documentation].
+in the link:https://tinkerpop.apache.org/docs/current/dev/provider/#io-implementations[provider documentation].
 
 When using `addCustom` or `addRegistry`, it is important to remember that the order in which those methods are called
 is important. The registrations get numeric "registration ids" and their order must match if the the Gryo is expected

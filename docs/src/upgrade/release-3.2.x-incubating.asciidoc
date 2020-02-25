@@ -40,7 +40,7 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.2.10/CHANGELOG.as
 The Gremlin Javascript Driver now supports SASL Plain Text authentication against a Gremlin Server.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1977[TINKERPOP-1977],
-link:http://tinkerpop.apache.org/docs/3.2.10/reference#gremlin-javascript[Reference Documentation - Gremlin Javascript]
+link:https://tinkerpop.apache.org/docs/3.2.10/reference#gremlin-javascript[Reference Documentation - Gremlin Javascript]
 
 ==== SSL Security
 
@@ -62,8 +62,8 @@ The packaged `*-secure.yaml` files now restrict the protocol to `TLSv1.2` by def
 
 PEM-based configurations are deprecated and may be removed in a future release.
 
-See also http://tinkerpop.apache.org/docs/current/reference/#_configuration[Connecting via Java Configuration],
-http://tinkerpop.apache.org/docs/current/reference/#_configuring_2[Gremlin Server Configuration].
+See also https://tinkerpop.apache.org/docs/current/reference/#_configuration[Connecting via Java Configuration],
+https://tinkerpop.apache.org/docs/current/reference/#_configuring_2[Gremlin Server Configuration].
 
 link:https://issues.apache.org/jira/browse/TINKERPOP-2022[TINKERPOP-2022]
 link:https://issues.apache.org/jira/browse/TINKERPOP-2023[TINKERPOP-2023]
@@ -93,8 +93,8 @@ $ docker run tinkerpop/gremlin-server:x.y.z
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1897[TINKERPOP-1897],
-link:http://tinkerpop.apache.org/docs/current/reference#gremlin-console-docker-image[Reference Documentation - Gremlin Console],
-link:http://tinkerpop.apache.org/docs/current/reference#gremlin-server-docker-image[Reference Documentation - Gremlin Server],
+link:https://tinkerpop.apache.org/docs/current/reference#gremlin-console-docker-image[Reference Documentation - Gremlin Console],
+link:https://tinkerpop.apache.org/docs/current/reference#gremlin-server-docker-image[Reference Documentation - Gremlin Server],
 
 ==== TimedInterruptCustomizerProvider
 
@@ -217,7 +217,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1726[TINKERPOP-1726]
 Gremlin.Net now has a `Lambda` class that can be used to construct Groovy or Java lambdas which will be evaluated on the
 server.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1854[TINKERPOP-1854], link:http://tinkerpop.apache.org/docs/3.2.8/reference/#_the_lambda_solution_3[Reference Documentation - Gremlin.Net - The Lambda Solution].
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1854[TINKERPOP-1854], link:https://tinkerpop.apache.org/docs/3.2.8/reference/#_the_lambda_solution_3[Reference Documentation - Gremlin.Net - The Lambda Solution].
 
 ==== Gremlin.Net Tokens Improved
 
@@ -493,7 +493,7 @@ social.persons().where(createdAtLeast(2)).count()
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-786[TINKERPOP-786],
-link:http://tinkerpop.apache.org/docs/3.2.5/reference/#dsl[Reference Documentation]
+link:https://tinkerpop.apache.org/docs/3.2.5/reference/#dsl[Reference Documentation]
 
 ==== GraphSON Path Serialization
 
@@ -540,7 +540,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1663[TINKERPOP-1663]
 
 The `GremlinScriptEngine` has a number of new metrics about its cache size and script compilation times which should
 be helpful in understanding usage problems. As `GremlinScriptEngine` instances are used in Gremlin Server these metrics
-are naturally exposed as part of the standard link:http://tinkerpop.apache.org/docs/current/reference/#_metrics[metrics]
+are naturally exposed as part of the standard link:https://tinkerpop.apache.org/docs/current/reference/#_metrics[metrics]
 set. Note that metrics are captured for both sessionless requests as well as for each individual session that is opened.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1644[TINKERPOP-1644]
@@ -886,7 +886,7 @@ The "force" argument is passed on the "close" message and is a boolean value. Th
 and defaults to `false`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-932[TINKERPOP-932],
-link:http://tinkerpop.apache.org/docs/current/dev/provider/#_session_opprocessor[Provider Documentation - Session OpProcessor]
+link:https://tinkerpop.apache.org/docs/current/dev/provider/#_session_opprocessor[Provider Documentation - Session OpProcessor]
 
 ===== SASL Authentication
 
@@ -1031,7 +1031,7 @@ There is new reference documentation for the various IO formats. The documentati
 that should be helpful to users and providers who intend to work directly with the TinkerPop supported serialization
 formats: GraphML, GraphSON and Gryo.
 
-See: link:http://tinkerpop.apache.org/docs/3.2.3/dev/io/[IO Reference Documentation]
+See: link:https://tinkerpop.apache.org/docs/3.2.3/dev/io/[IO Reference Documentation]
 
 === Upgrading for Providers
 
@@ -1178,7 +1178,7 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.2.2/CHANGELOG.asc
 GraphSON 2.0 has been introduced to improve and normalize the format of types embedded in GraphSON.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1274[TINKERPOP-1274],
-link:http://tinkerpop.apache.org/docs/3.2.2/reference/#graphson-2-0-types[Reference Documentation -
+link:https://tinkerpop.apache.org/docs/3.2.2/reference/#graphson-2-0-types[Reference Documentation -
 GraphSON 2.0].
 
 ==== Log4j Dependencies
@@ -1210,7 +1210,7 @@ the more natural color of green by using the `:set` command:
 gremlin> :set gremlin.color green
 
 It is also possible to colorize results, like vertices, edges, and other common returns. Please see the
-link:http://tinkerpop.apache.org/docs/3.2.2/reference/#console-preferences[reference documentation] for more details
+link:https://tinkerpop.apache.org/docs/3.2.2/reference/#console-preferences[reference documentation] for more details
 on all the settings.
 
 The console also now includes better multi-line support:
@@ -1228,7 +1228,7 @@ This is a nice feature in that it can help you understand if a line is incomplet
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1285[TINKERPOP-1285],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1285[TINKERPOP-1037],
-link:http://tinkerpop.apache.org/docs/3.2.2/reference/#console-preferences[Reference Documentation -
+link:https://tinkerpop.apache.org/docs/3.2.2/reference/#console-preferences[Reference Documentation -
 Console Preferences]
 
 ==== REST API Renamed to HTTP API
@@ -1273,7 +1273,7 @@ languages can then implement their own mapping of the GraphSON's language agnost
 to the appropriate representation for the driver's language.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1274[TINKERPOP-1274],
-link:http://tinkerpop.apache.org/docs/3.2.2/reference/#graphson-2.0-types[Reference Documentation -
+link:https://tinkerpop.apache.org/docs/3.2.2/reference/#graphson-2.0-types[Reference Documentation -
 GraphSON 2.0].
 
 ===== Traversal Serialization
@@ -1365,8 +1365,8 @@ The console also has a number of new features in addition to `-e` and `-i`:
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1268[TINKERPOP-1268],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1155[TINKERPOP-1155], link:https://issues.apache.org/jira/browse/TINKERPOP-1156[TINKERPOP-1156],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1157[TINKERPOP-1157],
-link:http://tinkerpop.apache.org/docs/3.2.1/reference/#interactive-mode[Reference Documentation - Interactive Mode],
-link:http://tinkerpop.apache.org/docs/3.2.1/reference/#execution-mode[Reference Documentation - Execution Mode]
+link:https://tinkerpop.apache.org/docs/3.2.1/reference/#interactive-mode[Reference Documentation - Interactive Mode],
+link:https://tinkerpop.apache.org/docs/3.2.1/reference/#execution-mode[Reference Documentation - Execution Mode]
 
 === Upgrading for Providers
 
@@ -1652,7 +1652,7 @@ gremlin> g.V().valueMap(true)
 Note that `g.V().valueMap(true)` is executing in Gremlin Server and not locally in the console.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-575[TINKERPOP-575],
-link:http://tinkerpop.apache.org/docs/3.2.0-incubating/reference/#connecting-via-remotegraph[Reference Documentation - Remote Graph]
+link:https://tinkerpop.apache.org/docs/3.2.0-incubating/reference/#connecting-via-remotegraph[Reference Documentation - Remote Graph]
 
 === Upgrading for Providers
 

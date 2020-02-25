@@ -198,7 +198,7 @@ current release was under development as this new release will have those change
 then only do this step for 3.3.x (`3.3-dev` branch), and update the site for all releases).
 .. Update the `template/header-footer.html`.
 .. Update `index.html`.
-.. Update link:http://tinkerpop.apache.org/downloads.html[Downloads] page, when moving "Current Releases" to "Archived
+.. Update link:https://tinkerpop.apache.org/downloads.html[Downloads] page, when moving "Current Releases" to "Archived
 Releases" recall that the hyperlink must change to point to version in the link:https://archive.apache.org/dist/tinkerpop/[Apache Archives].
 .. Preview changes locally with `bin/generate-home.sh` then commit changes to git.
 . `mvn versions:set -DnewVersion=xx.yy.zz -DgenerateBackupPoms=false` to update project files to reference the non-SNAPSHOT version
@@ -312,12 +312,12 @@ The GPG key used to sign the release artifacts is available at:
     https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS
 
 The online docs can be found here:
-	http://tinkerpop.apache.org/docs/xx.yy.zz/ (user docs)
-	http://tinkerpop.apache.org/docs/xx.yy.zz/upgrade/ (upgrade docs)
-	http://tinkerpop.apache.org/javadocs/xx.yy.zz/core/ (core javadoc)
-	http://tinkerpop.apache.org/javadocs/xx.yy.zz/full/ (full javadoc)
-	http://tinkerpop.apache.org/dotnetdocs/xx.yy.zz/ (.NET API docs)
-	http://tinkerpop.apache.org/jsdocs/xx.yy.zz/ (Javascript API docs)
+	https://tinkerpop.apache.org/docs/xx.yy.zz/ (user docs)
+	https://tinkerpop.apache.org/docs/xx.yy.zz/upgrade/ (upgrade docs)
+	https://tinkerpop.apache.org/javadocs/xx.yy.zz/core/ (core javadoc)
+	https://tinkerpop.apache.org/javadocs/xx.yy.zz/full/ (full javadoc)
+	https://tinkerpop.apache.org/dotnetdocs/xx.yy.zz/ (.NET API docs)
+	https://tinkerpop.apache.org/jsdocs/xx.yy.zz/ (Javascript API docs)
 
 The tag in Apache Git can be found here:
 	https://github.com/apache/tinkerpop/tree/xx.yy.zz
@@ -361,7 +361,7 @@ Thank you very much,
 
 The template below refers to the "name of release line" and the "release line logo". Every release line has a name
 and logo. For example, 3.1.x had the name, "A 187 On The Undercover Gremlinz" and the logo shown
-link:http://tinkerpop.apache.org/docs/current/upgrade/#_tinkerpop_3_1_0[here] in the upgrade documentation.
+link:https://tinkerpop.apache.org/docs/current/upgrade/#_tinkerpop_3_1_0[here] in the upgrade documentation.
 
 [source,text]
 ----
@@ -380,13 +380,13 @@ https://www.apache.org/dyn/closer.lua/tinkerpop/xx.yy.zz/apache-tinkerpop-xx.yy.
 
 The online docs can be found here:
 
-http://tinkerpop.apache.org/docs/xx.yy.zz/reference/ (user docs)
-http://tinkerpop.apache.org/docs/xx.yy.zz/upgrade/#_tinkerpop_xx_yy_zz (upgrade docs)
-http://tinkerpop.apache.org/javadocs/xx.yy.zz/core/ (core javadoc)
-http://tinkerpop.apache.org/javadocs/xx.yy.zz/full/ (full javadoc)
-http://tinkerpop.apache.org/dotnetdocs/xx.yy.zz/ (.NET API docs)
-http://tinkerpop.apache.org/jsdocs/xx.yy.zz/ (Javascript API docs)
-http://tinkerpop.apache.org/docs/xx.yy.zz/some-new-content/ (some new content) [NEW!]
+https://tinkerpop.apache.org/docs/xx.yy.zz/reference/ (user docs)
+https://tinkerpop.apache.org/docs/xx.yy.zz/upgrade/#_tinkerpop_xx_yy_zz (upgrade docs)
+https://tinkerpop.apache.org/javadocs/xx.yy.zz/core/ (core javadoc)
+https://tinkerpop.apache.org/javadocs/xx.yy.zz/full/ (full javadoc)
+https://tinkerpop.apache.org/dotnetdocs/xx.yy.zz/ (.NET API docs)
+https://tinkerpop.apache.org/jsdocs/xx.yy.zz/ (Javascript API docs)
+https://tinkerpop.apache.org/docs/xx.yy.zz/some-new-content/ (some new content) [NEW!]
 
 The release notes are available here:
 

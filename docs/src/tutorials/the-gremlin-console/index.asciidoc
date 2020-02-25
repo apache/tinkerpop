@@ -15,24 +15,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 
-image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
+image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
 *x.y.z*
 
 == The Gremlin Console
 
-In link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/#_the_first_five_minutes["The First Five Minutes"]
-of the link:http://tinkerpop.apache.org[Apache TinkerPop™] tutorial on how to
-link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/[get started] with TinkerPop and graphs, the
-importance of the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-console[Gremlin Console] was
+In link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/#_the_first_five_minutes["The First Five Minutes"]
+of the link:https://tinkerpop.apache.org[Apache TinkerPop™] tutorial on how to
+link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/[get started] with TinkerPop and graphs, the
+importance of the link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-console[Gremlin Console] was
 introduced. This tutorial further explores the usage of the console in the daily work of Gremlin developers delving
 more deeply into the details of its operations and expanding upon the basic usage guide in the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference[reference documentation].
+link:https://tinkerpop.apache.org/docs/x.y.z/reference[reference documentation].
 
 image::gremlin-dashboard.png[width="600",align="center"]
 
 IMPORTANT: This tutorial assumes that the Gremlin Console is installed and that you have some familiarity with Gremlin
-in general. Please be sure to read the link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/[Getting Started]
+in general. Please be sure to read the link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/[Getting Started]
 tutorial prior to proceeding further with this one.
 
 The Gremlin Console serves a variety of use cases that can meet the needs of different types of Gremlin users. This
@@ -68,7 +68,7 @@ compilation, and application execution. The faster that you can iterate through 
 faster you can advance your knowledge.
 
 As a new user, your best way to learn is to try Gremlin with a graph already packaged with the console:
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#tinkergraph-gremlin[TinkerGraph]. TinkerGraph is an in-memory
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#tinkergraph-gremlin[TinkerGraph]. TinkerGraph is an in-memory
 graph database that is easy to use and does not have a lot of configuration options to be concerned with. You can
 create an empty TinkerGraph as follows:
 
@@ -79,10 +79,10 @@ g = graph.traversal()        <2>
 ----
 
 <1> Creates the `Graph` instance that is the API to the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_the_graph_structure[structure] of the graph.
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#_the_graph_structure[structure] of the graph.
 <2> Creates the `TraversalSource` which is the API for
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#the-graph-process[processing] or
-link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/#_graph_traversal_staying_simple[traversing]
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#the-graph-process[processing] or
+link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/#_graph_traversal_staying_simple[traversing]
 that `Graph`.
 
 IMPORTANT: TinkerPop recommends creating the `TraversalSource` once and re-using it as necessary in your application.
@@ -94,13 +94,13 @@ packages with the console through the `TinkerFactory`.  `TinkerFactory` has a nu
 called to create these standard `TinkerGraph` instances.  They are "standard" in the sense that they are typically used
 for all TinkerPop examples and test cases.
 
-* `createClassic()` - The original TinkerPop 2.x toy graph (link:http://tinkerpop.apache.org/docs/x.y.z/images/tinkerpop-classic.png[diagram]).
+* `createClassic()` - The original TinkerPop 2.x toy graph (link:https://tinkerpop.apache.org/docs/x.y.z/images/tinkerpop-classic.png[diagram]).
 * `createModern()` - The TinkerPop 3.x representation of the "classic" graph, where the main difference is that vertex
 labels are defined and the "weight" edge property is a `double` rather than a `float`
-(link:http://tinkerpop.apache.org/docs/x.y.z/images/tinkerpop-modern.png[diagram]).
+(link:https://tinkerpop.apache.org/docs/x.y.z/images/tinkerpop-modern.png[diagram]).
 * `createTheCrew()` - A graph that demonstrates usage of the new structural features of TinkerPop 3.x (as compared to
-2.x) such as link:http://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-properties[vertex properties and multi-properties]
-(link:http://tinkerpop.apache.org/docs/x.y.z/images/the-crew-graph.png[diagram]).
+2.x) such as link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-properties[vertex properties and multi-properties]
+(link:https://tinkerpop.apache.org/docs/x.y.z/images/the-crew-graph.png[diagram]).
 
 [gremlin-groovy]
 ----
@@ -113,7 +113,7 @@ the output of the Gremlin Console itself, these toy graphs are small (only a few
 to have a small graph when learning Gremlin, so that you can easily see if you are getting the results you expect. Even
 though these graphs are "small", they are robust enough in structure to try out many different kinds of traversals.
 However, if you find that a larger graph might be helpful, there is another option: The Grateful Dead
-(link:http://tinkerpop.apache.org/docs/x.y.z/images/grateful-dead-schema.png[schema]).
+(link:https://tinkerpop.apache.org/docs/x.y.z/images/grateful-dead-schema.png[schema]).
 
 [gremlin-groovy]
 ----
@@ -136,7 +136,7 @@ including a Gremlin script that can construct a small body of sample data would 
 As you get familiar with the console, it is good to know what some of the basic commands are. A "command" is not
 "Gremlin code", but something interpreted by the console to have special meaning in terms of configuring how the
 console works or performing a particular function outside of code itself.  These commands are itemized in the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_console_commands[reference documentation], but they can also
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#_console_commands[reference documentation], but they can also
 be accessed within the console itself with the `:help` command.
 
 [gremlin-groovy]
@@ -179,13 +179,13 @@ sufficient complexity in your traversals where you will need to:
 * Quickly test the traversal over real data to determine if it is correct.
 * Test or debug pieces of the traversal in isolation.
 * Experiment with different ways of expressing the same traversal.
-* Examine the performance of a traversal through the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#profile-step[profile()]
-or link:http://tinkerpop.apache.org/docs/x.y.z/reference/#explain-step[explain()] steps.
+* Examine the performance of a traversal through the link:https://tinkerpop.apache.org/docs/x.y.z/reference/#profile-step[profile()]
+or link:https://tinkerpop.apache.org/docs/x.y.z/reference/#explain-step[explain()] steps.
 
 Consider an example where you are developing an application that uses TinkerGraph and the data from the "modern"
 toy graph. You want to encapsulate some logic for a graph traversal that finds a "person" vertex, iterates outgoing
 edges and groups the adjacent vertices as
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#valuemap-step["value maps"].
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#valuemap-step["value maps"].
 
 [[static-imports]]
 As you have read the TinkerPop documentation and have been experimenting with Gremlin for a while, you head to your
@@ -279,7 +279,7 @@ containing the appropriate number of vertices in the context of iteration. In th
 `by()` modulator takes `inV()` as an argument (an anonymous `Traversal` spawned from the `__` class whose methods are
 statically imported to the console). This `by()` tells Gremlin what aspect of the current group of edges should be
 stored in the list associated with that group.  By specifying `inV()` you are saying that you want to store the
-link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/#_the_next_fifteen_minutes[in-vertices] of the
+link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/#_the_next_fifteen_minutes[in-vertices] of the
 edges for a group.
 
 WARNING: While convenient, statically imported methods can be confusing for new users, especially those who are
@@ -405,9 +405,9 @@ g.V().hasLabel('person').valueMap()
 ----
 
 You can see from the output above that there are four "person" vertices and each has a "name" property and a "location"
-property.  The "location" is actually a link:http://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-properties[multi-property],
+property.  The "location" is actually a link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-properties[multi-property],
 where "location" does not have one value, but several. If you look a bit closer you can also see that each "location"
-has link:http://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-properties[meta-properties] as well:
+has link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-properties[meta-properties] as well:
 
 [gremlin-groovy,theCrew]
 ----
@@ -502,7 +502,7 @@ import java.time.Year
 Year.now()
 ----
 
-You can now use `Year` with the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#constant-step[constant()] step,
+You can now use `Year` with the link:https://tinkerpop.apache.org/docs/x.y.z/reference/#constant-step[constant()] step,
 to produce the set of years to have for each person up to the current year:
 
 [gremlin-groovy,theCrew]
@@ -549,11 +549,11 @@ other libraries into the console with the `:install` command. With `:install`, y
 coordinates (i.e. group, artifact, and version) of a library to have it automatically downloaded from a Maven
 repository and placed into the console classpath. If you have read through the reference documentation, you would find
 a number of examples of `:install` usage to bring in unbundled TinkerPop libraries, like
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#neo4j-gremlin[neo4j-gremlin] or
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#hadoop-gremlin[hadoop-gremlin].
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#neo4j-gremlin[neo4j-gremlin] or
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#hadoop-gremlin[hadoop-gremlin].
 
 IMPORTANT: Before you use the `:install` command, please be sure to read the reference documentation on
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-applications[Grape configuration]. If you do not have proper
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-applications[Grape configuration]. If you do not have proper
 settings in place, it is likely that the `:install` command will fail by way of download errors.
 
 TIP: You can also manually "install" dependencies to the console by copying them into the Gremlin Console classpath.
@@ -632,7 +632,7 @@ Display stack trace? [yN] n
 
 TIP: If you find that you always work with a particular library, consider starting the console with an initialization
 script that prepares your environment for you and start Gremlin Console in
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#interactive-mode[interactive mode]. An "initialization script"
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#interactive-mode[interactive mode]. An "initialization script"
 is just a Groovy script that contains the initial commands to execute when the console starts.  Following the use case,
 it would be nice if the initialization script contained the `import` statement for the driver and possibly the code to
 get the `Session` object ready for use. Start the Gremlin Console with that script by just adding it as an argument on

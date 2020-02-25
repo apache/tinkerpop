@@ -47,8 +47,8 @@ stream of `Map` objects can allow some greater flexibility.
 <5> For example, use of a stream enables use of an ordered limit that can be executed in a distributed fashion in
 OLAP traversals.
 
-NOTE: The link:http://tinkerpop.apache.org/docs/x.y.z/reference/#group-step[group] step takes up to two separate
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#by-step[by] modulators. The first `by()` tells `group()`
+NOTE: The link:https://tinkerpop.apache.org/docs/x.y.z/reference/#group-step[group] step takes up to two separate
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#by-step[by] modulators. The first `by()` tells `group()`
 what the key in the resulting `Map` will be (i.e. the value to group on). In the above examples, the `by()` is empty
 and as a result, the grouping will be on the incoming `Vertex` object itself. The second `by()` is the value to be
 stored in the `Map` for each key.
@@ -103,7 +103,7 @@ g.V().as("v").                                                                  
 
 WARNING: Since the betweeness centrality algorithm requires the shortest path between any pair of vertices in the graph,
 its practical applications are very limited. It's recommended to use this algorithm only on small subgraphs (graphs like
-the link:http://tinkerpop.apache.org/docs/current/reference/#grateful-dead[Grateful Dead graph] with only 808 vertices
+the link:https://tinkerpop.apache.org/docs/current/reference/#grateful-dead[Grateful Dead graph] with only 808 vertices
 and 8049 edges already require a massive amount of compute resources to determine the shortest paths between all vertex
 pairs).
 
@@ -132,7 +132,7 @@ g.withSack(1f).V().as("v").                                                     
           by(select(all, "v").count(local).sack(div).sack().sum()).next()
 ----
 
-<1> Defines a Gremlin link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sack-step[sack] with a value of one.
+<1> Defines a Gremlin link:https://tinkerpop.apache.org/docs/x.y.z/reference/#sack-step[sack] with a value of one.
 <2> Traverses on both - incoming and outgoing - edges, avoiding <<cycle-detection, cyclic paths>>.
 <3> Create a triple consisting of the first vertex, the last vertex and the length of the path between them.
 <4> Determine whether a path between those two vertices was already found.
@@ -142,7 +142,7 @@ g.withSack(1f).V().as("v").                                                     
 
 WARNING: Since the closeness centrality algorithm requires the shortest path between any pair of vertices in the graph,
 its practical applications are very limited. It's recommended to use this algorithm only on small subgraphs (graphs like
-the link:http://tinkerpop.apache.org/docs/current/reference/#grateful-dead[Grateful Dead graph] with only 808 vertices
+the link:https://tinkerpop.apache.org/docs/current/reference/#grateful-dead[Grateful Dead graph] with only 808 vertices
 and 8049 edges already require a massive amount of compute resources to determine the shortest paths between all vertex
 pairs).
 
@@ -169,7 +169,7 @@ passes through using the vertex as the key. The `Map` of this group count is sto
 time to converge on a solution. Calling `cap('m')` at the end simply extracts the `Map` side-effect stored in "m".
 <2> The entries in the `Map` are then iterated and sorted with the top ten most central vertices presented as output.
 <3> The previous examples can be expanded on a little bit by including a
-link:http://tinkerpop.apache.org/docs/current/reference/#timelimit-step[time limit]. The `timeLimit()` prevents the
+link:https://tinkerpop.apache.org/docs/current/reference/#timelimit-step[time limit]. The `timeLimit()` prevents the
 traversal from taking longer than one hundred milliseconds to execute (the previous example takes considerably longer
 than that). While the answer provided with the `timeLimit()` is not the absolute ranking, it does provide a relative
 ranking that closely matches the absolute one. The use of `timeLimit()` in certain algorithms (e.g. recommendations)
@@ -180,7 +180,7 @@ can shorten the time required to get a reasonable and usable result.
 
 While not technically a recipe, it's worth noting here in the "Centrality Section" that
 link:https://en.wikipedia.org/wiki/PageRank[PageRank] centrality can be calculated with Gremlin with the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#pagerank-step[pageRank()]-step which is designed to work with
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#pagerank-step[pageRank()]-step which is designed to work with
 `GraphComputer` (OLAP) based traversals.
 
 [gremlin-groovy,modern]

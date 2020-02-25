@@ -33,7 +33,7 @@ image::gremlin-variant-architecture.png[width=650,float=left]
 
 NOTE: The information herein describes how to use the Gremlin language variants distributed
 with Apache TinkerPop. For information on how to build a Gremlin language variant,
-please review the link:http://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[Gremlin Language Variants]
+please review the link:https://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[Gremlin Language Variants]
 tutorial.
 
 [[gremlin-java]]

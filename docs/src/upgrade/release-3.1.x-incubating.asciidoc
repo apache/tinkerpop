@@ -93,7 +93,7 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.1.4/CHANGELOG.asc
 
 ==== Gremlin Server Workers
 
-In release 3.1.3, a link:http://tinkerpop.apache.org/docs/3.1.3/upgrade/#_tinkerpop_3_1_3[recommendation] was made to
+In release 3.1.3, a link:https://tinkerpop.apache.org/docs/3.1.3/upgrade/#_tinkerpop_3_1_3[recommendation] was made to
 ensure that the `threadPoolWorker` setting for Gremlin Server was no less than `2` in cases where Gremlin Server was
 being used with sessions that accept parallel requests. In 3.1.4, that is no longer the case and a size of `1` remains
 acceptable even in that specific case.
@@ -215,7 +215,7 @@ The `:remote console` command provides a way to avoid having to prefix the `:>` 
 mode of console usage can be convenient when working exclusively with a remote like Gremlin Server and there is only a
 desire to view the returned data and not to actually work with it locally in any way.
 
-See: link:http://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#console-remote-console[Reference Documentation - Remote Console]
+See: link:https://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#console-remote-console[Reference Documentation - Remote Console]
 
 ==== Console Remote Sessions
 
@@ -235,7 +235,7 @@ how to connect with the Gremlin Driver, and how to embed Gremlin Server in a tes
 * `gremlin-archetype-tinkergraph` - A basic example of how to structure a TinkerPop project with Maven.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1085[TINKERPOP-1085],
-link:http://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#gremlin-archetypes[Reference Documentation - Archetypes]
+link:https://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#gremlin-archetypes[Reference Documentation - Archetypes]
 
 ==== Session Transaction Management
 
@@ -252,7 +252,7 @@ Specifying `true` to the `connect()` method signifies that the `client` should m
 in a transaction. With this configuration of `client` there is no need to close a transaction manually.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1039[TINKERPOP-1039],
-link:http://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#sessions[Reference Documentation - Considering Sessions]
+link:https://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#sessions[Reference Documentation - Considering Sessions]
 
 ==== Session Timeout Setting
 
@@ -273,7 +273,7 @@ changes there may prove important for the provider's implementation.
 
 Documentation related to the lower-level APIs used by a provider, that was formerly in the reference documentation,
 has been moved to its own documentation set that is now referred to as the
-link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Provider Documentation].
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Provider Documentation].
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-937[TINKERPOP-937]
 
@@ -293,13 +293,13 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1146[TINKERPOP-1146]
 ===== Session Transaction Management
 
 Up until now transaction management has been a feature of sessionless requests only, but the new `manageTransaction`
-request argument for the link:http://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#_session_opprocessor[Session OpProcessor]
+request argument for the link:https://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#_session_opprocessor[Session OpProcessor]
 changes that.  Session-based requests can now pass this boolean value on each request to signal to
 Gremlin Server that it should attempt to commit (or rollback) the transaction at the end of the request. By default,
 this value as `false`, so there is no change to the protocol for this feature.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1039[TINKERPOP-1039],
-link:http://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#sessions[Reference Documentation - Considering Sessions]
+link:https://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#sessions[Reference Documentation - Considering Sessions]
 
 ===== scriptEvalTimeout Override
 
@@ -319,7 +319,7 @@ that case, that `RemoteAcceptor` implementation can return `true`.  On the other
 expects that the user sometimes call `:>` and sometimes work with local evaluation as well. It interacts with the
 local variable bindings in the console itself. For `tinkerpop.gephi`, this method returns `false`.
 
-See: link:http://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#console-remote-console[Reference Documentation - Remote Console]
+See: link:https://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#console-remote-console[Reference Documentation - Remote Console]
 
 == TinkerPop 3.1.1
 
@@ -364,7 +364,7 @@ backward compatible with previous versions) will become the future standard mode
 it provides a more efficient method for transaction management.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-930[TINKERPOP-930],
-link:http://tinkerpop.apache.org/docs/3.1.1-incubating/reference/#considering-transactions[Reference Documentation - Considering Transactions]
+link:https://tinkerpop.apache.org/docs/3.1.1-incubating/reference/#considering-transactions[Reference Documentation - Considering Transactions]
 
 ==== Deprecated credentialsDbLocation
 
@@ -382,7 +382,7 @@ the `gremlin.tinkergraph.graphLocation` as soon as possible, as the deprecated s
 release.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-981[TINKERPOP-981],
-link:http://tinkerpop.apache.org/docs/3.1.1-incubating/reference/#_security[Reference Documentation - Gremlin Server Security]
+link:https://tinkerpop.apache.org/docs/3.1.1-incubating/reference/#_security[Reference Documentation - Gremlin Server Security]
 
 ==== TinkerGraph Supports Any I/O
 
@@ -435,7 +435,7 @@ variables that can be used in scripts. Note that the original `SandboxExtension`
 the `AbsstractSandboxExtension` or extending directly from Groovy's `TypeCheckingDSL`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-891[TINKERPOP-891],
-link:http://tinkerpop.apache.org/docs/3.1.0-incubating/#script-execution[Reference Documentation - Script Execution]
+link:https://tinkerpop.apache.org/docs/3.1.0-incubating/#script-execution[Reference Documentation - Script Execution]
 
 ==== Deprecated supportsAddProperty()
 
@@ -558,7 +558,7 @@ The notion of "rebindings" has been deprecated in favor of the term "aliases".  
 term than rebindings which should make it easier for newcomers to understand what they are for.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-913[TINKERPOP-913],
-link:http://tinkerpop.apache.org/docs/3.1.0-incubating/#_aliases[Reference Documentation - Aliases]
+link:https://tinkerpop.apache.org/docs/3.1.0-incubating/#_aliases[Reference Documentation - Aliases]
 
 ==== Configurable Driver Channelizer
 
@@ -643,7 +643,7 @@ gremlin> :remote config visualTraversal graph vg
 which creates a special `TraversalSource` from `graph` called `vg`.  The traversals created from `vg` can be used
 to `:submit` to Gephi.
 
-See: link:http://tinkerpop.apache.org/docs/3.1.0-SNAPSHOT/#gephi-plugin[Reference Documentation - Gephi]
+See: link:https://tinkerpop.apache.org/docs/3.1.0-SNAPSHOT/#gephi-plugin[Reference Documentation - Gephi]
 
 ==== Alterations to GraphTraversal
 

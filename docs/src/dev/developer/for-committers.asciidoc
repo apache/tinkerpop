@@ -719,9 +719,9 @@ best for everyone's general purposes, so if changes are made please revert them 
 [[io]]
 == IO Documentation and Testing
 
-The link:http://tinkerpop.apache.org/docs/x.y.z/dev/io[IO Documentation] provides more details into GraphML, GraphSON
+The link:https://tinkerpop.apache.org/docs/x.y.z/dev/io[IO Documentation] provides more details into GraphML, GraphSON
 and Gryo with a special focus on the needs of developers who are working directly with these formats. GraphSON gets
-the greatest focus here as it is used as the primary IO format for link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-variants[GLVs].
+the greatest focus here as it is used as the primary IO format for link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-variants[GLVs].
 This documentation is largely generated from the `gremlin-io-test` module found under `gremlin-tools`. The
 `gremlin-io-test` module also includes a testing framework which validates that formats don't break between TinkerPop
 versions. Unfortunately, this module requires some maintenance to ensure that the documentation and tests both stay

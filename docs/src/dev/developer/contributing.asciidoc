@@ -64,11 +64,11 @@ considered in the review process.
 
 Proposing a documentation change is quite similar to providing a source code change, which is described below in more
 detail. Note that there is a difference between project documentation and the
-link:http://tinkerpop.apache.org/[TinkerPop web site]. The project documentation refers to the documentation that is
+link:https://tinkerpop.apache.org/[TinkerPop web site]. The project documentation refers to the documentation that is
 published per release like, tutorials, reference documentation, and other similar pages. This content is not updated
 after release and remains static bound to that version. The TinkerPop web site refers to the static home page and its
-related content, such as link:http://tinkerpop.apache.org/gremlin.html[Understanding Gremlin],
-link:http://tinkerpop.apache.org/policy.html[Provider Listing and Graphic Usage Policies] and other similar pages.
+related content, such as link:https://tinkerpop.apache.org/gremlin.html[Understanding Gremlin],
+link:https://tinkerpop.apache.org/policy.html[Provider Listing and Graphic Usage Policies] and other similar pages.
 This content is not bound to any particular version and can be published at any time where new content simply replaces
 old content.
 
@@ -99,13 +99,13 @@ ultimately a resolution.
 === TinkerPop Libraries
 
 TinkerPop is more than just the core source code repository. It is a rich ecosystem of libraries developed by
-link:http://tinkerpop.apache.org/providers.html[providers], who look to use or extend upon the TinkerPop interfaces.
+link:https://tinkerpop.apache.org/providers.html[providers], who look to use or extend upon the TinkerPop interfaces.
 TinkerPop is highly focused on its interfaces and a small set of reference implementations of those interfaces as part
 of its core code base. As such, large and independent new functionality is often rejected from inclusion in TinkerPop
 itself, however, it is very much encouraged that such a project stand on its own as separate repository. Projects like
-this that meet the TinkerPop link:http://tinkerpop.apache.org/policy.html[listing policy] can be added to the
+this that meet the TinkerPop link:https://tinkerpop.apache.org/policy.html[listing policy] can be added to the
 TinkerPop web site and promoted there. Please see the current listing of such libraries on the TinkerPop
-link:http://tinkerpop.apache.org/#graph-systems[home page] to get an idea as to what kinds of libraries are available
+link:https://tinkerpop.apache.org/#graph-systems[home page] to get an idea as to what kinds of libraries are available
 from the community. When in doubt about whether a library might be a good fit for hosting and ongoing maintenance in
 the TinkerPop project itself, please ask on the dev@tinkerpop.apache.org mailing list.
 
@@ -152,7 +152,7 @@ rejected outright rather than receive iterations of review.
 * Introduces complex new functionality, especially an API that needs to be supported
 * Adds complexity that only helps a niche use case
 * Adds user-space functionality that does not need to be maintained in TinkerPop, but could be hosted externally and
-promoted in link:http://tinkerpop.apache.org/#graph-systems[provider listings]
+promoted in link:https://tinkerpop.apache.org/#graph-systems[provider listings]
 * Changes a public API or semantics thus introducing a breaking change
 * Adds large dependencies
 * Changes versions of existing dependencies
@@ -191,7 +191,7 @@ link:https://github.com/apache/tinkerpop[GitHub repository] if not already done.
 .. It is typically best to create a branch for the changes. Consider naming that branch after the JIRA issue number
 to easily track what that branch is for.
 .. Consider which release branch (e.g. `master`, `3.3-dev` - consult the
-link:http://tinkerpop.apache.org/docs/x.y.z/dev/developer/#branches[Branches Section] for more information) to create
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#branches[Branches Section] for more information) to create
 the development branch from in the first place. In other words, is the change to be targeted at a specific TinkerPop
 version (e.g. a patch to an older version)? When in doubt, please ask on dev@tinkerpop.apache.org.
 . Build the project and run tests.
@@ -204,7 +204,7 @@ tests to execute.
 . Consider whether documentation or tests need to be added or updated as part of the change, and add them as needed.
 .. Nearly all changes should include a modification to the `CHANGELOG.asciidoc` file - one or more entries to
 help summarize the change.
-.. Some changes will require updates to the link:http://tinkerpop.apache.org/docs/x.y.z/upgrade/[Upgrade Documentation].
+.. Some changes will require updates to the link:https://tinkerpop.apache.org/docs/x.y.z/upgrade/[Upgrade Documentation].
 Updates to this documentation are usually reserved for major new features and breaking changes.
 .. Docker can help simplify documentation generation: `docker/build.sh -d`
 .. Please see the <<building-testing,Building and Testing>> section for more documentation generation options.

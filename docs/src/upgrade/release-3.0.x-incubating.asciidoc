@@ -36,7 +36,7 @@ version 3.0.1-incubating). It can now also read from any TP3 enabled graph, like
 or `Neo4jGraph`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-814[TINKERPOP-319],
-link:http://tinkerpop.apache.org/docs/3.0.2-incubating/#bulkloadervertexprogram[Reference Documentation - BLVP]
+link:https://tinkerpop.apache.org/docs/3.0.2-incubating/#bulkloadervertexprogram[Reference Documentation - BLVP]
 
 ==== TinkerGraph
 
@@ -44,7 +44,7 @@ TinkerGraph can now be configured to support persistence, where TinkerGraph will
 location and calls to `close()` will save the graph data to that location.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-828[TINKERPOP-828],
-link:http://tinkerpop.apache.org/docs/3.0.2-incubating/#_configuration[Reference Documentation - TinkerGraph]
+link:https://tinkerpop.apache.org/docs/3.0.2-incubating/#_configuration[Reference Documentation - TinkerGraph]
 
 ==== Gremlin Driver and Server
 
@@ -74,7 +74,7 @@ closed by the server after timeout of activity.  This new "op" gives drivers the
 explicitly and as needed.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-849[TINKERPOP-849],
-link:http://tinkerpop.apache.org/docs/3.0.2-incubating/#_opprocessors_arguments[Reference Documentation - OpProcessor]
+link:https://tinkerpop.apache.org/docs/3.0.2-incubating/#_opprocessors_arguments[Reference Documentation - OpProcessor]
 
 == TinkerPop 3.0.1
 
@@ -157,4 +157,4 @@ authentication turned on and authentication is not required, so existing drivers
 additional change.  Drivers should however consider implementing this feature as it is likely that many users will
 want the security capabilities that it provides.
 
-See: link:http://tinkerpop.apache.org/docs/3.0.1-incubating/#_authentication[Reference Documentation - Gremlin Server Authentication]
+See: link:https://tinkerpop.apache.org/docs/3.0.1-incubating/#_authentication[Reference Documentation - Gremlin Server Authentication]

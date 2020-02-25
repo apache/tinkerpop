@@ -371,7 +371,7 @@ methods should produce output that is compatible with the corresponding read met
 `writeVertices` should be readable as input to `readVertices` and the output of `writeProperty` should be readable as
 input to `readProperty`.
 
-NOTE: Additional documentation for TinkerPop IO formats can be found in the link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/[IO Reference].
+NOTE: Additional documentation for TinkerPop IO formats can be found in the link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/[IO Reference].
 
 === GraphML Reader/Writer
 
@@ -597,7 +597,7 @@ graph.io(GraphSONIo.build(GraphSONVersion.V1_0)).writer().mapper(mapper).create(
 f.close()
 ----
 
-NOTE: Additional documentation for GraphSON can be found in the link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[IO Reference].
+NOTE: Additional documentation for GraphSON can be found in the link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[IO Reference].
 
 IMPORTANT: When using the extended type system in Gremlin Server, support for these types when used in the context of
 Gremlin Language Variants is dependent on the programming language, the driver and its serializers. These

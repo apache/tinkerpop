@@ -17,10 +17,10 @@ limitations under the License.
 [[olap-spark-yarn]]
 == OLAP traversals with Spark on YARN
 
-TinkerPop's combination of link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[SparkGraphComputer]
-and link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_properties_files[HadoopGraph] allows for running
+TinkerPop's combination of link:https://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[SparkGraphComputer]
+and link:https://tinkerpop.apache.org/docs/x.y.z/reference/#_properties_files[HadoopGraph] allows for running
 distributed, analytical graph queries (OLAP) on a computer cluster. The
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[reference documentation] covers the cases
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[reference documentation] covers the cases
 where Spark runs locally or where the cluster is managed by a Spark server. However, many users can only run OLAP jobs
 via the http://hadoop.apache.org/[Hadoop 2.x] Resource Manager (YARN), which requires `SparkGraphComputer` to be
 configured differently. This recipe describes this configuration.
@@ -49,8 +49,8 @@ it is to look at the install script at https://github.com/apache/tinkerpop/blob/
 and the `start hadoop` section of https://github.com/apache/tinkerpop/blob/x.y.z/docker/scripts/build.sh.
 
 This recipe assumes that you installed the Gremlin Console with the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#spark-plugin[Spark plugin] (the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#hadoop-plugin[Hadoop plugin] is optional). Your Hadoop cluster
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#spark-plugin[Spark plugin] (the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#hadoop-plugin[Hadoop plugin] is optional). Your Hadoop cluster
 may have been configured to use file compression, e.g. LZO compression. If so, you need to copy the relevant
 jar (e.g. `hadoop-lzo-*.jar`) to Gremlin Console's `ext/spark-gremlin/lib` folder.
 
@@ -119,7 +119,7 @@ https://spark.apache.org/docs/latest/running-on-yarn.html#debugging-your-applica
 === Explanation
 
 This recipe does not require running the `bin/hadoop/init-tp-spark.sh` script described in the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[reference documentation] and thus is also
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[reference documentation] and thus is also
 valid for cluster users without access permissions to do so.
 
 Rather, it exploits the `spark.yarn.archive` property, which points to an archive with jars on the local file
@@ -133,7 +133,7 @@ Also the `HADOOP_GREMLIN_LIBS` mechanism is not used because it can not work for
 added to the `SparkContext` are not available to the YARN application master).
 
 The `gremlin.spark.persistContext` property is explained in the reference documentation of
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[SparkGraphComputer]: it helps in getting
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[SparkGraphComputer]: it helps in getting
 follow-up OLAP queries answered faster, because you skip the overhead for getting resources from YARN.
 
 === Additional configuration options

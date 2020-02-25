@@ -267,9 +267,9 @@ place additional limits on the traversal to have it better return more quickly a
 
 
 Gremlin provides a number of steps that can help with these limits like:
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#coin-step[coin()],
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sample-step[sample()], and
-link:http://tinkerpop.apache.org/docs/current/reference/#timelimit-step[timeLimit()]. For example, to have the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#coin-step[coin()],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#sample-step[sample()], and
+link:https://tinkerpop.apache.org/docs/current/reference/#timelimit-step[timeLimit()]. For example, to have the
 traversal sample the data for no longer than one second, the previous "basic" recommendation could be changed to:
 
 [gremlin-groovy,existing]

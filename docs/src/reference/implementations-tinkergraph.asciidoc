@@ -63,7 +63,7 @@ g.addV("person").property("name","marko").property("age",29).as("m").
 
 IMPORTANT: Pay attention to the fact that traversals end with `next()` or `iterate()`. These methods advance the
 objects in the traversal stream and without those methods, the traversal does nothing. Review the
-link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/#result-iteration[Result Iteration Section]
+link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/#result-iteration[Result Iteration Section]
 of The Gremlin Console tutorial for more information.
 
 Next, the graph can be queried as such.

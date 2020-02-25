@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
+image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
 *x.y.z*
 
@@ -29,8 +29,8 @@ to any graph. Gremlin Recipes present these common traversal patterns and method
 provide some basic building blocks for virtually any graph in any domain.
 
 Recipes assume general familiarity with Gremlin and the Apache TinkerPop™ stack. Be sure to have read the
-link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started[Getting Started] tutorial and the
-link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[The Gremlin Console] tutorial.
+link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started[Getting Started] tutorial and the
+link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[The Gremlin Console] tutorial.
 
 = Traversal Recipes
 
@@ -81,8 +81,8 @@ include::traversal-component-reuse.asciidoc[]
 
 Recipes are generated under the same system as all TinkerPop documentation and is stored directly in the source code
 repository. TinkerPop documentation is all link:http://asciidoc.org/[asciidoc] based and can be generated locally with
-either link:http://tinkerpop.apache.org/docs/x.y.z/dev/developer/#building-testing[shell script/Maven] or
-link:http://tinkerpop.apache.org/docs/x.y.z/dev/developer/#docker-integration[Docker] build commands. Once
+either link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#building-testing[shell script/Maven] or
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#docker-integration[Docker] build commands. Once
 changes are complete, submit a pull request for review by TinkerPop committers.
 
 NOTE: Please review existing recipes and attempt to conform to their writing and visual style. It may also be a good
@@ -91,7 +91,7 @@ prior to starting work on it, as the community might provide insight on the appr
 It is preferable that a link:https://issues.apache.org/jira/browse/TINKERPOP[JIRA issue] be opened that describes the nature
 of the recipe so that the eventual pull request can be bound to that issue.
 
-IMPORTANT: Please read TinkerPop's link:http://tinkerpop.apache.org/docs/x.y.z/dev/developer/#_contributing[policy on contributing]
+IMPORTANT: Please read TinkerPop's link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#_contributing[policy on contributing]
 prior to submitting a recipe.
 
 To contribute a recipe, first clone the repository:
