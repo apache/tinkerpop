@@ -131,7 +131,15 @@ namespace Gremlin.Net.Driver
                 }
                 return connection;
             }
-            throw new ConnectionPoolBusyException(_poolSize, _maxInProcessPerConnection);
+
+            if (connections.Length > 0) 
+            {
+                throw new ConnectionPoolBusyException(_poolSize, _maxInProcessPerConnection);
+            }
+            else
+            {
+                throw new ServerUnavailableException();
+            }
         }
 
         private void ProtectIndexFromOverflowing(int currentIndex)
