@@ -23,8 +23,8 @@ from which to spawn more detailed accounts of specific topics and a target to wh
 The Reference Documentation makes some general assumptions about the reader:
 
 1. They have a sense of what a graph is - not sure? see link:http://kelvinlawrence.net/book/Gremlin-Graph-Guide.html#whygraph[Practical Gremlin - Why Graph?]
-1. They know what it means for a graph system to be TinkerPop-enabled - not sure? see link:http://tinkerpop.apache.org/providers.html[TinkerPop-enabled Providers]
-1. They know what the role of Gremlin is - not sure? see link:link:http://tinkerpop.apache.org/gremlin.html[Introduction to Gremlin]
+1. They know what it means for a graph system to be TinkerPop-enabled - not sure? see link:https://tinkerpop.apache.org/providers.html[TinkerPop-enabled Providers]
+1. They know what the role of Gremlin is - not sure? see link:link:https://tinkerpop.apache.org/gremlin.html[Introduction to Gremlin]
 
 Given those assumptions, it's possible to dive more quickly into the details without spending a lot of time repeating
 what is written elsewhere.
@@ -74,13 +74,13 @@ to graphs depending on their environment.
 * <<staying-agnostic, Staying Agnostic>> provides tips on ways to keep Gremlin as portable as possible among different
 graph providers.
 
-New users should not ignore TinkerPop's link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/[Getting Started]
-tutorial or link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[The Gremlin Console] tutorial.
+New users should not ignore TinkerPop's link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/[Getting Started]
+tutorial or link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[The Gremlin Console] tutorial.
 Both contain a large set of basic information and tips that can help readers avoid some general pitfalls early on.
 Both also focus on Gremlin usage in the Gremlin Console, which tends to be a critical tool for Gremlin developers of
 any development background.
 
-More advanced and experience users will appreciate link:http://tinkerpop.apache.org/docs/x.y.z/recipes/[Gremlin Recipes]
+More advanced and experience users will appreciate link:https://tinkerpop.apache.org/docs/x.y.z/recipes/[Gremlin Recipes]
 which provide examples of common Gremlin traversal patterns.
 
 Finally, all Gremlin developers should become familiar with
@@ -117,7 +117,7 @@ structure is analyzed. The typical form of graph processing is called a
 link:http://en.wikipedia.org/wiki/Graph_traversal[traversal].
 
 image:tinkerpop-enabled.png[width=135,float=left] TinkerPop's role in graph computing is to provide the appropriate
-interfaces for link:http://tinkerpop.apache.org/providers.html[graph providers] and users to interact with graphs over
+interfaces for link:https://tinkerpop.apache.org/providers.html[graph providers] and users to interact with graphs over
 their structure and process.  When a graph system implements the TinkerPop structure and process
 link:http://en.wikipedia.org/wiki/Application_programming_interface[APIs], their technology is considered
 _TinkerPop-enabled_ and becomes nearly indistinguishable from any other TinkerPop-enabled graph system save for their
@@ -333,7 +333,7 @@ GraphTraversalSource g = graph.traversal();
 List<Vertex> vertices = g.V().toList()
 ----
 
-NOTE: It may be helpful to read the link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlins-anatomy/[Gremlin Anatomy]
+NOTE: It may be helpful to read the link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlins-anatomy/[Gremlin Anatomy]
 tutorial, which describes the component parts of Gremlin to get a better understanding of the terminology before
 proceeding further.
 
@@ -363,7 +363,7 @@ image:rexster-character-3.png[width=125,float=left] A JVM-based graph may be hos
 <<gremlin-server,Gremlin Server>>. Gremlin Server exposes the graph as an endpoint to which different clients can
 connect, essentially providing a remote GTM. Gremlin Server supports multiple methods for clients to interface with it:
 
-* Websockets with a link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[custom sub-protocol]
+* Websockets with a link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[custom sub-protocol]
 ** String-based Gremlin scripts
 ** Bytecode-based Gremlin traversals
 * HTTP for string-based scripts
@@ -421,8 +421,8 @@ touch upon important concepts to focus on here.
 
 The first of these points is serialization. When Gremlin Server receives a request, the results must be serialized to
 the form requested by the client and then the client deserializes those into objects native to the language. TinkerPop
-has two such formats that it uses with link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#gryo[Gryo] and
-link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[GraphSON]. Gryo is a JVM-only format and thus carries the
+has two such formats that it uses with link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#gryo[Gryo] and
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[GraphSON]. Gryo is a JVM-only format and thus carries the
 advantage that serializing and deserializing occurs on the classes native to the JVM on both the client and server side.
 As the client has full access to the same classes that the server does it basically has a full GTM on its own and
 therefore has the ability to do some slightly more advanced things.
@@ -501,7 +501,7 @@ g.V(v1).addE('knows').to(v2).property('weight',0.75).iterate()
 The first two lines add a vertex each with the vertex label of "person" and the associated "name" property. The third
 line adds an edge with the "knows" label between them and an associated "weight" property. Note the use of `next()`
 and `iterate()` at the end of the lines - their effect as <<terminal-steps, terminal steps>> is described in
-link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/#result-iteration[The Gremlin Console Tutorial].
+link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/#result-iteration[The Gremlin Console Tutorial].
 
 IMPORTANT: Writing Gremlin is just one way to load data into the graph. Some graphs may have special data loaders which
 could be more efficient and make the task easier and faster. It is worth looking into those tools especially if there
@@ -540,12 +540,12 @@ different languages.
 
 The library of Gremlin steps with examples for each can be found in <<traversal, The Traversal Section>>. This section
 is meant as a reference guide and will not necessarily provide methods for applying Gremlin to solve particular
-problems. Please see the aforementioned link:http://tinkerpop.apache.org/docs/x.y.z/#tutorials[Tutorials]
-link:http://tinkerpop.apache.org/docs/x.y.z/recipes/[Recipes] and the
+problems. Please see the aforementioned link:https://tinkerpop.apache.org/docs/x.y.z/#tutorials[Tutorials]
+link:https://tinkerpop.apache.org/docs/x.y.z/recipes/[Recipes] and the
 link:http://kelvinlawrence.net/book/Gremlin-Graph-Guide.html[Practical Gremlin] book for that sort of information.
 
 NOTE: A full list of helpful Gremlin resources can be found on the
-link:http://tinkerpop.apache.org/docs/x.y.z/[TinkerPop Compendium] page.
+link:https://tinkerpop.apache.org/docs/x.y.z/[TinkerPop Compendium] page.
 
 [[staying-agnostic]]
 == Staying Agnostic
@@ -565,7 +565,7 @@ directly with the API of the graph provider. It is considered good practice to a
 graph provider specific class or set of classes to isolate or abstract it.
 * *Extensions* - Graphs may provide extensions to the Gremlin language, which will not be designed to be compatible
 with other graph providers. There may be a special helper syntax or
-link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlins-anatomy/#_expressions[expressions] which can make
+link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlins-anatomy/#_expressions[expressions] which can make
 certain features of that specific graph shine in powerful ways. Using those options is probably recommended, but users
 should be aware that doing so ties them more tightly to that graph.
 * *Graph specific semantics* - TinkerPop tries to enforce specific semantics through its test suite which is quite

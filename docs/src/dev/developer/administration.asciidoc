@@ -190,7 +190,7 @@ strives to ensure that contributions are honestly and accurately recognized for 
 help make TinkerPop possible.
 
 One of the ways in which this recognition is supported is by way of the
-link:http://tinkerpop.apache.org/#contributors[Contributor Listing] on the TinkerPop home page, which list those who
+link:https://tinkerpop.apache.org/#contributors[Contributor Listing] on the TinkerPop home page, which list those who
 have contributed to the project in some way. It lists both committers and PMC members and provides a short "bio"
 (i.e. a description of their contributions) as well as an indication of whether they are currently participating in
 the project or not, i.e. active or inactive.  The bios have a slightly different form depending on that status:
@@ -222,7 +222,7 @@ As an Apache TinkerPop committer and/or PMC member, your name is listed on the T
 
 Please take a moment to update your bio directly in Git[3] or, if you would prefer, please reply to this email with your bio update and it will be added for you. If no changes are required, please reply to this email to confirm that this is the case.
 
-[1] http://tinkerpop.apache.org/#contributors
-[2] http://tinkerpop.apache.org/docs/current/dev/developer/#contributor-listing
+[1] https://tinkerpop.apache.org/#contributors
+[2] https://tinkerpop.apache.org/docs/current/dev/developer/#contributor-listing
 [3] https://github.com/apache/tinkerpop/blob/master/docs/site/home/index.html
 ----

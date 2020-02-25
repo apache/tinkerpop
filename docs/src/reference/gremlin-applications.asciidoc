@@ -57,7 +57,7 @@ for Ivy should be acceptable:
 </ivysettings>
 ----
 
-TIP: Please see the link:http://tinkerpop.apache.org/docs/x.y.z/dev/developer/#groovy-environment[Developer Documentation]
+TIP: Please see the link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#groovy-environment[Developer Documentation]
 for additional configuration options when working with "snapshot" releases.
 
 [[gremlin-console]]
@@ -439,7 +439,7 @@ to communicate with the TinkerPop stack on the JVM.
 
 NOTE: Gremlin Server is the replacement for link:https://github.com/tinkerpop/rexster[Rexster].
 
-NOTE: Please see the link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Provider Documentation] for information
+NOTE: Please see the link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Provider Documentation] for information
 on how to develop a driver for Gremlin Server.
 
 By default, communication with Gremlin Server occurs over link:http://en.wikipedia.org/wiki/WebSocket[WebSocket] and
@@ -965,11 +965,11 @@ The following table describes the various YAML configuration options that Gremli
 |metrics.csvReporter.fileName |The file to write metrics to. |_none_
 |metrics.csvReporter.interval |Time in milliseconds between reports of metrics to file. |180000
 |metrics.gangliaReporter.addressingMode |Set to `MULTICAST` or `UNICAST`. |_none_
-|metrics.gangliaReporter.enabled |Turns on Ganglia reporting of metrics. Additional link:http://tinkerpop.apache.org/docs/x.y.z/reference/#metrics[setup] is required. |false
+|metrics.gangliaReporter.enabled |Turns on Ganglia reporting of metrics. Additional link:https://tinkerpop.apache.org/docs/x.y.z/reference/#metrics[setup] is required. |false
 |metrics.gangliaReporter.host |Define the Ganglia host to report Metrics to. |localhost
 |metrics.gangliaReporter.interval |Time in milliseconds between reports of metrics for Ganglia. |180000
 |metrics.gangliaReporter.port |Define the Ganglia port to report Metrics to. |8649
-|metrics.graphiteReporter.enabled |Turns on Graphite reporting of metrics. Additional link:http://tinkerpop.apache.org/docs/x.y.z/reference/#metrics[setup] is required. |false
+|metrics.graphiteReporter.enabled |Turns on Graphite reporting of metrics. Additional link:https://tinkerpop.apache.org/docs/x.y.z/reference/#metrics[setup] is required. |false
 |metrics.graphiteReporter.host |Define the Graphite host to report Metrics to. |localhost
 |metrics.graphiteReporter.interval |Time in milliseconds between reports of metrics for Graphite. |180000
 |metrics.graphiteReporter.port |Define the Graphite port to report Metrics to. |2003
@@ -1485,7 +1485,7 @@ different serializers: GraphSON, Gryo, and GraphBinary.
 The GraphSON serializer produces human readable output in JSON format and is a good configuration choice for those
 trying to use TinkerPop from non-JVM languages.  JSON obviously has wide support across virtually all major
 programming languages and can be consumed by a wide variety of tools. The format itself is described in the
-link:http://tinkerpop.apache.org/docs/current/dev/io/#graphson[IO Documentation].
+link:https://tinkerpop.apache.org/docs/current/dev/io/#graphson[IO Documentation].
 
 [source,yaml]
 ----
@@ -1520,7 +1520,7 @@ type names, so interpretation from non-JVM languages will be required.  It has t
 
 The Gryo serializer utilizes Kryo-based serialization which produces a binary output.  This format is best consumed
 by JVM-based languages. The format itself is described in the
-link:http://tinkerpop.apache.org/docs/current/dev/io/#gryo[IO Documentation].
+link:https://tinkerpop.apache.org/docs/current/dev/io/#gryo[IO Documentation].
 
 [source,yaml]
   - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerGremlinV1d0 }
@@ -1549,7 +1549,7 @@ extensions of the `GryoClassResolver` as this class is important to most seriali
 
 GraphBinary is a binary serialization format suitable for object trees, designed to reduce serialization overhead on
 both the client and the server, as well as limiting the size of the payload that is transmitted over the wire. The
-format itself is described in the link:http://tinkerpop.apache.org/docs/current/dev/io/#graphbinary[IO Documentation].
+format itself is described in the link:https://tinkerpop.apache.org/docs/current/dev/io/#graphbinary[IO Documentation].
 
 IMPORTANT: GraphBinary is currently only supported on the JVM.
 
@@ -1647,7 +1647,7 @@ and update the paths `/path/to/apache-tinkerpop-gremlin-server` with the actual 
 ----
 [Unit]
 Description=Apache TinkerPop Gremlin Server daemon
-Documentation=http://tinkerpop.apache.org/
+Documentation=https://tinkerpop.apache.org/
 After=network.target
 
 [Service]
@@ -2153,7 +2153,7 @@ image:gremlin-plugin.png[width=125]
 
 Plugins provide a way to expand the features of Gremlin Console and Gremlin Server. The following sections describe
 the plugins that are available directly from TinkerPop. Please see the
-link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/#gremlin-plugins[Provider Documentation] for information on
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#gremlin-plugins[Provider Documentation] for information on
 how to develop custom plugins.
 
 [[credentials-plugin]]

@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
+image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
 *x.y.z*
 
@@ -25,7 +25,7 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 image:gremlin-io2.png[width=300]
 
 IO features, capabilities and use cases are initially discussed in the Apache TinkerPop™
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#io-step[Reference Documentation]. This document focuses
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#io-step[Reference Documentation]. This document focuses
 more on the details of the implementations for both production and consumption of the various formats. It contains
 samples of the various formats and development details that provide deeper insight for their usage.
 

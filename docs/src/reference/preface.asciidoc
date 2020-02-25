@@ -90,4 +90,4 @@ realized realizations are just as real. For that is -- The TinkerPop.
 image::gremlintron.png[width=400]
 
 NOTE: For more information about differences between TinkerPop 3.x and earlier versions, please see the
-link:http://tinkerpop.apache.org/docs/x.y.z/upgrade/#appendix
+link:https://tinkerpop.apache.org/docs/x.y.z/upgrade/#appendix
