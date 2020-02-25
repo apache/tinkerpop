@@ -479,7 +479,7 @@ An <<clonevertexprogramusingspark,example>> is provided in the SparkGraphCompute
 
 Graph Providers should consider writing their own `OutputFormat` and `InputFormat` which would allow bulk loading and
 export capabilities through this `VertexProgram`. This topic is discussed further in the
-link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/#bulk-import-export[Provider Documentation].
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#bulk-import-export[Provider Documentation].
 
 [[traversalvertexprogram]]
 === TraversalVertexProgram

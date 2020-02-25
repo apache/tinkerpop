@@ -108,7 +108,7 @@ well. It is referred to as "TinkerPop Modern" as it is a modern variation of the
 TinkerPop0 back in 2009 (i.e. the good ol' days -- it was the best of times and it was the worst of times).
 
 TIP: All of the toy graphs available in TinkerPop are described in
-link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/#toy-graphs[The Gremlin Console] tutorial.
+link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/#toy-graphs[The Gremlin Console] tutorial.
 
 Similar to computing in general, graph computing makes a distinction between *structure* (graph) and *process*
 (traversal). The structure of the graph is the data model defined by a vertex/edge/property
@@ -129,10 +129,10 @@ IMPORTANT: TinkerPop is licensed under the popular link:http://www.apache.org/li
 free software license. However, note that the underlying graph engine used with TinkerPop may have a different
 license. Thus, be sure to respect the license caveats of the graph system product.
 
-Generally speaking, the structure or "graph" API is meant for link:http://tinkerpop.apache.org/providers.html[graph providers]
+Generally speaking, the structure or "graph" API is meant for link:https://tinkerpop.apache.org/providers.html[graph providers]
 who are implementing the TinkerPop interfaces and the process or "traversal" API (i.e. Gremlin) is meant for end-users
 who are utilizing a graph system from a graph provider. While the components of the process API are itemized below,
-they are described in greater detail in the link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlins-anatomy/[Gremlin's Anatomy]
+they are described in greater detail in the link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlins-anatomy/[Gremlin's Anatomy]
 tutorial.
 
 .Primary components of the TinkerPop *structure* API
@@ -167,7 +167,7 @@ is a key/value pair, where the key is always a character `String`. Conceptual kn
 essential to end-users working with graphs, however, as mentioned earlier, the structure API is not the appropriate
 way for users to think when building applications with TinkerPop. The structure API is reserved for usage by graph
 providers. Those interested in implementing the structure API to make their graph system TinkerPop enabled can learn
-more about it in the link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Graph Provider] documentation.
+more about it in the link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Graph Provider] documentation.
 
 [[the-graph-process]]
 === The Graph Process

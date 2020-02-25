@@ -22,5 +22,5 @@ image::gremlin-racecar.png[width=325]
 TinkerPop offers several reference implementations of its interfaces that are not only meant for production usage,
 but also represent models by which different graph providers can build their systems. More specific documentation
 on how to build systems at this level of the API can be found in the
-link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Provider Documentation]. The following sections
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Provider Documentation]. The following sections
 describe the various reference implementations and their usage.

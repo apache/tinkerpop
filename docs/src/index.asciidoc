@@ -26,7 +26,7 @@ image::tinkerpop-reading.png[width=800,align="center"]
 Apache TinkerPop™ has an extensive set of documentation that covers virtually all aspects of usage. This documentation
 tends to fall into the following categories:
 
-1. link:http://tinkerpop.apache.org/docs/x.y.z/reference[Reference Documentation] - The primary documentation for
+1. link:https://tinkerpop.apache.org/docs/x.y.z/reference[Reference Documentation] - The primary documentation for
 TinkerPop which provides the most complete guide to TinkerPop usage. All other documentation tends to exist in support
 of this reference guide.
 2. <<tutorials,Tutorials>> - Brief but detailed explanations of specific technologies, patterns, use cases or best
@@ -34,12 +34,12 @@ practices related to TinkerPop.
 3. <<publications,Publications>> - Blog posts, technical papers, presentation materials, etc.
 4. <<developer,Developer>> - Documentation for contributors to TinkerPop or for providers (i.e. those who implement
 TinkerPop's interfaces).
-5. link:http://tinkerpop.apache.org/javadocs/x.y.z/full/[Javadoc] - The full Javadoc for all TinkerPop modules. There
-is also an abridged version of the link:http://tinkerpop.apache.org/javadocs/current/core/[core] interfaces which may
+5. link:https://tinkerpop.apache.org/javadocs/x.y.z/full/[Javadoc] - The full Javadoc for all TinkerPop modules. There
+is also an abridged version of the link:https://tinkerpop.apache.org/javadocs/current/core/[core] interfaces which may
 be more convenient in some cases.
-6. link:http://tinkerpop.apache.org/dotnetdocs/x.y.z/[.NET Docs] - The API documentation for Gremlin.Net.
-7. link:http://tinkerpop.apache.org/jsdocs/x.y.z/[JSDoc] - The JSDoc for gremlin-javascript.
-8. link:http://tinkerpop.apache.org/docs/x.y.z/upgrade/[Upgrade Documentation] - Notes related to upgrading from one
+6. link:https://tinkerpop.apache.org/dotnetdocs/x.y.z/[.NET Docs] - The API documentation for Gremlin.Net.
+7. link:https://tinkerpop.apache.org/jsdocs/x.y.z/[JSDoc] - The JSDoc for gremlin-javascript.
+8. link:https://tinkerpop.apache.org/docs/x.y.z/upgrade/[Upgrade Documentation] - Notes related to upgrading from one
 version of TinkerPop to the next. This document describes breaking changes, major new features and other important
 information related to a particular version.
 
@@ -55,15 +55,15 @@ Note the "+" following the link in each table entry - it forces an asciidoc line
 
 [width="100%",cols="<.<3,<.^10",grid="none"]
 |=========================================================
-|image:gremlin-gym-cropped.png[] |link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/[Getting Started with TinkerPop] +
+|image:gremlin-gym-cropped.png[] |link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/[Getting Started with TinkerPop] +
 A gentle introduction to TinkerPop and the Gremlin traversal language that is divided into five, ten and fifteen minute tutorial blocks.
-|image:gremlin-dashboard.png[] |link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[The Gremlin Console] +
+|image:gremlin-dashboard.png[] |link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[The Gremlin Console] +
 Provides a detailed look at The Gremlin Console and how it can be used when working with TinkerPop.
-^|image:gremlin-anatomy.png[width=125] |link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlins-anatomy/[Gremlin's Anatomy] +
+^|image:gremlin-anatomy.png[width=125] |link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlins-anatomy/[Gremlin's Anatomy] +
 Identifies and explains the component parts of a Gremlin traversal.
-^|image:gremlin-chef.png[width=125] |link:http://tinkerpop.apache.org/docs/x.y.z/recipes/[Gremlin Recipes] +
+^|image:gremlin-chef.png[width=125] |link:https://tinkerpop.apache.org/docs/x.y.z/recipes/[Gremlin Recipes] +
 A collection of best practices and common traversal patterns for Gremlin.
-^|image:gremlin-house-of-mirrors-cropped.png[width=200] |link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlin-language-variants/[Gremlin Language Variants] +
+^|image:gremlin-house-of-mirrors-cropped.png[width=200] |link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlin-language-variants/[Gremlin Language Variants] +
 Instructs developers on the approach to building a Gremlin variant in their native programming language.
 |image:gremlin-lab-coat.png[width=200] |link:http://sql2gremlin.com/[Sql2Gremlin] +
 Learn Gremlin using typical patterns found when querying data with SQL. (*external*)
@@ -101,10 +101,10 @@ Unless otherwise noted, all "publications" are externally managed:
 
 [width="100%",cols="<.<3,<.^10",grid="none"]
 |=========================================================
-|image:business-gremlin.png[width=200] |link:http://tinkerpop.apache.org/docs/x.y.z/dev/developer/[Contributors] +
+|image:business-gremlin.png[width=200] |link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/[Contributors] +
 Provides information on ways to contribute to TinkerPop as well as details on building the project and other specific information for contributors.
-|image:tinkerpop-enabled.png[width=200] |link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Providers] +
+|image:tinkerpop-enabled.png[width=200] |link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Providers] +
 Documentation for providers who implement the TinkerPop interfaces, develop plugins or drivers, or provide other third-party libraries for TinkerPop.
-|image:gremlin-io2.png[width=200] |link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/[IO Reference] +
+|image:gremlin-io2.png[width=200] |link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/[IO Reference] +
 Reference Documentation for providers and users of the various IO formats that TinkerPop has: GraphML, GraphSON and Gryo.
 |=========================================================
