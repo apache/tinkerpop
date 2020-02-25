@@ -59,7 +59,7 @@ g.addV().property(id, "A").as("a").
 Connected components in a small graph can be determined with either an OLTP traversal or the OLAP
 `connectedComponent()`-step. The `connectedComponent()`-step is available as of TinkerPop 3.4.0 and is
 described in more detail in the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connectedcomponent-step[Reference Documentation].
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#connectedcomponent-step[Reference Documentation].
 The traversal looks like:
 
 [gremlin-groovy,existing]

@@ -50,7 +50,7 @@ applies to Gremlin Server, but also to Remote Gremlin Providers.
 
 In addition to the languages and drivers that TinkerPop supports, there are also third-party implementations, as well
 as extensions to the Gremlin language that might be specific to a particular graph provider. That listing can be
-found on the TinkerPop link:http://tinkerpop.apache.org/#graph-systems[home page]. Their description is beyond the
+found on the TinkerPop link:https://tinkerpop.apache.org/#graph-systems[home page]. Their description is beyond the
 scope of this documentation.
 
 TIP: When possible, it is typically best to align the version of TinkerPop used on the client with the version
@@ -67,7 +67,7 @@ image::gremlin-variant-architecture.png[width=650,float=left]
 
 NOTE: The information herein describes how to use the Gremlin language variants distributed
 with Apache TinkerPop. For information on how to build a Gremlin language variant, please review the
-link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlin-language-variants/[Gremlin Language Variants] tutorial.
+link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlin-language-variants/[Gremlin Language Variants] tutorial.
 
 The following sections describe each language variant and driver that is officially TinkerPop a part of the project,
 provided more detailed information about usage, configuration and known limitations.
@@ -281,7 +281,7 @@ The following table describes the various configuration options for the Gremlin 
 |workerPoolSize |Size of the pool for handling background work. |available processors * 2
 |=========================================================
 
-Please see the link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/driver/Cluster.Builder.html[Cluster.Builder javadoc] to get more information on these settings.
+Please see the link:https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/driver/Cluster.Builder.html[Cluster.Builder javadoc] to get more information on these settings.
 
 === Serialization
 
@@ -863,7 +863,7 @@ Writing a Gremlin <<dsl,Domain Specific Language>> (DSL) in Python simply requir
 * `__` - which spawns anonymous traversals from steps
 * `GraphTraversalSource` - which spawns `GraphTraversal` instances
 
-The Social DSL based on the link:http://tinkerpop.apache.org/docs/current/images/tinkerpop-modern.png["modern" toy graph]
+The Social DSL based on the link:https://tinkerpop.apache.org/docs/current/images/tinkerpop-modern.png["modern" toy graph]
 might look like this:
 
 [source,python]

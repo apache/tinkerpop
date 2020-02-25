@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 
-image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
+image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
 *x.y.z*
 
@@ -121,7 +121,7 @@ consistent and easily leveraged by anyone versed in Gremlin.
 
 IMPORTANT: The "Gremlin-Python" presented in this tutorial is basic and provided to show the primary techniques used to
 construct a Gremlin language variant. Apache TinkerPop distributes with a full fledged
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-python[Gremlin-Python] variant that uses many of the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-python[Gremlin-Python] variant that uses many of the
 techniques presented in this tutorial.
 
 [[language-drivers-vs-language-variants]]
@@ -135,8 +135,8 @@ and it is important that these two concepts (and their respective implementation
 
 image:language-drivers.png[width=375,float=right] A Gremlin language driver is a software library that is able to
 communicate with a TinkerPop-enabled graph system whether directly via the JVM or indirectly via
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-gremlin-server[Gremlin Server] Gremlin Server or some
-other link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-rgp[RemoteConnection] enabled graph system.
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-gremlin-server[Gremlin Server] Gremlin Server or some
+other link:https://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-rgp[RemoteConnection] enabled graph system.
 Language drivers are responsible for submitting Gremlin traversals to a TinkerPop-enabled graph system and
 returning results to the developer that are within the developer's language's type system.
 For instance, resultant doubles should be coerced to floats in Python.
@@ -252,7 +252,7 @@ variants will not leverage the unique features of the host language. It is for t
 variants such as link:https://github.com/mpollmeier/gremlin-scala[Gremlin-Scala] were developed. Scala provides many
 syntax niceties not available in Java. To leverage these niceties, Gremlin-Scala "wraps" `GraphTraversal` in order to
 provide Scala-idiomatic extensions. Another example is Apache TinkerPop's Gremlin-Groovy which does the same via the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sugar-plugin[Sugar plugin], but uses
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#sugar-plugin[Sugar plugin], but uses
 link:http://groovy-lang.org/metaprogramming.html[meta-programming] instead of object wrapping, where "behind the
 scenes," Groovy meta-programming is doing object wrapping.
 
@@ -280,7 +280,7 @@ IMPORTANT: Gremlin-Java serves as the standard/default representation of the Gre
 language variant **must** provide all the same functionality (methods) as `GraphTraversal`, but **can** extend it
 with host language specific constructs. This means that the extensions **must** compile to `GraphTraversal`-specific
 steps. A Gremlin language variant **should not** add steps/methods that do not exist in `GraphTraversal`. If an extension
-is desired, the language variant designer should submit a proposal to link:http://tinkerpop.apache.org[Apache TinkerPop]
+is desired, the language variant designer should submit a proposal to link:https://tinkerpop.apache.org[Apache TinkerPop]
 to have the extension added to a future release of Gremlin.
 
 [[using-python-and-remoteconnection]]
@@ -517,7 +517,7 @@ the `Bytecode` form:
 ]
 ----
 
-This nested list representation is ultimately converted by the language variant into link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graphson[GraphSON]
+This nested list representation is ultimately converted by the language variant into link:https://tinkerpop.apache.org/docs/x.y.z/reference/#graphson[GraphSON]
 for serialization to a `RemoteConnection` such as GremlinServer.
 
 [source,bash]
@@ -582,7 +582,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 >>>
 ----
 
-IMPORTANT: Learn more about Apache TinkerPop's distribution of Gremlin-Python link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-python[here].
+IMPORTANT: Learn more about Apache TinkerPop's distribution of Gremlin-Python link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-python[here].
 
 [[gremlin-language-variant-conventions]]
 == Gremlin Language Variant Conventions

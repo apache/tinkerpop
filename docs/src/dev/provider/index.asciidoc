@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
+image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
 *x.y.z*
 
@@ -127,10 +127,10 @@ to execute queries. Typically, the structure API methods are not used directly b
 === Implementing Gremlin-Core
 
 The classes that a graph system provider should focus on implementing are itemized below. It is a good idea to study
-the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#tinkergraph-gremlin[TinkerGraph] (in-memory OLTP and OLAP
-in `tinkergraph-gremlin`), link:http://tinkerpop.apache.org/docs/x.y.z/reference/#neo4j-gremlin[Neo4jGraph]
+the link:https://tinkerpop.apache.org/docs/x.y.z/reference/#tinkergraph-gremlin[TinkerGraph] (in-memory OLTP and OLAP
+in `tinkergraph-gremlin`), link:https://tinkerpop.apache.org/docs/x.y.z/reference/#neo4j-gremlin[Neo4jGraph]
 (OLTP w/ transactions in `neo4j-gremlin`) and/or
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#hadoop-gremlin[HadoopGraph] (OLAP in `hadoop-gremlin`)
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#hadoop-gremlin[HadoopGraph] (OLAP in `hadoop-gremlin`)
 implementations for ideas and patterns.
 
 . Online Transactional Processing Graph Systems (*OLTP*)
@@ -152,7 +152,7 @@ not efficient for the implementation, override them.
 * Implement the `structure/` package interfaces first and then, if desired, interfaces in the `process/` package
 interfaces.
 * `ComputerGraph` is a `Wrapper` system that ensure proper semantics during a GraphComputer computation.
-* The link:http://tinkerpop.apache.org/javadocs/x.y.z/core/[javadoc] is often a good resource in understanding
+* The link:https://tinkerpop.apache.org/javadocs/x.y.z/core/[javadoc] is often a good resource in understanding
 expectations from both the user's perspective as well as the graph provider's perspective. Also consider examining
 the javadoc of TinkerGraph which is often well annotated and the interfaces and classes of the test suite itself.
 
@@ -196,9 +196,9 @@ NOTE: The VertexProgram and MapReduce interfaces in the `process/computer/` pack
 system. Instead, these are interfaces to be implemented by application developers writing VertexPrograms and MapReduce jobs.
 
 IMPORTANT: TinkerPop provides two OLAP implementations:
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#tinkergraph-gremlin[TinkerGraphComputer] (TinkerGraph),
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#tinkergraph-gremlin[TinkerGraphComputer] (TinkerGraph),
 and
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[SparkGraphComputer] (Hadoop).
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[SparkGraphComputer] (Hadoop).
 Given the complexity of the OLAP system, it is good to study and copy many of the patterns used in these reference
 implementations.
 
@@ -413,7 +413,7 @@ determine how to read and write data to and from Hadoop. For instance, `gremlin.
 
 ===== GraphFilterAware Interface
 
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graph-filter[Graph filters] by OLAP processors to only pull a subgraph of the full graph from the graph data source. For instance, the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#graph-filter[Graph filters] by OLAP processors to only pull a subgraph of the full graph from the graph data source. For instance, the
 example below constructs a `GraphFilter` that will only pull the "knows"-graph amongst people into the `GraphComputer`
 for processing.
 
@@ -436,8 +436,8 @@ if (configuration.containsKey(Constants.GREMLIN_HADOOP_GRAPH_FILTER))
 
 A graph system provider's `OutputFormat` should implement the `PersistResultGraphAware` interface which
 determines which persistence options are available to the user. For the standard file-based `OutputFormats` provided
-by Hadoop-Gremlin (e.g. link:++http://tinkerpop.apache.org/docs/x.y.z/reference/#gryo-io-format++[`GryoOutputFormat`], link:++http://tinkerpop.apache.org/docs/x.y.z/reference/#graphson-io-format++[`GraphSONOutputFormat`],
-and link:++http://tinkerpop.apache.org/docs/x.y.z/reference/#script-io-format++[`ScriptInputOutputFormat`]) `ResultGraph.ORIGINAL` is not supported as the original graph
+by Hadoop-Gremlin (e.g. link:++https://tinkerpop.apache.org/docs/x.y.z/reference/#gryo-io-format++[`GryoOutputFormat`], link:++https://tinkerpop.apache.org/docs/x.y.z/reference/#graphson-io-format++[`GraphSONOutputFormat`],
+and link:++https://tinkerpop.apache.org/docs/x.y.z/reference/#script-io-format++[`ScriptInputOutputFormat`]) `ResultGraph.ORIGINAL` is not supported as the original graph
 data files are not random access and are, in essence, immutable. Thus, these file-based `OutputFormats` only support
 `ResultGraph.NEW` which creates a copy of the data specified by the `Persist` enum.
 
@@ -561,7 +561,7 @@ include::../../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Dev/Pr
 ==== RemoteConnection Implementations
 
 A `RemoteConnection` is an interface that is important for usage on traversal sources configured using the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-drivers[withRemote()] option. A `Traversal`
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-drivers[withRemote()] option. A `Traversal`
 that is generated from that source will apply a `RemoteStrategy` which will inject a `RemoteStep` to its end. That
 step will then send the `Bytecode` of the `Traversal` over the `RemoteConnection` to get the results that it will
 iterate.
@@ -599,9 +599,9 @@ efficient and easier to use than the options TinkerPop has tried to generalize i
 
 That said, for graph providers that don't have a special bulk loading feature, they can either rely on the default
 OLTP (single-threaded) `GraphReader` and `GraphWriter` options that are embedded in `IoStep` or get a basic bulk loader
-from TinkerPop using the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#clonevertexprogram[CloneVertexProgram].
+from TinkerPop using the link:https://tinkerpop.apache.org/docs/x.y.z/reference/#clonevertexprogram[CloneVertexProgram].
 Simply provide a `InputFormat` and `OutputFormat` that can be referenced by a `HadoopGraph` instance as discussed
-in the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#clonevertexprogram[Reference Documentation].
+in the link:https://tinkerpop.apache.org/docs/x.y.z/reference/#clonevertexprogram[Reference Documentation].
 
 [[validating-with-gremlin-test]]
 === Validating with Gremlin-Test
@@ -726,7 +726,7 @@ the parameterized test is identified, add it to the `specific` property on the `
 the other arguments.
 
 These annotations help provide users a level of transparency into test suite compliance (via the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#describe-graph[describeGraph()] utility function). It also
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#describe-graph[describeGraph()] utility function). It also
 allows implementers to have a lot of flexibility in terms of how they wish to support TinkerPop.  For example, maybe
 there is a single test case that prevents an implementer from claiming support of a `Feature`.  The implementer could
 choose to either not support the `Feature` or to support it but "opt-out" of the test with a "reason" as to why so
@@ -804,11 +804,11 @@ minimum requirements necessary to yield a valid TinkerPop implementation. Howeve
 graph system provider can tweak to provide an implementation more optimized for their underlying graph engine. Typical
 areas of focus include:
 
-* Traversal Strategies: A link:http://tinkerpop.apache.org/docs/x.y.z/reference/#traversalstrategy[TraversalStrategy]
+* Traversal Strategies: A link:https://tinkerpop.apache.org/docs/x.y.z/reference/#traversalstrategy[TraversalStrategy]
 can be used to alter a traversal prior to its execution. A typical example is converting a pattern of
 `g.V().has('name','marko')` into a global index lookup for all vertices with name "marko". In this way, a `O(|V|)`
 lookup becomes an `O(log(|V|))`. Please review `TinkerGraphStepStrategy` for ideas.
-* Step Implementations: Every link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graph-traversal-steps[step] is
+* Step Implementations: Every link:https://tinkerpop.apache.org/docs/x.y.z/reference/#graph-traversal-steps[step] is
 ultimately referenced by the `GraphTraversal` interface. It is possible to extend `GraphTraversal` to use a graph
 system specific step implementation. Note that while it is sometimes possible to develop custom step implementations
 by extending from a TinkerPop step (typically, `AddVertexStep` and other `Mutating` steps), it's important to
@@ -820,7 +820,7 @@ that would be less likely to be accepted by more public facing interfaces.
 
 image::gremlin-server-protocol.png[width=325]
 
-One of the roles for link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-server[Gremlin Server] is to
+One of the roles for link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-server[Gremlin Server] is to
 provide a bridge from TinkerPop to non-JVM languages (e.g. Go, Python, etc.).  Developers can build language bindings
 (or driver) that provide a way to submit Gremlin scripts to Gremlin Server and get back results.  Given the
 extensible nature of Gremlin Server, it is difficult to provide an authoritative guide to developing a driver.
@@ -942,7 +942,7 @@ Gremlin Server will send:
 |599 |SERVER SERIALIZATION ERROR |The server was not capable of serializing an object that was returned from the script supplied on the request. Either transform the object into something Gremlin Server can process within the script or install mapper serialization classes to Gremlin Server.
 |=========================================================
 
-NOTE: Please refer to the link:http://tinkerpop.apache.org/docs/current/dev/io[IO Reference Documentation] for more
+NOTE: Please refer to the link:https://tinkerpop.apache.org/docs/current/dev/io[IO Reference Documentation] for more
 examples of `RequestMessage` and `ResponseMessage` instances.
 
 === OpProcessors Arguments
@@ -1069,13 +1069,13 @@ as attempts to close long run jobs can occur more rapidly. If not provided, this
 
 Both the Standard and Session OpProcessors allow for Gremlin scripts to be submitted to the server. The
 `TraversalOpProcessor` however allows Gremlin `Bytecode` to be submitted to the server. Supporting this `OpProcessor`
-makes it possible for a link:http://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[Gremlin Language Variant]
+makes it possible for a link:https://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[Gremlin Language Variant]
 to submit a `Traversal` directly to Gremlin Server in the native language of the GLV without having to use a script in
 a different language.
 
 Unlike Standard and Session OpProcessors, the Traversal OpProcessor does not simply return the results of the
 `Traversal`. It instead returns `Traverser` objects which allows the client to take advantage of
-link:http://tinkerpop.apache.org/docs/current/reference/#barrier-step[bulking]. To describe this interaction more
+link:https://tinkerpop.apache.org/docs/current/reference/#barrier-step[bulking]. To describe this interaction more
 directly, the returned `Traverser` will represent some value from the `Traversal` result and the number of times it
 is represented in the full stream of results. So, if a `Traversal` happens to return the same vertex twenty times
 it won't return twenty instances of the same object. It will return one in `Traverser` with the `bulk` value set to
@@ -1175,7 +1175,7 @@ own imports.
 * Place specific objects in the bindings of the `GremlinScriptEngine` for the convenience of the user.
 * Bootstrap the `GremlinScriptEngine` with custom functions so that they are ready for usage at startup.
 
-The first step to developing a plugin is to implement the link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/GremlinPlugin.html[GremlinPlugin]
+The first step to developing a plugin is to implement the link:https://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/GremlinPlugin.html[GremlinPlugin]
 interface:
 
 [source,java]
@@ -1192,19 +1192,19 @@ make their implementations available to users.  The TinkerGraph implementation h
 include::{basedir}/tinkergraph-gremlin/src/main/java/org/apache/tinkerpop/gremlin/tinkergraph/jsr223/TinkerGraphGremlinPlugin.java[]
 ----
 
-This plugin extends from the abstract base class of link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/AbstractGremlinPlugin.html[AbstractGremlinPlugin]
+This plugin extends from the abstract base class of link:https://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/AbstractGremlinPlugin.html[AbstractGremlinPlugin]
 which provides some default implementations of the `GremlinPlugin` methods. It simply allows those who extend from it
-to be able to just supply the name of the module and a list of link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/Customizer.html[Customizer]
+to be able to just supply the name of the module and a list of link:https://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/Customizer.html[Customizer]
 instances to apply to the `GremlinScriptEngine`. In this case, the TinkerGraph plugin just needs an
-link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/ImportCustomizer.html[ImportCustomizer]
+link:https://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/ImportCustomizer.html[ImportCustomizer]
 which describes the list of classes to import when the plugin is activated and applied to the `GremlinScriptEngine`.
 
 The `ImportCustomizer` is just one of several provided `Customizer` implementations that can be used in conjunction
 with plugin development:
 
-* link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/BindingsCustomizer.html[BindingsCustomizer] - Inject a key/value pair into the global bindings of the `GremlinScriptEngine` instances
-* link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/ImportCustomizer.html[ImportCustomizer] - Add imports to a `GremlinScriptEngine`
-* link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/ScriptCustomizer.html[ScriptCustomizer] - Execute a script on a `GremlinScriptEngine` at startup
+* link:https://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/BindingsCustomizer.html[BindingsCustomizer] - Inject a key/value pair into the global bindings of the `GremlinScriptEngine` instances
+* link:https://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/ImportCustomizer.html[ImportCustomizer] - Add imports to a `GremlinScriptEngine`
+* link:https://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/ScriptCustomizer.html[ScriptCustomizer] - Execute a script on a `GremlinScriptEngine` at startup
 
 Individual `GremlinScriptEngine` instances may have their own `Customizer` instances that can be used only with that
 engine - e.g. `gremlin-groovy` has some that are specific to controlling the Groovy compiler configuration. Developing
@@ -1238,7 +1238,7 @@ a final `create` method as follows:
 public GremlinPlugin create()
 ----
 
-Please see the link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/ImportGremlinPlugin.html[ImportGremlinPlugin]
+Please see the link:https://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/jsr223/ImportGremlinPlugin.html[ImportGremlinPlugin]
 for an example of what implementing a `Builder` might look like in this context.
 
 Note that the plugin provides a unique name for the plugin which follows a namespaced pattern as _namespace_._plugin-name_

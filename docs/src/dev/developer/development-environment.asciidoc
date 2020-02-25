@@ -26,7 +26,7 @@ configure a development environment for TinkerPop.
 
 At a minimum, development of TinkerPop requires link:http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html[Java 1.8.0_40+]
 and link:https://maven.apache.org/download.cgi[Maven 3.2.5+]. Maven is used as the common build system, which even
-controls the builds of non-JVM link:http://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[GLVs]
+controls the builds of non-JVM link:https://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[GLVs]
 such as `gremlin-python`. Java and Maven are described as a "minimum" for a development environment, because they
 will only build JVM portions of TinkerPop and many integration tests will not fire with this simple setup. It is
 possible to get a clean and successful build with this minimum, but it will not be possible to build non-JVM aspects
@@ -47,7 +47,7 @@ that TinkerPop's build system will only allow for a minimum build at best.
 Groovy is not used in the standard build, but when generating documentation it does require the loading of a Gremlin
 Console instance. The Gremlin Console is Groovy-based and the documentation bootstrapping loads TinkerPop plugins
 which requires proper configuration of Graph/Ivy dependency loaders as described in the
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-applications[Gremlin Applications Section] of the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-applications[Gremlin Applications Section] of the
 Reference Documentation.
 
 The base configuration described in that link may need to be modified if there is a desire to work with the Gremlin
@@ -107,7 +107,7 @@ scripts should work on Mac and Linux.
 To generate documentation, it is required that link:https://hadoop.apache.org[Hadoop 2.7.x] is running in
 link:https://hadoop.apache.org/docs/r2.7.2/hadoop-project-dist/hadoop-common/SingleCluster.html#Pseudo-Distributed_Operation[pseudo-distributed]
 mode. Be sure to set the `HADOOP_GREMLIN_LIBS` environment variable as described in the
-link:http://tinkerpop.apache.org/docs/current/reference/#hadoop-gremlin[reference documentation]. It is also important
+link:https://tinkerpop.apache.org/docs/current/reference/#hadoop-gremlin[reference documentation]. It is also important
 to set the `CLASSPATH` to point at the directory containing the Hadoop configuration files, like `mapred-site.xml`.
 
 Also note that link:http://www.grymoire.com/Unix/Awk.html[awk] version `4.0.1` is required for documentation generation.

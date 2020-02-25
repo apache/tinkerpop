@@ -300,7 +300,7 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-2233[TINKERPOP-2233],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2239[TINKERPOP-2239],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2269[TINKERPOP-2269],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2273[TINKERPOP-2273],
-link:http://tinkerpop.apache.org/docs/3.5.0/upgrade/#_ssl_security[3.2.10 Upgrade Documentation for SSL]
+link:https://tinkerpop.apache.org/docs/3.5.0/upgrade/#_ssl_security[3.2.10 Upgrade Documentation for SSL]
 
 === Upgrading for Provider
 

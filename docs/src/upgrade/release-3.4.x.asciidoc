@@ -412,7 +412,7 @@ gremlin> g.E(11).elementMap()
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2284[TINKERPOP-2284],
-link:http://tinkerpop.apache.org/docs/3.4.4/reference/#elementmap-step[Reference Documentation]
+link:https://tinkerpop.apache.org/docs/3.4.4/reference/#elementmap-step[Reference Documentation]
 
 == TinkerPop 3.4.3
 
@@ -464,7 +464,7 @@ docker/gremlin-server.sh
 Once started, it is then possible to run GLV tests directly from a debugger against this instance which should
 hopefully reduce development friction.
 
-see: link:http://tinkerpop.apache.org/docs/3.4.3/dev/developer/#docker-integration[Developer Documentation]
+see: link:https://tinkerpop.apache.org/docs/3.4.3/dev/developer/#docker-integration[Developer Documentation]
 
 == TinkerPop 3.4.2
 
@@ -569,7 +569,7 @@ gremlin> g.sparql("SELECT * WHERE { }").out("knows").values("name")
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2171[TINKERPOP-2171],
-link:http://tinkerpop.apache.org/docs/3.4.1/reference/#sparql-with-gremlin[Reference Documentation]
+link:https://tinkerpop.apache.org/docs/3.4.1/reference/#sparql-with-gremlin[Reference Documentation]
 
 === Upgrading for Providers
 
@@ -606,7 +606,7 @@ g.sparql("""SELECT ?name ?age
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1878[TINKERPOP-1878],
-link:http://tinkerpop.apache.org/docs/3.4.0/reference/#sparql-gremlin[Reference Documentation]
+link:https://tinkerpop.apache.org/docs/3.4.0/reference/#sparql-gremlin[Reference Documentation]
 
 ==== Gremlin.NET Driver Improvements
 
@@ -620,7 +620,7 @@ These settings can be set as properties on the `ConnectionPoolSettings` instance
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1774[TINKERPOP-1774],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1775[TINKERPOP-1775],
-link:http://tinkerpop.apache.org/docs/3.4.0/reference/#_connection_pool[Reference Documentation]
+link:https://tinkerpop.apache.org/docs/3.4.0/reference/#_connection_pool[Reference Documentation]
 
 ==== Indexing of Collections
 
@@ -830,7 +830,7 @@ List<Result> r = client.submit("g.V().has('person','name','marko')").all().join(
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1942[TINKERPOP-1942],
-link:http://tinkerpop.apache.org/docs/3.4.0/dev/io/#graphbinary[IO Documentation]
+link:https://tinkerpop.apache.org/docs/3.4.0/dev/io/#graphbinary[IO Documentation]
 
 ==== Status Attributes
 
@@ -876,7 +876,7 @@ Note that the `by()` modulators still work, but should be considered deprecated 
 release where breaking changes are allowed.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1975[TINKERPOP-1975],
-link:http://tinkerpop.apache.org/docs/3.4.0/reference/#with-step[Reference Documentation]
+link:https://tinkerpop.apache.org/docs/3.4.0/reference/#with-step[Reference Documentation]
 
 ==== shortestPath() Step
 
@@ -892,7 +892,7 @@ gremlin> g.withComputer().V().has('name','marko').
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1990[TINKERPOP-1990],
-link:http://tinkerpop.apache.org/docs/3.4.0/reference/#shortestpath-step[Reference Documentation]
+link:https://tinkerpop.apache.org/docs/3.4.0/reference/#shortestpath-step[Reference Documentation]
 
 ==== connectedComponent() Step
 
@@ -924,7 +924,7 @@ It is important to note that this step does require the use of a `GraphComputer`
 `VertexProgram` behind the scenes.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1967[TINKERPOP-1967],
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connectedcomponent-step[Reference Documentation]
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#connectedcomponent-step[Reference Documentation]
 
 ==== io() Step
 
@@ -951,7 +951,7 @@ features, so consult the documentation of the implementation being used to deter
 efficiencies there.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1996[TINKERPOP-1996],
-link:http://tinkerpop.apache.org/docs/3.4.0/reference/#io-step[Reference Documentation]
+link:https://tinkerpop.apache.org/docs/3.4.0/reference/#io-step[Reference Documentation]
 
 ==== Per Request Options
 

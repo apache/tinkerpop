@@ -15,17 +15,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 
-image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
+image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
 *x.y.z*
 
 == Gremlin's Anatomy
 
 image:gremlin-anatomy.png[width=160,float=left]The Gremlin language is typically described by the individual
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graph-traversal-steps[steps] that make up the language, but it
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#graph-traversal-steps[steps] that make up the language, but it
 is worth taking a look at the component parts of Gremlin that make a traversal work. Understanding these component
 parts make it possible to discuss and understand more advanced Gremlin topics, such as
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#dsl[Gremlin DSL] development and Gremlin debugging techniques.
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dsl[Gremlin DSL] development and Gremlin debugging techniques.
 Ultimately, Gremlin's Anatomy provides a foundational understanding for helping to read and follow Gremlin of arbitrary
 complexity, which will lead you to more easily identify traversal patterns and thus enable you to craft better
 traversals of your own.
@@ -76,11 +76,11 @@ g.withSack(1.0f).V().sack()                                                     
 g.withComputer().V().pageRank()                                                    <3>
 ----
 
-<1> Define a link:http://tinkerpop.apache.org/docs/x.y.z/reference/#traversalstrategy[strategy] for the traversal
-<2> Define an initial link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sack-step[sack] value
-<3> Define a link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graphcomputer[GraphComputer] to use in conjunction
+<1> Define a link:https://tinkerpop.apache.org/docs/x.y.z/reference/#traversalstrategy[strategy] for the traversal
+<2> Define an initial link:https://tinkerpop.apache.org/docs/x.y.z/reference/#sack-step[sack] value
+<3> Define a link:https://tinkerpop.apache.org/docs/x.y.z/reference/#graphcomputer[GraphComputer] to use in conjunction
 with a `VertexProgram` for OLAP based traversals - for example, see
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[Spark]
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#sparkgraphcomputer[Spark]
 
 IMPORTANT: How you instantiate the `GraphTraversalSource` is highly dependent on the graph database implementation
 you are using. Typically, they are instantiated from a `Graph` instance with the `traversal()` method, but some graph
@@ -165,7 +165,7 @@ step and it returns the `Map` constructed in the `groupCount()`-step. Other exam
 `GraphTraversal`.
 
 NOTE: You can read more about traversal iteration in the
-link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/#result-iteration[Gremlin Console Tutorial].
+link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/#result-iteration[Gremlin Console Tutorial].
 
 === Expressions
 

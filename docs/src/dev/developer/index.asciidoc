@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
+image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
 *x.y.z*
 
@@ -35,7 +35,7 @@ include::for-committers.asciidoc[]
 
 Graph Providers are those who develop third-party systems and libraries on top of the various TinkerPop APIs and
 protocols. They manage their projects independently of TinkerPop in separate repositories. Additional details for
-providers can be found in the link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Provider Documentation].
+providers can be found in the link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Provider Documentation].
 
 
 include::release.asciidoc[]
