@@ -684,3 +684,12 @@ Feature: Step - has()
       | v[josh] |
       | v[ripple] |
       | v[peter] |
+
+  Scenario: g_V_hasXp_neqXvXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("p", P.neq("v"))
+      """
+    When iterated to list
+    Then the result should be empty

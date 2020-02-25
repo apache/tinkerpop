@@ -147,6 +147,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_gtXmX_andXcontainingXoXXX();
 
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXp_neqXvXX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_outXcreatedX_hasXname__mapXlengthX_isXgtX3XXX_name() {
@@ -677,6 +679,14 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXp_neqXvXX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXp_neqXvXX();
+        printTraversalForm(traversal);
+        assertThat(traversal.hasNext(), is(false));
+    }
+
     public static class Traversals extends HasTest {
         @Override
         public Traversal<Edge, Edge> get_g_EX11X_outV_outE_hasXid_10X(final Object e11Id, final Object e10Id) {
@@ -906,6 +916,11 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXname_gtXmX_andXcontainingXoXXX() {
             return g.V().has("name", P.gt("m").and(TextP.containing("o")));
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXp_neqXvXX() {
+            return g.V().has("p", P.neq("v"));
         }
     }
 }
