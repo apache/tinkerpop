@@ -59,41 +59,41 @@ describe('Traversal', function () {
     });
   });
 
-  describe('#hasNext()', function() {
-    it('should apply strategies and determine if there is anything left to iterate in the traversal')
-    const strategyMock = {
-      apply: function (traversal) {
-        traversal.traversers = [ new t.Traverser(1, 1), new t.Traverser(2, 1) ];
-        return Promise.resolve();
-      }
-    };
-    const strategies = new TraversalStrategies();
-    strategies.addStrategy(strategyMock);
-    const traversal = new t.Traversal(null, strategies, null);
-    return traversal.hasNext()
-        .then(function (more) {
-          assert.strictEqual(more, true);
-          return traversal.next();
-        })
-        .then(function (item) {
-          assert.strictEqual(item.value, 1);
-          assert.strictEqual(item.done, false);
-          return traversal.next();
-        })
-        .then(function (item) {
-          assert.strictEqual(item.value, 2);
-          assert.strictEqual(item.done, false);
-          return traversal.next();
-        })
-        .then(function (item) {
-          assert.strictEqual(item.value, null);
-          assert.strictEqual(item.done, true);
-          return traversal.hasNext();
-        })
-        .then(function (more) {
-          assert.strictEqual(more, false);
-        });
-  });
+  // describe('#hasNext()', function() {
+  //   it('should apply strategies and determine if there is anything left to iterate in the traversal')
+  //   const strategyMock = {
+  //     apply: function (traversal) {
+  //       traversal.traversers = [ new t.Traverser(1, 1), new t.Traverser(2, 1) ];
+  //       return Promise.resolve();
+  //     }
+  //   };
+  //   const strategies = new TraversalStrategies();
+  //   strategies.addStrategy(strategyMock);
+  //   const traversal = new t.Traversal(null, strategies, null);
+  //   return traversal.hasNext()
+  //       .then(function (more) {
+  //         assert.strictEqual(more, true);
+  //         return traversal.next();
+  //       })
+  //       .then(function (item) {
+  //         assert.strictEqual(item.value, 1);
+  //         assert.strictEqual(item.done, false);
+  //         return traversal.next();
+  //       })
+  //       .then(function (item) {
+  //         assert.strictEqual(item.value, 2);
+  //         assert.strictEqual(item.done, false);
+  //         return traversal.next();
+  //       })
+  //       .then(function (item) {
+  //         assert.strictEqual(item.value, null);
+  //         assert.strictEqual(item.done, true);
+  //         return traversal.hasNext();
+  //       })
+  //       .then(function (more) {
+  //         assert.strictEqual(more, false);
+  //       });
+  // });
 
   describe('#next()', function () {
     it('should apply the strategies and return a Promise with the iterator item', function () {
