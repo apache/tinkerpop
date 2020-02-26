@@ -201,6 +201,9 @@ final class Settings {
             if (connectionPoolConf.containsKey("trustStorePassword"))
                 cpSettings.trustStorePassword = connectionPoolConf.getString("trustStorePassword");
 
+            if (connectionPoolConf.containsKey("trustStoreType"))
+                cpSettings.trustStoreType = connectionPoolConf.getString("trustStoreType");
+
             if (connectionPoolConf.containsKey("sslEnabledProtocols"))
                 cpSettings.sslEnabledProtocols = connectionPoolConf.getList("sslEnabledProtocols").stream().map(Object::toString)
                         .collect(Collectors.toList());
@@ -317,6 +320,12 @@ final class Settings {
          * {@code javax.net.ssl.keyStoreType}.
          */
         public String keyStoreType;
+
+        /**
+         * JSSE truststore format. 'jks' or 'pkcs12'. Similar to setting JSSE property
+         * {@code javax.net.ssl.trustStoreType}.
+         */
+        public String trustStoreType;
 
         /**
          * @see <a href=

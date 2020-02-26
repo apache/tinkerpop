@@ -56,6 +56,7 @@ public class SettingsTest {
         conf.setProperty("connectionPool.keyStoreType", "pkcs12");
         conf.setProperty("connectionPool.trustStore", "trust.jks");
         conf.setProperty("connectionPool.trustStorePassword", "password3");
+        conf.setProperty("connectionPool.trustStoreType", "jks");
         conf.setProperty("connectionPool.sslEnabledProtocols", Arrays.asList("TLSv1.1","TLSv1.2"));
         conf.setProperty("connectionPool.sslCipherSuites", Arrays.asList("TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"));
         conf.setProperty("connectionPool.sslSkipCertValidation", true);
@@ -94,6 +95,7 @@ public class SettingsTest {
         assertEquals("pkcs12", settings.connectionPool.keyStoreType);
         assertEquals("trust.jks", settings.connectionPool.trustStore);
         assertEquals("password3", settings.connectionPool.trustStorePassword);
+        assertEquals("jks", settings.connectionPool.trustStoreType);
         assertEquals(Arrays.asList("TLSv1.1","TLSv1.2"), settings.connectionPool.sslEnabledProtocols);
         assertEquals(Arrays.asList("TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"), settings.connectionPool.sslCipherSuites);
         assertThat(settings.connectionPool.sslSkipCertValidation, is(true));

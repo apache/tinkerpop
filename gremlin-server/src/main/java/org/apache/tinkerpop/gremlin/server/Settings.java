@@ -527,6 +527,11 @@ public class Settings {
         public String keyStoreType;
 
         /**
+         * The format of the {@link #trustStore}, either {@code JKS} or {@code PKCS12}
+         */
+        public String trustStoreType;
+
+        /**
          * A list of SSL protocols to enable. @see <a href=
          *      "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SunJSSE_Protocols">JSSE
          *      Protocols</a>
