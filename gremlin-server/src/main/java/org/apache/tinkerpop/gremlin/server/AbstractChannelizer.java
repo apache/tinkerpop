@@ -286,8 +286,10 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
             // Load custom truststore for client auth certs
             if (null != sslSettings.trustStore) {
-                final String keystoreType = null == sslSettings.keyStoreType ? KeyStore.getDefaultType() : sslSettings.keyStoreType;
-                final KeyStore truststore = KeyStore.getInstance(keystoreType);
+                final String trustStoreType = null != sslSettings.trustStoreType ? sslSettings.trustStoreType
+                            : sslSettings.keyStoreType != null ? sslSettings.keyStoreType : KeyStore.getDefaultType();
+
+                final KeyStore truststore = KeyStore.getInstance(trustStoreType);
                 final char[] password = null == sslSettings.trustStorePassword ? null : sslSettings.trustStorePassword.toCharArray();
                 try (final InputStream in = new FileInputStream(sslSettings.trustStore)) {
                     truststore.load(in, password);

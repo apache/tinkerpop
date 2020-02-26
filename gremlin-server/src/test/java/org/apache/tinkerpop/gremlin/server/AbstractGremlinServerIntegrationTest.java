@@ -50,6 +50,8 @@ public abstract class AbstractGremlinServerIntegrationTest {
     public static final String P12_CLIENT_TRUST = "src/test/resources/client-trust.p12";
     public static final String KEYSTORE_TYPE_JKS = "jks";
     public static final String KEYSTORE_TYPE_PKCS12 = "pkcs12";
+    public static final String TRUSTSTORE_TYPE_JKS = "jks";
+    public static final String TRUSTSTORE_TYPE_PKCS12 = "pkcs12";
 
     protected GremlinServer server;
     private Settings overriddenSettings;

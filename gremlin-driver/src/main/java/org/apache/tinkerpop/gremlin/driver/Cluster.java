@@ -187,6 +187,7 @@ public final class Cluster {
                 .keyStoreType(settings.connectionPool.keyStoreType)
                 .trustStore(settings.connectionPool.trustStore)
                 .trustStorePassword(settings.connectionPool.trustStorePassword)
+                .trustStoreType(settings.connectionPool.trustStoreType)
                 .sslCipherSuites(settings.connectionPool.sslCipherSuites)
                 .sslEnabledProtocols(settings.connectionPool.sslEnabledProtocols)
                 .sslSkipCertValidation(settings.connectionPool.sslSkipCertValidation)
@@ -506,9 +507,9 @@ public final class Cluster {
 
             // Load custom truststore
             if (null != connectionPoolSettings.trustStore) {
-                final String keystoreType = null == connectionPoolSettings.keyStoreType ? KeyStore.getDefaultType()
-                        : connectionPoolSettings.keyStoreType;
-                final KeyStore truststore = KeyStore.getInstance(keystoreType);
+                final String trustStoreType = null != connectionPoolSettings.trustStoreType ? connectionPoolSettings.trustStoreType
+                        : null != connectionPoolSettings.keyStoreType ? connectionPoolSettings.keyStoreType : KeyStore.getDefaultType();
+                final KeyStore truststore = KeyStore.getInstance(trustStoreType);
                 final char[] password = null == connectionPoolSettings.trustStorePassword ? null
                         : connectionPoolSettings.trustStorePassword.toCharArray();
                 try (final InputStream in = new FileInputStream(connectionPoolSettings.trustStore)) {
@@ -568,6 +569,7 @@ public final class Cluster {
         private String trustStore = null;
         private String trustStorePassword = null;
         private String keyStoreType = null;
+        private String trustStoreType = null;
         private String validationRequest = "''";
         private List<String> sslEnabledProtocols = new ArrayList<>();
         private List<String> sslCipherSuites = new ArrayList<>();
@@ -704,6 +706,14 @@ public final class Cluster {
          */
         public Builder keyStoreType(final String keyStoreType) {
             this.keyStoreType = keyStoreType;
+            return this;
+        }
+
+        /**
+         * The format of the {@link #trustStore}, either {@code JKS} or {@code PKCS12}
+         */
+        public Builder trustStoreType(final String trustStoreType) {
+            this.trustStoreType = trustStoreType;
             return this;
         }
 
@@ -1019,6 +1029,7 @@ public final class Cluster {
             connectionPoolSettings.trustStore = builder.trustStore;
             connectionPoolSettings.trustStorePassword = builder.trustStorePassword;
             connectionPoolSettings.keyStoreType = builder.keyStoreType;
+            connectionPoolSettings.trustStoreType = builder.trustStoreType;
             connectionPoolSettings.sslCipherSuites = builder.sslCipherSuites;
             connectionPoolSettings.sslEnabledProtocols = builder.sslEnabledProtocols;
             connectionPoolSettings.sslSkipCertValidation = builder.sslSkipCertValidation;

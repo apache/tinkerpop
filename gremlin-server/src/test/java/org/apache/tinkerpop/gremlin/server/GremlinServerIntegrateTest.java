@@ -199,6 +199,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldCloseChannelIfClientDoesntRespond":
                 settings.idleConnectionTimeout = 1000;
                 break;
+            default:
+                break;
         }
 
         return settings;
