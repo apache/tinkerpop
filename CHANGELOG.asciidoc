@@ -24,6 +24,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-3-11]]
 === TinkerPop 3.3.11 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Added `trustStoreType` such that keystore and truststore can be of different types in the Java driver.
 
 [[release-3-3-10]]
 === TinkerPop 3.3.10 (Release Date: February 3, 2020)
