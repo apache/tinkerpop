@@ -204,19 +204,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldCloseChannelIfClientDoesntRespond":
                 settings.idleConnectionTimeout = 1000;
                 break;
-            case "shouldEnableSslAndClientCertificateAuthWithDifferentStoreType":
-            case "shouldEnableSslAndClientCertificateAuthAndFailWithIncorrectKeyStoreType":
-            case "shouldEnableSslAndClientCertificateAuthAndFailWithIncorrectTrustStoreType":
-                settings.ssl = new Settings.SslSettings();
-                settings.ssl.enabled = true;
-                settings.ssl.needClientAuth = ClientAuth.REQUIRE;
-                settings.ssl.keyStore = JKS_SERVER_KEY;
-                settings.ssl.keyStorePassword = KEY_PASS;
-                settings.ssl.keyStoreType = KEYSTORE_TYPE_JKS;
-                settings.ssl.trustStore = P12_SERVER_TRUST;
-                settings.ssl.trustStorePassword = KEY_PASS;
-                settings.ssl.trustStoreType = TRUSTSTORE_TYPE_PKCS12;
-                break;
             default:
                 break;
         }
@@ -1205,71 +1192,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should have tanked out because of number of parameters used and size of the compile script");
         } catch (Exception ex) {
             assertThat(ex.getMessage(), containsString("The Gremlin statement that was submitted exceeds the maximum compilation size allowed by the JVM"));
-        }
-    }
-
-    @Test
-    public void shouldEnableSslAndClientCertificateAuthWithDifferentStoreType() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(true)
-                .keyStore(JKS_CLIENT_KEY).keyStorePassword(KEY_PASS).keyStoreType(KEYSTORE_TYPE_JKS)
-                .trustStore(P12_CLIENT_TRUST).trustStorePassword(KEY_PASS).trustStoreType(TRUSTSTORE_TYPE_PKCS12)
-                .create();
-        final Client client = cluster.connect();
-
-        try {
-            assertEquals("test", client.submit("'test'").one().getString());
-        } finally {
-            cluster.close();
-        }
-
-        final Cluster cluster2 = TestClientFactory.build().enableSsl(true)
-                .keyStore(P12_CLIENT_KEY).keyStorePassword(KEY_PASS).keyStoreType(KEYSTORE_TYPE_PKCS12)
-                .trustStore(JKS_CLIENT_TRUST).trustStorePassword(KEY_PASS).trustStoreType(TRUSTSTORE_TYPE_JKS)
-                .create();
-        final Client client2 = cluster2.connect();
-
-        try {
-            assertEquals("test", client2.submit("'test'").one().getString());
-        } finally {
-            cluster2.close();
-        }
-    }
-
-    @Test
-    public void shouldEnableSslAndClientCertificateAuthAndFailWithIncorrectKeyStoreType() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(true)
-                .keyStore(JKS_CLIENT_KEY).keyStorePassword(KEY_PASS).keyStoreType(KEYSTORE_TYPE_PKCS12)
-                .trustStore(P12_CLIENT_TRUST).trustStorePassword(KEY_PASS).trustStoreType(TRUSTSTORE_TYPE_PKCS12)
-                .create();
-        final Client client = cluster.connect();
-
-        try {
-            String res = client.submit("'test'").one().getString();
-            fail("Should throw exception because incorrect keyStoreType is specified");
-        } catch (Exception x) {
-            final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldEnableSslAndClientCertificateAuthAndFailWithIncorrectTrustStoreType() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(true)
-                .keyStore(P12_CLIENT_KEY).keyStorePassword(KEY_PASS).keyStoreType(KEYSTORE_TYPE_PKCS12)
-                .trustStore(JKS_CLIENT_TRUST).trustStorePassword(KEY_PASS).trustStoreType(TRUSTSTORE_TYPE_PKCS12)
-                .create();
-        final Client client = cluster.connect();
-
-        try {
-            client.submit("'test'").one();
-            fail("Should throw exception because incorrect trustStoreType is specified");
-        } catch (Exception x) {
-            final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
-        } finally {
-            cluster.close();
         }
     }
 }

@@ -23,6 +23,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-4-7]]
 === TinkerPop 3.4.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+This release also includes changes from <<release-3-3-11, 3.3.11>>.
+
 
 [[release-3-4-6]]
 === TinkerPop 3.4.6 (Release Date: February 20, 2020)
