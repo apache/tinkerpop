@@ -1062,6 +1062,7 @@ It is possible to filter vertices, edges, and vertex properties based on their p
 [gremlin-groovy,modern]
 ----
 g.V().hasLabel('person')
+g.V().hasLabel('person','name','marko')
 g.V().hasLabel('person').out().has('name',within('vadas','josh'))
 g.V().hasLabel('person').out().has('name',within('vadas','josh')).
       outE().hasLabel('created')
@@ -1072,6 +1073,7 @@ g.V().has('name',without('josh','marko')).elementMap() <4>
 g.V().has('name',not(within('josh','marko'))).elementMap() <5>
 g.V().properties().hasKey('age').value() <6>
 g.V().hasNot('age').values('name') <7>
+g.V().has('person','name', startingWith('m')) <8>
 ----
 
 <1> Find all vertices whose ages are between 20 (exclusive) and 30 (exclusive). In other words, the age must be greater than 20 and less than 30.
@@ -1082,6 +1084,7 @@ the key,value pairs for those vertices.
 <5> Same as the prior example save using `not` on `within` to yield `without`.
 <6> Find all age-properties and emit their value.
 <7> Find all vertices that do not have an age-property and emit their name.
+<8> Find all "person" vertices that have a name property that starts with the letter "m".
 
 TinkerPop does not support a regular expression predicate, although specific graph databases that leverage TinkerPop
 may provide a partial match extension.
@@ -1107,6 +1110,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#hasValue-java.lang.Object-java.lang.Object...-++[`hasValue(Object,Object...)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#hasValue-org.apache.tinkerpop.gremlin.process.traversal.P-++[`hasValue(P)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/P.html++[`P`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/TextP.html++[`TextP`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/structure/T.html++[`T`]
 
 [[id-step]]
