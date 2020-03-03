@@ -29,6 +29,14 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.3.11/CHANGELOG.as
 
 === Upgrading for Users
 
+==== gremlin-javascript Sessions
+
+While TinkerPop doesn't recommend the use of sessions for most use cases, it does remain a feature that is available
+and exposed on the server. As such, providing support in all Gremlin Language Variants for this feature is useful in
+ensuring a consistent implementation for all programming languages.
+
+[source,javascript]
+const client = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traversalSource: 'g', 'processor': 'session' });
 
 == TinkerPop 3.3.10
 

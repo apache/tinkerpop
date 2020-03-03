@@ -624,7 +624,6 @@ g.V().repeat(__.out()).times(2).values("name").fold().toList();
 Additionally, you can also send parametrized Gremlin scripts to the server as strings, using the
 `Client` class in Gremlin-JavaScript.
 
-
 [source,javascript]
 ----
 const gremlin = require('gremlin');
@@ -639,5 +638,14 @@ const result2 = await client.submit('g.V().hasLabel(label).tail(n)', { label: 'p
 for (const vertex of result2) {
   console.log(vertex.id);
 }
-
 ----
+
+It is also possible to initialize the `Client` to use <<sessions,sessions>>:
+
+[source,javascript]
+----
+const client = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traversalSource: 'g', 'processor': 'session' });
+----
+
+With this configuration, the state of variables within scripts are preserved between requests.
+
