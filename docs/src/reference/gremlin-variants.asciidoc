@@ -205,7 +205,7 @@ IMPORTANT: Bytecode-based traversals use the `TraversalOpProcessor` in Gremlin S
 the retrieval of side-effects (if the `Traversal` produces any). That cache can be configured (e.g. controlling
 eviction times and sizing) in the Gremlin Server configuration file as described <<traversalopprocessor, here>>.
 
-Some connection options can also be set on individual requests made through the Java driver using `with()` step 
+Some connection options can also be set on individual requests made through the Java driver using `with()` step
 on the `TraversalSource`. For instance to set request timeout to 500 milliseconds:
 
 [source,java]
@@ -1315,6 +1315,15 @@ for (const vertex of result2) {
   console.log(vertex.id);
 }
 ----
+
+It is also possible to initialize the `Client` to use <<sessions,sessions>>:
+
+[source,javascript]
+----
+const client = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traversalSource: 'g', 'processor': 'session' });
+----
+
+With this configuration, the state of variables within scripts are preserved between requests.
 
 [[gremlin-javascript-dsl]]
 === Domain Specific Languages
