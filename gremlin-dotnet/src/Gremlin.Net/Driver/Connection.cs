@@ -42,13 +42,16 @@ namespace Gremlin.Net.Driver
         private readonly WebSocketConnection _webSocketConnection;
         private readonly string _username;
         private readonly string _password;
+        private readonly string _sessionId;
 
         public Connection(Uri uri, string username, string password, GraphSONReader graphSONReader,
-            GraphSONWriter graphSONWriter, string mimeType, Action<ClientWebSocketOptions> webSocketConfiguration)
+            GraphSONWriter graphSONWriter, string mimeType,
+            Action<ClientWebSocketOptions> webSocketConfiguration, string sessionId)
         {
             _uri = uri;
             _username = username;
             _password = password;
+            _sessionId = sessionId;
             _graphSONReader = graphSONReader;
             _graphSONWriter = graphSONWriter;
             _messageSerializer = new JsonMessageSerializer(mimeType);
@@ -68,16 +71,52 @@ namespace Gremlin.Net.Driver
 
         public async Task CloseAsync()
         {
+            if (!String.IsNullOrEmpty(_sessionId))
+            {
+                await closeSession().ConfigureAwait(false);
+            }
             await _webSocketConnection.CloseAsync().ConfigureAwait(false);
+        }
+
+        private async Task closeSession()
+        {
+            var msgBuilder = RequestMessage.Build(Tokens.OpsClose).Processor(Tokens.ProcessorSession);
+            msgBuilder.AddArgument(Tokens.ArgsGremlin, "session.close()").AddArgument("session", _sessionId);
+
+            var graphsonMsg = _graphSONWriter.WriteObject(msgBuilder.Create());
+            var serializedMsg = _messageSerializer.SerializeMessage(graphsonMsg);
+            await _webSocketConnection.SendMessageAsync(serializedMsg).ConfigureAwait(false);
         }
 
         public bool IsOpen => _webSocketConnection.IsOpen;
 
         private async Task SendAsync(RequestMessage message)
         {
-            var graphsonMsg = _graphSONWriter.WriteObject(message);
+            var msg = message;
+            if (!String.IsNullOrEmpty(_sessionId))
+            {
+                msg = rebuildSessionMessage(message);
+            }
+            var graphsonMsg = _graphSONWriter.WriteObject(msg);
             var serializedMsg = _messageSerializer.SerializeMessage(graphsonMsg);
             await _webSocketConnection.SendMessageAsync(serializedMsg).ConfigureAwait(false);
+        }
+
+        private RequestMessage rebuildSessionMessage(RequestMessage message)
+        {
+            if (message.Processor == Tokens.OpsAuthentication)
+            {
+                return message;
+            }
+
+            var msgBuilder = RequestMessage.Build(message.Operation)
+              .OverrideRequestId(message.RequestId).Processor(Tokens.ProcessorSession);
+            foreach(var kv in message.Arguments)
+            {
+                msgBuilder.AddArgument(kv.Key, kv.Value);
+            }
+            msgBuilder.AddArgument("session", _sessionId);
+            return msgBuilder.Create();
         }
 
         private async Task<IReadOnlyCollection<T>> ReceiveAsync<T>()

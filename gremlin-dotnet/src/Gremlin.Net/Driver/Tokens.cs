@@ -69,6 +69,11 @@ namespace Gremlin.Net.Driver
         public static string ProcessorTraversal = "traversal";
 
         /// <summary>
+        ///     Session OpProcessor.
+        /// </summary>
+        public static string ProcessorSession = "session";
+
+        /// <summary>
         ///     Argument name that allows to defines the number of iterations each ResponseMessage should contain - overrides the
         ///     resultIterationBatchSize server setting.
         /// </summary>
