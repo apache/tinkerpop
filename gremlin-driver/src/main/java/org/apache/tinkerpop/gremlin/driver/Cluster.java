@@ -402,6 +402,7 @@ public final class Cluster {
      *
      * @deprecated As of release 3.3.11, replaced in essence by {@link #getMaxWaitForClose()}.
      */
+    @Deprecated
     public int getMaxWaitForSessionClose() {
         return manager.connectionPoolSettings.maxWaitForSessionClose;
     }
@@ -925,7 +926,7 @@ public final class Cluster {
          * of the connection will trigger the close of the session and the release of resources.
          */
         public Builder maxWaitForClose(final int maxWait) {
-            this.maxWaitForSessionClose = maxWait;
+            this.maxWaitForClose = maxWait;
             return this;
         }
 
