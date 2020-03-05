@@ -236,6 +236,12 @@ final class Settings {
             if (connectionPoolConf.containsKey("maxWaitForConnection"))
                 cpSettings.maxWaitForConnection = connectionPoolConf.getInt("maxWaitForConnection");
 
+            if (connectionPoolConf.containsKey("maxWaitForSessionClose"))
+                cpSettings.maxWaitForSessionClose = connectionPoolConf.getInt("maxWaitForSessionClose");
+
+            if (connectionPoolConf.containsKey("maxWaitForClose"))
+                cpSettings.maxWaitForClose = connectionPoolConf.getInt("maxWaitForClose");
+
             if (connectionPoolConf.containsKey("maxContentLength"))
                 cpSettings.maxContentLength = connectionPoolConf.getInt("maxContentLength");
 
@@ -398,8 +404,18 @@ final class Settings {
          * If the connection is using a "session" this setting represents the amount of time in milliseconds to wait
          * for that session to close before timing out where the default value is 3000. Note that the server will
          * eventually clean up dead sessions itself on expiration of the session or during shutdown.
+         *
+         * @deprecated As of release 3.3.11, replaced in essence by {@link #maxWaitForClose}.
          */
+        @Deprecated
         public int maxWaitForSessionClose = Connection.MAX_WAIT_FOR_SESSION_CLOSE;
+
+        /**
+         * The amount of time in milliseconds to wait the connection to close before timing out where the default
+         * value is 3000. This timeout allows for a delay to occur in waiting for remaining messages that may still
+         * be returning from the server while a {@link Client#close()} is called.
+         */
+        public int maxWaitForClose = Connection.MAX_WAIT_FOR_CLOSE;
 
         /**
          * The maximum length in bytes that a message can be sent to the server. This number can be no greater than

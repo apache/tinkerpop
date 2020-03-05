@@ -168,6 +168,12 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
         // basically, we need one to submit the long run job and one to do the close operation that will cancel the
         // long run job. it is probably possible to do this with some low-level message manipulation but that's
         // probably not necessary
+        //
+        // this test wont work so well once we remove the sending of the session close message from the driver which
+        // got deprecated at 3.3.11 and lock a session to the connection that created it. in that case, two Client
+        // instances won't be able to connect to the same session which is what is happening below. not sure what
+        // form this test should take then especially since transactions will force close when the channel closes.
+        // perhaps it should just be removed.
         final Cluster cluster1 = TestClientFactory.open();
         final Client client1 = cluster1.connect(name.getMethodName());
         client1.submit("graph.addVertex()").all().join();
@@ -201,6 +207,12 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
         // basically, we need one to submit the long run job and one to do the close operation that will cancel the
         // long run job. it is probably possible to do this with some low-level message manipulation but that's
         // probably not necessary
+        //
+        // this test wont work so well once we remove the sending of the session close message from the driver which
+        // got deprecated at 3.3.11 and lock a session to the connection that created it. in that case, two Client
+        // instances won't be able to connect to the same session which is what is happening below. not sure what
+        // form this test should take then especially since transactions will force close when the channel closes.
+        // perhaps it should just be removed.
         final Cluster cluster1 = TestClientFactory.open();
         final Client client1 = cluster1.connect(name.getMethodName());
         client1.submit("graph.addVertex()").all().join();
@@ -320,7 +332,7 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
             cluster.close();
         }
 
-        // there will be on for the timeout and a second for closing the cluster
+        // there will be one for the timeout and a second for closing the cluster
         assertEquals(2, recordingAppender.getMessages().stream()
                 .filter(msg -> msg.equals("INFO - Session shouldHaveTheSessionTimeout closed\n")).count());
     }

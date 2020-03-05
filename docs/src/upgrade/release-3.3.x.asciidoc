@@ -37,6 +37,37 @@ ensuring a consistent implementation for all programming languages.
 
 [source,javascript]
 const client = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traversalSource: 'g', 'processor': 'session' });
+==== Deprecate maxWaitForSessionClose
+
+The `maxWaitForSessionClose` setting for the Java driver has been deprecated and in some sense replaced by the
+`maxWaitForClose` setting. The two settings perform different functions, but expect `maxWaitForSessionClose` to be
+removed in future versions. The `maxWaitForClose` performs a more useful function than `maxWaitForSessionClose` in
+the sense that it tells the driver how long it should wait for pending messages from the server before closing the
+connection. The `maxWaitForSessionClose` on the other hand is how long the driver should wait for the server to
+respond to a session close message (i.e. an actual response from the server). Waiting for that specific response to the
+session close message could result in the driver hanging on calls to `Client.close()` if there is a long run query
+running on the server and close message is stacked behind that in queue.
+
+Future versions will remove support for that particular message and simply close the session when the connection is
+closed. As a result that setting will no longer be useful. The old setting is really only useful for connecting to
+older versions of the server prior to 3.3.11 that do not have the session shutdown hook bound to the close of the
+connection.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2336[TINKERPOP-2336]
+
+=== Upgrading for Providers
+
+==== Gremlin Driver Providers
+
+===== Session Close
+
+The "close" message for the `SessionOpProcessor` is deprecated, however the functionality to accept the message remains
+in Gremlin Server and the functionality to send the message remains in the Java driver. The expectation is that
+support for the message will be removed from the driver in a future release, likely at 3.5.0. Server implementations
+starting at 3.3.11 should look to use the close of a connection to trigger the close of a session and its release of
+resources.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2336[TINKERPOP-2336]
 
 == TinkerPop 3.3.10
 
