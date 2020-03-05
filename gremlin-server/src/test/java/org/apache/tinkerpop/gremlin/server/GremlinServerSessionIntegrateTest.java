@@ -49,7 +49,7 @@ import java.util.stream.IntStream;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsCollectionContaining.hasItem;
+import static org.hamcrest.core.IsIterableContaining.hasItem;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -93,8 +93,7 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
                 settings.processors.add(processorSettings);
                 Logger.getRootLogger().setLevel(Level.INFO);
                 break;
-            case "shouldBlockAdditionalRequestsDuringClose":
-            case "shouldBlockAdditionalRequestsDuringForceClose":
+            case "shouldCloseSessionOnClientClose":
                 clearNeo4j(settings);
                 Logger.getRootLogger().setLevel(Level.INFO);
                 break;
@@ -122,6 +121,38 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
     private static void clearNeo4j(Settings settings) {
         deleteDirectory(new File("/tmp/neo4j"));
         settings.graphs.put("graph", "conf/neo4j-empty.properties");
+    }
+
+    @Test
+    public void shouldCloseSessionOnClientClose() throws Exception {
+        assumeNeo4jIsPresent();
+
+        final Cluster cluster1 = TestClientFactory.open();
+        final Client client1 = cluster1.connect(name.getMethodName());
+        client1.submit("x = 1").all().join();
+        client1.submit("graph.addVertex()").all().join();
+        client1.close();
+        cluster1.close();
+
+        assertThat(recordingAppender.getMessages(), hasItem("INFO - Skipped attempt to close open graph transactions on shouldCloseSessionOnClientClose - close was forced\n"));
+        assertThat(recordingAppender.getMessages(), hasItem("INFO - Session shouldCloseSessionOnClientClose closed\n"));
+
+        // try to reconnect to that session and make sure no state is there
+        final Cluster clusterReconnect = TestClientFactory.open();
+        final Client clientReconnect = clusterReconnect.connect(name.getMethodName());
+
+        // should get an error because "x" is not defined as this is a new session
+        try {
+            clientReconnect.submit("x").all().join();
+            fail("Should not have been successful as 'x' was only defined in the old session");
+        } catch(Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root.getMessage(), startsWith("No such property"));
+        }
+
+        // the commit from client1 should not have gone through so there should be no data present.
+        assertEquals(0, clientReconnect.submit("graph.traversal().V().count()").all().join().get(0).getInt());
+        clusterReconnect.close();
     }
 
     @Test
@@ -161,84 +192,23 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
     }
 
     @Test
-    public void shouldBlockAdditionalRequestsDuringClose() throws Exception {
-        assumeNeo4jIsPresent();
-
-        // this is sorta cobbled together a bit given limits/rules about how you can use Cluster/Client instances.
-        // basically, we need one to submit the long run job and one to do the close operation that will cancel the
-        // long run job. it is probably possible to do this with some low-level message manipulation but that's
-        // probably not necessary
-        //
-        // this test wont work so well once we remove the sending of the session close message from the driver which
-        // got deprecated at 3.3.11 and lock a session to the connection that created it. in that case, two Client
-        // instances won't be able to connect to the same session which is what is happening below. not sure what
-        // form this test should take then especially since transactions will force close when the channel closes.
-        // perhaps it should just be removed.
+    public void shouldNotAllowMoreThanOneClientPerSession() throws Exception {
         final Cluster cluster1 = TestClientFactory.open();
         final Client client1 = cluster1.connect(name.getMethodName());
-        client1.submit("graph.addVertex()").all().join();
-        final Cluster cluster2 = TestClientFactory.open();
-        final Client client2 = cluster2.connect(name.getMethodName());
-        client2.submit("1+1").all().join();
-
-        final ResultSet rs = client1.submit("Thread.sleep(3000);1+1");
-
-        // close while the previous request is still executing
-        client2.close();
-
-        assertEquals(2, rs.all().join().get(0).getInt());
-
-        client1.close();
-
-        cluster1.close();
-        cluster2.close();
-
-        // triggered an error during close and since we didn't force close, the attempt to close the transaction
-        // is made
-        assertThat(recordingAppender.getMessages(), hasItem("INFO - Rolling back open transactions on graph before killing session: " + name.getMethodName() + "\n"));
-
-    }
-
-    @Test
-    public void shouldBlockAdditionalRequestsDuringForceClose() throws Exception {
-        assumeNeo4jIsPresent();
-
-        // this is sorta cobbled together a bit given limits/rules about how you can use Cluster/Client instances.
-        // basically, we need one to submit the long run job and one to do the close operation that will cancel the
-        // long run job. it is probably possible to do this with some low-level message manipulation but that's
-        // probably not necessary
-        //
-        // this test wont work so well once we remove the sending of the session close message from the driver which
-        // got deprecated at 3.3.11 and lock a session to the connection that created it. in that case, two Client
-        // instances won't be able to connect to the same session which is what is happening below. not sure what
-        // form this test should take then especially since transactions will force close when the channel closes.
-        // perhaps it should just be removed.
-        final Cluster cluster1 = TestClientFactory.open();
-        final Client client1 = cluster1.connect(name.getMethodName());
-        client1.submit("graph.addVertex()").all().join();
+        client1.submit("1+1").all().join();
         final Cluster cluster2 = TestClientFactory.open();
         final Client.SessionSettings sessionSettings = Client.SessionSettings.build()
                 .sessionId(name.getMethodName())
                 .forceClosed(true).create();
         final Client client2 = cluster2.connect(Client.Settings.build().useSession(sessionSettings).create());
-        client2.submit("1+1").all().join();
-
-        final ResultSet rs = client1.submit("Thread.sleep(10000);1+1");
-
-        client2.close();
-
-        // because the close was forced, the message should appear immediately
-        assertThat(recordingAppender.getMessages(), hasItem("INFO - Skipped attempt to close open graph transactions on " + name.getMethodName() + " - close was forced\n"));
 
         try {
-            rs.all().join();
-            fail("The close of the session on client2 should have interrupted the script sent on client1");
+            client2.submit("2+2").all().join();
+            fail("Can't have more than one client connecting to the same session");
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertThat(root.getMessage(), startsWith("Evaluation exceeded the configured 'evaluationTimeout' threshold of 30000 ms or evaluation was otherwise cancelled directly for request"));
+            assertEquals("Session shouldNotAllowMoreThanOneClientPerSession is not bound to the connecting client", root.getMessage());
         }
-
-        client1.close();
 
         cluster1.close();
         cluster2.close();

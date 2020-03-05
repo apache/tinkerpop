@@ -256,7 +256,6 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.maxSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |16
 |connectionPool.maxSize |The maximum size of a connection pool for a host. |8
 |connectionPool.maxWaitForConnection |The amount of time in milliseconds to wait for a new connection before timing out. |3000
-|connectionPool.maxWaitForSessionClose |The amount of time in milliseconds to wait for a session to close before timing out (does not apply to sessionless connections). |3000
 |connectionPool.minInProcessPerConnection |The minimum number of in-flight requests that can occur on a connection. |1
 |connectionPool.minSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |8
 |connectionPool.minSize |The minimum size of a connection pool for a host. |2

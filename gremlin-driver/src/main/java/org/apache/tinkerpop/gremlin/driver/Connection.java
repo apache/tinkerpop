@@ -62,7 +62,6 @@ final class Connection {
     public static final int MAX_IN_PROCESS = 4;
     public static final int MIN_IN_PROCESS = 1;
     public static final int MAX_WAIT_FOR_CONNECTION = 16000;
-    public static final int MAX_WAIT_FOR_SESSION_CLOSE = 3000;
     public static final int MAX_WAIT_FOR_CLOSE = 3000;
     public static final int MAX_CONTENT_LENGTH = 65536;
 
@@ -311,41 +310,6 @@ final class Connection {
         // messages at the server and leads to ugly log messages over there.
         if (shutdownInitiated.compareAndSet(false, true)) {
             final String connectionInfo = this.getConnectionInfo();
-
-            // this block of code that "closes" the session is deprecated as of 3.3.11 - this message is going to be
-            // removed at 3.5.0. we will instead bind session closing to the close of the channel itself and not have
-            // this secondary operation here which really only acts as a means for clearing resources in a functioning
-            // session. "functioning" in this context means that the session is not locked up with a long running
-            // operation which will delay this close execution which ideally should be more immediate, as in the user
-            // is annoyed that a long run operation is happening and they want an immediate cancellation. that's the
-            // most likely use case. we also get the nice benefit that this if/then code just goes away as the
-            // Connection really shouldn't care about the specific Client implementation.
-            if (client instanceof Client.SessionedClient) {
-                final boolean forceClose = client.getSettings().getSession().get().isForceClosed();
-                final RequestMessage closeMessage = client.buildMessage(
-                        RequestMessage.build(Tokens.OPS_CLOSE).addArg(Tokens.ARGS_FORCE, forceClose)).create();
-
-                final CompletableFuture<ResultSet> closed = new CompletableFuture<>();
-                write(closeMessage, closed);
-
-                try {
-                    // make sure we get a response here to validate that things closed as expected.  on error, we'll let
-                    // the server try to clean up on its own.  the primary error here should probably be related to
-                    // protocol issues which should not be something a user has to fuss with.
-                    closed.join().all().get(cluster.getMaxWaitForSessionClose(), TimeUnit.MILLISECONDS);
-                } catch (TimeoutException ex) {
-                    final String msg = String.format(
-                            "Timeout while trying to close connection on %s - force closing - server will close session on shutdown or expiration.",
-                            ((Client.SessionedClient) client).getSessionId());
-                    logger.warn(msg, ex);
-                } catch (Exception ex) {
-                    final String msg = String.format(
-                            "Encountered an error trying to close connection on %s - force closing - server will close session on shutdown or expiration.",
-                            ((Client.SessionedClient) client).getSessionId());
-                    logger.warn(msg, ex);
-                }
-            }
-
             channelizer.close(channel);
 
             final ChannelPromise promise = channel.newPromise();

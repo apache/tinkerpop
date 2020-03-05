@@ -1023,14 +1023,13 @@ Gremlin Server are deployed, session state is not shared among them.
 !Key !Description
 !`authentication` !A request that contains the response to a server challenge for authentication.
 !`eval` !Evaluate a Gremlin script provided as a `String`.
-!`close` !Close the specified session. Will return a `NO CONTENT` message as confirmation of the close being completed.
 |=========================================================
 
-NOTE: The "close" message is deprecated as of 3.3.11 as servers at this version are required to automatically interrupt
-running processes on the close of the connection and release resources such as sessions. Servers wishing to be
-compatible with older versions of the driver need only send back a `NO_CONTENT` for this message. Drivers wishing to
-be compatible with servers prior to 3.3.11 may continue to send the message on calls to `close()` otherwise such code
-can be removed.
+NOTE: There was a "close" message related to sessions that was deprecated as of 3.3.11. It's functionality was removed
+in 3.5.0. Servers wishing to be compatible with older versions of the driver need only send back a `NO_CONTENT` for
+this message (which is what Gremlin Server does as of 3.5.0). Drivers wishing to be compatible with servers prior to
+3.3.11 may continue to send the message on calls to `close()` (TinkerPop drivers no longer do that as of 3.5.0)
+otherwise such code can be removed.
 
 **`authentication` operation arguments**
 

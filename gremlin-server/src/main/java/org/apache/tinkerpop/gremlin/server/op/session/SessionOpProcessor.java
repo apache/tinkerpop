@@ -122,13 +122,14 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
     }
 
     /**
-     * Session based requests accept a "close" operator in addition to "eval". A close will trigger the session to be
-     * killed and any uncommitted transaction to be rolled-back.
+     * Older versions of session-based requests accepted a "close" operator in addition to "eval". This feature
+     * effectively acts as a do-nothing for 3.5.0 to allow older versions of the drivers to connect. At some point
+     * this may be removed completely. Note that closing the channel kills the session now.
      */
     @Override
     public Optional<ThrowingConsumer<Context>> selectOther(final RequestMessage requestMessage) throws OpProcessorException {
-        // deprecated the "close" message at 3.3.11 - should probably leave this check for the "close" token so that
-        // if older versions of the driver connect they won't get an error. can basically just write back a NO_CONTENT
+        // deprecated the "close" message at 3.3.11 - left this check for the "close" token so that if older versions
+        // of the driver connect they won't get an error. basically just writes back a NO_CONTENT
         // for the immediate term in 3.5.0 and then for some future version remove support for the message completely
         // and thus disallow older driver versions from connecting at all.
         if (requestMessage.getOp().equals(Tokens.OPS_CLOSE)) {
@@ -138,14 +139,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                 throw new OpProcessorException(msg, ResponseMessage.build(requestMessage).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
             }
 
-            final boolean force = requestMessage.<Boolean>optionalArgs(Tokens.ARGS_FORCE).orElse(false);
-
             return Optional.of(rhc -> {
-                final Session sessionToClose = sessions.get(requestMessage.getArgs().get(Tokens.ARGS_SESSION).toString());
-                if (null != sessionToClose) {
-                    sessionToClose.manualKill(force);
-                }
-
                 // send back a confirmation of the close
                 rhc.writeAndFlush(ResponseMessage.build(requestMessage)
                         .code(ResponseStatusCode.NO_CONTENT)
@@ -185,6 +179,15 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
         // check if the session is still accepting requests - if not block further requests
         if (!session.acceptingRequests()) {
             final String sessionClosedMessage = String.format("Session %s is no longer accepting requests as it has been closed",
+                    session.getSessionId());
+            final ResponseMessage response = ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
+                    .statusMessage(sessionClosedMessage).create();
+            throw new OpProcessorException(sessionClosedMessage, response);
+        }
+
+        // check if the session is bound to this channel, thus one client per session
+        if (!session.isBoundTo(context.getChannelHandlerContext().channel())) {
+            final String sessionClosedMessage = String.format("Session %s is not bound to the connecting client",
                     session.getSessionId());
             final ResponseMessage response = ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
                     .statusMessage(sessionClosedMessage).create();

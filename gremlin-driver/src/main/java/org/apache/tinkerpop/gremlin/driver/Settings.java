@@ -156,9 +156,7 @@ final class Settings {
             final Configuration serializerConfigConf = conf.subset("serializer.config");
             if (IteratorUtils.count(serializerConfigConf.getKeys()) > 0) {
                 final Map<String,Object> m = new HashMap<>();
-                serializerConfigConf.getKeys().forEachRemaining(name -> {
-                    m.put(name, serializerConfigConf.getProperty(name));
-                });
+                serializerConfigConf.getKeys().forEachRemaining(name -> m.put(name, serializerConfigConf.getProperty(name)));
                 serializerSettings.config = m;
             }
             settings.serializer = serializerSettings;
@@ -223,9 +221,6 @@ final class Settings {
 
             if (connectionPoolConf.containsKey("maxWaitForConnection"))
                 cpSettings.maxWaitForConnection = connectionPoolConf.getInt("maxWaitForConnection");
-
-            if (connectionPoolConf.containsKey("maxWaitForSessionClose"))
-                cpSettings.maxWaitForSessionClose = connectionPoolConf.getInt("maxWaitForSessionClose");
 
             if (connectionPoolConf.containsKey("maxWaitForClose"))
                 cpSettings.maxWaitForClose = connectionPoolConf.getInt("maxWaitForClose");
@@ -361,16 +356,6 @@ final class Settings {
         public int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
 
         /**
-         * If the connection is using a "session" this setting represents the amount of time in milliseconds to wait
-         * for that session to close before timing out where the default value is 3000. Note that the server will
-         * eventually clean up dead sessions itself on expiration of the session or during shutdown.
-         *
-         * @deprecated As of release 3.3.11, replaced in essence by {@link #maxWaitForClose}.
-         */
-        @Deprecated
-        public int maxWaitForSessionClose = Connection.MAX_WAIT_FOR_SESSION_CLOSE;
-
-        /**
          * The amount of time in milliseconds to wait the connection to close before timing out where the default
          * value is 3000. This timeout allows for a delay to occur in waiting for remaining messages that may still
          * be returning from the server while a {@link Client#close()} is called.
@@ -422,7 +407,7 @@ final class Settings {
         public Map<String, Object> config = null;
 
         public MessageSerializer create() throws Exception {
-            final Class clazz = Class.forName(className);
+            final Class<?> clazz = Class.forName(className);
             final MessageSerializer serializer = (MessageSerializer) clazz.newInstance();
             Optional.ofNullable(config).ifPresent(c -> serializer.configure(c, null));
             return serializer;

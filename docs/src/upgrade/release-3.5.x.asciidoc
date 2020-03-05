@@ -255,6 +255,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.driver.Cluster.Builder#keyCertChainFile(String)`
 ** `org.apache.tinkerpop.gremlin.driver.Cluster.Builder#keyFile(String)`
 ** `org.apache.tinkerpop.gremlin.driver.Cluster.Builder#keyPassword(String)`
+** `org.apache.tinkerpop.gremlin.driver.Cluster.Builder#maxWaitForSessionClose(Integer)`
 ** `org.apache.tinkerpop.gremlin.driver.Cluster.Builder#trustCertificateChainFile(String)`
 ** `org.apache.tinkerpop.gremlin.driver.handler.NioGremlinRequestEncoder`
 ** `org.apache.tinkerpop.gremlin.driver.handler.NioGremlinResponseDecoder`
@@ -580,6 +581,16 @@ that rely on the old step names.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2254[TINKERPOP-2254]
 
+===== Session Close
+
+TinkerPop drivers no longer send the session "close" message to kill a session. The close of the connection itself
+should be responsible for the close of the session. It is also expected that a session is bound to the client that
+created it. Closing the session explicitly by closing the connection will act as a force close where transaction are
+not explicitly rolled-back by Gremlin Server. Such transactions would be handled by the underlying graph system in the
+manner that they provide.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2336[TINKERPOP-2336]
+
 ==== Graph Driver Providers
 
 ===== TraversalOpProcessor Side-effects
@@ -588,3 +599,12 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2254[TINKERPOP-2254]
 been removed and is no longer supported in the server or drivers.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2269[TINKERPOP-2269]
+
+===== Close Message
+
+The functionality of the "close" message is no longer in place in Gremlin Server. Sending the message (from older
+drivers for example) will simply result in a no-op on the server and the expected return of the `NO_CONTENT` message.
+From 3.5.0 forward, drivers need not send this message to close the session and simply rely on the close of the
+connection to kill the session.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2336[TINKERPOP-2336]
