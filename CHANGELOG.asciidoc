@@ -30,6 +30,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `maxWaitForClose` configuration option to the Java driver.
 * Deprecated `maxWaitForSessionClose` in the Java driver.
 
+==== Bugs
+
+* TINKERPOP-2347 Remove invalid service descriptors from gremlin-shaded
+
 [[release-3-3-10]]
 === TinkerPop 3.3.10 (Release Date: February 3, 2020)
 
