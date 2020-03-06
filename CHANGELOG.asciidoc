@@ -76,6 +76,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-3-11, 3.3.11>>.
 
+* Gremlin.NET driver: Fixed a `NullReferenceException` and throw clear exception if received message is empty.
 
 [[release-3-4-6]]
 === TinkerPop 3.4.6 (Release Date: February 20, 2020)

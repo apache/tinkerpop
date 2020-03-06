@@ -117,6 +117,10 @@ namespace Gremlin.Net.Driver
         private void Parse(byte[] received)
         {
             var receivedMsg = _messageSerializer.DeserializeMessage<ResponseMessage<JToken>>(received);
+            if (receivedMsg == null)
+            {
+                ThrowMessageDeserializedNull();
+            }
 
             try
             {
@@ -126,10 +130,13 @@ namespace Gremlin.Net.Driver
             {
                 if (_callbackByRequestId.TryRemove(receivedMsg.RequestId, out var responseHandler))
                 {
-                    responseHandler.HandleFailure(e);
+                    responseHandler?.HandleFailure(e);
                 }
             }
         }
+
+        private static void ThrowMessageDeserializedNull() =>
+            throw new InvalidOperationException("Received data deserialized into null object message. Cannot operate on it.");
 
         private void TryParseResponseMessage(ResponseMessage<JToken> receivedMsg)
         {
