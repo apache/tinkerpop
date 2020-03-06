@@ -97,6 +97,16 @@ limitations under the License.
                                     <shadedPattern>org.apache.tinkerpop.shaded.jackson</shadedPattern>
                                 </relocation>
                             </relocations>
+                            <filters>
+                                <!-- Exclude service descriptors because they still reference unshaded classes, this
+                                     causes an error if the JAR is used as an automatic module in a JPMS app. -->
+                                <filter>
+                                  <artifact>*</artifact>
+                                  <excludes>
+                                    <exclude>META-INF/services/**</exclude>
+                                  </excludes>
+                                </filter>
+                            </filters>
                             <!-- false below means the shade plugin overwrites the main project artifact (the one
                                  with no classifier). false does *not* actually detach the main artifact, despite what
                                  the option name suggests. -->
