@@ -96,6 +96,11 @@ namespace Gremlin.Net.Driver
         public static string ArgsGremlin = "gremlin";
 
         /// <summary>
+        ///     Argument name that allows to defines the id of session.
+        /// </summary>
+        public static string ArgsSession = "session";
+
+        /// <summary>
         ///     Argument name that allows to specify the unique identifier for the request.
         /// </summary>
         [Obsolete("As of release 3.3.8, not replaced, prefer use of cap()-step to retrieve side-effects as part of traversal iteration", false)]

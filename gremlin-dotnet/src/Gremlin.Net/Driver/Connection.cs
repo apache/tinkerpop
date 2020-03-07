@@ -43,6 +43,7 @@ namespace Gremlin.Net.Driver
         private readonly string _username;
         private readonly string _password;
         private readonly string _sessionId;
+        private readonly bool _sessionEnabled;
 
         public Connection(Uri uri, string username, string password, GraphSONReader graphSONReader,
             GraphSONWriter graphSONWriter, string mimeType,
@@ -52,6 +53,10 @@ namespace Gremlin.Net.Driver
             _username = username;
             _password = password;
             _sessionId = sessionId;
+            if (!string.IsNullOrEmpty(sessionId))
+            {
+                _sessionEnabled = true;
+            }
             _graphSONReader = graphSONReader;
             _graphSONWriter = graphSONWriter;
             _messageSerializer = new JsonMessageSerializer(mimeType);
@@ -71,21 +76,20 @@ namespace Gremlin.Net.Driver
 
         public async Task CloseAsync()
         {
-            if (!String.IsNullOrEmpty(_sessionId))
+            if (_sessionEnabled)
             {
-                await closeSession().ConfigureAwait(false);
+                await CloseSession().ConfigureAwait(false);
             }
             await _webSocketConnection.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task closeSession()
+        private async Task CloseSession()
         {
-            var msgBuilder = RequestMessage.Build(Tokens.OpsClose).Processor(Tokens.ProcessorSession);
-            msgBuilder.AddArgument(Tokens.ArgsGremlin, "session.close()").AddArgument("session", _sessionId);
+            // build a request to close this session, 'gremlin' in args as tips and not be executed actually
+            var msg = RequestMessage.Build(Tokens.OpsClose).Processor(Tokens.ProcessorSession)
+              .AddArgument(Tokens.ArgsGremlin, "session.close()").Create();
 
-            var graphsonMsg = _graphSONWriter.WriteObject(msgBuilder.Create());
-            var serializedMsg = _messageSerializer.SerializeMessage(graphsonMsg);
-            await _webSocketConnection.SendMessageAsync(serializedMsg).ConfigureAwait(false);
+            await SendAsync(msg).ConfigureAwait(false);
         }
 
         public bool IsOpen => _webSocketConnection.IsOpen;
@@ -93,16 +97,16 @@ namespace Gremlin.Net.Driver
         private async Task SendAsync(RequestMessage message)
         {
             var msg = message;
-            if (!String.IsNullOrEmpty(_sessionId))
+            if (_sessionEnabled)
             {
-                msg = rebuildSessionMessage(message);
+                msg = RebuildSessionMessage(message);
             }
             var graphsonMsg = _graphSONWriter.WriteObject(msg);
             var serializedMsg = _messageSerializer.SerializeMessage(graphsonMsg);
             await _webSocketConnection.SendMessageAsync(serializedMsg).ConfigureAwait(false);
         }
 
-        private RequestMessage rebuildSessionMessage(RequestMessage message)
+        private RequestMessage RebuildSessionMessage(RequestMessage message)
         {
             if (message.Processor == Tokens.OpsAuthentication)
             {
@@ -115,7 +119,7 @@ namespace Gremlin.Net.Driver
             {
                 msgBuilder.AddArgument(kv.Key, kv.Value);
             }
-            msgBuilder.AddArgument("session", _sessionId);
+            msgBuilder.AddArgument(Tokens.ArgsSession, _sessionId);
             return msgBuilder.Create();
         }
 
