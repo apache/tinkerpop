@@ -72,15 +72,15 @@ file.withWriter { writer ->
   writer.write(toJson(msg, "Authentication Response", "The following `RequestMessage` is an example of the response that should be made to a SASL-based authentication challenge."))
   msg = RequestMessage.build("eval").processor("session").
                        overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-                       add("gremlin", "g.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
+                       add("gremlin", "g.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "session", "unique-session-identifier").create()
   writer.write(toJson(msg, "Session Eval", "The following `RequestMessage` is an example of a simple session request for a script evaluation with parameters."))
   msg = RequestMessage.build("eval").processor("session").
                        overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-                       add("gremlin", "social.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "aliases", [g: "social"], "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
+                       add("gremlin", "social.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "aliases", [g: "social"], "session", "unique-session-identifier").create()
   writer.write(toJson(msg, "Session Eval Aliased", "The following `RequestMessage` is an example of a session request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\"."))
   msg = RequestMessage.build("close").processor("session").
                        overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-                       add("session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
+                       add("session", "unique-session-identifier").create()
   writer.write(toJson(msg, "Session Close", "The following `RequestMessage` is an example of a request to close a session."))
   msg = RequestMessage.build("eval").
                        overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
@@ -169,15 +169,15 @@ file.withWriter { writer ->
   writer.write(toJson(msg, "Authentication Response", "The following `RequestMessage` is an example of the response that should be made to a SASL-based authentication challenge.", "v2d0-partial"))
   msg = RequestMessage.build("eval").processor("session").
                 overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-                add("gremlin", "g.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
+                add("gremlin", "g.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "session", "unique-session-identifier").create()
   writer.write(toJson(msg, "Session Eval", "The following `RequestMessage` is an example of a simple session request for a script evaluation with parameters.", "v2d0-partial"))
   msg = RequestMessage.build("eval").processor("session").
                 overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-                add("gremlin", "social.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "aliases", [g: "social"], "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
+                add("gremlin", "social.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "aliases", [g: "social"], "session", "unique-session-identifier").create()
   writer.write(toJson(msg, "Session Eval Aliased", "The following `RequestMessage` is an example of a session request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".", "v2d0-partial"))
   msg = RequestMessage.build("close").processor("session").
                 overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-                add("session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
+                add("session", "unique-session-identifier").create()
   writer.write(toJson(msg, "Session Close", "The following `RequestMessage` is an example of a request to close a session.", "v2d0-partial"))
   msg = RequestMessage.build("eval").
                 overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
@@ -298,15 +298,15 @@ file.withWriter { writer ->
   writer.write(toJson(msg, "Authentication Response", "The following `RequestMessage` is an example of the response that should be made to a SASL-based authentication challenge.", "v2d0-no-types"))
   msg = RequestMessage.build("eval").processor("session").
                        overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-                       add("gremlin", "g.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
+                       add("gremlin", "g.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "session", "unique-session-identifier").create()
   writer.write(toJson(msg, "Session Eval", "The following `RequestMessage` is an example of a simple session request for a script evaluation with parameters.", "v2d0-no-types"))
   msg = RequestMessage.build("eval").processor("session").
                        overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-                       add("gremlin", "social.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "aliases", [g: "social"], "session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
+                       add("gremlin", "social.V(x)", "bindings", [x: 1], "language", "gremlin-groovy", "aliases", [g: "social"], "session", "unique-session-identifier").create()
   writer.write(toJson(msg, "Session Eval Aliased", "The following `RequestMessage` is an example of a session request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".", "v2d0-no-types"))
   msg = RequestMessage.build("close").processor("session").
                        overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-                       add("session", UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).create()
+                       add("session", "unique-session-identifier").create()
   writer.write(toJson(msg, "Session Close", "The following `RequestMessage` is an example of a request to close a session.", "v2d0-no-types"))
   msg = RequestMessage.build("eval").
                        overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
@@ -958,7 +958,7 @@ The following `RequestMessage` is an example of a simple session request for a s
   "args" : {
     "gremlin" : "g.V(x)",
     "language" : "gremlin-groovy",
-    "session" : "41d2e28a-20a4-4ab0-b379-d810dede3786",
+    "session" : "unique-session-identifier",
     "bindings" : {
       "x" : 1
     }
@@ -982,7 +982,7 @@ The following `RequestMessage` is an example of a session request for a script e
     "aliases" : {
       "g" : "social"
     },
-    "session" : "41d2e28a-20a4-4ab0-b379-d810dede3786",
+    "session" : "unique-session-identifier",
     "bindings" : {
       "x" : 1
     }
@@ -1001,7 +1001,7 @@ The following `RequestMessage` is an example of a request to close a session.
   "op" : "close",
   "processor" : "session",
   "args" : {
-    "session" : "41d2e28a-20a4-4ab0-b379-d810dede3786"
+    "session" : "unique-session-identifier"
   }
 }
 ----
@@ -3312,10 +3312,7 @@ The following `RequestMessage` is an example of a simple session request for a s
   "args" : {
     "gremlin" : "g.V(x)",
     "language" : "gremlin-groovy",
-    "session" : {
-      "@type" : "g:UUID",
-      "@value" : "41d2e28a-20a4-4ab0-b379-d810dede3786"
-    },
+    "session" : "unique-session-identifier",
     "bindings" : {
       "x" : {
         "@type" : "g:Int32",
@@ -3345,10 +3342,7 @@ The following `RequestMessage` is an example of a session request for a script e
     "aliases" : {
       "g" : "social"
     },
-    "session" : {
-      "@type" : "g:UUID",
-      "@value" : "41d2e28a-20a4-4ab0-b379-d810dede3786"
-    },
+    "session" : "unique-session-identifier",
     "bindings" : {
       "x" : {
         "@type" : "g:Int32",
@@ -3373,10 +3367,7 @@ The following `RequestMessage` is an example of a request to close a session.
   "op" : "close",
   "processor" : "session",
   "args" : {
-    "session" : {
-      "@type" : "g:UUID",
-      "@value" : "41d2e28a-20a4-4ab0-b379-d810dede3786"
-    }
+    "session" : "unique-session-identifier"
   }
 }
 ----
@@ -5666,10 +5657,7 @@ The following `RequestMessage` is an example of a simple session request for a s
   "processor" : "session",
   "args" : {
     "@type" : "g:Map",
-    "@value" : [ "gremlin", "g.V(x)", "language", "gremlin-groovy", "session", {
-      "@type" : "g:UUID",
-      "@value" : "41d2e28a-20a4-4ab0-b379-d810dede3786"
-    }, "bindings", {
+    "@value" : [ "gremlin", "g.V(x)", "language", "gremlin-groovy", "session", "unique-session-identifier", "bindings", {
       "@type" : "g:Map",
       "@value" : [ "x", {
         "@type" : "g:Int32",
@@ -5695,10 +5683,7 @@ The following `RequestMessage` is an example of a session request for a script e
     "@value" : [ "gremlin", "social.V(x)", "language", "gremlin-groovy", "aliases", {
       "@type" : "g:Map",
       "@value" : [ "g", "social" ]
-    }, "session", {
-      "@type" : "g:UUID",
-      "@value" : "41d2e28a-20a4-4ab0-b379-d810dede3786"
-    }, "bindings", {
+    }, "session", "unique-session-identifier", "bindings", {
       "@type" : "g:Map",
       "@value" : [ "x", {
         "@type" : "g:Int32",
@@ -5721,10 +5706,7 @@ The following `RequestMessage` is an example of a request to close a session.
   "processor" : "session",
   "args" : {
     "@type" : "g:Map",
-    "@value" : [ "session", {
-      "@type" : "g:UUID",
-      "@value" : "41d2e28a-20a4-4ab0-b379-d810dede3786"
-    } ]
+    "@value" : [ "session", "unique-session-identifier" ]
   }
 }
 ----
