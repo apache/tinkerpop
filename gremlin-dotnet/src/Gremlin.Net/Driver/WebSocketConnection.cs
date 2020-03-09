@@ -78,9 +78,11 @@ namespace Gremlin.Net.Driver
             using (var ms = new MemoryStream())
             {
                 WebSocketReceiveResult received;
+                var buffer = new byte[ReceiveBufferSize];
+
                 do
                 {
-                    var receiveBuffer = new ArraySegment<byte>(new byte[ReceiveBufferSize]);
+                    var receiveBuffer = new ArraySegment<byte>(buffer);
                     received = await _client.ReceiveAsync(receiveBuffer, CancellationToken.None).ConfigureAwait(false);
                     ms.Write(receiveBuffer.Array, receiveBuffer.Offset, received.Count);
                 } while (!received.EndOfMessage);
