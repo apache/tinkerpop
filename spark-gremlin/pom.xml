@@ -115,6 +115,10 @@
                     <groupId>jakarta.annotation</groupId>
                     <artifactId>jakarta.annotation-api</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-text</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <!-- spark self-conflict and hadoop conflict -->
