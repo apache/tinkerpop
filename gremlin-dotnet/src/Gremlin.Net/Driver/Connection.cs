@@ -96,12 +96,11 @@ namespace Gremlin.Net.Driver
 
         private async Task SendAsync(RequestMessage message)
         {
-            var msg = message;
             if (_sessionEnabled)
             {
-                msg = RebuildSessionMessage(message);
+                message = RebuildSessionMessage(message);
             }
-            var graphsonMsg = _graphSONWriter.WriteObject(msg);
+            var graphsonMsg = _graphSONWriter.WriteObject(message);
             var serializedMsg = _messageSerializer.SerializeMessage(graphsonMsg);
             await _webSocketConnection.SendMessageAsync(serializedMsg).ConfigureAwait(false);
         }
