@@ -32,9 +32,19 @@ RUN apt-get update
 # include both java 8/11 so that we can use the same docker image for future builds on that version of the jdk as we do
 # for the older release branches. the java version to use is just controlled by JAVA_HOME hardcoded below
 RUN apt-get install -y openjdk-8-jdk openjdk-11-jdk gawk git maven openssh-server subversion zip
-RUN apt-get install -y --force-yes dotnet-sdk-2.2 python python-dev python3-dev python-pip build-essential mono-devel
+RUN apt-get install -y --force-yes dotnet-sdk-2.2 mono-devel
+
+# python3 on xenial install 3.5.2 which is insufficient for newer versions of python/typing#259 so
+# custom build and install 3.5.3 and upgrade pip along the way. this could be resolved by using bionic
+# but trying to keep all of our release branches on the same docker image and the older versions sorta
+# suit 3.3.x and 3.4.x
+RUN apt-get install -y --force-yes python python-dev python-pip build-essential checkinstall zlib1g-dev libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev
+RUN cd /opt && wget https://www.python.org/ftp/python/3.5.3/Python-3.5.3.tgz && tar -xvf Python-3.5.3.tgz
+RUN cd /opt/Python-3.5.3 && ./configure && make && make install
+RUN ln -sf /usr/bin/python3.5.3 /usr/bin/python3
 RUN pip install --upgrade pip
 RUN pip install virtualenv virtualenvwrapper
+
 RUN rm -rf /var/lib/apt/lists/* /var/cache/openjdk-8-jdk
 RUN rm -rf /var/lib/apt/lists/* /var/cache/openjdk-11-jdk
 
