@@ -160,7 +160,7 @@ See the <<release-environment,Release Environment>> section for more information
 [[dotnet-environment]]
 === DotNet Environment
 
-The build optionally requires link:https://www.microsoft.com/net/core[.NET Core SDK] (>=2.1.300) to work with the
+The build optionally requires link:https://www.microsoft.com/net/core[.NET Core SDK] (>=3.1) to work with the
 `gremlin-dotnet` module. If .NET Core SDK is not installed, TinkerPop will still build with Maven, but .NET projects
 will be skipped.
 
