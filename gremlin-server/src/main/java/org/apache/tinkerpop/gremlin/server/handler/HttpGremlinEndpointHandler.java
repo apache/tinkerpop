@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
+import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
@@ -186,6 +187,12 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             try {
                 logger.debug("Processing request containing script [{}] and bindings of [{}] on {}",
                         requestArguments.getValue0(), requestArguments.getValue1(), Thread.currentThread().getName());
+                if (settings.enableAuditLog) {
+                    AuthenticatedUser user = ctx.channel().attr(StateKey.AUTHENTICATED_USER).get();
+                    String address = ctx.channel().remoteAddress().toString();
+                    if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
+                    auditLogger.info("User {} with address {} requested: {}", user.getName(), address, requestArguments.getValue0());
+                }
                 if (settings.authentication.enableAuditLog) {
                     String address = ctx.channel().remoteAddress().toString();
                     if (address.startsWith("/") && address.length() > 1) address = address.substring(1);

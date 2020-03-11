@@ -56,7 +56,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         final Settings.AuthenticationSettings authSettings = new Settings.AuthenticationSettings();
         authSettings.authenticator = SimpleAuthenticator.class.getName();
 
-        // use a credentials graph with one user in it: stephen/password
+        // use a credentials graph with two users in it: stephen/password and marko/rainbow-dash
         final Map<String,Object> authConfig = new HashMap<>();
         authConfig.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-credentials.properties");
 

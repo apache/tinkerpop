@@ -27,11 +27,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
+import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -58,6 +61,8 @@ import javax.net.ssl.TrustManager;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class Settings {
+
+    private static final Logger logger = LoggerFactory.getLogger(Settings.class);
 
     public Settings() {
         // setup some sensible defaults like gremlin-groovy
@@ -220,6 +225,13 @@ public class Settings {
 
     public AuthenticationSettings authentication = new AuthenticationSettings();
 
+    public AuthorizationSettings authorization = new AuthorizationSettings();
+
+    /**
+     * Enable audit logging of authenticated users and gremlin evaluation requests.
+     */
+    public Boolean enableAuditLog = false;
+
     /**
      * Custom settings for {@link OpProcessor} implementations. Implementations are loaded via
      * {@link ServiceLoader} but custom configurations can be supplied through this configuration.
@@ -317,7 +329,15 @@ public class Settings {
         constructor.addTypeDescription(graphiteReporterDescription);
 
         final Yaml yaml = new Yaml(constructor);
-        return yaml.loadAs(stream, Settings.class);
+        final Settings settings = yaml.loadAs(stream, Settings.class);
+        if (settings.authentication.enableAuditLog && settings.enableAuditLog) {
+            logger.warn("Both authentication.enableAuditLog and settings.enableAuditLog " +
+                        "are enabled, so auditable events are logged twice.");
+        }
+        if (settings.authentication.enableAuditLog && !settings.enableAuditLog) {
+            logger.warn("Configuration property 'authentication.enableAuditLog' is deprecated, use 'enableAuditLog' instead.");
+        }
+        return settings;
     }
 
     /**
@@ -418,12 +438,32 @@ public class Settings {
 
         /**
          * Enable audit logging of authenticated users and gremlin evaluation requests.
+         * @deprecated As of release 3.5.0, replaced by {@link Settings#enableAuditLog} with slight changes in the
+         * log message format.
          */
+        @Deprecated
         public boolean enableAuditLog = false;
 
         /**
          * A {@link Map} containing {@link Authenticator} specific configurations. Consult the
          * {@link Authenticator} implementation for specifics on what configurations are expected.
+         */
+        public Map<String, Object> config = null;
+    }
+
+    /**
+     * Settings for the {@link Authenticator} implementation.
+     */
+    public static class AuthorizationSettings {
+        /**
+         * The fully qualified class name of the {@link Authorizer} implementation. This class name will be
+         * used to load the implementation from the classpath. Defaults to null when not specified.
+         */
+        public String authorizer = null;
+
+        /**
+         * A {@link Map} containing {@link Authorizer} specific configurations. Consult the
+         * {@link Authorizer} implementation for specifics on what configurations are expected.
          */
         public Map<String, Object> config = null;
     }

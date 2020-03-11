@@ -941,9 +941,12 @@ The following table describes the various YAML configuration options that Gremli
 |Key |Description |Default
 |authentication.authenticator |The fully qualified classname of an `Authenticator` implementation to use.  If this setting is not present, then authentication is effectively disabled. |`AllowAllAuthenticator`
 |authentication.authenticationHandler | The fully qualified classname of an `AbstractAuthenticationHandler` implementation to use. If this setting is not present, but the `authentication.authenticator` is, it will use that authenticator with the default `AbstractAuthenticationHandler` implementation for the specified `Channelizer` |_none_
-|authentication.config |A `Map` of configuration settings to be passes to the `Authenticator` when it is constructed.  The settings available are dependent on the implementation. |_none_
-|authentication.enableAuditLog |The available authenticators can issue audit logging messages, binding the authenticated user to his remote socket address and binding requests with a gremlin query to the remote socket address. For privacy reasons, the default value of this setting is false. The audit logging messages are logged at the INFO level via the `audit.org.apache.tinkerpop.gremlin.server` logger, which can be configured using the log4j.properties file. |false
+|authentication.config |A `Map` of configuration settings to be passed to the `Authenticator` when it is constructed.  The settings available are dependent on the implementation. |_none_
+|authentication.enableAuditLog |Deprecated: replaced by `enableAuditLog` with slight changes in the log message format. |_false_
+|authorization.authorizer |The fully qualified classname of an `Authorizer` implementation to use. |_none_
+|authorization.config |A `Map` of configuration settings to be passed to the `Authorizer` when it is constructed.  The settings available are dependent on the implementation. |_none_
 |channelizer |The fully qualified classname of the `Channelizer` implementation to use.  A `Channelizer` is a "channel initializer" which Gremlin Server uses to define the type of processing pipeline to use.  By allowing different `Channelizer` implementations, Gremlin Server can support different communication protocols (e.g. WebSocket). |`WebSocketChannelizer`
+|enableAuditLog |The `AuthenticationHandler`, `AuthorizationHandler` and processors can issue audit logging messages with the authenticated user, remote socket address and requests with a gremlin query. For privacy reasons, the default value of this setting is false. The audit logging messages are logged at the INFO level via the `audit.org.apache.tinkerpop.gremlin.server` logger, which can be configured using the log4j.properties file. |_false_
 |graphManager |The fully qualified classname of the `GraphManager` implementation to use.  A `GraphManager` is a class that adheres to the TinkerPop `GraphManager` interface, allowing custom implementations for storing and managing graph references, as well as defining custom methods to open and close graphs instantiations. It is important to note that the TinkerPop HTTP and WebSocketChannelizers auto-commit and auto-rollback based on the graphs stored in the graphManager upon script execution completion. To prevent Gremlin Server from starting when all graphs fails, the `CheckedGraphManager` can be used.|`DefaultGraphManager`
 |graphs |A `Map` of `Graph` configuration files where the key of the `Map` becomes the name to which the `Graph` will be bound and the value is the file name of a `Graph` configuration file. |_none_
 |gremlinPool |The number of "Gremlin" threads available to execute actual scripts in a `ScriptEngine`. This pool represents the workers available to handle blocking operations in Gremlin Server. When set to `0`, Gremlin Server will use the value provided by `Runtime.availableProcessors()`. |0
@@ -1052,418 +1055,6 @@ method for processing script evaluation requests.
 
 The `TraversalOpProcessor` provides a way to accept traversals configured via <<connecting-via-drivers,withRemote()>>.
 It has no special configuration settings.
-
-[[security]]
-==== Security
-
-image:gremlin-server-secure.png[width=175,float=right] Gremlin Server provides for several features that aid in the
-security of the graphs that it exposes.  In particular it supports SSL for transport layer security, protective
-measures against malicious script execution, and authentication.  Client SSL options are described in the
-<<gremlin-drivers-variants, Gremlin Drivers and Variants">> sections with varying capability depending on the driver
-chosen. Script execution options are covered <<script-execution, "at the end of this section">>. This section
-starts with authentication.
-
-Gremlin Server supports a pluggable authentication framework using
-link:https://en.wikipedia.org/wiki/Simple_Authentication_and_Security_Layer[SASL] (Simple Authentication and
-Security Layer). Depending on the client used to connect to Gremlin Server, different authentication
-mechanisms are accessible, see the table below.
-
-[width="70%",cols="3,5,3",options="header"]
-|=========================================================
-|Client |Authentication mechanism |Availability
-|HTTP |BASIC |3.0.0-incubating
-1.3+v|Gremlin-Java/
-Gremlin-Console |PLAIN SASL (username/password) |3.0.0-incubating
-|Pluggable SASL |3.0.0-incubating
-|GSSAPI SASL (Kerberos) |3.3.0
-|Gremlin.NET |PLAIN SASL |3.3.0
-1.2+v|Gremlin-Python |PLAIN SASL |3.2.2
-|GSSAPI SASL (Kerberos) |3.4.7
-|Gremlin.Net |PLAIN SASL |3.2.7
-|Gremlin-Javascript |PLAIN SASL |3.3.0
-|=========================================================
-
-By default, Gremlin Server is configured to allow all requests to be processed (i.e. no authentication).  To enable
-authentication, Gremlin Server must be configured with an `Authenticator` implementation in its YAML file.  Gremlin
-Server comes packaged with two implementations called `SimpleAuthenticator` for plain text authentication using HTTP
-BASIC or PLAIN SASL and `Krb5Authenticator` for Kerberos authentication using GSSAPI SASL.
-
-===== Plain text authentication
-
-The `SimpleAuthenticator` implements the "PLAIN" SASL mechanism (i.e. plain text) to authenticate a request.  It also
-supports handling basic authentication requests from http clients. It validates
-username/password pairs against a graph database, which must be provided to it as part of the configuration.
-
-[source,yaml]
-authentication: {
-  authenticator: org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator,
-  config: {
-    credentialsDb: conf/tinkergraph-credentials.properties}}
-
-A quick way to get started with the `SimpleAuthenticator` is to use TinkerGraph for the "credentials graph" and the
-"sample" credential graph that is packaged with the server.  To secure the transport for the credentials,
-SSL should be enabled. For this Quick Start, a self-signed certificate will be created but this should not
-be used in a production environment.
-
-Generate the self-signed SSL certificate:
-
-[source,text]
-----
-$ keytool -genkey -alias localhost -keyalg RSA -keystore server.jks
-Enter keystore password:
-Re-enter new password:
-What is your first and last name?
-  [Unknown]:  localhost
-What is the name of your organizational unit?
-  [Unknown]:
-What is the name of your organization?
-  [Unknown]:
-What is the name of your City or Locality?
-  [Unknown]:
-What is the name of your State or Province?
-  [Unknown]:
-What is the two-letter country code for this unit?
-  [Unknown]:
-Is CN=localhost, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct?
-  [no]:  yes
-
-Enter key password for <localhost>
-	(RETURN if same as keystore password):
-----
-
-Next, uncomment the `keyStore` and `keyStorePassword` lines in `conf/gremlin-server-secure.yaml`.
-
-[source,yaml]
-----
-ssl: {
-  enabled: true,
-  sslEnabledProtocols: [TLSv1.2],
-  keyStore: server.jks,
-  keyStorePassword: changeit
-}
-----
-
-[source,text]
-----
-$ bin/gremlin-server.sh conf/gremlin-server-secure.yaml
-[INFO] GremlinServer -
-         \,,,/
-         (o o)
------oOOo-(3)-oOOo-----
-
-[INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-secure.yaml
-...
-[INFO] AbstractChannelizer - SSL enabled
-[INFO] SimpleAuthenticator - Initializing authentication with the org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator
-[INFO] SimpleAuthenticator - CredentialGraph initialized at CredentialGraph{graph=tinkergraph[vertices:1 edges:0]}
-[INFO] GremlinServer$1 - Gremlin Server configured with worker thread pool of 1, gremlin pool of 8 and boss thread pool of 1.
-[INFO] GremlinServer$1 - Channel started at port 8182.
-----
-
-When SSL is enabled on the server, it must also be enabled on the client when connecting.  To connect to
-Gremlin Server with the <<gremlin-java,`gremlin-driver`>>, set the `credentials`, `enableSsl`, and `trustStore`
-when constructing the `Cluster`.
-
-[source,java]
-Cluster cluster = Cluster.build().credentials("stephen", "password")
-                                 .enableSsl(true).trustStore("server.jks").create();
-
-If connecting with Gremlin Console, which utilizes `gremlin-driver` for remote script execution, use the provided
-`conf/remote-secure.yaml` file when defining the remote.  That file contains configuration for the username and
-password as well as enablement of SSL from the client side. Be sure to configure the trustStore if using self-signed
-certificates.
-
-Similarly, Gremlin Server can be configured for REST and security. Follow the steps above for configuring the SSL
-certificate.
-
-[source,text]
-----
-$ bin/gremlin-server.sh conf/gremlin-server-rest-secure.yaml
-[INFO] GremlinServer -
-         \,,,/
-         (o o)
------oOOo-(3)-oOOo-----
-
-[INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-secure.yaml
-...
-[INFO] AbstractChannelizer - SSL enabled
-[INFO] SimpleAuthenticator - Initializing authentication with the org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator
-[INFO] SimpleAuthenticator - CredentialGraph initialized at CredentialGraph{graph=tinkergraph[vertices:1 edges:0]}
-[INFO] GremlinServer$1 - Gremlin Server configured with worker thread pool of 1, gremlin pool of 8 and boss thread pool of 1.
-[INFO] GremlinServer$1 - Channel started at port 8182.
-----
-
-Once the server has started, issue a request passing the credentials with an `Authentication` header, as described in link:http://tools.ietf.org/html/rfc2617#section-2[RFC2617]. Here's a HTTP Basic authentication example with cURL:
-
-[source,text]
-curl -X POST --insecure -u stephen:password -d "{\"gremlin\":\"100-1\"}" "https://localhost:8182"
-
-[[credentials-dsl]]
-===== Credentials Graph DSL
-
-The "credentials graph", which has been mentioned in previous sections, is used by Gremlin Server to hold the list of
-users who can authenticate to the server.  It is possible to use virtually any `Graph` instance for this task as long
-as it complies to a defined schema. The credentials graph stores users as vertices with the `label` of "user".  Each
-"user" vertex has two properties: `username` and `password`.  Naturally, these are both `String` values.  The password
-must not be stored in plain text and should be hashed.
-
-IMPORTANT: Be sure to define an index on the `username` property, as this will be used for lookups.  If supported by
-the `Graph`, consider specifying a unique constraint as well.
-
-To aid with the management of a credentials graph, Gremlin Server provides a Gremlin Console plugin which can be
-used to add and remove users so as to ensure that the schema is adhered to, thus ensuring compatibility with Gremlin
-Server. In addition, as it is a plugin, it works naturally in the Gremlin Console as an extension of its
-capabilities (though one could use it programmatically, if desired). This plugin is distributed with the Gremlin
-Console so it does not have to be "installed". It does however need to be activated:
-
-[source,groovy]
-gremlin> :plugin use tinkerpop.credentials
-==>tinkerpop.credentials activated
-
-Please see the example usage as follows:
-
-[gremlin-groovy]
-----
-graph = TinkerGraph.open()
-graph.createIndex("username",Vertex.class)
-credentials = traversal(CredentialTraversalSource.class).withEmbedded(graph)
-credentials.user("stephen","password")
-credentials.user("daniel","better-password")
-credentials.user("marko","rainbow-dash")
-credentials.users("marko").elementMap()
-credentials.users().count()
-credentials.users("daniel").drop()
-credentials.users().count()
-----
-
-NOTE: The Credentials DSL is built using TinkerPop's DSL Annotation Processor described <<gremlin-java-dsl,here>>.
-
-IMPORTANT: In the above example, an empty in-memory TinkerGraph was used for demonstrating the API of the DSL.
-Obviously, this data will not be retained and usable with Gremlin Server. It would be important to configure
-TinkerGraph to persist that data or to manually persist it (e.g. write the graph data to Gryo) once changes are
-complete. Alternatively, use a persistent graph to hold the credentials and configure Gremlin Server accordingly.
-
-[[krb5authenticator]]
-===== Kerberos Authentication
-
-The `Krb5Authenticator` implements the "GSSAPI" SASL mechanism (i.e. Kerberos) to authenticate a request from a Gremlin
-client.  It can be applied in an existing Kerberos environment and validates whether a
-link:https://www.roguelynn.com/words/explain-like-im-5-kerberos/[valid authentication proof and service ticket are
-offered].
-
-[source,yaml]
-authentication: {
-  className: org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator,
-  config: {
-    principal: gremlinserver/hostname.your.org@YOUR.REALM,
-    keytab: /etc/security/keytabs/gremlinserver.service.keytab}}
-
-`Krb5Authenticator` needs a Kerberos service principal and a keytab that holds the secret key for that principal. The keytab
-location and service name, e.g. gremlinserver, are free to be chosen. `Krb5Authenticator` finds the KDC's hostname and
-port from the krb5.conf file with Kerberos configurations. This file can reside at either the
-https://web.mit.edu/kerberos/krb5-devel/doc/mitK5defaults.html[default location] or a location to be specified as a
-system property in the JAVA_OPTIONS environment variable of Gremlin Server:
-
-[source, bash]
-export JAVA_OPTIONS="${JAVA_OPTIONS} -Xms512m -Xmx4096m -Djava.security.krb5.conf=/etc/krb5.conf"
-
-Gremlin clients have to specify the service name as the `protocol` connection parameter. For Gremlin-Console the
-`protocol` is an entry in the remote.yaml file, for Gremlin-java the client builder has a `protocol()` method.
-
-In addition to the `protocol`, the Gremlin client needs to specify a `jaasEntry`, an entry in the
-link:https://en.wikipedia.org/wiki/Java_Authentication_and_Authorization_Service[JAAS] configuration file. As a
-start one can define a conf/gremlin-jaas.conf file with a `GremlinConsole` jaasEntry:
-
-[source, jaas]
-GremlinConsole {
-  com.sun.security.auth.module.Krb5LoginModule required
-  doNotPrompt=true
-  useTicketCache=true;
-};
-
-This configuration tells Gremlin Console to pass authentication requests from Gremlin Server to the Krb5LoginModule, which is
-part of the java standard library. The Krb5LoginModule does not prompt the user for a username and password but uses the
-ticket cache that is normally refreshed when a user logs in to a host within the Kerberos realm.
-
-The Gremlin client needs the location of the JAAS configuration file to be passed as a system property to the JVM. For
-Gremlin-Console the easiest way to do this is to pass it to the run script via the JAVA_OPTIONS environment property.
-If the krb5.conf Kerberos configuration file is not available from the
-https://web.mit.edu/kerberos/krb5-devel/doc/mitK5defaults.html[default location] it has to be provided as a system
-property as well:
-
-[source, bash]
-JAAS_OPTION="-Djava.security.auth.login.config=conf/gremlin-jaas.conf"
-KRB5_OPTION="-Djava.security.krb5.conf=/etc/krb5.conf"
-export JAVA_OPTIONS="${JAVA_OPTIONS} ${KRB5_OPTION} ${JAAS_OPTION}"
-
-[[script-execution]]
-===== Protecting Script Execution
-
-It is important to remember that Gremlin Server exposes `GremlinScriptEngine` instances that allows for remote execution
-of arbitrary code on the server.  Obviously, this situation can represent a security risk or, more minimally, provide
-ways for "bad" scripts to be inadvertently executed. A simple example of a "valid" Gremlin script that would cause
-some problems would be, `while(true) {}`, which would consume a thread in the Gremlin pool indefinitely, thus
-preventing it from serving other requests.  Sending enough of these kinds of scripts would eventually consume all
-available threads and Gremlin Server would stop responding.
-
-Scripts have access to the full power of their language and the JVM on which they are running. This means that they
-can access certain APIs that have nothing to do with Gremlin itself, such as `java.lang.System` or the `java.io`
-and `java.net` packages. Scripts offer developers a lot of flexibility, but having that flexibility comes at the cost
-of safety. A Gremlin Server instance that is not secured appropriately provides for a big security risk.
-
-The previous sections discussed methods for securing Gremlin Server through authentication and encryption, which is a
-good first step in protection. Another layer of protection comes in the form of specific configurations for the
-`GremlinGroovyScriptEngine`.  A user can configure the script engine with a `GroovyCompilerGremlinPlugin`
-implementation. Consider the basic configuration from the Gremlin Server YAML file:
-
-[source,yaml]
-----
-scriptEngines: {
-  gremlin-groovy: {
-    plugins: { org.apache.tinkerpop.gremlin.server.jsr223.GremlinServerGremlinPlugin: {},
-               org.apache.tinkerpop.gremlin.tinkergraph.jsr223.TinkerGraphGremlinPlugin: {},
-               org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin: {classImports: [java.lang.Math], methodImports: [java.lang.Math#*]},
-               org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin: {files: [scripts/empty-sample.groovy]}}}}
-----
-
-This configuration can be expanded to include a the `GroovyCompilerGremlinPlugin`:
-
-[source,yaml]
-----
-scriptEngines: {
-  gremlin-groovy: {
-    plugins: { org.apache.tinkerpop.gremlin.server.jsr223.GremlinServerGremlinPlugin: {},
-               org.apache.tinkerpop.gremlin.tinkergraph.jsr223.TinkerGraphGremlinPlugin: {}
-               org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin: {classImports: [java.lang.Math], methodImports: [java.lang.Math#*]},
-               org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin: {files: [scripts/empty-sample-secure.groovy]},
-               org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin: {enableThreadInterrupt: true}}}}
-----
-
-This configuration sets up the script engine with to ensure that loops (like `while`) will respect interrupt requests.
-With this configuration in place, a remote execution as follows, now times out rather than consuming the thread
-continuously:
-
-[source,groovy]
-gremlin> :remote connect tinkerpop.server conf/remote.yaml
-==>Configured localhost/127.0.0.1:8182
-gremlin> :> while(true) { }
-==>Evaluation exceeded the configured 'evaluationTimeout' threshold of 30000 ms or evaluation was otherwise cancelled directly for request [while(true) {}]
-
-The `GroovyCompilerGremlinPlugin` has a number of configuration options:
-
-[width="100%",cols="3,10a",options="header"]
-|=========================================================
-|Customizer |Description
-|`compilation` |Allows for three configurations: `COMPILE_STATIC`, `TYPE_CHECKED` or `NONE` (default). When configured with `COMPILE_STATIC` or `TYPE_CHECKED` it applies `CompileStatic` or `TypeChecked` annotations (respectively) to incoming scripts thus removing dynamic dispatch. More information about static compilation can be found link:http://docs.groovy-lang.org/latest/html/documentation/#_static_compilation[here] and additional information on `TypeChecked` usage can be found link:http://docs.groovy-lang.org/latest/html/documentation/#_the_code_typechecked_code_annotation[here].
-|`compilerConfigurationOptions` |Allows configuration of the Groovy `CompilerConfiguration` object by taking a `Map` of key/value pairs where the "key" is a property to set on the `CompilerConfiguration`.
-|`enableThreadInterrupt` |Injects checks for thread interruption, thus allowing the script to potentially respect calls to `Thread.interrupt()`
-|`expectedCompilationTime` |The amount of time in milliseconds a script is allowed to compile before a warning message is sent to the logs.
-|`globalFunctionCacheEnabled` |Determines if the global function cache is enabled. By default, this value is `true` - described in more detail in the <<gremlin-server-cache,Cache Management>> Section.
-|`classMapCacheSpecification` |The cache specification for the `GremlinGroovyScriptEngine` class map cache - described in more detail in the <<gremlin-server-cache,Cache Management>> Section.
-|`extensions` | This setting is for use when `compilation` is configured with `COMPILE_STATIC` or `TYPE_CHECKED` and accepts a comma separated list of link:http://docs.groovy-lang.org/latest/html/documentation/#Typecheckingextensions-Workingwithextensions[type checking extensions] that can have the effect of securing calls to various methods.
-|=========================================================
-
-NOTE: Consult the latest link:http://docs.groovy-lang.org/latest/html/documentation/#_typing[Groovy Documentation]
-for information on the differences. It is important to understand the impact that these configuration will have on
-submitted scripts before enabling this feature.
-
-To provide some basic out-of-the-box protections against troublesome scripts, the following configuration can be used:
-
-[source,yaml]
-----
-scriptEngines: {
-  gremlin-groovy: {
-    plugins: { org.apache.tinkerpop.gremlin.server.jsr223.GremlinServerGremlinPlugin: {},
-               org.apache.tinkerpop.gremlin.tinkergraph.jsr223.TinkerGraphGremlinPlugin: {}
-               org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin: {enableThreadInterrupt: true, compilation: COMPILE_STATIC, extensions: org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension},
-               org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin: {classImports: [java.lang.Math], methodImports: [java.lang.Math#*]},
-               org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin: {files: [scripts/empty-sample-secure.groovy]}}}}
-----
-
-This configuration uses the `SimpleSandboxExtension`, which blacklists calls to methods on the `System` class,
-thereby preventing someone from remotely killing the server:
-
-[source,groovy]
-----
-gremlin> :> System.exit(0)
-Script8.groovy: 1: [Static type checking] - Not authorized to call this method: java.lang.System#exit(int)
- @ line 1, column 1.
-   System.exit(0)
-   ^
-
-1 error
-----
-
-The `SimpleSandboxExtension` is by no means a "complete" implementation protecting against all manner of nefarious
-scripts, but it does provide an example for how such a capability might be implemented.  A more complete implementation
-is offered in the `FileSandboxExtension` which uses a configuration file to white list certain classes and methods.
-The configuration file is YAML-based and an example is presented as follows:
-
-[source,yaml]
-----
-autoTypeUnknown: true
-methodWhiteList:
-  - java\.lang\.Boolean.*
-  - java\.lang\.Byte.*
-  - java\.lang\.Character.*
-  - java\.lang\.Double.*
-  - java\.lang\.Enum.*
-  - java\.lang\.Float.*
-  - java\.lang\.Integer.*
-  - java\.lang\.Long.*
-  - java\.lang\.Math.*
-  - java\.lang\.Number.*
-  - java\.lang\.Object.*
-  - java\.lang\.Short.*
-  - java\.lang\.String.*
-  - java\.lang\.StringBuffer.*
-  - java\.lang\.System#currentTimeMillis\(\)
-  - java\.lang\.System#nanoTime\(\)
-  - java\.lang\.Throwable.*
-  - java\.lang\.Void.*
-  - java\.util\..*
-  - org\.codehaus\.groovy\.runtime\.DefaultGroovyMethods.*
-  - org\.codehaus\.groovy\.runtime\.InvokerHelper#runScript\(java\.lang\.Class,java\.lang\.String\[\]\)
-  - org\.codehaus\.groovy\.runtime\.StringGroovyMethods.*
-  - groovy\.lang\.Script#<init>\(groovy.lang.Binding\)
-  - org\.apache\.tinkerpop\.gremlin\.structure\..*
-  - org\.apache\.tinkerpop\.gremlin\.process\..*
-  - org\.apache\.tinkerpop\.gremlin\.process\.computer\..*
-  - org\.apache\.tinkerpop\.gremlin\.process\.computer\.bulkloading\..*
-  - org\.apache\.tinkerpop\.gremlin\.process\.computer\.clustering\.peerpressure\.*
-  - org\.apache\.tinkerpop\.gremlin\.process\.computer\.ranking\.pagerank\.*
-  - org\.apache\.tinkerpop\.gremlin\.process\.computer\.traversal\..*
-  - org\.apache\.tinkerpop\.gremlin\.process\.traversal\..*
-  - org\.apache\.tinkerpop\.gremlin\.process\.traversal\.dsl\.graph\..*
-  - org\.apache\.tinkerpop\.gremlin\.process\.traversal\.engine\..*
-  - org\.apache\.tinkerpop\.gremlin\.server\.util\.LifeCycleHook.*
-staticVariableTypes:
-  graph: org.apache.tinkerpop.gremlin.structure.Graph
-  g: org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
-----
-
-There are three keys in this configuration file that control different aspects of the sandbox:
-
-. `autoTypeUnknown` - When set to `true`, unresolved variables are typed as `Object`.
-. `methodWhiteList` - A white list of classes and methods that follow a regex pattern which can then be matched against
-method descriptors to determine if they can be executed.  The method descriptor is the fully-qualified class name
-of the method, its name and parameters. For example, `Math.ceil` would have a descriptor of
-`java.lang.Math#ceil(double)`.
-. `staticVariableTypes` - A list of variables that will be used in the `ScriptEngine` for which the types are
-always known.  In the above example, the variable "graph" will always be bound to a `Graph` instance.
-
-At Gremlin Server startup, the `FileSandboxExtension` looks in the root of Gremlin Server installation directory for a
-file called `sandbox.yaml` and configures itself.  To use a file in a different location set the
-`gremlinServerSandbox` system property to the location of the file (e.g. `-DgremlinServerSandbox=conf/my-sandbox.yaml`).
-
-The `FileSandboxExtension` provides for a basic configurable security function in Gremlin Server. More complex
-sandboxing implementations can be developed by using this white listing model and extending from the
-`AbstractSandboxExtension`.
-
-A final thought on the topic of `GroovyCompilerGremlinPlugin` implementation is that it is not just for
-"security" (though it is demonstrated in that capacity here).  It can be used for a variety of features that
-can fine tune the Groovy compilation process.  Read more about compilation customization in the
-link:http://docs.groovy-lang.org/latest/html/documentation/#compilation-customizers[Groovy Documentation].
 
 ==== Serialization
 
@@ -1669,6 +1260,718 @@ WantedBy=multi-user.target
 Enable the service with `systemctl enable gremlin-server`
 
 Start the service with `systemctl start gremlin-server`
+
+
+[[security]]
+=== Security
+
+image:gremlin-server-secure.png[width=175,float=right] Gremlin Server provides for several features that aid in the
+security of the graphs that it exposes.  In particular it supports SSL for transport layer security, authentication,
+authorization and protective measures against malicious script execution.  Client SSL options are described in the
+<<gremlin-drivers-variants, Gremlin Drivers and Variants">> sections with varying capability depending on the driver
+chosen. Script execution options are covered <<script-execution, "at the end of this section">>. This section
+starts with authentication.
+
+Gremlin Server supports a pluggable authentication framework using
+link:https://en.wikipedia.org/wiki/Simple_Authentication_and_Security_Layer[SASL] (Simple Authentication and
+Security Layer). Depending on the client used to connect to Gremlin Server, different authentication
+mechanisms are accessible, see the table below.
+
+[width="70%",cols="3,5,3",options="header"]
+|=========================================================
+|Client |Authentication mechanism |Availability
+|HTTP |BASIC |3.0.0-incubating
+1.3+v|Gremlin-Java/
+Gremlin-Console |PLAIN SASL (username/password) |3.0.0-incubating
+|Pluggable SASL |3.0.0-incubating
+|GSSAPI SASL (Kerberos) |3.3.0
+|Gremlin.NET |PLAIN SASL |3.3.0
+1.2+v|Gremlin-Python |PLAIN SASL |3.2.2
+|GSSAPI SASL (Kerberos) |3.4.7
+|Gremlin.Net |PLAIN SASL |3.2.7
+|Gremlin-Javascript |PLAIN SASL |3.3.0
+|=========================================================
+
+By default, Gremlin Server is configured to allow all requests to be processed (i.e. no authentication).  To enable
+authentication, Gremlin Server must be configured with an `Authenticator` implementation in its YAML file.  Gremlin
+Server comes packaged with two implementations called `SimpleAuthenticator` for plain text authentication using HTTP
+BASIC or PLAIN SASL and `Krb5Authenticator` for Kerberos authentication using GSSAPI SASL.
+
+==== Plain text authentication
+
+The `SimpleAuthenticator` implements the "PLAIN" SASL mechanism (i.e. plain text) to authenticate a request.  It also
+supports handling basic authentication requests from http clients. It validates
+username/password pairs against a graph database, which must be provided to it as part of the configuration.
+
+[source,yaml]
+authentication: {
+  authenticator: org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator,
+  config: {
+    credentialsDb: conf/tinkergraph-credentials.properties}}
+
+A quick way to get started with the `SimpleAuthenticator` is to use TinkerGraph for the "credentials graph" and the
+"sample" credential graph that is packaged with the server.  To secure the transport for the credentials,
+SSL should be enabled. For this Quick Start, a self-signed certificate will be created but this should not
+be used in a production environment.
+
+Generate the self-signed SSL certificate:
+
+[source,text]
+----
+$ keytool -genkey -alias localhost -keyalg RSA -keystore server.jks
+Enter keystore password:
+Re-enter new password:
+What is your first and last name?
+  [Unknown]:  localhost
+What is the name of your organizational unit?
+  [Unknown]:
+What is the name of your organization?
+  [Unknown]:
+What is the name of your City or Locality?
+  [Unknown]:
+What is the name of your State or Province?
+  [Unknown]:
+What is the two-letter country code for this unit?
+  [Unknown]:
+Is CN=localhost, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct?
+  [no]:  yes
+
+Enter key password for <localhost>
+	(RETURN if same as keystore password):
+----
+
+Next, uncomment the `keyStore` and `keyStorePassword` lines in `conf/gremlin-server-secure.yaml`.
+
+[source,yaml]
+----
+ssl: {
+  enabled: true,
+  sslEnabledProtocols: [TLSv1.2],
+  keyStore: server.jks,
+  keyStorePassword: changeit
+}
+----
+
+[source,text]
+----
+$ bin/gremlin-server.sh conf/gremlin-server-secure.yaml
+[INFO] GremlinServer -
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+
+[INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-secure.yaml
+...
+[INFO] AbstractChannelizer - SSL enabled
+[INFO] SimpleAuthenticator - Initializing authentication with the org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator
+[INFO] SimpleAuthenticator - CredentialGraph initialized at CredentialGraph{graph=tinkergraph[vertices:1 edges:0]}
+[INFO] GremlinServer$1 - Gremlin Server configured with worker thread pool of 1, gremlin pool of 8 and boss thread pool of 1.
+[INFO] GremlinServer$1 - Channel started at port 8182.
+----
+
+When SSL is enabled on the server, it must also be enabled on the client when connecting.  To connect to
+Gremlin Server with the <<gremlin-java,`gremlin-driver`>>, set the `credentials`, `enableSsl`, and `trustStore`
+when constructing the `Cluster`.
+
+[source,java]
+Cluster cluster = Cluster.build().credentials("stephen", "password")
+                                 .enableSsl(true).trustStore("server.jks").create();
+
+If connecting with Gremlin Console, which utilizes `gremlin-driver` for remote script execution, use the provided
+`conf/remote-secure.yaml` file when defining the remote.  That file contains configuration for the username and
+password as well as enablement of SSL from the client side. Be sure to configure the trustStore if using self-signed
+certificates.
+
+Similarly, Gremlin Server can be configured for REST and security. Follow the steps above for configuring the SSL
+certificate.
+
+[source,text]
+----
+$ bin/gremlin-server.sh conf/gremlin-server-rest-secure.yaml
+[INFO] GremlinServer -
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+
+[INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-secure.yaml
+...
+[INFO] AbstractChannelizer - SSL enabled
+[INFO] SimpleAuthenticator - Initializing authentication with the org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator
+[INFO] SimpleAuthenticator - CredentialGraph initialized at CredentialGraph{graph=tinkergraph[vertices:1 edges:0]}
+[INFO] GremlinServer$1 - Gremlin Server configured with worker thread pool of 1, gremlin pool of 8 and boss thread pool of 1.
+[INFO] GremlinServer$1 - Channel started at port 8182.
+----
+
+Once the server has started, issue a request passing the credentials with an `Authentication` header, as described in link:http://tools.ietf.org/html/rfc2617#section-2[RFC2617]. Here's a HTTP Basic authentication example with cURL:
+
+[source,text]
+curl -X POST --insecure -u stephen:password -d "{\"gremlin\":\"100-1\"}" "https://localhost:8182"
+
+[[credentials-dsl]]
+==== Credentials Graph DSL
+
+The "credentials graph", which has been mentioned in previous sections, is used by Gremlin Server to hold the list of
+users who can authenticate to the server.  It is possible to use virtually any `Graph` instance for this task as long
+as it complies to a defined schema. The credentials graph stores users as vertices with the `label` of "user".  Each
+"user" vertex has two properties: `username` and `password`.  Naturally, these are both `String` values.  The password
+must not be stored in plain text and should be hashed.
+
+IMPORTANT: Be sure to define an index on the `username` property, as this will be used for lookups.  If supported by
+the `Graph`, consider specifying a unique constraint as well.
+
+To aid with the management of a credentials graph, Gremlin Server provides a Gremlin Console plugin which can be
+used to add and remove users so as to ensure that the schema is adhered to, thus ensuring compatibility with Gremlin
+Server. In addition, as it is a plugin, it works naturally in the Gremlin Console as an extension of its
+capabilities (though one could use it programmatically, if desired). This plugin is distributed with the Gremlin
+Console so it does not have to be "installed". It does however need to be activated:
+
+[source,groovy]
+gremlin> :plugin use tinkerpop.credentials
+==>tinkerpop.credentials activated
+
+Please see the example usage as follows:
+
+[gremlin-groovy]
+----
+graph = TinkerGraph.open()
+graph.createIndex("username",Vertex.class)
+credentials = traversal(CredentialTraversalSource.class).withEmbedded(graph)
+credentials.user("stephen","password")
+credentials.user("daniel","better-password")
+credentials.user("marko","rainbow-dash")
+credentials.users("marko").elementMap()
+credentials.users().count()
+credentials.users("daniel").drop()
+credentials.users().count()
+----
+
+NOTE: The Credentials DSL is built using TinkerPop's DSL Annotation Processor described <<gremlin-java-dsl,here>>.
+
+IMPORTANT: In the above example, an empty in-memory TinkerGraph was used for demonstrating the API of the DSL.
+Obviously, this data will not be retained and usable with Gremlin Server. It would be important to configure
+TinkerGraph to persist that data or to manually persist it (e.g. write the graph data to Gryo) once changes are
+complete. Alternatively, use a persistent graph to hold the credentials and configure Gremlin Server accordingly.
+
+[[krb5authenticator]]
+==== Kerberos Authentication
+
+The `Krb5Authenticator` implements the "GSSAPI" SASL mechanism (i.e. Kerberos) to authenticate a request from a Gremlin
+client.  It can be applied in an existing Kerberos environment and validates whether a
+link:https://www.roguelynn.com/words/explain-like-im-5-kerberos/[valid authentication proof and service ticket are
+offered].
+
+[source,yaml]
+authentication: {
+  className: org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator,
+  config: {
+    principal: gremlinserver/hostname.your.org@YOUR.REALM,
+    keytab: /etc/security/keytabs/gremlinserver.service.keytab}}
+
+`Krb5Authenticator` needs a Kerberos service principal and a keytab that holds the secret key for that principal. The keytab
+location and service name, e.g. gremlinserver, are free to be chosen. `Krb5Authenticator` finds the KDC's hostname and
+port from the krb5.conf file with Kerberos configurations. This file can reside at either the
+https://web.mit.edu/kerberos/krb5-devel/doc/mitK5defaults.html[default location] or a location to be specified as a
+system property in the JAVA_OPTIONS environment variable of Gremlin Server:
+
+[source, bash]
+export JAVA_OPTIONS="${JAVA_OPTIONS} -Xms512m -Xmx4096m -Djava.security.krb5.conf=/etc/krb5.conf"
+
+Gremlin clients have to specify the service name as the `protocol` connection parameter. For Gremlin-Console the
+`protocol` is an entry in the remote.yaml file, for Gremlin-java the client builder has a `protocol()` method.
+
+In addition to the `protocol`, the Gremlin client needs to specify a `jaasEntry`, an entry in the
+link:https://en.wikipedia.org/wiki/Java_Authentication_and_Authorization_Service[JAAS] configuration file. As a
+start one can define a conf/gremlin-jaas.conf file with a `GremlinConsole` jaasEntry:
+
+[source, jaas]
+GremlinConsole {
+  com.sun.security.auth.module.Krb5LoginModule required
+  doNotPrompt=true
+  useTicketCache=true;
+};
+
+This configuration tells Gremlin Console to pass authentication requests from Gremlin Server to the Krb5LoginModule, which is
+part of the java standard library. The Krb5LoginModule does not prompt the user for a username and password but uses the
+ticket cache that is normally refreshed when a user logs in to a host within the Kerberos realm.
+
+The Gremlin client needs the location of the JAAS configuration file to be passed as a system property to the JVM. For
+Gremlin-Console the easiest way to do this is to pass it to the run script via the JAVA_OPTIONS environment property.
+If the krb5.conf Kerberos configuration file is not available from the
+https://web.mit.edu/kerberos/krb5-devel/doc/mitK5defaults.html[default location] it has to be provided as a system
+property as well:
+
+[source, bash]
+JAAS_OPTION="-Djava.security.auth.login.config=conf/gremlin-jaas.conf"
+KRB5_OPTION="-Djava.security.krb5.conf=/etc/krb5.conf"
+export JAVA_OPTIONS="${JAVA_OPTIONS} ${KRB5_OPTION} ${JAAS_OPTION}"
+
+[[authorization]]
+==== Authorization
+While authentication determines which clients can connect to Gremlin Server, authorization regulates which elements
+of the exposed graphs a specific user is allowed to create, read, update or delete (CRUD). Authorization in Gremlin
+Server can take place at two instances. Before execution a user request can be allowed or denied based on the
+presence of operations such as:
+
+* reading from a GraphTraversalSource
+* writing to a GraphTraversalSource
+* `VertexProgram` execution (OLAP)
+* script execution
+* presence of lambdas in bytecode
+* illegal removal of `Strategies`
+
+During execution of a request, gremlin can prevent returning vertices or edges with specific labels or values of a
+property, based on predicates specified in a `SubgraphStrategy'.
+
+===== Mechanisms
+Gremlin Server supports
+three mechanisms to configure authorization:
+
+. With the `ScriptFileGremlinPlugin` a groovy script is configured that instantiates the `GraphTraversalSources` that
+can be accessed by client requests. Using the `withStrategies()` gremlin
+link:https://tinkerpop.apache.org/docs/current/reference/#start-steps[start step],
+one can apply so-called `Strategies` to these `GraphTraversalSources`, some of
+which can serve for authorization purposes (`ReadOnlyStrategy`, `SubgraphStrategy`, `LambdaRestrictionStrategy`,
+`EdgeLabelVerificationStrategy`), provided that users are not allowed to remove these `Strategies` afterwards. The
+`ScriptFileGremlinPlugin` is found in the yaml configuration file for Gremlin Server:
++
+[source,yaml]
+----
+scriptEngines: {
+  gremlin-groovy: {
+    plugins: {
+      org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin: {files: [scripts/empty-sample.groovy]}}}}
+----
+. Administrators can configure an authorizer class, an implementation of the `Authorizer` interface. An authorizer receives
+a request before it is executed and it can decide to pass or deny the request, based on the information it has available
+on the requesting user or can seek externally.
+. Apart from passing or denying requests, an `Authorizer` implementation can actively modify the request, in particular
+add the `Strategies` mentioned in item 1.
+
+IMPORTANT: This section is written with gremlin bytecode requests in mind. Realizing authorization for script requests
+is hardly feasible, because such requests get full access to Gremlin Server's execution environment. Although the section
+<<script-execution>> explains how the client access to this environment can be restricted, it is not possible to deny
+execution of `GraphFactory.open()` or `GraphTraversalSource.getGraph()` methods without resorting to TinkerPop
+implementation details (that is, internal API's that can change without notice).
+
+The three mechanisms for authorization each have their merits in terms of simplicity and flexibility. The table below
+gives an overview.
+
+[width="95%",cols="5,2,2,4",options="header"]
+|=========================================================
+|Type (mechanism) |GraphTraversalSources |Groups |Bytecode analysis
+|Implicit (init script) | all accessible |one |`withStrategies()`
+|Passive (pass/deny) | selected access |few |hybrid
+|Active (inject) |selected access |many |hybrid
+|=========================================================
+
+With implicit authorization (only adding restricting `Strategies` in the initialization script of Gremlin Server) all
+authenticated users can access all hosted `GraphTraversalSources` and all face the same restrictions. One would need
+separate Gremlin Server instances for each authorization policy and apply an authenticator that restricts access to a g
+roup of users (that is, supports in authorization).
+
+The other extreme is the active authorization solution that injects the restricting `Strategies` into the user request,
+following a policy that takes into account both the authenticated user and the original request. While this solution is
+the most flexible and can support an almost unlimited number of authorization policies, it is somewhat complex to
+implement. In particular, applying the `SubgraphStrategy` requires knowledge about the schema of the graph.
+
+The passive authoratization solution perhaps provides a middle ground to start implementing authorization. This
+solution assumes that the `SubgraphStrategy` is applied in the Gremlin Server initialization script, because compliance
+with a subgraph restriction can only be determined during the actual execution of the gremlin traversal. Note that the
+same graph can be reused with different `SubgraphStrategies`. Now, authorization policies can be defined in terms of
+accessible `GraphTraversalSources` and the authorizer can simply match the requested access to a `GraphTraversalSource`
+against the policies applicable to the authenticated user. Like for the active authorization solution, other restrictions
+such as read only access can be either applied at authorization time as policy in the authorizer itself or at request
+execution time as a result of an applied `Strategy` (denoted as 'hybrid' bytecode analysis in the table). A code
+example pursuing the former option is provided in the <<authz-code-example, next section>>.
+
+NOTE: Both the passive and active authorization solutions need to analyze the gremlin bytecode of the original request
+for unwanted removal of restricting Strategies.
+
+NOTE: Gremlin Server is not shipped with `Authorizer` implementations, because these would heavily depend on the external
+systems to integrate with, e.g. link:https://ldap.com/directory-servers/[LDAP systems] or
+link:https://ranger.apache.org/[Apache Ranger ]. However, third-party implementations can be
+offered as <<gremlin-plugins, gremlin plugins>>.
+
+[[authz-code-example]]
+===== Code example
+The two java classes below provide an example implementation of the `Authorizer` interface; they originate from
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-server/src/test/java/org/apache/tinkerpop/gremlin/server/authz[Gremlin Server's test package].
+If you copy the files into a project, build them into a jar and add the jar to Gremlin Server's CLASSPATH, you can use
+it by adding the following to Gremlin Server's yaml configuration file:
+
+[source, yaml]
+----
+authentication: {
+  authenticator: org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator,
+  config: {
+    credentialsDb: conf/tinkergraph-credentials.properties}}
+authorization: {
+  authorizer: your.package.AllowListAuthorizer,
+  config: {
+    authorizationAllowList: your/path/allow-list.yaml}}
+----
+
+The `AllowListAuthorizer` does not implement the `Authorizer` interface directly, but rather extends the
+`AbstractAuthorizer`. The latter class provides the logic to split user requests into gremlin bytecode requests and
+groovy string requests. It also has the helper methods `runsLambda(Bytecode bytecode)` and
+`runsVertexProgram(Bytecode bytecode)` to detect the presence of these operations in the gremlin bytecode.
+
+[source,java]
+----
+import org.apache.tinkerpop.gremlin.driver.Tokens;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.server.Settings.AuthorizationSettings;
+import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
+import org.apache.tinkerpop.gremlin.server.authz.AbstractAuthorizer;
+import org.apache.tinkerpop.gremlin.server.authz.AuthorizationException;
+
+import java.util.*;
+
+
+/**
+ * Authorizes a user per request, based on a whitelist that grants access to {@link TraversalSource} instances for
+ * bytecode requests and to gremlin server's sandbox for string requests and lambdas. The {@link
+ * AuthorizationSettings}.config must have an authorizationAllowList entry that contains the filename of the whitelist.
+ * This authorizer is for demonstration purposes only. It does not scale well in the number of users regarding
+ * memory usage and administrative burden.
+ */
+public class AllowListAuthorizer extends AbstractAuthorizer {
+
+    // Collections derived from the list with allowed users for fast lookups
+    private final Map<String, List<String>> usernamesByTraversalSource = new HashMap<>();
+    private final Set<String> usernamesSandbox = new HashSet<>();
+
+    public static final String WILDCARD = "*";
+    public static final String SANDBOX = "sandbox";
+    public static final String REJECT_BYTECODE = "User not authorized for bytecode requests on %s.";
+    public static final String REJECT_LAMBDA = "User not authorized for bytecode requests with lambdas on %s.";
+    public static final String REJECT_OLAP = "User not authorized for bytecode OLAP requests on %s.";
+    public static final String REJECT_STRING = "User not authorized for string-based requests.";
+    public static final String KEY_AUTHORIZATION_ALLOWLIST = "authorizationAllowList";
+
+
+    @Override
+    public void setup(final Map<String,Object> config) {
+        AllowList allowList;
+        final String file = (String) config.get(KEY_AUTHORIZATION_ALLOWLIST);
+
+        try {
+            allowList = AllowList.read(file);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(String.format("Failed to read list with allowed users from %s", file));
+        }
+        for (Map.Entry<String, List<String>> entry : allowList.grants.entrySet()) {
+            if (!entry.getKey().equals(SANDBOX)) {
+                usernamesByTraversalSource.put(entry.getKey(), new ArrayList<>());
+            }
+            for (final String group : entry.getValue()) {
+                if (allowList.groups.get(group) == null) {
+                    throw new RuntimeException(String.format("Group '%s' not defined in file with allowed users.", group));
+                }
+                if (entry.getKey().equals(SANDBOX)) {
+                    usernamesSandbox.addAll(allowList.groups.get(group));
+                } else {
+                    usernamesByTraversalSource.get(entry.getKey()).addAll(allowList.groups.get(group));
+                }
+            }
+        }
+    }
+
+    /**
+     * Authorizes a user for a string-based evaluation request. The request is rejected if the user does not have the "sandbox" grant.
+     *
+     * @param user {@link AuthenticatedUser} to be used for the authorization
+     * @param script String with an arbitratry succession of groovy and gremlin-groovy statements
+     * @param msg {@link RequestMessage} to authorize the user for
+     */
+    @Override
+    protected RequestMessage authorizeString(final AuthenticatedUser user, final String script, final RequestMessage msg) throws AuthorizationException {
+        if (!usernamesSandbox.contains(user.getName())) {
+            throw new AuthorizationException(REJECT_STRING);
+        }
+        return msg;
+    }
+
+    /**
+     * Authorizes a user for a gremlin bytecode request. The request is rejected if it contains aliases for {@link TraversalSource}
+     * names for which the user has no permission. In addition the request is rejected if it contains
+     * lambdas and the user has no "sandbox" permission.
+     *
+     * @param user {@link AuthenticatedUser} to be used for the authorization
+     * @param bytecode {@link Bytecode} request extracted from the msg parameter
+     * @param msg RequestMessage to authorize the user for
+     */
+    @Override
+    protected RequestMessage authorizeBytecode(final AuthenticatedUser user, final Bytecode bytecode, final RequestMessage msg) throws AuthorizationException {
+        final Map<String, String> aliases = (Map<String, String>) msg.getArgs().getOrDefault(Tokens.ARGS_ALIASES, Collections.emptyMap());
+        final Set<String> usernames = new HashSet<>();
+
+        for (final String resource: aliases.values()) {
+            usernames.addAll(usernamesByTraversalSource.get(resource));
+        }
+        final boolean userHasTraversalSourceGrant = usernames.contains(user.getName()) || usernames.contains(WILDCARD);
+        final boolean userHasSandboxGrant = usernamesSandbox.contains(user.getName()) || usernamesSandbox.contains(WILDCARD);
+
+        final String rejectMessage;
+        if (runsLambda(bytecode)) {
+            rejectMessage = REJECT_LAMBDA;
+        } else if (runsVertexProgram(bytecode)){
+            rejectMessage = REJECT_OLAP;
+        } else {
+            rejectMessage = REJECT_BYTECODE;
+        }
+        if ((!userHasTraversalSourceGrant || runsLambda(bytecode) || runsVertexProgram(bytecode)) && !userHasSandboxGrant) {
+            throw new AuthorizationException(String.format(rejectMessage, aliases.values()));
+        }
+        return msg;
+    }
+}
+----
+
+[source,java]
+----
+import org.yaml.snakeyaml.TypeDescription;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+
+/**
+ * AllowList for the AllowListAuthorizer as configured by a YAML file.
+ */
+public class AllowList {
+
+    /**
+     * Holds lists of groups by grant. A grant is either a TraversalSource name or the "sandbox" value. With the
+     * sandbox grant users can access all TraversalSource instances and execute groovy scripts as string based
+     * requests or as lambda functions, only limited by Gremlin Server's sandbox definition.
+     */
+    public Map<String, List<String>> grants;
+
+    /**
+     * Holds lists of usernames by groupname. The wildcard ['*'] can be used to denote any user.
+     */
+    public Map<String, List<String>> groups;
+
+    /**
+     * Read configuration from a YAML file into a new {@link AllowList} object.
+     *
+     * @param file the location of a Whitelist YAML configuration file
+     * @return a new {@link Optional} object wrapping the created {@link AllowList}
+     */
+    public static AllowList read(final String file) throws Exception {
+        final InputStream stream = new FileInputStream(new File(file));
+
+        final Constructor constructor = new Constructor(AllowList.class);
+        final TypeDescription whitelistDescription = new TypeDescription(AllowList.class);
+        whitelistDescription.putMapPropertyType("grants", String.class, Object.class);
+        whitelistDescription.putMapPropertyType("groups", String.class, Object.class);
+        constructor.addTypeDescription(whitelistDescription);
+
+        final Yaml yaml = new Yaml(constructor);
+        return yaml.loadAs(stream, AllowList.class);
+    }
+}
+----
+
+
+allow-list.yaml:
+[source,yaml]
+----
+grants: {
+gclassic: [groupclassic],
+gmodern: [groupmodern],
+gcrew: [groupclassic, groupmodern],
+ggrateful: [groupgrateful],
+sandbox: [groupsandbox]
+}
+
+groups: {
+groupclassic: [userclassic],
+groupmodern: [usermodern, stephen],
+groupsink: [usersink],
+groupgrateful: ['*'],
+groupsandbox: [usersandbox, marko]
+}
+----
+
+
+[[script-execution]]
+==== Protecting Script Execution
+
+It is important to remember that Gremlin Server exposes `GremlinScriptEngine` instances that allows for remote execution
+of arbitrary code on the server.  Obviously, this situation can represent a security risk or, more minimally, provide
+ways for "bad" scripts to be inadvertently executed. A simple example of a "valid" Gremlin script that would cause
+some problems would be, `while(true) {}`, which would consume a thread in the Gremlin pool indefinitely, thus
+preventing it from serving other requests.  Sending enough of these kinds of scripts would eventually consume all
+available threads and Gremlin Server would stop responding.
+
+Scripts have access to the full power of their language and the JVM on which they are running. This means that they
+can access certain APIs that have nothing to do with Gremlin itself, such as `java.lang.System` or the `java.io`
+and `java.net` packages. Scripts offer developers a lot of flexibility, but having that flexibility comes at the cost
+of safety. A Gremlin Server instance that is not secured appropriately provides for a big security risk.
+
+The previous sections discussed methods for securing Gremlin Server through authentication and encryption, which is a
+good first step in protection. Another layer of protection comes in the form of specific configurations for the
+`GremlinGroovyScriptEngine`.  A user can configure the script engine with a `GroovyCompilerGremlinPlugin`
+implementation. Consider the basic configuration from the Gremlin Server YAML file:
+
+[source,yaml]
+----
+scriptEngines: {
+  gremlin-groovy: {
+    plugins: { org.apache.tinkerpop.gremlin.server.jsr223.GremlinServerGremlinPlugin: {},
+               org.apache.tinkerpop.gremlin.tinkergraph.jsr223.TinkerGraphGremlinPlugin: {},
+               org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin: {classImports: [java.lang.Math], methodImports: [java.lang.Math#*]},
+               org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin: {files: [scripts/empty-sample.groovy]}}}}
+----
+
+This configuration can be expanded to include a the `GroovyCompilerGremlinPlugin`:
+
+[source,yaml]
+----
+scriptEngines: {
+  gremlin-groovy: {
+    plugins: { org.apache.tinkerpop.gremlin.server.jsr223.GremlinServerGremlinPlugin: {},
+               org.apache.tinkerpop.gremlin.tinkergraph.jsr223.TinkerGraphGremlinPlugin: {}
+               org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin: {classImports: [java.lang.Math], methodImports: [java.lang.Math#*]},
+               org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin: {files: [scripts/empty-sample-secure.groovy]},
+               org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin: {enableThreadInterrupt: true}}}}
+----
+
+This configuration sets up the script engine with to ensure that loops (like `while`) will respect interrupt requests.
+With this configuration in place, a remote execution as follows, now times out rather than consuming the thread
+continuously:
+
+[source,groovy]
+gremlin> :remote connect tinkerpop.server conf/remote.yaml
+==>Configured localhost/127.0.0.1:8182
+gremlin> :> while(true) { }
+==>Evaluation exceeded the configured 'evaluationTimeout' threshold of 30000 ms or evaluation was otherwise cancelled directly for request [while(true) {}]
+
+The `GroovyCompilerGremlinPlugin` has a number of configuration options:
+
+[width="100%",cols="3,10a",options="header"]
+|=========================================================
+|Customizer |Description
+|`compilation` |Allows for three configurations: `COMPILE_STATIC`, `TYPE_CHECKED` or `NONE` (default). When configured with `COMPILE_STATIC` or `TYPE_CHECKED` it applies `CompileStatic` or `TypeChecked` annotations (respectively) to incoming scripts thus removing dynamic dispatch. More information about static compilation can be found link:http://docs.groovy-lang.org/latest/html/documentation/#_static_compilation[here] and additional information on `TypeChecked` usage can be found link:http://docs.groovy-lang.org/latest/html/documentation/#_the_code_typechecked_code_annotation[here].
+|`compilerConfigurationOptions` |Allows configuration of the Groovy `CompilerConfiguration` object by taking a `Map` of key/value pairs where the "key" is a property to set on the `CompilerConfiguration`.
+|`enableThreadInterrupt` |Injects checks for thread interruption, thus allowing the script to potentially respect calls to `Thread.interrupt()`
+|`expectedCompilationTime` |The amount of time in milliseconds a script is allowed to compile before a warning message is sent to the logs.
+|`globalFunctionCacheEnabled` |Determines if the global function cache is enabled. By default, this value is `true` - described in more detail in the <<gremlin-server-cache,Cache Management>> Section.
+|`classMapCacheSpecification` |The cache specification for the `GremlinGroovyScriptEngine` class map cache - described in more detail in the <<gremlin-server-cache,Cache Management>> Section.
+|`extensions` | This setting is for use when `compilation` is configured with `COMPILE_STATIC` or `TYPE_CHECKED` and accepts a comma separated list of link:http://docs.groovy-lang.org/latest/html/documentation/#Typecheckingextensions-Workingwithextensions[type checking extensions] that can have the effect of securing calls to various methods.
+|=========================================================
+
+NOTE: Consult the latest link:http://docs.groovy-lang.org/latest/html/documentation/#_typing[Groovy Documentation]
+for information on the differences. It is important to understand the impact that these configuration will have on
+submitted scripts before enabling this feature.
+
+To provide some basic out-of-the-box protections against troublesome scripts, the following configuration can be used:
+
+[source,yaml]
+----
+scriptEngines: {
+  gremlin-groovy: {
+    plugins: { org.apache.tinkerpop.gremlin.server.jsr223.GremlinServerGremlinPlugin: {},
+               org.apache.tinkerpop.gremlin.tinkergraph.jsr223.TinkerGraphGremlinPlugin: {}
+               org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin: {enableThreadInterrupt: true, compilation: COMPILE_STATIC, extensions: org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension},
+               org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin: {classImports: [java.lang.Math], methodImports: [java.lang.Math#*]},
+               org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin: {files: [scripts/empty-sample-secure.groovy]}}}}
+----
+
+This configuration uses the `SimpleSandboxExtension`, which blacklists calls to methods on the `System` class,
+thereby preventing someone from remotely killing the server:
+
+[source,groovy]
+----
+gremlin> :> System.exit(0)
+Script8.groovy: 1: [Static type checking] - Not authorized to call this method: java.lang.System#exit(int)
+ @ line 1, column 1.
+   System.exit(0)
+   ^
+
+1 error
+----
+
+The `SimpleSandboxExtension` is by no means a "complete" implementation protecting against all manner of nefarious
+scripts, but it does provide an example for how such a capability might be implemented.  A more complete implementation
+is offered in the `FileSandboxExtension` which uses a configuration file to white list certain classes and methods.
+The configuration file is YAML-based and an example is presented as follows:
+
+[source,yaml]
+----
+autoTypeUnknown: true
+methodWhiteList:
+  - java\.lang\.Boolean.*
+  - java\.lang\.Byte.*
+  - java\.lang\.Character.*
+  - java\.lang\.Double.*
+  - java\.lang\.Enum.*
+  - java\.lang\.Float.*
+  - java\.lang\.Integer.*
+  - java\.lang\.Long.*
+  - java\.lang\.Math.*
+  - java\.lang\.Number.*
+  - java\.lang\.Object.*
+  - java\.lang\.Short.*
+  - java\.lang\.String.*
+  - java\.lang\.StringBuffer.*
+  - java\.lang\.System#currentTimeMillis\(\)
+  - java\.lang\.System#nanoTime\(\)
+  - java\.lang\.Throwable.*
+  - java\.lang\.Void.*
+  - java\.util\..*
+  - org\.codehaus\.groovy\.runtime\.DefaultGroovyMethods.*
+  - org\.codehaus\.groovy\.runtime\.InvokerHelper#runScript\(java\.lang\.Class,java\.lang\.String\[\]\)
+  - org\.codehaus\.groovy\.runtime\.StringGroovyMethods.*
+  - groovy\.lang\.Script#<init>\(groovy.lang.Binding\)
+  - org\.apache\.tinkerpop\.gremlin\.structure\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.computer\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.computer\.bulkloading\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.computer\.clustering\.peerpressure\.*
+  - org\.apache\.tinkerpop\.gremlin\.process\.computer\.ranking\.pagerank\.*
+  - org\.apache\.tinkerpop\.gremlin\.process\.computer\.traversal\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.traversal\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.traversal\.dsl\.graph\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.traversal\.engine\..*
+  - org\.apache\.tinkerpop\.gremlin\.server\.util\.LifeCycleHook.*
+staticVariableTypes:
+  graph: org.apache.tinkerpop.gremlin.structure.Graph
+  g: org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
+----
+
+There are three keys in this configuration file that control different aspects of the sandbox:
+
+. `autoTypeUnknown` - When set to `true`, unresolved variables are typed as `Object`.
+. `methodWhiteList` - A white list of classes and methods that follow a regex pattern which can then be matched against
+method descriptors to determine if they can be executed.  The method descriptor is the fully-qualified class name
+of the method, its name and parameters. For example, `Math.ceil` would have a descriptor of
+`java.lang.Math#ceil(double)`.
+. `staticVariableTypes` - A list of variables that will be used in the `ScriptEngine` for which the types are
+always known.  In the above example, the variable "graph" will always be bound to a `Graph` instance.
+
+At Gremlin Server startup, the `FileSandboxExtension` looks in the root of Gremlin Server installation directory for a
+file called `sandbox.yaml` and configures itself.  To use a file in a different location set the
+`gremlinServerSandbox` system property to the location of the file (e.g. `-DgremlinServerSandbox=conf/my-sandbox.yaml`).
+
+The `FileSandboxExtension` provides for a basic configurable security function in Gremlin Server. More complex
+sandboxing implementations can be developed by using this white listing model and extending from the
+`AbstractSandboxExtension`.
+
+A final thought on the topic of `GroovyCompilerGremlinPlugin` implementation is that it is not just for
+"security" (though it is demonstrated in that capacity here).  It can be used for a variety of features that
+can fine tune the Groovy compilation process.  Read more about compilation customization in the
+link:http://docs.groovy-lang.org/latest/html/documentation/#compilation-customizers[Groovy Documentation].
 
 
 === Best Practices

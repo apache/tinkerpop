@@ -67,6 +67,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Changed `TraversalStrategy` application methodology to apply each strategy in turn to each level of the traversal hierarchy starting from root down to children.
 * Prevented more than one `Client` from connecting to the same Gremlin Server session.
 * Changed the Groovy dependency in `gremlin-driver` to a `provided` scope.
+* Adds support for configuring an Authorizer implentation to Gremlin Server, allowing for authorization of individual gremlin requests.
 * Removed internal functionality for the session close message in Gremlin Server - the message is accepted but ignored if sent.
 * Removed `Property.Exceptions.propertyValueCanNotBeNull` exception type as `null` now has meaning in Gremlin.
 * Removed the "experimental" support for multi/meta-properties in Neo4j.
@@ -87,6 +88,8 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Removed previously deprecated `StarGraph.builder()` and `StarGraph.Builder.create()`.
 * Removed previously deprecated `AbstractOpProcessor.generateMetaData(ChannelHandlerContext, RequestMessage, ResponseStatusCode, Iterator)`
 * Removed previously deprecated `BulkDumperVertexProgram` and `BulkLoaderVertexProgram`.
+
+!!! Improvements: do not forget to close TINKERPOP-2418 (StateKey.AUTHENTICATED_USER) when merging the PR for TINKERPOP-2389 (Authorization)
 
 == TinkerPop 3.4.0 (Avant-Gremlin Construction #3 for Theremin and Flowers)
 

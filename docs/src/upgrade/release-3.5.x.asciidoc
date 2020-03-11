@@ -343,6 +343,11 @@ return these types of results and not have to work around them:
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2395[TINKERPOP-2395]
 
+==== Gremlin Server
+The `authentication.enableAuditlog` configuration property is deprecated, but replaced by the `enableAuditLog` property
+to also make it available to `Authorizer` implementations. With the new setting enabled, there are slight changes in the
+formatting of audit log messages. In particular, the name of the authenticated user is included in every message.
+
 ==== Python 2.x Support
 
 The gremlinpython module no longer supports Python 2.x. Users must use Python 3 going forward. For the most part, from

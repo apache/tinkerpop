@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.channel;
 
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig;
 import org.apache.tinkerpop.gremlin.server.AbstractChannelizer;
@@ -25,6 +26,7 @@ import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.Settings;
+import org.apache.tinkerpop.gremlin.server.handler.AuthorizationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.SaslAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.WsGremlinBinaryRequestDecoder;
 import org.apache.tinkerpop.gremlin.server.handler.WsGremlinCloseRequestDecoder;
@@ -57,6 +59,7 @@ public class WebSocketChannelizer extends AbstractChannelizer {
     private WsGremlinResponseFrameEncoder wsGremlinResponseFrameEncoder;
     private WsGremlinCloseRequestDecoder wsGremlinCloseRequestDecoder;
     private AbstractAuthenticationHandler authenticationHandler;
+    private ChannelInboundHandlerAdapter authorizationHandler;
 
     @Override
     public void init(final ServerGremlinExecutor serverGremlinExecutor) {
@@ -69,9 +72,11 @@ public class WebSocketChannelizer extends AbstractChannelizer {
         wsGremlinResponseFrameEncoder = new WsGremlinResponseFrameEncoder();
 
         // configure authentication - null means don't bother to add authentication to the pipeline
-        if (authenticator != null)
-            authenticationHandler = authenticator.getClass() == AllowAllAuthenticator.class ?
-                    null : instantiateAuthenticationHandler(settings.authentication);
+        authenticationHandler = authenticator.getClass() == AllowAllAuthenticator.class ?
+            null : instantiateAuthenticationHandler(settings);
+        if (authorizer != null) {
+            authorizationHandler = new AuthorizationHandler(authorizer);
+        }
     }
 
     @Override
@@ -120,6 +125,9 @@ public class WebSocketChannelizer extends AbstractChannelizer {
 
         if (authenticationHandler != null)
             pipeline.addLast(PIPELINE_AUTHENTICATOR, authenticationHandler);
+
+        if (authorizationHandler != null)
+            pipeline.addLast(PIPELINE_AUTHORIZER, authorizationHandler);
     }
 
     @Override
@@ -132,13 +140,13 @@ public class WebSocketChannelizer extends AbstractChannelizer {
         return new PingWebSocketFrame();
     }
 
-    private AbstractAuthenticationHandler instantiateAuthenticationHandler(final Settings.AuthenticationSettings authSettings) {
-        final String authenticationHandler = authSettings.authenticationHandler;
+    private AbstractAuthenticationHandler instantiateAuthenticationHandler(final Settings settings) {
+        final String authenticationHandler = settings.authentication.authenticationHandler;
         if (authenticationHandler == null) {
             //Keep things backwards compatible
-            return new SaslAuthenticationHandler(authenticator, authSettings);
+            return new SaslAuthenticationHandler(authenticator, settings);
         } else {
-            return createAuthenticationHandler(authSettings);
+            return createAuthenticationHandler(settings);
         }
     }
 }

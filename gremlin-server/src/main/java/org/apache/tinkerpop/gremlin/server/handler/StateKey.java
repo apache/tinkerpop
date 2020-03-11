@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.server.handler;
 
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.op.session.Session;
 import io.netty.util.AttributeKey;
@@ -57,4 +58,9 @@ public final class StateKey {
      * The key for the current request.
      */
     public static final AttributeKey<RequestMessage> REQUEST_MESSAGE = AttributeKey.valueOf("request");
+
+    /**
+     * The key for the current {@link AuthenticatedUser}.
+     */
+    public static final AttributeKey<AuthenticatedUser> AUTHENTICATED_USER = AttributeKey.valueOf("authenticatedUser");
 }

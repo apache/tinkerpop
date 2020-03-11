@@ -57,11 +57,11 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
     private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder();
     private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
 
-    protected final Settings.AuthenticationSettings authenticationSettings;
+    protected final Settings settings;
 
-    public SaslAuthenticationHandler(final Authenticator authenticator, final Settings.AuthenticationSettings authenticationSettings) {
+    public SaslAuthenticationHandler(final Authenticator authenticator, final Settings settings) {
         super(authenticator);
-        this.authenticationSettings = authenticationSettings;
+        this.settings = settings;
     }
 
     @Override
@@ -83,7 +83,7 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
                     // newSaslNegotiator can cause troubles - if we don't catch and respond nicely the driver seems
                     // to hang until timeout which isn't so nice. treating this like a server error as it means that
                     // the Authenticator isn't really ready to deal with requests for some reason.
-                    logger.error("{} is not ready to handle requests - check it's configuration or related services",
+                    logger.error("{} is not ready to handle requests - check its configuration or related services",
                             authenticator.getClass().getSimpleName());
 
                     final ResponseMessage error = ResponseMessage.build(requestMessage)
@@ -111,8 +111,9 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
                         final byte[] saslMessage = negotiator.get().evaluateResponse(saslResponse);
                         if (negotiator.get().isComplete()) {
                             final AuthenticatedUser user = negotiator.get().getAuthenticatedUser();
+                            ctx.channel().attr(StateKey.AUTHENTICATED_USER).set(user);
                             // User name logged with the remote socket address and authenticator classname for audit logging
-                            if (authenticationSettings.enableAuditLog) {
+                            if (settings.enableAuditLog || settings.authentication.enableAuditLog) {
                                 String address = ctx.channel().remoteAddress().toString();
                                 if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
                                 final String[] authClassParts = authenticator.getClass().toString().split("[.]");

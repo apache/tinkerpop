@@ -1147,24 +1147,42 @@ one key value pair present (since only one `Traversal` is being submitted, there
 single alias).
 |=========================================================
 
-=== Authentication
+=== Authentication and Authorization
 
 Gremlin Server supports link:https://en.wikipedia.org/wiki/Simple_Authentication_and_Security_Layer[SASL-based]
 authentication.  A SASL implementation provides a series of challenges and responses that a driver must comply with
-in order to authenticate.  By default, Gremlin Server only supports the "PLAIN" SASL mechanism, which is a cleartext
-password system.  When authentication is enabled, an incoming request is intercepted before it is evaluated by the
-`ScriptEngine`.  The request is saved on the server and a `AUTHENTICATE` challenge response (status code `407`) is
-returned to the client.
+in order to authenticate.  Gremlin Server supports the "PLAIN" SASL mechanism, which is a cleartext
+password system, for all link:https://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[Gremlin Language Variants].
+Other SASL mechanisms supported for selected clients are listed in the
+link:https://tinkerpop.apache.org/docs/current/reference/#security[security section of the Gremlin Server reference documentation].
 
-The client will detect the `AUTHENTICATE` and respond with an `authentication` for the `op` and an `arg` named `sasl`
-that contains the password.  The password should be either, an encoded sequence of UTF-8 bytes, delimited by 0
-(US-ASCII NUL), where the form is : `<NUL>username<NUL>password`, or a Base64 encoded string of the former (which
-in this instance would be `AHVzZXJuYW1lAHBhc3N3b3Jk`).  Should Gremlin Server be able to authenticate with the
-provided credentials, the server will return the results of the original request as it normally does without
-authentication.  If it cannot authenticate given the challenge response from the client, it will return `UNAUTHORIZED`
-(status code `401`).
+When authentication is enabled, an incoming request is intercepted before it is evaluated by the `ScriptEngine`.  The
+request is saved on the server and a `AUTHENTICATE` challenge response (status code `407`) is returned to the client.
+
+The client will detect the `AUTHENTICATE` and respond with an `authentication` for the `op` and an `arg` named `sasl`.
+In case of the "PLAIN" SASL mechanism the `arg` contains the password.  The password should be either, an encoded
+sequence of UTF-8 bytes, delimited by 0 (US-ASCII NUL), where the form is : `<NUL>username<NUL>password`, or a Base64
+encoded string of the former (which in this instance would be `AHVzZXJuYW1lAHBhc3N3b3Jk`).  Should Gremlin Server be
+able to authenticate with the provided credentials, the server will return the results of the original request as it
+normally does without authentication.  If it cannot authenticate given the challenge response from the client, it will
+return `UNAUTHORIZED` (status code `401`).
 
 NOTE: Gremlin Server does not support the "authorization identity" as described in link:https://tools.ietf.org/html/rfc4616[RFC4616].
+
+In addition to authenticating users at the start of a connection, Gremlin Server allows providers to authorize users on
+a per request basis. If
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#_configuring_2[a java class is configured] that implements the
+link:https://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/server/authz/Authorizer.html[Authorizer interface],
+Gremlin Server passes each request to this `Authorizer`. The `Authorizer` can deny authorization for the request by
+throwing an exception and Gremlin Server returns `UNAUTHORIZED` (status code `401`) to the client. The `Authorizer`
+authorizes the request by returning the original request or the request with some additional constraints. Gremlin Server
+proceeds with the returned request and on its turn returns the result of the request to the client. More details on
+implementing authorization can be found in the
+link:https://tinkerpop.apache.org/docs/current/reference/#security[reference documentation for Gremlin Server security].
+
+NOTE: While Gremlin Server supports this authorization feature it is not a feature that TinkerPop requires of graph
+providers as part of the agreement between client and server.
+
 
 [[gremlin-plugins]]
 == Gremlin Plugins

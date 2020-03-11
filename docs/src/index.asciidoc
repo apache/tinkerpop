@@ -108,5 +108,5 @@ Provides information on ways to contribute to TinkerPop as well as details on bu
 |image:tinkerpop-enabled.png[width=200] |link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Providers] +
 Documentation for providers who implement the TinkerPop interfaces, develop plugins or drivers, or provide other third-party libraries for TinkerPop.
 |image:gremlin-io2.png[width=200] |link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/[IO Reference] +
-Reference Documentation for providers and users of the various IO formats that TinkerPop has: GraphML, GraphSON and Gryo.
+Reference Documentation for providers and users of the various IO formats that TinkerPop has: GraphML, GraphSON, GraphBinary and Gryo.
 |=========================================================
