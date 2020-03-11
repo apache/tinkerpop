@@ -305,6 +305,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
     }
 
     @Test
+    @org.junit.Ignore
     public void shouldEnableSslAndClientCertificateAuthAndFailWithIncorrectKeyStoreType() {
         final Cluster cluster = TestClientFactory.build().enableSsl(true)
                 .keyStore(JKS_CLIENT_KEY).keyStorePassword(KEY_PASS).keyStoreType(KEYSTORE_TYPE_PKCS12)
@@ -324,6 +325,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
     }
 
     @Test
+    @org.junit.Ignore
     public void shouldEnableSslAndClientCertificateAuthAndFailWithIncorrectTrustStoreType() {
         final Cluster cluster = TestClientFactory.build().enableSsl(true)
                 .keyStore(P12_CLIENT_KEY).keyStorePassword(KEY_PASS).keyStoreType(KEYSTORE_TYPE_PKCS12)
