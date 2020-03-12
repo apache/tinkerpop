@@ -24,18 +24,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimiza
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.MessagePassingReductionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.InlineFilterStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.LazyBarrierStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchPredicateStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.OrderLimitStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathProcessorStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.*;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
@@ -44,16 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.tools.MultiMap;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -125,7 +105,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
      *
      * @param strategies the traversal strategies to sort
      */
-    public static Set<TraversalStrategy<?>> sortStrategies(final Set<TraversalStrategy<?>> strategies) {
+    public static List<TraversalStrategy<?>> sortStrategies(final List<TraversalStrategy<?>> strategies) {
         final Map<Class<? extends TraversalStrategy>, Set<Class<? extends TraversalStrategy>>> dependencyMap = new HashMap<>();
         final Map<Class<? extends TraversalStrategy>, Set<Class<? extends TraversalStrategy>>> strategiesByCategory = new HashMap<>();
         final Set<Class<? extends TraversalStrategy>> strategyClasses = new HashSet<>(strategies.size());
@@ -168,7 +148,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
             visit(dependencyMap, sortedStrategyClasses, seenStrategyClasses, unprocessedStrategyClasses, strategy);
         }
 
-        final Set<TraversalStrategy<?>> sortedStrategies = new LinkedHashSet<>();
+        final List<TraversalStrategy<?>> sortedStrategies = new ArrayList<>();
         //We now have a linked set of sorted strategy classes
         for (Class<? extends TraversalStrategy> strategyClass : sortedStrategyClasses) {
             for (TraversalStrategy strategy : strategies) {

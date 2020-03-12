@@ -25,17 +25,15 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class DefaultTraversalStrategies implements TraversalStrategies {
 
-    protected Set<TraversalStrategy<?>> traversalStrategies = new LinkedHashSet<>();
+    protected List<TraversalStrategy<?>> traversalStrategies = new ArrayList<>();
 
     @Override
     @SuppressWarnings({"unchecked", "varargs"})
@@ -93,7 +91,7 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     public DefaultTraversalStrategies clone() {
         try {
             final DefaultTraversalStrategies clone = (DefaultTraversalStrategies) super.clone();
-            clone.traversalStrategies = new LinkedHashSet<>(this.traversalStrategies.size());
+            clone.traversalStrategies = new ArrayList<>(this.traversalStrategies.size());
             clone.traversalStrategies.addAll(this.traversalStrategies);
             return clone;
         } catch (final CloneNotSupportedException e) {
