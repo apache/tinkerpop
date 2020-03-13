@@ -59,15 +59,16 @@ namespace Gremlin.Net.Driver
         ///     A delegate that will be invoked with the <see cref="ClientWebSocketOptions" />
         ///     object used to configure WebSocket connections.
         /// </param>
+        /// <param name="sessionId">The session Id if Gremlin Client in session mode, defaults to null as session-less Client.</param>
         public GremlinClient(GremlinServer gremlinServer, GraphSONReader graphSONReader = null,
             GraphSONWriter graphSONWriter = null, string mimeType = null,
             ConnectionPoolSettings connectionPoolSettings = null,
-            Action<ClientWebSocketOptions> webSocketConfiguration = null)
+            Action<ClientWebSocketOptions> webSocketConfiguration = null, string sessionId = null)
         {
             var reader = graphSONReader ?? new GraphSON3Reader();
             var writer = graphSONWriter ?? new GraphSON3Writer();
             var connectionFactory = new ConnectionFactory(gremlinServer, reader, writer, mimeType ?? DefaultMimeType,
-                webSocketConfiguration);
+                webSocketConfiguration, sessionId);
             _connectionPool =
                 new ConnectionPool(connectionFactory, connectionPoolSettings ?? new ConnectionPoolSettings());            
         }
