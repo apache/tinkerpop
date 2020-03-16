@@ -157,6 +157,16 @@ def test_multi_conn_pool(client):
     assert len(result_set.all().result()) == 6
 
 
+def test_multi_request_in_session(client):
+    # Overwrite fixture with session client
+    client = Client('ws://localhost:45940/gremlin', 'g', session=str(uuid.uuid4()))
+
+    assert client.submit('x = 1').all().result()[0] == 1
+    assert client.submit('x + 2').all().result()[0] == 3
+
+    client.close()
+
+
 def test_big_result_set(client):
     g = Graph().traversal()
     t = g.inject(1).repeat(__.addV('person').property('name', __.loops())).times(20000).count()

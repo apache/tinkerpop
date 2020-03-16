@@ -39,9 +39,11 @@ class Client:
     def __init__(self, url, traversal_source, protocol_factory=None,
                  transport_factory=None, pool_size=None, max_workers=None,
                  message_serializer=None, username="", password="",
-                 headers=None):
+                 headers=None, session=""):
         self._url = url
         self._headers = headers
+        self._session = session
+        self._sessionEnabled = (session != "")
         self._traversal_source = traversal_source
         if message_serializer is None:
             message_serializer = serializer.GraphSONSerializersV3d0()
@@ -95,10 +97,19 @@ class Client:
             self._pool.put_nowait(conn)
 
     def close(self):
+        if self._sessionEnabled:
+            self._close_session()
         while not self._pool.empty():
             conn = self._pool.get(True)
             conn.close()
         self._executor.shutdown()
+
+    def _close_session(self):
+        message = request.RequestMessage(
+            processor='session', op='close',
+            args={'session': self._session})
+        conn = self._pool.get(True)
+        return conn.write(message).result()
 
     def _get_connection(self):
         protocol = self._protocol_factory()
@@ -123,5 +134,8 @@ class Client:
                       'aliases': {'g': self._traversal_source}})
             if bindings:
                 message.args.update({'bindings': bindings})
+            if self._sessionEnabled:
+                message = message._replace(processor='session')
+                message.args.update({'session': self._session})
         conn = self._pool.get(True)
         return conn.write(message)
