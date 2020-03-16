@@ -18,6 +18,7 @@
 #
 import pytest
 
+import uuid
 from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.protocol import GremlinServerError
