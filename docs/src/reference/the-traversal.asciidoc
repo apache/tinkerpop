@@ -3286,6 +3286,10 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 
 The `valueMap()`-step yields a `Map` representation of the properties of an element.
 
+IMPORTANT: This step is the precursor to the <<elementmap-step,elementMap()-step>>. Users should typically
+choose `elementMap()` unless they utilize multi-properties. `elementMap()` effectively mimics the functionality of
+`valueMap(true).by(unfold())` as a single step.
+
 [gremlin-groovy,modern]
 ----
 g.V().valueMap()
