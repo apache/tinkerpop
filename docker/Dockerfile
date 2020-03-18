@@ -32,7 +32,7 @@ RUN apt-get update
 # include both java 8/11 so that we can use the same docker image for future builds on that version of the jdk as we do
 # for the older release branches. the java version to use is just controlled by JAVA_HOME hardcoded below
 RUN apt-get install -y openjdk-8-jdk openjdk-11-jdk gawk git maven openssh-server subversion zip
-RUN apt-get install -y --force-yes dotnet-sdk-2.2 mono-devel
+RUN apt-get install -y --force-yes dotnet-sdk-3.1 mono-devel
 
 # python3 on xenial install 3.5.2 which is insufficient for newer versions of python/typing#259 so
 # custom build and install 3.5.3 and upgrade pip along the way. this could be resolved by using bionic
