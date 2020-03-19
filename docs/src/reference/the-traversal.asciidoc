@@ -149,6 +149,7 @@ then possible to use start steps to spawn a `GraphTraversal`.
 
 Configuration methods can be identified by their names with make use of "with" as a prefix:
 
+* `with()` - Adds arbitrary configuration options which can be used by graph providers as configuration options.
 * `withBulk()` - This value is `true` by default allowing for normal <<barrier-step,bulking>> operations, but when set
 to `false`, introduces a subtle change in that behavior as shown in examples in <<sack-step,sack()-step>>.
 * `withComputer()` - Adds a `Computer` that will be used to process the traversal (<<sparkgraphcomputer,example>>).
