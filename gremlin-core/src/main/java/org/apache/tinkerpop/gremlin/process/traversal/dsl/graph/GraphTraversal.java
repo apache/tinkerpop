@@ -1216,7 +1216,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @param scope       whether the deduplication is on the stream (global) or the current object (local).
      * @param dedupLabels if labels are provided, then the scope labels determine de-duplication. No labels implies current object.
-     * @return the traversal with an appended {@link DedupGlobalStep}.
+     * @return the traversal with an appended {@link DedupGlobalStep} or {@link DedupLocalStep} depending on {@code scope}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dedup-step" target="_blank">Reference Documentation - Dedup Step</a>
      * @since 3.0.0-incubating
      */
