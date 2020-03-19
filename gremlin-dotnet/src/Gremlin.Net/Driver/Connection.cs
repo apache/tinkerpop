@@ -272,21 +272,7 @@ namespace Gremlin.Net.Driver
         public async Task CloseAsync()
         {
             Interlocked.Exchange(ref _connectionState, Closed);
-
-            if (_sessionEnabled)
-            {
-                await CloseSession().ConfigureAwait(false);
-            }
             await _webSocketConnection.CloseAsync().ConfigureAwait(false);
-        }
-
-        private async Task CloseSession()
-        {
-            // build a request to close this session, 'gremlin' in args as tips and not be executed actually
-            var msg = RequestMessage.Build(Tokens.OpsClose).Processor(Tokens.ProcessorSession)
-              .AddArgument(Tokens.ArgsGremlin, "session.close()").Create();
-
-            await SendMessageAsync(msg).ConfigureAwait(false);
         }
 
         #region IDisposable Support
