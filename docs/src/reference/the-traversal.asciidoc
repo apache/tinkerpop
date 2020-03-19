@@ -140,6 +140,36 @@ g.V().choose(has('name','marko'),
 <2> The same operation, but using the traversal representing of `branch()`.
 <3> The more specific boolean-based `choose()`-step is implemented as a `branch()`.
 
+[[start-steps]]
+=== Start Steps
+
+Not all steps are capable of starting a `GraphTraversal`. Only those steps on the `GraphTraversalSource` can do that.
+Many of the methods on `GraphTraversalSource` are actually for its configuration. From that configured object, it is
+then possible to use start steps to spawn a `GraphTraversal`.
+
+Configuration methods can be identified by their names with make use of "with" as a prefix:
+
+* `with()` - Adds arbitrary configuration options which can be used by graph providers as configuration options.
+* `withBulk()` - This value is `true` by default allowing for normal <<barrier-step,bulking>> operations, but when set
+to `false`, introduces a subtle change in that behavior as shown in examples in <<sack-step,sack()-step>>.
+* `withComputer()` - Adds a `Computer` that will be used to process the traversal (<<sparkgraphcomputer,example>>).
+* `withSack()` - Adds a "sack" that can be accessed by traversals spawned from this source (<<sack-step,example>>).
+* `withSideEffect()` - Adds an arbitrary `Object` to traversals spawned from this source which can be accessed as a
+side-effect given the supplied key (<<math-step,example>>).
+* `withStrategies()` - Includes additional `TraversalStrategy` instances to be applied to any traversals spawned from
+the configured source (<<readonlystrategy, example>>).
+* `withPath()`
+* `withoutStrategies()` - Removes a particular `TraversalStrategy` from those to be applied to traversals spawned from
+the configured source.
+
+Spawn steps, which actually yield a traversal, typically match the names of existing steps:
+
+* `addE()` - Adds an `Edge` to start the traversal (<<addedge-step, example>>).
+* `addV()` - Adds a `Vertex` to start the traversal (<<addvertex-step, example>>).
+* `E()` - Reads edges from the graph to start the traversal (<<graph-step, example>>).
+* `inject()` - Inserts arbitrary objects to start the traversal (<<inject-step, example>>).
+* `V()` - Reads vertices from the graph to start the traversal (<<graph-step, example>>).
+
 [[terminal-steps]]
 === Terminal Steps
 
@@ -951,15 +981,25 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[graph-step]]
 === Graph Step
 
-The `V()`-step is usually used to start a `GraphTraversal`, but can also be used mid-traversal.
+Graph steps are those that read vertices, `V()`, or edges, `E()`, from the graph. The `V()`-step is usually used to
+start a `GraphTraversal`, but can also be used mid-traversal. The `E()`-step on the other hand can only be used as a
+start step.
 
 [gremlin-groovy,modern]
 ----
+g.V(1) <1>
 g.V().has('name', within('marko', 'vadas', 'josh')).as('person').
-  V().has('name', within('lop', 'ripple')).addE('uses').from('person')
+  V().has('name', within('lop', 'ripple')).addE('uses').from('person') <2>
+g.E(11) <3>
+g.E().hasLabel('knows').has('weight', gt(0.75))
 ----
 
-NOTE: Whether a mid-traversal `V()` uses an index or not, depends on a) whether suitable index exists and b) if the particular graph system provider implemented this functionality.
+<1> Find the vertex by its unique identifier (i.e. `T.id`) - not all graphs will use a numeric value for their identifier.
+<2> An example where `V()` is used both as a start step and in the middle of a traversal.
+<3> Find the edge by its unique identifier (i.e. `T.id`) - not all graphs will use a numeric value for their identifier.
+
+NOTE: Whether a mid-traversal `V()` uses an index or not, depends on a) whether suitable index exists and b) if the
+particular graph system provider implemented this functionality.
 
 [gremlin-groovy,modern]
 ----
@@ -974,7 +1014,8 @@ g.V().has('name', within('marko', 'vadas', 'josh')).as('person').
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#V-java.lang.Object...-++[`V(Object...)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#V-java.lang.Object...-++[`V(Object...)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#E-java.lang.Object...-++[`E(Object...)`]
 
 [[group-step]]
 === Group Step
@@ -2622,8 +2663,8 @@ g.withBulk(false).withSack(1.0f).V(1).local(outE('knows').barrier(normSack).inV(
 <4> Like 1, but using barrier internally
 <5> The `local(...barrier(normSack)...)` ensures that all traversers leaving vertex 1 have an evenly distributed amount of the initial 1.0 "energy" (50-50), i.e. the sack is 0.5 on each result
 <6> Like 3, but using `sum` as merge operator leads to the expected 1.0
-<7> There is now a single traverser with bulk of 2 and sack of 1.0 and thus, setting withBulk(false) yields the expected 1.0
-<8> Like 7, but without the sum operator
+<7> There is now a single traverser with bulk of 2 and sack of 1.0 and thus, setting `withBulk(false)`` yields the expected 1.0
+<8> Like 7, but without the `sum` operator
 
 *Additional References*
 
@@ -3996,10 +4037,21 @@ By writing elements to particular partitions and then restricting read partition
 multiple graphs within a single address space. Moreover, by supporting references between partitions, it is possible
 to merge those multiple graphs (i.e. join partitions).
 
+[[readonlystrategy]]
 === ReadOnlyStrategy
 
 `ReadOnlyStrategy` is largely self-explanatory.  A `Traversal` that has this strategy applied will throw an
 `IllegalStateException` if the `Traversal` has any mutating steps within it.
+
+[source,text]
+----
+gremlin> readonly = g.withStrategies(ReadOnlyStrategy.instance())
+==>graphtraversalsource[tinkergraph[vertices:5 edges:7], standard]
+gremlin> readonly.addV('person')
+The provided traversal has a mutating step and thus is not read only: AddVertexStartStep({label=[person]})
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+----
 
 === SubgraphStrategy
 
