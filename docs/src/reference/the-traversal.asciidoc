@@ -2185,6 +2185,28 @@ g.V().out().out().path().by(
                                  __.in('created').values('name')).fold())
 ----
 
+It's possible to limit the path using the <<to-step,`to()`>> or <<from-step,`from()`>> step modulators.
+
+[gremlin-groovy,modern]
+----
+g.V().has('person','name','vadas').as('e').
+      in('knows').
+      out('knows').where(neq('e')).
+      path().by('name') <1>
+g.V().has('person','name','vadas').as('e').
+       in('knows').as('m').
+       out('knows').where(neq('e')).
+       path().to('m').by('name') <2>
+g.V().has('person','name','vadas').as('e').
+       in('knows').as('m').
+       out('knows').where(neq('e')).
+       path().from('m').by('name') <3>
+----
+
+<1> Obtain the full path from vadas to josh.
+<2> Save the middle node, marko, and use the `to()` modulator to show only the path from vadas to marko
+<3> Use the `from()` mdoulator to show only the path from marko to josh
+
 WARNING: Generating path information is expensive as the history of the traverser is stored into a Java list. With
 numerous traversers, there are numerous lists. Moreover, in an OLAP <<graphcomputer,`GraphComputer`>> environment
 this becomes exceedingly prohibitive as there are traversers emanating from all vertices in the graph in parallel.
