@@ -2189,15 +2189,15 @@ It's possible to limit the path using the <<to-step,`to()`>> or <<from-step,`fro
 
 [gremlin-groovy,modern]
 ----
-g.V().has('person','name','vardas').as('e').
+g.V().has('person','name','vadas').as('e').
       in('knows').
       out('knows').where(neq('e')).
       path().by('name') <1>
-g.V().has('person','name','vardas').as('e').
+g.V().has('person','name','vadas').as('e').
        in('knows').as('m').
        out('knows').where(neq('e')).
        path().to('m').by('name') <2>
-g.V().has('person','name','vardas').as('e').
+g.V().has('person','name','vadas').as('e').
        in('knows').as('m').
        out('knows').where(neq('e')).
        path().from('m').by('name') <3>
