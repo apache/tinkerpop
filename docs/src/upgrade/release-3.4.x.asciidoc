@@ -37,6 +37,14 @@ specific clear operations and provides a common way to perform that function.
 
 link:https://issues.apache.org/jira/browse/TINKERPOP-2357[TINKERPOP-2357]
 
+==== Gremlin.NET: Automatic Reconnect
+
+The Gremlin.NET driver now automatically tries to reconnect to a server when no open connection is available to submit
+a request. This should enable the driver to handle cases where the server is only temporarily unavailable or where the
+server has closed connections which some graph providers do when no requests were sent for some time.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2288[TINKERPOP-2288]
+
 == TinkerPop 3.4.6
 
 *Release Date: February 20, 2020*

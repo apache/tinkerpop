@@ -47,5 +47,24 @@ namespace Gremlin.Net.UnitTest.Driver
             Assert.Throws<ArgumentOutOfRangeException>(() => new ConnectionPoolSettings
                 {MaxInProcessPerConnection = invalidMaxInProcessPerConnection});
         }
+        
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(-100)]
+        public void ShouldThrowForInvalidReconnectionAttempts(int reconnectionAttempts)
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => new ConnectionPoolSettings
+                {ReconnectionAttempts = reconnectionAttempts});
+        }
+
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(-1000)]
+        [InlineData(0)]
+        public void ShouldThrowForInvalidReconnectionBaseDelay(int baseDelayInMs)
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => new ConnectionPoolSettings
+                {ReconnectionBaseDelay = TimeSpan.FromMilliseconds(baseDelayInMs)});
+        }
     }
 }

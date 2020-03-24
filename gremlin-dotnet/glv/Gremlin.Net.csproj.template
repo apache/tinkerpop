@@ -64,6 +64,7 @@ NOTE that versions suffixed with "-rc" are considered release candidates (i.e. p
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
+    <PackageReference Include="Polly" Version="7.2.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'\$(TargetFramework)' == 'netstandard1.3'">
@@ -73,9 +74,9 @@ NOTE that versions suffixed with "-rc" are considered release candidates (i.e. p
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="../../LICENSE" Pack="true" PackagePath=""/>
-    <None Include="../../NOTICE" Pack="true" PackagePath=""/>
-    <None Include="../../../docs/static/images/gremlin-dotnet-logo_256x256.png" Pack="true" PackagePath="\"/>
+    <None Include="../../LICENSE" Pack="true" PackagePath="" />
+    <None Include="../../NOTICE" Pack="true" PackagePath="" />
+    <None Include="../../../docs/static/images/gremlin-dotnet-logo_256x256.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
 </Project>
