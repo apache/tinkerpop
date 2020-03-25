@@ -346,7 +346,7 @@ limitations under the License.
                                         </copy>
                                         <exec dir="${project.build.directory}/python" executable="virtualenv"
                                               failonerror="true">
-                                            <arg line="--python=python env"/>
+                                            <arg line="--python=python3 env"/>
                                         </exec>
                                     </tasks>
                                 </configuration>
