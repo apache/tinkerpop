@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Added `trustStoreType` such that keystore and truststore can be of different types in the Java driver.
 * Added session support to gremlin-javascript.
+* Fixed bug in Gremlin Server shutdown if failures occurred during `GraphManager` initialization.
 * Modified Gremlin Server to close the session when the channel itself is closed.
 * Added `maxWaitForClose` configuration option to the Java driver.
 * Deprecated `maxWaitForSessionClose` in the Java driver.
