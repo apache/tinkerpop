@@ -58,9 +58,13 @@ public enum Order implements Comparator<Object> {
 
         @Override
         public int compare(final Object first, final Object second) {
-            return first instanceof Number && second instanceof Number
-                    ? NumberHelper.compare((Number) first, (Number) second)
-                    : ascendingComparator.compare((Comparable) first, (Comparable) second);
+            // need to convert enum to string representations for comparison or else you can get cast exceptions.
+            // this typically happens when sorting local on the keys of maps that contain T
+            final Object f = first instanceof Enum<?> ? ((Enum<?>) first).name() : first;
+            final Object s = second instanceof Enum<?> ? ((Enum<?>) second).name() : second;
+            return f instanceof Number && s instanceof Number
+                    ? NumberHelper.compare((Number) f, (Number) s)
+                    : ascendingComparator.compare((Comparable) f, (Comparable) s);
         }
 
         @Override
@@ -79,9 +83,13 @@ public enum Order implements Comparator<Object> {
 
         @Override
         public int compare(final Object first, final Object second) {
-            return first instanceof Number && second instanceof Number
-                    ? NumberHelper.compare((Number) second, (Number) first)
-                    : descendingComparator.compare((Comparable) first, (Comparable) second);
+            // need to convert enum to string representations for comparison or else you can get cast exceptions.
+            // this typically happens when sorting local on the keys of maps that contain T
+            final Object f = first instanceof Enum<?> ? ((Enum<?>) first).name() : first;
+            final Object s = second instanceof Enum<?> ? ((Enum<?>) second).name() : second;
+            return f instanceof Number && s instanceof Number
+                    ? NumberHelper.compare((Number) s, (Number) f)
+                    : descendingComparator.compare((Comparable) f, (Comparable) s);
         }
 
         @Override
