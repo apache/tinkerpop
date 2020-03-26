@@ -368,17 +368,17 @@ Feature: Step - order()
       TODO
       """
 
-  Scenario: g_VX1X_valueMapXtrueX_orderXlocalX_byXkeys_descXunfold
+  Scenario: g_VX1X_elementMap_orderXlocalX_byXkeys_descXunfold
     Given the modern graph
     And using the parameter v1Id defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1Id).valueMap(true).order(Scope.local).by(Column.keys, Order.desc).unfold()
+      g.V(v1Id).elementMap().order(Scope.local).by(Column.keys, Order.desc).unfold()
       """
     When iterated to list
     Then the result should be ordered
       | result |
-      | m[{"name":["marko"]}] |
+      | m[{"name":"marko"}] |
       | m[{"t[label]":"person"}] |
       | m[{"t[id]":"v[marko].id"}] |
-      | m[{"age":[29]}] |
+      | m[{"age":29}] |
