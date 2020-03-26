@@ -104,7 +104,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map.Entry<String, Number>> get_g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_unfold_order_byXvalues_descX();
 
-    public abstract Traversal<Vertex, Map.Entry<Object, Object>> get_g_VX1X_valueMapXtrueX_orderXlocalX_byXkeys_descXunfold(final Object v1Id);
+    public abstract Traversal<Vertex, Map.Entry<Object, Object>> get_g_VX1X_elementMap_orderXlocalX_byXkeys_descXunfold(final Object v1Id);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -430,8 +430,8 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_VX1X_valueMapXtrueX_orderXlocalX_byXkeys_descXunfold() {
-        final Traversal<Vertex, ?> traversal = get_g_VX1X_valueMapXtrueX_orderXlocalX_byXkeys_descXunfold(convertToVertexId(graph, "marko"));
+    public void g_VX1X_elementMap_orderXlocalX_byXkeys_descXunfold() {
+        final Traversal<Vertex, ?> traversal = get_g_VX1X_elementMap_orderXlocalX_byXkeys_descXunfold(convertToVertexId(graph, "marko"));
         printTraversalForm(traversal);
 
         final Object name = traversal.next();
@@ -578,8 +578,8 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map.Entry<Object, Object>> get_g_VX1X_valueMapXtrueX_orderXlocalX_byXkeys_descXunfold(final Object v1Id) {
-            return g.V(v1Id).valueMap(true).order(Scope.local).by(keys, desc).unfold();
+        public Traversal<Vertex, Map.Entry<Object, Object>> get_g_VX1X_elementMap_orderXlocalX_byXkeys_descXunfold(final Object v1Id) {
+            return g.V(v1Id).elementMap().order(Scope.local).by(keys, desc).unfold();
         }
     }
 }
