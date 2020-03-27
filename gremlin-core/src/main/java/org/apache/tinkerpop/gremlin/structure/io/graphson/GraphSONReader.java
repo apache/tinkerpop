@@ -177,7 +177,8 @@ public final class GraphSONReader implements GraphReader {
                              final Direction attachEdgesOfThisDirection) throws IOException {
         // graphson v3 has special handling for generic Map instances, by forcing to linkedhashmap (which is probably
         // what it should have been anyway) stargraph format can remain unchanged across all versions
-        final Map<String, Object> vertexData = mapper.readValue(inputStream, version == GraphSONVersion.V3_0 ? linkedHashMapTypeReference : mapTypeReference);
+        final Map<String, Object> vertexData = version == GraphSONVersion.V3_0 ?
+                mapper.readValue(inputStream, linkedHashMapTypeReference) : mapper.readValue(inputStream, mapTypeReference);
         final StarGraph starGraph = StarGraphGraphSONDeserializer.readStarGraphVertex(vertexData);
         if (vertexAttachMethod != null) vertexAttachMethod.apply(starGraph.getStarVertex());
 
@@ -315,9 +316,9 @@ public final class GraphSONReader implements GraphReader {
 
         /**
          * If the adjacency list is wrapped in a JSON object, as is done when writing a graph with
-         * {@link GraphSONWriter.Builder#wrapAdjacencyList} set to {@code true}, this setting needs to be set to
-         * {@code true} to properly read it.  By default, this value is {@code false} and the adjacency list is
-         * simply read as line delimited vertices.
+         * {@link GraphSONWriter.Builder#wrapAdjacencyList(boolean)} wrapAdjacencyList} set to {@code true}, this
+         * setting needs to be set to {@code true} to properly read it.  By default, this value is {@code false} and
+         * the adjacency list is simply read as line delimited vertices.
          * <p/>
          * By setting this value to {@code true}, the generated JSON is no longer "splittable" by line and thus not
          * suitable for OLAP processing.  Furthermore, reading this format of the JSON with
