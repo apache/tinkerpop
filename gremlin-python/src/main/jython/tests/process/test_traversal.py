@@ -20,6 +20,7 @@
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 from gremlin_python.structure.graph import Graph
+from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.traversal import P
 from gremlin_python.process.traversal import Binding
 from gremlin_python.process.graph_traversal import __
@@ -27,7 +28,7 @@ from gremlin_python.process.graph_traversal import __
 
 class TestTraversal(object):
     def test_bytecode(self):
-        g = Graph().traversal()
+        g = traversal().withGraph(Graph())
         bytecode = g.V().out("created").bytecode
         assert 0 == len(bytecode.bindings.keys())
         assert 0 == len(bytecode.source_instructions)
@@ -82,3 +83,22 @@ class TestTraversal(object):
         assert 0 == len(bytecode.bindings.keys())
         assert 0 == len(bytecode.source_instructions)
         assert 0 == len(bytecode.step_instructions)
+
+    def test_clone_traversal(self):
+        g = traversal().withGraph(Graph())
+        original = g.V().out("created")
+        clone = original.clone().out("knows")
+        cloneClone = clone.clone().out("created")
+
+        assert 2 == len(original.bytecode.step_instructions)
+        assert 3 == len(clone.bytecode.step_instructions)
+        assert 4 == len(cloneClone.bytecode.step_instructions)
+
+        original.has("person", "name", "marko")
+        clone.V().out()
+
+        assert 3 == len(original.bytecode.step_instructions)
+        assert 5 == len(clone.bytecode.step_instructions)
+        assert 4 == len(cloneClone.bytecode.step_instructions)
+
+
