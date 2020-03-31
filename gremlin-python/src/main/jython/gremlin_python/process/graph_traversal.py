@@ -18,6 +18,7 @@
 #
 
 import sys
+import copy
 from .traversal import Traversal
 from .traversal import TraversalStrategies
 from .strategies import VertexProgramStrategy
@@ -142,7 +143,7 @@ class GraphTraversal(Traversal):
         return self.values(key)
 
     def clone(self):
-        return GraphTraversal(self.graph, self.traversal_strategies, self.bytecode)
+        return GraphTraversal(self.graph, self.traversal_strategies, copy.deepcopy(self.bytecode))
 
     def V(self, *args):
         self.bytecode.add_step("V", *args)
