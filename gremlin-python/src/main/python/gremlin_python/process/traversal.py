@@ -17,10 +17,10 @@
 # under the License.
 #
 
+import copy
 from aenum import Enum
 from .. import statics
 from ..statics import long
-
 
 class Traversal(object):
     def __init__(self, graph, traversal_strategies, bytecode):
@@ -610,6 +610,20 @@ class Bytecode(object):
             return self.source_instructions == other.source_instructions and self.step_instructions == other.step_instructions
         else:
             return False
+
+    def __copy__(self):
+        bb = Bytecode()
+        bb.source_instructions = self.source_instructions
+        bb.step_instructions = self.step_instructions
+        bb.bindings = self.bindings
+        return bb
+
+    def __deepcopy__(self, memo={}):
+        bb = Bytecode()
+        bb.source_instructions = copy.deepcopy(self.source_instructions, memo)
+        bb.step_instructions = copy.deepcopy(self.step_instructions, memo)
+        bb.bindings = copy.deepcopy(self.bindings, memo)
+        return bb
 
     def __convertArgument(self,arg):
         if isinstance(arg, Traversal):
