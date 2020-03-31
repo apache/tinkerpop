@@ -60,6 +60,10 @@ TinkerPop has a link:http://groups.google.com/group/gremlin-users[user mailing l
 pass:[<a href="https://lists.apache.org/list.html?dev@tinkerpop.apache.org">dev mailing list</a>].  As a committer,
 it is a good idea to join both.
 
+TinkerPop also has a link:https://the-asf.slack.com/archives/CUBJ577EW[Slack channel] for more real-time communication
+about the project among contributors, though it must be kept in mind that project discussion and decisions must occur
+on the dev mailing list mentioned above.
+
 Occasionally, online meetings via video conference are held. These meetings are schedule via the dev mailing list
 about a week before they are to occur to find a day and time that is available for those interested in attending.
 On the day of the meeting, the meeting organizer will create a Google Hangout (or similar video conferencing link).
