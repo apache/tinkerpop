@@ -37,6 +37,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -67,10 +68,19 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
     protected Double map(final Traverser.Admin<S> traverser) {
         final Expression localExpression = new Expression(this.expression.getExpression());
         for (final String var : this.expression.getVariables()) {
-            localExpression.setVariable(var,
-                    var.equals(CURRENT) ?
-                            TraversalUtil.applyNullable(traverser, this.traversalRing.next()).doubleValue() :
-                            TraversalUtil.applyNullable((S) this.getNullableScopeValue(Pop.last, var, traverser), this.traversalRing.next()).doubleValue());
+            final Object o = var.equals(CURRENT) ?
+                    TraversalUtil.applyNullable(traverser, this.traversalRing.next()) :
+                    TraversalUtil.applyNullable((S) this.getNullableScopeValue(Pop.last, var, traverser), this.traversalRing.next());
+
+            // it's possible for ElementValueTraversal to return null or something that is possibly not a Number.
+            // worth a check to try to return a nice error message. The TraversalRing<S, Number> is a bit optimistic
+            // given type erasure. It could easily end up otherwise.
+            if (!(o instanceof Number))
+                throw new IllegalStateException(String.format(
+                        "The variable %s for math() step must resolve to a Number - it is instead of type %s with value %s",
+                        var, Objects.isNull(o) ? "null" : o.getClass().getName(), o));
+
+            localExpression.setVariable(var, ((Number) o).doubleValue());
         }
         this.traversalRing.reset();
         return localExpression.evaluate();

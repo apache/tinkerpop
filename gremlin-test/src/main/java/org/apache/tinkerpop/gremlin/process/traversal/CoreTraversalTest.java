@@ -48,8 +48,10 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inject;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
+import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -267,6 +269,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         //They should be converted to regular exceptions before returning to the the user.
         try {
             g.V().has("foo").next();
+            fail("Expected a user facing NoSuchElementException");
         } catch (NoSuchElementException e) {
             assertEquals(NoSuchElementException.class, e.getClass());
         }
@@ -289,7 +292,6 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         } catch (NoSuchElementException e) {
             assertEquals(FastNoSuchElementException.class, e.getClass());
         }
-
     }
 
     @Test
@@ -298,5 +300,27 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         final GraphTraversalSource simulatedRemoteG = traversal().withRemote(new EmbeddedRemoteConnection(g));
         assertEquals(6, simulatedRemoteG.V().count().next().intValue());
         assertEquals("marko", simulatedRemoteG.V().has("name", "marko").values("name").next());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldThrowNiceExceptionWhenMapKeyNotFoundInMathStep() {
+        try {
+            g.V().hasLabel("person").project("age").by("age").as("x").math("x").by("aged").iterate();
+            fail("Traversal should no have succeeded since the 'aged' key does not exist");
+        } catch (IllegalStateException ise) {
+            assertThat(ise.getMessage(), startsWith("The variable x for math() step must resolve to a Number"));
+        }
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldThrowNiceExceptionWhenMapKeyIsNotResolvingToNumberInMathStep() {
+        try {
+            g.V().hasLabel("person").project("age").by("age").as("x").math("x").by("name").iterate();
+            fail("Traversal should no have succeeded since the 'name' key does not resolve to Number");
+        } catch (IllegalStateException ise) {
+            assertThat(ise.getMessage(), startsWith("The variable x for math() step must resolve to a Number"));
+        }
     }
 }
