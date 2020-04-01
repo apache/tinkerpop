@@ -57,6 +57,11 @@ namespace Gremlin.Net.Driver
         public static string ProcessorTraversal = "traversal";
 
         /// <summary>
+        ///     Session OpProcessor.
+        /// </summary>
+        public static string ProcessorSession = "session";
+
+        /// <summary>
         ///     Argument name that allows to defines the number of iterations each ResponseMessage should contain - overrides the
         ///     resultIterationBatchSize server setting.
         /// </summary>
@@ -77,6 +82,11 @@ namespace Gremlin.Net.Driver
         ///     Argument name that corresponds to the Traversal to evaluate.
         /// </summary>
         public static string ArgsGremlin = "gremlin";
+
+        /// <summary>
+        ///     Argument name that allows to define the id of session.
+        /// </summary>
+        public static string ArgsSession = "session";
 
         /// <summary>
         ///     Argument name that allows to change the flavor of Gremlin used (e.g. gremlin-groovy).

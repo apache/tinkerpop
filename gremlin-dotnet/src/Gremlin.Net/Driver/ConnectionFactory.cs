@@ -34,12 +34,15 @@ namespace Gremlin.Net.Driver
         private readonly Action<ClientWebSocketOptions> _webSocketConfiguration;
         private readonly GremlinServer _gremlinServer;
         private readonly string _mimeType;
+        private readonly string _sessionId;
 
         public ConnectionFactory(GremlinServer gremlinServer, GraphSONReader graphSONReader,
-            GraphSONWriter graphSONWriter, string mimeType, Action<ClientWebSocketOptions> webSocketConfiguration)
+            GraphSONWriter graphSONWriter, string mimeType,
+            Action<ClientWebSocketOptions> webSocketConfiguration, string sessionId)
         {
             _gremlinServer = gremlinServer;
             _mimeType = mimeType;
+            _sessionId = sessionId;
             _graphSONReader = graphSONReader ?? throw new ArgumentNullException(nameof(graphSONReader));
             _graphSONWriter = graphSONWriter ?? throw new ArgumentNullException(nameof(graphSONWriter));
             _webSocketConfiguration = webSocketConfiguration;
@@ -48,7 +51,7 @@ namespace Gremlin.Net.Driver
         public Connection CreateConnection()
         {
             return new Connection(_gremlinServer.Uri, _gremlinServer.Username, _gremlinServer.Password, _graphSONReader,
-                                 _graphSONWriter, _mimeType, _webSocketConfiguration);
+                                 _graphSONWriter, _mimeType, _webSocketConfiguration, _sessionId);
         }
     }
 }

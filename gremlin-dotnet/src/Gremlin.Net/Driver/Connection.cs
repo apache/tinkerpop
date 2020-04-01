@@ -51,6 +51,8 @@ namespace Gremlin.Net.Driver
         private readonly WebSocketConnection _webSocketConnection;
         private readonly string _username;
         private readonly string _password;
+        private readonly string _sessionId;
+        private readonly bool _sessionEnabled;
         private readonly ConcurrentQueue<RequestMessage> _writeQueue = new ConcurrentQueue<RequestMessage>();
 
         private readonly ConcurrentDictionary<Guid, IResponseHandlerForSingleRequestMessage> _callbackByRequestId =
@@ -60,11 +62,17 @@ namespace Gremlin.Net.Driver
         private const int Closed = 1;
 
         public Connection(Uri uri, string username, string password, GraphSONReader graphSONReader,
-            GraphSONWriter graphSONWriter, string mimeType, Action<ClientWebSocketOptions> webSocketConfiguration)
+            GraphSONWriter graphSONWriter, string mimeType,
+            Action<ClientWebSocketOptions> webSocketConfiguration, string sessionId)
         {
             _uri = uri;
             _username = username;
             _password = password;
+            _sessionId = sessionId;
+            if (!string.IsNullOrEmpty(sessionId))
+            {
+                _sessionEnabled = true;
+            }
             _graphSONReader = graphSONReader;
             _graphSONWriter = graphSONWriter;
             _messageSerializer = new JsonMessageSerializer(mimeType);
@@ -235,9 +243,30 @@ namespace Gremlin.Net.Driver
 
         private async Task SendMessageAsync(RequestMessage message)
         {
+            if (_sessionEnabled)
+            {
+                message = RebuildSessionMessage(message);
+            }
             var graphsonMsg = _graphSONWriter.WriteObject(message);
             var serializedMsg = _messageSerializer.SerializeMessage(graphsonMsg);
             await _webSocketConnection.SendMessageAsync(serializedMsg).ConfigureAwait(false);
+        }
+
+        private RequestMessage RebuildSessionMessage(RequestMessage message)
+        {
+            if (message.Processor == Tokens.OpsAuthentication)
+            {
+                return message;
+            }
+
+            var msgBuilder = RequestMessage.Build(message.Operation)
+              .OverrideRequestId(message.RequestId).Processor(Tokens.ProcessorSession);
+            foreach(var kv in message.Arguments)
+            {
+                msgBuilder.AddArgument(kv.Key, kv.Value);
+            }
+            msgBuilder.AddArgument(Tokens.ArgsSession, _sessionId);
+            return msgBuilder.Create();
         }
 
         public async Task CloseAsync()

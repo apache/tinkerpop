@@ -278,5 +278,18 @@ namespace Gremlin.Net.IntegrationTest.Driver
                 Assert.Equal(expectedKeepAliveInterval, optionsSet.KeepAliveInterval);
             }
         }
+
+        [Fact]
+        public async Task ShouldSaveVariableBetweenRequestsInSession()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using (var gremlinClient = new GremlinClient(gremlinServer, sessionId: Guid.NewGuid().ToString()))
+            {
+                await gremlinClient.SubmitWithSingleResultAsync<int>("x = 1");
+
+                var response = await gremlinClient.SubmitWithSingleResultAsync<int>("x + 2");
+                Assert.Equal(3, response);
+            }
+        }
     }
 }
