@@ -21,14 +21,15 @@
 
 #endregion
 
-using System;
+using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class Int16Converter : NumberConverter
+    internal class Int16Converter : NumberConverter<short>
     {
         protected override string GraphSONTypeName => "Int16";
-        protected override Type HandledType => typeof(short);
         protected override string Prefix => "gx";
+        
+        protected override dynamic FromJsonElement(JsonElement graphson) => graphson.GetInt16();
     }
 }

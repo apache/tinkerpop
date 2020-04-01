@@ -21,12 +21,8 @@
 
 #endregion
 
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Win32.SafeHandles;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
@@ -34,17 +30,16 @@ namespace Gremlin.Net.Structure.IO.GraphSON
     {
         private static readonly IReadOnlyList<object> EmptyList = new object[0];
         
-        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
+        public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
-            var jArray = graphsonObject as JArray;
-            if (jArray == null)
+            if (graphsonObject.ValueKind != JsonValueKind.Array)
             {
                 return EmptyList;
             }
-            var result = new object[jArray.Count];
+            var result = new object[graphsonObject.GetArrayLength()];
             for (var i = 0; i < result.Length; i++)
             {
-                result[i] = reader.ToObject(jArray[i]);
+                result[i] = reader.ToObject(graphsonObject[i]);
             }
             // object[] implements IList<object>
             return result;

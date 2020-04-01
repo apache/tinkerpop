@@ -21,13 +21,14 @@
 
 #endregion
 
-using System;
+using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class Int32Converter : NumberConverter
+    internal class Int32Converter : NumberConverter<int>
     {
         protected override string GraphSONTypeName => "Int32";
-        protected override Type HandledType => typeof(int);
+
+        protected override dynamic FromJsonElement(JsonElement graphson) => graphson.GetInt32();
     }
 }

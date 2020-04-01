@@ -21,17 +21,17 @@
 
 #endregion
 
+using System.Text.Json;
 using Gremlin.Net.Process.Traversal;
-using Newtonsoft.Json.Linq;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
     internal class TraverserReader : IGraphSONDeserializer
     {
-        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
+        public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
-            var bulkObj = reader.ToObject(graphsonObject["bulk"]);
-            var valueObj = reader.ToObject(graphsonObject["value"]);
+            var bulkObj = reader.ToObject(graphsonObject.GetProperty("bulk"));
+            var valueObj = reader.ToObject(graphsonObject.GetProperty("value"));
             return new Traverser(valueObj, bulkObj);
         }
     }

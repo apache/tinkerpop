@@ -23,15 +23,12 @@
 
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Messages;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Text;
 using Xunit;
 
 namespace Gremlin.Net.UnitTest.Driver
 {
-    // Will be used in future to switch to new .NET Core Json deserializer
     public class JsonMessageSerializerTests
     {
         [Fact]
@@ -39,7 +36,7 @@ namespace Gremlin.Net.UnitTest.Driver
         {
             var sut = new JsonMessageSerializer(GremlinClient.DefaultMimeType);
 
-            Assert.Throws<ArgumentNullException>(()=> sut.DeserializeMessage<ResponseMessage<JToken>>(null));
+            Assert.Throws<ArgumentNullException>(()=> sut.DeserializeMessage<ResponseMessage>(null));
         }
 
         [Fact]
@@ -47,7 +44,7 @@ namespace Gremlin.Net.UnitTest.Driver
         {
             var sut = new JsonMessageSerializer(GremlinClient.DefaultMimeType);
 
-            Assert.Null(sut.DeserializeMessage<ResponseMessage<JToken>>(new byte[0]));            
+            Assert.Null(sut.DeserializeMessage<ResponseMessage>(new byte[0]));            
         }
 
         [Fact]
@@ -56,7 +53,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var sut = new JsonMessageSerializer(GremlinClient.DefaultMimeType);
             var ofEmpty = Encoding.UTF8.GetBytes("");
 
-            Assert.Null(sut.DeserializeMessage<ResponseMessage<JToken>>(ofEmpty));
+            Assert.Null(sut.DeserializeMessage<ResponseMessage>(ofEmpty));
         }
 
         [Fact]
@@ -65,7 +62,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var sut = new JsonMessageSerializer(GremlinClient.DefaultMimeType);
             var ofNull = Encoding.UTF8.GetBytes("null");
 
-            Assert.Null(sut.DeserializeMessage<ResponseMessage<JToken>>(ofNull));
+            Assert.Null(sut.DeserializeMessage<ResponseMessage>(ofNull));
         }
     }
 }

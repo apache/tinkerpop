@@ -20,15 +20,19 @@
  */
 #endregion
 
-using System;
+using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class CharConverter : NumberConverter
+    internal class CharConverter : NumberConverter<char>
     {
         protected override string GraphSONTypeName => "Char";
-        protected override Type HandledType => typeof(char);
         protected override string Prefix => "gx";
         protected override bool StringifyValue => true;
+        protected override dynamic FromJsonElement(JsonElement graphson)
+        {
+            var deserializedByte = graphson.GetString();
+            return deserializedByte[0];
+        }
     }
 }

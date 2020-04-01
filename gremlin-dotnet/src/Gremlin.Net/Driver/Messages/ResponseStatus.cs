@@ -23,19 +23,15 @@
 
 using System.Collections.Generic;
 using Gremlin.Net.Driver.Exceptions;
-using Newtonsoft.Json;
 
 namespace Gremlin.Net.Driver.Messages
 {
     internal class ResponseStatus
     {
-        [JsonProperty(PropertyName = "code")]
         public ResponseStatusCode Code { get; set; }
-
-        [JsonProperty(PropertyName = "attributes")]
+        
         public Dictionary<string, object> Attributes { get; set; }
-
-        [JsonProperty(PropertyName = "message")]
+        
         public string Message { get; set; }
     }
 

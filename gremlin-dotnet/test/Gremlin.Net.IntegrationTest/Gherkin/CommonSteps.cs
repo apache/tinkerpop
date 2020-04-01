@@ -26,13 +26,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Gherkin.Ast;
 using Gremlin.Net.IntegrationTest.Gherkin.Attributes;
 using Gremlin.Net.IntegrationTest.Gherkin.TraversalEvaluation;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
@@ -46,6 +46,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private readonly IDictionary<string, object> _parameters = new Dictionary<string, object>();
         private ITraversal _traversal;
         private object[] _result;
+        private static readonly JsonSerializerOptions JsonDeserializingOptions = new JsonSerializerOptions
+            {PropertyNamingPolicy = JsonNamingPolicy.CamelCase};
 
         private static readonly IDictionary<Regex, Func<string, string, object>> Parsers =
             new Dictionary<string, Func<string, string, object>>
@@ -234,7 +236,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
         private static object ToMap(string stringMap, string graphName)
         {
-            return ParseMapValue(JObject.Parse(stringMap), graphName);
+            var jsonMap = JsonSerializer.Deserialize<JsonElement>(stringMap, JsonDeserializingOptions);
+            return ParseMapValue(jsonMap, graphName);
         }
 
         private static object ToLambda(string stringLambda, string graphName)
@@ -258,29 +261,45 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 stringNumber.Substring(0, stringNumber.Length - 1));
         }
 
-        private static object ParseMapValue(JToken value, string graphName)
+        private static object ParseMapValue(JsonElement value, string graphName)
         {
-            if (value.Type == JTokenType.Object)
+            switch (value.ValueKind)
             {
-                IDictionary<string, JToken> jsonMap = (JObject)value;
-                return jsonMap.ToDictionary(kv => ParseMapValue(kv.Key, graphName),
-                    kv => ParseMapValue(kv.Value, graphName));
+                case JsonValueKind.Object:
+                {
+                    return value.EnumerateObject().ToDictionary(property => ParseValue(property.Name, graphName),
+                        property => ParseMapValue(property.Value, graphName));
+                }
+                case JsonValueKind.Array:
+                    return value.EnumerateArray().Select(v => ParseMapValue(v, graphName)).ToArray();
+                case JsonValueKind.Number:
+                {
+                    // This can maybe be simplified when this issue is resolved:
+                    // https://github.com/dotnet/runtime/issues/31274
+                    if (value.TryGetInt32(out var integer))
+                    {
+                        return integer;
+                    }
+
+                    if (value.TryGetDouble(out var floating))
+                    {
+                        return floating;
+                    }
+
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "Not a supported number type");
+                }
+                case JsonValueKind.String:
+                    return ParseValue(value.GetString(), graphName);
+                case JsonValueKind.True:
+                    return true;
+                case JsonValueKind.False:
+                    return false;
+                case JsonValueKind.Null:
+                    return null;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(value.ValueKind), value.ValueKind,
+                        "JSON type not supported");
             }
-            if (value.Type == JTokenType.Array)
-            {
-                return value.Select(v => ParseMapValue(v, graphName)).ToArray();
-            }
-            var objValue = value.ToObject<object>();
-            if (objValue is long longValue)
-            {
-                // JSON Numeric values converted to int64 by default
-                return Convert.ToInt32(longValue);
-            }
-            if (objValue is string stringValue)
-            {
-                return ParseValue(stringValue, graphName);
-            }
-            return objValue;
         }
 
         private static ISet<object> ToSet(string stringSet, string graphName)

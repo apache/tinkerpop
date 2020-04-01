@@ -21,14 +21,17 @@
 
 #endregion
 
+using System;
 using System.Text;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Gremlin.Net.Driver
 {
     internal class JsonMessageSerializer
     {
         private readonly string _mimeType;
+        private static readonly JsonSerializerOptions JsonDeserializingOptions = new JsonSerializerOptions
+            {PropertyNamingPolicy = JsonNamingPolicy.CamelCase};
 
         public JsonMessageSerializer(string mimeType)
         {
@@ -47,8 +50,11 @@ namespace Gremlin.Net.Driver
 
         public TMessage DeserializeMessage<TMessage>(byte[] message)
         {
-            var responseStr = Encoding.UTF8.GetString(message);
-            return JsonConvert.DeserializeObject<TMessage>(responseStr);
+            if (message == null) throw new ArgumentNullException(nameof(message));
+            if (message.Length == 0) return default;
+            var reader = new Utf8JsonReader(message);
+            var deserialized = JsonSerializer.Deserialize<TMessage>(ref reader, JsonDeserializingOptions);
+            return deserialized;
         }
     }
 }

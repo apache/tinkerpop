@@ -22,17 +22,14 @@
 #endregion
 
 using System.Collections.Generic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Gremlin.Net.Driver.Messages
 {
     internal class ResponseResult
     {
-        [JsonProperty(PropertyName = "data")]
-        public JToken Data { get; set; }
-
-        [JsonProperty(PropertyName = "meta")]
+        public JsonElement Data { get; set; }
+        
         public Dictionary<string, object> Meta { get; set; }
     }
 }

@@ -23,17 +23,15 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
     internal class BulkSetSerializer : IGraphSONDeserializer
     {
-        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
+        public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
-            var jArray = graphsonObject as JArray;
-            if (jArray == null)
+            if (graphsonObject.ValueKind != JsonValueKind.Array)
             {
                 return new List<object>(0);
             }
@@ -42,9 +40,9 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             // so this query will be trouble. we'd need a legit BulkSet implementation here in C#. this current 
             // implementation is here to replicate the previous functionality that existed on the server side in 
             // previous versions.
-            return Enumerable.Range(0, jArray.Count / 2).SelectMany<int,object>(i =>
-                           Enumerable.Repeat<object>(reader.ToObject(jArray[i * 2]), (int) reader.ToObject(jArray[i * 2 + 1]))).
-                       ToList();
+            return Enumerable.Range(0, graphsonObject.GetArrayLength() / 2).SelectMany<int, object>(i =>
+                Enumerable.Repeat<object>(reader.ToObject(graphsonObject[i * 2]),
+                    (int) reader.ToObject(graphsonObject[i * 2 + 1]))).ToList();
         }
     }
 }

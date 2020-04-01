@@ -218,6 +218,19 @@ Gremlin.NET no longer targets .NET Standard 1.3, but only .NET Standard 2.0. Sin
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2335[TINKERPOP-2335]
 
+=== Gremlin.NET: New JSON Library
+
+Gremlin.NET now uses `System.Text.Json` instead of Newtonsoft.Json as `System.Text.Json` is already included in .NET
+Core 3.0 and higher which means that we have one dependency less on this platform and because it offers an increased
+performance.
+Most users should not notice this change. But users who have implemented their own GraphSON serializers or
+deserializers probably have to change them accordingly. The same applies to users that let Gremlin.NET return data
+without deserializing it first as the returned data types will change in this case, for example from Newtonsoft.Json's
+`JObject` or `JToken` to `JsonElement` with `System.Text.Json`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2349[TINKERPOP-2349],
+link:http://tinkerpop.apache.org/docs/3.5.0/dev/provider/#_supporting_gremlin_net_io[Documentation for custom JSON serialization with Gremlin.NET]
+
 ==== Neo4j Changes
 
 There were two key changes to the neo4j-gremlin module:

@@ -26,11 +26,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Reflection;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Process.Traversal.Strategy;
-using Newtonsoft.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
@@ -39,6 +39,9 @@ namespace Gremlin.Net.Structure.IO.GraphSON
     /// </summary>
     public abstract class GraphSONWriter
     {
+        private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
+            {Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping};
+        
         /// <summary>
         /// Contains the information of serializers by type.
         /// </summary>
@@ -103,7 +106,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         /// <returns>The serialized GraphSON.</returns>
         public virtual string WriteObject(dynamic objectData)
         {
-            return JsonConvert.SerializeObject(ToDict(objectData));
+            return JsonSerializer.Serialize(ToDict(objectData), _jsonOptions);
         }
 
         /// <summary>

@@ -21,24 +21,22 @@
 
 #endregion
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
     internal class SetSerializer : IGraphSONDeserializer, IGraphSONSerializer
     {
-        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
+        public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
-            var jArray = graphsonObject as JArray;
-            if (jArray == null)
+            if (graphsonObject.ValueKind != JsonValueKind.Array)
             {
                 return new HashSet<object>();
             }
             // ISet<object>
-            return new HashSet<object>(jArray.Select(reader.ToObject));
+            return new HashSet<object>(graphsonObject.EnumerateArray().Select(reader.ToObject));
         }
 
         public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)

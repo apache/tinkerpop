@@ -22,15 +22,17 @@
 #endregion
 
 using System;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
     internal class UuidDeserializer : IGraphSONDeserializer
     {
-        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
+        public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
-            return graphsonObject.ToObject<Guid>();
+            var uuidString = graphsonObject.GetString();
+
+            return Guid.Parse(uuidString);
         }
     }
 }

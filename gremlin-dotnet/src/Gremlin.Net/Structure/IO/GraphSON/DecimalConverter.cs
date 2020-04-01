@@ -21,15 +21,23 @@
 
 #endregion
 
-using System;
+using System.Globalization;
+using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class DecimalConverter : NumberConverter
+    internal class DecimalConverter : NumberConverter<decimal>
     {
         protected override string GraphSONTypeName => "BigDecimal";
-        protected override Type HandledType => typeof(decimal);
         protected override string Prefix => "gx";
         protected override bool StringifyValue => true;
+        protected override dynamic FromJsonElement(JsonElement graphson)
+        {
+            if (graphson.ValueKind == JsonValueKind.String)
+            {
+                return decimal.Parse(graphson.GetString(), CultureInfo.InvariantCulture);
+            }
+            return graphson.GetDecimal();
+        }
     }
 }

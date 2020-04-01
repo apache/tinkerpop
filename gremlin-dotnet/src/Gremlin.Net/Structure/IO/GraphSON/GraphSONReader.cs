@@ -24,7 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
@@ -90,7 +90,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         /// </summary>
         /// <param name="graphSonData">The GraphSON collection to deserialize.</param>
         /// <returns>The deserialized object.</returns>
-        public virtual dynamic ToObject(IEnumerable<JToken> graphSonData)
+        public virtual dynamic ToObject(IEnumerable<JsonElement> graphSonData)
         {
             return graphSonData.Select(graphson => ToObject(graphson));
         }
@@ -98,52 +98,50 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         /// <summary>
         ///     Deserializes GraphSON to an object.
         /// </summary>
-        /// <param name="jToken">The GraphSON to deserialize.</param>
+        /// <param name="graphSon">The GraphSON to deserialize.</param>
         /// <returns>The deserialized object.</returns>
-        public virtual dynamic ToObject(JToken jToken)
+        public virtual dynamic ToObject(JsonElement graphSon)
         {
-            if (jToken is JArray)
+            switch (graphSon.ValueKind)
             {
-                return jToken.Select(t => ToObject(t));
+                case JsonValueKind.Array:
+                    return graphSon.EnumerateArray().Select(t => ToObject(t));
+                case JsonValueKind.String:
+                    return graphSon.GetString();
+                case JsonValueKind.Null:
+                    return null;
+                case JsonValueKind.True:
+                    return true;
+                case JsonValueKind.False:
+                    return false;
+                case JsonValueKind.Object:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(graphSon.ValueKind), graphSon.ValueKind,
+                        $"JSON type not supported.");
             }
-            if (jToken is JValue jValue)
+
+            if (graphSon.TryGetProperty(GraphSONTokens.TypeKey, out var graphSonTypeProperty))
             {
-                return jValue.Value;
+                return ReadValueOfType(graphSon, graphSonTypeProperty.GetString());
             }
-            if (!HasTypeKey(jToken))
-            {
-                return ReadDictionary(jToken);
-            }
-            return ReadTypedValue(jToken);
+            return ReadDictionary(graphSon);
+            
         }
 
-        private bool HasTypeKey(JToken jToken)
+        private dynamic ReadValueOfType(JsonElement typedValue, string graphSONType)
         {
-            var graphSONType = (string) jToken[GraphSONTokens.TypeKey];
-            return graphSONType != null;
-        }
-
-        private dynamic ReadTypedValue(JToken typedValue)
-        {
-            var graphSONType = (string) typedValue[GraphSONTokens.TypeKey];
             if (!Deserializers.TryGetValue(graphSONType, out var deserializer))
             {
                 throw new InvalidOperationException($"Deserializer for \"{graphSONType}\" not found");
             }
-            return deserializer.Objectify(typedValue[GraphSONTokens.ValueKey], this);
+            return deserializer.Objectify(typedValue.GetProperty(GraphSONTokens.ValueKey), this);
         }
-
-        private dynamic ReadDictionary(JToken jtokenDict)
+        
+        private dynamic ReadDictionary(JsonElement jsonDict)
         {
-            var dict = new Dictionary<string, dynamic>();
-            foreach (var e in jtokenDict)
-            {
-                var property = e as JProperty;
-                if (property == null)
-                    throw new InvalidOperationException($"Cannot read graphson: {jtokenDict}");
-                dict.Add(property.Name, ToObject(property.Value));
-            }
-            return dict;
+            return jsonDict.EnumerateObject()
+                .ToDictionary(property => property.Name, property => ToObject(property.Value));
         }
     }
 }

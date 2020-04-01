@@ -23,10 +23,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Structure.IO.GraphSON;
-using Newtonsoft.Json.Linq;
 
 namespace Gremlin.Net.Driver
 {
@@ -45,9 +45,9 @@ namespace Gremlin.Net.Driver
             _graphSONReader = graphSonReader;
         }
 
-        public void HandleReceived(ResponseMessage<JToken> received)
+        public void HandleReceived(ResponseMessage received)
         {
-            var receivedData = typeof(T) == typeof(JToken)
+            var receivedData = typeof(T) == typeof(JsonElement)
                 ? new[] {received.Result.Data}
                 : _graphSONReader.ToObject(received.Result.Data);
             foreach (var d in receivedData)

@@ -23,9 +23,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Structure.IO.GraphSON;
-using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Sdk;
 
@@ -64,10 +64,10 @@ internal class MyClassWriter : IGraphSONSerializer
 
 internal class MyTypeReader : IGraphSONDeserializer
 {
-    public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
+    public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
     {
-        var x = reader.ToObject(graphsonObject["x"]);
-        var y = reader.ToObject(graphsonObject["y"]);
+        var x = reader.ToObject(graphsonObject.GetProperty("x"));
+        var y = reader.ToObject(graphsonObject.GetProperty("y"));
         return new MyType(x, y);
     }
 }

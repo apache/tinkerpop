@@ -24,12 +24,12 @@
 using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.IntegrationTest.Util;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Gremlin.Net.IntegrationTest.Driver
@@ -70,31 +70,29 @@ namespace Gremlin.Net.IntegrationTest.Driver
         }
 
         [Fact]
-        public async Task ShouldReturnResultWithoutDeserializingItForJTokenType()
+        public async Task ShouldReturnResultWithoutDeserializingItForJsonElementType()
         {
             var gremlinServer = new GremlinServer(TestHost, TestPort);
-            using (var gremlinClient = new GremlinClient(gremlinServer))
-            {
-                var gremlinScript = "'someString'";
+            using var gremlinClient = new GremlinClient(gremlinServer);
+            const string gremlinScript = "'someString'";
                 
-                var response = await gremlinClient.SubmitWithSingleResultAsync<JToken>(gremlinScript);
+            var response = await gremlinClient.SubmitWithSingleResultAsync<JsonElement>(gremlinScript);
 
-                //Expected:
-                /* {
+            //Expected:
+            /* {
                   "@type": "g:List",
                   "@value": [
                     "someString"
                   ]
                 }*/
 
-                Assert.IsType<JObject>(response);
-                Assert.Equal("g:List", response["@type"]);
+            Assert.IsType<JsonElement>(response);
+            Assert.Equal("g:List", response.GetProperty("@type").GetString());
 
-                var jArray = response["@value"] as JArray;
-                Assert.NotNull(jArray);
-                Assert.Equal(1, jArray.Count);
-                Assert.Equal("someString", (jArray[0] as JValue)?.Value);
-            }
+            var valueProperty = response.GetProperty("@value");
+            Assert.NotNull(valueProperty);
+            Assert.Equal(1, valueProperty.GetArrayLength());
+            Assert.Equal("someString", (valueProperty[0].GetString()));
         }
 
         [Fact]
@@ -201,16 +199,14 @@ namespace Gremlin.Net.IntegrationTest.Driver
         public async Task ShouldReturnResponseAttributes()
         {
             var gremlinServer = new GremlinServer(TestHost, TestPort);
-            using (var gremlinClient = new GremlinClient(gremlinServer))
-            {
-                var requestMsg = _requestMessageProvider.GetDummyMessage();
-                var resultSet = await gremlinClient.SubmitAsync<int>(requestMsg);
+            using var gremlinClient = new GremlinClient(gremlinServer);
+            var requestMsg = _requestMessageProvider.GetDummyMessage();
+            var resultSet = await gremlinClient.SubmitAsync<int>(requestMsg);
 
-                Assert.NotNull(resultSet.StatusAttributes);
+            Assert.NotNull(resultSet.StatusAttributes);
 
-                var values= resultSet.StatusAttributes["@value"] as JArray;
-                Assert.True(values.First.ToString().Equals("host"));
-            }
+            var values = (JsonElement) resultSet.StatusAttributes["@value"];
+            Assert.True(values[0].ToString().Equals("host"));
         }
 
         [Fact]

@@ -21,22 +21,28 @@
 
 #endregion
 
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
     internal class EdgeDeserializer : IGraphSONDeserializer
     {
-        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
+        public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
-            var outVId = reader.ToObject(graphsonObject["outV"]);
-            var outVLabel = (string) (graphsonObject["outVLabel"] ?? Vertex.DefaultLabel);
+            var outVId = reader.ToObject(graphsonObject.GetProperty("outV"));
+            var outVLabel = graphsonObject.TryGetProperty("outVLabel", out var outVLabelProperty)
+                ? outVLabelProperty.GetString()
+                : Vertex.DefaultLabel;
             var outV = new Vertex(outVId, outVLabel);
-            var inVId = reader.ToObject(graphsonObject["inV"]);
-            var inVLabel = (string) (graphsonObject["inVLabel"] ?? Vertex.DefaultLabel);
+            var inVId = reader.ToObject(graphsonObject.GetProperty("inV"));
+            var inVLabel = graphsonObject.TryGetProperty("inVLabel", out var inVLabelProperty)
+                ? inVLabelProperty.GetString()
+                : Vertex.DefaultLabel;
             var inV = new Vertex(inVId, inVLabel);
-            var edgeId = reader.ToObject(graphsonObject["id"]);
-            var edgeLabel = (string) graphsonObject["label"] ?? "edge";
+            var edgeId = reader.ToObject(graphsonObject.GetProperty("id"));
+            var edgeLabel = graphsonObject.TryGetProperty("label", out var labelProperty)
+                ? labelProperty.GetString()
+                : "edge";
             return new Edge(edgeId, outV, edgeLabel, inV);
         }
     }

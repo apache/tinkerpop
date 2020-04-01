@@ -22,19 +22,15 @@
 #endregion
 
 using System;
-using Newtonsoft.Json;
 
 namespace Gremlin.Net.Driver.Messages
 {
-    internal class ResponseMessage<T>
+    internal class ResponseMessage
     {
-        [JsonProperty(PropertyName = "requestId")]
         public Guid RequestId { get; set; }
 
-        [JsonProperty(PropertyName = "status")]
         public ResponseStatus Status { get; set; }
 
-        [JsonProperty(PropertyName = "result")]
         public ResponseResult Result { get; set; }
     }
 }

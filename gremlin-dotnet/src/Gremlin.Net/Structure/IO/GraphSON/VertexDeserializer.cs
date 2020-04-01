@@ -21,16 +21,18 @@
 
 #endregion
 
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
     internal class VertexDeserializer : IGraphSONDeserializer
     {
-        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
+        public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
-            var id = reader.ToObject(graphsonObject["id"]);
-            var label = (string) graphsonObject["label"] ?? Vertex.DefaultLabel;
+            var id = reader.ToObject(graphsonObject.GetProperty("id"));
+            var label = graphsonObject.TryGetProperty("label", out var labelProperty)
+                ? labelProperty.GetString()
+                : Vertex.DefaultLabel;
             return new Vertex(id, label);
         }
     }

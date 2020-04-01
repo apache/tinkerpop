@@ -21,17 +21,19 @@
 
 #endregion
 
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
     internal class PropertyDeserializer : IGraphSONDeserializer
     {
-        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
+        public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
-            var key = (string) graphsonObject["key"];
-            var value = reader.ToObject(graphsonObject["value"]);
-            var element = graphsonObject["element"] != null ? reader.ToObject(graphsonObject["element"]) : null;
+            var key = graphsonObject.GetProperty("key").GetString();
+            var value = reader.ToObject(graphsonObject.GetProperty("value"));
+            var element = graphsonObject.TryGetProperty("element", out var elementProperty)
+                ? reader.ToObject(elementProperty)
+                : null;
             return new Property(key, value, element);
         }
     }

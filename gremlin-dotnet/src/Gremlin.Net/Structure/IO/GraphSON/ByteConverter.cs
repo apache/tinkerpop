@@ -20,14 +20,14 @@
  */
 #endregion
 
-using System;
+using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class ByteConverter : NumberConverter
+    internal class ByteConverter : NumberConverter<byte>
     {
         protected override string GraphSONTypeName => "Byte";
-        protected override Type HandledType => typeof(byte);
         protected override string Prefix => "gx";
+        protected override dynamic FromJsonElement(JsonElement graphson) => graphson.GetByte();
     }
 }

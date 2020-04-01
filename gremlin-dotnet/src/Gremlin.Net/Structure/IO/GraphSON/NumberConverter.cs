@@ -21,33 +21,36 @@
 
 #endregion
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal abstract class NumberConverter : IGraphSONDeserializer, IGraphSONSerializer
+    internal abstract class NumberConverter<T> : IGraphSONDeserializer, IGraphSONSerializer
     {
         protected abstract string GraphSONTypeName { get; }
-        protected abstract Type HandledType { get; }
         protected virtual string Prefix => "g";
         protected virtual bool StringifyValue => false;
 
-        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
+        public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
-            return graphsonObject.ToObject(HandledType);
+            return FromJsonElement(graphsonObject);
         }
+
+        protected abstract dynamic FromJsonElement(JsonElement graphson);
 
         public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
         {
-            object value = objectData;
+            T number = objectData;
+            var value = ConvertInvalidNumber(number);
             if (StringifyValue)
             {
                 value = string.Format(CultureInfo.InvariantCulture, "{0}", value);
             }
             return GraphSONUtil.ToTypedValue(GraphSONTypeName, value, Prefix);
         }
+
+        protected virtual object ConvertInvalidNumber(T number) => number;
     }
 }

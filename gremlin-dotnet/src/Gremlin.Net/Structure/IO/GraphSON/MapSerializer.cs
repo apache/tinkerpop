@@ -24,23 +24,22 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
     internal class MapSerializer : IGraphSONDeserializer, IGraphSONSerializer
     {
-        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
+        public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
-            var jArray = graphsonObject as JArray;
-            if (jArray == null)
+            if (graphsonObject.ValueKind != JsonValueKind.Array)
             {
                 return new Dictionary<object, object>(0);
             }
-            var result = new Dictionary<object, object>(jArray.Count / 2);
-            for (var i = 0; i < jArray.Count; i += 2)
+            var result = new Dictionary<object, object>(graphsonObject.GetArrayLength() / 2);
+            for (var i = 0; i < graphsonObject.GetArrayLength(); i += 2)
             {
-                result[reader.ToObject(jArray[i])] = reader.ToObject(jArray[i + 1]);
+                result[reader.ToObject(graphsonObject[i])] = reader.ToObject(graphsonObject[i + 1]);
             }
             // IDictionary<object, object>
             return result;
@@ -48,8 +47,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         
         public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
         {
-            var map = objectData as IDictionary;
-            if (map == null)
+            if (!(objectData is IDictionary map))
             {
                 throw new InvalidOperationException("Object must implement IDictionary");
             }

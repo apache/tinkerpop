@@ -23,19 +23,21 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
     internal class PathDeserializer : IGraphSONDeserializer
     {
-        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
+        public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
             var labels =
-                graphsonObject["labels"]
-                    .Select(readObjLabels => new HashSet<string>(readObjLabels.Select(l => (string) l)))
+                graphsonObject.GetProperty("labels").EnumerateArray()
+                    .Select(readObjLabels =>
+                        new HashSet<string>(readObjLabels.EnumerateArray().Select(l => l.GetString())))
                     .ToList<ISet<string>>();
-            var objects = graphsonObject["objects"].Select(o => reader.ToObject(o)).ToList();
+            var objects = graphsonObject.GetProperty("objects").EnumerateArray().Select(o => reader.ToObject(o))
+                .ToList();
             return new Path(labels, objects);
         }
     }

@@ -21,13 +21,52 @@
 
 #endregion
 
-using System;
+using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class DoubleConverter : NumberConverter
+    internal class DoubleConverter : NumberConverter<double>
     {
         protected override string GraphSONTypeName => "Double";
-        protected override Type HandledType => typeof(double);
+        private const string NaN = "NaN";
+        private const string PositiveInfinity = "Infinity";
+        private const string NegativeInfinity = "-Infinity";
+
+        protected override dynamic FromJsonElement(JsonElement graphson)
+        {
+            if (graphson.ValueKind == JsonValueKind.String)
+            {
+                switch (graphson.GetString())
+                {
+                    case NaN:
+                        return double.NaN;
+                    case PositiveInfinity:
+                        return double.PositiveInfinity;
+                    case NegativeInfinity:
+                        return double.NegativeInfinity;
+                }
+            }  
+            return graphson.GetDouble();
+        }
+
+        protected override object ConvertInvalidNumber(double number)
+        {
+            if (double.IsNaN(number))
+            {
+                return NaN;
+            }
+
+            if (double.IsPositiveInfinity(number))
+            {
+                return PositiveInfinity;
+            }
+
+            if (double.IsNegativeInfinity(number))
+            {
+                return NegativeInfinity;
+            }
+            
+            return number;
+        }
     }
 }

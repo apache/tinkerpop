@@ -21,13 +21,13 @@
 
 #endregion
 
-using System;
+using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class FloatConverter : NumberConverter
+    internal class FloatConverter : NumberConverter<float>
     {
         protected override string GraphSONTypeName => "Float";
-        protected override Type HandledType => typeof(float);
+        protected override dynamic FromJsonElement(JsonElement graphson) => graphson.GetSingle();
     }
 }

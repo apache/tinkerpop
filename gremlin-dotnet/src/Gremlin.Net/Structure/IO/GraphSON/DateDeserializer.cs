@@ -21,7 +21,7 @@
 #endregion
 
 using System;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
@@ -29,9 +29,9 @@ namespace Gremlin.Net.Structure.IO.GraphSON
     {
         private static readonly DateTimeOffset UnixStart = new DateTimeOffset(1970, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
 
-        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
+        public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
-            var milliseconds = graphsonObject.ToObject<long>();
+            var milliseconds = graphsonObject.GetInt64();
             return UnixStart.AddTicks(TimeSpan.TicksPerMillisecond * milliseconds);
         }
     }

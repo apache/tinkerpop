@@ -21,16 +21,16 @@
 
 #endregion
 
+using System.Text.Json;
 using Gremlin.Net.Process.Traversal;
-using Newtonsoft.Json.Linq;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
     internal class DirectionDeserializer : IGraphSONDeserializer
     {
-        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
+        public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
-            return Direction.GetByValue(graphsonObject.ToString());
+            return Direction.GetByValue(graphsonObject.GetString());
         }
     }
 }

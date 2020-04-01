@@ -203,6 +203,8 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         public void ShouldSerializeWithCustomSerializerForCommonType()
         {
             var customSerializerMock = new Mock<IGraphSONSerializer>();
+            customSerializerMock.Setup(m => m.Dictify(It.IsAny<int>(), It.IsAny<GraphSONWriter>()))
+                .Returns(new Dictionary<string, dynamic>());
             var customSerializerByType = new Dictionary<Type, IGraphSONSerializer>
             {
                 {typeof(int), customSerializerMock.Object}

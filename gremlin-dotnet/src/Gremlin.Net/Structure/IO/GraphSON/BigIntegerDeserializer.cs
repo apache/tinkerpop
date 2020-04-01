@@ -22,16 +22,15 @@
 #endregion
 
 using System.Numerics;
-using System.Xml;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
     internal class BigIntegerDeserializer : IGraphSONDeserializer
     {
-        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
+        public dynamic Objectify(JsonElement graphson, GraphSONReader reader)
         {
-            var bigInteger = graphsonObject.ToObject<string>();
+            var bigInteger = graphson.ValueKind == JsonValueKind.String ? graphson.GetString() : graphson.GetRawText();
             return BigInteger.Parse(bigInteger);
         }
     }

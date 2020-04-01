@@ -21,15 +21,15 @@
 #endregion
 
 using System;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
     internal class ByteBufferDeserializer : IGraphSONDeserializer
     {
-        public dynamic Objectify(JToken graphsonObject, GraphSONReader reader)
+        public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
-            var base64String = graphsonObject.ToObject<string>();
+            var base64String = graphsonObject.GetString();
             return Convert.FromBase64String(base64String);
         }
     }
