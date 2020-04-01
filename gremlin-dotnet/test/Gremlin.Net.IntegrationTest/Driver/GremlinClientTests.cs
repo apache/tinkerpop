@@ -285,12 +285,22 @@ namespace Gremlin.Net.IntegrationTest.Driver
             var gremlinServer = new GremlinServer(TestHost, TestPort);
             using (var gremlinClient = new GremlinClient(gremlinServer, sessionId: Guid.NewGuid().ToString()))
             {
-
                 await gremlinClient.SubmitWithSingleResultAsync<int>("x = 1");
 
                 var response = await gremlinClient.SubmitWithSingleResultAsync<int>("x + 2");
                 Assert.Equal(3, response);
             }
+        }
+
+        [Fact]
+        public void ShouldThrowOnExecutionOfMultiConnectionInPool()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            var poolSettings = new ConnectionPoolSettings();
+            poolSettings.PoolSize = 2;
+            var sessionId = Guid.NewGuid().ToString();
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => new GremlinClient(gremlinServer, connectionPoolSettings: poolSettings, sessionId: sessionId));
         }
     }
 }

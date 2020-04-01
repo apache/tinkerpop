@@ -69,6 +69,21 @@ namespace Gremlin.Net.Driver
             var writer = graphSONWriter ?? new GraphSON3Writer();
             var connectionFactory = new ConnectionFactory(gremlinServer, reader, writer, mimeType ?? DefaultMimeType,
                 webSocketConfiguration, sessionId);
+
+            // make sure one connection in pool as session mode
+            if (!String.IsNullOrEmpty(sessionId))
+            {
+                if (connectionPoolSettings != null)
+                {
+                    if (connectionPoolSettings.PoolSize != 1)
+                        throw new ArgumentOutOfRangeException(nameof(connectionPoolSettings), "Session Client PoolSize must be 1!");
+                }
+                else
+                {
+                    connectionPoolSettings = new ConnectionPoolSettings();
+                    connectionPoolSettings.PoolSize = 1;
+                }
+            }
             _connectionPool =
                 new ConnectionPool(connectionFactory, connectionPoolSettings ?? new ConnectionPoolSettings());            
         }
