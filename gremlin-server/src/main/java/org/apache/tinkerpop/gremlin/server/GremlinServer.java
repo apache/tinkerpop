@@ -95,7 +95,7 @@ public class GremlinServer {
         this.settings = settings;
         provideDefaultForGremlinPoolSize(settings);
         this.isEpollEnabled = settings.useEpollEventLoop && SystemUtils.IS_OS_LINUX;
-        if(settings.useEpollEventLoop && !SystemUtils.IS_OS_LINUX){
+        if (settings.useEpollEventLoop && !SystemUtils.IS_OS_LINUX){
             logger.warn("cannot use epoll in non-linux env, falling back to NIO");
         }
 
@@ -105,19 +105,20 @@ public class GremlinServer {
         // if linux os use epoll else fallback to nio based eventloop
         // epoll helps in reducing GC and has better  performance
         // http://netty.io/wiki/native-transports.html
-        if(isEpollEnabled){
+        if (isEpollEnabled){
             bossGroup = new EpollEventLoopGroup(settings.threadPoolBoss, threadFactoryBoss);
         } else {
             bossGroup = new NioEventLoopGroup(settings.threadPoolBoss, threadFactoryBoss);
         }
 
         final ThreadFactory threadFactoryWorker = ThreadFactoryUtil.create("worker-%d");
-        if(isEpollEnabled) {
+        if (isEpollEnabled) {
             workerGroup = new EpollEventLoopGroup(settings.threadPoolWorker, threadFactoryWorker);
-        }else {
+        } else {
             workerGroup = new NioEventLoopGroup(settings.threadPoolWorker, threadFactoryWorker);
         }
 
+        // use the ExecutorService returned from ServerGremlinExecutor as it might be initialized there
         serverGremlinExecutor = new ServerGremlinExecutor(settings, gremlinExecutorService, workerGroup);
         this.gremlinExecutorService = serverGremlinExecutor.getGremlinExecutorService();
 
@@ -161,7 +162,7 @@ public class GremlinServer {
             channelizer.init(serverGremlinExecutor);
             b.group(bossGroup, workerGroup)
                     .childHandler(channelizer);
-            if(isEpollEnabled){
+            if (isEpollEnabled){
                 b.channel(EpollServerSocketChannel.class);
             } else{
                 b.channel(NioServerSocketChannel.class);
@@ -251,7 +252,7 @@ public class GremlinServer {
         logger.info("Shutting down thread pools.");
 
         try {
-            gremlinExecutorService.shutdown();
+            if (gremlinExecutorService != null) gremlinExecutorService.shutdown();
         } finally {
             logger.debug("Shutdown Gremlin thread pool.");
         }
@@ -269,18 +270,21 @@ public class GremlinServer {
 
         // channel is shutdown as are the thread pools - time to kill graphs as nothing else should be acting on them
         new Thread(() -> {
-            serverGremlinExecutor.getHooks().forEach(hook -> {
-                logger.info("Executing shutdown {}", LifeCycleHook.class.getSimpleName());
-                try {
-                    hook.onShutDown(new LifeCycleHook.Context(logger));
-                } catch (UnsupportedOperationException | UndeclaredThrowableException uoe) {
-                    // if the user doesn't implement onShutDown the scriptengine will throw
-                    // this exception.  it can safely be ignored.
-                }
-            });
+            if (serverGremlinExecutor != null) {
+                serverGremlinExecutor.getHooks().forEach(hook -> {
+                    logger.info("Executing shutdown {}", LifeCycleHook.class.getSimpleName());
+                    try {
+                        hook.onShutDown(new LifeCycleHook.Context(logger));
+                    } catch (UnsupportedOperationException | UndeclaredThrowableException uoe) {
+                        // if the user doesn't implement onShutDown the scriptengine will throw
+                        // this exception.  it can safely be ignored.
+                    }
+                });
+            }
 
             try {
-                gremlinExecutorService.awaitTermination(30000, TimeUnit.MILLISECONDS);
+                if (gremlinExecutorService != null)
+                    gremlinExecutorService.awaitTermination(30000, TimeUnit.MILLISECONDS);
             } catch (InterruptedException ie) {
                 logger.warn("Timeout waiting for Gremlin thread pool to shutdown - continuing with shutdown process.");
             }
@@ -291,16 +295,18 @@ public class GremlinServer {
                 logger.warn("Timeout waiting for boss/worker thread pools to shutdown - continuing with shutdown process.");
             }
 
-            serverGremlinExecutor.getGraphManager().getGraphNames().forEach(gName -> {
-                logger.debug("Closing Graph instance [{}]", gName);
-                try {
-                    serverGremlinExecutor.getGraphManager().getGraph(gName).close();
-                } catch (Exception ex) {
-                    logger.warn(String.format("Exception while closing Graph instance [%s]", gName), ex);
-                } finally {
-                    logger.info("Closed Graph instance [{}]", gName);
-                }
-            });
+            if (serverGremlinExecutor != null) {
+                serverGremlinExecutor.getGraphManager().getGraphNames().forEach(gName -> {
+                    logger.debug("Closing Graph instance [{}]", gName);
+                    try {
+                        serverGremlinExecutor.getGraphManager().getGraph(gName).close();
+                    } catch (Exception ex) {
+                        logger.warn(String.format("Exception while closing Graph instance [%s]", gName), ex);
+                    } finally {
+                        logger.info("Closed Graph instance [{}]", gName);
+                    }
+                });
+            }
 
             // kills reporter threads. this is a last bit of cleanup that can be done. typically, the jvm is headed
             // for shutdown which would obviously kill the reporters, but when it isn't they just keep reporting.
