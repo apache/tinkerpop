@@ -76,7 +76,7 @@ namespace Gremlin.Net.Driver
                 if (connectionPoolSettings != null)
                 {
                     if (connectionPoolSettings.PoolSize != 1)
-                        throw new ArgumentOutOfRangeException(nameof(connectionPoolSettings), "Session Client PoolSize must be 1!");
+                        throw new ArgumentOutOfRangeException(nameof(connectionPoolSettings), "PoolSize must be 1 in session mode!");
                 }
                 else
                 {

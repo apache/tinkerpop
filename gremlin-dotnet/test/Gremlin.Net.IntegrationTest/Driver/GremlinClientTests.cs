@@ -291,16 +291,5 @@ namespace Gremlin.Net.IntegrationTest.Driver
                 Assert.Equal(3, response);
             }
         }
-
-        [Fact]
-        public void ShouldThrowOnExecutionOfMultiConnectionInPool()
-        {
-            var gremlinServer = new GremlinServer(TestHost, TestPort);
-            var poolSettings = new ConnectionPoolSettings();
-            poolSettings.PoolSize = 2;
-            var sessionId = Guid.NewGuid().ToString();
-
-            Assert.Throws<ArgumentOutOfRangeException>(() => new GremlinClient(gremlinServer, connectionPoolSettings: poolSettings, sessionId: sessionId));
-        }
     }
 }
