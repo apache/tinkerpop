@@ -18,6 +18,7 @@
  */
 'use strict';
 
+const utils = require('../utils');
 const Connection = require('./connection');
 const Bytecode = require('../process/bytecode');
 
@@ -39,11 +40,20 @@ class Client {
    * @param {String} [options.traversalSource] The traversal source. Defaults to: 'g'.
    * @param {GraphSONWriter} [options.writer] The writer to use.
    * @param {Authenticator} [options.authenticator] The authentication handler to use.
-   * @param {String} [options.processor] The name of the opProcessor to use
+   * @param {String} [options.processor] The name of the opProcessor to use, leave it undefined or set 'session' when session mode
+   * @param {String} [options.session] The sessionId of Client in session mode. Defaults to null means session-less Client.
    * @constructor
    */
   constructor(url, options) {
     this._options = options;
+    if (this._options.processor === 'session') {
+      // compatibility with old 'session' processor
+      this._options.session = options.session || utils.getUuid()
+    }
+    if (this._options.session !== null) {
+      // re-assign processor to 'session' when in session mode
+      this._options.processor = options.processor || 'session';
+    }
     this._connection = new Connection(url, options);
   }
 
@@ -70,6 +80,9 @@ class Client {
         'accept': this._connection.mimeType,
         'aliases': { 'g': this._options.traversalSource || 'g' }
       };
+      if (this._options.session !== null && this._options.processor === 'session') {
+        args['session'] = this._options.session;
+      }
 
       return this._connection.submit(null, 'eval', args, null, this._options.processor || '');
     }

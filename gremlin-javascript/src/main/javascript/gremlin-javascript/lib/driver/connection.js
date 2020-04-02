@@ -100,10 +100,6 @@ class Connection extends EventEmitter {
     this._pingIntervalDelay = this.options.pingInterval || pingIntervalDelay;
     this._pongTimeoutDelay = this.options.pongTimeout || pongTimeoutDelay;
 
-    if (options.processor === 'session') {
-      this._session = true;
-      this._sessionId = utils.getUuid();
-    }
     if (this.options.connectOnStartup !== false) {
       this.open();
     }
@@ -169,13 +165,6 @@ class Connection extends EventEmitter {
         };
       }
 
-      if (this._session === true) {
-        if (bytecode !== null || args === null) {
-          reject(new Error('only script enabled in session mode'));
-          return;
-        }
-      }
-
       const message = Buffer.from(this._header + JSON.stringify(this._getRequest(requestId, bytecode, op, args, processor)));
       this._ws.send(message);
     }));
@@ -196,10 +185,6 @@ class Connection extends EventEmitter {
   _getRequest(id, bytecode, op, args, processor) {
     if (args) {
       args = this._adaptArgs(args, true);
-    }
-
-    if (this._session === true && op !== 'authentication') {
-      args['session'] = this._sessionId;
     }
 
     return ({
@@ -380,13 +365,6 @@ class Connection extends EventEmitter {
     }
     if (!this._closePromise) {
       this._closePromise = new Promise(resolve => {
-        if (this._session === true) {
-          // session close request, dsl in args as tips and not be executed actually
-          const args = {'gremlin': 'session.close()'};
-          const message = Buffer.from(this._header + JSON.stringify(this._getRequest(utils.getUuid(), null, 'close', args, 'session')));
-          this._ws.send(message);
-        }
-
         this._closeCallback = resolve;
         this._ws.close();
       });
