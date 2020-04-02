@@ -29,6 +29,13 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.3.11/CHANGELOG.as
 
 === Upgrading for Users
 
+==== gremlin-python Sessions
+
+The `sessions` feature is enabled in gremlin-python.
+
+[source, python]
+client = Client('ws://localhost:8182/gremlin', 'g', session=str(uuid.uuid4()))
+
 ==== gremlin-javascript Sessions
 
 While TinkerPop doesn't recommend the use of sessions for most use cases, it does remain a feature that is available
