@@ -32,7 +32,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Deprecated `maxWaitForSessionClose` in the Java driver.
 * Bumped to Jackson 2.9.10.3.
 * Remove invalid service descriptors from gremlin-shaded.
-* Fixed bug in Python traversal `clone()` where deep copies of bytecode were not occurring.
+* Fixed bug in Python and .NET traversal `clone()` where deep copies of bytecode were not occurring.
 
 [[release-3-3-10]]
 === TinkerPop 3.3.10 (Release Date: February 3, 2020)
