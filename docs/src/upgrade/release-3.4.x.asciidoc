@@ -30,7 +30,12 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Clear Screen Command
 
+Gremlin Console now has the `:cls` command to clear the screen. This feature acts as an alternative to platform
+specific clear operations and provides a common way to perform that function.
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-2357[TINKERPOP-2357]
 
 == TinkerPop 3.4.6
 

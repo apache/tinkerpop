@@ -27,6 +27,7 @@ This release also includes changes from <<release-3-3-11, 3.3.11>>.
 
 * Gremlin.NET driver: Fixed a `NullReferenceException` and throw clear exception if received message is empty.
 * Improved error message for `math()` when the selected key in a `Map` is `null` or not a `Number`.
+* Added `:cls` command to Gremlin Console to clear the screen.
 
 [[release-3-4-6]]
 === TinkerPop 3.4.6 (Release Date: February 20, 2020)
