@@ -1784,7 +1784,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<S, E> Clone()
         {
-            return new GraphTraversal<S, E>(this.TraversalStrategies, this.Bytecode);
+            return new GraphTraversal<S, E>(TraversalStrategies, new Bytecode(Bytecode));
         }
     }
 }

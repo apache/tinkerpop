@@ -63,5 +63,25 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             Assert.Equal(0, gLocal.TraversalStrategies.Count);
             Assert.Equal(1, gRemote.TraversalStrategies.Count);
         }
+
+        [Fact]
+        public void CloneShouldCreateIndependentGraphTraversalModifiyingBytecode()
+        {
+            var g = AnonymousTraversalSource.Traversal();
+            var original = g.V().Out("created");
+            var clone = original.Clone().Out("knows");
+            var cloneClone = clone.Clone().Out("created");
+            
+            Assert.Equal(2, original.Bytecode.StepInstructions.Count);
+            Assert.Equal(3, clone.Bytecode.StepInstructions.Count);
+            Assert.Equal(4, cloneClone.Bytecode.StepInstructions.Count);
+
+            original.Has("person", "name", "marko");
+            clone.V().Out();
+            
+            Assert.Equal(3, original.Bytecode.StepInstructions.Count);
+            Assert.Equal(5, clone.Bytecode.StepInstructions.Count);
+            Assert.Equal(4, cloneClone.Bytecode.StepInstructions.Count);
+        }
     }
 }
