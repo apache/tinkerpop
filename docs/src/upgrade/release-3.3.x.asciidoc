@@ -43,7 +43,7 @@ and exposed on the server. As such, providing support in all Gremlin Language Va
 ensuring a consistent implementation for all programming languages.
 
 [source,javascript]
-const client = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traversalSource: 'g', 'processor': 'session' });
+const client = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traversalSource: 'g', 'session': 'unique-string-id' });
 ==== Deprecate maxWaitForSessionClose
 
 The `maxWaitForSessionClose` setting for the Java driver has been deprecated and in some sense replaced by the
