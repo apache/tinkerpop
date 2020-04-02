@@ -49,6 +49,14 @@ class Standard(Processor):
         return args
 
 
+class Session(Processor):
+
+    def authentication(self, args):
+        return args
+
+    def eval(self, args):
+        return args
+
 class Traversal(Processor):
 
     def authentication(self, args):
@@ -104,6 +112,7 @@ class GraphSONMessageSerializer(object):
             writer = self.DEFAULT_WRITER_CLASS()
         self.standard = Standard(writer)
         self.traversal = Traversal(writer)
+        self.session = Session(writer)
 
     @property
     def version(self):
