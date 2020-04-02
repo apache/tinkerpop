@@ -53,6 +53,7 @@ NOTE that versions suffixed with "-rc" are considered release candidates (i.e. p
     <PackageTags>gremlin;tinkerpop;apache</PackageTags>
     <PackageProjectUrl>http://tinkerpop.apache.org</PackageProjectUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageIcon>gremlin-dotnet-logo_256x256.png</PackageIcon>
     <PackageIconUrl>http://tinkerpop.apache.org/docs/current/images/gremlin-dotnet-logo_256x256.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/apache/tinkerpop</RepositoryUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>    
@@ -74,6 +75,7 @@ NOTE that versions suffixed with "-rc" are considered release candidates (i.e. p
   <ItemGroup>
     <None Include="../../LICENSE" Pack="true" PackagePath=""/>
     <None Include="../../NOTICE" Pack="true" PackagePath=""/>
+    <None Include="../../../docs/static/images/gremlin-dotnet-logo_256x256.png" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
 </Project>
