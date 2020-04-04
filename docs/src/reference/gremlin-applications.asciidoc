@@ -1077,7 +1077,8 @@ Gremlin-Console |PLAIN SASL (username/password) |3.0.0-incubating
 |Pluggable SASL |3.0.0-incubating
 |GSSAPI SASL (Kerberos) |3.3.0
 |Gremlin.NET |PLAIN SASL |3.3.0
-|Gremlin-Python |PLAIN SASL |3.2.2
+1.2+v|Gremlin-Python |PLAIN SASL |3.2.2
+|GSSAPI SASL (Kerberos) |3.4.7
 |Gremlin.Net |PLAIN SASL |3.2.7
 |Gremlin-Javascript |PLAIN SASL |3.3.0
 |=========================================================
@@ -1257,14 +1258,22 @@ authentication: {
     principal: gremlinserver/hostname.your.org@YOUR.REALM,
     keytab: /etc/security/keytabs/gremlinserver.service.keytab}}
 
-Krb5Authenticator needs a Kerberos service principal and a keytab that holds the secret key for that principal. The keytab
-location and service name, e.g. gremlinserver, are free to be chosen, but Gremlin clients have to specify this service name
-as the `protocol`. For Gremlin-Console the `protocol` is an entry in the remote.yaml file, for Gremlin-java the client builder
-has a `protocol()` method.
+`Krb5Authenticator` needs a Kerberos service principal and a keytab that holds the secret key for that principal. The keytab
+location and service name, e.g. gremlinserver, are free to be chosen. In addition, if the krb5.conf kerberos
+configuration file is not available from the
+https://web.mit.edu/kerberos/krb5-devel/doc/mitK5defaults.html[default location], `Krb5Authenticator` needs the location
+of the krb5.conf configuration file, to be specified as a system property in the JAVA_OPTIONS environment variable
+of Gremlin Server:
+
+[source, bash]
+export JAVA_OPTIONS="${JAVA_OPTIONS} -Xms512m -Xmx4096m -Djava.security.krb5.conf=/etc/krb5.conf"
+
+Gremlin clients have to specify the service name as the `protocol` connection parameter. For Gremlin-Console the
+`protocol` is an entry in the remote.yaml file, for Gremlin-java the client builder has a `protocol()` method.
 
 In addition to the `protocol`, the Gremlin client needs to specify a `jaasEntry`, an entry in the
-link:https://en.wikipedia.org/wiki/Java_Authentication_and_Authorization_Service[JAAS] configuration file. Gremlin-Console
-comes with a sample gremlin-jaas.conf file with a `GremlinConsole` jaasEntry:
+link:https://en.wikipedia.org/wiki/Java_Authentication_and_Authorization_Service[JAAS] configuration file. As a
+start one can define a conf/gremlin-jaas.conf file with a `GremlinConsole` jaasEntry:
 
 [source, jaas]
 GremlinConsole {
@@ -1273,15 +1282,20 @@ GremlinConsole {
   useTicketCache=true;
 };
 
-This configuration tells Gremlin-Console to pass authentication requests from gremlin-server to the Krb5LoginModule, which is
-part of the java standard library.  The Krb5LoginModule does not prompt the user for a username and password but uses the ticket cache that
-is normally refreshed when a user logs in to a host within the Kerberos realm.
+This configuration tells Gremlin Console to pass authentication requests from Gremlin Server to the Krb5LoginModule, which is
+part of the java standard library. The Krb5LoginModule does not prompt the user for a username and password but uses the
+ticket cache that is normally refreshed when a user logs in to a host within the Kerberos realm.
 
-Finally, the Gremlin client needs the location of the JAAS configuration file to be passed as a system property to the JVM. For
-Gremlin-Console the easiest way to do this is to pass it to the run script via the JAVA_OPTIONS environment property:
+The Gremlin client needs the location of the JAAS configuration file to be passed as a system property to the JVM. For
+Gremlin-Console the easiest way to do this is to pass it to the run script via the JAVA_OPTIONS environment property.
+If the krb5.conf kerberos configuration file is not available from the
+https://web.mit.edu/kerberos/krb5-devel/doc/mitK5defaults.html[default location] it has to be provided as a system
+property as well:
 
 [source, bash]
-export JAVA_OPTIONS="$JAVA_OPTIONS -Djava.security.auth.login.config=conf/gremlin-jaas.conf"
+JAAS_OPTION="-Djava.security.auth.login.config=conf/gremlin-jaas.conf"
+KRB5_OPTION="-Djava.security.krb5.conf=/etc/krb5.conf"
+export JAVA_OPTIONS="${JAVA_OPTIONS} ${KRB5_OPTION} ${JAAS_OPTION}"
 
 [[script-execution]]
 ===== Protecting Script Execution

@@ -25,7 +25,7 @@ COPY docker/gremlin-server/docker-entrypoint.sh docker/gremlin-server/*.yaml /op
 RUN chmod 755 /opt/docker-entrypoint.sh
 ENV GREMLIN_SERVER_VERSION=GREMLIN_SERVER_VERSION
 
-EXPOSE 45940-45941
+EXPOSE 45940-45942 4588
 
 ENTRYPOINT ["/opt/docker-entrypoint.sh"]
 CMD []

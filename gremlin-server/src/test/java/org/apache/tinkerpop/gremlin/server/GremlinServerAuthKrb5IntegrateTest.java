@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
 import org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator;
 import org.ietf.jgss.GSSException;
-import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
@@ -54,13 +53,13 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
 
     private KdcFixture kdcServer;
 
-    @Before
     @Override
     public void setUp() throws Exception {
         try {
-            final String buildDir = System.getProperty("build.dir");
-            kdcServer = new KdcFixture(buildDir +
-                    "/test-classes/org/apache/tinkerpop/gremlin/server/gremlin-console-jaas.conf");
+            final String projectBaseDir = System.getProperty("basedir");
+            final String authConfigName = projectBaseDir + "/src/test/resources/org/apache/tinkerpop/gremlin/server/gremlin-console-jaas.conf";
+            System.setProperty("java.security.auth.login.config", authConfigName);
+            kdcServer = new KdcFixture(projectBaseDir);
             kdcServer.setUp();
         } catch(Exception e)  {
             logger.warn(e.getMessage());
@@ -68,12 +67,19 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
         super.setUp();
     }
 
+    @Override
+    public void tearDown() throws Exception {
+        kdcServer.close();
+        System.clearProperty("java.security.auth.login.config");
+        super.tearDown();
+    }
+
     /**
      * Configure specific Gremlin Server settings for specific tests.
      */
     @Override
     public Settings overrideSettings(final Settings settings) {
-        settings.host = kdcServer.hostname;
+        settings.host = kdcServer.gremlinHostname;
         final Settings.SslSettings sslConfig = new Settings.SslSettings();
         sslConfig.enabled = false;
         settings.ssl = sslConfig;
@@ -120,7 +126,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
     @Test
     public void shouldAuthenticateWithDefaults() throws Exception {
         final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
+                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.gremlinHostname).create();
         final Client client = cluster.connect();
         assertConnection(cluster, client);
     }
@@ -128,7 +134,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
     @Test
     public void shouldFailWithoutClientJaasEntry() throws Exception {
         final Cluster cluster = TestClientFactory.build().protocol(kdcServer.serverPrincipalName)
-                .addContactPoint(kdcServer.hostname).create();
+                .addContactPoint(kdcServer.gremlinHostname).create();
         final Client client = cluster.connect();
         try {
             client.submit("1+1").all().get();
@@ -144,7 +150,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
     @Test
     public void shouldFailWithoutClientTicketCache() throws Exception {
         final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE_NOT_LOGGED_IN)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
+                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.gremlinHostname).create();
         final Client client = cluster.connect();
         try {
             client.submit("1+1").all().get();
@@ -177,7 +183,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
         final String oldQop = System.getProperty("javax.security.sasl.qop", "");
         System.setProperty("javax.security.sasl.qop", "auth-conf");
         final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
+                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.gremlinHostname).create();
         final Client client = cluster.connect();
         try {
             assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
@@ -192,7 +198,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
     @Test
     public void shouldAuthenticateWithSsl() throws Exception {
         final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE).enableSsl(true).sslSkipCertValidation(true)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
+                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.gremlinHostname).create();
         final Client client = cluster.connect();
         assertConnection(cluster, client);
     }
@@ -217,7 +223,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
         config.put("serializeResultToString", true);
         serializer.configure(config, null);
         final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).serializer(serializer).create();
+                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.gremlinHostname).serializer(serializer).create();
         final Client client = cluster.connect();
         assertConnection(cluster, client);
     }
@@ -237,7 +243,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
      */
     private void assertFailedLogin() throws Exception {
         final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
+                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.gremlinHostname).create();
         final Client client = cluster.connect();
         try {
             client.submit("1+1").all().get();

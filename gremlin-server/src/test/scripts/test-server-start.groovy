@@ -18,6 +18,7 @@
  */
 
 import org.apache.tinkerpop.gremlin.server.GremlinServer
+import org.apache.tinkerpop.gremlin.server.KdcFixture
 import org.apache.tinkerpop.gremlin.server.Settings
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -25,8 +26,8 @@ import org.apache.tinkerpop.gremlin.server.Settings
 ////////////////////////////////////////////////////////////////////////////////
 // Changes to this file need to be appropriately replicated to
 //
-// - docker/gremlin-server/gremlin-server-integration.yaml
-// - docker/gremlin-server/gremlin-server-integration-secure.yaml
+// - docker/gremlin-server/*
+// - docker/gremlin-server.sh
 //
 // Without such changes, the test docker server can't be started for independent
 // testing with Gremlin Language Variants.
@@ -49,7 +50,8 @@ def server = new GremlinServer(settings)
 server.start().join()
 
 project.setContextValue("gremlin.server", server)
-log.info("Gremlin Server with no authentication started on port 45940")
+log.info("Gremlin Server without authentication started on port 45940")
+
 
 def securePropsFile = new File("${projectBaseDir}/target/tinkergraph-credentials.properties")
 if (!securePropsFile.exists()) {
@@ -76,4 +78,31 @@ def serverSecure = new GremlinServer(settingsSecure)
 serverSecure.start().join()
 
 project.setContextValue("gremlin.server.secure", serverSecure)
-log.info("Gremlin Server with authentication started on port 45941")
+log.info("Gremlin Server with password authentication started on port 45941")
+
+
+def kdcServer = new KdcFixture(projectBaseDir)
+kdcServer.setUp()
+
+project.setContextValue("gremlin.server.kdcserver", kdcServer)
+log.info("KDC started with configuration ${projectBaseDir}/target/kdc/krb5.conf")
+
+def settingsKrb5 = Settings.read("${settingsFile}")
+settingsKrb5.graphs.graph = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settingsKrb5.graphs.classic = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settingsKrb5.graphs.modern = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settingsKrb5.graphs.crew = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settingsKrb5.graphs.grateful = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settingsKrb5.graphs.sink = gremlinServerDir + "/src/test/scripts/tinkergraph-empty.properties"
+settingsKrb5.scriptEngines["gremlin-groovy"].plugins["org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin"].files = [gremlinServerDir + "/src/test/scripts/generate-all.groovy"]
+settingsKrb5.port = 45942
+settingsKrb5.authentication.authenticator = "org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator"
+settingsKrb5.authentication.config = [
+        "principal": kdcServer.serverPrincipal,
+        "keytab": kdcServer.serviceKeytabFile.getAbsolutePath()]
+
+def serverKrb5 = new GremlinServer(settingsKrb5)
+serverKrb5.start().join()
+
+project.setContextValue("gremlin.server.krb5", serverKrb5)
+log.info("Gremlin Server with kerberos authentication started on port 45942")
