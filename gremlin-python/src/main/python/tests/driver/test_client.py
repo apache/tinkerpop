@@ -16,10 +16,8 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-import pytest
-
 import uuid
-from gremlin_python.driver.protocol import GremlinServerError
+
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver.request import RequestMessage
@@ -231,11 +229,11 @@ def test_big_result_set(client):
     assert len(results) == 10000
 
 
-def test_big_result_set_secure(secure_client):
+def test_big_result_set_secure(authenticated_client):
     g = Graph().traversal()
     t = g.inject(1).repeat(__.addV('person').property('name', __.loops())).times(20000).count()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
-    result_set = secure_client.submit(message)
+    result_set = authenticated_client.submit(message)
     results = []
     for result in result_set:
         results += result
@@ -243,7 +241,7 @@ def test_big_result_set_secure(secure_client):
 
     t = g.V().limit(10)
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
-    result_set = secure_client.submit(message)
+    result_set = authenticated_client.submit(message)
     results = []
     for result in result_set:
         results += result
@@ -251,7 +249,7 @@ def test_big_result_set_secure(secure_client):
 
     t = g.V().limit(100)
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
-    result_set = secure_client.submit(message)
+    result_set = authenticated_client.submit(message)
     results = []
     for result in result_set:
         results += result
@@ -259,7 +257,7 @@ def test_big_result_set_secure(secure_client):
 
     t = g.V().limit(1000)
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
-    result_set = secure_client.submit(message)
+    result_set = authenticated_client.submit(message)
     results = []
     for result in result_set:
         results += result
@@ -267,7 +265,7 @@ def test_big_result_set_secure(secure_client):
 
     t = g.V().limit(10000)
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
-    result_set = secure_client.submit(message)
+    result_set = authenticated_client.submit(message)
     results = []
     for result in result_set:
         results += result

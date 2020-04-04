@@ -28,7 +28,7 @@ class GephiHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-Type', 'text/plain')
         self.end_headers()
-        self.wfile.write("{}")
+        self.wfile.write("{}".encode('utf-8'))
 
     def do_GET(self):
         self.respond()

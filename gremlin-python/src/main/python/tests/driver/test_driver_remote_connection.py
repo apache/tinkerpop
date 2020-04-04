@@ -16,15 +16,10 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-import pytest
-
-from tornado import ioloop, gen
 
 from gremlin_python import statics
 from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.statics import long
-from gremlin_python.driver.driver_remote_connection import (
-    DriverRemoteConnection)
 from gremlin_python.process.traversal import Traverser
 from gremlin_python.process.traversal import TraversalStrategy
 from gremlin_python.process.traversal import Bindings
@@ -99,7 +94,6 @@ class TestDriverRemoteConnection(object):
         # test binding in P
         results = g.V().has('person', 'age', Bindings.of('x', lt(30))).count().next()
         assert 2 == results
-
 
     def test_lambda_traversals(self, remote_connection):
         statics.load_statics(globals())
@@ -201,3 +195,9 @@ class TestDriverRemoteConnection(object):
         assert 6 == t.next()
         assert 6 == t.clone().next()
         assert 6 == t.clone().next()
+
+    def test_authenticated(self, remote_connection_authenticated):
+        statics.load_statics(globals())
+        g = traversal().withRemote(remote_connection_authenticated)
+
+        assert long(6) == g.V().count().toList()[0]

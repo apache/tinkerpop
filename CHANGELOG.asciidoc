@@ -45,6 +45,9 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Bump to Neo4j 3.4.11.
 * Added a parameterized `TypeTranslator` for use with `GroovyTranslator` that should produce more cache hits.
 * Added support for `TextP` in Neo4j using its string search functions.
+* Added a kerberos KDC to the docker container for testing GLV's.
+* Added kerberos authentication to Gremlin-Python.
+* Added audit logging to bytecode-based traversals.
 * Changed `TraversalStrategy` application methodology to apply each strategy in turn to each level of the traversal hierarchy starting from root down to children.
 * Prevented more than one `Client` from connecting to the same Gremlin Server session.
 * Bumped to Jackson 2.10.x.

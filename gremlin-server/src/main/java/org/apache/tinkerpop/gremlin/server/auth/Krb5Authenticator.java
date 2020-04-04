@@ -72,7 +72,7 @@ public class Krb5Authenticator implements Authenticator {
             principalName = (String) config.get(PRINCIPAL_KEY);
             subject = JaasKrbUtil.loginUsingKeytab(principalName, keytabFile);
         } catch (Exception e) {
-            logger.warn("Failed to login to kdc");
+            logger.warn("Failed to login to kdc:" + e.getMessage());
         }
         
         logger.debug("Done logging in to kdc");
@@ -110,7 +110,7 @@ public class Krb5Authenticator implements Authenticator {
                 //   https://docs.oracle.com/javase/8/docs/technotes/guides/security/sasl/sasl-refguide.html#SERVER
                 // Rely on GSSAPI defaults for Sasl.MAX_BUFFER and Sasl.QOP. Note, however, that gremlin-driver has
                 // Sasl.SERVER_AUTH fixed to true (mutual authentication) and one can configure SSL for enhanced confidentiality,
-                // Sasl policy properties for negotiating the authenticatin mechanism are not relevant here, because
+                // Sasl policy properties for negotiating the authentication mechanism are not relevant here, because
                 // GSSAPI is the only available mechanism for this authenticator
                 final Map props = new HashMap<String, Object>();
                 final String[] principalParts = principalName.split("/|@");

@@ -72,6 +72,7 @@ import static com.codahale.metrics.MetricRegistry.name;
  */
 public class TraversalOpProcessor extends AbstractOpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(TraversalOpProcessor.class);
+    private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
     private static final ObjectMapper mapper = GraphSONMapper.build().version(GraphSONVersion.V2_0).create().createMapper();
     public static final String OP_PROCESSOR_NAME = "traversal";
     public static final Timer traversalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "traversal"));
@@ -149,6 +150,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
     private void iterateBytecodeTraversal(final Context context) throws Exception {
         final RequestMessage msg = context.getRequestMessage();
+        final Settings settings = context.getSettings();
         logger.debug("Traversal request {} for in thread {}", msg.getRequestId(), Thread.currentThread().getName());
 
         // right now the TraversalOpProcessor can take a direct GraphSON representation of Bytecode or directly take
@@ -189,6 +191,11 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION)
                             .statusMessage(ex.getMessage())
                             .statusAttributeException(ex).create());
+        }
+        if (settings.authentication.enableAuditLog) {
+            String address = context.getChannelHandlerContext().channel().remoteAddress().toString();
+            if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
+            auditLogger.info("User with address {} requested: {}", address, bytecode);
         }
 
         final Timer.Context timerContext = traversalOpTimer.time();

@@ -69,6 +69,11 @@ limitations under the License.
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
+                        <groupId>org.apache.tinkerpop</groupId>
+                        <artifactId>gremlin-test</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
                         <groupId>org.codehaus.groovy</groupId>
                         <artifactId>groovy-all</artifactId>
                         <version>${groovy.version}</version>

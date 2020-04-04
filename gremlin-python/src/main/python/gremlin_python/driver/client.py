@@ -39,7 +39,7 @@ class Client:
     def __init__(self, url, traversal_source, protocol_factory=None,
                  transport_factory=None, pool_size=None, max_workers=None,
                  message_serializer=None, username="", password="",
-                 headers=None, session=""):
+                 kerberized_service="", headers=None, session=""):
         self._url = url
         self._headers = headers
         self._traversal_source = traversal_source
@@ -64,7 +64,8 @@ class Client:
             protocol_factory = lambda: protocol.GremlinServerWSProtocol(
                 self._message_serializer,
                 username=self._username,
-                password=self._password)
+                password=self._password,
+                kerberized_service=kerberized_service)
         self._protocol_factory = protocol_factory
         if self._sessionEnabled:
             if pool_size is None:
