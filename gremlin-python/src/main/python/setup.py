@@ -54,6 +54,9 @@ install_requires = [
 if sys.version_info < (3, 2):
     install_requires += ['futures>=3.0.5,<4.0.0']
 
+if sys.version_info < (3, 5):
+    install_requires += ['pyparsing>=2.4.6,<3.0.0']
+
 setup(
     name='gremlinpython',
     version=version,
