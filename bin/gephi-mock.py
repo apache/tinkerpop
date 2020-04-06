@@ -21,6 +21,7 @@
 
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
+
 class GephiHandler(BaseHTTPRequestHandler):
 
     def respond(self):
@@ -35,14 +36,16 @@ class GephiHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         self.respond()
 
+
 def main():
     try:
         server = HTTPServer(('', 8080), GephiHandler)
-        print 'listening on port 8080...'
+        print('listening on port 8080...')
         server.serve_forever()
     except KeyboardInterrupt:
-        print '^C received, shutting down server'
+        print('^C received, shutting down server')
         server.socket.close()
+
 
 if __name__ == '__main__':
     main()
