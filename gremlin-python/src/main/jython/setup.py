@@ -51,8 +51,11 @@ install_requires = [
     'isodate>=0.6.0,<1.0.0'
 ]
 
-if sys.version_info < (3,2):
+if sys.version_info < (3, 2):
     install_requires += ['futures>=3.0.5,<4.0.0']
+
+if sys.version_info < (3, 5):
+    install_requires += ['pyparsing>=2.4.6,<3.0.0']
 
 setup(
     name='gremlinpython',
