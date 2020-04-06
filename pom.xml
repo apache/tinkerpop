@@ -529,7 +529,7 @@ limitations under the License.
                 <plugin>
                     <groupId>org.codehaus.gmavenplus</groupId>
                     <artifactId>gmavenplus-plugin</artifactId>
-                    <version>1.7.1</version>
+                    <version>1.9.0</version>
                     <configuration>
                         <targetBytecode>1.8</targetBytecode>
                         <invokeDynamic>true</invokeDynamic>
