@@ -57,6 +57,9 @@ class Session(Processor):
     def eval(self, args):
         return args
 
+    def close(self, args):
+        return args
+
 class Traversal(Processor):
 
     def authentication(self, args):

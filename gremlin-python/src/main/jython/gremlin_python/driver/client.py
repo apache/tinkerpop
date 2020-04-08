@@ -102,10 +102,19 @@ class Client:
             self._pool.put_nowait(conn)
 
     def close(self):
+        if self._sessionEnabled:
+            self._close_session()
         while not self._pool.empty():
             conn = self._pool.get(True)
             conn.close()
         self._executor.shutdown()
+
+    def _close_session(self):
+        message = request.RequestMessage(
+            processor='session', op='close',
+            args={'session': self._session})
+        conn = self._pool.get(True)
+        return conn.write(message).result()
 
     def _get_connection(self):
         protocol = self._protocol_factory()
