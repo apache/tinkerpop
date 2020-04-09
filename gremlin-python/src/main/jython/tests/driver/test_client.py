@@ -131,12 +131,22 @@ def test_multi_conn_pool(client):
 
 def test_multi_request_in_session(client):
     # Overwrite fixture with session client
-    client = Client('ws://localhost:45940/gremlin', 'g', session=str(uuid.uuid4()))
+    session_id = str(uuid.uuid4())
+    client = Client('ws://localhost:45940/gremlin', 'g', session=session_id)
 
     assert client.submit('x = 1').all().result()[0] == 1
     assert client.submit('x + 2').all().result()[0] == 3
 
     client.close()
+
+    # attempt reconnect to session and make sure "x" is no longer a thing
+    client = Client('ws://localhost:45940/gremlin', 'g', session=session_id)
+    try:
+        # should fire an exception
+        client.submit('x').all().result()
+        assert False
+    except Exception:
+        assert True
 
 
 def test_client_pool_in_session(client):
