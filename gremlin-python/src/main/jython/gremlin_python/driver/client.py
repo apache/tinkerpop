@@ -39,7 +39,7 @@ class Client:
     def __init__(self, url, traversal_source, protocol_factory=None,
                  transport_factory=None, pool_size=None, max_workers=None,
                  message_serializer=None, username="", password="",
-                 headers=None):
+                 headers=None, session=""):
         self._url = url
         self._headers = headers
         self._traversal_source = traversal_source
@@ -48,6 +48,8 @@ class Client:
         self._message_serializer = message_serializer
         self._username = username
         self._password = password
+        self._session = session
+        self._sessionEnabled = (session != "")
         if transport_factory is None:
             try:
                 from gremlin_python.driver.tornado.transport import (
@@ -64,6 +66,11 @@ class Client:
                 username=self._username,
                 password=self._password)
         self._protocol_factory = protocol_factory
+        if self._sessionEnabled:
+            if pool_size is None:
+                pool_size = 1
+            elif pool_size != 1:
+                raise Exception("PoolSize must be 1 on session mode!")
         if pool_size is None:
             pool_size = 4
         self._pool_size = pool_size
@@ -95,10 +102,19 @@ class Client:
             self._pool.put_nowait(conn)
 
     def close(self):
+        if self._sessionEnabled:
+            self._close_session()
         while not self._pool.empty():
             conn = self._pool.get(True)
             conn.close()
         self._executor.shutdown()
+
+    def _close_session(self):
+        message = request.RequestMessage(
+            processor='session', op='close',
+            args={'session': self._session})
+        conn = self._pool.get(True)
+        return conn.write(message).result()
 
     def _get_connection(self):
         protocol = self._protocol_factory()
@@ -123,5 +139,8 @@ class Client:
                       'aliases': {'g': self._traversal_source}})
             if bindings:
                 message.args.update({'bindings': bindings})
+            if self._sessionEnabled:
+                message = message._replace(processor='session')
+                message.args.update({'session': self._session})
         conn = self._pool.get(True)
         return conn.write(message)
