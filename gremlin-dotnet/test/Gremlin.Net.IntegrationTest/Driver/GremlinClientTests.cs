@@ -267,7 +267,8 @@ namespace Gremlin.Net.IntegrationTest.Driver
         public async Task ShouldSaveVariableBetweenRequestsInSession()
         {
             var gremlinServer = new GremlinServer(TestHost, TestPort);
-            using (var gremlinClient = new GremlinClient(gremlinServer, sessionId: Guid.NewGuid().ToString()))
+            var sessionId = Guid.NewGuid().ToString();
+            using (var gremlinClient = new GremlinClient(gremlinServer, sessionId: sessionId))
             {
                 await gremlinClient.SubmitAsync<int>("x = 1");
 
@@ -275,6 +276,19 @@ namespace Gremlin.Net.IntegrationTest.Driver
                 var response = await gremlinClient.SubmitAsync<int>("x + 2");
 
                 Assert.Equal(expectedResult, response);
+            }
+
+            using (var gremlinClient = new GremlinClient(gremlinServer, sessionId: sessionId))
+            {
+                try
+                {
+                    await gremlinClient.SubmitAsync<int>("x");
+                    Assert.True(false, "The 'x' variable should not exist after session close");
+                }
+                catch (Exception ignored)
+                {
+                    // do nothing
+                }
             }
         }
     }

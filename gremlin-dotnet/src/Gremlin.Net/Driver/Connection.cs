@@ -85,9 +85,7 @@ namespace Gremlin.Net.Driver
 
         private async Task CloseSession()
         {
-            // build a request to close this session, 'gremlin' in args as tips and not be executed actually
-            var msg = RequestMessage.Build(Tokens.OpsClose).Processor(Tokens.ProcessorSession)
-              .AddArgument(Tokens.ArgsGremlin, "session.close()").Create();
+            var msg = RequestMessage.Build(Tokens.OpsClose).Processor(Tokens.ProcessorSession).Create();
 
             await SendAsync(msg).ConfigureAwait(false);
         }
