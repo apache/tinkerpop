@@ -19,7 +19,7 @@
 # under the License.
 #
 
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 
 class GephiHandler(BaseHTTPRequestHandler):
