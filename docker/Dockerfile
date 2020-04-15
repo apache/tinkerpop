@@ -20,7 +20,7 @@ FROM ubuntu:xenial
 LABEL maintainer="Daniel Kuppitz <me@gremlin.guru>"
 
 RUN apt-get update
-RUN apt-get -y install software-properties-common python-software-properties apt-transport-https curl dpkg
+RUN apt-get -y install software-properties-common python-software-properties apt-transport-https curl dpkg netcat net-tools
 RUN add-apt-repository ppa:openjdk-r/ppa
 RUN sh -c 'curl -s https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb -o packages-microsoft-prod.deb'
 RUN sh -c 'dpkg -i packages-microsoft-prod.deb'
