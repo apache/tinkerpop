@@ -89,6 +89,7 @@ if [ ! -z "${BUILD_USER_DOCS}" ]; then
   service ssh start
 
   # start Hadoop
+  echo "export JAVA_HOME=$JAVA_HOME" >> ${HADOOP_PREFIX}/etc/hadoop/hadoop-env.sh
   cp docker/hadoop/resources/* ${HADOOP_PREFIX}/etc/hadoop/
   hdfs namenode -format
   ${HADOOP_PREFIX}/sbin/start-dfs.sh
