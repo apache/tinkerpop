@@ -72,7 +72,7 @@ import java.util.stream.Collectors;
 /**
  * {@code PartitionStrategy} partitions the vertices, edges and vertex properties of a graph into String named
  * partitions (i.e. buckets, subgraphs, etc.).  It blinds a {@link Traversal} from "seeing" specified areas of
- * the graph given the partition names assigned to {@link Builder#addReadPartition(String)}.  The traversal will
+ * the graph given the partition names assigned to {@link Builder#readPartitions(String...)}.  The traversal will
  * ignore all graph elements not in those "read" partitions.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
