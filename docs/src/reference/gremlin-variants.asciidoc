@@ -737,6 +737,7 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 |message_serializer |The message serializer implementation.|`gremlin_python.driver.serializer.GraphSONMessageSerializer`
 |password |The password to submit on requests that require authentication. |""
 |username |The username to submit on requests that require authentication. |""
+|session | A unique string-based identifier (typically a UUID) to enable a <<sessions,session-based connection>>. This is not a valid configuration for `DriverRemoteConnection`. |None
 |=========================================================
 
 === Traversal Strategies
@@ -1108,6 +1109,14 @@ If the remote system has authentication and SSL enabled, then the `GremlinServer
 [source,csharp]
 ----
 include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=submittingScriptsWithAuthentication]
+----
+
+It is also possible to initialize the `Client` to use <<sessions,sessions>>:
+
+[source,csharp]
+----
+var gremlinServer = new GremlinServer("localhost", 8182);
+var client = new GremlinClient(gremlinServer, sessionId: Guid.NewGuid().ToString()))
 ----
 
 [[gremlin-net-dsl]]

@@ -587,7 +587,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.3.11 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Added `trustStoreType` such that keystore and truststore can be of different types in the Java driver.
-* Added session support to gremlin-javascript.
+* Added session support to all GLVs: Javascript, .NET and Python.
 * Fixed bug in Gremlin Server shutdown if failures occurred during `GraphManager` initialization.
 * Modified Gremlin Server to close the session when the channel itself is closed.
 * Fixed bug in `Order` where comparisons of `enum` types wouldn't compare with `String` values.
@@ -596,7 +596,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Bumped to Jackson 2.9.10.3.
 * Remove invalid service descriptors from gremlin-shaded.
 * Fixed bug in Python and .NET traversal `clone()` where deep copies of bytecode were not occurring.
-* Added session support to gremlin-python
 
 [[release-3-3-10]]
 === TinkerPop 3.3.10 (Release Date: February 3, 2020)
