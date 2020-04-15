@@ -29,21 +29,22 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.3.11/CHANGELOG.as
 
 === Upgrading for Users
 
-==== gremlin-python Sessions
-
-The `sessions` feature is enabled in gremlin-python.
-
-[source, python]
-client = Client('ws://localhost:8182/gremlin', 'g', session=str(uuid.uuid4()))
-
-==== gremlin-javascript Sessions
+==== GLV Sessions
 
 While TinkerPop doesn't recommend the use of sessions for most use cases, it does remain a feature that is available
 and exposed on the server. As such, providing support in all Gremlin Language Variants for this feature is useful in
 ensuring a consistent implementation for all programming languages.
 
 [source,javascript]
-const client = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traversalSource: 'g', 'session': 'unique-string-id' });
+const client = new Client('ws://localhost:8182/gremlin', { traversalSource: 'g', 'session': 'unique-string-id' });
+
+[source, python]
+client = Client('ws://localhost:8182/gremlin', 'g', session=str(uuid.uuid4()))
+
+[source, csharp]
+var gremlinServer = new GremlinServer("localhost", 8182);
+var client = new GremlinClient(gremlinServer, sessionId: Guid.NewGuid().ToString()))
+
 ==== Deprecate maxWaitForSessionClose
 
 The `maxWaitForSessionClose` setting for the Java driver has been deprecated and in some sense replaced by the

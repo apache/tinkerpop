@@ -327,14 +327,34 @@ is detected during deserialization, the `Set` is coerced to a `List` so that tra
 results within a collection across different languages. If a `Set` is needed then convert `List` results
 to `Set` manually.
 
+=== Submit Gremlin Scripts
+
+Additionally, you can also send parametrized Gremlin scripts to the server as strings:
+
+[source,python]
+----
+client = Client('ws://localhost:8182/gremlin', 'g')
+client.submit('x + x', {'x': 2}).all().result()
+----
+
+It is also possible to initialize the `Client` to use <<sessions,sessions>>:
+
+[source,python]
+----
+client = Client('ws://localhost:8182/gremlin', 'g', session=str(uuid.uuid4()))
+----
+
+With this configuration, the state of variables within scripts are preserved between requests.
+
 [[gremlin-DotNet]]
 == Gremlin.Net
 
-image:gremlin-dotnet-logo.png[width=371,float=right] Apache TinkerPop's Gremlin.Net implements Gremlin within the C# language. It targets .NET Standard and can
-therefore be used on different operating systems and with different .NET frameworks, such as .NET Framework
-and link:https://www.microsoft.com/net/core[.NET Core]. Since the C# syntax is very similar to that of Java, it should be very easy to switch between
-Gremlin-Java and Gremlin.Net. The only major syntactical difference is that all method names in Gremlin.Net
-use PascalCase as opposed to camelCase in Gremlin-Java in order to comply with .NET conventions.
+image:gremlin-dotnet-logo.png[width=371,float=right] Apache TinkerPop's Gremlin.Net implements Gremlin within the C#
+language. It targets .NET Standard and can therefore be used on different operating systems and with different .NET
+frameworks, such as .NET Framework and link:https://www.microsoft.com/net/core[.NET Core]. Since the C# syntax is very
+similar to that of Java, it should be very easy to switch between Gremlin-Java and Gremlin.Net. The only major
+syntactical difference is that all method names in Gremlin.Net use PascalCase as opposed to camelCase in Gremlin-Java
+in order to comply with .NET conventions.
 
 [source,powershell]
 nuget install Gremlin.Net
@@ -515,6 +535,31 @@ TIP: When running into situations where Groovy cannot properly discern a method 
 instance created, it will help to fully define the closure in the lambda expression - so rather than
 `Lambda.Groovy("it.get().value('name'))`, prefer `Lambda.Groovy("x -> x.get().value('name'))`.
 
+=== Submit Gremlin Scripts
+
+Additionally, you can also send parametrized Gremlin scripts to the server as strings:
+
+[source,csharp]
+----
+var gremlinServer = new GremlinServer("localhost", 8182);
+using (var gremlinClient = new GremlinClient(gremlinServer))
+{
+    var bindings = new Dictionary<string, object> {{"a", a}, {"b", b}};
+    var response =
+        await gremlinClient.SubmitWithSingleResultAsync<int>("a + b", bindings);
+}
+----
+
+It is also possible to initialize the `Client` to use <<sessions,sessions>>:
+
+[source,csharp]
+----
+var gremlinServer = new GremlinServer("localhost", 8182);
+var client = new GremlinClient(gremlinServer, sessionId: Guid.NewGuid().ToString()))
+----
+
+With this configuration, the state of variables within scripts are preserved between requests.
+
 [[gremlin-javascript]]
 == Gremlin-JavaScript
 
@@ -575,7 +620,6 @@ asynchronous by default, this terminal methods return a `Promise`.
 * `Traversal.next()`: Returns a `Promise` with a `{ value, done }` tuple as result value, according to the
 link:https://github.com/tc39/proposal-async-iteration[async iterator proposal].
 * `Traversal.iterate()`: Returns a `Promise` without a value.
-
 
 For example:
 
