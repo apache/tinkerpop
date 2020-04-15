@@ -48,5 +48,5 @@ exports.getClient = function getClient(traversalSource) {
 };
 
 exports.getSessionClient = function getSessionClient(traversalSource) {
-  return new Client(serverUrl, { 'traversalSource': traversalSource, 'processor': 'session'});
+  return new Client(serverUrl, { 'traversalSource': traversalSource, 'session': 'unique-string-id'});
 };

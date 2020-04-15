@@ -1291,7 +1291,7 @@ It is also possible to initialize the `Client` to use <<sessions,sessions>>:
 
 [source,javascript]
 ----
-const client = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traversalSource: 'g', 'processor': 'session' });
+const client = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traversalSource: 'g', 'session': 'unique-string-id' });
 ----
 
 With this configuration, the state of variables within scripts are preserved between requests.
