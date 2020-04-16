@@ -123,10 +123,10 @@ class Client:
             self._transport_factory, self._executor, self._pool,
             headers=self._headers)
 
-    def submit(self, message, bindings=None):
-        return self.submitAsync(message, bindings=bindings).result()
+    def submit(self, message, bindings=None, timeout=None):
+        return self.submitAsync(message, bindings=bindings, timeout=timeout).result()
 
-    def submitAsync(self, message, bindings=None):
+    def submitAsync(self, message, bindings=None, timeout=None):
         if isinstance(message, traversal.Bytecode):
             message = request.RequestMessage(
                 processor='traversal', op='bytecode',
@@ -139,6 +139,8 @@ class Client:
                       'aliases': {'g': self._traversal_source}})
             if bindings:
                 message.args.update({'bindings': bindings})
+            if timeout:
+                message.args.update({'scriptEvaluationTimeout': timeout})
             if self._sessionEnabled:
                 message = message._replace(processor='session')
                 message.args.update({'session': self._session})
