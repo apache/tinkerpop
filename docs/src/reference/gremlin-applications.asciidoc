@@ -128,6 +128,7 @@ some other useful operations.  The following table outlines the most commonly us
 |:help |:? |Displays list of commands and descriptions.  When followed by a command name, it will display more specific help on that particular item.
 |:exit |:x |Ends the Console session.
 |import |:i |Import a class into the Console session.
+|:cls |:C |Clear the screen of the Console.
 |:clear |:c |Sometimes the Console can get into a state where the command buffer no longer understands input (e.g. a misplaced `(` or `}`).  Use this command to clear that buffer.
 |:load |:l |Load a file or URL into the command buffer for execution.
 |:install |:+ |Imports a Maven library and its dependencies into the Console.
