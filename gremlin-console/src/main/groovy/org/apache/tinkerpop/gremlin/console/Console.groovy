@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.console.commands.GremlinSetCommand
 import org.apache.tinkerpop.gremlin.console.commands.InstallCommand
 import org.apache.tinkerpop.gremlin.console.commands.PluginCommand
 import org.apache.tinkerpop.gremlin.console.commands.RemoteCommand
+import org.apache.tinkerpop.gremlin.console.commands.ClsCommand
 import org.apache.tinkerpop.gremlin.console.commands.SubmitCommand
 import org.apache.tinkerpop.gremlin.console.commands.UninstallCommand
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader
@@ -107,6 +108,7 @@ class Console {
         groovy.register(new RemoteCommand(groovy, mediator))
         groovy.register(new SubmitCommand(groovy, mediator))
         groovy.register(new BytecodeCommand(groovy, mediator))
+        groovy.register(new ClsCommand(groovy, mediator))
 
         // hide output temporarily while imports execute
         showShellEvaluationOutput(false)
@@ -288,6 +290,13 @@ class Console {
                 }
             }
         }
+    }
+
+    /**
+     * Clears the console screen.
+     */
+    def clear() {
+        io.out.println("\033[H\033[2J")
     }
 
     def printResult(def object) {
