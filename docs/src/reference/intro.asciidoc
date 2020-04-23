@@ -412,6 +412,8 @@ g = traversal().withRemote(
 As shown in the embedded approach in the previous section, once "g" is defined, writing Gremlin is structurally and
 conceptually the same irrespective of programming language.
 
+TIP: The variable `g`, the `TraversalSource`, only needs to be instantiated once and should then be re-used.
+
 [[connecting-gremlin-server-limitations]]
 ==== Limitations
 
