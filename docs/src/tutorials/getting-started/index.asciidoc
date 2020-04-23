@@ -145,6 +145,8 @@ g.V(1).out('knows').has('age', gt(30)).values('name')    <7>
 (similar to `inE().outV()` and `in()` for incoming edges).
 <7> Get the names of the people vertex "1" knows who are over the age of 30.
 
+TIP: The variable `g`, the `TraversalSource`, only needs to be instantiated once and should then be re-used.
+
 IMPORTANT: A `Traversal` is essentially an `Iterator` so if you have code like `x = g.V()`, the `x` does not contain
 the results of the `g.V()` query.  Rather, that statement assigns an `Iterator` value to `x`. To get your results,
 you would then need to iterate through `x`. This understanding is *important* because in the context of the console
