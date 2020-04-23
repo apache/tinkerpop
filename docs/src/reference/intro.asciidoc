@@ -230,7 +230,7 @@ gremlin> g.V().has('name','marko').out('knows').values('name') // <3>
 ----
 
 <1> Open the toy graph and reference it by the variable `graph`.
-<2> Create a graph traversal source from the graph using the standard, OLTP traversal engine.
+<2> Create a graph traversal source from the graph using the standard, OLTP traversal engine. This object should be created once and then re-used.
 <3> Spawn a traversal off the traversal source that determines the names of the people that the marko-vertex knows.
 
 .The Name of The People That Marko Knows
