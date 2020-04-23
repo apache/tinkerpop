@@ -205,7 +205,6 @@ public final class LegacyGraphSONReader implements GraphReader {
         private boolean loadCustomModules = false;
         private List<SimpleModule> customModules = new ArrayList<>();
         private long batchSize = 10000;
-        private boolean embedTypes = false;
 
         private Builder() {
         }
@@ -236,9 +235,12 @@ public final class LegacyGraphSONReader implements GraphReader {
         }
 
         public LegacyGraphSONReader create() {
-            final GraphSONMapper.Builder builder = GraphSONMapper.build();
+            // not sure why there is specific need for V2 here with "no types" as we don't even need TP3 GraphSON
+            // at all. Seems like a standard Jackson ObjectMapper would have worked fine, but rather than change
+            // this ancient class at this stage we'll just stick to what is there.
+            final GraphSONMapper.Builder builder = GraphSONMapper.build().version(GraphSONVersion.V2_0);
             customModules.forEach(builder::addCustomModule);
-            final GraphSONMapper mapper = builder.typeInfo(embedTypes ? TypeInfo.PARTIAL_TYPES : TypeInfo.NO_TYPES)
+            final GraphSONMapper mapper = builder.typeInfo(TypeInfo.NO_TYPES)
                     .loadCustomModules(loadCustomModules).create();
             return new LegacyGraphSONReader(mapper.createMapper(), batchSize);
         }
