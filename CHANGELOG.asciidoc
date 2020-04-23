@@ -30,7 +30,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in `Order` where comparisons of `enum` types wouldn't compare with `String` values.
 * Added `maxWaitForClose` configuration option to the Java driver.
 * Deprecated `maxWaitForSessionClose` in the Java driver.
-* Bumped to Jackson 2.9.10.3.
+* Bumped to Jackson 2.9.10.4.
 * Remove invalid service descriptors from gremlin-shaded.
 * Fixed bug in Python and .NET traversal `clone()` where deep copies of bytecode were not occurring.
 
