@@ -55,7 +55,7 @@ namespace Gremlin.Net.IntegrationTest.Docs.Reference
         public void ConnectingTest()
         {
 // tag::connecting[]
-var remoteConnection = new DriverRemoteConnection(new GremlinClient(new GremlinServer("localhost", 8182)));
+var remoteConnection = new DriverRemoteConnection(new GremlinClient(new GremlinServer("localhost", 8182)), "g");
 var g = Traversal().WithRemote(remoteConnection);
 // end::connecting[]
         }
