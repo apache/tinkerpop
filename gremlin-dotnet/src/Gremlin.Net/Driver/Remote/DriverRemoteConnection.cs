@@ -39,7 +39,7 @@ namespace Gremlin.Net.Driver.Remote
         private readonly string _traversalSource;
 
         /// <summary>
-        ///     Initializes a new <see cref="IRemoteConnection" />.
+        ///     Initializes a new <see cref="IRemoteConnection" /> using "g" as the default remote TraversalSource name.
         /// </summary>
         /// <param name="client">The <see cref="IGremlinClient" /> that will be used for the connection.</param>
         /// <exception cref="ArgumentNullException">Thrown when client is null.</exception>
