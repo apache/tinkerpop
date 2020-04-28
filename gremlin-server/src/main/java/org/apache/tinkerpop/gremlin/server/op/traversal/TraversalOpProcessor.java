@@ -254,12 +254,6 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().commit();
     }
 
-    protected void onSideEffectSuccess(final Graph graph, final Context ctx) {
-        // there was no "writing" here, just side-effect retrieval, so if a transaction was opened then
-        // just close with rollback
-        if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
-    }
-
     protected void handleIterator(final Context context, final Iterator itty, final Graph graph) throws InterruptedException {
         final ChannelHandlerContext nettyContext = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();

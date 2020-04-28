@@ -57,7 +57,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Removed previously deprecated `TraversalStrategies.applyStrategies()`.
 * Removed previously deprecated `scriptEvaluationTimeout`.
 * Removed previously deprecated `NioChannelizer` and related classes.
-* Removed previously deprecated remote traversal side-effects.
+* Removed previously deprecated remote traversal side-effects and related infrastructure.
 * Removed previously deprecated `Serializers.DEFAULT_RESULT_SERIALIZER` and `Serializers.DEFAULT_REQUEST_SERIALIZER`.
 * Removed previously deprecated `decr` and `incr` from `Order`.
 * Removed previously deprecated `TraversalSource.withRemote()`.

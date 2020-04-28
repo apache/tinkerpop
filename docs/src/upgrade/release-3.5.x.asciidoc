@@ -301,6 +301,7 @@ The following deprecated classes, methods or fields have been removed in this ve
 ** `org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor.makeFrame(Context, RequestMessage, MessageSerializer, boolean, List, ResponseStatusCode, Map)`
 ** `org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor.makeFrame(ResponseHandlerContext, RequestMessage, MessageSerializer, boolean, List, ResponseStatusCode, Map)`
 ** `org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor.makeFrame(ResponseHandlerContext, RequestMessage, MessageSerializer, boolean, List, ResponseStatusCode, Map, Map)`
+** `org.apache.tinkerpop.gremlin.server.op.traversal.TraversalOpProcessor.onSideEffectSuccess(Graph, Context)`
 ** `org.apache.tinkerpop.gremlin.server.util.SideEffectIterator`
 * `neo4j-gremlin`
 ** `org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph#getTrait()`
