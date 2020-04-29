@@ -600,6 +600,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Remove invalid service descriptors from gremlin-shaded.
 * Fixed bug in Python and .NET traversal `clone()` where deep copies of bytecode were not occurring.
 * Fixed bug in Python about integer serializer which was out of range of `g:Int32`
+* Bump commons-codec 1.14
 
 [[release-3-3-10]]
 === TinkerPop 3.3.10 (Release Date: February 3, 2020)
