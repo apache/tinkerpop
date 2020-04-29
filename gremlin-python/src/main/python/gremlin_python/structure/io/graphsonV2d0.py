@@ -495,6 +495,18 @@ class Int32IO(Int64IO):
     graphson_type = "g:Int32"
     graphson_base_type = "Int32"
 
+    @classmethod
+    def dictify(cls, n, writer):
+        # if we exceed Java int range then we need a long
+        if isinstance(n, bool):
+            return n
+        elif n < -9223372036854775808 or n > 9223372036854775807:
+            return GraphSONUtil.typedValue("BigInteger", str(n), "gx")
+        elif n < -2147483648 or n > 2147483647:
+            return GraphSONUtil.typedValue("Int64", n)
+        else:
+            return GraphSONUtil.typedValue(cls.graphson_base_type, n)
+
 
 class ByteIO(_NumberIO):
     python_type = SingleByte
