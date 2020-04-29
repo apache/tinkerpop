@@ -354,16 +354,15 @@ class TestGraphSONWriter(object):
                 "@value": ['a', {"@type": "g:Int32", "@value": 1}]} == json.loads(
             self.graphson_writer.writeObject({'a': 1}))
 
-    def test_number_output(self):
-        assert {"@type": "g:Int64", "@value": 2} == json.loads(self.graphson_writer.writeObject(long(2)))
-        assert {"@type": "g:Int32", "@value": 1} == json.loads(self.graphson_writer.writeObject(1))
-        assert {"@type": "g:Double", "@value": 3.2} == json.loads(self.graphson_writer.writeObject(3.2))
-        assert """true""" == self.graphson_writer.writeObject(True)
-
     def test_numbers(self):
         assert {"@type": "gx:Byte", "@value": 1} == json.loads(self.graphson_writer.writeObject(int.__new__(SingleByte, 1)))
         assert {"@type": "g:Int64", "@value": 2} == json.loads(self.graphson_writer.writeObject(long(2)))
+        assert {"@type": "g:Int64", "@value": 851401972585122} == json.loads(self.graphson_writer.writeObject(long(851401972585122)))
+        assert {"@type": "g:Int64", "@value": -2} == json.loads(self.graphson_writer.writeObject(long(-2)))
+        assert {"@type": "g:Int64", "@value": -851401972585122} == json.loads(self.graphson_writer.writeObject(long(-851401972585122)))
         assert {"@type": "g:Int32", "@value": 1} == json.loads(self.graphson_writer.writeObject(1))
+        assert {"@type": "g:Int32", "@value": -1} == json.loads(self.graphson_writer.writeObject(-1))
+        assert {"@type": "g:Int64", "@value": 851401972585122} == json.loads(self.graphson_writer.writeObject(851401972585122))
         assert {"@type": "g:Double", "@value": 3.2} == json.loads(self.graphson_writer.writeObject(3.2))
         assert {"@type": "g:Double", "@value": "NaN"} == json.loads(self.graphson_writer.writeObject(float('nan')))
         assert {"@type": "g:Double", "@value": "Infinity"} == json.loads(self.graphson_writer.writeObject(float('inf')))
