@@ -29,6 +29,7 @@ This release also includes changes from <<release-3-3-11, 3.3.11>>.
 * Bumped to Groovy 2.5.11.
 * Improved error message for `math()` when the selected key in a `Map` is `null` or not a `Number`.
 * Added `:cls` command to Gremlin Console to clear the screen.
+* Bump Netty 4.1.49.
 
 [[release-3-4-6]]
 === TinkerPop 3.4.6 (Release Date: February 20, 2020)
