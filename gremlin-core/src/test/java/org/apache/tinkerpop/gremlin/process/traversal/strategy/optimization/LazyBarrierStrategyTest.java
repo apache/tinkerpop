@@ -100,7 +100,11 @@ public class LazyBarrierStrategyTest {
                 {__.out().as("a").out().as("b").in().where(P.neq("a")).out().select("b").out(), __.out().as("a").out().as("b").in().where(P.neq("a")).barrier(PATH_SIZE).out().select("b").barrier(PATH_SIZE).out(), Collections.singletonList(PathRetractionStrategy.instance())},
                 {__.out().as("a").out().as("b").in().where(P.neq("a")).out().select("b").out().out(), __.out().as("a").out().as("b").in().where(P.neq("a")).barrier(PATH_SIZE).out().select("b").barrier(PATH_SIZE).out().barrier(LAZY_SIZE).out(), Collections.singletonList(PathRetractionStrategy.instance())},
                 {__.V().out().out().groupCount().by(__.out().out().out()).out(), __.V().out().barrier(LAZY_SIZE).out().groupCount().by(__.out().out().barrier(LAZY_SIZE).out()).out(), Collections.emptyList()},
-                {__.V().out().out().groupCount().by(__.out().out().out()).out().as("a"), __.V().out().barrier(LAZY_SIZE).out().groupCount().by(__.out().out().barrier(LAZY_SIZE).out()).out().as("a"), Collections.emptyList()}
+                {__.V().out().out().groupCount().by(__.out().out().out()).out().as("a"), __.V().out().barrier(LAZY_SIZE).out().groupCount().by(__.out().out().barrier(LAZY_SIZE).out()).out().as("a"), Collections.emptyList()},
+                {__.V().both().profile(), __.V().both().profile(), Collections.emptyList() },
+                {__.V().both().both().profile(), __.V().both().barrier(LAZY_SIZE).both().profile(), Collections.emptyList() },
+                {__.V().both().local(__.both().both().out()).profile(), __.V().both().barrier(LAZY_SIZE).local(__.both().both().barrier(LAZY_SIZE).out()).profile(), Collections.emptyList() },
+                {__.V().both().local(__.both().both().out()).in().profile(), __.V().both().barrier(LAZY_SIZE).local(__.both().both().barrier(LAZY_SIZE).out()).in().profile(), Collections.emptyList() },
         });
     }
 }
