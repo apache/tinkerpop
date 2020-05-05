@@ -21,9 +21,9 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
@@ -72,7 +72,7 @@ public final class ByModulatorOptimizationStrategy extends AbstractTraversalStra
             if (singleStep instanceof PropertiesStep) {
                 final PropertiesStep ps = (PropertiesStep) singleStep;
                 if (ps.getReturnType().equals(PropertyType.VALUE) && ps.getPropertyKeys().length == 1) {
-                    step.replaceLocalChild(traversal, new ElementValueTraversal<>(ps.getPropertyKeys()[0]));
+                    step.replaceLocalChild(traversal, new ValueTraversal<>(ps.getPropertyKeys()[0]));
                 }
             } else if (singleStep instanceof IdStep) {
                 step.replaceLocalChild(traversal, new TokenTraversal<>(T.id));

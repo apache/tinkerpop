@@ -109,7 +109,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_order_byXlabelX();
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_order_byXlabel_decrX();
+    public abstract Traversal<Vertex, Vertex> get_g_V_order_byXlabel_descX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -449,8 +449,8 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
-    public void g_V_order_byXlabel_decrX() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_order_byXlabel_decrX();
+    public void g_V_order_byXlabel_descX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_order_byXlabel_descX();
         printTraversalForm(traversal);
         for (int i = 0; i < 2; i++) {
             assertTrue(traversal.hasNext());
@@ -624,8 +624,8 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_order_byXlabel_decrX() {
-            return g.V().order().by(__.label(), Order.decr);
+        public Traversal<Vertex, Vertex> get_g_V_order_byXlabel_descX() {
+            return g.V().order().by(__.label(), Order.desc);
         }
     }
 }

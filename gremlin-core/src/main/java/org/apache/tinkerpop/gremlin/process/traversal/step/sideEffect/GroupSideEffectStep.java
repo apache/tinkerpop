@@ -75,7 +75,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     }
 
     private void setValueTraversal(final Traversal.Admin<?, ?> valueTraversal) {
-        this.valueTraversal = this.integrateChild(GroupStep.convertValueTraversal(kvTraversal));
+        this.valueTraversal = this.integrateChild(GroupStep.convertValueTraversal(valueTraversal));
         this.barrierStep = GroupStep.determineBarrierStep(this.valueTraversal);
         this.getTraversal().getSideEffects().register(this.sideEffectKey, null,
                 new GroupStep.GroupBiOperator<>(null == this.barrierStep ?
