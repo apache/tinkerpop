@@ -201,6 +201,14 @@ formerly held the cache for these side-effects, no longer have any effect and ca
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2269[TINKERPOP-2269]
 
+==== ByModulatorOptimizationStrategy
+
+The new `ByModulatorOptimizationStrategy` attempts to re-write `by()` modulator traversals to use their more optimized
+forms which can provide a major performance improvement. As a simple an example, a traversal like `by(id())` would
+be replaced by `by(id)`, thus replacing a step-based traversal with a token-based traversal.
+
+Note that this
+
 ==== Python 2.x Support
 
 The gremlinpython module no longer supports Python 2.x. Users must use Python 3 going forward. For the most part, from

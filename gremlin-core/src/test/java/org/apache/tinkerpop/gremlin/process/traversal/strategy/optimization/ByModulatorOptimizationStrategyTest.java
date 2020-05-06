@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.Operator.assign;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -51,7 +52,7 @@ public class ByModulatorOptimizationStrategyTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> generateTestParameters() {
 
-        final List<Object[]> result = new ArrayList<>();
+        final List<Object[]> originalAndOptimized = new ArrayList<>();
         final GraphTraversal[] baseTraversals = new GraphTraversal[]{
                 __.aggregate("x"),
                 __.dedup(),
@@ -77,15 +78,15 @@ public class ByModulatorOptimizationStrategyTest {
         };
 
         for (final Traversal traversal : baseTraversals) {
-            result.add(new Traversal[]{
-                    ((GraphTraversal<?, ?>) traversal.asAdmin().clone()).by(__.values("name")),
+            originalAndOptimized.add(new Traversal[]{
+                    ((GraphTraversal<?, ?>) traversal.asAdmin().clone()).by(values("name")),
                     ((GraphTraversal) traversal.asAdmin().clone()).by("name"),
             });
-            result.add(new Traversal[]{
+            originalAndOptimized.add(new Traversal[]{
                     ((GraphTraversal<?, ?>) traversal.asAdmin().clone()).by(__.id()),
                     ((GraphTraversal) traversal.asAdmin().clone()).by(T.id),
             });
-            result.add(new Traversal[]{
+            originalAndOptimized.add(new Traversal[]{
                     ((GraphTraversal<?, ?>) traversal.asAdmin().clone()).by(__.label()),
                     ((GraphTraversal) traversal.asAdmin().clone()).by(T.label),
             });
@@ -97,15 +98,15 @@ public class ByModulatorOptimizationStrategyTest {
                     ((GraphTraversal<?, ?>) traversal.asAdmin().clone()).by(__.value()),
                     ((GraphTraversal) traversal.asAdmin().clone()).by(T.value),
             });*/
-            result.add(new Traversal[]{
+            originalAndOptimized.add(new Traversal[]{
                     ((GraphTraversal<?, ?>) traversal.asAdmin().clone()).by(__.identity()),
                     ((GraphTraversal) traversal.asAdmin().clone()).by(),
             });
         }
 
-        result.add(new Traversal[]{
+        originalAndOptimized.add(new Traversal[]{
                 __.project("a", "b", "c", "d", "e")
-                        .by(__.values("name"))
+                        .by(values("name"))
                         .by(__.id())
                         .by(__.label())
                         .by(__.identity())
@@ -118,7 +119,59 @@ public class ByModulatorOptimizationStrategyTest {
                         .by(__.outE().count())
         });
 
-        return result;
+        final GraphTraversal[] baseGroupTraversals = new GraphTraversal[]{
+                __.group().by("age"),
+                __.group("x").by("age"),
+        };
+
+        for (final Traversal traversal : baseGroupTraversals) {
+            originalAndOptimized.add(new Traversal[]{
+                    ((GraphTraversal<?, ?>) traversal.asAdmin().clone()).by(values("name").fold()),
+                    ((GraphTraversal) traversal.asAdmin().clone()).by("name"),
+            });
+            originalAndOptimized.add(new Traversal[]{
+                    ((GraphTraversal<?, ?>) traversal.asAdmin().clone()).by(__.id().fold()),
+                    ((GraphTraversal) traversal.asAdmin().clone()).by(T.id),
+            });
+            originalAndOptimized.add(new Traversal[]{
+                    ((GraphTraversal<?, ?>) traversal.asAdmin().clone()).by(__.label().fold()),
+                    ((GraphTraversal) traversal.asAdmin().clone()).by(T.label),
+            });
+            /*result.add(new Traversal[]{
+                    ((GraphTraversal<?, ?>) traversal.asAdmin().clone()).by(__.key().fold()),
+                    ((GraphTraversal) traversal.asAdmin().clone()).by(T.key),
+            });
+            result.add(new Traversal[]{
+                    ((GraphTraversal<?, ?>) traversal.asAdmin().clone()).by(__.value().fold()),
+                    ((GraphTraversal) traversal.asAdmin().clone()).by(T.value),
+            });*/
+            originalAndOptimized.add(new Traversal[]{
+                    ((GraphTraversal<?, ?>) traversal.asAdmin().clone()).by(__.identity()),
+                    ((GraphTraversal) traversal.asAdmin().clone()).by(),
+            });
+        }
+
+        originalAndOptimized.add(new Traversal[]{
+                __.group().by(values("age")).by(values("name")),
+                __.group().by("age").by(values("name"))
+        });
+
+        originalAndOptimized.add(new Traversal[]{
+                __.group("x").by(values("age")).by(values("name")),
+                __.group("x").by("age").by(values("name"))
+        });
+
+        originalAndOptimized.add(new Traversal[]{
+                __.group().by(values("age")).by(values("name").fold()),
+                __.group().by("age").by("name")
+        });
+
+        originalAndOptimized.add(new Traversal[]{
+                __.group("x").by(values("age")).by(values("name").fold()),
+                __.group("x").by("age").by("name")
+        });
+
+        return originalAndOptimized;
     }
 
     private void applyByModulatorOptimizationStrategy(final Traversal traversal) {

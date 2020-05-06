@@ -38,6 +38,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -82,7 +83,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_chooseXoutE_count_isX0X__asXaX__asXbXX_chooseXselectXaX__selectXaX__selectXbXX();
 
-    public abstract Traversal<Vertex, String> get_g_VX1X_groupXaX_byXconstantXaXX_byXvaluesXnameXunfoldX_selectXaX_selectXaX(final Object v1Id);
+    public abstract Traversal<Vertex, String> get_g_VX1X_groupXaX_byXconstantXaXX_byXnameX_selectXaX_selectXaX(final Object v1Id);
 
     public abstract Traversal<Vertex, Long> get_g_V_asXaX_groupXmX_by_byXbothE_countX_barrier_selectXmX_selectXselectXaXX();
 
@@ -376,8 +377,8 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_VX1X_groupXaX_byXconstantXaXX_byXvaluesXnameXunfoldX_selectXaX_selectXaX() {
-        final Traversal<Vertex, String> traversal = get_g_VX1X_groupXaX_byXconstantXaXX_byXvaluesXnameXunfoldX_selectXaX_selectXaX(convertToVertexId("marko"));
+    public void g_VX1X_groupXaX_byXconstantXaXX_byXnameX_selectXaX_selectXaX() {
+        final Traversal<Vertex, String> traversal = get_g_VX1X_groupXaX_byXconstantXaXX_byXnameX_selectXaX_selectXaX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         assertEquals("marko", traversal.next());
@@ -888,8 +889,8 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_groupXaX_byXconstantXaXX_byXvaluesXnameXunfoldX_selectXaX_selectXaX(final Object v1Id) {
-            return g.V(v1Id).group("a").by(__.constant("a")).by(__.values("name").unfold())
+        public Traversal<Vertex, String> get_g_VX1X_groupXaX_byXconstantXaXX_byXnameX_selectXaX_selectXaX(final Object v1Id) {
+            return g.V(v1Id).group("a").by(__.constant("a")).by(__.values("name"))
                     .barrier() // TODO: this barrier() should not be necessary
                     .select("a").select("a");
         }

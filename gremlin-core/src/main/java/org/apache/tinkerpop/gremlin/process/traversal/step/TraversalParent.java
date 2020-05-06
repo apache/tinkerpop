@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
 import java.util.Collections;
@@ -57,7 +56,7 @@ public interface TraversalParent extends AutoCloseable {
         throw new IllegalStateException("This traversal parent does not support the removal of global traversals: " + this.getClass().getCanonicalName());
     }
 
-    public default void replaceLocalChild(final Traversal.Admin<?, ?> oldTrversal, final Traversal.Admin<?, ?> newTrversal) {
+    public default void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
         throw new IllegalStateException("This traversal parent does not support the replacement of local traversals: " + this.getClass().getCanonicalName());
     }
 

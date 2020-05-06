@@ -25,15 +25,20 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Grouping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
 import org.apache.tinkerpop.gremlin.structure.T;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -45,17 +50,24 @@ import java.util.Set;
  * <p/>
  *
  * @author Daniel Kuppitz (http://gremlin.guru)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  * @example <pre>
- * __.path().by(id())            // is replaced by __.path().by(id)
- * __.dedup().by(label())        // is replaced by __.dedup().by(label)
- * __.order().by(values("name")) // is replaced by __.order().by("name")
+ * __.path().by(id())                        // is replaced by __.path().by(id)
+ * __.dedup().by(label())                    // is replaced by __.dedup().by(label)
+ * __.order().by(values("name"))             // is replaced by __.order().by("name")
+ * __.group().by().by(values("name").fold()) // is replaced by __.group().by("name")
  * </pre>
  */
 public final class ByModulatorOptimizationStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy>
         implements TraversalStrategy.OptimizationStrategy {
 
     private static final ByModulatorOptimizationStrategy INSTANCE = new ByModulatorOptimizationStrategy();
-    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>(Collections.singletonList(IdentityRemovalStrategy.class));
+
+    // when PathProcessorStrategy is present for withComputer() you need to ensure it always executes first because
+    // it does some manipulation to select().by(t) in some cases to turn it to select().map(t) in which case this
+    // strategy has nothing to do. if it were to occur first then that optimization wouldn't work as expected.
+    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>(Arrays.asList(
+            PathProcessorStrategy.class, IdentityRemovalStrategy.class));
 
     private ByModulatorOptimizationStrategy() {
     }
@@ -69,24 +81,28 @@ public final class ByModulatorOptimizationStrategy extends AbstractTraversalStra
         final List<Step> steps = traversal.asAdmin().getSteps();
         if (steps.size() == 1) {
             final Step singleStep = steps.get(0);
-            if (singleStep instanceof PropertiesStep) {
-                final PropertiesStep ps = (PropertiesStep) singleStep;
-                if (ps.getReturnType().equals(PropertyType.VALUE) && ps.getPropertyKeys().length == 1) {
-                    step.replaceLocalChild(traversal, new ValueTraversal<>(ps.getPropertyKeys()[0]));
-                }
-            } else if (singleStep instanceof IdStep) {
-                step.replaceLocalChild(traversal, new TokenTraversal<>(T.id));
-            } else if (singleStep instanceof LabelStep) {
-                step.replaceLocalChild(traversal, new TokenTraversal<>(T.label));
-/* todo: this fails for `Property`s (e.g. outE().property().as("a").select("a").by(key/value))
-            } else if (singleStep instanceof PropertyKeyStep) {
-                step.setModulateByTraversal(n, new TokenTraversal<>(T.key));
-            } else if (singleStep instanceof PropertyValueStep) {
-                step.setModulateByTraversal(n, new TokenTraversal<>(T.value));
-*/
-            } else if (singleStep instanceof IdentityStep) {
-                step.replaceLocalChild(traversal, new IdentityTraversal<>());
+            optimizeForStep(step, traversal, singleStep);
+        }
+    }
+
+    private void optimizeForStep(final TraversalParent step, final Traversal.Admin<?, ?> traversal, final Step singleStep) {
+        if (singleStep instanceof PropertiesStep) {
+            final PropertiesStep ps = (PropertiesStep) singleStep;
+            if (ps.getReturnType().equals(PropertyType.VALUE) && ps.getPropertyKeys().length == 1) {
+                step.replaceLocalChild(traversal, new ValueTraversal<>(ps.getPropertyKeys()[0]));
             }
+        } else if (singleStep instanceof IdStep) {
+            step.replaceLocalChild(traversal, new TokenTraversal<>(T.id));
+        } else if (singleStep instanceof LabelStep) {
+            step.replaceLocalChild(traversal, new TokenTraversal<>(T.label));
+/* todo: this fails for `Property`s (e.g. outE().property().as("a").select("a").by(key/value))
+        } else if (singleStep instanceof PropertyKeyStep) {
+            step.setModulateByTraversal(n, new TokenTraversal<>(T.key));
+        } else if (singleStep instanceof PropertyValueStep) {
+            step.setModulateByTraversal(n, new TokenTraversal<>(T.value));
+*/
+        } else if (singleStep instanceof IdentityStep) {
+            step.replaceLocalChild(traversal, new IdentityTraversal<>());
         }
     }
 
@@ -95,8 +111,23 @@ public final class ByModulatorOptimizationStrategy extends AbstractTraversalStra
         final Step step = traversal.getParent().asStep();
         if (step instanceof ByModulating && step instanceof TraversalParent) {
             final TraversalParent byModulatingStep = (TraversalParent) step;
-            for (final Traversal.Admin<?, ?> byModulatingTraversal : byModulatingStep.getLocalChildren()) {
-                optimizeByModulatingTraversal(byModulatingStep, byModulatingTraversal);
+            if (step instanceof Grouping) {
+                final Grouping grouping = (Grouping) step;
+                optimizeByModulatingTraversal(byModulatingStep, grouping.getKeyTraversal());
+
+                // the value by() needs different handling because by(Traversal) only equals by(String) or by(T)
+                // if the traversal does a fold().
+                final Traversal.Admin<?, ?> currentValueTraversal = grouping.getValueTraversal();
+                final List<Step> stepsInCurrentValueTraversal = currentValueTraversal.getSteps();
+                if (stepsInCurrentValueTraversal.size() == 1 && stepsInCurrentValueTraversal.get(0) instanceof IdentityStep)
+                    optimizeForStep(byModulatingStep, currentValueTraversal, stepsInCurrentValueTraversal.get(0));
+                else if (stepsInCurrentValueTraversal.size() == 2 && stepsInCurrentValueTraversal.get(1) instanceof FoldStep)
+                    optimizeForStep(byModulatingStep, currentValueTraversal, stepsInCurrentValueTraversal.get(0));
+
+            } else {
+                for (final Traversal.Admin<?, ?> byModulatingTraversal : byModulatingStep.getLocalChildren()) {
+                    optimizeByModulatingTraversal(byModulatingStep, byModulatingTraversal);
+                }
             }
         }
     }
