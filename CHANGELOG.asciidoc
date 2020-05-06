@@ -30,6 +30,9 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Ensured better consistency of the use of `null` as arguments to mutation steps.
 * Allowed `property(T.label,Object)` to be used if no value was supplied to `addV(String)`.
 * Added a `Graph.Feature` for `supportsNullPropertyValues`.
+* Added `Grouping` step interface.
+* Added `TraversalParent.replaceTraversal()` which can replace a direct child traversal.
+* Added `ByModulatorOptimizationStrategy` which replaces certain standard traversals w/ optimized traversals (e.g. `TokenTraversal`).
 * Refactored `MapStep` to move its logic to `ScalarMapStep` so that the old behavior could be preserved while allow other implementations to have more flexibility.
 * Modified TinkerGraph to support `null` property values and can be configured to disable that feature.
 * Modified `null` handling in mutations to be consistent for a new `Vertex` as well as update to an existing one.
@@ -1029,8 +1032,6 @@ This release also includes changes from <<release-3-2-9, 3.2.9>>.
 
 This release also includes changes from <<release-3-2-8, 3.2.8>>.
 
-* Added `TraversalParent.replaceTraversal()` which can replace a direct child traversal.
-* Added `ByModulatorOptimizationStrategy` which replaces certain standard traversals w/ optimized traversals (e.g. `TokenTraversal`).
 * Fixed regression issue where the HTTPChannelizer doesn't instantiate the specified AuthenticationHandler.
 * Defaulted GLV tests for gremlin-python to run for GraphSON 3.0.
 * Fixed a bug with `Tree` serialization in GraphSON 3.0.

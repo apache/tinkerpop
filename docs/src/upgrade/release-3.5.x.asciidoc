@@ -207,7 +207,7 @@ The new `ByModulatorOptimizationStrategy` attempts to re-write `by()` modulator 
 forms which can provide a major performance improvement. As a simple an example, a traversal like `by(id())` would
 be replaced by `by(id)`, thus replacing a step-based traversal with a token-based traversal.
 
-Note that this
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1682[TINKERPOP-1682]
 
 ==== Python 2.x Support
 
