@@ -90,14 +90,14 @@ public class ByModulatorOptimizationStrategyTest {
                     ((GraphTraversal<?, ?>) traversal.asAdmin().clone()).by(__.label()),
                     ((GraphTraversal) traversal.asAdmin().clone()).by(T.label),
             });
-            /*result.add(new Traversal[]{
+            originalAndOptimized.add(new Traversal[]{
                     ((GraphTraversal<?, ?>) traversal.asAdmin().clone()).by(__.key()),
                     ((GraphTraversal) traversal.asAdmin().clone()).by(T.key),
             });
-            result.add(new Traversal[]{
+            originalAndOptimized.add(new Traversal[]{
                     ((GraphTraversal<?, ?>) traversal.asAdmin().clone()).by(__.value()),
                     ((GraphTraversal) traversal.asAdmin().clone()).by(T.value),
-            });*/
+            });
             originalAndOptimized.add(new Traversal[]{
                     ((GraphTraversal<?, ?>) traversal.asAdmin().clone()).by(__.identity()),
                     ((GraphTraversal) traversal.asAdmin().clone()).by(),
@@ -137,14 +137,14 @@ public class ByModulatorOptimizationStrategyTest {
                     ((GraphTraversal<?, ?>) traversal.asAdmin().clone()).by(__.label().fold()),
                     ((GraphTraversal) traversal.asAdmin().clone()).by(T.label),
             });
-            /*result.add(new Traversal[]{
+            originalAndOptimized.add(new Traversal[]{
                     ((GraphTraversal<?, ?>) traversal.asAdmin().clone()).by(__.key().fold()),
                     ((GraphTraversal) traversal.asAdmin().clone()).by(T.key),
             });
-            result.add(new Traversal[]{
+            originalAndOptimized.add(new Traversal[]{
                     ((GraphTraversal<?, ?>) traversal.asAdmin().clone()).by(__.value().fold()),
                     ((GraphTraversal) traversal.asAdmin().clone()).by(T.value),
-            });*/
+            });
             originalAndOptimized.add(new Traversal[]{
                     ((GraphTraversal<?, ?>) traversal.asAdmin().clone()).by(__.identity()),
                     ((GraphTraversal) traversal.asAdmin().clone()).by(),

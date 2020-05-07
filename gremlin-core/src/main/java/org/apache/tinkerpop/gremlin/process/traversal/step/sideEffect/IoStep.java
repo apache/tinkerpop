@@ -188,7 +188,7 @@ public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
                 final GryoMapper.Builder builder = GryoMapper.build();
                 detectRegistries().forEach(builder::addRegistry);
                 return GryoWriter.build().mapper(builder.create()).create();
-            }else if (objectOrClass.equals(IO.graphml))
+            } else if (objectOrClass.equals(IO.graphml))
                 return GraphMLWriter.build().create();
             else {
                 try {

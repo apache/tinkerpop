@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.lambda;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 
 import java.util.Objects;
@@ -27,7 +28,7 @@ import java.util.Objects;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TokenTraversal<S extends Element, E> extends AbstractLambdaTraversal<S, E> {
+public final class TokenTraversal<S, E> extends AbstractLambdaTraversal<S, E> {
 
     private E e;
     private final T t;
@@ -43,7 +44,21 @@ public final class TokenTraversal<S extends Element, E> extends AbstractLambdaTr
 
     @Override
     public void addStart(final Traverser.Admin<S> start) {
-        this.e = (E) this.t.apply(start.get());
+        final S s = start.get();
+        if (s instanceof Element)
+            this.e = (E) this.t.apply((Element) start.get());
+        else if (s instanceof Property) {
+            // T.apply() doesn't work on Property because the inheritance hierarchy doesn't make it an Element. have
+            // to special case it here. only T.key/value make any sense for it.
+            if (t == T.key)
+                this.e = (E) ((Property) s).key();
+            else if (t == T.value)
+                this.e = ((Property<E>) s).value();
+            else
+                throw new IllegalStateException(String.format("TokenTraversal support of Property does not allow selection by %s", t));
+        } else
+            throw new IllegalStateException(String.format("TokenTraversal support of %s does not allow selection by %s", s.getClass().getName(), t));
+
     }
 
     @Override

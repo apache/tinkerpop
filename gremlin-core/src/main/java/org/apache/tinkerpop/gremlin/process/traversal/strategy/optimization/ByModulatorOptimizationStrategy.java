@@ -32,6 +32,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyKeyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyValueStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -95,12 +97,10 @@ public final class ByModulatorOptimizationStrategy extends AbstractTraversalStra
             step.replaceLocalChild(traversal, new TokenTraversal<>(T.id));
         } else if (singleStep instanceof LabelStep) {
             step.replaceLocalChild(traversal, new TokenTraversal<>(T.label));
-/* todo: this fails for `Property`s (e.g. outE().property().as("a").select("a").by(key/value))
         } else if (singleStep instanceof PropertyKeyStep) {
-            step.setModulateByTraversal(n, new TokenTraversal<>(T.key));
+            step.replaceLocalChild(traversal, new TokenTraversal<>(T.key));
         } else if (singleStep instanceof PropertyValueStep) {
-            step.setModulateByTraversal(n, new TokenTraversal<>(T.value));
-*/
+            step.replaceLocalChild(traversal, new TokenTraversal<>(T.value));
         } else if (singleStep instanceof IdentityStep) {
             step.replaceLocalChild(traversal, new IdentityTraversal<>());
         }

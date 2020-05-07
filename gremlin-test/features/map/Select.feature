@@ -744,3 +744,27 @@ Feature: Step - select()
       | s[a,b] |
       | s[c]   |
     And the graph should return 6 for count of "g.V().as(\"a\", \"b\").out().as(\"c\").path().select(Column.keys)"
+
+  Scenario: g_EX11X_propertiesXweightX_asXaX_selectXaX_byXkeyX
+    Given the modern graph
+    And using the parameter e11Id defined as "e[josh-created->lop].id"
+    And the traversal of
+      """
+      g.E(e11Id).properties("weight").as("a").select("a").by(T.key)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | weight |
+
+  Scenario: g_EX11X_propertiesXweightX_asXaX_selectXaX_byXvalueX
+    Given the modern graph
+    And using the parameter e11Id defined as "e[josh-created->lop].id"
+    And the traversal of
+      """
+      g.E(e11Id).properties("weight").as("a").select("a").by(T.value)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0.4].d |
