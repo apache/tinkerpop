@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Profiling;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.LazyBarrierStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
@@ -41,7 +42,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -93,6 +96,12 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, TraversalMetrics> get_g_V_hasLabelXpersonX_pageRank_withXpropertyName_rankX_withXedges_bothEX_rank_profile();
 
     public abstract Traversal<Vertex, TraversalMetrics> get_g_V_groupXmX_profile();
+
+    @Override
+    protected void afterLoadGraphWith(final Graph graph) throws Exception {
+        // profile() does some explicit counting which goes off with LazyBarrierStrategy in place.
+        g = g.withoutStrategies(LazyBarrierStrategy.class);
+    }
 
     @Test
     @LoadGraphWith(MODERN)
