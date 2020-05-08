@@ -66,9 +66,7 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         if (TraversalHelper.onGraphComputer(traversal) ||
-                traversal.getTraverserRequirements().contains(TraverserRequirement.PATH) ||
-                (IS_TESTING && ((TraversalHelper.hasStepOfAssignableClass(ProfileStep.class, TraversalHelper.getRootTraversal(traversal)) ||
-                        TraversalHelper.hasStepOfAssignableClass(ProfileSideEffectStep.class, TraversalHelper.getRootTraversal(traversal)))))) // necessary cause ProfileTest analyzes counts
+                traversal.getTraverserRequirements().contains(TraverserRequirement.PATH))
             return;
 
         boolean foundFlatMap = false;
@@ -86,10 +84,17 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
                     (step instanceof GraphStep &&
                             (i > 0 || ((GraphStep) step).getIds().length >= BIG_START_SIZE ||
                                     (((GraphStep) step).getIds().length == 0 && !(step.getNextStep() instanceof HasStep))))) {
+
+                // NoneStep, EmptyStep signify the end of the traversal where no barriers are really going to be
+                // helpful after that. ProfileSideEffectStep means the traversal had profile() called on it and if
+                // we don't account for that a barrier will inject at the end of the traversal where it wouldn't
+                // be otherwise. LazyBarrierStrategy executes before the finalization strategy of ProfileStrategy
+                // so additionally injected ProfileSideEffectStep instances should not have effect here.
                 if (foundFlatMap && !labeledPath &&
                         !(step.getNextStep() instanceof Barrier) &&
                         !(step.getNextStep() instanceof NoneStep) &&
-                        !(step.getNextStep() instanceof EmptyStep)) {
+                        !(step.getNextStep() instanceof EmptyStep) &&
+                        !(step.getNextStep() instanceof ProfileSideEffectStep)) {
                     final Step noOpBarrierStep = new NoOpBarrierStep<>(traversal, MAX_BARRIER_SIZE);
                     TraversalHelper.copyLabels(step, noOpBarrierStep, true);
                     TraversalHelper.insertAfterStep(noOpBarrierStep, step, traversal);
