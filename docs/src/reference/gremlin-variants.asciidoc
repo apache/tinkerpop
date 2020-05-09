@@ -675,12 +675,12 @@ g = traversal().withRemote(DriverRemoteConnection(
 
 # Kerberos authentication
 g = traversal().withRemote(DriverRemoteConnection(
-    'ws://localhost:8182/gremlin', 'g', kerberized_service='gremlin'))
+    'ws://localhost:8182/gremlin', 'g', kerberized_service='gremlin@hostname.your.org'))
 ----
 
 The value specified for the kerberized_service should correspond to the first part of the principal name configured for
-the gremlin service. The Gremlin-Python client reads the kerberos configurations from your system.
-It finds the KDC's hostname and port from the krb5.conf file at the
+the gremlin service, but with the slash replaced by an _at_ sign. The Gremlin-Python client reads the kerberos
+configurations from your system. It finds the KDC's hostname and port from the krb5.conf file at the
 https://web.mit.edu/kerberos/krb5-devel/doc/mitK5defaults.html[default location] or as indicated in the KRB5_CONFIG
 environment variable. It finds credentials from the credential cache or a keytab file at the
 https://web.mit.edu/kerberos/krb5-devel/doc/mitK5defaults.html[default locations] or as indicated
