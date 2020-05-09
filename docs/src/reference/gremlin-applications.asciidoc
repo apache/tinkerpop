@@ -1258,11 +1258,10 @@ authentication: {
     keytab: /etc/security/keytabs/gremlinserver.service.keytab}}
 
 `Krb5Authenticator` needs a Kerberos service principal and a keytab that holds the secret key for that principal. The keytab
-location and service name, e.g. gremlinserver, are free to be chosen. In addition, if the krb5.conf kerberos
-configuration file is not available from the
-https://web.mit.edu/kerberos/krb5-devel/doc/mitK5defaults.html[default location], `Krb5Authenticator` needs the location
-of the krb5.conf configuration file, to be specified as a system property in the JAVA_OPTIONS environment variable
-of Gremlin Server:
+location and service name, e.g. gremlinserver, are free to be chosen. `Krb5Authenticator` finds the KDC's hostname and
+port from the krb5.conf file with Kerberos configurations. This file can reside at either the
+https://web.mit.edu/kerberos/krb5-devel/doc/mitK5defaults.html[default location] or a location to be specified as a
+system property in the JAVA_OPTIONS environment variable of Gremlin Server:
 
 [source, bash]
 export JAVA_OPTIONS="${JAVA_OPTIONS} -Xms512m -Xmx4096m -Djava.security.krb5.conf=/etc/krb5.conf"
@@ -1287,7 +1286,7 @@ ticket cache that is normally refreshed when a user logs in to a host within the
 
 The Gremlin client needs the location of the JAAS configuration file to be passed as a system property to the JVM. For
 Gremlin-Console the easiest way to do this is to pass it to the run script via the JAVA_OPTIONS environment property.
-If the krb5.conf kerberos configuration file is not available from the
+If the krb5.conf Kerberos configuration file is not available from the
 https://web.mit.edu/kerberos/krb5-devel/doc/mitK5defaults.html[default location] it has to be provided as a system
 property as well:
 
