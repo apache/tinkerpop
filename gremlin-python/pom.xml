@@ -135,7 +135,7 @@ limitations under the License.
                                         </exec>
                                         <exec dir="${project.build.directory}/python3" executable="env/bin/pip"
                                               failonerror="true">
-                                            <arg line="install wheel radish-bdd PyHamcrest aenum isodate kerberos six tornado"/>
+                                            <arg line="install wheel radish-bdd PyHamcrest aenum isodate kerberos six"/>
                                         </exec>
                                         <copy todir="${project.build.directory}/python-packaged">
                                             <fileset dir="src/main/python"/>
