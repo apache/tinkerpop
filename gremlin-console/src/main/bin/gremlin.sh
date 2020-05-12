@@ -109,4 +109,5 @@ if [ -n "$SCRIPT_DEBUG" ]; then
 fi
 
 # Start the JVM, execute the application, and return its exit code
-exec $JAVA "${JVM_OPTS[@]}" org.apache.tinkerpop.gremlin.console.Console "$@"
+# shellcheck disable=SC2068
+exec $JAVA ${JVM_OPTS[@]} org.apache.tinkerpop.gremlin.console.Console "$@"
