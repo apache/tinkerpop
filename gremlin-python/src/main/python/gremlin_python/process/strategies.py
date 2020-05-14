@@ -115,6 +115,16 @@ class AdjacentToIncidentStrategy(TraversalStrategy):
         TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy")
 
 
+class ByModulatorOptimizationStrategy(TraversalStrategy):
+    def __init__(self):
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy")
+
+
+class CountStrategy(TraversalStrategy):
+    def __init__(self):
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ByModulatorOptimizationStrategy")
+
+
 class FilterRankingStrategy(TraversalStrategy):
     def __init__(self):
         TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy")
@@ -158,12 +168,6 @@ class PathProcessorStrategy(TraversalStrategy):
 class PathRetractionStrategy(TraversalStrategy):
     def __init__(self):
         TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy")
-
-
-class CountStrategy(TraversalStrategy):
-    def __init__(self):
-        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy")
-
 
 class RepeatUnrollStrategy(TraversalStrategy):
     def __init__(self):

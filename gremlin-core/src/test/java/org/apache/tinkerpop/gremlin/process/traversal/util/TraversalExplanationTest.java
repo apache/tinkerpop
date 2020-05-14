@@ -130,8 +130,9 @@ public class TraversalExplanationTest {
         }
         assertEquals(4, found);
         //
+        //System.out.println(traversal.explain().prettyPrint(160));
         found = 0;
-        for (final String line : traversal.explain().prettyPrint(158).split("]\n")) { // need to split cause of word wrap
+        for (final String line : traversal.explain().prettyPrint(170).split("]\n")) { // need to split cause of word wrap
             if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStep(IN,vertex)"))
                 found++;
             if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStep(OUT,vertex)"))

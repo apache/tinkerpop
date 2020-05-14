@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -60,6 +61,15 @@ public final class TraversalRing<A, B> implements Serializable, Cloneable {
 
     public void addTraversal(final Traversal.Admin<A, B> traversal) {
         this.traversals.add(traversal);
+    }
+
+    public void replaceTraversal(final Traversal.Admin<A, B> oldTraversal, final Traversal.Admin<A, B> newTraversal) {
+        for (int i = 0, j = this.traversals.size(); i < j; i++) {
+            if (Objects.equals(oldTraversal, this.traversals.get(i))) {
+                this.traversals.set(i, newTraversal);
+                break;
+            }
+        }
     }
 
     public List<Traversal.Admin<A, B>> getTraversals() {

@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,7 +39,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -154,6 +154,10 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_asXaX_repeatXout_asXaXX_timesX2X_selectXfirst_aX(final Object v1Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_asXaX_repeatXout_asXaXX_timesX2X_selectXlast_aX(final Object v1Id);
+
+    public abstract Traversal<Edge, Object> get_g_EX11X_propertiesXweightX_asXaX_selectXaX_byXkeyX(final Object e11Id);
+
+    public abstract Traversal<Edge, Object> get_g_EX11X_propertiesXweightX_asXaX_selectXaX_byXvalueX(final Object e11Id);
 
     // when labels don't exist
 
@@ -703,6 +707,22 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         assertEquals(Collections.emptyList(), traversal.toList());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_EX11X_propertiesXweightX_asXaX_selectXaX_byXkeyX() {
+        final Traversal<Edge, Object> traversal = get_g_EX11X_propertiesXweightX_asXaX_selectXaX_byXkeyX(convertToEdgeId("josh", "created", "lop"));
+        printTraversalForm(traversal);
+        assertEquals("weight", traversal.next());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_EX11X_propertiesXweightX_asXaX_selectXaX_byXvalueX() {
+        final Traversal<Edge, Object> traversal = get_g_EX11X_propertiesXweightX_asXaX_selectXaX_byXvalueX(convertToEdgeId("josh", "created", "lop"));
+        printTraversalForm(traversal);
+        assertEquals(0.4d, (double) traversal.next(), 0.0001d);
+    }
+
     // when labels don't exist
 
     @Test
@@ -1072,6 +1092,16 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_asXaX_whereXoutXknowsXX_selectXaX() {
             return g.V().as("a").where(__.out("knows")).<Vertex>select("a");
+        }
+
+        @Override
+        public Traversal<Edge, Object> get_g_EX11X_propertiesXweightX_asXaX_selectXaX_byXkeyX(final Object e11Id) {
+            return g.E(e11Id).properties("weight").as("a").select("a").by(T.key);
+        }
+
+        @Override
+        public Traversal<Edge, Object> get_g_EX11X_propertiesXweightX_asXaX_selectXaX_byXvalueX(final Object e11Id) {
+            return g.E(e11Id).properties("weight").as("a").select("a").by(T.value);
         }
 
         // select columns test

@@ -119,6 +119,13 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Si
     }
 
     @Override
+    public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
+        this.traversalRing.replaceTraversal(
+                (Traversal.Admin<Object, Object>) oldTraversal,
+                (Traversal.Admin<Object, Object>) newTraversal);
+    }
+
+    @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
     }

@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -163,5 +162,12 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
     @Override
     public void modulateBy(final Traversal.Admin<?, ?> traversal) throws UnsupportedOperationException {
         this.traversalRing.addTraversal(this.integrateChild(traversal));
+    }
+
+    @Override
+    public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
+        this.traversalRing.replaceTraversal(
+                (Traversal.Admin) oldTraversal,
+                (Traversal.Admin) newTraversal);
     }
 }

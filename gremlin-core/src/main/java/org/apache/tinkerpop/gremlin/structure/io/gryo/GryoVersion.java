@@ -53,6 +53,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Partit
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ByModulatorOptimizationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
@@ -337,6 +338,8 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MatchAlgorithmStrategy.class, 143));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 144));
             add(GryoTypeReg.of(AdjacentToIncidentStrategy.class, 145));
+            add(GryoTypeReg.of(ByModulatorOptimizationStrategy.class, 191));  // ***LAST ID***
+            add(GryoTypeReg.of(CountStrategy.class, 155));
             add(GryoTypeReg.of(FilterRankingStrategy.class, 146));
             add(GryoTypeReg.of(IdentityRemovalStrategy.class, 147));
             add(GryoTypeReg.of(IncidentToAdjacentStrategy.class, 148));
@@ -347,7 +350,6 @@ public enum GryoVersion {
             add(GryoTypeReg.of(OptionsStrategy.class, 187, new JavaSerializer()));
             add(GryoTypeReg.of(PathProcessorStrategy.class, 153));
             add(GryoTypeReg.of(PathRetractionStrategy.class, 154));
-            add(GryoTypeReg.of(CountStrategy.class, 155));
             add(GryoTypeReg.of(RepeatUnrollStrategy.class, 156));
             add(GryoTypeReg.of(GraphFilterStrategy.class, 157));
             add(GryoTypeReg.of(LambdaRestrictionStrategy.class, 158));
@@ -356,7 +358,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MatchStep.CountMatchAlgorithm.class, 160));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 164));
             add(GryoTypeReg.of(EdgeLabelVerificationStrategy.class, 189));
-            add(GryoTypeReg.of(ReservedKeysVerificationStrategy.class, 190));   // ***LAST ID***
+            add(GryoTypeReg.of(ReservedKeysVerificationStrategy.class, 190));
 
             add(GryoTypeReg.of(TraverserSet.class, 58));
             add(GryoTypeReg.of(Tree.class, 61));
@@ -574,6 +576,8 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MatchAlgorithmStrategy.class, 143));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 144));
             add(GryoTypeReg.of(AdjacentToIncidentStrategy.class, 145));
+            add(GryoTypeReg.of(ByModulatorOptimizationStrategy.class, 191)); // ***LAST ID***
+            add(GryoTypeReg.of(CountStrategy.class, 155));
             add(GryoTypeReg.of(FilterRankingStrategy.class, 146));
             add(GryoTypeReg.of(IdentityRemovalStrategy.class, 147));
             add(GryoTypeReg.of(IncidentToAdjacentStrategy.class, 148));
@@ -584,7 +588,6 @@ public enum GryoVersion {
             add(GryoTypeReg.of(OptionsStrategy.class, 187, new JavaSerializer()));
             add(GryoTypeReg.of(PathProcessorStrategy.class, 153));
             add(GryoTypeReg.of(PathRetractionStrategy.class, 154));
-            add(GryoTypeReg.of(CountStrategy.class, 155));
             add(GryoTypeReg.of(RepeatUnrollStrategy.class, 156));
             add(GryoTypeReg.of(GraphFilterStrategy.class, 157));
             add(GryoTypeReg.of(LambdaRestrictionStrategy.class, 158));
@@ -593,7 +596,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(MatchStep.CountMatchAlgorithm.class, 160));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 167));
             add(GryoTypeReg.of(EdgeLabelVerificationStrategy.class, 189));
-            add(GryoTypeReg.of(ReservedKeysVerificationStrategy.class, 190));   // ***LAST ID***
+            add(GryoTypeReg.of(ReservedKeysVerificationStrategy.class, 190));
             // skip 171, 172 to sync with the 3.3.x
             add(GryoTypeReg.of(IndexedTraverserSet.VertexIndexedTraverserSet.class, 173));
 

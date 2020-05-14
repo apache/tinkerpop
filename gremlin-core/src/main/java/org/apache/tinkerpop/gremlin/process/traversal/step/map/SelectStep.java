@@ -123,6 +123,13 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     }
 
     @Override
+    public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
+        this.traversalRing.replaceTraversal(
+                (Traversal.Admin<Object, E>) oldTraversal,
+                (Traversal.Admin<Object, E>) newTraversal);
+    }
+
+    @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS);
     }

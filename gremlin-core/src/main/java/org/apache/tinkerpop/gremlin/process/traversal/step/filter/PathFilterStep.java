@@ -109,6 +109,13 @@ public final class PathFilterStep<S> extends FilterStep<S> implements FromToModu
     }
 
     @Override
+    public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
+        this.traversalRing.replaceTraversal(
+                (Traversal.Admin<Object, Object>) oldTraversal,
+                (Traversal.Admin<Object, Object>) newTraversal);
+    }
+
+    @Override
     public void reset() {
         super.reset();
         this.traversalRing.reset();

@@ -201,6 +201,43 @@ formerly held the cache for these side-effects, no longer have any effect and ca
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2269[TINKERPOP-2269]
 
+==== ByModulatorOptimizationStrategy
+
+The new `ByModulatorOptimizationStrategy` attempts to re-write `by()` modulator traversals to use their more optimized
+forms which can provide a major performance improvement. As a simple an example, a traversal like `by(id())` would
+be replaced by `by(id)`, thus replacing a step-based traversal with a token-based traversal.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1682[TINKERPOP-1682]
+
+==== by(T) for Property
+
+The `Property` interface is not included in the hierarchy of `Element`. This means that an edge property or a
+meta-property are not considered elements the way that a `VertexProperty` is. As a result, some usages of `T` in
+relation to properties do not work consistently. One such example is `by(T)`, a token-based traversal, where the
+following works for a `VertexProperty` but will not for edge properties or meta-properties:
+
+[source,text]
+----
+gremlin> g.V(1).properties().as('a').select('a').by(key)
+==>name
+==>age
+----
+
+For a `Property` you would need to use `key()`-step:
+
+[source,text]
+----
+gremlin> g.E(11).properties().as('a').select(last,'a').by(key())
+==>weight
+----
+
+Aside from the inconsistency, this issue also presents a situation where performance is impacted as token-based
+traversals are inherently faster than step-based ones. In 3.5.0, this issue has been resolved in conjunction with the
+introduction of `ByModulatorOptimizationStrategy` which will optimize `by(key())` and `by(value())` to their
+appropriate token versions automatically.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1682[TINKERPOP-1682]
+
 ==== Python 2.x Support
 
 The gremlinpython module no longer supports Python 2.x. Users must use Python 3 going forward. For the most part, from

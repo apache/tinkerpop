@@ -228,9 +228,12 @@ g.V().has('person','name','marko')            <2>
 [[steps-instead-of-tokens]]
 == Steps Instead of Tokens
 
-When child traversals contain a single step, there's a good chance that the step can be replaced with a token. These tokens are translated
-into optimized traversals that execute much faster then their step traversal pendants. A few examples of single step child traversals are
-shown in the following code block.
+NOTE: As of 3.5.0, `ByModulatorOptimizationStrategy` is present to automatically translate this anti-pattern to their
+more performant versions for most cases however, it is still best to write Gremlin according to the contents that follow.
+
+When child traversals contain a single step, there's a good chance that the step can be replaced with a token. These
+tokens are translated into optimized traversals that execute much faster then their step traversal pendants. A few
+examples of single step child traversals are shown in the following code block.
 
 [gremlin-groovy,modern]
 ----
@@ -260,33 +263,3 @@ g.V().choose(label).
 
 <1> Note, that tokens use a `fold()` reducer by default.
 <2> `by("name")` doesn't use a token, but falls into the same category as the String `"name"` is translated into an optimized traversal.
-
-But this is not all about readability; as initially mentioned, the use of tokens also improves the overall query performance as shown in
-the `profile()` output below.
-
-[gremlin-groovy,existing]
-----
-g.V().groupCount().by(label()).profile()               // not using token
-g.V().groupCount().by(label).profile()                 // using a token
-g.V().group().by(label()).by(id().fold()).profile()    // not using tokens
-g.V().group().by(label).by(id).profile()               // using tokens
-g.V().project("id","label").
-    by(id()).
-    by(label()).profile()                              // not using tokens
-g.V().project("id","label").
-    by(id).
-    by(label).profile()                                // using tokens
-g.V().choose(label()).
-    option("person", project("person").by(values("name"))).
-    option("software", project("product").by(values("name"))).
-  profile()                                            // not using tokens
-g.V().choose(label).
-    option("person", project("person").by("name")).
-    option("software", project("product").by("name")).
-  profile()                                            // using tokens
-----
-
-NOTE: Pay attention to all metrics. The time difference does not always look significant, sometimes it might even be worse in the
-optimized query, but that's usually because TinkerGraph keeps everything in memory and thus even bad queries can sometimes perform
-surprisingly well. The more important metrics, however, are the number of traversers that are used and the overall number of
-generated steps.

@@ -24,13 +24,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Grouping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ProfilingAware;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
@@ -44,7 +44,8 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implements SideEffectCapable<Map<K, ?>, Map<K, V>>, TraversalParent, ByModulating, ProfilingAware {
+public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S>
+        implements SideEffectCapable<Map<K, ?>, Map<K, V>>, TraversalParent, ByModulating, ProfilingAware, Grouping<S, K, V> {
 
     private char state = 'k';
     private Traversal.Admin<S, K> keyTraversal;
@@ -58,7 +59,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
         super(traversal);
         this.sideEffectKey = sideEffectKey;
         this.valueTraversal = this.integrateChild(__.fold().asAdmin());
-        this.barrierStep = GroupStep.determineBarrierStep(this.valueTraversal);
+        this.barrierStep = determineBarrierStep(this.valueTraversal);
         this.getTraversal().getSideEffects().registerIfAbsent(this.sideEffectKey, HashMapSupplier.instance(),
                 new GroupStep.GroupBiOperator<>(null == this.barrierStep ?
                         Operator.assign :
@@ -75,21 +76,43 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     }
 
     @Override
+    public Traversal.Admin<S, K> getKeyTraversal() {
+        return this.keyTraversal;
+    }
+
+    @Override
+    public Traversal.Admin<S, V> getValueTraversal() {
+        return this.valueTraversal;
+    }
+
+    private void setValueTraversal(final Traversal.Admin valueTraversal) {
+        this.valueTraversal = this.integrateChild(convertValueTraversal(valueTraversal));
+        this.barrierStep = determineBarrierStep(this.valueTraversal);
+        this.getTraversal().getSideEffects().register(this.sideEffectKey, null,
+                new GroupStep.GroupBiOperator<>(null == this.barrierStep ?
+                        Operator.assign :
+                        this.barrierStep.getMemoryComputeKey().getReducer()));
+    }
+
+    @Override
     public void modulateBy(final Traversal.Admin<?, ?> kvTraversal) {
         if ('k' == this.state) {
             this.keyTraversal = this.integrateChild(kvTraversal);
             this.state = 'v';
         } else if ('v' == this.state) {
-            this.valueTraversal = this.integrateChild(GroupStep.convertValueTraversal(kvTraversal));
-            this.barrierStep = GroupStep.determineBarrierStep(this.valueTraversal);
-            this.getTraversal().getSideEffects().register(this.sideEffectKey, null,
-                    new GroupStep.GroupBiOperator<>(null == this.barrierStep ?
-                            Operator.assign :
-                            this.barrierStep.getMemoryComputeKey().getReducer()));
+            this.setValueTraversal(kvTraversal);
             this.state = 'x';
         } else {
             throw new IllegalStateException("The key and value traversals for group()-step have already been set: " + this);
         }
+    }
+
+    @Override
+    public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
+        if (null != this.keyTraversal && this.keyTraversal.equals(oldTraversal))
+            this.keyTraversal = this.integrateChild(newTraversal);
+        else if (null != this.valueTraversal && this.valueTraversal.equals(oldTraversal))
+            this.setValueTraversal(newTraversal);
     }
 
     @Override
@@ -101,7 +124,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
         // reset the barrierStep as there are now ProfileStep instances present and the timers won't start right
         // without specific configuration through wrapping both the Barrier and ProfileStep in ProfiledBarrier
         if (resetBarrierForProfiling) {
-            barrierStep = GroupStep.determineBarrierStep(valueTraversal);
+            barrierStep = determineBarrierStep(valueTraversal);
 
             // the barrier only needs to be reset once
             resetBarrierForProfiling = false;
@@ -146,7 +169,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
         if (null != this.keyTraversal)
             clone.keyTraversal = this.keyTraversal.clone();
         clone.valueTraversal = this.valueTraversal.clone();
-        clone.barrierStep = GroupStep.determineBarrierStep(clone.valueTraversal);
+        clone.barrierStep = determineBarrierStep(clone.valueTraversal);
         return clone;
     }
 
@@ -167,6 +190,6 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
 
     @Override
     public Map<K, V> generateFinalResult(final Map<K, ?> object) {
-        return GroupStep.doFinalReduction((Map<K, Object>) object, this.valueTraversal);
+        return doFinalReduction((Map<K, Object>) object, this.valueTraversal);
     }
 }

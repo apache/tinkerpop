@@ -99,6 +99,13 @@ public final class PathStep<S> extends ScalarMapStep<S, Path> implements Travers
     }
 
     @Override
+    public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
+        this.traversalRing.replaceTraversal(
+                (Traversal.Admin<Object, Object>) oldTraversal,
+                (Traversal.Admin<Object, Object>) newTraversal);
+    }
+
+    @Override
     public String toString() {
         return StringFactory.stepString(this, this.traversalRing);
     }

@@ -20,21 +20,14 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.ColumnTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.ValueTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.FunctionTraverser;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Grouping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ProfilingAware;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.LocalBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -53,7 +46,8 @@ import java.util.function.BinaryOperator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> implements ByModulating, TraversalParent, ProfilingAware {
+public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>>
+        implements ByModulating, TraversalParent, ProfilingAware, Grouping<S, K, V> {
 
     private char state = 'k';
     private Traversal.Admin<S, K> keyTraversal;
@@ -70,31 +64,6 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     }
 
     /**
-     * Determines the first (non-local) barrier step in the provided traversal. This method is used by {@link GroupStep}
-     * and {@link GroupSideEffectStep} to ultimately determine the reducing bi-operator.
-     *
-     * @param traversal The traversal to inspect.
-     * @return The first non-local barrier step or {@code null} if no such step was found.
-     */
-    public static <S, V> Barrier determineBarrierStep(final Traversal.Admin<S, V> traversal) {
-        final List<Step> steps = traversal.getSteps();
-        for (int ix = 0; ix < steps.size(); ix++) {
-            final Step step = steps.get(ix);
-            if (step instanceof Barrier && !(step instanceof LocalBarrier)) {
-                final Barrier b = (Barrier) step;
-
-                // when profile() is enabled the step needs to be wrapped up with the barrier so that the timer on
-                // the ProfileStep is properly triggered
-                if (ix < steps.size() - 1 && steps.get(ix + 1) instanceof ProfileStep)
-                    return new ProfilingAware.ProfiledBarrier(b, (ProfileStep) steps.get(ix + 1));
-                else
-                    return b;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Reset the {@link Barrier} on the step to be wrapped in a {@link ProfiledBarrier} which can properly start/stop
      * the timer on the associated {@link ProfileStep}.
      */
@@ -104,18 +73,40 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     }
 
     @Override
+    public Traversal.Admin<S, K> getKeyTraversal() {
+        return this.keyTraversal;
+    }
+
+    @Override
+    public Traversal.Admin<S, V> getValueTraversal() {
+        return this.valueTraversal;
+    }
+
+    private void setValueTraversal(final Traversal.Admin kvTraversal) {
+        this.valueTraversal = this.integrateChild(convertValueTraversal(kvTraversal));
+        this.barrierStep = determineBarrierStep(this.valueTraversal);
+        this.setReducingBiOperator(new GroupBiOperator<>(null == this.barrierStep ? Operator.assign : this.barrierStep.getMemoryComputeKey().getReducer()));
+    }
+
+    @Override
     public void modulateBy(final Traversal.Admin<?, ?> kvTraversal) {
         if ('k' == this.state) {
             this.keyTraversal = this.integrateChild(kvTraversal);
             this.state = 'v';
         } else if ('v' == this.state) {
-            this.valueTraversal = this.integrateChild(convertValueTraversal(kvTraversal));
-            this.barrierStep = determineBarrierStep(this.valueTraversal);
-            this.setReducingBiOperator(new GroupBiOperator<>(null == this.barrierStep ? Operator.assign : this.barrierStep.getMemoryComputeKey().getReducer()));
+            this.setValueTraversal(kvTraversal);
             this.state = 'x';
         } else {
             throw new IllegalStateException("The key and value traversals for group()-step have already been set: " + this);
         }
+    }
+
+    @Override
+    public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
+        if (null != this.keyTraversal && this.keyTraversal.equals(oldTraversal))
+            this.keyTraversal = this.integrateChild(newTraversal);
+        else if (null != this.valueTraversal && this.valueTraversal.equals(oldTraversal))
+            this.setValueTraversal(newTraversal);
     }
 
     @Override
@@ -187,7 +178,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     @Override
     public Map<K, V> generateFinalResult(final Map<K, V> object) {
-        return GroupStep.doFinalReduction((Map<K, Object>) object, this.valueTraversal);
+        return doFinalReduction((Map<K, Object>) object, this.valueTraversal);
     }
 
     ///////////////////////
@@ -217,32 +208,5 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
             }
             return mapA;
         }
-    }
-
-
-    ///////////////////////
-
-    public static <S, E> Traversal.Admin<S, E> convertValueTraversal(final Traversal.Admin<S, E> valueTraversal) {
-        if (valueTraversal instanceof ValueTraversal ||
-                valueTraversal instanceof TokenTraversal ||
-                valueTraversal instanceof IdentityTraversal ||
-                valueTraversal instanceof ColumnTraversal ||
-                valueTraversal.getStartStep() instanceof LambdaMapStep && ((LambdaMapStep) valueTraversal.getStartStep()).getMapFunction() instanceof FunctionTraverser) {
-            return (Traversal.Admin<S, E>) __.map(valueTraversal).fold();
-        } else
-            return valueTraversal;
-    }
-
-    public static <K, V> Map<K, V> doFinalReduction(final Map<K, Object> map, final Traversal.Admin<?, V> valueTraversal) {
-        final Barrier barrierStep = determineBarrierStep(valueTraversal);
-        if (barrierStep != null) {
-            for (final K key : map.keySet()) {
-                valueTraversal.reset();
-                barrierStep.addBarrier(map.get(key));
-                if (valueTraversal.hasNext())
-                    map.put(key, valueTraversal.next());
-            }
-        }
-        return (Map<K, V>) map;
     }
 }
