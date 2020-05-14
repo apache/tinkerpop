@@ -36,7 +36,7 @@ before_install:
   - sudo apt install python3.6
   - sudo rm /usr/bin/python3
   - sudo ln -s python3.6 /usr/bin/python3
-  - sudo apt install gcc python3.6-dev libkrb5-dev
+  - sudo apt install libkrb5-dev
 
 jobs:
   include:
