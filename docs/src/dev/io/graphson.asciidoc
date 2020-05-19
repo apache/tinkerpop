@@ -3818,7 +3818,8 @@ Version 3.0 of GraphSON was first introduced on TinkerPop 3.3.0 and is the defau
 version. It is quite similar to GraphSON 2.0 and in most cases will appear compatible to the eye, however there are
 some critical differences:
 
-* GraphSON 3.0 does not have an option to be typeless. Types are always embedded.
+* GraphSON 3.0 does not have an option to be typeless. Types are always embedded except for strings and boolean values
+which are inferred from JSON types.
 * GraphSON 2.0 relied on JSON data types for collections like `Map` and `List`. In GraphSON 3.0, there is explicit
 typed support for `Map`, `List` and `Set` as Gremlin relies on those types in quite specific ways that are not
 directly compatible with the JSON definitions of those collections. In the case of `List` and `Set`, it was important

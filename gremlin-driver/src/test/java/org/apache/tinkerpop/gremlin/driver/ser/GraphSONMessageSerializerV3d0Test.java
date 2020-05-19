@@ -101,6 +101,7 @@ public class GraphSONMessageSerializerV3d0Test {
         final Map<String, String> innerMap = new HashMap<>();
         innerMap.put("a", "b");
 
+        map.put("w", true);
         map.put("x", 1);
         map.put("y", "some");
         map.put("z", innerMap);
@@ -109,7 +110,8 @@ public class GraphSONMessageSerializerV3d0Test {
         assertCommon(response);
 
         final Map<String, Object> deserializedMap = (Map<String, Object>) response.getResult().getData();
-        assertEquals(3, deserializedMap.size());
+        assertEquals(4, deserializedMap.size());
+        assertEquals(true, deserializedMap.get("w"));
         assertEquals(1, deserializedMap.get("x"));
         assertEquals("some", deserializedMap.get("y"));
 
