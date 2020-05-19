@@ -88,6 +88,22 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
     public String version;
 
     @Test
+    public void shouldHandleBoolean() throws Exception {
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+
+        final boolean b = true;
+        assertEquals(b, serializeDeserialize(mapper, b, Boolean.class));
+    }
+
+    @Test
+    public void shouldHandleString() throws Exception {
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+
+        final String s = "simple";
+        assertEquals(s, serializeDeserialize(mapper, s, String.class));
+    }
+
+    @Test
     public void shouldHandleTraversalExplanation() throws Exception {
         assumeThat(version, not(startsWith("v1")));
 
