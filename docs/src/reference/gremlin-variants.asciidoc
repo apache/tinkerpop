@@ -1291,14 +1291,15 @@ const gremlin = require('gremlin');
 const traversal = gremlin.process.AnonymousTraversalSource.traversal;
 const __ = gremlin.process.statics;
 const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
-const column = gremlin.process.traversal.column
-const direction = gremlin.process.traversal.direction
-const p = gremlin.process.traversal.P
-const pick = gremlin.process.traversal.pick
-const pop = gremlin.process.traversal.pop
-const order = gremlin.process.traversal.order
-const scope = gremlin.process.traversal.scope
-const t = gremlin.process.traversal.t
+const column = gremlin.process.column
+const direction = gremlin.process.direction
+const p = gremlin.process.P
+const textp = gremlin.process.TextP
+const pick = gremlin.process.pick
+const pop = gremlin.process.pop
+const order = gremlin.process.order
+const scope = gremlin.process.scope
+const t = gremlin.process.t
 ----
 
 === Submitting Scripts
