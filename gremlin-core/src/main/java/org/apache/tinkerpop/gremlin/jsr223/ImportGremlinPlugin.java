@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -45,7 +46,8 @@ public final class ImportGremlinPlugin extends AbstractGremlinPlugin {
         super(NAME, builder.appliesTo, DefaultImportCustomizer.build()
                                                 .addClassImports(builder.classImports)
                                                 .addEnumImports(builder.enumImports)
-                                                .addMethodImports(builder.methodImports).create());
+                                                .addMethodImports(builder.methodImports)
+                                                .addFieldImports(builder.fieldImports).create());
     }
 
     public static Builder build() {
@@ -55,6 +57,7 @@ public final class ImportGremlinPlugin extends AbstractGremlinPlugin {
     public static final class Builder {
         private static final Pattern METHOD_PATTERN = Pattern.compile("(.*)#(.*)\\((.*)\\)");
         private static final Pattern ENUM_PATTERN = Pattern.compile("(.*)#(.*)");
+        private Set<Field> fieldImports = new HashSet<>();
         private Set<Class> classImports = new HashSet<>();
         private Set<Method> methodImports = new HashSet<>();
         private Set<Enum> enumImports = new HashSet<>();
@@ -154,9 +157,42 @@ public final class ImportGremlinPlugin extends AbstractGremlinPlugin {
             enumImports.addAll(Arrays.asList(enums));
             return this;
         }
+        
+        public Builder fieldsImports(final Collection<String> fields) {
+            for (String fieldItem : fields) {
+                try {
+                    if (fieldItem.endsWith("#*")) {
+                        final String classString = fieldItem.substring(0, fieldItem.length() - 2);
+                        final Class<?> clazz = Class.forName(classString);
+                        fieldImports.addAll(allStaticFields(clazz));
+                    } else {
+                        final Matcher matcher = ENUM_PATTERN.matcher(fieldItem);
+
+                        if (!matcher.matches())
+                            throw new IllegalArgumentException(String.format("Could not read field descriptor - check format of: %s", fieldItem));
+
+                        final String classString = matcher.group(1);
+                        final String fieldName = matcher.group(2);
+                        final Class<?> clazz = Class.forName(classString);
+                        fieldImports.add(clazz.getField(fieldName));
+                    }
+                } catch (IllegalArgumentException iae) {
+                    throw iae;
+                } catch (Exception ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+            return this;
+        }
+        
+        public Builder fieldsImports(final Field... fields) {
+            fieldImports.addAll(Arrays.asList(fields));
+            return this;
+        }
 
         public ImportGremlinPlugin create() {
-            if (enumImports.isEmpty() && classImports.isEmpty() && methodImports.isEmpty())
+            if (enumImports.isEmpty() && classImports.isEmpty() && methodImports.isEmpty()
+            		&& fieldImports.isEmpty())
                 throw new IllegalStateException("At least one import must be specified");
 
             return new ImportGremlinPlugin(this);
@@ -168,6 +204,10 @@ public final class ImportGremlinPlugin extends AbstractGremlinPlugin {
 
         private static List<Method> allStaticMethods(final Class<?> clazz) {
             return Stream.of(clazz.getMethods()).filter(m -> Modifier.isStatic(m.getModifiers())).collect(Collectors.toList());
+        }
+        
+        private static List<Field> allStaticFields(final Class<?> clazz) {
+            return Stream.of(clazz.getFields()).filter(f -> Modifier.isStatic(f.getModifiers())).collect(Collectors.toList());
         }
 
         private static Class<?>[] parse(final String argString) {

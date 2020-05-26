@@ -18,21 +18,25 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.junit.Test;
 
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsCollectionContaining.hasItems;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -126,6 +130,29 @@ public class ImportGremlinPluginTest {
         assertThat(customizer.getEnumImports(), hasItems(T.id));
     }
 
+    @Test
+    public void shouldImportFields() throws Exception {
+    	final Field field = Math.class.getField("PI");
+        final ImportGremlinPlugin module = ImportGremlinPlugin.build()
+                .fieldsImports(Collections.singletonList(Math.class.getCanonicalName() + "#" + field.getName())).create();
+
+        final DefaultImportCustomizer customizer = (DefaultImportCustomizer) module.getCustomizers().get()[0];
+        assertEquals(1, module.getCustomizers().get().length);
+        assertThat(customizer.getFieldImports(), hasItems(field));
+    }
+    
+    @Test
+    public void shouldImportWildcardFields() throws Exception {
+        final ImportGremlinPlugin module = ImportGremlinPlugin.build()
+                .fieldsImports(Collections.singletonList(Math.class.getCanonicalName() + "#*")).create();
+
+        final DefaultImportCustomizer customizer = (DefaultImportCustomizer) module.getCustomizers().get()[0];
+        assertThat(customizer.getFieldImports(), is(ImmutableSet.of(Math.class.getField("PI"), Math.class.getField("E"))));
+    }
+
+
+    
+    
     @Test
     public void shouldThrowExceptionIfInvalidEnumDescriptor() throws Exception {
         final String badDescriptor = "T*id";
