@@ -53,7 +53,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Added support for `TextP` in Neo4j using its string search functions.
 * Changed `TraversalStrategy` application methodology to apply each strategy in turn to each level of the traversal hierarchy starting from root down to children.
 * Prevented more than one `Client` from connecting to the same Gremlin Server session.
-* Bumped to Jackson 2.10.x.
+* Bumped to Jackson 2.11.x.
 * Removed internal functionality for the session close message in Gremlin Server - the message is accepted but ignored if sent.
 * Removed `Property.Exceptions.propertyValueCanNotBeNull` exception type as `null` now has meaning in Gremlin.
 * Removed the "experimental" support for multi/meta-properties in Neo4j.
