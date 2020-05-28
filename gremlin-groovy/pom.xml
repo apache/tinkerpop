@@ -57,6 +57,20 @@ limitations under the License.
         </dependency>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-cli-picocli</artifactId>
+            <version>${groovy.version}</version>
+            <classifier>indy</classifier>
+        </dependency>
+        <!--
+        not sure why jline won't come in with groovy-groovysh but it messes up build of gremlin-console
+        -->
+        <dependency>
+            <groupId>jline</groupId>
+            <artifactId>jline</artifactId>
+            <version>2.14.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-json</artifactId>
             <version>${groovy.version}</version>
             <classifier>indy</classifier>
