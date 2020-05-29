@@ -68,6 +68,8 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<Object, Object>> get_g_V_valueMapXname_ageX_withXtokens_labelsX_byXunfoldX();
 
+    public abstract Traversal<Vertex, Map<Object, Object>> get_g_V_valueMapXname_ageX_withXtokens_idsX_byXunfoldX();
+
     public abstract Traversal<Vertex, Map<Object, List<String>>> get_g_VX1X_outXcreatedX_valueMap(final Object v1Id);
 
     public abstract Traversal<Vertex, Map<Object, Object>> get_g_VX1X_valueMapXname_locationX_byXunfoldX_by(final Object v1Id);
@@ -264,6 +266,48 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    public void g_V_valueMapXname_ageX_withXtokens_idsX_byXunfoldX() {
+        final Traversal<Vertex, Map<Object, Object>> traversal = get_g_V_valueMapXname_ageX_withXtokens_idsX_byXunfoldX();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            final Map<Object, Object> values = traversal.next();
+            final String name = (String) values.get("name");
+            assertThat(values.containsKey(T.label), is(false));
+            if (name.equals("marko")) {
+                assertEquals(3, values.size());
+                assertEquals(29, values.get("age"));
+                assertEquals(convertToVertexId("marko"), values.get(T.id));
+            } else if (name.equals("josh")) {
+                assertEquals(3, values.size());
+                assertEquals(32, values.get("age"));
+                assertEquals(convertToVertexId("josh"), values.get(T.id));
+            } else if (name.equals("peter")) {
+                assertEquals(3, values.size());
+                assertEquals(35, values.get("age"));
+                assertEquals(convertToVertexId("peter"), values.get(T.id));
+            } else if (name.equals("vadas")) {
+                assertEquals(3, values.size());
+                assertEquals(27, values.get("age"));
+                assertEquals(convertToVertexId("vadas"), values.get(T.id));
+            } else if (name.equals("lop")) {
+                assertEquals(2, values.size());
+                assertNull(values.get("lang"));
+                assertEquals(convertToVertexId("lop"), values.get(T.id));
+            } else if (name.equals("ripple")) {
+                assertEquals(2, values.size());
+                assertNull(values.get("lang"));
+                assertEquals(convertToVertexId("ripple"), values.get(T.id));
+            } else {
+                throw new IllegalStateException("It is not possible to reach here: " + values);
+            }
+        }
+        assertEquals(6, counter);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
     public void g_VX1X_outXcreatedX_valueMap() {
         final Traversal<Vertex, Map<Object, List<String>>> traversal = get_g_VX1X_outXcreatedX_valueMap(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -350,6 +394,11 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<Object, Object>> get_g_V_valueMapXname_ageX_withXtokens_labelsX_byXunfoldX() {
             return g.V().valueMap("name", "age").with(WithOptions.tokens, WithOptions.labels).by(__.unfold());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<Object, Object>> get_g_V_valueMapXname_ageX_withXtokens_idsX_byXunfoldX() {
+            return g.V().valueMap("name", "age").with(WithOptions.tokens, WithOptions.ids).by(__.unfold());
         }
 
         @Override
