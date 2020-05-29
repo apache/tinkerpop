@@ -121,6 +121,11 @@ namespace Gremlin.Net.Process.Traversal
             {
                 return null;
             }
+
+            if (argument is ITraversal traversal && !traversal.IsAnonymous)
+                throw new ArgumentException(
+                    $"The child traversal of {traversal.Bytecode} was not spawned anonymously - use the __ class rather than a TraversalSource to construct the child traversal");
+                
             
             if (IsDictionaryType(argument.GetType()))
             {

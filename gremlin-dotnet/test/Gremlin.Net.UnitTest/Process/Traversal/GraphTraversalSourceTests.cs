@@ -21,6 +21,7 @@
 
 #endregion
 
+using System;
 using Gremlin.Net.Process.Traversal;
 using Xunit;
 
@@ -82,6 +83,16 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             Assert.Equal(3, original.Bytecode.StepInstructions.Count);
             Assert.Equal(5, clone.Bytecode.StepInstructions.Count);
             Assert.Equal(4, cloneClone.Bytecode.StepInstructions.Count);
+        }
+        
+        [Fact]
+        public void ShouldOnlyAllowChildTraversalsThatAreAnonymous()
+        {
+            var g = AnonymousTraversalSource.Traversal();
+
+            g.V(0).AddE("self").To(__.V(1));
+
+            Assert.Throws<ArgumentException>(() => g.V(0).AddE("self").To(g.V(1)));
         }
     }
 }

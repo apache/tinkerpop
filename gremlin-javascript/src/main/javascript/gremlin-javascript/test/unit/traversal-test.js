@@ -25,7 +25,10 @@
 const assert = require('assert');
 const expect = require('chai').expect;
 const graph = require('../../lib/structure/graph');
+const anon = require('../../lib/process/anonymous-traversal');
 const t = require('../../lib/process/traversal');
+const gt = require('../../lib/process/graph-traversal');
+const V = gt.statics.V;
 const Bytecode = require('../../lib/process/bytecode');
 const TraversalStrategies = require('../../lib/process/traversal-strategy').TraversalStrategies;
 
@@ -33,7 +36,7 @@ describe('Traversal', function () {
 
   describe('#getByteCode()', function () {
     it('should add steps for with a string parameter', function () {
-      const g = new graph.Graph().traversal();
+      const g = anon.traversal().withGraph(new graph.Graph());
       const bytecode = g.V().out('created').getBytecode();
       assert.ok(bytecode);
       assert.strictEqual(bytecode.sourceInstructions.length, 0);
@@ -44,7 +47,7 @@ describe('Traversal', function () {
     });
 
     it('should add steps with an enum value', function () {
-      const g = new graph.Graph().traversal();
+      const g = anon.traversal().withGraph(new graph.Graph());
       const bytecode = g.V().order().by('age', t.order.desc).getBytecode();
       assert.ok(bytecode);
       assert.strictEqual(bytecode.sourceInstructions.length, 0);
@@ -236,5 +239,18 @@ describe('Traversal', function () {
         assert.strictEqual(applied, true);
       });
     });
+  });
+
+  describe("build", function() {
+    it('should only allow anonymous child traversals', function() {
+      const g = anon.traversal().withGraph(new graph.Graph());
+      assert.doesNotThrow(function() {
+        g.V(0).addE("self").to(V(1))
+      });
+
+      assert.throws(function() {
+        g.V(0).addE("self").to(g.V(1))
+      });
+    })
   });
 });

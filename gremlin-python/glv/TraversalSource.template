@@ -345,6 +345,8 @@ class Bytecode(object):
 
     def __convertArgument(self,arg):
         if isinstance(arg, Traversal):
+            if arg.graph is not None:
+                raise TypeError("The child traversal of " + arg + " was not spawned anonymously - use the __ class rather than a TraversalSource to construct the child traversal")
             self.bindings.update(arg.bytecode.bindings)
             return arg.bytecode
         elif isinstance(arg, dict):

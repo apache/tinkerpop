@@ -291,9 +291,14 @@ public final class Bytecode implements Cloneable, Serializable {
                 return new Binding<>(variable, convertArgument(argument, false));
         }
         //
-        if (argument instanceof Traversal)
+        if (argument instanceof Traversal) {
+            // prevent use of "g" to spawn child traversals
+            if (((Traversal) argument).asAdmin().getTraversalSource().isPresent())
+                throw new IllegalStateException(String.format(
+                        "The child traversal of %s was not spawned anonymously - use the __ class rather than a TraversalSource to construct the child traversal", argument));
+
             return ((Traversal) argument).asAdmin().getBytecode();
-        else if (argument instanceof Map) {
+        } else if (argument instanceof Map) {
             final Map<Object, Object> map = new LinkedHashMap<>(((Map) argument).size());
             for (final Map.Entry<?, ?> entry : ((Map<?, ?>) argument).entrySet()) {
                 map.put(convertArgument(entry.getKey(), true), convertArgument(entry.getValue(), true));

@@ -19,10 +19,13 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -35,11 +38,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -126,6 +131,16 @@ public class TraversalTest {
         assertThat(t.hasNext(), is(true));
         t.close();
         assertThat(t.isClosed(), is(true));
+    }
+
+    @Test
+    public void shouldOnlyAllowAnonymousChildren() {
+        final GraphTraversalSource g = traversal().withGraph(EmptyGraph.instance());
+        g.V(1).addE("self").to(__.V(1));
+        try {
+            g.V(1).addE("self").to(g.V(1));
+            fail("Should not allow child traversals spawned from 'g'");
+        } catch (IllegalStateException ignored) {}
     }
 
     private static class MockCloseStep<E> extends MockStep<E> implements AutoCloseable {

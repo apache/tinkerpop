@@ -29,6 +29,32 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.5.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Anonymous Child Traversals
+
+TinkerPop conventions for child traversals is to spawn them anonymously from `__`, therefore:
+
+[source,groovy]
+g.addV('person').addE('self').to(__.V(1))
+
+or more succinctly via static import as:
+
+[source,groovy]
+g.addV('person').addE('self').to(V(1))
+
+Some users have chosen to instead write the above as:
+
+[source,groovy]
+g.addV('person').addE('self').to(g.V(1))
+
+which spawns a child traversal from a `GraphTraversalSource`. When spawned this way, a traversal is bound to a "source"
+and therefore is not anonymous. While the above code worked, it is important that there be less ways to do things
+with Gremlin so as to avoid confusion in examples, documentations and mailing list answers.
+
+As of 3.5.0, attempting to use a traversal spawned from a "source" will result in an exception. Users will need to
+modify their code if they use the unconventional syntax.
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-2361[TINKERPOP-2361]
+
 ==== Gryo Usage
 
 Since the first release of TinkerPop 3.x, Gryo has been the default serialization format for Gremlin Server and

@@ -38,6 +38,11 @@ namespace Gremlin.Net.Process.Traversal
         ///     Gets the <see cref="Bytecode" /> representation of this traversal.
         /// </summary>
         Bytecode Bytecode { get; }
+        
+        /// <summary>
+        ///     Determines if this traversal was spawned anonymously or not.
+        /// </summary>
+        bool IsAnonymous { get;  }
 
         /// <summary>
         ///     Gets or sets the <see cref="Traverser" />'s of this traversal that hold the results of the traversal.
