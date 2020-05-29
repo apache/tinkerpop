@@ -110,7 +110,8 @@ and communicating with other members of the community.
 under release is protected. Tweaks to documentation and other odds and ends related to release are still allowed
 during this period.
 . At some point during the week:
-.. Run the full integration test suite: `mvn clean install -DskipIntegrationTests=false -DincludeNeo4j`
+.. Run a local build `mvn clean install`
+.. Run the full integration test suite: `docker/build.sh -t -i -n`
 .. Build and test the Docker images: `mvn clean install -pl gremlin-server,gremlin-console -DdockerImages`
 .. Ensure that the Gremlin.Net.Template gets packaged successfully: `mvn clean install -pl :gremlin-dotnet-source -Dnuget`
 .. Deploy a final SNAPSHOT to the Apache snapshot repository for Java.
@@ -139,8 +140,8 @@ offered in cases where there is significant change in a particular version and t
 might be high. Release candidates do not require a vote thread. Lazy consensus is acceptable for confirming their
 deployment.
 
-. `mvn clean install -DincludeNeo4j`
-.. `mvn verify -DskipIntegrationTests=false -DincludeNeo4j`
+. `mvn clean install`
+. `docker/build.sh -t -i -n`
 . `bin/publish-docs.sh <username>` - note that under a release candidate the documentation is published as SNAPSHOT
 . `mvn versions:set -DnewVersion=xx.yy.zz -DgenerateBackupPoms=false` to update the project files to reference a non-SNAPSHOT version
 . `pushd gremlin-console/bin; ln -fs ../target/apache-tinkerpop-gremlin-console-xx.yy.zz-standalone/bin/gremlin.sh gremlin.sh; popd`
