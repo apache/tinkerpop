@@ -129,6 +129,22 @@ Feature: Step - valueMap()
       | m[{"t[label]": "software", "name": "lop"}] |
       | m[{"t[label]": "software", "name": "ripple"}] |
 
+  Scenario: g_V_valueMapXname_ageX_withXtokens_idsX_byXunfoldX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().valueMap("name", "age").with(WithOptions.tokens, WithOptions.ids).by(__.unfold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[id]": "v[marko].id", "name": "marko", "age": 29}] |
+      | m[{"t[id]": "v[josh].id", "name": "josh", "age": 32}] |
+      | m[{"t[id]": "v[peter].id", "name": "peter", "age": 35}] |
+      | m[{"t[id]": "v[vadas].id", "name": "vadas", "age": 27}] |
+      | m[{"t[id]": "v[lop].id", "name": "lop"}] |
+      | m[{"t[id]": "v[ripple].id", "name": "ripple"}] |
+
   Scenario: g_VX1X_outXcreatedX_valueMap
     Given the modern graph
     And using the parameter v1Id defined as "v[marko].id"
