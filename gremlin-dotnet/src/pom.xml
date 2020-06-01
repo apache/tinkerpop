@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>gremlin-dotnet</artifactId>
-        <version>3.4.7-SNAPSHOT</version>
+        <version>3.4.7</version>
     </parent>
     <artifactId>gremlin-dotnet-source</artifactId>
     <name>Apache TinkerPop :: Gremlin.Net - Source</name>
