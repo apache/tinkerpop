@@ -32,7 +32,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 == TinkerPop 3.4.7
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: June 1, 2020*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.7/CHANGELOG.asciidoc#release-3-4-7[changelog] for a
 complete list of all the modifications that are part of this release.

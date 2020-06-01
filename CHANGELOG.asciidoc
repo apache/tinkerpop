@@ -79,7 +79,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
 [[release-3-4-7]]
-=== TinkerPop 3.4.7 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.4.7 (Release Date: June 1, 2020)
 
 This release also includes changes from <<release-3-3-11, 3.3.11>>.
 
@@ -89,6 +89,28 @@ This release also includes changes from <<release-3-3-11, 3.3.11>>.
 * Improved error message for `math()` when the selected key in a `Map` is `null` or not a `Number`.
 * Added `:cls` command to Gremlin Console to clear the screen.
 * Bump Netty 4.1.49.
+
+==== Bugs
+
+* TINKERPOP-2192 Gremlin.Net.Driver.Connection.Parse throws a NullReferenceException
+* TINKERPOP-2345 NullPointerException when Map key is not found for math()
+* TINKERPOP-2347 Remove invalid service descriptors from gremlin-shaded
+* TINKERPOP-2350 clone() is not deep copying Traversal internals
+* TINKERPOP-2351 Local Map ordering of keys can generate cast errors
+* TINKERPOP-2353 Error while Shutting Down Gremlin Server
+* TINKERPOP-2355 Jackson-databind version in Gremlin shaded dependency needs to be increased  - introduces vulnerability issues
+* TINKERPOP-2360 failed to deserializer int32 when gremlin-python submit bytecode with a big int value
+* TINKERPOP-2365 LazyBarrierStrategy adds a NoOpBarrierStep when profile() is present
+* TINKERPOP-2368 JAVA_OPTIONS are not properly expanded in gremlin-console
+
+==== Improvements
+
+* TINKERPOP-2215 Better exception message for connection problems
+* TINKERPOP-2336 Allow close of channel without having to wait for server
+* TINKERPOP-2339 Gremlin.Net: Update System.Net.WebSockets.Client dependency
+* TINKERPOP-2354 Document recommendation to reuse graph traversal source
+* TINKERPOP-2357 Add a command to clear the Gremlin Console screen
+* TINKERPOP-2371 Add possibility to import constants with ImportGremlinPlugin
 
 [[release-3-4-6]]
 === TinkerPop 3.4.6 (Release Date: February 20, 2020)
