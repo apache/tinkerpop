@@ -134,6 +134,8 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
             client.close();
             client = new CombinedTestClient(getProtocol());
             client.sendAndAssert("2+2", 4, "stephen", "password");
+            // Expect exception when try again if the server pipeline is correct
+            client.sendAndAssertUnauthorized("2+2", "stephen", "notpassword");
             client.close();
         } catch (Exception e) {
             client.close();
@@ -149,6 +151,8 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
             client.close();
             client = new CombinedTestClient(getSecureProtocol());
             client.sendAndAssert("2+2", 4, "stephen", "password");
+            // Expect exception when try again if the server pipeline is correct
+            client.sendAndAssertUnauthorized("2+2", "stephen", "incorrect-password");
             client.close();
         } catch (Exception e) {
             client.close();
