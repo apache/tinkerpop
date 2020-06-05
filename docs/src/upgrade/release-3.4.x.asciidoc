@@ -30,6 +30,15 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Avant-Gremlin Construction #3 for Theremin and Flowers*
 
+== TinkerPop 3.4.8
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.4.8/CHANGELOG.asciidoc#release-3-4-8[changelog] for a
+complete list of all the modifications that are part of this release.
+
+
+
 == TinkerPop 3.4.7
 
 *Release Date: June 1, 2020*

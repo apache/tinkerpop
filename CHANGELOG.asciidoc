@@ -78,6 +78,11 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
+[[release-3-4-8]]
+=== TinkerPop 3.4.8 (Release Date: NOT OFFICIALLY RELEASED YET)
+
+
+
 [[release-3-4-7]]
 === TinkerPop 3.4.7 (Release Date: June 1, 2020)
 
