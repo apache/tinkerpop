@@ -20,15 +20,13 @@
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 import datetime
-import time
+import calendar
 import json
 import uuid
 import math
 from decimal import *
 
 from mock import Mock
-
-import six
 
 from gremlin_python.statics import *
 from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Graph, Path
@@ -242,8 +240,7 @@ class TestGraphSONReader(object):
 
     def test_datetime(self):
         expected = datetime.datetime(2016, 12, 14, 16, 14, 36, 295000)
-        pts = time.mktime(expected.timetuple()) + expected.microsecond / 1e6 - \
-                         (time.mktime(datetime.datetime(1970, 1, 1).timetuple()))
+        pts = calendar.timegm(expected.utctimetuple()) + expected.microsecond / 1e6
         ts = int(round(pts * 1000))
         dt = self.graphson_reader.readObject(json.dumps({"@type": "g:Date", "@value": ts}))
         assert isinstance(dt, datetime.datetime)
