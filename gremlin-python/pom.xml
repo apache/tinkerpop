@@ -291,7 +291,7 @@ limitations under the License.
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <!-- seems like we need a few different copies of the same source. all the
                                              different python/jython stuff doesn't seem to want to share. we use
                                              /python for basic tests and stuff, /jython for jython compilation with
@@ -311,7 +311,7 @@ limitations under the License.
                                             <fileset dir="src/main/jython"/>
                                         </copy>
                                         <!-- print versions of python and virtualenv -->
-                                        <exec dir="${project.build.directory}/python2" executable="python2"
+                                        <exec dir="${project.build.directory}/python2" executable="python"
                                               failonerror="true">
                                             <arg line="--version"/>
                                         </exec>
@@ -325,7 +325,7 @@ limitations under the License.
                                         </exec>
                                         <exec dir="${project.build.directory}/python2" executable="virtualenv"
                                               failonerror="true">
-                                            <arg line="--python=python2 env"/>
+                                            <arg line="--python=python env"/>
                                         </exec>
                                         <!-- pip 20 doesn't work with python 2 it seems -->
                                         <exec dir="${project.build.directory}/python2" executable="env/bin/python"
@@ -352,7 +352,7 @@ limitations under the License.
                                               failonerror="true">
                                             <arg line="install wheel"/>
                                         </exec>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                             <execution>
