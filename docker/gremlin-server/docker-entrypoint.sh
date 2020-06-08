@@ -42,7 +42,7 @@ java -version
 
 /opt/gremlin-server/bin/gremlin-server.sh conf/gremlin-server-integration-secure.yaml &
 
-java -cp /opt/gremlin-test/gremlin-test-3.5.0-SNAPSHOT-jar-with-dependencies.jar \
+java -cp /opt/gremlin-test/gremlin-test-${GREMLIN_SERVER_VERSION}-jar-with-dependencies.jar \
      -Dlog4j.configuration="file:/opt/gremlin-server/conf/log4j-server.properties" \
      org.apache.tinkerpop.gremlin.server.KdcFixture /opt/gremlin-server &
 
