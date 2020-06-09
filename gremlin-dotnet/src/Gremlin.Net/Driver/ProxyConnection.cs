@@ -30,23 +30,37 @@ namespace Gremlin.Net.Driver
 {
     internal sealed class ProxyConnection : IConnection
     {
-        private readonly Connection _realConnection;
-        private readonly Action<Connection> _releaseAction;
+        public IConnection ProxiedConnection { get; }
+        private readonly Action<IConnection> _releaseAction;
 
-        public ProxyConnection(Connection realConnection, Action<Connection> releaseAction)
+        public ProxyConnection(IConnection proxiedConnection, Action<IConnection> releaseAction)
         {
-            _realConnection = realConnection;
+            ProxiedConnection = proxiedConnection;
             _releaseAction = releaseAction;
+        }
+
+        public async Task ConnectAsync()
+        {
+            await ProxiedConnection.ConnectAsync().ConfigureAwait(false);
         }
 
         public async Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage)
         {
-            return await _realConnection.SubmitAsync<T>(requestMessage).ConfigureAwait(false);
+            return await ProxiedConnection.SubmitAsync<T>(requestMessage).ConfigureAwait(false);
+        }
+
+        public int NrRequestsInFlight => ProxiedConnection.NrRequestsInFlight;
+
+        public bool IsOpen => ProxiedConnection.IsOpen;
+
+        public async Task CloseAsync()
+        {
+            await ProxiedConnection.CloseAsync().ConfigureAwait(false);
         }
 
         public void Dispose()
         {
-            _releaseAction(_realConnection);
+            _releaseAction(ProxiedConnection);
         }
     }
 }

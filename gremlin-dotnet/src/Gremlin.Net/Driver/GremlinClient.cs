@@ -96,7 +96,7 @@ namespace Gremlin.Net.Driver
         /// <inheritdoc />
         public async Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage)
         {
-            using (var connection = await _connectionPool.GetAvailableConnectionAsync().ConfigureAwait(false))
+            using (var connection = _connectionPool.GetAvailableConnection())
             {
                 return await connection.SubmitAsync<T>(requestMessage).ConfigureAwait(false);
             }

@@ -30,6 +30,10 @@ namespace Gremlin.Net.Driver
 {
     internal interface IConnection : IDisposable
     {
+        Task ConnectAsync();
         Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage);
+        int NrRequestsInFlight { get; }
+        bool IsOpen { get; }
+        Task CloseAsync();
     }
 }
