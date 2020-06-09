@@ -22,79 +22,77 @@
  */
 'use strict';
 
-const defineSupportCode = require('cucumber').defineSupportCode;
+const {setWorldConstructor, Before, BeforeAll, AfterAll} = require('cucumber');
 const helper = require('../helper');
 const traversal = require('../../lib/process/anonymous-traversal').traversal;
 const graphTraversalModule = require('../../lib/process/graph-traversal');
 const __ = graphTraversalModule.statics;
 
-defineSupportCode(function (methods) {
-  const cache = {};
+const cache = {};
 
-  function TinkerPopWorld(){
-    this.scenario = null;
-    this.g = null;
-    this.traversal = null;
-    this.result = null;
-    this.cache = null;
-    this.graphName = null;
-    this.parameters = {};
+function TinkerPopWorld(){
+  this.scenario = null;
+  this.g = null;
+  this.traversal = null;
+  this.result = null;
+  this.cache = null;
+  this.graphName = null;
+  this.parameters = {};
+}
+
+TinkerPopWorld.prototype.getData = function () {
+  if (!this.graphName) {
+    throw new Error("Graph name is not set");
   }
+  return this.cache[this.graphName];
+};
 
-  TinkerPopWorld.prototype.getData = function () {
-    if (!this.graphName) {
-      throw new Error("Graph name is not set");
+TinkerPopWorld.prototype.cleanEmptyGraph = function () {
+  const connection = this.cache['empty'].connection;
+  const g = traversal().withRemote(connection);
+  return g.V().drop().toList();
+};
+
+TinkerPopWorld.prototype.loadEmptyGraphData = function () {
+  const cacheData = this.cache['empty'];
+  const c = cacheData.connection;
+  return Promise.all([ getVertices(c), getEdges(c) ]).then(values => {
+    cacheData.vertices = values[0];
+    cacheData.edges = values[1];
+  });
+};
+
+setWorldConstructor(TinkerPopWorld);
+
+BeforeAll(function () {
+  // load all traversals
+  const promises = ['modern', 'classic', 'crew', 'grateful', 'sink', 'empty'].map(graphName => {
+    let connection = null;
+    if (graphName === 'empty') {
+      connection = helper.getConnection('ggraph');
+      return connection.open().then(() => cache['empty'] = { connection: connection });
     }
-    return this.cache[this.graphName];
-  };
-
-  TinkerPopWorld.prototype.cleanEmptyGraph = function () {
-    const connection = this.cache['empty'].connection;
-    const g = traversal().withRemote(connection);
-    return g.V().drop().toList();
-  };
-
-  TinkerPopWorld.prototype.loadEmptyGraphData = function () {
-    const cacheData = this.cache['empty'];
-    const c = cacheData.connection;
-    return Promise.all([ getVertices(c), getEdges(c) ]).then(values => {
-      cacheData.vertices = values[0];
-      cacheData.edges = values[1];
-    });
-  };
-
-  methods.setWorldConstructor(TinkerPopWorld);
-
-  methods.BeforeAll(function () {
-    // load all traversals
-    const promises = ['modern', 'classic', 'crew', 'grateful', 'sink', 'empty'].map(graphName => {
-      let connection = null;
-      if (graphName === 'empty') {
-        connection = helper.getConnection('ggraph');
-        return connection.open().then(() => cache['empty'] = { connection: connection });
-      }
-      connection = helper.getConnection('g' + graphName);
-      return connection.open()
-        .then(() => Promise.all([getVertices(connection), getEdges(connection)]))
-        .then(values => {
-          cache[graphName] = {
-            connection: connection,
-            vertices: values[0],
-            edges: values[1]
-          };
-        });
-    });
-    return Promise.all(promises);
+    connection = helper.getConnection('g' + graphName);
+    return connection.open()
+      .then(() => Promise.all([getVertices(connection), getEdges(connection)]))
+      .then(values => {
+        cache[graphName] = {
+          connection: connection,
+          vertices: values[0],
+          edges: values[1]
+        };
+      });
   });
+  return Promise.all(promises);
+});
 
-  methods.AfterAll(function () {
-    return Promise.all(Object.keys(cache).map(graphName => cache[graphName].connection.close()));
-  });
+AfterAll(function () {
+  return Promise.all(Object.keys(cache).map(graphName => cache[graphName].connection.close()));
+});
 
-  methods.Before(function (info) {
-    this.scenario = info.pickle.name;
-    this.cache = cache;
-  });
+Before(function (info) {
+  this.scenario = info.pickle.name;
+  this.cache = cache;
 });
 
 function getVertices(connection) {
