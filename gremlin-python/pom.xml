@@ -311,7 +311,7 @@ limitations under the License.
                                             <fileset dir="src/main/jython"/>
                                         </copy>
                                         <!-- print versions of python and virtualenv -->
-                                        <exec dir="${project.build.directory}/python2" executable="python"
+                                        <exec dir="${project.build.directory}/python2" executable="python2"
                                               failonerror="true">
                                             <arg line="--version"/>
                                         </exec>
@@ -325,7 +325,7 @@ limitations under the License.
                                         </exec>
                                         <exec dir="${project.build.directory}/python2" executable="virtualenv"
                                               failonerror="true">
-                                            <arg line="--python=python env"/>
+                                            <arg line="--python=python2 env"/>
                                         </exec>
                                         <!-- pip 20 doesn't work with python 2 it seems -->
                                         <exec dir="${project.build.directory}/python2" executable="env/bin/python"
