@@ -291,7 +291,7 @@ limitations under the License.
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <target>
+                                    <tasks>
                                         <!-- seems like we need a few different copies of the same source. all the
                                              different python/jython stuff doesn't seem to want to share. we use
                                              /python for basic tests and stuff, /jython for jython compilation with
@@ -352,7 +352,7 @@ limitations under the License.
                                               failonerror="true">
                                             <arg line="install wheel"/>
                                         </exec>
-                                    </target>
+                                    </tasks>
                                 </configuration>
                             </execution>
                             <execution>
