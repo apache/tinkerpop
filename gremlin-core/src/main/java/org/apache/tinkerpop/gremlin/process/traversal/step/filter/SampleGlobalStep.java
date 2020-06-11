@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Seedable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.ProjectedTraverser;
@@ -38,15 +39,20 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implements TraversalParent, ByModulating {
+public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implements TraversalParent, ByModulating, Seedable {
 
     private Traversal.Admin<S, Number> probabilityTraversal = new ConstantTraversal<>(1.0d);
     private final int amountToSample;
-    private static final Random RANDOM = new Random();
+    private final Random random = new Random();
 
     public SampleGlobalStep(final Traversal.Admin traversal, final int amountToSample) {
         super(traversal);
         this.amountToSample = amountToSample;
+    }
+
+    @Override
+    public void resetSeed(final long seed) {
+        random.setSeed(seed);
     }
 
     @Override
@@ -99,7 +105,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
                     final double currentWeight = ((ProjectedTraverser<S, Number>) s).getProjections().get(0).doubleValue();
                     for (int i = 0; i < (s.bulk() - sampleBulk); i++) {
                         runningWeight = runningWeight + currentWeight;
-                        if (RANDOM.nextDouble() <= ((runningWeight / totalWeight))) {
+                        if (random.nextDouble() <= ((runningWeight / totalWeight))) {
                             final Traverser.Admin<S> split = s.split();
                             split.setBulk(1L);
                             sampledSet.add(split);

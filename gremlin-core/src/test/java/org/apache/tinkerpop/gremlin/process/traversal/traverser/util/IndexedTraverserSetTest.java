@@ -26,6 +26,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.nullValue;
@@ -111,7 +112,7 @@ public class IndexedTraverserSetTest {
         assertEquals(1, nopeTraversers.size());
         assertEquals(1, nopeTraversers.get(0).bulk());
 
-        ts.shuffle();
+        ts.shuffle(new Random());
 
         final List<Traverser.Admin<String>> testTraversersAfterShuffle = new ArrayList<>(ts.get("test"));
         assertEquals(1, testTraversersAfterShuffle.size());

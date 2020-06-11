@@ -32,14 +32,16 @@ import org.apache.tinkerpop.gremlin.util.NumberHelper;
 public enum Order implements Comparator<Object> {
 
     /**
-     * Order in a random fashion.
+     * Order in a random fashion. While this enum implements {@code Comparator}, the {@code compare(a,b)} method is not
+     * supported as a direct call. This change to the implementation of {@code compare(a,b)} occurred at 3.5.0 but
+     * this implementation was never used directly within the TinkerPop code base.
      *
      * @since 3.0.0-incubating
      */
     shuffle {
         @Override
         public int compare(final Object first, final Object second) {
-            return RANDOM.nextBoolean() ? -1 : 1;
+            throw new UnsupportedOperationException("Order.shuffle should not be used as an actual Comparator - it is a marker only");
         }
 
         @Override
