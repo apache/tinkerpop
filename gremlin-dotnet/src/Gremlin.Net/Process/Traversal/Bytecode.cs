@@ -110,16 +110,16 @@ namespace Gremlin.Net.Process.Traversal
 
         private object ConvertArgument(object argument, bool searchBindings)
         {
+            if (null == argument)
+            {
+                return null;
+            }
+            
             if (searchBindings)
             {
                 var variable = Bindings.GetBoundVariable(argument);
                 if (variable != null)
                     return new Binding(variable, ConvertArgument(argument, false));
-            }
-
-            if (null == argument)
-            {
-                return null;
             }
             
             if (IsDictionaryType(argument.GetType()))
