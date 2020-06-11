@@ -53,19 +53,19 @@ class TestTraversal(object):
         assert 1 == len(bytecode.step_instructions[1])
         assert 2 == len(bytecode.step_instructions[2])
         ##
-        bytecode = g.V(Bindings.of('a', [1,2,3])) \
-            .out(Bindings.of('b','created')) \
-            .where(__.in_(Bindings.of('c','created'), Bindings.of('d','knows')) \
-            .count().is_(Bindings.of('e',P.gt(2)))).bytecode
+        bytecode = g.V(Bindings.of('a', [1, 2, 3])) \
+            .out(Bindings.of('b', 'created')) \
+            .where(__.in_(Bindings.of('c', 'created'), Bindings.of('d', 'knows')) \
+            .count().is_(Bindings.of('e', P.gt(2)))).bytecode
         assert 5 == len(bytecode.bindings.keys())
         assert [1,2,3] == bytecode.bindings['a']
         assert 'created' == bytecode.bindings['b']
         assert 'created' == bytecode.bindings['c']
         assert 'knows' == bytecode.bindings['d']
         assert P.gt(2) == bytecode.bindings['e']
-        assert Binding('b','created') == bytecode.step_instructions[1][1]
+        assert Binding('b', 'created') == bytecode.step_instructions[1][1]
         assert 'binding[b=created]' == str(bytecode.step_instructions[1][1])
-        assert isinstance(hash(bytecode.step_instructions[1][1]),int)
+        assert isinstance(hash(bytecode.step_instructions[1][1]), int)
 
     def test_P(self):
         # verify that the order of operations is respected
@@ -103,5 +103,15 @@ class TestTraversal(object):
         assert 3 == len(original.bytecode.step_instructions)
         assert 5 == len(clone.bytecode.step_instructions)
         assert 4 == len(cloneClone.bytecode.step_instructions)
+
+    def test_enforce_anonymous_child_traversal(self):
+        g = traversal().withGraph(Graph())
+        g.V(0).addE("self").to(__.V(1))
+
+        try:
+            g.V(0).addE("self").to(g.V(1))
+            assert false
+        except TypeError:
+            pass
 
 

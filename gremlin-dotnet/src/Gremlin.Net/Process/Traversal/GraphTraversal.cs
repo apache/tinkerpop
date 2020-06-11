@@ -37,7 +37,7 @@ namespace Gremlin.Net.Process.Traversal
         ///     Initializes a new instance of the <see cref="GraphTraversal{SType, EType}" /> class.
         /// </summary>
         public GraphTraversal()
-            : this(new List<ITraversalStrategy>(), new Bytecode())
+            : this(new List<ITraversalStrategy>(), new Bytecode(), true)
         {
         }
 
@@ -47,9 +47,21 @@ namespace Gremlin.Net.Process.Traversal
         /// <param name="traversalStrategies">The traversal strategies to be used by this graph traversal at evaluation time.</param>
         /// <param name="bytecode">The <see cref="Bytecode" /> associated with the construction of this graph traversal.</param>
         public GraphTraversal(ICollection<ITraversalStrategy> traversalStrategies, Bytecode bytecode)
+            : this(traversalStrategies, bytecode, false)
+        {
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="GraphTraversal{SType, EType}" /> class.
+        /// </summary>
+        /// <param name="traversalStrategies">The traversal strategies to be used by this graph traversal at evaluation time.</param>
+        /// <param name="bytecode">The <see cref="Bytecode" /> associated with the construction of this graph traversal.</param>
+        /// <param name="anonymous">Set to true if spawned from an anonymous traversal source and false otherwise.</param>
+        private GraphTraversal(ICollection<ITraversalStrategy> traversalStrategies, Bytecode bytecode, bool anonymous)
         {
             TraversalStrategies = traversalStrategies;
             Bytecode = bytecode;
+            IsAnonymous = anonymous;
         }
 
         private static GraphTraversal<S2, E2> Wrap<S2, E2>(GraphTraversal<S, E> traversal)
@@ -59,7 +71,7 @@ namespace Gremlin.Net.Process.Traversal
                 return traversal as GraphTraversal<S2, E2>;
             }
             // New wrapper
-            return new GraphTraversal<S2, E2>(traversal.TraversalStrategies, traversal.Bytecode);
+            return new GraphTraversal<S2, E2>(traversal.TraversalStrategies, traversal.Bytecode, traversal.IsAnonymous);
         }
 
 

@@ -162,6 +162,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         public TestTraversal(Bytecode bytecode)
         {
             Bytecode = bytecode;
+            IsAnonymous = true;
         }
     }
 }

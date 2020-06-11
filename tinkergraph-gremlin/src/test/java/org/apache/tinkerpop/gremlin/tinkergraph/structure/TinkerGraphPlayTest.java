@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ConsoleMutationListener;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
@@ -269,10 +270,9 @@ public class TinkerGraphPlayTest {
     }
 
     @Test
-    @Ignore
     public void testBugs() {
         GraphTraversalSource g = TinkerFactory.createModern().traversal();
-
+        Object o1 = g.V().map(__.V(1));
         System.out.println(g.V().as("a").both().as("b").dedup("a", "b").by(T.label).select("a", "b").explain());
         System.out.println(g.V().as("a").both().as("b").dedup("a", "b").by(T.label).select("a", "b").toList());
 
