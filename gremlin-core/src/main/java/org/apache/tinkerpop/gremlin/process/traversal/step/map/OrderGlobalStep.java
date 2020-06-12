@@ -149,8 +149,8 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
         return MemoryComputeKey.of(this.getId(), new OrderBiOperator<>(this.limit, this.multiComparator), false, true);
     }
 
-    private final ProjectedTraverser<S, C> createProjectedTraverser(final Traverser.Admin<S> traverser) {
-        final List<C> projections = new ArrayList<>(this.comparators.size());
+    private final ProjectedTraverser<S, Object> createProjectedTraverser(final Traverser.Admin<S> traverser) {
+        final List<Object> projections = new ArrayList<>(this.comparators.size());
         for (final Pair<Traversal.Admin<S, C>, Comparator<C>> pair : this.comparators) {
             projections.add(TraversalUtil.apply(traverser, pair.getValue0()));
         }
