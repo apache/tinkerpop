@@ -1431,7 +1431,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Filters vertices, edges and vertex properties based on their properties.
+     * Filters vertices, edges and vertex properties based on their value of {@link T} where only {@link T#id} and
+     * {@link T#label} are supported.
      *
      * @param accessor          the {@link T} accessor of the property to filter on
      * @param propertyTraversal the traversal to filter the accessor value by
@@ -1441,13 +1442,23 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, E> has(final T accessor, final Traversal<?, ?> propertyTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.has, accessor, propertyTraversal);
-        return this.asAdmin().addStep(
-                new TraversalFilterStep<>(this.asAdmin(), propertyTraversal.asAdmin().addStep(0,
-                        new PropertiesStep(propertyTraversal.asAdmin(), PropertyType.VALUE, accessor.getAccessor()))));
+        switch (accessor) {
+            case id:
+                return this.asAdmin().addStep(
+                        new TraversalFilterStep<>(this.asAdmin(), propertyTraversal.asAdmin().addStep(0,
+                                new IdStep<>(propertyTraversal.asAdmin()))));
+            case label:
+                return this.asAdmin().addStep(
+                        new TraversalFilterStep<>(this.asAdmin(), propertyTraversal.asAdmin().addStep(0,
+                                new LabelStep<>(propertyTraversal.asAdmin()))));
+            default:
+                throw new IllegalArgumentException("has(T,Traversal) can only take id or label as its argument");
+        }
+
     }
 
     /**
-     * Filters vertices, edges and vertex properties based on their properties.
+     * Filters vertices, edges and vertex properties based on the value of the specified property key.
      *
      * @param propertyKey       the key of the property to filter on
      * @param propertyTraversal the traversal to filter the property value by
