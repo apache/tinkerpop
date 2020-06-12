@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
@@ -47,7 +48,16 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
-        return HasContainer.testAll(traverser.get(), this.hasContainers);
+        // the generic S is defined as Element but Property can also be used with HasStep so this seems to cause
+        // problems with some jdk versions.
+        if (traverser.get() instanceof Element)
+            return HasContainer.testAll(traverser.get(), this.hasContainers);
+        else if (traverser.get() instanceof Property)
+            return HasContainer.testAll((Property) traverser.get(), this.hasContainers);
+        else
+            throw new IllegalStateException(String.format(
+                    "Traverser to has() must be of type Property or Element, not %s",
+                    traverser.get().getClass().getName()));
     }
 
     @Override
