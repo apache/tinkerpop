@@ -38,6 +38,7 @@ import java.util.Map;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import static org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialGraphTokens.PROPERTY_ADDRESS;
 import static org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialGraphTokens.PROPERTY_PASSWORD;
 import static org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialGraphTokens.PROPERTY_USERNAME;
 
@@ -97,14 +98,16 @@ public class HttpBasicAuthenticationHandler extends AbstractAuthenticationHandle
             credentials.put(PROPERTY_USERNAME, split[0]);
             credentials.put(PROPERTY_PASSWORD, split[1]);
 
+            String address = ctx.channel().remoteAddress().toString();
+            if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
+            credentials.put(PROPERTY_ADDRESS, address);
+
             try {
                 authenticator.authenticate(credentials);
                 ctx.fireChannelRead(request);
 
                 // User name logged with the remote socket address and authenticator classname for audit logging
                 if (authenticationSettings.enableAuditLog) {
-                    String address = ctx.channel().remoteAddress().toString();
-                    if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
                     final String[] authClassParts = authenticator.getClass().toString().split("[.]");
                     auditLogger.info("User {} with address {} authenticated by {}",
                             credentials.get(PROPERTY_USERNAME), address, authClassParts[authClassParts.length - 1]);
