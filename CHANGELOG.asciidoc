@@ -82,7 +82,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-4-8]]
 === TinkerPop 3.4.8 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+==== Bugs
 
+* TINKERPOP-2374 Fix authorization bug when using WsAndHttpChannelizerHandler with keepAlive=true
 
 [[release-3-4-7]]
 === TinkerPop 3.4.7 (Release Date: June 1, 2020)
