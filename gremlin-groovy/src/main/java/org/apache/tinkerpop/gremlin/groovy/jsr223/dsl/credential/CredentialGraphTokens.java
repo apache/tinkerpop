@@ -24,6 +24,7 @@ package org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential;
 public final class CredentialGraphTokens {
     public static final String PROPERTY_USERNAME = "username";
     public static final String PROPERTY_PASSWORD = "password";
+    public static final String PROPERTY_ADDRESS = "address";
 
     public static final String VERTEX_LABEL_USER = "user";
 
