@@ -123,8 +123,7 @@ def test_client_async(client):
 
 
 def test_connection_share(client):
-    # Overwrite fixture with pool_size=1 client
-    client = Client('ws://localhost:45940/gremlin', 'gmodern', pool_size=1)
+    client = Client('ws://localhost:45940/gremlin', 'gmodern')
     g = Graph().traversal()
     t = g.V()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
@@ -146,7 +145,7 @@ def test_multi_conn_pool(client):
     t = g.V()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
     message2 = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
-    client = Client('ws://localhost:45940/gremlin', 'g', pool_size=1)
+    client = Client('ws://localhost:45940/gremlin', 'g')
     future = client.submitAsync(message)
     future2 = client.submitAsync(message2)
 
