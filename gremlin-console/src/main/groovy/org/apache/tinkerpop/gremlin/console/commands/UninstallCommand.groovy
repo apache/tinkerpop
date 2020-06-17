@@ -20,8 +20,8 @@ package org.apache.tinkerpop.gremlin.console.commands
 
 import org.apache.tinkerpop.gremlin.console.ConsoleFs
 import org.apache.tinkerpop.gremlin.console.Mediator
-import org.codehaus.groovy.tools.shell.CommandSupport
-import org.codehaus.groovy.tools.shell.Groovysh
+import org.apache.groovy.groovysh.CommandSupport
+import org.apache.groovy.groovysh.Groovysh
 
 /**
  * Uninstall a maven dependency from the Console's path.
