@@ -48,7 +48,6 @@ import org.codehaus.groovy.tools.shell.IO
 import org.codehaus.groovy.tools.shell.InteractiveShellRunner
 import org.codehaus.groovy.tools.shell.commands.SetCommand
 import org.fusesource.jansi.Ansi
-import picocli.CommandLine
 import sun.misc.Signal
 import sun.misc.SignalHandler
 
