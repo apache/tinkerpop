@@ -450,7 +450,7 @@ limitations under the License.
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.8.1</version>
                     <configuration>
-                        <release>11</release>
+                        <release>8</release>
                         <compilerArgs>
                             <arg>-parameters</arg>
                         </compilerArgs>
