@@ -70,7 +70,11 @@ public class GremlinProcessRunner extends BlockJUnit4ClassRunner {
     private static boolean validateForGraphComputer(final Throwable e) {
         Throwable ex = e;
         while (ex != null) {
-            if (ex instanceof VerificationException)
+            // for remote tests ex will be a IllegalStateException holding a VerificationException or only have a
+            // string message to compare on
+            if (ex instanceof VerificationException || ex.getCause() instanceof VerificationException ||
+                ex.getMessage().contains("It is not possible to access more than a path element's id on GraphComputer") ||
+                ex.getMessage().contains("Local traversals may not traverse past the local star-graph on GraphComputer"))
                 return true;
             else if (ex instanceof NotSerializableException)
                 return true;
