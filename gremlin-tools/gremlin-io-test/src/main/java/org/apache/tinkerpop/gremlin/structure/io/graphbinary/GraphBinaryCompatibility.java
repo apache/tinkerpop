@@ -49,6 +49,7 @@ public enum GraphBinaryCompatibility implements Compatibility {
     V1_3_4_5("3.4.5", "1.0", "v1"),
     V1_3_4_6("3.4.6", "1.0", "v1"),
     V1_3_4_7("3.4.7", "1.0", "v1"),
+    V1_3_4_8("3.4.8", "1.0", "v1"),
 
     V1_3_5_0("3.5.0", "1.0", "v1");
 
