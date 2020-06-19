@@ -81,6 +81,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXage_isXgt_30XX();
 
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXlabel_isXsoftwareXX();
+
     public abstract Traversal<Edge, Edge> get_g_EX7X_hasLabelXknowsX(final Object e7Id);
 
     public abstract Traversal<Edge, Edge> get_g_E_hasLabelXknowsX();
@@ -229,6 +231,18 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         assertEquals(2, list.size());
         for (final Element v : list) {
             assertTrue(v.<Integer>value("age") > 30);
+        }
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXlabel_isXsoftwareXX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXlabel_isXsoftwareXX();
+        printTraversalForm(traversal);
+        final List<Vertex> list = traversal.toList();
+        assertEquals(2, list.size());
+        for (final Element v : list) {
+            assertEquals("software", v.label());
         }
     }
 
@@ -756,6 +770,11 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXage_isXgt_30XX() {
             return g.V().has("age", __.is(P.gt(30)));
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXlabel_isXsoftwareXX() {
+            return g.V().has(T.label, __.is("software"));
         }
 
         @Override
