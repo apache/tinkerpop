@@ -1000,8 +1000,9 @@ g.V().both().name.toList()
 In situations where Python reserved words and global functions overlap with standard Gremlin steps and tokens, those
 bits of conflicting Gremlin get an underscore appended as a suffix:
 
-*Steps* - <<and-step,and_()>>, <<as-step,as_()>>, <<from-step,from_()>>, <<is-step,is_()>>, <<in-step,in_()>>,
-<<not-step,not_()>>, <<or-step,or_()>>, <<with-step,with_()>>
+*Steps* - <<and-step,and_()>>, <<as-step,as_()>>, <<filter-step,filter_()>>, <<from-step,from_()>>, <<id-step,id_()>>,
+<<is-step,is_()>>, <<in-step,in_()>>, <<max-step,max_()>>, <<min-step,min_()>>, <<not-step,not_()>>, <<or-step,or_()>>,
+<<range-step,range_()>>, <<sum-step,sum_()>>, <<with-step,with_()>>
 
 *Tokens* - <<a-note-on-scopes,Scope.global_>>
 
