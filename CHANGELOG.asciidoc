@@ -82,7 +82,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-4-8]]
 === TinkerPop 3.4.8 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-* Fix authorization bug when using `WsAndHttpChannelizerHandler` with keep-alive enabled.
+* Fixed bug in `has(T,Traversal)` where results were not being returned.
+* Fixed authorization bug when using `WsAndHttpChannelizerHandler` with keep-alive enabled.
 
 [[release-3-4-7]]
 === TinkerPop 3.4.7 (Release Date: June 1, 2020)
