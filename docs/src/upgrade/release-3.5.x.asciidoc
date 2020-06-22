@@ -235,6 +235,28 @@ be replaced by `by(id)`, thus replacing a step-based traversal with a token-base
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1682[TINKERPOP-1682]
 
+==== SeedStrategy
+
+The new `SeedStrategy` allows the user to set a seed value for steps that make use of `Random` so that the traversal
+has the ability to return deterministic results. While this feature is useful for testing and debugging purposes,
+there are also some practical applications as well.
+
+[source,text]
+----
+gremlin> g.V().values('name').fold().order(local).by(shuffle)
+==>[josh,marko,vadas,peter,ripple,lop]
+gremlin> g.V().values('name').fold().order(local).by(shuffle)
+==>[vadas,lop,marko,peter,josh,ripple]
+gremlin> g.V().values('name').fold().order(local).by(shuffle)
+==>[peter,ripple,josh,lop,marko,vadas]
+gremlin> g.withStrategies(new SeedStrategy(22323)).V().values('name').fold().order(local).by(shuffle)
+==>[lop,peter,josh,marko,vadas,ripple]
+gremlin> g.withStrategies(new SeedStrategy(22323)).V().values('name').fold().order(local).by(shuffle)
+==>[lop,peter,josh,marko,vadas,ripple]
+gremlin> g.withStrategies(new SeedStrategy(22323)).V().values('name').fold().order(local).by(shuffle)
+==>[lop,peter,josh,marko,vadas,ripple]
+----
+
 ==== by(T) for Property
 
 The `Property` interface is not included in the hierarchy of `Element`. This means that an edge property or a

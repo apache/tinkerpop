@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComparatorHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Seedable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -37,19 +38,26 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class OrderLocalStep<S, C extends Comparable> extends ScalarMapStep<S, S> implements ComparatorHolder<S, C>, ByModulating, TraversalParent {
+public final class OrderLocalStep<S, C extends Comparable> extends ScalarMapStep<S, S> implements ComparatorHolder<S, C>, ByModulating, TraversalParent, Seedable {
 
     private List<Pair<Traversal.Admin<S, C>, Comparator<C>>> comparators = new ArrayList<>();
     private ChainedComparator<S, C> chainedComparator = null;
+    private final Random random = new Random();
 
     public OrderLocalStep(final Traversal.Admin traversal) {
         super(traversal);
+    }
+
+    @Override
+    public void resetSeed(long seed) {
+        this.random.setSeed(seed);
     }
 
     @Override
@@ -58,9 +66,9 @@ public final class OrderLocalStep<S, C extends Comparable> extends ScalarMapStep
             this.chainedComparator = new ChainedComparator<>(false, this.comparators);
         final S start = traverser.get();
         if (start instanceof Collection)
-            return (S) OrderLocalStep.sortCollection((Collection) start, this.chainedComparator);
+            return (S) sortCollection((Collection) start, this.chainedComparator);
         else if (start instanceof Map)
-            return (S) OrderLocalStep.sortMap((Map) start, this.chainedComparator);
+            return (S) sortMap((Map) start, this.chainedComparator);
         else
             return start;
     }
@@ -142,10 +150,10 @@ public final class OrderLocalStep<S, C extends Comparable> extends ScalarMapStep
 
     /////////////
 
-    private static final <A> List<A> sortCollection(final Collection<A> collection, final ChainedComparator comparator) {
+    private <A> List<A> sortCollection(final Collection<A> collection, final ChainedComparator comparator) {
         if (collection instanceof List) {
             if (comparator.isShuffle())
-                Collections.shuffle((List) collection);
+                Collections.shuffle((List) collection, random);
             else
                 Collections.sort((List) collection, comparator);
             return (List<A>) collection;
@@ -154,10 +162,10 @@ public final class OrderLocalStep<S, C extends Comparable> extends ScalarMapStep
         }
     }
 
-    private static final <K, V> Map<K, V> sortMap(final Map<K, V> map, final ChainedComparator comparator) {
+    private <K, V> Map<K, V> sortMap(final Map<K, V> map, final ChainedComparator comparator) {
         final List<Map.Entry<K, V>> entries = new ArrayList<>(map.entrySet());
         if (comparator.isShuffle())
-            Collections.shuffle(entries);
+            Collections.shuffle(entries, random);
         else
             Collections.sort(entries, comparator);
         final LinkedHashMap<K, V> sortedMap = new LinkedHashMap<>();

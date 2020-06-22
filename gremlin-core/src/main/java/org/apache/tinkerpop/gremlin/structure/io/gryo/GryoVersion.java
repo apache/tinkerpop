@@ -50,6 +50,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Connec
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
@@ -334,11 +335,12 @@ public enum GryoVersion {
             add(GryoTypeReg.of(HaltedTraverserStrategy.class, 139));
             add(GryoTypeReg.of(PartitionStrategy.class, 140, new JavaSerializer()));
             add(GryoTypeReg.of(SubgraphStrategy.class, 141, new JavaSerializer()));
+            add(GryoTypeReg.of(SeedStrategy.class, 192, new JavaSerializer()));          // ***LAST ID***
             add(GryoTypeReg.of(VertexProgramStrategy.class, 142, new JavaSerializer()));
             add(GryoTypeReg.of(MatchAlgorithmStrategy.class, 143));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 144));
             add(GryoTypeReg.of(AdjacentToIncidentStrategy.class, 145));
-            add(GryoTypeReg.of(ByModulatorOptimizationStrategy.class, 191));  // ***LAST ID***
+            add(GryoTypeReg.of(ByModulatorOptimizationStrategy.class, 191));
             add(GryoTypeReg.of(CountStrategy.class, 155));
             add(GryoTypeReg.of(FilterRankingStrategy.class, 146));
             add(GryoTypeReg.of(IdentityRemovalStrategy.class, 147));
@@ -572,11 +574,12 @@ public enum GryoVersion {
             add(GryoTypeReg.of(HaltedTraverserStrategy.class, 139));
             add(GryoTypeReg.of(PartitionStrategy.class, 140, new JavaSerializer()));
             add(GryoTypeReg.of(SubgraphStrategy.class, 141, new JavaSerializer()));
+            add(GryoTypeReg.of(SeedStrategy.class, 192, new JavaSerializer()));          // ***LAST ID***
             add(GryoTypeReg.of(VertexProgramStrategy.class, 142, new JavaSerializer()));
             add(GryoTypeReg.of(MatchAlgorithmStrategy.class, 143));
             add(GryoTypeReg.of(MatchStep.GreedyMatchAlgorithm.class, 144));
             add(GryoTypeReg.of(AdjacentToIncidentStrategy.class, 145));
-            add(GryoTypeReg.of(ByModulatorOptimizationStrategy.class, 191)); // ***LAST ID***
+            add(GryoTypeReg.of(ByModulatorOptimizationStrategy.class, 191));
             add(GryoTypeReg.of(CountStrategy.class, 155));
             add(GryoTypeReg.of(FilterRankingStrategy.class, 146));
             add(GryoTypeReg.of(IdentityRemovalStrategy.class, 147));

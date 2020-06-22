@@ -28,11 +28,11 @@ from gremlin_python.driver.driver_remote_connection import (
 from gremlin_python.process.traversal import Traverser
 from gremlin_python.process.traversal import TraversalStrategy
 from gremlin_python.process.traversal import Bindings
-from gremlin_python.process.traversal import P
+from gremlin_python.process.traversal import P, Order
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.structure.graph import Vertex
-from gremlin_python.process.strategies import SubgraphStrategy, ReservedKeysVerificationStrategy
+from gremlin_python.process.strategies import SubgraphStrategy, ReservedKeysVerificationStrategy, SeedStrategy
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
@@ -186,6 +186,12 @@ class TestDriverRemoteConnection(object):
         g = traversal().withRemote(remote_connection).withComputer()
         assert 6 == g.V().count().next()
         assert 6 == g.E().count().next()
+        #
+        g = traversal().withRemote(remote_connection).withStrategies(SeedStrategy(12345))
+        shuffledResult = g.V().values("name").order().by(Order.shuffle).toList()
+        assert shuffledResult == g.V().values("name").order().by(Order.shuffle).toList()
+        assert shuffledResult == g.V().values("name").order().by(Order.shuffle).toList()
+        assert shuffledResult == g.V().values("name").order().by(Order.shuffle).toList()
         #
         g = traversal().withRemote(remote_connection). \
             withStrategies(ReservedKeysVerificationStrategy(throw_exception=True))

@@ -63,6 +63,12 @@ class PartitionStrategy(TraversalStrategy):
             self.configuration["includeMetaProperties"] = include_meta_properties
 
 
+class SeedStrategy(TraversalStrategy):
+    def __init__(self, seed):
+        TraversalStrategy.__init__(self, fqcn="org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy")
+        self.configuration["seed"] = seed
+
+
 class SubgraphStrategy(TraversalStrategy):
 
     def __init__(self, vertices=None, edges=None, vertex_properties=None):

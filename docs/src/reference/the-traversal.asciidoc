@@ -4075,6 +4075,44 @@ Type ':help' or ':h' for help.
 Display stack trace? [yN]
 ----
 
+=== SeedStrategy
+
+There are number of components of the Gremlin language that, by design, can produce non-deterministic results:
+
+* <<coin-step,coin()>>
+* <<order-step,order()>> when `Order.shuffle` is used
+* <<sample-step,sample()>>
+
+To get these steps to return deterministic results, `SeedStrategy` allows assignment of a seed value to the `Random`
+operations of the steps. The following example demonstrates the random nature of `shuffle`:
+
+[gremlin-groovy,modern]
+----
+g.V().values('name').fold().order(local).by(shuffle)
+g.V().values('name').fold().order(local).by(shuffle)
+g.V().values('name').fold().order(local).by(shuffle)
+g.V().values('name').fold().order(local).by(shuffle)
+g.V().values('name').fold().order(local).by(shuffle)
+----
+
+With `SeedStrategy` in place, however, the same order is applied each time:
+
+[gremlin-groovy,modern]
+----
+seedStrategy = new SeedStrategy(999998L)
+g.withStategy(seedStrategy).V().values('name').fold().order(local).by(shuffle)
+g.withStategy(seedStrategy).V().values('name').fold().order(local).by(shuffle)
+g.withStategy(seedStrategy).V().values('name').fold().order(local).by(shuffle)
+g.withStategy(seedStrategy).V().values('name').fold().order(local).by(shuffle)
+g.withStategy(seedStrategy).V().values('name').fold().order(local).by(shuffle)
+----
+
+IMPORTANT: `SeedStrategy` only makes specific steps behave in a deterministic fashion and does not necessarily make
+the entire traversal deterministic itself. If the underlying graph database or processing engine happens to not
+guarantee iteration order, then it is possible that the final result of the traversal will appear to be
+non-deterministic. In these cases, it would be necessary to enforce a deterministic iteration with `order()` prior to
+these steps that make use of randomness to return results.
+
 === SubgraphStrategy
 
 `SubgraphStrategy` is similar to `PartitionStrategy` in that it constrains a `Traversal` to certain vertices, edges,
