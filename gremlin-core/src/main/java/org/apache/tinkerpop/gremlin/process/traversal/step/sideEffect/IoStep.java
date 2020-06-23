@@ -197,11 +197,11 @@ public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
                     final GraphWriter.WriterBuilder builder = (GraphWriter.WriterBuilder) build.invoke(null);
                     return builder.create();
                 } catch (Exception ex) {
-                    throw new IllegalStateException(String.format("Could not construct the specified GraphReader of %s", objectOrClass), ex);
+                    throw new IllegalStateException(String.format("Could not construct the specified GraphWriter of %s", objectOrClass), ex);
                 }
             }
         } else {
-            throw new IllegalStateException("GraphReader could not be determined");
+            throw new IllegalStateException("GraphWriter could not be determined");
         }
     }
 
