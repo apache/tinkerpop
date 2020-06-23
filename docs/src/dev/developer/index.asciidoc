@@ -25,6 +25,8 @@ image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 This document contains information for TinkerPop developers, contributors, and community members. It focuses on
 technical information and other internal processes related to the project.
 
+image:jan-de-bray.jpg[]
+
 include::contributing.asciidoc[]
 
 include::development-environment.asciidoc[]
