@@ -21,6 +21,8 @@ TinkerPop is fairly large body of code spread across many modules and covering m
 this complexity, it remains relatively straightforward a project to build. This following subsections explain how to
 configure a development environment for TinkerPop.
 
+image:conspiracy.png[]
+
 [[system-configuration]]
 == System Configuration
 

@@ -156,7 +156,7 @@ Example values:
 
 ==== Long
 
-Format: 4-byte two's complement integer.
+Format: 8-byte two's complement integer.
 
 Example values
 

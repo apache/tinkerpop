@@ -32,7 +32,7 @@ import org.apache.tinkerpop.gremlin.server.handler.WebSocketHandlerUtil;
 import static org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer.PIPELINE_AUTHENTICATOR;
 
 /**
- *An Authentication Handler for doing WebSocket Sasl and Http Basic auth
+ * An Authentication Handler for doing WebSocket Sasl and Http Basic auth
  */
 @ChannelHandler.Sharable
 public class SaslAndHttpBasicAuthenticationHandler extends SaslAuthenticationHandler {
@@ -47,9 +47,11 @@ public class SaslAndHttpBasicAuthenticationHandler extends SaslAuthenticationHan
     @Override
     public void channelRead(final ChannelHandlerContext ctx, final Object obj) throws Exception {
         if (obj instanceof HttpMessage && !WebSocketHandlerUtil.isWebSocket((HttpMessage)obj)) {
-            if (null == ctx.pipeline().get(HTTP_AUTH)) {
-                ctx.pipeline().addAfter(PIPELINE_AUTHENTICATOR, HTTP_AUTH, new HttpBasicAuthenticationHandler(authenticator, this.authenticationSettings));
+            ChannelPipeline pipeline = ctx.pipeline();
+            if (null != pipeline.get(HTTP_AUTH)) {
+                pipeline.remove(HTTP_AUTH);
             }
+            pipeline.addAfter(PIPELINE_AUTHENTICATOR, HTTP_AUTH, new HttpBasicAuthenticationHandler(authenticator, this.authenticationSettings));
             ctx.fireChannelRead(obj);
         } else {
             super.channelRead(ctx, obj);
