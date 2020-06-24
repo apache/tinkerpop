@@ -24,7 +24,8 @@ configure a development environment for TinkerPop.
 [[system-configuration]]
 == System Configuration
 
-At a minimum, development of TinkerPop requires link:https://openjdk.java.net/projects/jdk/11/[Java 11]
+At a minimum, development of TinkerPop requires link:https://openjdk.java.net/projects/jdk8/[Java 8] (but will build
+with link:https://openjdk.java.net/projects/jdk/11/[Java 11] cross-compiled to Java 8)
 and link:https://maven.apache.org/download.cgi[Maven 3.3.9+]. Maven is used as the common build system, which even
 controls the builds of non-JVM link:https://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[GLVs]
 such as `gremlin-python`. Java and Maven are described as a "minimum" for a development environment, because they
