@@ -201,7 +201,7 @@ limitations under the License.
                             <rules>
                                 <DependencyConvergence/>
                                 <requireJavaVersion>
-                                    <version>[11,)</version>
+                                    <version>[1.8,12)</version>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
                                     <version>[3.3.9,)</version>
@@ -445,12 +445,14 @@ limitations under the License.
         </plugins>
         <pluginManagement>
             <plugins>
+                <!-- there is a jdk11 profile that will be enabled if built with that version - these settings will be overriden -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.8.1</version>
                     <configuration>
-                        <release>8</release>
+                        <source>1.8</source>
+                        <target>1.8</target>
                         <compilerArgs>
                             <arg>-parameters</arg>
                         </compilerArgs>
@@ -528,13 +530,16 @@ limitations under the License.
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${javadoc-plugin.version}</version>
+                    <configuration>
+                        <source>1.8</source>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.gmavenplus</groupId>
                     <artifactId>gmavenplus-plugin</artifactId>
                     <version>1.9.0</version>
                     <configuration>
-                        <targetBytecode>11</targetBytecode>
+                        <targetBytecode>1.8</targetBytecode>
                         <invokeDynamic>true</invokeDynamic>
                     </configuration>
                 </plugin>
@@ -761,6 +766,30 @@ limitations under the License.
     </dependencyManagement>
 
     <profiles>
+
+        <profile>
+            <id>jdk11</id>
+            <activation>
+                <jdk>11</jdk>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-compiler-plugin</artifactId>
+                            <version>3.8.1</version>
+                            <configuration>
+                                <release>8</release>
+                                <compilerArgs>
+                                    <arg>-parameters</arg>
+                                </compilerArgs>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
 
         <profile>
             <id>asciidoc</id>
