@@ -16,15 +16,14 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-import pytest
-
+import threading
 import uuid
-from gremlin_python.driver.protocol import GremlinServerError
+
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver.request import RequestMessage
-from gremlin_python.process.strategies import OptionsStrategy
 from gremlin_python.process.graph_traversal import __
+from gremlin_python.process.strategies import OptionsStrategy
 from gremlin_python.structure.graph import Graph
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
@@ -156,6 +155,47 @@ def test_multi_conn_pool(client):
     # with connection pool `future` may or may not be done here
     result_set = future.result()
     assert len(result_set.all().result()) == 6
+
+
+def test_multi_thread_pool(client):
+    g = Graph().traversal()
+    traversals = [g.V(),
+                  g.V().count(),
+                  g.E(),
+                  g.E().count()
+                  ]
+    results = [[] for _ in traversals]
+
+    # Use a condition variable to synchronise a group of threads, which should also inject some
+    # non-determinism into the run-time execution order
+    condition = threading.Condition()
+
+    def thread_run(tr, result_list):
+        message = RequestMessage('traversal', 'bytecode', {'gremlin': tr.bytecode, 'aliases': {'g': 'gmodern'}})
+        with condition:
+            condition.wait(5)
+        result_set = client.submit(message)
+        for result in result_set:
+            result_list.append(result)
+
+    threads = []
+    for i in range(len(results)):
+        thread = threading.Thread(target=thread_run,
+                                  args=(traversals[i], results[i]),
+                                  name="test_multi_thread_pool_%d" % i)
+        thread.daemon = True
+        threads.append(thread)
+        thread.start()
+    with condition:
+        condition.notify_all()
+
+    for t in threads:
+        t.join(5)
+
+    assert len(results[0][0]) == 6
+    assert results[1][0][0].object == 6
+    assert len(results[2][0]) == 6
+    assert results[3][0][0].object == 6
 
 
 def test_client_bytecode_with_int(client):

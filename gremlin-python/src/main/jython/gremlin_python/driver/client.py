@@ -17,7 +17,6 @@
 # under the License.
 #
 from concurrent.futures import ThreadPoolExecutor
-
 from six.moves import queue
 
 from gremlin_python.driver import connection, protocol, request, serializer
