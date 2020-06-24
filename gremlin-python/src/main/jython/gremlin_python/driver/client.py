@@ -75,7 +75,7 @@ class Client:
         if max_workers is None:
             # If your application is overlapping Gremlin I/O on multiple threads
             # consider passing kwarg max_workers = (cpu_count() or 1) * 5
-            max_workers = 1
+            max_workers = pool_size
         self._executor = ThreadPoolExecutor(max_workers=max_workers)
         # Threadsafe queue
         self._pool = queue.Queue()
