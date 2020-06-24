@@ -662,6 +662,11 @@ to the `DriverRemoteConnection` constructor.
 g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g',headers={'Header':'Value'}))
 ----
 
+NOTE: If connecting from an inherently single-threaded Python process where blocking while waiting for Gremlin
+traversals to complete is acceptable, it might be helpful to set `pool_size` and `max_workers` parameters to 1.
+See the <<python-configuration,Configuration>> section just below.  Examples where this could apply are serverless cloud functions or WSGI
+worker processes.
+
 [[python-imports]]
 === Common Imports
 
@@ -718,6 +723,7 @@ That is, without the `+__+`-prefix.
 g.V().repeat(out()).times(2).name.fold().toList()
 ----
 
+[[python-configuration]]
 === Configuration
 
 The following table describes the various configuration options for the Gremlin-Python Driver. They
