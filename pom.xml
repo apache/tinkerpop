@@ -455,7 +455,7 @@ limitations under the License.
                         <target>1.8</target>
                         <compilerArgs>
                             <arg>-parameters</arg>
-                        </compilerArgs>
+                        </compilerArgs>1
                     </configuration>
                 </plugin>
                 <plugin>
@@ -466,7 +466,7 @@ limitations under the License.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.22.2</version>
+                    <version>3.0.0-M3</version>
                     <configuration>
                         <argLine>
                             -Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true --illegal-access=permit
@@ -480,7 +480,11 @@ limitations under the License.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>2.22.2</version>
+                    <!--
+                    M5 seems to introduce problems to the classpath, but M3 solves jdk11/SUREFIRE-1614 (2.22.2 should
+                    also do the trick, but doesn't for some reason)
+                    -->
+                    <version>3.0.0-M3</version>
                     <executions>
                         <execution>
                             <id>integration-test</id>
@@ -1575,7 +1579,7 @@ limitations under the License.
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-report-plugin</artifactId>
-                        <version>2.20</version>
+                        <version>3.0.0-M3</version>
                         <executions>
                             <execution>
                                 <id>aggregate-surefire-report</id>
