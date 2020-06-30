@@ -164,6 +164,7 @@ limitations under the License.
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipIntegrationTests>true</skipIntegrationTests>
+        <suresafeArgs> </suresafeArgs>
 
         <!--
         This file will come from the root of each modules test/resources/ directories. log4j-silent.properties will
@@ -455,7 +456,7 @@ limitations under the License.
                         <target>1.8</target>
                         <compilerArgs>
                             <arg>-parameters</arg>
-                        </compilerArgs>1
+                        </compilerArgs>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -469,9 +470,11 @@ limitations under the License.
                     <version>3.0.0-M3</version>
                     <configuration>
                         <argLine>
-                            -Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true --illegal-access=permit
+                            -Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true ${suresafeArgs}
                         </argLine>
                         <trimStackTrace>false</trimStackTrace>
+                        <forkCount>1</forkCount>
+                        <reuseForks>false</reuseForks>
                         <excludes>
                             <exclude>**/*IntegrateTest.java</exclude>
                         </excludes>
@@ -497,8 +500,10 @@ limitations under the License.
                                 </includes>
                                 <skipTests>${skipIntegrationTests}</skipTests>
                                 <argLine>
-                                    -Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182 -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true --illegal-access=permit
+                                    -Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182 -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true ${suresafeArgs}
                                 </argLine>
+                                <forkCount>1</forkCount>
+                                <reuseForks>false</reuseForks>
                                 <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
                             </configuration>
                         </execution>
@@ -776,6 +781,9 @@ limitations under the License.
             <activation>
                 <jdk>11</jdk>
             </activation>
+            <properties>
+                <suresafeArgs>--illegal-access=permit</suresafeArgs>
+            </properties>
             <build>
                 <pluginManagement>
                     <plugins>

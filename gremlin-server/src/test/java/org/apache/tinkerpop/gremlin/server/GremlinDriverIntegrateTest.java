@@ -485,7 +485,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final ResponseException rex = (ResponseException) inner;
             assertEquals("java.lang.ArithmeticException", rex.getRemoteExceptionHierarchy().get().get(0));
             assertEquals(1, rex.getRemoteExceptionHierarchy().get().size());
-            assertThat(rex.getRemoteStackTrace().get(), startsWith("java.lang.ArithmeticException: Division by zero\n\tat java.base/java.math.BigDecimal.divide(BigDecimal.java"));
+            assertThat(rex.getRemoteStackTrace().get(), containsString("Division by zero"));
         }
 
         // should not die completely just because we had a bad serialization error.  that kind of stuff happens
