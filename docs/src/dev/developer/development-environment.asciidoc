@@ -26,8 +26,10 @@ image:conspiracy.png[]
 [[system-configuration]]
 == System Configuration
 
-At a minimum, development of TinkerPop requires link:http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html[Java 1.8.0_40+]
-and link:https://maven.apache.org/download.cgi[Maven 3.2.5+]. Maven is used as the common build system, which even
+At a minimum, development of TinkerPop requires link:https://openjdk.java.net/projects/jdk8/[Java 8] but it is
+preferable to use link:https://openjdk.java.net/projects/jdk/11/[Java 11] cross-compiled to Java 8 (the
+cross-compilation happens automatically as part of the build). Maven (requiring a minimum of
+link:https://maven.apache.org/download.cgi[Maven 3.3.9+]) is used as the common build system, which even
 controls the builds of non-JVM link:https://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[GLVs]
 such as `gremlin-python`. Java and Maven are described as a "minimum" for a development environment, because they
 will only build JVM portions of TinkerPop and many integration tests will not fire with this simple setup. It is
@@ -36,6 +38,9 @@ of the project and those will go untested.
 
 To gain the ability to execute all aspects of the TinkerPop build system, other environmental configurations must be
 established. Those prerequisites are defined in the following subsections.
+
+IMPORTANT: Use Java 11 for documentation generation with `bin/process-docs.sh` and for other build features outside
+of the basic `mvn clean install` sort of function.
 
 IMPORTANT: For those who intend to offer a contribution, building with a minimal configuration may not be sufficient
 when submitting a pull request. Consider setting up the full environment.
@@ -107,10 +112,31 @@ The documentation generation process is not Maven-based and uses shell scripts t
 scripts should work on Mac and Linux.
 
 To generate documentation, it is required that link:https://hadoop.apache.org[Hadoop 2.7.x] is running in
-link:https://hadoop.apache.org/docs/r2.7.2/hadoop-project-dist/hadoop-common/SingleCluster.html#Pseudo-Distributed_Operation[pseudo-distributed]
+link:https://hadoop.apache.org/docs/r2.7.7/hadoop-project-dist/hadoop-common/SingleCluster.html#Pseudo-Distributed_Operation[pseudo-distributed]
 mode. Be sure to set the `HADOOP_GREMLIN_LIBS` environment variable as described in the
 link:https://tinkerpop.apache.org/docs/current/reference/#hadoop-gremlin[reference documentation]. It is also important
 to set the `CLASSPATH` to point at the directory containing the Hadoop configuration files, like `mapred-site.xml`.
+
+The `/etc/hadoop/yarn-site.xml` file prefers this configuration over the one provided in the Hadoop documentation
+referenced above:
+
+[source,xml]
+----
+<configuration>
+    <property>
+        <name>yarn.nodemanager.aux-services</name>
+        <value>mapreduce_shuffle</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.vmem-check-enabled</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.vmem-pmem-ratio</name>
+        <value>4</value>
+    </property>
+</configuration>
+----
 
 Also note that link:http://www.grymoire.com/Unix/Awk.html[awk] version `4.0.1` is required for documentation generation.
 

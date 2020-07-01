@@ -179,7 +179,7 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
         for (final Pair<Traversal.Admin<S, C>, Comparator<C>> pair : this.comparators) {
             projections.add(TraversalUtil.apply(traverser, pair.getValue0()));
         }
-        return new ProjectedTraverser<>(traverser, projections);
+        return new ProjectedTraverser(traverser, projections);
     }
 
     private final MultiComparator<C> createMultiComparator() {

@@ -232,7 +232,7 @@ When writing a Java test case for a Gremlin step, be sure to use the following c
 ** `get_g_V_groupCount_byXnameX()`
 ** `get_g_V_groupCountXaX_byXnameX_capXaX()`
 * The name of the actual test case should be the name of the traversal generator minus the `get_` prefix.
-* The Gremlin-Groovy version of the test should use the sugar syntax in order to test sugar (as Gremlin-Java8 tests test standard syntax).
+* The Gremlin-Groovy version of the test should use the sugar syntax in order to test sugar (as Gremlin-Java tests test standard syntax).
 ** `g.V.age.sum`
 * Avoid using lambdas in the test case unless that is explicitly what is being tested as OLAP systems will typically not be able to execute those tests.
 * `AbstractGremlinProcessTest` has various static methods to make writing a test case easy.

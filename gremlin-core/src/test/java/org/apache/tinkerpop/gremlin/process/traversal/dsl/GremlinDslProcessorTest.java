@@ -45,7 +45,7 @@ public class GremlinDslProcessorTest {
         final Compilation compilation = javac()
                 .withProcessors(new GremlinDslProcessor())
                 .compile(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialTraversalDsl.java")));
-        assertThat(compilation).succeededWithoutWarnings();
+        assertCompilationSuccess(compilation);
     }
 
     @Test
@@ -53,7 +53,7 @@ public class GremlinDslProcessorTest {
         final Compilation compilation = javac()
                 .withProcessors(new GremlinDslProcessor())
                 .compile(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialMoveTraversalDsl.java")));
-        assertThat(compilation).succeededWithoutWarnings();
+        assertCompilationSuccess(compilation);
         assertThat(compilation)
                 .generatedFile(StandardLocation.SOURCE_OUTPUT, "org.apache.tinkerpop.gremlin.process.traversal.dsl.social", "SocialMoveTraversal.java");
     }
@@ -63,7 +63,7 @@ public class GremlinDslProcessorTest {
         final Compilation compilation = javac()
                 .withProcessors(new GremlinDslProcessor())
                 .compile(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialPackageTraversalDsl.java")));
-        assertThat(compilation).succeededWithoutWarnings();
+        assertCompilationSuccess(compilation);
     }
 
     @Test
@@ -71,7 +71,7 @@ public class GremlinDslProcessorTest {
         final Compilation compilation = javac()
                 .withProcessors(new GremlinDslProcessor())
                 .compile(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialNoDefaultMethodsTraversalDsl.java")));
-        assertThat(compilation).succeededWithoutWarnings();
+        assertCompilationSuccess(compilation);
     }
 
     @Test
@@ -88,6 +88,20 @@ public class GremlinDslProcessorTest {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void assertCompilationSuccess(final Compilation compilation) {
+        if (isJava8())
+            assertThat(compilation).succeededWithoutWarnings();
+        else {
+            assertThat(compilation).hadWarningContaining("Supported source version 'RELEASE_8' from annotation processor");
+            assertThat(compilation).succeeded();
+        }
+    }
+
+    private boolean isJava8() {
+        String version = System.getProperty("java.version");
+        return version.startsWith("1.");
     }
 
     static class JavaFileObjectClassLoader extends ClassLoader {

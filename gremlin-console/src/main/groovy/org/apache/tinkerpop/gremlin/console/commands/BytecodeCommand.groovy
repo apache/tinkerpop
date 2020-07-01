@@ -25,8 +25,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper
-import org.codehaus.groovy.tools.shell.ComplexCommandSupport
-import org.codehaus.groovy.tools.shell.Groovysh
+import org.apache.groovy.groovysh.ComplexCommandSupport
+import org.apache.groovy.groovysh.Groovysh
 
 /**
  * Commands that help work with Gremlin bytecode.

@@ -183,7 +183,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     }
 
     /**
-     * Scenario: limit step, Scope.local, >1 item requested, List<String> input, List<String> output
+     * Scenario: limit step, Scope.local, &gt;1 item requested, List&lt;String&gt; input, List&lt;String&gt; output
      */
     @Test
     @LoadGraphWith(MODERN)
@@ -212,7 +212,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     }
 
     /**
-     * Scenario: range step, Scope.local, >1 item requested, List<String> input, List<String> output
+     * Scenario: range step, Scope.local, &gt;1 item requested, List&lt;String&gt; input, List&lt;String&gt; output
      */
     @Test
     @LoadGraphWith(MODERN)
@@ -256,7 +256,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     }
 
     /**
-     * Scenario: limit step, Scope.local, >1 item requested, Map input, Map output
+     * Scenario: limit step, Scope.local, &gt;1 item requested, Map input, Map output
      */
     @Test
     @LoadGraphWith(MODERN)
@@ -286,7 +286,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     }
 
     /**
-     * Scenario: range step, Scope.local, >1 item requested, Map input, Map output
+     * Scenario: range step, Scope.local, &gt;1 item requested, Map input, Map output
      */
     @Test
     @LoadGraphWith(MODERN)

@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-FROM openjdk:8-jre-alpine
+FROM adoptopenjdk/openjdk11:alpine-slim
 
 LABEL maintainer="dev@tinkerpop.apache.org"
 

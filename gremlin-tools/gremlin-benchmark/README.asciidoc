@@ -14,19 +14,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-= Gremlin DSL
+== Apache TinkerPop Benchmarks
 
-This is a starter project that demonstrates how a basic
-link:http://tinkerpop.apache.org/docs/${project.version}/reference/#dsl[Domain Specific Language] (DSL) project is
-structured with Java and Maven. The DSL is built to work with the TinkerPop "modern" toy graph. Please see the unit
-tests in `SocialDslTest` for actual DSL usage.
+This module is for development and testing only and no convenience binaries are produced for it. The compilation
+of this module requires:
 
-== Prerequisites
+[source,xml]
+----
+<dependency>
+    <groupId>javax.annotation</groupId>
+    <artifactId>javax.annotation-api</artifactId>
+    <scope>provided</scope>
+</dependency>
+----
 
-* Java 11
-* link:https://maven.apache.org/[Maven 3.3+]
-
-== Building and Running
-
-[source,text]
-mvn clean install
+The source for this project can be found at link:javaee/javax.annotation:https://github.com/javaee/javax.annotation.

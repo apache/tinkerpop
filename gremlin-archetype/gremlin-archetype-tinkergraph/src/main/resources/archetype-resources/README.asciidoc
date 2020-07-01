@@ -22,8 +22,8 @@ embedded graph database, loads it with some data and then executes a shortest pa
 
 == Prerequisites
 
-* Java 8 Update 40+
-* link:https://maven.apache.org/[Maven 3.x]
+* Java 11
+* link:https://maven.apache.org/[Maven 3.3+]
 
 == Building and Running
 

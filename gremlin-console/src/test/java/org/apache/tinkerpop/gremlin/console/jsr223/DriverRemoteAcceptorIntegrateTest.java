@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.codehaus.groovy.tools.shell.Groovysh;
+import org.apache.groovy.groovysh.Groovysh;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;

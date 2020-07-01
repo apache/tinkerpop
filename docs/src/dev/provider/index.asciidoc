@@ -39,7 +39,7 @@ This document attempts to address the needs of the different providers that have
 [[graph-system-provider-requirements]]
 == Graph System Provider Requirements
 
-image:tinkerpop-enabled.png[width=140,float=left] At the core of TinkerPop 3.x is a Java8 API. The implementation of this
+image:tinkerpop-enabled.png[width=140,float=left] At the core of TinkerPop 3.x is a Java API. The implementation of this
 core API and its validation via the `gremlin-test` suite is all that is required of a graph system provider wishing to
 provide a TinkerPop-enabled graph engine. Once a graph system has a valid implementation, then all the applications
 provided by TinkerPop (e.g. Gremlin Console, Gremlin Server, etc.) and 3rd-party developers (e.g. Gremlin-Scala,
@@ -79,7 +79,7 @@ In the above code all the vertices are created first and then their respective e
 `Graph.addVertex(Object...)` or `Vertex.addEdge(String,Vertex,Object...)`, the respective element is created along
 with the provided key/value pair properties appended to it.
 
-Below is a sequence of basic graph mutation operations represented in Java 8.
+Below is a sequence of basic graph mutation operations represented in Java:
 
 image:basic-mutation.png[width=240,float=right]
 [source,java]

@@ -23,7 +23,7 @@ package org.apache.tinkerpop.gremlin.structure;
  * {@link Edge}. For example:
  * <p/>
  * <pre>
- * gremlin--knows-->rexster
+ * gremlin--knows--&gt;rexster
  * </pre>
  * is an {@link Direction#OUT} {@link Edge} for Gremlin and an {@link Direction#IN} edge for Rexster. Moreover, given
  * that {@link Edge}, Gremlin is the {@link Direction#OUT} {@link Vertex} and Rexster is the {@link Direction#IN}

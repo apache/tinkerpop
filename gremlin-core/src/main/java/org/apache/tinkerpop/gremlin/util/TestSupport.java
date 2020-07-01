@@ -19,8 +19,6 @@
 package org.apache.tinkerpop.gremlin.util;
 
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -28,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -160,7 +157,7 @@ public class TestSupport {
 
     /**
      * Copies a file stored as part of a resource to the file system in the path returned from
-     * {@link TestHelper#makeTestDataPath} in a subdirectory called {@code temp/resources}.
+     * {@link TestSupport#makeTestDataPath} in a subdirectory called {@code temp/resources}.
      */
     public static File generateTempFileFromResource(final Class graphClass, final Class resourceClass,
                                                     final String resourceName, final String extension, final boolean overwrite) throws IOException {

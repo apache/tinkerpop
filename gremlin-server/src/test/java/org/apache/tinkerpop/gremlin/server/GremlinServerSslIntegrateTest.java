@@ -303,42 +303,4 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
             cluster2.close();
         }
     }
-
-    @Test
-    public void shouldEnableSslAndClientCertificateAuthAndFailWithIncorrectKeyStoreType() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(true)
-                .keyStore(JKS_CLIENT_KEY).keyStorePassword(KEY_PASS).keyStoreType(KEYSTORE_TYPE_PKCS12)
-                .trustStore(P12_CLIENT_TRUST).trustStorePassword(KEY_PASS).trustStoreType(TRUSTSTORE_TYPE_PKCS12)
-                .create();
-        final Client client = cluster.connect();
-
-        try {
-            String res = client.submit("'test'").one().getString();
-            fail("Should throw exception because incorrect keyStoreType is specified");
-        } catch (Exception x) {
-            final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldEnableSslAndClientCertificateAuthAndFailWithIncorrectTrustStoreType() {
-        final Cluster cluster = TestClientFactory.build().enableSsl(true)
-                .keyStore(P12_CLIENT_KEY).keyStorePassword(KEY_PASS).keyStoreType(KEYSTORE_TYPE_PKCS12)
-                .trustStore(JKS_CLIENT_TRUST).trustStorePassword(KEY_PASS).trustStoreType(TRUSTSTORE_TYPE_PKCS12)
-                .create();
-        final Client client = cluster.connect();
-
-        try {
-            client.submit("'test'").one();
-            fail("Should throw exception because incorrect trustStoreType is specified");
-        } catch (Exception x) {
-            final Throwable root = ExceptionUtils.getRootCause(x);
-            assertThat(root, instanceOf(TimeoutException.class));
-        } finally {
-            cluster.close();
-        }
-    }
 }

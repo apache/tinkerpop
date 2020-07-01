@@ -24,8 +24,8 @@ This section contains a few notes that reference differences between TinkerPop 2
 
 One of the major differences between TinkerPop 2.x and TinkerPop 3.x is that in TinkerPop 3.x, the Java convention of
 using setters and getters was abandoned in favor of a syntax that is more aligned with the syntax of Gremlin-Groovy in
-TinkerPop2. Given that Gremlin-Java8 and Gremlin-Groovy are nearly identical due to the inclusion of Java 8 lambdas, a
-big effort was made to ensure that both languages were as similar as possible.
+TinkerPop2. Given that Gremlin-Java and Gremlin-Groovy are nearly identical due to the inclusion of lambdas from
+Java 8, a big effort was made to ensure that both languages were as similar as possible.
 
 In addition, TinkerPop2 and below made a sharp distinction between the various TinkerPop projects: Blueprints, Pipes,
 Gremlin, Frames, Furnace, and Rexster. With TinkerPop 3.x, all of these projects have been merged and are generally

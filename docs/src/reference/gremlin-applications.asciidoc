@@ -2351,7 +2351,7 @@ image:gremlin-sugar.png[width=120,float=left] In previous versions of Gremlin-Gr
 link:http://en.wikipedia.org/wiki/Syntactic_sugar[syntactic sugars] that users could rely on to make their traversals
 more succinct. Unfortunately, many of these conventions made use of link:http://docs.oracle.com/javase/tutorial/reflect/[Java reflection]
 and thus, were not performant. In TinkerPop, these conveniences have been removed in support of the standard
-Gremlin-Groovy syntax being both inline with Gremlin-Java8 syntax as well as always being the most performant
+Gremlin-Groovy syntax being both inline with Gremlin-Java syntax as well as always being the most performant
 representation. However, for those users that would like to use the previous syntactic sugars (as well as new ones),
 there is `SugarGremlinPlugin` (a.k.a Gremlin-Groovy-Sugar).
 

@@ -34,7 +34,7 @@ limitations under the License.
         <dependency>
             <groupId>org.apache.ivy</groupId>
             <artifactId>ivy</artifactId>
-            <version>2.3.0</version>
+            <version>2.4.0</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
@@ -173,4 +173,29 @@ limitations under the License.
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>jdk11</id>
+            <activation>
+                <jdk>11</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <!--
+                            need to override source path as we don't seem to get the groovy-stubs automatically. this worked
+                            under java 8 but errors under java 11 due to missing files on the path. i guess java 8 was more
+                            forgiving.
+                            -->
+                            <sourcepath>${pom.basedir}/src/main/java:${project.build.directory}/generated-sources/annotations:${project.build.directory}/generated-sources/groovy-stubs/main</sourcepath>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

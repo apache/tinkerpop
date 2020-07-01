@@ -29,7 +29,7 @@ import java.util.Iterator;
  * <p/>
  * Diagrammatically:
  * <pre>
- * outVertex ---label---> inVertex.
+ * outVertex ---label---&gt; inVertex.
  * </pre>
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)

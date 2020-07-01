@@ -2,9 +2,9 @@ language: java
 os:
   - linux
 jdk:
-  - openjdk8
+  - openjdk11
 sudo: required
-dist: xenial
+dist: bionic
 services:
   - docker
 cache:
@@ -41,7 +41,7 @@ jobs:
   include:
     - stage: "tests"
       script: "mvn clean install -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
-      name: "mvn clean install"
+      name: "mvn clean install - jdk11"
     - script: "touch gremlin-dotnet/src/.glv && touch gremlin-dotnet/test/.glv && mvn clean install -q -DskipTests && mvn verify -pl :gremlin-dotnet,:gremlin-dotnet-tests -P gremlin-dotnet"
       name: ".net"
     - script: "touch gremlin-python/.glv && mvn clean install -q -DskipTests && mvn verify -pl gremlin-python"
@@ -49,8 +49,13 @@ jobs:
     - script: "mvn clean install -q -DskipTests && mvn verify -pl :gremlin-javascript"
       name: "javascript"
     - script:
-      - "mvn clean install -q -DskipTests"
-      - "mvn verify -pl :gremlin-server -DskipTests -DskipIntegrationTests=false"
+        - "mvn -version"
+        - "mvn clean install -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+      jdk: openjdk8
+      name: "mvn clean install - jdk8"
+    - script:
+        - "mvn clean install -q -DskipTests"
+        - "mvn verify -pl :gremlin-server -DskipTests -DskipIntegrationTests=false"
       name: "gremlin server"
     - script:
         - "mvn clean install -q -DskipTests"

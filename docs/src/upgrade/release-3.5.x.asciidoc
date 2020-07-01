@@ -29,6 +29,12 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.5.0/CHANGELOG.asc
 
 === Upgrading for Users
 
+==== Java 11
+
+TinkerPop now builds and is compatible with Java 11.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2076[TINKERPOP-2076]
+
 ==== Anonymous Child Traversals
 
 TinkerPop conventions for child traversals is to spawn them anonymously from `__`, therefore:
@@ -70,7 +76,7 @@ advisable to take this approach.
 
 For best compatibility between 3.4.x and 3.5.x, please use GraphBinary.
 
-link:https://issues.apache.org/jira/browse/TINKERPOP-2259[TINKERPOP-2259]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2259[TINKERPOP-2259]
 
 ==== Configuration Upgrade
 

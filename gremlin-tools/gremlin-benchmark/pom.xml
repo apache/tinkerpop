@@ -60,6 +60,11 @@ limitations under the License.
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>tinkergraph-gremlin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.openjdk.jmh</groupId>
             <artifactId>jmh-core</artifactId>
             <version>${jmh.version}</version>
@@ -73,7 +78,6 @@ limitations under the License.
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <optional>true</optional>
         </dependency>
     </dependencies>
     <build>
