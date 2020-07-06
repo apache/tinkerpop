@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraver
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -116,13 +117,24 @@ public final class TraversalSelectStep<S, E> extends MapStep<S, E> implements Tr
 
     @Override
     public List<Traversal.Admin<?, ?>> getLocalChildren() {
-        return null == this.selectTraversal ? Collections.emptyList() : Collections.singletonList(this.selectTraversal);
+        if (null == this.selectTraversal && null == this.keyTraversal)
+            return Collections.emptyList();
+
+        final List<Traversal.Admin<?, ?>> children = new ArrayList<>();
+        if (selectTraversal != null)
+            children.add(selectTraversal);
+        if (keyTraversal != null)
+            children.add(keyTraversal);
+
+        return children;
     }
 
     @Override
     public void removeLocalChild(final Traversal.Admin<?, ?> traversal) {
         if (this.selectTraversal == traversal)
             this.selectTraversal = null;
+        if (this.keyTraversal == traversal)
+            this.keyTraversal = null;
     }
 
     @Override

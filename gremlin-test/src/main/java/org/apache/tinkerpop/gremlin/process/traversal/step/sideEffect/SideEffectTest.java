@@ -43,6 +43,8 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.valueMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -67,6 +69,8 @@ public abstract class SideEffectTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Integer> get_g_withSideEffectXa_0_sumX_V_out_sideEffectXsideEffectsXa_bulkXX_capXaX();
 
     public abstract Traversal<Vertex, Integer> get_g_withSideEffectXa_0X_V_out_sideEffectXsideEffectsXa_1XX_capXaX();
+
+    public abstract Traversal<Vertex, String> get_g_withSideEffectXk_nameX_V_order_byXvalueMap_selectXkX_unfoldX_name();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -191,6 +195,14 @@ public abstract class SideEffectTest extends AbstractGremlinProcessTest {
         checkSideEffects(traversal.asAdmin().getSideEffects(), "a", Integer.class);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_withSideEffectXk_nameX_V_order_byXvalueMap_selectXkX_unfoldX_name() {
+        final Traversal<Vertex, String> traversal = get_g_withSideEffectXk_nameX_V_order_byXvalueMap_selectXkX_unfoldX_name();
+        checkOrderedResults(Arrays.asList(
+                "josh", "lop", "marko", "peter", "ripple", "vadas"), traversal);
+    }
+
     public static class Traversals extends SideEffectTest {
 
         @Override
@@ -245,6 +257,11 @@ public abstract class SideEffectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Integer> get_g_withSideEffectXa_0X_V_out_sideEffectXsideEffectsXa_1XX_capXaX() {
             return g.withSideEffect("a", 0).V().out().sideEffect(t -> t.sideEffects("a", 1)).cap("a");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_withSideEffectXk_nameX_V_order_byXvalueMap_selectXkX_unfoldX_name() {
+            return g.withSideEffect("key","name").V().order().by(valueMap().select(select("key")).unfold()).values("name");
         }
     }
 
