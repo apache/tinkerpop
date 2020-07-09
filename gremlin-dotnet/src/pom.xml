@@ -33,14 +33,40 @@ limitations under the License.
 
     <build>
         <plugins>
-            <!-- Override the execution from gremlin-dotnet to disable code generation from happening a second time -->
             <plugin>
                 <groupId>org.codehaus.gmavenplus</groupId>
                 <artifactId>gmavenplus-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.codehaus.groovy</groupId>
+                        <artifactId>groovy-all</artifactId>
+                        <version>${groovy.version}</version>
+                        <type>pom</type>
+                        <scope>runtime</scope>
+                    </dependency>
+                </dependencies>
                 <executions>
                     <execution>
-                        <id>generate-dsl</id>
-                        <phase/>
+                        <id>update-version</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                        <configuration>
+                            <scripts>
+                                <script>
+def mavenVersion = "${project.version}"
+def file = new File("${project.basedir}/Gremlin.Net/Gremlin.Net.csproj")
+file.write(file.getText("UTF-8").replaceFirst(/&lt;Version&gt;(.*)&lt;\/Version&gt;/, "&lt;Version&gt;" + mavenVersion + "&lt;/Version&gt;"))
+
+file = new File("${project.basedir}/Gremlin.Net.Template/Gremlin.Net.Template.csproj")
+file.write(file.getText("UTF-8").replaceFirst(/Version="(.*)"/, "Version=\"" + mavenVersion + "\""))
+
+file = new File("${project.basedir}/Gremlin.Net.Template/Gremlin.Net.Template.nuspec")
+file.write(file.getText("UTF-8").replaceFirst(/&lt;version&gt;(.*)&lt;\/version&gt;/, "&lt;version&gt;" + mavenVersion + "&lt;/version&gt;"))
+                                </script>
+                            </scripts>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -301,18 +327,10 @@ limitations under the License.
                                 <configuration>
                                     <scripts>
                                         <script><![CDATA[
-// revert back the version after a SNAPSHOT deployment
+// prevent SNAPSHOT deployment for .NET
 def versionToUse = '${project.version}'
-def engine = new groovy.text.GStringTemplateEngine()
-def csprojTemplate = engine.createTemplate(new File('${project.parent.basedir}/glv/Gremlin.Net.csproj.template')).make(["projectVersion":versionToUse])
-def csprojFile = new File('${project.basedir}/Gremlin.Net/Gremlin.Net.csproj')
-csprojFile.newWriter().withWriter{ it << csprojTemplate }
-def templateCsprojTemplate = engine.createTemplate(new File('${project.parent.basedir}/glv/Gremlin.Net.Template.csproj.template')).make(["projectVersion":versionToUse])
-def templateCsprojFile = new File('${project.basedir}/Gremlin.Net.Template/Gremlin.Net.Template.csproj')
-templateCsprojFile.newWriter().withWriter{ it << templateCsprojTemplate }
-def nuspecTemplate = engine.createTemplate(new File('${project.parent.basedir}/glv/Gremlin.Net.Template.nuspec.template')).make(["projectVersion":versionToUse])
-def nuspecFile = new File('${project.basedir}/Gremlin.Net.Template/Gremlin.Net.Template.nuspec')
-nuspecFile.newWriter().withWriter{ it << nuspecTemplate }
+if (versionToUse.endsWith("-SNAPSHOT")
+  throw new RuntimeException("Current version is a SNAPSHOT which can not be deployed to nuget")
 ]]>
                                         </script>
                                     </scripts>

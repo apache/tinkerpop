@@ -64,24 +64,19 @@ limitations under the License.
                 </dependencies>
                 <executions>
                     <execution>
-                        <id>generate-javascript</id>
+                        <id>update-version</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>execute</goal>
                         </goals>
                         <configuration>
-                            <properties>
-                                <property>
-                                    <name>projectBaseDir</name>
-                                    <value>${project.basedir}</value>
-                                </property>
-                                <property>
-                                    <name>projectVersion</name>
-                                    <value>${project.version}</value>
-                                </property>
-                            </properties>
                             <scripts>
-                                <script>${project.basedir}/glv/generate.groovy</script>
+                                <script>
+def mavenVersion = "${project.version}"
+def versionForJs = mavenVersion.replace("-SNAPSHOT", "-alpha1")
+def file = new File("${project.basedir}/src/main/javascript/gremlin-javascript/package.json")
+file.write(file.getText("UTF-8").replaceFirst(/"version": "(.*)",/, "\"version\": \"" + versionForJs + "\","))
+                                </script>
                             </scripts>
                         </configuration>
                     </execution>
