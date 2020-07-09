@@ -2179,7 +2179,7 @@ exploration, and analysis platform for graphs. The link:https://gephi.org/plugin
 plugin for Gephi provides an API that can be leveraged to stream graph data to a running Gephi application. The Gephi
 plugin for Gremlin Console utilizes this API to allow for graph and traversal visualization.
 
-IMPORTANT: These instructions have been tested with Gephi 0.9.1 and Graph Streaming plugin 1.0.3.
+IMPORTANT: These instructions have been tested with Gephi 0.9.2 and Graph Streaming plugin 1.0.3.
 
 The following instructions assume that Gephi has been download and installed.  It further assumes that the Graph
 Streaming plugin has been installed (`Tools > Plugins`). The following instructions explain how to visualize a
