@@ -55,4 +55,20 @@ describe('Client', function () {
     customClient._connection = connectionMock;
     customClient.submit(query)
   });
+
+  it('should allow to submit extra arguments', function () {
+    const connectionMock = {
+      submit: function (bytecode, op, args, requestId, processor) {
+        assert.strictEqual(args.gremlin, query);
+        assert.strictEqual(args.scriptEvaluationTimeout, 123);
+        assert.strictEqual(processor, customOpProcessor);
+
+        return Promise.resolve();
+      }
+    };
+
+    const customClient = new Client('ws://localhost:9321', {traversalSource: 'g', processor: customOpProcessor});
+    customClient._connection = connectionMock;
+    customClient.submit(query, null, {"scriptEvaluationTimeout": 123})
+  });
 });

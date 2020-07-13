@@ -69,17 +69,18 @@ class Client {
    * Send a request to the Gremlin Server, can send a script or bytecode steps.
    * @param {Bytecode|string} message The bytecode or script to send
    * @param {Object} [bindings] The script bindings, if any.
+   * @param {Object} [extraArgs] The extra arguments, if any.
    * @returns {Promise}
    */
-  submit(message, bindings) {
+  submit(message, bindings, extraArgs) {
     if (typeof message === 'string') {
-      const args = {
+      const args = Object.assign({}, extraArgs, {
         'gremlin': message,
         'bindings': bindings,
         'language': 'gremlin-groovy',
         'accept': this._connection.mimeType,
         'aliases': { 'g': this._options.traversalSource || 'g' }
-      };
+      });
       if (this._options.session && this._options.processor === 'session') {
         args['session'] = this._options.session;
       }
