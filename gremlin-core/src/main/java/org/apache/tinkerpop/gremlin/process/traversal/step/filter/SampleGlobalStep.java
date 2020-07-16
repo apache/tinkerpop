@@ -98,22 +98,21 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
         int runningAmountToSample = 0;
         while (runningAmountToSample < this.amountToSample) {
             boolean reSample = false;
-            double runningWeight = 0.0d;
+            double runningTotalWeight = totalWeight;
             for (final Traverser.Admin<S> s : traverserSet) {
                 long sampleBulk = sampledSet.contains(s) ? sampledSet.get(s).bulk() : 0;
                 if (sampleBulk < s.bulk()) {
                     final double currentWeight = ((ProjectedTraverser<S, Number>) s).getProjections().get(0).doubleValue();
                     for (int i = 0; i < (s.bulk() - sampleBulk); i++) {
-                        runningWeight = runningWeight + currentWeight;
-                        if (random.nextDouble() <= ((runningWeight / totalWeight))) {
+                        if (random.nextDouble() <= ((currentWeight / runningTotalWeight))) {
                             final Traverser.Admin<S> split = s.split();
                             split.setBulk(1L);
                             sampledSet.add(split);
                             runningAmountToSample++;
-                            totalWeight = totalWeight - currentWeight;
                             reSample = true;
                             break;
                         }
+                        runningTotalWeight = runningTotalWeight - currentWeight;
                     }
                     if (reSample || (runningAmountToSample >= this.amountToSample))
                         break;
