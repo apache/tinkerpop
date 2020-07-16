@@ -27,6 +27,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in `select(Traversal)` where side-effects were getting lost if accessed from the child traversal.
 * Fixed authorization bug when using `WsAndHttpChannelizerHandler` with keep-alive enabled.
 * Bumped Jackson to 2.9.10.5.
+* Improved sampling distribution for global scope `sample()` operations.
 
 [[release-3-4-7]]
 === TinkerPop 3.4.7 (Release Date: June 1, 2020)
