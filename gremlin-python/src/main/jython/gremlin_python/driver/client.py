@@ -17,6 +17,7 @@
 # under the License.
 #
 from concurrent.futures import ThreadPoolExecutor
+
 from six.moves import queue
 
 from gremlin_python.driver import connection, protocol, request, serializer
@@ -75,9 +76,9 @@ class Client:
         self._pool_size = pool_size
         # This is until concurrent.futures backport 3.1.0 release
         if max_workers is None:
-            # Use this number because ThreadPoolExecutor is often
-            # used to overlap I/O instead of CPU work.
-            max_workers = (cpu_count() or 1) * 5
+            # If your application is overlapping Gremlin I/O on multiple threads
+            # consider passing kwarg max_workers = (cpu_count() or 1) * 5
+            max_workers = pool_size
         self._executor = ThreadPoolExecutor(max_workers=max_workers)
         # Threadsafe queue
         self._pool = queue.Queue()
