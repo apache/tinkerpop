@@ -215,11 +215,12 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         // initialize the global scope in case this scriptengine was instantiated outside of the ScriptEngineManager
         setBindings(new ConcurrentBindings(), ScriptContext.GLOBAL_SCOPE);
 
-        final List<Customizer> listOfCustomizers = new ArrayList<>(Arrays.asList(customizers));
+        final List<Customizer> listOfCustomizers = new ArrayList<>();
 
         // always need this plugin for a scriptengine to be "Gremlin-enabled"
         CoreGremlinPlugin.instance().getCustomizers("gremlin-groovy").ifPresent(c -> listOfCustomizers.addAll(Arrays.asList(c)));
-
+        listOfCustomizers.addAll(Arrays.asList(customizers));
+        
         GremlinLoader.load();
 
         final List<ImportCustomizer> importCustomizers = listOfCustomizers.stream()

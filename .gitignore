@@ -10,6 +10,7 @@ build_output.txt
 .classpath
 .project
 .settings
+.factorypath
 _bsp/
 doc/out
 docs/*.asciidoc
