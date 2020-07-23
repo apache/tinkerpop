@@ -44,7 +44,7 @@ class Client {
    * @param {String} [options.session] The sessionId of Client in session mode. Defaults to null means session-less Client.
    * @constructor
    */
-  constructor(url, options) {
+  constructor(url, options = {}) {
     this._options = options;
     if (this._options.processor === 'session') {
       // compatibility with old 'session' processor setting
