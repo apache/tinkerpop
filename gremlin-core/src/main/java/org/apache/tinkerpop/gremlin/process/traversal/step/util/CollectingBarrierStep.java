@@ -41,7 +41,7 @@ import java.util.function.BinaryOperator;
  */
 public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implements Barrier<TraverserSet<S>> {
 
-    protected TraverserSet<S> traverserSet = new TraverserSet<>();
+    protected TraverserSet<S> traverserSet;
     private int maxBarrierSize;
     private boolean barrierConsumed = false;
 
@@ -51,6 +51,7 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implem
 
     public CollectingBarrierStep(final Traversal.Admin traversal, final int maxBarrierSize) {
         super(traversal);
+        this.traverserSet = this.traverserSetSupplier.get();
         this.maxBarrierSize = maxBarrierSize;
     }
 
@@ -86,7 +87,7 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implem
         if (this.traverserSet.isEmpty())
             throw FastNoSuchElementException.instance();
         else {
-            final TraverserSet<S> temp = new TraverserSet<>();
+            final TraverserSet<S> temp = this.traverserSetSupplier.get();
             IteratorUtils.removeOnNext(this.traverserSet.iterator()).forEachRemaining(t -> {
                 DetachedFactory.detach(t, true); // this should be dynamic
                 temp.add(t);
@@ -119,7 +120,7 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implem
     @Override
     public CollectingBarrierStep<S> clone() {
         final CollectingBarrierStep<S> clone = (CollectingBarrierStep<S>) super.clone();
-        clone.traverserSet = new TraverserSet<>();
+        clone.traverserSet = this.traverserSetSupplier.get();
         clone.barrierConsumed = false;
         return clone;
     }

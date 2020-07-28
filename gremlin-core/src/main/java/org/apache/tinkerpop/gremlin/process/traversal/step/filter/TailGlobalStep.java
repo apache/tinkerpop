@@ -146,7 +146,7 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
     public TraverserSet<S> nextBarrier() throws NoSuchElementException {
         if (!this.starts.hasNext())
             throw FastNoSuchElementException.instance();
-        final TraverserSet<S> barrier = new TraverserSet<>();
+        final TraverserSet<S> barrier = this.traverserSetSupplier.get();
         while (this.starts.hasNext()) {
             barrier.add(this.starts.next());
         }
