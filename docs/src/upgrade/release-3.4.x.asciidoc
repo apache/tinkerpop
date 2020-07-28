@@ -37,7 +37,15 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.8/CHANGELOG.asciidoc#release-3-4-8[changelog] for a
 complete list of all the modifications that are part of this release.
 
+=== Upgrading for Users
 
+==== Gremlin.NET: Automatic Reconnect
+
+The Gremlin.NET driver now automatically tries to reconnect to a server when no open connection is available to submit
+a request. This should enable the driver to handle cases where the server is only temporarily unavailable or where the
+server has closed connections which some graph providers do when no requests were sent for some time.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2288[TINKERPOP-2288]
 
 == TinkerPop 3.4.7
 
@@ -54,14 +62,6 @@ Gremlin Console now has the `:cls` command to clear the screen. This feature act
 specific clear operations and provides a common way to perform that function.
 
 link:https://issues.apache.org/jira/browse/TINKERPOP-2357[TINKERPOP-2357]
-
-==== Gremlin.NET: Automatic Reconnect
-
-The Gremlin.NET driver now automatically tries to reconnect to a server when no open connection is available to submit
-a request. This should enable the driver to handle cases where the server is only temporarily unavailable or where the
-server has closed connections which some graph providers do when no requests were sent for some time.
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2288[TINKERPOP-2288]
 
 == TinkerPop 3.4.6
 
