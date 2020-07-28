@@ -82,7 +82,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
             totalWeight = totalWeight + (((ProjectedTraverser<S, Number>) s).getProjections().get(0).doubleValue() * s.bulk());
         }
         ///////
-        final TraverserSet<S> sampledSet = new TraverserSet<>();
+        final TraverserSet<S> sampledSet = this.traverserSetSupplier.get();
         int runningAmountToSample = 0;
         while (runningAmountToSample < this.amountToSample) {
             boolean reSample = false;

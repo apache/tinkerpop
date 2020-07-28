@@ -30,11 +30,17 @@ import java.util.Iterator;
  */
 public final class ExpandableStepIterator<S> implements Iterator<Traverser.Admin<S>>, Serializable {
 
-    private final TraverserSet<S> traverserSet = new TraverserSet<>();
+    private TraverserSet<S> traverserSet;
     private final Step<S, ?> hostStep;
 
     public ExpandableStepIterator(final Step<S, ?> hostStep) {
         this.hostStep = hostStep;
+        this.traverserSet = new TraverserSet<>();
+    }
+
+    public ExpandableStepIterator(final Step<S, ?> hostStep, final TraverserSet<S> traverserSet) {
+        this.hostStep = hostStep;
+        this.traverserSet = traverserSet;
     }
 
     @Override
@@ -51,6 +57,16 @@ public final class ExpandableStepIterator<S> implements Iterator<Traverser.Admin
             return this.hostStep.getPreviousStep().next();
         /////////////
         return this.traverserSet.remove();
+    }
+
+    /**
+     * Replaces the traverserSet. Useful when providers want to use their own implementation of TraverserSet instead of default {@link TraverserSet}.
+     * Note that if the existing traverserSet has elements, they are discarded.
+     *
+     * @param traverserSet a new TraverserSet used to manage a set of traversers.
+     */
+    public void setTraverserSet(final TraverserSet<S> traverserSet) {
+        this.traverserSet = traverserSet;
     }
 
     public void add(final Iterator<Traverser.Admin<S>> iterator) {

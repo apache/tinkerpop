@@ -21,9 +21,11 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.function.TraverserSetSupplier;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -43,13 +45,21 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     protected ExpandableStepIterator<S> starts;
     protected Traverser.Admin<E> nextEnd = null;
     protected boolean traverserStepIdAndLabelsSetByChild = false;
+    protected TraverserSetSupplier<S> traverserSetSupplier;
 
     protected Step<?, S> previousStep = EmptyStep.instance();
     protected Step<E, ?> nextStep = EmptyStep.instance();
 
     public AbstractStep(final Traversal.Admin traversal) {
         this.traversal = traversal;
-        this.starts = new ExpandableStepIterator<>(this);
+        this.traverserSetSupplier = TraverserSetSupplier.instance();
+        this.starts = new ExpandableStepIterator<>(this, this.traverserSetSupplier.get());
+    }
+
+    public AbstractStep(final Traversal.Admin traversal, final TraverserSetSupplier<S> traverserSetSupplier) {
+        this.traversal = traversal;
+        this.traverserSetSupplier = traverserSetSupplier;
+        this.starts = new ExpandableStepIterator<>(this, this.traverserSetSupplier.get());
     }
 
     @Override
@@ -199,6 +209,21 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
             result ^= label.hashCode();
         }
         return result;
+    }
+
+    public ExpandableStepIterator<S> getStarts() {
+        return this.starts;
+    }
+
+    /**
+     * Sets a new traverserSupplier so that providers can use their own implementation of TraverserSet instead of the default {@link TraverserSet}.
+     * Note that {@link AbstractStep#starts} also holds TraverserSet but this method doesn't automatically replace the traverserSet for it.
+     * Providers may use {@link ExpandableStepIterator#setTraverserSet(TraverserSet)} independently to replace its TraverserSet.
+     *
+     * @param traverserSetSupplier a new traverserSetSupplier used to spawn a new TraverserSet when necessary in the step.
+     */
+    public void setTraverserSetSupplier(final TraverserSetSupplier<S> traverserSetSupplier) {
+        this.traverserSetSupplier = traverserSetSupplier;
     }
 
     private final Traverser.Admin<E> prepareTraversalForNextStep(final Traverser.Admin<E> traverser) {
