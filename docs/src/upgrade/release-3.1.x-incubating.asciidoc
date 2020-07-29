@@ -192,7 +192,7 @@ is an optional argument and does not represent a breaking change, but it does ma
 complete. While the default authentication implementations packaged with Gremlin Server don't utilize this argument
 other implementations might, so the drivers should be able to pass it as per the SASL specification.
 
-See: link:https://issues.apache.org/jira/browse/[TINKERPOP-1263]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1263[TINKERPOP-1263]
 
 == TinkerPop 3.1.2
 

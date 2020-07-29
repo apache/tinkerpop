@@ -35,7 +35,7 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.2.10/CHANGELOG.as
 
 === Upgrading for Users
 
-==== SASL in Gremlin.Net
+==== SASL in Gremlin-Javascript
 
 The Gremlin Javascript Driver now supports SASL Plain Text authentication against a Gremlin Server.
 
