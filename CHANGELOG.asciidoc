@@ -21,7 +21,7 @@ limitations under the License.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
 [[release-3-4-8]]
-=== TinkerPop 3.4.8 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.4.8 (Release Date: August 3, 2020)
 
 * Fixed bug in `has(T,Traversal)` where results were not being returned.
 * Fixed bug in `select(Traversal)` where side-effects were getting lost if accessed from the child traversal.
@@ -29,6 +29,19 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in option-less construction of `DriverRemoteConnection` in Javascript.
 * Bumped Jackson to 2.9.10.5.
 * Improved sampling distribution for global scope `sample()` operations.
+
+==== Bugs
+
+* TINKERPOP-2288 Get ConnectionPoolBusyException and then ServerUnavailableExceptions
+* TINKERPOP-2352 Gremlin Python driver default pool size makes Gremlin keep-alive difficult
+* TINKERPOP-2374 SaslAndHttpBasicAuthenticationHandler can't extract authorization
+* TINKERPOP-2383 has(T,Traversal) does not return results
+* TINKERPOP-2384 Inject and withSideEffect causing different outcomes in order step
+
+==== Improvements
+
+* TINKERPOP-2328 Do not close all connections if just one has became closed
+* TINKERPOP-2376 Probability distribution controlled by weight when using sample step
 
 [[release-3-4-7]]
 === TinkerPop 3.4.7 (Release Date: June 1, 2020)
