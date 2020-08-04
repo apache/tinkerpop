@@ -1317,6 +1317,17 @@ const client = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traver
 
 With this configuration, the state of variables within scripts are preserved between requests.
 
+==== Per Request Settings
+
+Some settings can be established per request, like an override of the `scriptEvaluationTimeout` which can be helpful
+when it is known that particular request might need to execute longer than what the server might allow with its
+settings:
+
+[source,javascript]
+----
+const result = await client.submit('g.V().repeat(both()).times(100)', null, {"scriptEvaluationTimeout": 60000});
+----
+
 [[gremlin-javascript-dsl]]
 === Domain Specific Languages
 
