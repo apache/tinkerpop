@@ -219,6 +219,11 @@ final class Handler {
             try {
                 final ResponseStatusCode statusCode = response.getStatus().getCode();
                 final ResultQueue queue = pending.get(response.getRequestId());
+                if (queue == null) {
+                    // client is not expecting any results from the server for this requestID. Ignore it.
+                    logger.warn("Server sent a message for unrecognized requestID={}. Ignoring the server message.", response.getRequestId());
+                    return;
+                }
                 if (statusCode == ResponseStatusCode.SUCCESS || statusCode == ResponseStatusCode.PARTIAL_CONTENT) {
                     final Object data = response.getResult().getData();
                     final Map<String,Object> meta = response.getResult().getMeta();

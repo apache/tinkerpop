@@ -38,6 +38,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -249,8 +250,16 @@ final class ConnectionPool {
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
     }
 
+    /**
+     * This method is not idempotent and should only be called once per connection.
+     */
     void replaceConnection(final Connection connection) {
         logger.debug("Replace {}", connection);
+        if (connection.isBeingReplaced.get()) {
+            return;
+        }
+
+        connection.isBeingReplaced.set(true);
 
         considerNewConnection();
         definitelyDestroyConnection(connection);
@@ -335,6 +344,7 @@ final class ConnectionPool {
         if (connection.isDead() || connection.borrowed.get() == 0) {
             if(bin.remove(connection)) {
                 connection.closeAsync();
+                // TODO: Log the following message on completion of the future returned by closeAsync.
                 logger.debug("{} destroyed", connection.getConnectionInfo());
             }
         }
@@ -473,6 +483,14 @@ final class ConnectionPool {
         } finally {
             waitLock.unlock();
         }
+    }
+
+    /**
+     * Returns the set of Channel IDs maintained by the connection pool.
+     * Currently, only used for testing.
+     */
+    Set<String> getConnectionIDs() {
+        return connections.stream().map(Connection::getChannelId).collect(Collectors.toSet());
     }
 
     public String getPoolInfo() {
