@@ -119,15 +119,18 @@ final class Connection {
              *
              * This callback would trigger the workflow to replace this connection. ReplaceConnection workflow might be
              * called twice, once from this workflow and once again from actions taken by channelInactive callback.
-             * In such scenarios, isBeingReplaced boolean is used to ensure that the connection is only replaced ones.
+             * In such scenarios, isBeingReplaced boolean is used to ensure that the connection is only replaced once.
              */
             final Connection thisConnection = this;
             channel.closeFuture().addListener(f -> {
                 if (f.cause() != null) {
                     logger.warn("Unable to close the channel {}", this.getChannelId(), f.cause());
                 }
-                // delegate the task to worker thread and free up the event loop
-                cluster.executor().submit(() -> pool.replaceConnection(thisConnection));
+                // Replace the channel if it was not intentionally closed using CloseAsync method.
+                if (closeFuture.get() == null) {
+                    // delegate the task to worker thread and free up the event loop
+                    cluster.executor().submit(() -> pool.replaceConnection(thisConnection));
+                }
             });
 
             channelizer.connected();
