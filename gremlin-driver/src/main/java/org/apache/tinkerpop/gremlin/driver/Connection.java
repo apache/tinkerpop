@@ -121,12 +121,13 @@ final class Connection {
              * called twice, once from this workflow and once again from actions taken by channelInactive callback.
              * In such scenarios, isBeingReplaced boolean is used to ensure that the connection is only replaced ones.
              */
+            final Connection thisConnection = this;
             channel.closeFuture().addListener(f -> {
                 if (f.cause() != null) {
-                    logger.error("Unable to close the channel {}", this.getChannelId(), f.cause());
-                } else {
-                    pool.replaceConnection(this);
+                    logger.warn("Unable to close the channel {}", this.getChannelId(), f.cause());
                 }
+                // delegate the task to worker thread and free up the event loop
+                cluster.executor().submit(() -> pool.replaceConnection(thisConnection));
             });
 
             channelizer.connected();
@@ -381,7 +382,9 @@ final class Connection {
             if (!channel.closeFuture().isDone()) {
                 channel.close(promise);
             } else {
-                promise.setSuccess();
+                if (!(promise instanceof io.netty.channel.VoidChannelPromise) && !promise.trySuccess()) {
+                    logger.warn("Failed to mark a promise as success because it is done already: {}", promise);
+                }
             }
         }
     }
