@@ -114,6 +114,7 @@ final class Connection {
             b.channel(NioSocketChannel.class).handler(channelizer);
 
             channel = b.connect(uri.getHost(), uri.getPort()).sync().channel();
+            channelizer.connected();
 
             /* Configure behaviour on close of this channel.
              *
@@ -126,6 +127,7 @@ final class Connection {
                 if (f.cause() != null) {
                     logger.warn("Unable to close the channel {}", this.getChannelId(), f.cause());
                 }
+                logger.debug("OnChannelClose future called for channel {}", this.getChannelId());
                 // Replace the channel if it was not intentionally closed using CloseAsync method.
                 if (closeFuture.get() == null) {
                     // delegate the task to worker thread and free up the event loop
@@ -133,7 +135,6 @@ final class Connection {
                 }
             });
 
-            channelizer.connected();
 
             logger.info("Created new connection for {}", uri);
 

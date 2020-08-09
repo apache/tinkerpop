@@ -47,9 +47,12 @@ public class WebSocketClientBehaviorIntegrateTest {
     public void setUp() throws InterruptedException {
         recordingAppender = new Log4jRecordingAppender();
         final org.apache.log4j.Logger rootLogger = org.apache.log4j.Logger.getRootLogger();
-        if (name.getMethodName().equals("TestClosedConnectionIsRecycledForConnectionWithPendingRequests")) {
-            final org.apache.log4j.Logger connectionLogger = org.apache.log4j.Logger.getLogger(ConnectionPool.class);
-            previousLogLevel = connectionLogger.getLevel();
+        if (name.getMethodName().equals("TestClosedConnectionIsRecycledForConnectionWithPendingRequests") ||
+                name.getMethodName().equals("TestCloseConnectionByClientIsNotRecycled")) {
+            final org.apache.log4j.Logger connectionPoolLogger = org.apache.log4j.Logger.getLogger(ConnectionPool.class);
+            final org.apache.log4j.Logger connectionLogger = org.apache.log4j.Logger.getLogger(Connection.class);
+            previousLogLevel = connectionPoolLogger.getLevel();
+            connectionPoolLogger.setLevel(Level.DEBUG);
             connectionLogger.setLevel(Level.DEBUG);
         }
 
@@ -66,8 +69,11 @@ public class WebSocketClientBehaviorIntegrateTest {
         // reset logger
         final org.apache.log4j.Logger rootLogger = org.apache.log4j.Logger.getRootLogger();
 
-        if (name.getMethodName().equals("TestClosedConnectionIsRecycledForConnectionWithPendingRequests")) {
+        if (name.getMethodName().equals("TestClosedConnectionIsRecycledForConnectionWithPendingRequests") ||
+                name.getMethodName().equals("TestCloseConnectionByClientIsNotRecycled")) {
+            final org.apache.log4j.Logger connectionPoolLogger = org.apache.log4j.Logger.getLogger(ConnectionPool.class);
             final org.apache.log4j.Logger connectionLogger = org.apache.log4j.Logger.getLogger(Connection.class);
+            connectionPoolLogger.setLevel(previousLogLevel);
             connectionLogger.setLevel(previousLogLevel);
         }
 
@@ -167,5 +173,41 @@ public class WebSocketClientBehaviorIntegrateTest {
                 RequestOptions.build().overrideRequestId(TestWSGremlinInitializer.SINGLE_VERTEX_REQUEST_ID).create())
                 .one().getVertex();
         Assert.assertNotNull(v);
+    }
+
+    /**
+     * Tests the scenario when client intentionally closes the connection. In this case, the
+     * connection should not be recycled.
+     */
+    @Test
+    public void TestClosedConnectionByClientIsNotRecycled() throws ExecutionException, InterruptedException {
+        final Cluster cluster = Cluster.build("localhost").port(SimpleWebSocketServer.PORT)
+                .minConnectionPoolSize(1)
+                .maxConnectionPoolSize(1)
+                .serializer(Serializers.GRAPHSON_V2D0)
+                .create();
+        final Client.ClusteredClient client = cluster.connect();
+
+        // Initialize the client preemptively
+        client.init();
+
+        // assert number of connections opened
+        ConnectionPool channelPool = client.hostConnectionPools.values().stream().findFirst().get();
+        Assert.assertEquals(1, channelPool.getConnectionIDs().size());
+
+        channelPool.closeAsync().get();
+
+        // wait for channel closure callback to trigger
+        Thread.sleep(2000);
+
+        Assert.assertEquals("OnClose callback should be called",1,
+                recordingAppender.getMessages().stream()
+                        .filter(str -> str.contains("OnChannelClose future called for channel"))
+                        .count());
+
+        Assert.assertEquals("No new connection creation should be started",0,
+                recordingAppender.getMessages().stream()
+                        .filter(str -> str.contains("Considering new connection on"))
+                        .count());
     }
 }
