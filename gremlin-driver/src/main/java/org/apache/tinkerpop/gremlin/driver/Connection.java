@@ -24,6 +24,8 @@ import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
@@ -123,18 +125,17 @@ final class Connection {
              * In such scenarios, isBeingReplaced boolean is used to ensure that the connection is only replaced once.
              */
             final Connection thisConnection = this;
-            channel.closeFuture().addListener(f -> {
-                if (f.cause() != null) {
-                    logger.warn("Unable to close the channel {}", this.getChannelId(), f.cause());
-                }
-                logger.debug("OnChannelClose future called for channel {}", this.getChannelId());
-                // Replace the channel if it was not intentionally closed using CloseAsync method.
-                if (closeFuture.get() == null) {
-                    // delegate the task to worker thread and free up the event loop
-                    cluster.executor().submit(() -> pool.replaceConnection(thisConnection));
+            channel.closeFuture().addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    logger.debug("OnChannelClose future called for channel {}", thisConnection.getChannelId());
+                    // Replace the channel if it was not intentionally closed using CloseAsync method.
+                    if (closeFuture.get() == null) {
+                        // delegate the task to worker thread and free up the event loop
+                        cluster.executor().submit(() -> pool.replaceConnection(thisConnection));
+                    }
                 }
             });
-
 
             logger.info("Created new connection for {}", uri);
 
@@ -225,7 +226,7 @@ final class Connection {
                         if (logger.isDebugEnabled())
                             logger.debug(String.format("Write on connection %s failed", thisConnection.getConnectionInfo()), f.cause());
 
-                        thisConnection.handleConnectionOnRequestError();
+                        handleConnectionCleanupOnError(thisConnection);
 
                         cluster.executor().submit(() -> future.completeExceptionally(f.cause()));
                     } else {
@@ -251,7 +252,7 @@ final class Connection {
                         // write operation.
                         readCompleted.exceptionally(t -> {
 
-                            thisConnection.handleConnectionOnRequestError();
+                            handleConnectionCleanupOnError(thisConnection);
 
                             // While this request was in process, close might have been signaled in closeAsync().
                             // However, close would be blocked until all pending requests are completed. Attempt
@@ -307,11 +308,11 @@ final class Connection {
         }
     }
 
-    private void handleConnectionOnRequestError() {
-        if (this.isDead()) {
-            if (pool != null) pool.replaceConnection(this);
+    private void handleConnectionCleanupOnError(final Connection thisConnection) {
+        if (thisConnection.isDead()) {
+            if (pool != null) pool.replaceConnection(thisConnection);
         } else {
-            this.returnToPool();
+            thisConnection.returnToPool();
         }
     }
 
