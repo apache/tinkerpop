@@ -32,6 +32,13 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 == TinkerPop 3.4.8
 
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.4.9/CHANGELOG.asciidoc#release-3-4-9[changelog] for a
+complete list of all the modifications that are part of this release.
+
+
+
 *Release Date: August 3, 2020*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.8/CHANGELOG.asciidoc#release-3-4-8[changelog] for a
