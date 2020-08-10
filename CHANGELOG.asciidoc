@@ -21,7 +21,7 @@ limitations under the License.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/avant-gremlin.png[width=185]
 
 [[release-3-4-9]]
-=== TinkerPop 3.4.9
+=== TinkerPop 3.4.9 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Replace `Connection` on server initiated `Channel` close for connections with no pending requests.
 
 [[release-3-4-8]]
