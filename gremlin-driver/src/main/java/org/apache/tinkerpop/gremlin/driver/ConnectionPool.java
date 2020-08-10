@@ -98,7 +98,7 @@ final class ConnectionPool {
         } catch (ConnectionException ce) {
             // ok if we don't get it initialized here - when a request is attempted in a connection from the
             // pool it will try to create new connections as needed.
-            logger.debug("Could not initialize connections in pool for {} - pool size at {}", host, this.connections.size());
+            logger.warn("Could not initialize connections in pool for {} - pool size at {}", host, this.connections.size(), ce);
             considerHostUnavailable();
         }
 
@@ -255,11 +255,9 @@ final class ConnectionPool {
      */
     void replaceConnection(final Connection connection) {
         logger.debug("Replace {}", connection);
-        if (connection.isBeingReplaced.get()) {
+        if (connection.isBeingReplaced.getAndSet(true)) {
             return;
         }
-
-        connection.isBeingReplaced.set(true);
 
         considerNewConnection();
         definitelyDestroyConnection(connection);
