@@ -240,6 +240,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
      * Tries to force the logger to flush fully or at least wait until it does.
      */
     private void assertFailedLogin() throws Exception {
+        rootLogger.setLevel(Level.DEBUG);
         final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
                 .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
         final Client client = cluster.connect();
@@ -252,6 +253,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
             assertEquals("Authenticator is not ready to handle requests", re.getMessage());
         } finally {
             cluster.close();
+            rootLogger.setLevel(Level.WARN);
         }
     }
 }
