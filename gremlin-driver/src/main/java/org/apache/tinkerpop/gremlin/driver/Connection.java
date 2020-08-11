@@ -125,7 +125,7 @@ final class Connection {
              * In such scenarios, isBeingReplaced boolean is used to ensure that the connection is only replaced once.
              */
             final Connection thisConnection = this;
-            channel.closeFuture().addListener(new ChannelFutureListener() {
+            ((NioSocketChannel)channel).closeFuture().addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) throws Exception {
                     logger.debug("OnChannelClose future called for channel {}", thisConnection.getChannelId());
@@ -233,35 +233,37 @@ final class Connection {
                         final LinkedBlockingQueue<Result> resultLinkedBlockingQueue = new LinkedBlockingQueue<>();
                         final CompletableFuture<Void> readCompleted = new CompletableFuture<>();
 
-                        // the callback for when the read was successful, meaning that ResultQueue.markComplete()
-                        // was called
-                        readCompleted.thenAcceptAsync(v -> {
-                            // connection is fine, just return it to the pool
-                            thisConnection.returnToPool();
-
-                            // While this request was in process, close might have been signaled in closeAsync().
-                            // However, close would be blocked until all pending requests are completed. Attempt
-                            // the shutdown if the returned result cleared up the last pending message and unblocked
-                            // the close.
-                            tryShutdown();
-                        }, cluster.executor());
+//                        // the callback for when the read was successful, meaning that ResultQueue.markComplete()
+//                        // was called
+//                        readCompleted.thenAcceptAsync(v -> {
+//                            // connection is fine, just return it to the pool
+//                            thisConnection.returnToPool();
+//
+//                            // While this request was in process, close might have been signaled in closeAsync().
+//                            // However, close would be blocked until all pending requests are completed. Attempt
+//                            // the shutdown if the returned result cleared up the last pending message and unblocked
+//                            // the close.
+//                            tryShutdown();
+//                        }, cluster.executor());
 
                         // the callback for when the read failed. a failed read means the request went to the server
                         // and came back with a server-side error of some sort.  it means the server is responsive
                         // so this isn't going to be like a potentially dead host situation which is handled above on a failed
                         // write operation.
-                        readCompleted.exceptionally(t -> {
+                        readCompleted.whenCompleteAsync((v,t) -> {
+                            if (t != null) {
+                                handleConnectionCleanupOnError(thisConnection);
 
-                            handleConnectionCleanupOnError(thisConnection);
-
-                            // While this request was in process, close might have been signaled in closeAsync().
-                            // However, close would be blocked until all pending requests are completed. Attempt
-                            // the shutdown if the returned result cleared up the last pending message and unblocked
-                            // the close.
-                            tryShutdown();
-
-                            return null;
-                        });
+                                // While this request was in process, close might have been signaled in closeAsync().
+                                // However, close would be blocked until all pending requests are completed. Attempt
+                                // the shutdown if the returned result cleared up the last pending message and unblocked
+                                // the close.
+                                tryShutdown();
+                            } else {
+                                // connection is fine, just return it to the pool
+                                thisConnection.returnToPool();
+                            }
+                        }, cluster.executor());
 
                         final ResultQueue handler = new ResultQueue(resultLinkedBlockingQueue, readCompleted);
                         pending.put(requestMessage.getRequestId(), handler);
@@ -410,7 +412,7 @@ final class Connection {
 
     @Override
     public String toString() {
-        return connectionLabel;
+        return connectionLabel + getChannelId();
     }
 
     /**
