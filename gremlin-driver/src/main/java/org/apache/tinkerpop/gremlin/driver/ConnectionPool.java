@@ -372,6 +372,7 @@ final class ConnectionPool {
                 throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
 
             final Connection leastUsed = selectLeastUsed();
+            logger.debug("Select least used conn");
             if (leastUsed != null) {
                 while (true) {
                     final int inFlight = leastUsed.borrowed.get();
@@ -391,7 +392,7 @@ final class ConnectionPool {
             }
 
             remaining = to - TimeUtil.timeSince(start, unit);
-            logger.debug("Continue to wait for connection on {} if {} > 0", host, remaining);
+            logger.debug("Continue to wait for connection on {} if {} > 0 on {}", host, remaining, getPoolInfo());
         } while (remaining > 0);
 
         logger.debug("Timed-out waiting for connection on {} - possibly unavailable", host);
