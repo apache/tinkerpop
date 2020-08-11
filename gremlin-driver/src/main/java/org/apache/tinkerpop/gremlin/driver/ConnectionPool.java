@@ -114,7 +114,8 @@ final class ConnectionPool {
     public Connection borrowConnection(final long timeout, final TimeUnit unit) throws TimeoutException, ConnectionException {
         logger.debug("Borrowing connection from pool on {} - timeout in {} {}", host, timeout, unit);
 
-        if (isClosed()) throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
+        if (isClosed())
+            throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
 
         final Connection leastUsedConn = selectLeastUsed();
 
@@ -256,9 +257,10 @@ final class ConnectionPool {
      * This method is not idempotent and should only be called once per connection.
      */
     void replaceConnection(final Connection connection) {
-        logger.debug("Replace Connection ID:{}", connection.getChannelId());
-        // Do not replace connection is the conn pool is closing/closed.
-        // Do not replace connection if it is alrady being replaced.
+        logger.info("Replace Connection ID:{}", connection.getChannelId());
+
+        // Do not replace connection if the conn pool is closing/closed.
+        // Do not replace connection if it is already being replaced.
         if (connection.isBeingReplaced.getAndSet(true) || isClosed()) {
             return;
         }
@@ -353,6 +355,7 @@ final class ConnectionPool {
     }
 
     private Connection waitForConnection(final long timeout, final TimeUnit unit) throws TimeoutException, ConnectionException {
+        logger.debug("Start wait for connection");
         long start = System.nanoTime();
         long remaining = timeout;
         long to = timeout;
@@ -360,6 +363,7 @@ final class ConnectionPool {
             try {
                 awaitAvailableConnection(remaining, unit);
             } catch (InterruptedException e) {
+                logger.debug("Await interrupted", e);
                 Thread.currentThread().interrupt();
                 to = 0;
             }
@@ -400,6 +404,7 @@ final class ConnectionPool {
     }
 
     public void considerHostUnavailable() {
+        logger.debug("Considering host unavailable for pool {}", this.getPoolInfo());
         // called when a connection is "dead" due to a non-recoverable error.
         host.makeUnavailable(this::tryReconnect);
 
@@ -503,6 +508,8 @@ final class ConnectionPool {
             sb.append(c);
             sb.append(",");
         });
+        sb.append("isClosing=");
+        sb.append(isClosed());
         return sb.toString().trim();
     }
 
