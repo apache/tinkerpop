@@ -240,6 +240,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
      * Tries to force the logger to flush fully or at least wait until it does.
      */
     private void assertFailedLogin() throws Exception {
+        final org.apache.log4j.Logger rootLogger = org.apache.log4j.Logger.getRootLogger();
         rootLogger.setLevel(Level.DEBUG);
         final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE)
                 .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
