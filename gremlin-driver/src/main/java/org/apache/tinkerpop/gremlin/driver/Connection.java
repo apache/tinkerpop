@@ -190,7 +190,7 @@ final class Connection {
         if (isClosing()) return closeFuture.get();
 
         final CompletableFuture<Void> future = new CompletableFuture<>();
-        closeFuture.set(future);
+        closeFuture.getAndSet(future);
 
         // stop any pings being sent at the server for keep-alive
         final ScheduledFuture keepAlive = keepAliveFuture.get();
@@ -389,7 +389,7 @@ final class Connection {
             if (!channel.closeFuture().isDone()) {
                 channel.close(promise);
             } else {
-                if (!(promise instanceof io.netty.channel.VoidChannelPromise) && !promise.trySuccess()) {
+                if (promise instanceof io.netty.channel.VoidChannelPromise || promise.trySuccess()) {
                     logger.warn("Failed to mark a promise as success because it is done already: {}", promise);
                 }
             }

@@ -253,7 +253,9 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
             assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
             assertEquals("Authenticator is not ready to handle requests", re.getMessage());
         } finally {
+            logger.debug("Starting cluster close...");
             cluster.close();
+            logger.debug("Cluster closed...");
             rootLogger.setLevel(Level.WARN);
         }
     }

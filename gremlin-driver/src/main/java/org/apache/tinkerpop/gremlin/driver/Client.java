@@ -529,6 +529,8 @@ public abstract class Client {
             final CompletableFuture[] poolCloseFutures = new CompletableFuture[hostConnectionPools.size()];
             hostConnectionPools.values().stream().map(ConnectionPool::closeAsync).collect(Collectors.toList()).toArray(poolCloseFutures);
             closing.set(CompletableFuture.allOf(poolCloseFutures));
+
+            logger.debug("Closing client with conn futures with future");
             return closing.get();
         }
     }

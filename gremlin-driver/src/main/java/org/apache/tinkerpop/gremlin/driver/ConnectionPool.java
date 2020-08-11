@@ -226,12 +226,15 @@ final class ConnectionPool {
         if (closeFuture.get() != null) return closeFuture.get();
 
         // marking conn pool to be closing...
-        closeFuture.set(new CompletableFuture<>());
+        closeFuture.getAndSet(new CompletableFuture<>());
         logger.info("Signalled closing of connection pool on {} with core size of {}", host, minPoolSize);
 
         announceAllAvailableConnection();
         final CompletableFuture<Void> future = killAvailableConnections();
-        closeFuture.set(future);
+        logger.debug("Killed all connections in pool {}", getPoolInfo());
+
+        closeFuture.getAndSet(future);
+
         return future;
     }
 
@@ -368,9 +371,11 @@ final class ConnectionPool {
                 to = 0;
             }
 
+            logger.debug("wait for conn...isClosed {}", this.getPoolInfo());
             if (isClosed())
                 throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
 
+            logger.debug("Selecting least used conn...");
             final Connection leastUsed = selectLeastUsed();
             logger.debug("Select least used conn");
             if (leastUsed != null) {
