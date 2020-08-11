@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.log4j.Level;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
@@ -47,7 +48,7 @@ import static org.junit.Assert.fail;
  * @author Marc de Lignie
  */
 public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerIntegrationTest {
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(GremlinServerAuthKrb5IntegrateTest.class);
+    private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(GremlinServerAuthKrb5IntegrateTest.class);
 
     static final String TESTCONSOLE = "GremlinConsole";
     static final String TESTCONSOLE_NOT_LOGGED_IN = "UserNotLoggedIn";
@@ -127,6 +128,8 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
 
     @Test
     public void shouldFailWithoutClientJaasEntry() throws Exception {
+        final org.apache.log4j.Logger rootLogger = org.apache.log4j.Logger.getRootLogger();
+        rootLogger.setLevel(Level.DEBUG);
         final Cluster cluster = TestClientFactory.build().protocol(kdcServer.serverPrincipalName)
                 .addContactPoint(kdcServer.hostname).create();
         final Client client = cluster.connect();
@@ -138,6 +141,7 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
             assertTrue(root instanceof ResponseException || root instanceof GSSException);
         } finally {
             cluster.close();
+            rootLogger.setLevel(Level.WARN);
         }
     }
 

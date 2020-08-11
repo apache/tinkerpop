@@ -178,7 +178,7 @@ final class ConnectionPool {
             this.replaceConnection(connection);
         } else {
             if (bin.contains(connection) && borrowed == 0) {
-                logger.debug("{} is already in the bin and it has no inflight requests so it is safe to close", connection);
+                logger.debug("{} is already in the bin and it has no in-flight requests so it is safe to close", connection);
                 if (bin.remove(connection))
                     connection.closeAsync();
                 return;
@@ -224,6 +224,8 @@ final class ConnectionPool {
     public synchronized CompletableFuture<Void> closeAsync() {
         if (closeFuture.get() != null) return closeFuture.get();
 
+        // marking conn pool to be closing...
+        closeFuture.set(new CompletableFuture<>());
         logger.info("Signalled closing of connection pool on {} with core size of {}", host, minPoolSize);
 
         announceAllAvailableConnection();
@@ -254,8 +256,10 @@ final class ConnectionPool {
      * This method is not idempotent and should only be called once per connection.
      */
     void replaceConnection(final Connection connection) {
-        logger.debug("Replace {}", connection);
-        if (connection.isBeingReplaced.getAndSet(true)) {
+        logger.debug("Replace Connection ID:{}", connection.getChannelId());
+        // Do not replace connection is the conn pool is closing/closed.
+        // Do not replace connection if it is alrady being replaced.
+        if (connection.isBeingReplaced.getAndSet(true) || isClosed()) {
             return;
         }
 
