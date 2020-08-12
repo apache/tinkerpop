@@ -24,6 +24,9 @@ import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -93,8 +96,29 @@ final class ConnectionPool {
         this.connections = new CopyOnWriteArrayList<>();
 
         try {
-            for (int i = 0; i < minPoolSize; i++)
-                this.connections.add(new Connection(host.getHostUri(), this, settings.maxInProcessPerConnection));
+            for (int i = 0; i < minPoolSize; i++) {
+                Connection conn = new Connection(host.getHostUri(), this, settings.maxInProcessPerConnection);
+                conn.channel.closeFuture().addListener(new ChannelFutureListener() {
+                    @Override
+                    public void operationComplete(ChannelFuture future) throws Exception {
+                        logger.debug("OnChannelClose future called for channel {}", conn.getChannelId());
+                        // Replace the channel if it was not intentionally closed using CloseAsync method.
+                        if (conn.closeFuture.get() == null) {
+                            logger.debug("Queuing up channel replacement {}", conn.getChannelId());
+                            // delegate the task to worker thread and free up the event loop
+                            try {
+                                cluster.executor().submit(() -> replaceConnection(conn));
+                                //thisConnection.cluster.executor().submit(() -> logger.debug("Running after close {}", thisConnection.getChannelId()));
+                            }catch (Exception ex) {
+                                logger.error("error inside on close",ex);
+                                throw ex;
+                            }
+                        }
+                    }
+                });
+                this.connections.add(conn);
+            }
+
         } catch (ConnectionException ce) {
             // ok if we don't get it initialized here - when a request is attempted in a connection from the
             // pool it will try to create new connections as needed.
@@ -225,15 +249,16 @@ final class ConnectionPool {
     public synchronized CompletableFuture<Void> closeAsync() {
         if (closeFuture.get() != null) return closeFuture.get();
 
-        // marking conn pool to be closing...
-        closeFuture.getAndSet(new CompletableFuture<>());
+        CompletableFuture<Void> future1 = new CompletableFuture<>();
+        closeFuture.set(future1);
         logger.info("Signalled closing of connection pool on {} with core size of {}", host, minPoolSize);
 
         announceAllAvailableConnection();
+        logger.info("Announced conns available pool={}", getPoolInfo());
         final CompletableFuture<Void> future = killAvailableConnections();
         logger.debug("Killed all connections in pool {}", getPoolInfo());
 
-        closeFuture.getAndSet(future);
+        closeFuture.set(future);
 
         logger.debug("Set the close future {}", getPoolInfo());
 
@@ -255,7 +280,7 @@ final class ConnectionPool {
             futures.add(future);
         }
 
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
 
     /**
@@ -267,6 +292,7 @@ final class ConnectionPool {
         // Do not replace connection if the conn pool is closing/closed.
         // Do not replace connection if it is already being replaced.
         if (connection.isBeingReplaced.getAndSet(true) || isClosed()) {
+            logger.info("Replace Connection ID:{} is already being replaced or conn= {} pool={}", connection.getChannelId(), connection.isClosing(), isClosed());
             return;
         }
 
@@ -315,7 +341,26 @@ final class ConnectionPool {
         }
 
         try {
-            connections.add(new Connection(host.getHostUri(), this, settings().maxInProcessPerConnection));
+            final Connection conn = new Connection(host.getHostUri(), this, settings().maxInProcessPerConnection);
+            conn.channel.closeFuture().addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    logger.debug("OnChannelClose future called for channel {}", conn.getChannelId());
+                    // Replace the channel if it was not intentionally closed using CloseAsync method.
+                    if (conn.closeFuture.get() == null) {
+                        logger.debug("Queuing up channel replacement {}", conn.getChannelId());
+                        // delegate the task to worker thread and free up the event loop
+                        try {
+                            cluster.executor().submit(() -> replaceConnection(conn));
+                            //thisConnection.cluster.executor().submit(() -> logger.debug("Running after close {}", thisConnection.getChannelId()));
+                        }catch (Exception ex) {
+                            logger.error("error inside on close",ex);
+                            throw ex;
+                        }
+                    }
+                }
+            });
+            connections.add(conn);
         } catch (ConnectionException ce) {
             logger.debug("Connections were under max, but there was an error creating the connection.", ce);
             open.decrementAndGet();
@@ -367,6 +412,7 @@ final class ConnectionPool {
         do {
             try {
                 awaitAvailableConnection(remaining, unit);
+                logger.debug("await available {}", this.getPoolInfo());
             } catch (InterruptedException e) {
                 logger.debug("Await interrupted", e);
                 Thread.currentThread().interrupt();

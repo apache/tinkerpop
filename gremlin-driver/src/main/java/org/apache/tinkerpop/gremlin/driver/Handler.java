@@ -91,17 +91,17 @@ final class Handler {
                 final RequestMessage.Builder messageBuilder = RequestMessage.build(Tokens.OPS_AUTHENTICATION);
                 // First time through we don't have a sasl client
                 if (saslClient.get() == null) {
-                    subject.set(login());
                     try {
+                        subject.set(login());
                         saslClient.set(saslClient(getHostName(channelHandlerContext)));
-                    } catch (SaslException saslException) {
+                    } catch (SaslException | LoginException ex) {
                         // push the sasl error into a failure response from the server. this ensures that standard
                         // processing for the ResultQueue is kept. without this SaslException trap and subsequent
                         // conversion to an authentication failure, the close() of the connection might not
                         // succeed as it will appear as though pending messages remain present in the queue on the
                         // connection and the shutdown won't proceed
                         final ResponseMessage clientSideError = ResponseMessage.build(response.getRequestId())
-                                .code(ResponseStatusCode.FORBIDDEN).statusMessage(saslException.getMessage()).create();
+                                .code(ResponseStatusCode.FORBIDDEN).statusMessage(ex.getMessage()).create();
                         channelHandlerContext.fireChannelRead(clientSideError);
                         return;
                     }
