@@ -97,26 +97,7 @@ final class ConnectionPool {
 
         try {
             for (int i = 0; i < minPoolSize; i++) {
-                Connection conn = new Connection(host.getHostUri(), this, settings.maxInProcessPerConnection);
-                conn.channel.closeFuture().addListener(new ChannelFutureListener() {
-                    @Override
-                    public void operationComplete(ChannelFuture future) throws Exception {
-                        logger.debug("OnChannelClose future called for channel {}", conn.getChannelId());
-                        // Replace the channel if it was not intentionally closed using CloseAsync method.
-                        if (conn.closeFuture.get() == null) {
-                            logger.debug("Queuing up channel replacement {}", conn.getChannelId());
-                            // delegate the task to worker thread and free up the event loop
-                            try {
-                                cluster.executor().submit(() -> replaceConnection(conn));
-                                //thisConnection.cluster.executor().submit(() -> logger.debug("Running after close {}", thisConnection.getChannelId()));
-                            }catch (Exception ex) {
-                                logger.error("error inside on close",ex);
-                                throw ex;
-                            }
-                        }
-                    }
-                });
-                this.connections.add(conn);
+                this.connections.add(new Connection(host.getHostUri(), this, settings.maxInProcessPerConnection));
             }
 
         } catch (ConnectionException ce) {
@@ -341,26 +322,7 @@ final class ConnectionPool {
         }
 
         try {
-            final Connection conn = new Connection(host.getHostUri(), this, settings().maxInProcessPerConnection);
-            conn.channel.closeFuture().addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture future) throws Exception {
-                    logger.debug("OnChannelClose future called for channel {}", conn.getChannelId());
-                    // Replace the channel if it was not intentionally closed using CloseAsync method.
-                    if (conn.closeFuture.get() == null) {
-                        logger.debug("Queuing up channel replacement {}", conn.getChannelId());
-                        // delegate the task to worker thread and free up the event loop
-                        try {
-                            cluster.executor().submit(() -> replaceConnection(conn));
-                            //thisConnection.cluster.executor().submit(() -> logger.debug("Running after close {}", thisConnection.getChannelId()));
-                        }catch (Exception ex) {
-                            logger.error("error inside on close",ex);
-                            throw ex;
-                        }
-                    }
-                }
-            });
-            connections.add(conn);
+            connections.add(new Connection(host.getHostUri(), this, settings().maxInProcessPerConnection));
         } catch (ConnectionException ce) {
             logger.debug("Connections were under max, but there was an error creating the connection.", ce);
             open.decrementAndGet();
@@ -386,7 +348,7 @@ final class ConnectionPool {
         return true;
     }
 
-    private void definitelyDestroyConnection(final Connection connection) {
+    public void definitelyDestroyConnection(final Connection connection) {
         // only add to the bin for future removal if its not already there.
         if (!bin.contains(connection) && !connection.isClosing()) {
             bin.add(connection);

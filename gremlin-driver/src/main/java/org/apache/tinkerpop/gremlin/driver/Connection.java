@@ -118,31 +118,31 @@ final class Connection {
             channel = b.connect(uri.getHost(), uri.getPort()).sync().channel();
             channelizer.connected();
 
-//            /* Configure behaviour on close of this channel.
-//             *
-//             * This callback would trigger the workflow to replace this connection. ReplaceConnection workflow might be
-//             * called twice, once from this workflow and once again from actions taken by channelInactive callback.
-//             * In such scenarios, isBeingReplaced boolean is used to ensure that the connection is only replaced once.
-//             */
-//            final Connection thisConnection = this;
-//            ((NioSocketChannel)channel).closeFuture().addListener(new ChannelFutureListener() {
-//                @Override
-//                public void operationComplete(ChannelFuture future) throws Exception {
-//                    logger.debug("OnChannelClose future called for channel {}", thisConnection.getChannelId());
-//                    // Replace the channel if it was not intentionally closed using CloseAsync method.
-//                    if (thisConnection.closeFuture.get() == null) {
-//                        logger.debug("Queuing up channel replacement {}", thisConnection.getChannelId());
-//                        // delegate the task to worker thread and free up the event loop
-//                        try {
-//                            thisConnection.cluster.executor().submit(() -> thisConnection.pool.replaceConnection(thisConnection));
-//                            //thisConnection.cluster.executor().submit(() -> logger.debug("Running after close {}", thisConnection.getChannelId()));
-//                        }catch (Exception ex) {
-//                            logger.error("error inside on close",ex);
-//                            throw ex;
-//                        }
-//                    }
-//                }
-//            });
+            /* Configure behaviour on close of this channel.
+             *
+             * This callback would trigger the workflow to replace this connection. ReplaceConnection workflow might be
+             * called twice, once from this workflow and once again from actions taken by channelInactive callback.
+             * In such scenarios, isBeingReplaced boolean is used to ensure that the connection is only replaced once.
+             */
+            final Connection thisConnection = this;
+            ((NioSocketChannel)channel).closeFuture().addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    logger.debug("OnChannelClose future called for channel {}", thisConnection.getChannelId());
+                    // Replace the channel if it was not intentionally closed using CloseAsync method.
+                    if (thisConnection.closeFuture.get() == null) {
+                        logger.debug("Queuing up channel replacement {}", thisConnection.getChannelId());
+                        // delegate the task to worker thread and free up the event loop
+                        try {
+                            thisConnection.cluster.executor().submit(() -> thisConnection.pool.definitelyDestroyConnection(thisConnection));
+                            //thisConnection.cluster.executor().submit(() -> logger.debug("Running after close {}", thisConnection.getChannelId()));
+                        }catch (Exception ex) {
+                            logger.error("error inside on close",ex);
+                            throw ex;
+                        }
+                    }
+                }
+            });
 
             logger.info("Created new connection for {}", uri);
 
@@ -261,17 +261,16 @@ final class Connection {
                             if (t != null) {
                                 logger.error("read complete error");
                                 handleConnectionCleanupOnError(thisConnection);
-
-                                // While this request was in process, close might have been signaled in closeAsync().
-                                // However, close would be blocked until all pending requests are completed. Attempt
-                                // the shutdown if the returned result cleared up the last pending message and unblocked
-                                // the close.
-                                tryShutdown();
                             } else {
                                 logger.error("read complete success");
                                 // connection is fine, just return it to the pool
                                 thisConnection.returnToPool();
                             }
+                            // While this request was in process, close might have been signaled in closeAsync().
+                            // However, close would be blocked until all pending requests are completed. Attempt
+                            // the shutdown if the returned result cleared up the last pending message and unblocked
+                            // the close.
+                            tryShutdown();
                         }, cluster.executor());
 
                         final ResultQueue handler = new ResultQueue(resultLinkedBlockingQueue, readCompleted);
