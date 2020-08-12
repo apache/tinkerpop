@@ -125,23 +125,23 @@ final class Connection {
              * In such scenarios, isBeingReplaced boolean is used to ensure that the connection is only replaced once.
              */
             final Connection thisConnection = this;
-//            ((NioSocketChannel)channel).closeFuture().addListener(new ChannelFutureListener() {
-//                @Override
-//                public void operationComplete(ChannelFuture future) throws Exception {
-//                    logger.debug("OnChannelClose future called for channel {}", thisConnection.getChannelId());
-//                    // Replace the channel if it was not intentionally closed using CloseAsync method.
-//                    if (closeFuture.get() == null) {
-//                        logger.debug("Queuing up channel replacement {}", thisConnection.getChannelId());
-//                        // delegate the task to worker thread and free up the event loop
-//                        try {
-//                            cluster.executor().submit(() -> pool.replaceConnection(thisConnection));
-//                        }catch (Exception ex) {
-//                            logger.error("",ex);
-//                            throw ex;
-//                        }
-//                    }
-//                }
-//            });
+            ((NioSocketChannel)channel).closeFuture().addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    logger.debug("OnChannelClose future called for channel {}", thisConnection.getChannelId());
+                    // Replace the channel if it was not intentionally closed using CloseAsync method.
+                    if (closeFuture.get() == null) {
+                        logger.debug("Queuing up channel replacement {}", thisConnection.getChannelId());
+                        // delegate the task to worker thread and free up the event loop
+                        try {
+                            cluster.executor().submit(() -> pool.replaceConnection(thisConnection));
+                        }catch (Exception ex) {
+                            logger.error("",ex);
+                            throw ex;
+                        }
+                    }
+                }
+            });
 
             logger.info("Created new connection for {}", uri);
 
