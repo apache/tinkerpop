@@ -195,7 +195,6 @@ final class Connection {
 
     public synchronized CompletableFuture<Void> closeAsync() {
         if (isClosing()) return closeFuture.get();
-        this.isClosing
 
         final CompletableFuture<Void> future = new CompletableFuture<>();
         closeFuture.set(future);
