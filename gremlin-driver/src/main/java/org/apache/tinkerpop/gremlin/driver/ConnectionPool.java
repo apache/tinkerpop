@@ -36,6 +36,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
@@ -70,6 +71,7 @@ final class ConnectionPool {
     private final AtomicInteger scheduledForCreation = new AtomicInteger();
 
     private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
+    private final AtomicBoolean isClosingBool = new AtomicBoolean(false);
 
     private volatile int waiter = 0;
     private final Lock waitLock = new ReentrantLock(true);
@@ -221,7 +223,7 @@ final class ConnectionPool {
     }
 
     public boolean isClosed() {
-        return closeFuture.get() != null;
+        return (this.closeFuture.get() != null) || isClosingBool.get();
     }
 
     /**
@@ -229,6 +231,7 @@ final class ConnectionPool {
      */
     public synchronized CompletableFuture<Void> closeAsync() {
         if (closeFuture.get() != null) return closeFuture.get();
+        isClosingBool.set(true);
 
         CompletableFuture<Void> future1 = new CompletableFuture<>();
         closeFuture.set(future1);
@@ -241,7 +244,7 @@ final class ConnectionPool {
 
         closeFuture.set(future);
 
-        logger.debug("Set the close future {}", getPoolInfo());
+        logger.debug("Set the close future {}-{}", getPoolInfo(),this.hashCode());
 
         return future;
     }
@@ -381,8 +384,8 @@ final class ConnectionPool {
                 to = 0;
             }
 
-            logger.debug("wait for conn...isClosed {}", this.getPoolInfo());
-            if (isClosed())
+            logger.debug("wait for conn...isClosed {}-{}", this.getPoolInfo(), this.hashCode());
+            if (this.isClosed())
                 throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
 
             logger.debug("Selecting least used conn...");
