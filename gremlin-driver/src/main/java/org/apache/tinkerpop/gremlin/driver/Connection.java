@@ -130,16 +130,17 @@ final class Connection {
                 public void operationComplete(ChannelFuture future) throws Exception {
                     logger.debug("OnChannelClose future called for channel {}", thisConnection.getChannelId());
                     // Replace the channel if it was not intentionally closed using CloseAsync method.
-//                    if (closeFuture.get() == null) {
-//                        logger.debug("Queuing up channel replacement {}", thisConnection.getChannelId());
-//                        // delegate the task to worker thread and free up the event loop
-//                        try {
-//                            cluster.executor().submit(() -> pool.replaceConnection(thisConnection));
-//                        }catch (Exception ex) {
-//                            logger.error("",ex);
-//                            throw ex;
-//                        }
-//                    }
+                    if (closeFuture.get() == null) {
+                        logger.debug("Queuing up channel replacement {}", thisConnection.getChannelId());
+                        // delegate the task to worker thread and free up the event loop
+                        try {
+                            //thisConnection.cluster.executor().submit(() -> thisConnection.pool.replaceConnection(thisConnection));
+                            thisConnection.cluster.executor().submit(() -> logger.debug("Running after close {}", thisConnection.getChannelId()));
+                        }catch (Exception ex) {
+                            logger.error("",ex);
+                            throw ex;
+                        }
+                    }
                 }
             });
 
