@@ -235,6 +235,8 @@ final class ConnectionPool {
 
         closeFuture.getAndSet(future);
 
+        logger.debug("Set the close future {}", getPoolInfo());
+
         return future;
     }
 
