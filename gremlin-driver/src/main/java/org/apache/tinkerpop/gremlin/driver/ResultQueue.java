@@ -23,6 +23,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.javatuples.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,6 +48,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 final class ResultQueue {
+    private static final Logger logger = LoggerFactory.getLogger(ResultQueue.class);
 
     private final LinkedBlockingQueue<Result> resultLinkedBlockingQueue;
 
@@ -183,6 +186,7 @@ final class ResultQueue {
     }
 
     void markError(final Throwable throwable) {
+        logger.warn("marked error");
         error.set(throwable);
         this.readComplete.completeExceptionally(throwable);
         this.drainAllWaiting();
