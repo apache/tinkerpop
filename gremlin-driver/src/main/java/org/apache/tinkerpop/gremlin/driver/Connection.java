@@ -134,8 +134,8 @@ final class Connection {
                         logger.debug("Queuing up channel replacement {}", thisConnection.getChannelId());
                         // delegate the task to worker thread and free up the event loop
                         try {
-                            //thisConnection.cluster.executor().submit(() -> thisConnection.pool.definitelyDestroyConnection(thisConnection));
-                            thisConnection.cluster.executor().submit(() -> logger.debug("Running after close {}", thisConnection.getChannelId()));
+                            thisConnection.cluster.executor().submit(() -> thisConnection.pool.definitelyDestroyConnection(thisConnection));
+                            //thisConnection.cluster.executor().submit(() -> logger.debug("Running after close {}", thisConnection.getChannelId()));
                         }catch (Exception ex) {
                             logger.error("error inside on close",ex);
                             throw ex;
