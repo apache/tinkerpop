@@ -67,6 +67,8 @@ public class TestWSGremlinInitializer extends TestWebSocketServerInitializer {
             UUID.fromString("0150143b-00f9-48a7-a268-28142d902e18");
     public static final UUID CLOSE_CONNECTION_REQUEST_ID_2 =
             UUID.fromString("3c4cf18a-c7f2-4dad-b9bf-5c701eb33000");
+    public static final UUID RESPONSE_CONTAINS_SERVER_ERROR_REQUEST_ID =
+            UUID.fromString("0d333b1d-6e91-4807-b915-50b9ad721d20");
 
     /**
      * Gremlin serializer used for serializing/deserializing the request/response. This should be same as client.
@@ -119,6 +121,9 @@ public class TestWSGremlinInitializer extends TestWebSocketServerInitializer {
                         .statusAttributeException(new RuntimeException()).create();
                 ctx.channel().writeAndFlush(new TextWebSocketFrame(SERIALIZER.serializeResponseAsString(responseMessage)));
             } else if (msg.getRequestId().equals(CLOSE_CONNECTION_REQUEST_ID)) {
+                Thread.sleep(1000);
+                ctx.channel().writeAndFlush(new CloseWebSocketFrame());
+            } else if (msg.getRequestId().equals(RESPONSE_CONTAINS_SERVER_ERROR_REQUEST_ID)) {
                 Thread.sleep(1000);
                 ctx.channel().writeAndFlush(new CloseWebSocketFrame());
             }

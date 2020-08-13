@@ -48,7 +48,7 @@ public class WebSocketClientBehaviorIntegrateTest {
         recordingAppender = new Log4jRecordingAppender();
         final org.apache.log4j.Logger rootLogger = org.apache.log4j.Logger.getRootLogger();
         if (name.getMethodName().equals("TestClosedConnectionIsRecycledForConnectionWithPendingRequests") ||
-                name.getMethodName().equals("TestCloseConnectionByClientIsNotRecycled")) {
+                name.getMethodName().equals("TestClosedConnectionByClientIsNotRecycled")) {
             final org.apache.log4j.Logger connectionPoolLogger = org.apache.log4j.Logger.getLogger(ConnectionPool.class);
             final org.apache.log4j.Logger connectionLogger = org.apache.log4j.Logger.getLogger(Connection.class);
             previousLogLevel = connectionPoolLogger.getLevel();
@@ -70,7 +70,7 @@ public class WebSocketClientBehaviorIntegrateTest {
         final org.apache.log4j.Logger rootLogger = org.apache.log4j.Logger.getRootLogger();
 
         if (name.getMethodName().equals("TestClosedConnectionIsRecycledForConnectionWithPendingRequests") ||
-                name.getMethodName().equals("TestCloseConnectionByClientIsNotRecycled")) {
+                name.getMethodName().equals("TestClosedConnectionByClientIsNotRecycled")) {
             final org.apache.log4j.Logger connectionPoolLogger = org.apache.log4j.Logger.getLogger(ConnectionPool.class);
             final org.apache.log4j.Logger connectionLogger = org.apache.log4j.Logger.getLogger(Connection.class);
             connectionPoolLogger.setLevel(previousLogLevel);
@@ -195,17 +195,18 @@ public class WebSocketClientBehaviorIntegrateTest {
         ConnectionPool channelPool = client.hostConnectionPools.values().stream().findFirst().get();
         Assert.assertEquals(1, channelPool.getConnectionIDs().size());
 
+        // close the connection pool in an authentic manner
         channelPool.closeAsync().get();
 
         // wait for channel closure callback to trigger
         Thread.sleep(2000);
 
-        Assert.assertEquals("OnClose callback should be called",1,
+        Assert.assertEquals("OnClose callback should be called but only once", 1,
                 recordingAppender.getMessages().stream()
-                        .filter(str -> str.contains("OnChannelClose future called for channel"))
+                        .filter(str -> str.contains("OnChannelClose callback called for channel"))
                         .count());
 
-        Assert.assertEquals("No new connection creation should be started",0,
+        Assert.assertEquals("No new connection creation should be started", 0,
                 recordingAppender.getMessages().stream()
                         .filter(str -> str.contains("Considering new connection on"))
                         .count());

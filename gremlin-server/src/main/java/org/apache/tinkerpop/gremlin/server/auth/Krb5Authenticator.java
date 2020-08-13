@@ -112,12 +112,16 @@ public class Krb5Authenticator implements Authenticator {
                 // Sasl.SERVER_AUTH fixed to true (mutual authentication) and one can configure SSL for enhanced confidentiality,
                 // Sasl policy properties for negotiating the authenticatin mechanism are not relevant here, because
                 // GSSAPI is the only available mechanism for this authenticator
-                final Map props = new HashMap<String, Object>();
+                final Map<String, Object> props = new HashMap<>();
+                if (principalName == null) {
+                    throw new IllegalArgumentException("Principal name cannot be empty. Use principal name of format 'service/fqdn@kdcrealm'");
+                }
                 final String[] principalParts = principalName.split("/|@");
                 if (principalParts.length < 3) throw new IllegalArgumentException("Use principal name of format 'service/fqdn@kdcrealm'");
                 saslServer = Sasl.createSaslServer(mechanism, principalParts[0], principalParts[1], props, Krb5SaslAuthenticator.this);
             } catch(Exception e) {
                 logger.error("Creating sasl server failed: ", e);
+                throw new RuntimeException(e);
             }
             logger.debug("SaslServer created with: " + saslServer.getMechanismName());
         }

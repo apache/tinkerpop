@@ -71,7 +71,6 @@ final class ConnectionPool {
     private final AtomicInteger scheduledForCreation = new AtomicInteger();
 
     private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
-    private final AtomicBoolean isClosingBool = new AtomicBoolean(false);
 
     private volatile int waiter = 0;
     private final Lock waitLock = new ReentrantLock(true);
@@ -105,7 +104,7 @@ final class ConnectionPool {
         } catch (ConnectionException ce) {
             // ok if we don't get it initialized here - when a request is attempted in a connection from the
             // pool it will try to create new connections as needed.
-            logger.warn("Could not initialize connections in pool for {} - pool size at {}", host, this.connections.size(), ce);
+            logger.info("Could not initialize connections in pool for {} - pool size at {}", host, this.connections.size(), ce);
             considerHostUnavailable();
         }
 
@@ -121,8 +120,7 @@ final class ConnectionPool {
     public Connection borrowConnection(final long timeout, final TimeUnit unit) throws TimeoutException, ConnectionException {
         logger.debug("Borrowing connection from pool on {} - timeout in {} {}", host, timeout, unit);
 
-        if (isClosed())
-            throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
+        if (isClosed()) throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
 
         final Connection leastUsedConn = selectLeastUsed();
 
@@ -186,7 +184,7 @@ final class ConnectionPool {
             this.replaceConnection(connection);
         } else {
             if (bin.contains(connection) && borrowed == 0) {
-                logger.debug("{} is already in the bin and it has no in-flight requests so it is safe to close", connection);
+                logger.debug("{} is already in the bin and it has no inflight requests so it is safe to close", connection);
                 if (bin.remove(connection))
                     connection.closeAsync();
                 return;
@@ -223,7 +221,7 @@ final class ConnectionPool {
     }
 
     public boolean isClosed() {
-        return (this.closeFuture.get() != null) || isClosingBool.get();
+        return this.closeFuture.get() != null;
     }
 
     /**
@@ -231,20 +229,12 @@ final class ConnectionPool {
      */
     public synchronized CompletableFuture<Void> closeAsync() {
         if (closeFuture.get() != null) return closeFuture.get();
-        isClosingBool.set(true);
 
-        CompletableFuture<Void> future1 = new CompletableFuture<>();
-        closeFuture.set(future1);
         logger.info("Signalled closing of connection pool on {} with core size of {}", host, minPoolSize);
 
         announceAllAvailableConnection();
-        logger.info("Announced conns available pool={}", getPoolInfo());
         final CompletableFuture<Void> future = killAvailableConnections();
-        logger.debug("Killed all connections in pool {}", getPoolInfo());
-
         closeFuture.set(future);
-
-        logger.debug("Set the close future {}-{}", getPoolInfo(),this.hashCode());
 
         return future;
     }
@@ -271,12 +261,11 @@ final class ConnectionPool {
      * This method is not idempotent and should only be called once per connection.
      */
     void replaceConnection(final Connection connection) {
-        logger.info("Replace Connection ID:{}", connection.getChannelId());
+        logger.info("Replace {}", connection);
 
         // Do not replace connection if the conn pool is closing/closed.
         // Do not replace connection if it is already being replaced.
         if (connection.isBeingReplaced.getAndSet(true) || isClosed()) {
-            logger.info("Replace Connection ID:{} is already being replaced or conn= {} pool={}", connection.getChannelId(), connection.isClosing(), isClosed());
             return;
         }
 
@@ -351,7 +340,7 @@ final class ConnectionPool {
         return true;
     }
 
-    public void definitelyDestroyConnection(final Connection connection) {
+    private void definitelyDestroyConnection(final Connection connection) {
         // only add to the bin for future removal if its not already there.
         if (!bin.contains(connection) && !connection.isClosing()) {
             bin.add(connection);
@@ -370,27 +359,21 @@ final class ConnectionPool {
     }
 
     private Connection waitForConnection(final long timeout, final TimeUnit unit) throws TimeoutException, ConnectionException {
-        logger.debug("Start wait for connection");
         long start = System.nanoTime();
         long remaining = timeout;
         long to = timeout;
         do {
             try {
                 awaitAvailableConnection(remaining, unit);
-                logger.debug("await available {}", this.getPoolInfo());
             } catch (InterruptedException e) {
-                logger.debug("Await interrupted", e);
                 Thread.currentThread().interrupt();
                 to = 0;
             }
 
-            logger.debug("wait for conn...isClosed {}-{}", this.getPoolInfo(), this.hashCode());
-            if (this.isClosed())
+            if (isClosed())
                 throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
 
-            logger.debug("Selecting least used conn...");
             final Connection leastUsed = selectLeastUsed();
-            logger.debug("Select least used conn");
             if (leastUsed != null) {
                 while (true) {
                     final int inFlight = leastUsed.borrowed.get();
@@ -410,7 +393,7 @@ final class ConnectionPool {
             }
 
             remaining = to - TimeUtil.timeSince(start, unit);
-            logger.debug("Continue to wait for connection on {} if {} > 0 on {}", host, remaining, getPoolInfo());
+            logger.debug("Continue to wait for connection on {} if {} > 0", host, remaining);
         } while (remaining > 0);
 
         logger.debug("Timed-out waiting for connection on {} - possibly unavailable", host);
@@ -423,7 +406,6 @@ final class ConnectionPool {
     }
 
     public void considerHostUnavailable() {
-        logger.debug("Considering host unavailable for pool {}", this.getPoolInfo());
         // called when a connection is "dead" due to a non-recoverable error.
         host.makeUnavailable(this::tryReconnect);
 
@@ -527,8 +509,6 @@ final class ConnectionPool {
             sb.append(c);
             sb.append(",");
         });
-        sb.append("isClosing=");
-        sb.append(isClosed());
         return sb.toString().trim();
     }
 

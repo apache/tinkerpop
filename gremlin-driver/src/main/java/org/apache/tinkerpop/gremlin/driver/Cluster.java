@@ -1261,7 +1261,6 @@ public final class Cluster {
                 closeIt.complete(null);
             });
 
-            logger.debug("Closing the executor....");
             // Prevent the executor from accepting new tasks while still allowing enqueued tasks to complete
             executor.shutdown();
 

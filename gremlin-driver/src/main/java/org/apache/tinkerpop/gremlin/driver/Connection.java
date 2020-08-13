@@ -51,7 +51,7 @@ import java.util.concurrent.atomic.AtomicReference;
 final class Connection {
     private static final Logger logger = LoggerFactory.getLogger(Connection.class);
 
-    public final Channel channel;
+    private final Channel channel;
     private final URI uri;
     private final ConcurrentMap<UUID, ResultQueue> pending = new ConcurrentHashMap<>();
     private final Cluster cluster;
@@ -88,7 +88,7 @@ final class Connection {
 
     private final Channelizer channelizer;
 
-    public final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
+    private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
     private final AtomicBoolean shutdownInitiated = new AtomicBoolean(false);
     private final AtomicReference<ScheduledFuture> keepAliveFuture = new AtomicReference<>();
 
@@ -125,21 +125,16 @@ final class Connection {
              * In such scenarios, isBeingReplaced boolean is used to ensure that the connection is only replaced once.
              */
             final Connection thisConnection = this;
-            ((NioSocketChannel)channel).closeFuture().addListener(new ChannelFutureListener() {
+            channel.closeFuture().addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) throws Exception {
-                    logger.debug("OnChannelClose future called for channel {}", thisConnection.getChannelId());
+                    if(logger.isDebugEnabled()) {
+                        logger.debug("OnChannelClose callback called for channel {}", channel.id().asShortText());
+                    }
                     // Replace the channel if it was not intentionally closed using CloseAsync method.
                     if (thisConnection.closeFuture.get() == null) {
-                        logger.debug("Queuing up channel replacement {}", thisConnection.getChannelId());
                         // delegate the task to worker thread and free up the event loop
-                        try {
-                            thisConnection.cluster.executor().submit(() -> thisConnection.pool.definitelyDestroyConnection(thisConnection));
-                            //thisConnection.cluster.executor().submit(() -> logger.debug("Running after close {}", thisConnection.getChannelId()));
-                        }catch (Exception ex) {
-                            logger.error("error inside on close",ex);
-                            throw ex;
-                        }
+                        thisConnection.cluster.executor().submit(() -> thisConnection.pool.replaceConnection(thisConnection));
                     }
                 }
             });
@@ -240,38 +235,34 @@ final class Connection {
                         final LinkedBlockingQueue<Result> resultLinkedBlockingQueue = new LinkedBlockingQueue<>();
                         final CompletableFuture<Void> readCompleted = new CompletableFuture<>();
 
-//                        // the callback for when the read was successful, meaning that ResultQueue.markComplete()
-//                        // was called
-//                        readCompleted.thenAcceptAsync(v -> {
-//                            // connection is fine, just return it to the pool
-//                            thisConnection.returnToPool();
-//
-//                            // While this request was in process, close might have been signaled in closeAsync().
-//                            // However, close would be blocked until all pending requests are completed. Attempt
-//                            // the shutdown if the returned result cleared up the last pending message and unblocked
-//                            // the close.
-//                            tryShutdown();
-//                        }, cluster.executor());
+                        // the callback for when the read was successful, meaning that ResultQueue.markComplete()
+                        // was called
+                        readCompleted.thenAcceptAsync(v -> {
+                            // connection is fine, just return it to the pool
+                            thisConnection.returnToPool();
 
-                        // the callback for when the read failed. a failed read means the request went to the server
-                        // and came back with a server-side error of some sort.  it means the server is responsive
-                        // so this isn't going to be like a potentially dead host situation which is handled above on a failed
-                        // write operation.
-                        readCompleted.whenCompleteAsync((v,t) -> {
-                            if (t != null) {
-                                logger.error("read complete error");
-                                handleConnectionCleanupOnError(thisConnection);
-                            } else {
-                                logger.error("read complete success");
-                                // connection is fine, just return it to the pool
-                                thisConnection.returnToPool();
-                            }
                             // While this request was in process, close might have been signaled in closeAsync().
                             // However, close would be blocked until all pending requests are completed. Attempt
                             // the shutdown if the returned result cleared up the last pending message and unblocked
                             // the close.
                             tryShutdown();
                         }, cluster.executor());
+
+                        // the callback for when the read failed. a failed read means the request went to the server
+                        // and came back with a server-side error of some sort.  it means the server is responsive
+                        // so this isn't going to be like a potentially dead host situation which is handled above on a failed
+                        // write operation.
+                        readCompleted.exceptionally(t -> {
+                            handleConnectionCleanupOnError(thisConnection);
+
+                            // While this request was in process, close might have been signaled in closeAsync().
+                            // However, close would be blocked until all pending requests are completed. Attempt
+                            // the shutdown if the returned result cleared up the last pending message and unblocked
+                            // the close.
+                            tryShutdown();
+
+                            return null;
+                        });
 
                         final ResultQueue handler = new ResultQueue(resultLinkedBlockingQueue, readCompleted);
                         pending.put(requestMessage.getRequestId(), handler);
@@ -353,7 +344,7 @@ final class Connection {
             // is annoyed that a long run operation is happening and they want an immediate cancellation. that's the
             // most likely use case. we also get the nice benefit that this if/then code just goes away as the
             // Connection really shouldn't care about the specific Client implementation.
-            if (client instanceof Client.SessionedClient) {
+            if (client instanceof Client.SessionedClient && !isDead()) {
                 final boolean forceClose = client.getSettings().getSession().get().isForceClosed();
                 final RequestMessage closeMessage = client.buildMessage(
                         RequestMessage.build(Tokens.OPS_CLOSE).addArg(Tokens.ARGS_FORCE, forceClose)).create();
@@ -394,19 +385,19 @@ final class Connection {
             });
 
             // close the netty channel, if not already closed
-           // if (!channel.closeFuture().isDone()) {
+            if (!channel.closeFuture().isDone()) {
                 channel.close(promise);
-//            } else {
-//                if (promise instanceof io.netty.channel.VoidChannelPromise || promise.trySuccess()) {
-//                    logger.warn("Failed to mark a promise as success because it is done already: {}", promise);
-//                }
-//            }
+            } else {
+                if (promise instanceof io.netty.channel.VoidChannelPromise || promise.trySuccess()) {
+                    logger.warn("Failed to mark a promise as success because it is done already: {}", promise);
+                }
+            }
         }
     }
 
     public String getConnectionInfo() {
-        return String.format("Connection{host=%s, isDead=%s, borrowed=%s, pending=%s}",
-                pool.host, isDead(), borrowed, pending.size());
+        return String.format("Connection{channel=%s, host=%s, isDead=%s, borrowed=%s, pending=%s}",
+                channel, pool.host, isDead(), borrowed, pending.size());
     }
 
     /**
@@ -415,12 +406,12 @@ final class Connection {
      * Currently only used for testing.
      */
     String getChannelId() {
-        return channel.id().asShortText();
+        return (channel != null) ? channel.id().asShortText() : "";
     }
 
     @Override
     public String toString() {
-        return connectionLabel + getChannelId();
+        return String.format(connectionLabel + ", {channel=%s}", getChannelId());
     }
 
     /**

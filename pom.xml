@@ -25,7 +25,7 @@ limitations under the License.
     </parent>
     <groupId>org.apache.tinkerpop</groupId>
     <artifactId>tinkerpop</artifactId>
-    <version>3.4.9-SNAPSHOT</version>
+    <version>3.4.8</version>
     <packaging>pom</packaging>
     <name>Apache TinkerPop</name>
     <description>A Graph Computing Framework</description>
@@ -484,7 +484,7 @@ limitations under the License.
                             </goals>
                             <configuration>
                                 <includes>
-                                    <include>**/GremlinServerAuthKrb5IntegrateTest.java</include>
+                                    <include>**/*IntegrateTest.java</include>
                                 </includes>
                                 <skipTests>${skipIntegrationTests}</skipTests>
                                 <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182 -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true
