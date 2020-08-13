@@ -83,7 +83,7 @@ public class KdcFixture {
         // in principal names.
         String hostname = "";
         try {
-            hostname = "localhost";
+            hostname = Inet4Address.getLocalHost().getCanonicalHostName().toLowerCase();
         } catch (Exception e) {
             logger.error("Hostname not found: " + e.getMessage());
         }
