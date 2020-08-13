@@ -453,7 +453,7 @@ final class ConnectionPool {
             this.cluster.loadBalancingStrategy().onAvailable(h);
             return true;
         } catch (Exception ex) {
-            logger.debug("Failed reconnect attempt on {}", h);
+            logger.debug("Failed reconnect attempt on {}", h, ex);
             if (connection != null) definitelyDestroyConnection(connection);
             return false;
         }
