@@ -484,7 +484,7 @@ limitations under the License.
                             </goals>
                             <configuration>
                                 <includes>
-                                    <include>**/*IntegrateTest.java</include>
+                                    <include>**/GremlinServerAuthKrb5IntegrateTest.java</include>
                                 </includes>
                                 <skipTests>${skipIntegrationTests}</skipTests>
                                 <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182 -Dbuild.dir=${project.build.directory} -Dis.testing=true -Djava.net.preferIPv4Stack=true
