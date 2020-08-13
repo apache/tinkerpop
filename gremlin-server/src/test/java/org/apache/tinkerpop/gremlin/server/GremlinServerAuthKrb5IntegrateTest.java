@@ -192,29 +192,29 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
             System.setProperty("javax.security.sasl.qop", oldQop);
         }
     }
-
-    @Test
-    public void shouldAuthenticateWithSsl() throws Exception {
-        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE).enableSsl(true).sslSkipCertValidation(true)
-                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
-        final Client client = cluster.connect();
-        assertConnection(cluster, client);
-    }
-
-    @Test
-    public void shouldAuthenticateWithSerializeResultToStringGryoV1() throws Exception {
-        assertAuthViaToStringWithSpecifiedSerializer(new GryoMessageSerializerV1d0());
-    }
-
-    @Test
-    public void shouldAuthenticateWithSerializeResultToStringGryoV3() throws Exception {
-        assertAuthViaToStringWithSpecifiedSerializer(new GryoMessageSerializerV3d0());
-    }
-
-    @Test
-    public void shouldAuthenticateWithSerializeResultToStringGraphBinaryV1() throws Exception {
-        assertAuthViaToStringWithSpecifiedSerializer(new GraphBinaryMessageSerializerV1());
-    }
+//
+//    @Test
+//    public void shouldAuthenticateWithSsl() throws Exception {
+//        final Cluster cluster = TestClientFactory.build().jaasEntry(TESTCONSOLE).enableSsl(true).sslSkipCertValidation(true)
+//                .protocol(kdcServer.serverPrincipalName).addContactPoint(kdcServer.hostname).create();
+//        final Client client = cluster.connect();
+//        assertConnection(cluster, client);
+//    }
+//
+//    @Test
+//    public void shouldAuthenticateWithSerializeResultToStringGryoV1() throws Exception {
+//        assertAuthViaToStringWithSpecifiedSerializer(new GryoMessageSerializerV1d0());
+//    }
+//
+//    @Test
+//    public void shouldAuthenticateWithSerializeResultToStringGryoV3() throws Exception {
+//        assertAuthViaToStringWithSpecifiedSerializer(new GryoMessageSerializerV3d0());
+//    }
+//
+//    @Test
+//    public void shouldAuthenticateWithSerializeResultToStringGraphBinaryV1() throws Exception {
+//        assertAuthViaToStringWithSpecifiedSerializer(new GraphBinaryMessageSerializerV1());
+//    }
 
     public void assertAuthViaToStringWithSpecifiedSerializer(final MessageSerializer serializer) throws InterruptedException, ExecutionException {
         final Map<String,Object> config = new HashMap<>();
