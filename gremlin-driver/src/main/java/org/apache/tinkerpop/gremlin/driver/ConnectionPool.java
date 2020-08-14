@@ -340,7 +340,7 @@ final class ConnectionPool {
         return true;
     }
 
-    private void definitelyDestroyConnection(final Connection connection) {
+    public void definitelyDestroyConnection(final Connection connection) {
         // only add to the bin for future removal if its not already there.
         if (!bin.contains(connection) && !connection.isClosing()) {
             bin.add(connection);

@@ -134,7 +134,7 @@ final class Connection {
                     // Replace the channel if it was not intentionally closed using CloseAsync method.
                     if (thisConnection.closeFuture.get() == null) {
                         // delegate the task to worker thread and free up the event loop
-                        thisConnection.cluster.executor().submit(() -> thisConnection.pool.replaceConnection(thisConnection));
+                        thisConnection.cluster.executor().submit(() -> thisConnection.pool.definitelyDestroyConnection(thisConnection));
                     }
                 }
             });

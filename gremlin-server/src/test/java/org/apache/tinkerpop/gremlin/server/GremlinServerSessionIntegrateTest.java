@@ -75,6 +75,9 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             case "shouldBlockAdditionalRequestsDuringForceClose":
                 Logger.getRootLogger().setLevel(Level.INFO);
                 break;
+            case "shouldHaveTheSessionTimeout":
+                Logger.getRootLogger().setLevel(Level.INFO);
+                break;
         }
         rootLogger.addAppender(recordingAppender);
     }
