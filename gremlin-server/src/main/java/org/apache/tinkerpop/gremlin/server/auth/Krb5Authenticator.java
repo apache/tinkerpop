@@ -121,7 +121,6 @@ public class Krb5Authenticator implements Authenticator {
                 saslServer = Sasl.createSaslServer(mechanism, principalParts[0], principalParts[1], props, Krb5SaslAuthenticator.this);
             } catch(Exception e) {
                 logger.error("Creating sasl server failed: ", e);
-                throw new RuntimeException(e);
             }
             logger.debug("SaslServer created with: " + saslServer.getMechanismName());
         }
