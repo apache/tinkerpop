@@ -388,7 +388,7 @@ final class Connection {
             if (!channel.closeFuture().isDone()) {
                 channel.close(promise);
             } else {
-                if (promise instanceof io.netty.channel.VoidChannelPromise || promise.trySuccess()) {
+                if (!promise.trySuccess()) {
                     logger.warn("Failed to mark a promise as success because it is done already: {}", promise);
                 }
             }
