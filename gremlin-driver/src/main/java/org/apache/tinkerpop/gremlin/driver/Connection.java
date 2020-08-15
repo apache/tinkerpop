@@ -18,17 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import io.netty.handler.codec.CodecException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -98,7 +96,8 @@ final class Connection {
 
         connectionLabel = String.format("Connection{host=%s}", pool.host);
 
-        if (cluster.isClosing()) throw new IllegalStateException("Cannot open a connection with the cluster after close() is called");
+        if (cluster.isClosing())
+            throw new IllegalStateException("Cannot open a connection with the cluster after close() is called");
 
         final Bootstrap b = this.cluster.getFactory().createBootstrap();
         try {
@@ -134,12 +133,12 @@ final class Connection {
 
     /**
      * Consider a connection as dead if the underlying channel is not connected.
-     *
+     * <p>
      * Note: A dead connection does not necessarily imply that the server is unavailable. Additional checks
      * should be performed to mark the server host as unavailable.
      */
     public boolean isDead() {
-        return (channel !=null && !channel.isActive());
+        return (channel != null && !channel.isActive());
     }
 
     boolean isClosing() {
@@ -199,7 +198,7 @@ final class Connection {
         }
     }
 
-    public ChannelPromise write(final RequestMessage requestMessage, final CompletableFuture<ResultSet> future) {
+    public ChannelPromise write(final RequestMessage requestMessage, final CompletableFuture<ResultSet> resultQueueSetup) {
         // once there is a completed write, then create a traverser for the result set and complete
         // the promise so that the client knows that that it can start checking for results.
         final Connection thisConnection = this;
@@ -208,40 +207,39 @@ final class Connection {
                 .addListener(f -> {
                     if (!f.isSuccess()) {
                         if (logger.isDebugEnabled())
-                            logger.debug(String.format("Write on connection %s failed", thisConnection.getConnectionInfo()), f.cause());
+                            logger.debug(String.format("Write on connection %s failed",
+                                    thisConnection.getConnectionInfo()), f.cause());
 
                         handleConnectionCleanupOnError(thisConnection, f.cause());
 
-                        cluster.executor().submit(() -> future.completeExceptionally(f.cause()));
+                        cluster.executor().submit(() -> resultQueueSetup.completeExceptionally(f.cause()));
                     } else {
                         final LinkedBlockingQueue<Result> resultLinkedBlockingQueue = new LinkedBlockingQueue<>();
                         final CompletableFuture<Void> readCompleted = new CompletableFuture<>();
 
-                        // the callback for when the read was successful, meaning that ResultQueue.markComplete()
-                        // was called
-                        readCompleted.thenAcceptAsync(v -> {
-                            thisConnection.returnToPool();
+                        readCompleted.whenCompleteAsync((v, t) -> {
+                            if (t != null) {
+                                // the callback for when the read failed. a failed read means the request went to the server
+                                // and came back with a server-side error of some sort.  it means the server is responsive
+                                // so this isn't going to be like a potentially dead host situation which is handled above on a failed
+                                // write operation.
+                                logger.debug("Error while processing request on the server {}.", this, t);
+                                handleConnectionCleanupOnError(thisConnection, t);
+                            } else {
+                                // the callback for when the read was successful, meaning that ResultQueue.markComplete()
+                                // was called
+                                thisConnection.returnToPool();
+                            }
                             tryShutdown();
                         }, cluster.executor());
 
-                        // the callback for when the read failed. a failed read means the request went to the server
-                        // and came back with a server-side error of some sort.  it means the server is responsive
-                        // so this isn't going to be like a potentially dead host situation which is handled above on a failed
-                        // write operation.
-                        readCompleted.exceptionally(t -> {
-
-                            handleConnectionCleanupOnError(thisConnection, t);
-
-                            // close was signaled in closeAsync() but there were pending messages at that time. attempt
-                            // the shutdown if the returned result cleared up the last pending message
-                            tryShutdown();
-
-                            return null;
-                        });
-
                         final ResultQueue handler = new ResultQueue(resultLinkedBlockingQueue, readCompleted);
                         pending.put(requestMessage.getRequestId(), handler);
-                        cluster.executor().submit(() -> future.complete(
+
+                        // resultQueueSetup should only be completed by a worker since the application code might have sync
+                        // completion stages attached to it which and we do not want the event loop threads to process those
+                        // stages.
+                        cluster.executor().submit(() -> resultQueueSetup.complete(
                                 new ResultSet(handler, cluster.executor(), readCompleted, requestMessage, pool.host)));
                     }
                 });
@@ -293,7 +291,7 @@ final class Connection {
     }
 
     private boolean isOkToClose() {
-        return pending.isEmpty() || (channel !=null && !channel.isOpen()) || !pool.host.isAvailable();
+        return pending.isEmpty() || (channel != null && !channel.isOpen()) || !pool.host.isAvailable();
     }
 
     /**
@@ -396,7 +394,7 @@ final class Connection {
                 shutdown(future);
                 boolean interrupted = false;
                 try {
-                    while(null == self) {
+                    while (null == self) {
                         try {
                             Thread.sleep(1);
                         } catch (InterruptedException e) {
@@ -405,7 +403,7 @@ final class Connection {
                     }
                     self.cancel(false);
                 } finally {
-                    if(interrupted) {
+                    if (interrupted) {
                         Thread.currentThread().interrupt();
                     }
                 }
