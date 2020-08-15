@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -120,9 +121,8 @@ final class Connection {
 
             /* Configure behaviour on close of this channel.
              *
-             * This callback would trigger the workflow to replace this connection. ReplaceConnection workflow might be
-             * called twice, once from this workflow and once again from actions taken by channelInactive callback.
-             * In such scenarios, isBeingReplaced boolean is used to ensure that the connection is only replaced once.
+             * This callback would trigger the workflow to destroy this connection, so that a new request doesn't pick
+             * this closed connection.
              */
             final Connection thisConnection = this;
             channel.closeFuture().addListener(new ChannelFutureListener() {
