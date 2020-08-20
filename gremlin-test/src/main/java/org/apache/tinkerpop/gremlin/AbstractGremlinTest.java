@@ -295,7 +295,7 @@ public abstract class AbstractGremlinTest {
         assertThat(actual, instanceOf(expected.getClass()));
     }
 
-    private static void verifyUniqueStepIds(final Traversal.Admin<?, ?> traversal) {
+    public static void verifyUniqueStepIds(final Traversal.Admin<?, ?> traversal) {
         AbstractGremlinTest.verifyUniqueStepIds(traversal, 0, new HashSet<>());
     }
 
