@@ -25,7 +25,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Gremlin.Net.Structure;
 
-// THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
 namespace Gremlin.Net.Process.Traversal
 {
     /// <summary>

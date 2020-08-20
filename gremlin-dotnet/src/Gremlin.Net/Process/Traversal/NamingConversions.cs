@@ -23,7 +23,6 @@
 
 using System.Collections.Generic;
 
-// THIS IS A GENERATED FILE - DO NOT MODIFY THIS FILE DIRECTLY - see pom.xml
 namespace Gremlin.Net.Process.Traversal
 {
     internal static class NamingConversions
