@@ -178,6 +178,10 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
         this.parameters.getTraversals().forEach(this::integrateChild);
     }
 
+    public VertexProperty.Cardinality getCardinality() {
+        return cardinality;
+    }
+
     @Override
     public String toString() {
         return StringFactory.stepString(this, this.parameters);

@@ -71,6 +71,10 @@ public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> {
         return REQUIREMENTS;
     }
 
+    public boolean isListFold() {
+        return listFold;
+    }
+
     public static class FoldBiOperator<E> implements BinaryOperator<E>, Serializable {
 
         private BiFunction biFunction;

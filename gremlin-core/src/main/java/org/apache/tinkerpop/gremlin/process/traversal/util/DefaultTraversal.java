@@ -63,6 +63,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     protected TraversalStrategies strategies;
     protected transient TraverserGenerator generator;
     protected Set<TraverserRequirement> requirements;
+
     protected boolean locked = false;
     protected Bytecode bytecode;
 
@@ -346,6 +347,10 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     @Override
     public void setGraph(final Graph graph) {
         this.graph = graph;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
     }
 
     @Override
