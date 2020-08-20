@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TinkerVertex extends TinkerElement implements Vertex {
+public class TinkerVertex extends TinkerElement implements Vertex {
 
     protected Map<String, List<VertexProperty>> properties;
     protected Map<String, Set<Edge>> outEdges;
