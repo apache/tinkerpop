@@ -47,8 +47,8 @@ public class WebSocketClientBehaviorIntegrateTest {
     public void setUp() throws InterruptedException {
         recordingAppender = new Log4jRecordingAppender();
         final org.apache.log4j.Logger rootLogger = org.apache.log4j.Logger.getRootLogger();
-        if (name.getMethodName().equals("TestClosedConnectionIsRecycledForConnectionWithPendingRequests") ||
-                name.getMethodName().equals("TestClosedConnectionByClientIsNotRecycled")) {
+        if (name.getMethodName().equals("shouldRemoveConnectionFromPoolWhenServerClose_WithPendingRequests") ||
+                name.getMethodName().equals("shouldNotCreateReplacementConnectionWhenClientClosesConnection")) {
             final org.apache.log4j.Logger connectionPoolLogger = org.apache.log4j.Logger.getLogger(ConnectionPool.class);
             final org.apache.log4j.Logger connectionLogger = org.apache.log4j.Logger.getLogger(Connection.class);
             previousLogLevel = connectionPoolLogger.getLevel();
@@ -69,8 +69,8 @@ public class WebSocketClientBehaviorIntegrateTest {
         // reset logger
         final org.apache.log4j.Logger rootLogger = org.apache.log4j.Logger.getRootLogger();
 
-        if (name.getMethodName().equals("TestClosedConnectionIsRecycledForConnectionWithPendingRequests") ||
-                name.getMethodName().equals("TestClosedConnectionByClientIsNotRecycled")) {
+        if (name.getMethodName().equals("shouldRemoveConnectionFromPoolWhenServerClose_WithPendingRequests") ||
+                name.getMethodName().equals("shouldNotCreateReplacementConnectionWhenClientClosesConnection")) {
             final org.apache.log4j.Logger connectionPoolLogger = org.apache.log4j.Logger.getLogger(ConnectionPool.class);
             final org.apache.log4j.Logger connectionLogger = org.apache.log4j.Logger.getLogger(Connection.class);
             connectionPoolLogger.setLevel(previousLogLevel);
@@ -82,10 +82,10 @@ public class WebSocketClientBehaviorIntegrateTest {
 
     /**
      * Test a scenario when server closes a connection which does not have any active requests. Such connection
-     * should be recycled and replaced by another connection.
+     * should be destroyed and replaced by another connection on next request.
      */
     @Test
-    public void TestClosedConnectionIsRecycledForConnectionWithNoRequests() throws InterruptedException {
+    public void shouldRemoveConnectionFromPoolWhenServerClose_WithNoPendingRequests() throws InterruptedException {
         final Cluster cluster = Cluster.build("localhost").port(SimpleWebSocketServer.PORT)
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(1)
@@ -132,7 +132,7 @@ public class WebSocketClientBehaviorIntegrateTest {
      * Ensures that the creation of a new replacement channel only happens once.
      */
     @Test
-    public void TestClosedConnectionIsRecycledForConnectionWithPendingRequests() throws InterruptedException, ExecutionException {
+    public void shouldRemoveConnectionFromPoolWhenServerClose_WithPendingRequests() throws InterruptedException, ExecutionException {
         final Cluster cluster = Cluster.build("localhost").port(SimpleWebSocketServer.PORT)
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(1)
@@ -180,7 +180,7 @@ public class WebSocketClientBehaviorIntegrateTest {
      * connection should not be recycled.
      */
     @Test
-    public void TestClosedConnectionByClientIsNotRecycled() throws ExecutionException, InterruptedException {
+    public void shouldNotCreateReplacementConnectionWhenClientClosesConnection() throws ExecutionException, InterruptedException {
         final Cluster cluster = Cluster.build("localhost").port(SimpleWebSocketServer.PORT)
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(1)
