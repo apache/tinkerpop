@@ -44,6 +44,7 @@ import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Base64;
 
 import static org.junit.Assert.assertEquals;
@@ -131,15 +132,23 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
         CombinedTestClient client =  new CombinedTestClient(getProtocol());
         try {
             client.sendAndAssertUnauthorized("2+2", "stephen", "notpassword");
+        } finally {
             client.close();
-            client = new CombinedTestClient(getProtocol());
+        }
+
+        client = new CombinedTestClient(getProtocol());
+        try {
             client.sendAndAssert("2+2", 4, "stephen", "password");
+        } finally {
+            client.close();
+        }
+
+        client = new CombinedTestClient(getProtocol());
+        try {
             // Expect exception when try again if the server pipeline is correct
             client.sendAndAssertUnauthorized("2+2", "stephen", "notpassword");
+        } finally {
             client.close();
-        } catch (Exception e) {
-            client.close();
-            throw e;
         }
     }
 
@@ -148,15 +157,23 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
         CombinedTestClient client =  new CombinedTestClient(getSecureProtocol());
         try {
             client.sendAndAssertUnauthorized("2+2", "stephen", "incorrect-password");
+        } finally {
             client.close();
-            client = new CombinedTestClient(getSecureProtocol());
+        }
+
+        client = new CombinedTestClient(getSecureProtocol());
+        try {
             client.sendAndAssert("2+2", 4, "stephen", "password");
+        } finally {
+            client.close();
+        }
+
+        client = new CombinedTestClient(getSecureProtocol());
+        try {
             // Expect exception when try again if the server pipeline is correct
             client.sendAndAssertUnauthorized("2+2", "stephen", "incorrect-password");
+        } finally {
             client.close();
-        } catch (Exception e) {
-            client.close();
-            throw e;
         }
     }
 
@@ -228,7 +245,10 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
             sendAndAssert(gremlin, result, null, null);
         }
 
-        public void close() {
+        public void close() throws IOException {
+            if (httpClient != null) {
+                httpClient.close();
+            }
             if (wsCluster != null) {
                 wsCluster.close();
             }

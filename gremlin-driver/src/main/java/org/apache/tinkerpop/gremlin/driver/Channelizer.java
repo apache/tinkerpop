@@ -58,7 +58,7 @@ public interface Channelizer extends ChannelHandler {
     public void init(final Connection connection);
 
     /**
-     * Called on {@link Connection#close()} to perform an {@code Channelizer} specific functions.  Note that the
+     * Called on {@link Connection#closeAsync()} to perform an {@code Channelizer} specific functions.  Note that the
      * {@link Connection} already calls {@code Channel.close()} so there is no need to call that method here.
      * An implementation will typically use this method to send a {@code Channelizer} specific message to the
      * server to notify of shutdown coming from the client side (e.g. a "close" websocket frame).
@@ -148,6 +148,7 @@ public interface Channelizer extends ChannelHandler {
      * WebSocket {@link Channelizer} implementation.
      */
     public final class WebSocketChannelizer extends AbstractChannelizer {
+        private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WebSocketChannelizer.class);
         private WebSocketClientHandler handler;
 
         private WebSocketGremlinRequestEncoder webSocketGremlinRequestEncoder;
@@ -180,7 +181,12 @@ public interface Channelizer extends ChannelHandler {
          */
         @Override
         public void close(final Channel channel) {
-            if (channel.isOpen()) channel.writeAndFlush(new CloseWebSocketFrame());
+            if (channel.isOpen()) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Sending CloseWS frame to server.");
+                }
+                channel.writeAndFlush(new CloseWebSocketFrame());
+            }
         }
 
         @Override
