@@ -22,8 +22,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
@@ -74,6 +77,10 @@ final class Connection {
      * busy a particular {@code Connection} is.
      */
     public final AtomicInteger borrowed = new AtomicInteger(0);
+    /**
+     * This boolean guards the replace of the connection and ensures that it only occurs once.
+     */
+    public final AtomicBoolean isBeingReplaced = new AtomicBoolean(false);
     private final AtomicReference<Class<Channelizer>> channelizerClass = new AtomicReference<>(null);
 
     private final int maxInProcess;
@@ -111,6 +118,26 @@ final class Connection {
 
             channel = b.connect(uri.getHost(), uri.getPort()).sync().channel();
             channelizer.connected();
+
+            /* Configure behaviour on close of this channel.
+             *
+             * This callback would trigger the workflow to destroy this connection, so that a new request doesn't pick
+             * this closed connection.
+             */
+            final Connection thisConnection = this;
+            channel.closeFuture().addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    if(logger.isDebugEnabled()) {
+                        logger.debug("OnChannelClose callback called for channel {}", channel.id().asShortText());
+                    }
+                    // Replace the channel if it was not intentionally closed using CloseAsync method.
+                    if (thisConnection.closeFuture.get() == null) {
+                        // delegate the task to worker thread and free up the event loop
+                        thisConnection.cluster.executor().submit(() -> thisConnection.pool.definitelyDestroyConnection(thisConnection));
+                    }
+                }
+            });
 
             logger.info("Created new connection for {}", uri);
 
@@ -190,14 +217,6 @@ final class Connection {
         return future;
     }
 
-    public void close() {
-        try {
-            closeAsync().get();
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
     public ChannelPromise write(final RequestMessage requestMessage, final CompletableFuture<ResultSet> resultQueueSetup) {
         // once there is a completed write, then create a traverser for the result set and complete
         // the promise so that the client knows that that it can start checking for results.
@@ -210,7 +229,7 @@ final class Connection {
                             logger.debug(String.format("Write on connection %s failed",
                                     thisConnection.getConnectionInfo()), f.cause());
 
-                        handleConnectionCleanupOnError(thisConnection, f.cause());
+                        handleConnectionCleanupOnError(thisConnection);
 
                         cluster.executor().submit(() -> resultQueueSetup.completeExceptionally(f.cause()));
                     } else {
@@ -230,6 +249,10 @@ final class Connection {
                                 // was called
                                 thisConnection.returnToPool();
                             }
+                            // While this request was in process, close might have been signaled in closeAsync().
+                            // However, close would be blocked until all pending requests are completed. Attempt
+                            // the shutdown if the returned result cleared up the last pending message and unblocked
+                            // the close.
                             tryShutdown();
                         }, cluster.executor());
 
@@ -273,7 +296,7 @@ final class Connection {
         }
     }
 
-    public void returnToPool() {
+    private void returnToPool() {
         try {
             if (pool != null) pool.returnConnection(this);
         } catch (ConnectionException ce) {
@@ -282,7 +305,7 @@ final class Connection {
         }
     }
 
-    private void handleConnectionCleanupOnError(final Connection thisConnection, final Throwable t) {
+    private void handleConnectionCleanupOnError(final Connection thisConnection) {
         if (thisConnection.isDead()) {
             if (pool != null) pool.replaceConnection(thisConnection);
         } else {
@@ -309,7 +332,6 @@ final class Connection {
         // messages at the server and leads to ugly log messages over there.
         if (shutdownInitiated.compareAndSet(false, true)) {
             final String connectionInfo = this.getConnectionInfo();
-
             // this block of code that "closes" the session is deprecated as of 3.3.11 - this message is going to be
             // removed at 3.5.0. we will instead bind session closing to the close of the channel itself and not have
             // this secondary operation here which really only acts as a means for clearing resources in a functioning
@@ -318,7 +340,7 @@ final class Connection {
             // is annoyed that a long run operation is happening and they want an immediate cancellation. that's the
             // most likely use case. we also get the nice benefit that this if/then code just goes away as the
             // Connection really shouldn't care about the specific Client implementation.
-            if (client instanceof Client.SessionedClient) {
+            if (client instanceof Client.SessionedClient && !isDead()) {
                 final boolean forceClose = client.getSettings().getSession().get().isForceClosed();
                 final RequestMessage closeMessage = client.buildMessage(
                         RequestMessage.build(Tokens.OPS_CLOSE).addArg(Tokens.ARGS_FORCE, forceClose)).create();
@@ -358,18 +380,34 @@ final class Connection {
                 }
             });
 
-            channel.close(promise);
+            // close the netty channel, if not already closed
+            if (!channel.closeFuture().isDone()) {
+                channel.close(promise);
+            } else {
+                if (!promise.trySuccess()) {
+                    logger.warn("Failed to mark a promise as success because it is done already: {}", promise);
+                }
+            }
         }
     }
 
     public String getConnectionInfo() {
-        return String.format("Connection{host=%s, isDead=%s, borrowed=%s, pending=%s}",
-                pool.host, isDead(), borrowed, pending.size());
+        return String.format("Connection{channel=%s, host=%s, isDead=%s, borrowed=%s, pending=%s}",
+                channel, pool.host, isDead(), borrowed, pending.size());
+    }
+
+    /**
+     * Returns the short ID for the underlying channel for this connection.
+     * <p>
+     * Currently only used for testing.
+     */
+    String getChannelId() {
+        return (channel != null) ? channel.id().asShortText() : "";
     }
 
     @Override
     public String toString() {
-        return connectionLabel;
+        return String.format(connectionLabel + ", {channel=%s}", getChannelId());
     }
 
     /**
