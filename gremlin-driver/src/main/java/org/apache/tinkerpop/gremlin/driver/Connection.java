@@ -243,7 +243,7 @@ final class Connection {
                                 // so this isn't going to be like a potentially dead host situation which is handled above on a failed
                                 // write operation.
                                 logger.debug("Error while processing request on the server {}.", this, t);
-                                handleConnectionCleanupOnError(thisConnection, t);
+                                handleConnectionCleanupOnError(thisConnection);
                             } else {
                                 // the callback for when the read was successful, meaning that ResultQueue.markComplete()
                                 // was called
