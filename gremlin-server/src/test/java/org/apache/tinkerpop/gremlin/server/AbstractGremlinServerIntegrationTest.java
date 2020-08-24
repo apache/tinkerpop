@@ -131,7 +131,9 @@ public abstract class AbstractGremlinServerIntegrationTest {
     }
 
     public void stopServer() throws Exception {
-        server.stop().join();
+        if (server != null) {
+            server.stop().join();
+        }
         // reset the OpLoader processors so that they can get reconfigured on startup - Settings may have changed
         // between tests
         OpLoader.reset();

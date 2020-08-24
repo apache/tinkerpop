@@ -24,6 +24,9 @@ import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -33,11 +36,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -92,12 +97,14 @@ final class ConnectionPool {
         this.connections = new CopyOnWriteArrayList<>();
 
         try {
-            for (int i = 0; i < minPoolSize; i++)
+            for (int i = 0; i < minPoolSize; i++) {
                 this.connections.add(new Connection(host.getHostUri(), this, settings.maxInProcessPerConnection));
+            }
+
         } catch (ConnectionException ce) {
             // ok if we don't get it initialized here - when a request is attempted in a connection from the
             // pool it will try to create new connections as needed.
-            logger.debug("Could not initialize connections in pool for {} - pool size at {}", host, this.connections.size());
+            logger.info("Could not initialize connections in pool for {} - pool size at {}", host, this.connections.size(), ce);
             considerHostUnavailable();
         }
 
@@ -214,7 +221,7 @@ final class ConnectionPool {
     }
 
     public boolean isClosed() {
-        return closeFuture.get() != null;
+        return this.closeFuture.get() != null;
     }
 
     /**
@@ -228,6 +235,7 @@ final class ConnectionPool {
         announceAllAvailableConnection();
         final CompletableFuture<Void> future = killAvailableConnections();
         closeFuture.set(future);
+
         return future;
     }
 
@@ -246,11 +254,20 @@ final class ConnectionPool {
             futures.add(future);
         }
 
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
 
+    /**
+     * This method is not idempotent and should only be called once per connection.
+     */
     void replaceConnection(final Connection connection) {
-        logger.debug("Replace {}", connection);
+        logger.info("Replace {}", connection);
+
+        // Do not replace connection if the conn pool is closing/closed.
+        // Do not replace connection if it is already being replaced.
+        if (connection.isBeingReplaced.getAndSet(true) || isClosed()) {
+            return;
+        }
 
         considerNewConnection();
         definitelyDestroyConnection(connection);
@@ -323,7 +340,7 @@ final class ConnectionPool {
         return true;
     }
 
-    private void definitelyDestroyConnection(final Connection connection) {
+    public void definitelyDestroyConnection(final Connection connection) {
         // only add to the bin for future removal if its not already there.
         if (!bin.contains(connection) && !connection.isClosing()) {
             bin.add(connection);
@@ -335,6 +352,7 @@ final class ConnectionPool {
         if (connection.isDead() || connection.borrowed.get() == 0) {
             if(bin.remove(connection)) {
                 connection.closeAsync();
+                // TODO: Log the following message on completion of the future returned by closeAsync.
                 logger.debug("{} destroyed", connection.getConnectionInfo());
             }
         }
@@ -417,7 +435,7 @@ final class ConnectionPool {
             this.cluster.loadBalancingStrategy().onAvailable(h);
             return true;
         } catch (Exception ex) {
-            logger.debug("Failed reconnect attempt on {}", h);
+            logger.debug("Failed reconnect attempt on {}", h, ex);
             if (connection != null) definitelyDestroyConnection(connection);
             return false;
         }
@@ -473,6 +491,14 @@ final class ConnectionPool {
         } finally {
             waitLock.unlock();
         }
+    }
+
+    /**
+     * Returns the set of Channel IDs maintained by the connection pool.
+     * Currently, only used for testing.
+     */
+    Set<String> getConnectionIDs() {
+        return connections.stream().map(Connection::getChannelId).collect(Collectors.toSet());
     }
 
     public String getPoolInfo() {
