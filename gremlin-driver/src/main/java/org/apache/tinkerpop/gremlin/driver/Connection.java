@@ -217,7 +217,7 @@ final class Connection {
         return future;
     }
 
-    public ChannelPromise write(final RequestMessage requestMessage, final CompletableFuture<ResultSet> future) {
+    public ChannelPromise write(final RequestMessage requestMessage, final CompletableFuture<ResultSet> resultQueueSetup) {
         // once there is a completed write, then create a traverser for the result set and complete
         // the promise so that the client knows that that it can start checking for results.
         final Connection thisConnection = this;
@@ -226,21 +226,29 @@ final class Connection {
                 .addListener(f -> {
                     if (!f.isSuccess()) {
                         if (logger.isDebugEnabled())
-                            logger.debug(String.format("Write on connection %s failed", thisConnection.getConnectionInfo()), f.cause());
+                            logger.debug(String.format("Write on connection %s failed",
+                                    thisConnection.getConnectionInfo()), f.cause());
 
                         handleConnectionCleanupOnError(thisConnection);
 
-                        cluster.executor().submit(() -> future.completeExceptionally(f.cause()));
+                        cluster.executor().submit(() -> resultQueueSetup.completeExceptionally(f.cause()));
                     } else {
                         final LinkedBlockingQueue<Result> resultLinkedBlockingQueue = new LinkedBlockingQueue<>();
                         final CompletableFuture<Void> readCompleted = new CompletableFuture<>();
 
-                        // the callback for when the read was successful, meaning that ResultQueue.markComplete()
-                        // was called
-                        readCompleted.thenAcceptAsync(v -> {
-                            // connection is fine, just return it to the pool
-                            thisConnection.returnToPool();
-
+                        readCompleted.whenCompleteAsync((v, t) -> {
+                            if (t != null) {
+                                // the callback for when the read failed. a failed read means the request went to the server
+                                // and came back with a server-side error of some sort.  it means the server is responsive
+                                // so this isn't going to be like a potentially dead host situation which is handled above on a failed
+                                // write operation.
+                                logger.debug("Error while processing request on the server {}.", this, t);
+                                handleConnectionCleanupOnError(thisConnection);
+                            } else {
+                                // the callback for when the read was successful, meaning that ResultQueue.markComplete()
+                                // was called
+                                thisConnection.returnToPool();
+                            }
                             // While this request was in process, close might have been signaled in closeAsync().
                             // However, close would be blocked until all pending requests are completed. Attempt
                             // the shutdown if the returned result cleared up the last pending message and unblocked
@@ -248,25 +256,13 @@ final class Connection {
                             tryShutdown();
                         }, cluster.executor());
 
-                        // the callback for when the read failed. a failed read means the request went to the server
-                        // and came back with a server-side error of some sort.  it means the server is responsive
-                        // so this isn't going to be like a potentially dead host situation which is handled above on a failed
-                        // write operation.
-                        readCompleted.exceptionally(t -> {
-                            handleConnectionCleanupOnError(thisConnection);
-
-                            // While this request was in process, close might have been signaled in closeAsync().
-                            // However, close would be blocked until all pending requests are completed. Attempt
-                            // the shutdown if the returned result cleared up the last pending message and unblocked
-                            // the close.
-                            tryShutdown();
-
-                            return null;
-                        });
-
                         final ResultQueue handler = new ResultQueue(resultLinkedBlockingQueue, readCompleted);
                         pending.put(requestMessage.getRequestId(), handler);
-                        cluster.executor().submit(() -> future.complete(
+
+                        // resultQueueSetup should only be completed by a worker since the application code might have sync
+                        // completion stages attached to it which and we do not want the event loop threads to process those
+                        // stages.
+                        cluster.executor().submit(() -> resultQueueSetup.complete(
                                 new ResultSet(handler, cluster.executor(), readCompleted, requestMessage, pool.host)));
                     }
                 });
