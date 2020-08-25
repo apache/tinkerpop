@@ -26,6 +26,8 @@ const t = require('../../lib/process/traversal');
 const TraversalStrategies = require('../../lib/process/traversal-strategy').TraversalStrategies;
 const Bytecode = require('../../lib/process/bytecode');
 const Translator = require('../../lib/process/translator');
+const graphTraversalModule = require('../../lib/process/graph-traversal');
+const __ = graphTraversalModule.statics;
 
 describe('Translator', function () {
 
@@ -63,6 +65,20 @@ describe('Translator', function () {
       const script = new Translator('g').translate(g.V().hasLabel('person').has('age', t.P.gt(30)).getBytecode());
       assert.ok(script);
       assert.strictEqual(script, 'g.V().hasLabel(\'person\').has(\'age\', gt(30))');
+    });
+
+    it('should produce valid script representation from bytecode glv steps with child', function () {
+      const g = new graph.Graph().traversal();
+      const script = new Translator('g').translate(g.V().filter(__.outE('created')).getBytecode());
+      assert.ok(script);
+      assert.strictEqual(script, 'g.V().filter(__.outE(\'created\'))');
+    });
+
+    it('should produce valid script representation from bytecode glv steps with embedded child', function () {
+      const g = new graph.Graph().traversal();
+      const script = new Translator('g').translate(g.V().filter(__.outE('created').filter(__.has('weight'))).getBytecode());
+      assert.ok(script);
+      assert.strictEqual(script, 'g.V().filter(__.outE(\'created\').filter(__.has(\'weight\')))');
     });
   });
 });

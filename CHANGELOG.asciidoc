@@ -86,9 +86,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-4-9]]
 === TinkerPop 3.4.9 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-* (Java driver) Delegate handling of erroneous response to the worker thread pool instead of event loop thread pool. 
-* (Java driver) Remove `Connection` from `Connection Pool` when server closes a connection with no pending requests.
-
+* Delegated handling of erroneous response to the worker thread pool instead of event loop thread pool in Java Driver.
+* Removed `Connection` from `Connection Pool` when server closes a connection with no pending requests in Java Driver.
+* Fixed bug in Javascript `Translator` that wasn't handling child traversals well.
 
 [[release-3-4-8]]
 === TinkerPop 3.4.8 (Release Date: August 3, 2020)
