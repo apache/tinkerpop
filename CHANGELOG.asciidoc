@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Delegated handling of erroneous response to the worker thread pool instead of event loop thread pool in Java Driver.
 * Removed `Connection` from `Connection Pool` when server closes a connection with no pending requests in Java Driver.
 * Fixed bug in Javascript `Translator` that wasn't handling child traversals well.
+* Fix an interator leak in HasContainer. 
 
 [[release-3-4-8]]
 === TinkerPop 3.4.8 (Release Date: August 3, 2020)

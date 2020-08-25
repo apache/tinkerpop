@@ -82,9 +82,19 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
             return testLabel(element);
 
         final Iterator<? extends Property> itty = element.properties(this.key);
-        while (itty.hasNext()) {
-            if (testValue(itty.next()))
-                return true;
+        try {
+            while (itty.hasNext()) {
+                if (testValue(itty.next()))
+                    return true;
+            }
+        } finally {
+            if (itty instanceof AutoCloseable) {
+                try {
+                    ((AutoCloseable)itty).close();
+                } catch (Exception ex) {
+                    throw ex instanceof RuntimeException ? (RuntimeException) ex : new RuntimeException(ex);
+                }
+            }
         }
         return false;
     }
