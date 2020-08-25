@@ -30,6 +30,7 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Ensured better consistency of the use of `null` as arguments to mutation steps.
 * Allowed `property(T.label,Object)` to be used if no value was supplied to `addV(String)`.
 * Allowed additional arguments to `Client.submit()` in Javascript driver to enable setting of parameters like `scriptEvaluationTimeout`.
+* Supported deserialization of `dict` as a key in a `dict` for Python.
 * Added a `Graph.Feature` for `supportsNullPropertyValues`.
 * Modified `TokenTraversal` to support `Property` thus `by(key)` and `by(value)` can now apply to `Edge` and meta-properties.
 * Added `SeedStrategy` to allow deterministic behavior for `coin()`, `sample()` and `Order.shuffle`.

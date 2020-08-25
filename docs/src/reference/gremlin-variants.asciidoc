@@ -969,7 +969,9 @@ is detected during deserialization, the `Set` is coerced to a `List` so that tra
 results within a collection across different languages. If a `Set` is needed then convert `List` results
 to `Set` manually.
 * Gremlin is capable of returning `Dictionary` results that use non-hashable keys (e.g. Dictionary as a key) and Python
-does not support that at a language level. Gremlin that returns such results will need to be re-written to avoid that.
+does not support that at a language level. Using GraphSON 3.0 or GraphBinary (after 3.5.0) makes it possible to return
+such results. In all other cases, Gremlin that returns such results will need to be re-written to avoid that sort of
+key.
 
 === Application Examples
 
