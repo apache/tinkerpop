@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
@@ -88,13 +89,7 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
                     return true;
             }
         } finally {
-            if (itty instanceof AutoCloseable) {
-                try {
-                    ((AutoCloseable)itty).close();
-                } catch (Exception ex) {
-                    throw ex instanceof RuntimeException ? (RuntimeException) ex : new RuntimeException(ex);
-                }
-            }
+            CloseableIterator.closeIterator(itty);
         }
         return false;
     }
