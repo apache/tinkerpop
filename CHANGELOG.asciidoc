@@ -23,6 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-4-9]]
 === TinkerPop 3.4.9 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Established a default read and write timeout for the `TornadoTransport` in Python, allowing it to be configurable.
 * Delegated handling of erroneous response to the worker thread pool instead of event loop thread pool in Java Driver.
 * Removed `Connection` from `Connection Pool` when server closes a connection with no pending requests in Java Driver.
 * Fixed bug in Javascript `Translator` that wasn't handling child traversals well.
