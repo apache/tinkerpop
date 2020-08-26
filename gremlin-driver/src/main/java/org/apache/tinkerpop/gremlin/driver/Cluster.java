@@ -576,7 +576,7 @@ public final class Cluster {
         private List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
         private String path = "/gremlin";
-        private MessageSerializer serializer = Serializers.GRYO_V3D0.simpleInstance();
+        private MessageSerializer serializer = null;
         private int nioPoolSize = Runtime.getRuntime().availableProcessors();
         private int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
         private int minConnectionPoolSize = ConnectionPool.MIN_POOL_SIZE;
@@ -1053,6 +1053,7 @@ public final class Cluster {
 
         public Cluster create() {
             if (addresses.size() == 0) addContactPoint("localhost");
+            if (null == serializer) serializer = Serializers.GRYO_V3D0.simpleInstance();
             return new Cluster(this);
         }
     }
