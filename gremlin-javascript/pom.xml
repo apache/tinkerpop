@@ -29,10 +29,21 @@ limitations under the License.
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
         <gremlin.server.dir>${project.parent.basedir}/gremlin-server</gremlin.server.dir>
+        <npm.version>6.14.6</npm.version>
+        <node.version>v10.22.0</node.version>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
         <finalName>${project.artifactId}-${project.version}</finalName>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>com.github.eirslett</groupId>
+                    <artifactId>frontend-maven-plugin</artifactId>
+                    <version>1.10.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <!--
@@ -152,7 +163,6 @@ file.write(file.getText("UTF-8").replaceFirst(/"version": "(.*)",/, "\"version\"
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
-                <version>1.7.6</version>
                 <executions>
                     <execution>
                         <id>install node and npm</id>
@@ -208,7 +218,8 @@ file.write(file.getText("UTF-8").replaceFirst(/"version": "(.*)",/, "\"version\"
                 </executions>
                 <configuration>
                     <workingDirectory>src/main/javascript/gremlin-javascript</workingDirectory>
-                    <nodeVersion>v6.12.3</nodeVersion>
+                    <nodeVersion>${node.version}</nodeVersion>
+                    <npmVersion>${npm.version}</npmVersion>
                 </configuration>
             </plugin>
             <!--
@@ -264,7 +275,6 @@ file.write(file.getText("UTF-8").replaceFirst(/"version": "(.*)",/, "\"version\"
                     <plugin>
                         <groupId>com.github.eirslett</groupId>
                         <artifactId>frontend-maven-plugin</artifactId>
-                        <version>1.4</version>
                         <executions>
                             <execution>
                                 <id>npm publish</id>
@@ -285,7 +295,8 @@ file.write(file.getText("UTF-8").replaceFirst(/"version": "(.*)",/, "\"version\"
                             -->
                             <skip>false</skip>
                             <workingDirectory>src/main/javascript/gremlin-javascript</workingDirectory>
-                            <nodeVersion>v6.12.3</nodeVersion>
+                            <nodeVersion>${node.version}</nodeVersion>
+                            <npmVersion>${npm.version}</npmVersion>
                         </configuration>
                     </plugin>
                 </plugins>
