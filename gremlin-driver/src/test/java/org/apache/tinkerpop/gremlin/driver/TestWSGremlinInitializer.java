@@ -116,7 +116,7 @@ public class TestWSGremlinInitializer extends TestWebSocketServerInitializer {
             } else if (msg.getRequestId().equals(FAILED_AFTER_DELAY_REQUEST_ID)) {
                 logger.info("waiting for 2 sec");
                 Thread.sleep(1000);
-                ResponseMessage responseMessage = ResponseMessage.build(msg)
+                final ResponseMessage responseMessage = ResponseMessage.build(msg)
                         .code(ResponseStatusCode.SERVER_ERROR)
                         .statusAttributeException(new RuntimeException()).create();
                 ctx.channel().writeAndFlush(new TextWebSocketFrame(SERIALIZER.serializeResponseAsString(responseMessage)));
@@ -129,7 +129,7 @@ public class TestWSGremlinInitializer extends TestWebSocketServerInitializer {
             }
         }
 
-        private String returnSingleVertexResponse(UUID requestID) throws SerializationException {
+        private String returnSingleVertexResponse(final UUID requestID) throws SerializationException {
             final TinkerGraph graph = TinkerFactory.createClassic();
             final GraphTraversalSource g = graph.traversal();
             final Vertex t = g.V().limit(1).next();

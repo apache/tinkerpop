@@ -34,10 +34,10 @@ public class SimpleWebSocketServer {
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
-    public Channel start(TestWebSocketServerInitializer channelInitializer) throws InterruptedException {
+    public Channel start(final TestWebSocketServerInitializer channelInitializer) throws InterruptedException {
         bossGroup = new NioEventLoopGroup(1);
         workerGroup = new NioEventLoopGroup();
-        ServerBootstrap b = new ServerBootstrap();
+        final ServerBootstrap b = new ServerBootstrap();
         b.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
                 .handler(new LoggingHandler(LogLevel.INFO))

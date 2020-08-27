@@ -35,7 +35,7 @@ public abstract class TestWebSocketServerInitializer extends ChannelInitializer<
 
     @Override
     public void initChannel(SocketChannel ch) {
-        ChannelPipeline pipeline = ch.pipeline();
+        final ChannelPipeline pipeline = ch.pipeline();
         pipeline.addLast(new HttpServerCodec());
         pipeline.addLast(new HttpObjectAggregator(65536));
         pipeline.addLast(new WebSocketServerCompressionHandler());
@@ -43,5 +43,5 @@ public abstract class TestWebSocketServerInitializer extends ChannelInitializer<
         this.postInit(ch.pipeline());
     }
 
-    public abstract void postInit(ChannelPipeline ch);
+    public abstract void postInit(final ChannelPipeline ch);
 }

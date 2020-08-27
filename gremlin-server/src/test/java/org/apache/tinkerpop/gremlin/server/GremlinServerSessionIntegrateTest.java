@@ -36,7 +36,6 @@ import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -70,12 +69,8 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
         final String nameOfTest = name.getMethodName();
         switch (nameOfTest) {
             case "shouldCloseSessionOnceOnRequest":
-                Logger.getRootLogger().setLevel(Level.INFO);
-                break;
-            case "shouldBlockAdditionalRequestsDuringForceClose":
-                Logger.getRootLogger().setLevel(Level.INFO);
-                break;
             case "shouldHaveTheSessionTimeout":
+            case "shouldBlockAdditionalRequestsDuringForceClose":
                 Logger.getRootLogger().setLevel(Level.INFO);
                 break;
         }
