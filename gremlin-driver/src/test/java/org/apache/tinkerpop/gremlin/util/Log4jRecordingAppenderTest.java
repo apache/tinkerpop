@@ -25,7 +25,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -67,12 +69,12 @@ public class Log4jRecordingAppenderTest {
 
     @Test
     public void shouldMatchAnyMessages() {
-        assertTrue(recordingAppender.logContainsAny("ERROR.*"));
+        assertThat(recordingAppender.logContainsAny("ERROR.*"), is(true));
     }
 
     @Test
     public void shouldMatchNoMessages() {
-        assertFalse(recordingAppender.logContainsAny("this is not here"));
+        assertThat(recordingAppender.logContainsAny("this is not here"), is(false));
     }
 
     @Test

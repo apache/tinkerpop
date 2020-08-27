@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,6 +32,11 @@ import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class WebSocketClientBehaviorIntegrateTest {
     @Rule
@@ -97,8 +101,8 @@ public class WebSocketClientBehaviorIntegrateTest {
         client.init();
 
         // assert number of connections opened
-        ConnectionPool channelPool = client.hostConnectionPools.values().stream().findFirst().get();
-        Assert.assertEquals(1, channelPool.getConnectionIDs().size());
+        final ConnectionPool channelPool = client.hostConnectionPools.values().stream().findFirst().get();
+        assertEquals(1, channelPool.getConnectionIDs().size());
 
         final String originalConnectionID = channelPool.getConnectionIDs().iterator().next();
         logger.info("On client init ConnectionIDs: " + channelPool.getConnectionIDs());
@@ -108,23 +112,23 @@ public class WebSocketClientBehaviorIntegrateTest {
                 .overrideRequestId(TestWSGremlinInitializer.SINGLE_VERTEX_DELAYED_CLOSE_CONNECTION_REQUEST_ID).create())
                 .one().getVertex();
 
-        Assert.assertNotNull(v);
+        assertNotNull(v);
 
         // assert connection is not closed yet
-        Assert.assertEquals(1, channelPool.getConnectionIDs().size());
+        assertEquals(1, channelPool.getConnectionIDs().size());
 
         // wait for server to send the close WS frame
         Thread.sleep(6000);
 
         // assert that original connection is not part of the connection pool any more
-        Assert.assertFalse("The original connection should have been closed by the server.",
-                channelPool.getConnectionIDs().contains(originalConnectionID));
+        assertThat("The original connection should have been closed by the server.",
+                channelPool.getConnectionIDs().contains(originalConnectionID), is(false));
 
         // assert sanity after connection replacement
         v = client.submit("1",
                 RequestOptions.build().overrideRequestId(TestWSGremlinInitializer.SINGLE_VERTEX_REQUEST_ID).create())
                 .one().getVertex();
-        Assert.assertNotNull(v);
+        assertNotNull(v);
     }
 
     /**
@@ -145,18 +149,18 @@ public class WebSocketClientBehaviorIntegrateTest {
         client.init();
 
         // assert number of connections opened
-        ConnectionPool channelPool = client.hostConnectionPools.values().stream().findFirst().get();
-        Assert.assertEquals(1, channelPool.getConnectionIDs().size());
+        final ConnectionPool channelPool = client.hostConnectionPools.values().stream().findFirst().get();
+        assertEquals(1, channelPool.getConnectionIDs().size());
 
         // Send two requests in flight. Both should error out.
-        CompletableFuture<ResultSet> req1 = client.submitAsync("1", RequestOptions.build()
+        final CompletableFuture<ResultSet> req1 = client.submitAsync("1", RequestOptions.build()
                 .overrideRequestId(TestWSGremlinInitializer.CLOSE_CONNECTION_REQUEST_ID).create());
-        CompletableFuture<ResultSet> req2 = client.submitAsync("1", RequestOptions.build()
+        final CompletableFuture<ResultSet> req2 = client.submitAsync("1", RequestOptions.build()
                 .overrideRequestId(TestWSGremlinInitializer.CLOSE_CONNECTION_REQUEST_ID_2).create());
 
 
         // assert both are sent on same connection
-        Assert.assertEquals(1, channelPool.getConnectionIDs().size());
+        assertEquals(1, channelPool.getConnectionIDs().size());
 
         // trigger write for both requests
         req1.get();
@@ -166,13 +170,13 @@ public class WebSocketClientBehaviorIntegrateTest {
         Thread.sleep(2000);
 
         // Assert that we should consider creating a connection only once, since only one connection is being closed.
-        Assert.assertEquals(1, recordingAppender.getMessages().stream().filter(str -> str.contains("Considering new connection on")).count());
+        assertEquals(1, recordingAppender.getMessages().stream().filter(str -> str.contains("Considering new connection on")).count());
 
         // assert sanity after connection replacement
-        Vertex v = client.submit("1",
+        final Vertex v = client.submit("1",
                 RequestOptions.build().overrideRequestId(TestWSGremlinInitializer.SINGLE_VERTEX_REQUEST_ID).create())
                 .one().getVertex();
-        Assert.assertNotNull(v);
+        assertNotNull(v);
     }
 
     /**
@@ -192,8 +196,8 @@ public class WebSocketClientBehaviorIntegrateTest {
         client.init();
 
         // assert number of connections opened
-        ConnectionPool channelPool = client.hostConnectionPools.values().stream().findFirst().get();
-        Assert.assertEquals(1, channelPool.getConnectionIDs().size());
+        final ConnectionPool channelPool = client.hostConnectionPools.values().stream().findFirst().get();
+        assertEquals(1, channelPool.getConnectionIDs().size());
 
         // close the connection pool in an authentic manner
         channelPool.closeAsync().get();
@@ -201,12 +205,12 @@ public class WebSocketClientBehaviorIntegrateTest {
         // wait for channel closure callback to trigger
         Thread.sleep(2000);
 
-        Assert.assertEquals("OnClose callback should be called but only once", 1,
+        assertEquals("OnClose callback should be called but only once", 1,
                 recordingAppender.getMessages().stream()
                         .filter(str -> str.contains("OnChannelClose callback called for channel"))
                         .count());
 
-        Assert.assertEquals("No new connection creation should be started", 0,
+        assertEquals("No new connection creation should be started", 0,
                 recordingAppender.getMessages().stream()
                         .filter(str -> str.contains("Considering new connection on"))
                         .count());

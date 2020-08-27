@@ -38,6 +38,8 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.ssl.SslContext;
 import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -148,7 +150,7 @@ public interface Channelizer extends ChannelHandler {
      * WebSocket {@link Channelizer} implementation.
      */
     public final class WebSocketChannelizer extends AbstractChannelizer {
-        private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WebSocketChannelizer.class);
+        private static final Logger logger = LoggerFactory.getLogger(WebSocketChannelizer.class);
         private WebSocketClientHandler handler;
 
         private WebSocketGremlinRequestEncoder webSocketGremlinRequestEncoder;
