@@ -558,6 +558,13 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             // while waiting for the client to catch up
             if (aggregate.size() < resultIterationBatchSize && itty.hasNext() && !forceFlush) aggregate.add(itty.next());
 
+            // Don't keep executor busy if client has already given up; there is no way to catch up if the channel is
+            // not active, and hence we should break the loop.
+            if (!nettyContext.channel().isActive()) {
+                onError(graph, context);
+                break;
+            }
+
             // send back a page of results if batch size is met or if it's the end of the results being iterated.
             // also check writeability of the channel to prevent OOME for slow clients.
             //
