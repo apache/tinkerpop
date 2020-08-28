@@ -70,6 +70,7 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
         switch (nameOfTest) {
             case "shouldCloseSessionOnceOnRequest":
             case "shouldHaveTheSessionTimeout":
+            case "shouldBlockAdditionalRequestsDuringClose":
             case "shouldBlockAdditionalRequestsDuringForceClose":
                 Logger.getRootLogger().setLevel(Level.INFO);
                 break;
