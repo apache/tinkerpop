@@ -58,6 +58,72 @@ const names = await g.V().hasLabel('person').values('name').toList();
 console.log(names);
 ```
 
+# Main Operations
+
+## Create Vertex
+
+```javascript
+/* if we want to assign our own ID and properties to this vertex */
+const { t: { id } } = gremlin.process;
+const { cardinality: { single } } = gremlin.process;
+
+/**
+ * create a new vertex with Id, Label and properties
+ * @param {String,Number} vertexId Vertex Id
+ * @param {String} label Vertex Label
+ */
+const createVertex = async (vertexId, label) => {
+  const vertex = await g.addV(label)
+    .property(id, vertexId)
+    .property(single, 'name', 'Apache')
+    .property(single, 'lastname', 'Tinkerpop')
+    .next();
+
+  return vertex.value;
+};
+```
+
+## Find Vertex
+
+```javascript
+/**
+ * find unique vertex with id and label
+ * @param {String,Number} vertexId
+ * @param {String} label
+ */
+const findVertex = async (vertexId, label) => {
+  const vertex = await g.V(vertexId).hasLabel(label).elementMap().next();
+  return vertex.value;
+};
+```
+
+## Listing Vertexes
+```javascript
+/**
+ * List all vertexes in db
+ * @param {Number} limit
+ */
+const listAll = async (limit = 500) => {
+  return g.V().limit(limit).elementMap().toList();
+};
+```
+
+## Update Vertex
+```javascript
+const { cardinality: { single } } = gremlin.process;
+
+/**
+ * Update Vertex Properties
+ * @param {String,Number} vertexId Vertex Id
+ * @param {String} label Vertex Label
+ * @param {String} name Vertex Name Property
+ */
+const updateVertex = async (vertexId, label, name) => {
+  const vertex = await g.V(vertexId).property(single, 'name', name).next();
+  return vertex.value;
+};
+```
+
 Please see the [reference documentation][docs] at Apache TinkerPop for more information.
 
 NOTE that versions suffixed with "-rc" are considered release candidates (i.e. pre-alpha, alpha, beta, etc.) and 
