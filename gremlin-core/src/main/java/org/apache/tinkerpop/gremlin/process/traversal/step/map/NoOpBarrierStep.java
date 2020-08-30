@@ -47,7 +47,7 @@ public final class NoOpBarrierStep<S> extends AbstractStep<S, S> implements Loca
     public NoOpBarrierStep(final Traversal.Admin traversal, final int maxBarrierSize) {
         super(traversal);
         this.maxBarrierSize = maxBarrierSize;
-        this.barrier = this.traverserSetSupplier.get();
+        this.barrier = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
     }
 
     @Override
@@ -84,7 +84,7 @@ public final class NoOpBarrierStep<S> extends AbstractStep<S, S> implements Loca
             throw FastNoSuchElementException.instance();
         else {
             final TraverserSet<S> temp = this.barrier;
-            this.barrier = this.traverserSetSupplier.get();
+            this.barrier = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
             return temp;
         }
     }
@@ -97,7 +97,7 @@ public final class NoOpBarrierStep<S> extends AbstractStep<S, S> implements Loca
     @Override
     public NoOpBarrierStep<S> clone() {
         final NoOpBarrierStep<S> clone = (NoOpBarrierStep<S>) super.clone();
-        clone.barrier = this.traverserSetSupplier.get();
+        clone.barrier = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
         return clone;
     }
 

@@ -21,14 +21,27 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Avant-Gremlin Construction #3 for Theremin and Flowers*
 
-== TinkerPop 3.4.8
+== TinkerPop 3.4.9
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.9/CHANGELOG.asciidoc#release-3-4-9[changelog] for a
 complete list of all the modifications that are part of this release.
 
+=== Upgrading for Providers
 
+==== Graph System Providers
+
+===== Custom TraverserSet
+
+It is now possible to provide a custom `TraverserSet` to `Step` implementations that make use of those objects to
+introduce new logic for how they are populated and managed. Providers can take advantage of this capability by
+constructing their own `Traversal` implementation and overriding the `getTraverserSetSupplier()` method. When new
+`TraverserSet` instances are needed during traversal execution, steps will consult this method to get those instances.
+
+link:https://issues.apache.org/jira/browse/TINKERPOP-2396[TINKERPOP-2396]
+
+== TinkerPop 3.4.8
 
 *Release Date: August 3, 2020*
 

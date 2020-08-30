@@ -91,7 +91,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         this.matchTraversals = (List) Stream.of(matchTraversals).map(Traversal::asAdmin).collect(Collectors.toList());
         this.matchTraversals.forEach(this::configureStartAndEndSteps); // recursively convert to MatchStep, MatchStartStep, or MatchEndStep
         this.matchTraversals.forEach(this::integrateChild);
-        this.standardAlgorithmBarrier = this.traverserSetSupplier.get();
+        this.standardAlgorithmBarrier = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
         this.computedStartLabel = Helper.computeStartLabel(this.matchTraversals);
     }
 
@@ -247,7 +247,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             clone.matchTraversals.add(traversal.clone());
         }
         if (this.dedups != null) clone.dedups = new HashSet<>();
-        clone.standardAlgorithmBarrier = this.traverserSetSupplier.get();
+        clone.standardAlgorithmBarrier = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
         return clone;
     }
 

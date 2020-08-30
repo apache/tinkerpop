@@ -53,7 +53,7 @@ public final class AggregateStep<S> extends AbstractStep<S, S> implements SideEf
     public AggregateStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
-        this.barrier = this.traverserSetSupplier.get();
+        this.barrier = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
         this.getTraversal().getSideEffects().registerIfAbsent(this.sideEffectKey, (Supplier) BulkSetSupplier.instance(), Operator.addAll);
     }
 
@@ -85,7 +85,7 @@ public final class AggregateStep<S> extends AbstractStep<S, S> implements SideEf
     @Override
     public AggregateStep<S> clone() {
         final AggregateStep<S> clone = (AggregateStep<S>) super.clone();
-        clone.barrier = this.traverserSetSupplier.get();
+        clone.barrier = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
         if (null != this.aggregateTraversal)
             clone.aggregateTraversal = this.aggregateTraversal.clone();
         return clone;
@@ -144,7 +144,7 @@ public final class AggregateStep<S> extends AbstractStep<S, S> implements SideEf
             throw FastNoSuchElementException.instance();
         else {
             final TraverserSet<S> temp = this.barrier;
-            this.barrier = this.traverserSetSupplier.get();
+            this.barrier = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
             return temp;
         }
     }

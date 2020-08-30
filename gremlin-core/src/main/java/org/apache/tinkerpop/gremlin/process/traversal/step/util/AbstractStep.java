@@ -45,21 +45,13 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     protected ExpandableStepIterator<S> starts;
     protected Traverser.Admin<E> nextEnd = null;
     protected boolean traverserStepIdAndLabelsSetByChild = false;
-    protected TraverserSetSupplier<S> traverserSetSupplier;
 
     protected Step<?, S> previousStep = EmptyStep.instance();
     protected Step<E, ?> nextStep = EmptyStep.instance();
 
     public AbstractStep(final Traversal.Admin traversal) {
         this.traversal = traversal;
-        this.traverserSetSupplier = TraverserSetSupplier.instance();
-        this.starts = new ExpandableStepIterator<>(this, this.traverserSetSupplier.get());
-    }
-
-    public AbstractStep(final Traversal.Admin traversal, final TraverserSetSupplier<S> traverserSetSupplier) {
-        this.traversal = traversal;
-        this.traverserSetSupplier = traverserSetSupplier;
-        this.starts = new ExpandableStepIterator<>(this, this.traverserSetSupplier.get());
+        this.starts = new ExpandableStepIterator<>(this, (TraverserSet<S>) traversal.getTraverserSetSupplier().get());
     }
 
     @Override
@@ -184,7 +176,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     public AbstractStep<S, E> clone() {
         try {
             final AbstractStep<S, E> clone = (AbstractStep<S, E>) super.clone();
-            clone.starts = new ExpandableStepIterator<>(clone);
+            clone.starts = new ExpandableStepIterator<>(clone, (TraverserSet<S>) traversal.getTraverserSetSupplier().get());
             clone.previousStep = EmptyStep.instance();
             clone.nextStep = EmptyStep.instance();
             clone.nextEnd = null;
@@ -215,18 +207,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         return this.starts;
     }
 
-    /**
-     * Sets a new traverserSupplier so that providers can use their own implementation of TraverserSet instead of the default {@link TraverserSet}.
-     * Note that {@link AbstractStep#starts} also holds TraverserSet but this method doesn't automatically replace the traverserSet for it.
-     * Providers may use {@link ExpandableStepIterator#setTraverserSet(TraverserSet)} independently to replace its TraverserSet.
-     *
-     * @param traverserSetSupplier a new traverserSetSupplier used to spawn a new TraverserSet when necessary in the step.
-     */
-    public void setTraverserSetSupplier(final TraverserSetSupplier<S> traverserSetSupplier) {
-        this.traverserSetSupplier = traverserSetSupplier;
-    }
-
-    private final Traverser.Admin<E> prepareTraversalForNextStep(final Traverser.Admin<E> traverser) {
+    private Traverser.Admin<E> prepareTraversalForNextStep(final Traverser.Admin<E> traverser) {
         if (!this.traverserStepIdAndLabelsSetByChild) {
             traverser.setStepId(this.nextStep.getId());
             traverser.addLabels(this.labels);

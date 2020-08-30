@@ -375,7 +375,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
 
     /**
      * Configures the {@code TraversalSource} as a "remote" to issue the {@link Traversal} for execution elsewhere.
-     * Expects key for {@link #GREMLIN_REMOTE_CONNECTION_CLASS} as well as any configuration required by
+     * Expects key for {@link RemoteConnection#GREMLIN_REMOTE_CONNECTION_CLASS} as well as any configuration required by
      * the underlying {@link RemoteConnection} which will be instantiated. Note that the {@code Configuration} object
      * is passed down without change to the creation of the {@link RemoteConnection} instance.
      *
