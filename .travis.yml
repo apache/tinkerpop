@@ -54,11 +54,11 @@ jobs:
       name: "gremlin server"
     - script:
         - "mvn clean install -q -DskipTests"
-        - "mvn verify -pl :gremlin-console -DskipIntegrationTests=false"
+        - "mvn verify -pl :gremlin-console -DskipTests -DskipIntegrationTests=false"
       name: "gremlin console"
     - script:
       - "mvn clean install -q -DskipTests"
-      - "travis_wait 60 mvn verify -pl :spark-gremlin -DskipIntegrationTests=false"
+      - "travis_wait 60 mvn verify -pl :spark-gremlin -DskipTests -DskipIntegrationTests=false"
       name: "spark"
     - script: "docker/build.sh"
       name: "docker"
