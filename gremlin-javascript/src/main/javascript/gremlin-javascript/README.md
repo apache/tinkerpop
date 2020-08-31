@@ -58,7 +58,17 @@ const names = await g.V().hasLabel('person').values('name').toList();
 console.log(names);
 ```
 
-# Main Operations
+# Sample Traversals
+
+The Gremlin language allows users to write highly expressive graph traversals and has a broad list of functions that 
+cover a wide body of features. The [Reference Documentation][steps] describes these functions and other aspects of the 
+TinkerPop ecosystem including some specifics on [Gremlin in Javascript][docs] itself. Most of the examples found in the 
+documentation use Groovy language syntax in the [Gremlin Console][console]. For the most part, these examples
+should generally translate to Javascript with [little modification][differences]. Given the strong correspondence 
+between canonical Gremlin in Java and its variants like Javascript, there is a limited amount of Javascript-specific 
+documentation and examples. This strong correspondence among variants ensures that the general Gremlin reference 
+documentation is applicable to all variants and that users moving between development languages can easily adopt the 
+Gremlin variant for that language.
 
 ## Create Vertex
 
@@ -68,36 +78,23 @@ const { t: { id } } = gremlin.process;
 const { cardinality: { single } } = gremlin.process;
 
 /**
- * create a new vertex with Id, Label and properties
- * @param {String,Number} vertexId Vertex Id
- * @param {String} label Vertex Label
+ * Create a new vertex with Id, Label and properties
+ * @param {String,Number} vertexId Vertex Id (assuming the graph database allows id assignment)
+ * @param {String} vlabel Vertex Label
  */
-const createVertex = async (vertexId, label) => {
-  const vertex = await g.addV(label)
+const createVertex = async (vertexId, vlabel) => {
+  const vertex = await g.addV(vlabel)
     .property(id, vertexId)
     .property(single, 'name', 'Apache')
-    .property(single, 'lastname', 'Tinkerpop')
+    .property('lastname', 'Tinkerpop') // default database cardinality
     .next();
 
   return vertex.value;
 };
 ```
 
-## Find Vertex
+## Find Vertices
 
-```javascript
-/**
- * find unique vertex with id and label
- * @param {String,Number} vertexId
- * @param {String} label
- */
-const findVertex = async (vertexId, label) => {
-  const vertex = await g.V(vertexId).hasLabel(label).elementMap().next();
-  return vertex.value;
-};
-```
-
-## Listing Vertexes
 ```javascript
 /**
  * List all vertexes in db
@@ -105,6 +102,22 @@ const findVertex = async (vertexId, label) => {
  */
 const listAll = async (limit = 500) => {
   return g.V().limit(limit).elementMap().toList();
+};
+/**
+ * Find unique vertex with id
+ * @param {Object} vertexId Vertex Id
+ */
+const findVertex = async (vertexId) => {
+  const vertex = await g.V(vertexId).elementMap().next();
+  return vertex.value;
+};
+/**
+ * Find vertices by label and 'name' property
+ * @param {String} vlabel Vertex label
+ * @param {String} name value of 'name' property
+ */
+const listByLabelAndName = async (vlabel, name) => {
+  return g.V().has(vlabel, 'name', name).elementMap().toList();
 };
 ```
 
@@ -115,7 +128,6 @@ const { cardinality: { single } } = gremlin.process;
 /**
  * Update Vertex Properties
  * @param {String,Number} vertexId Vertex Id
- * @param {String} label Vertex Label
  * @param {String} name Vertex Name Property
  */
 const updateVertex = async (vertexId, label, name) => {
@@ -123,8 +135,6 @@ const updateVertex = async (vertexId, label, name) => {
   return vertex.value;
 };
 ```
-
-Please see the [reference documentation][docs] at Apache TinkerPop for more information.
 
 NOTE that versions suffixed with "-rc" are considered release candidates (i.e. pre-alpha, alpha, beta, etc.) and 
 thus for early testing purposes only.
@@ -134,3 +144,6 @@ thus for early testing purposes only.
 [docs]: http://tinkerpop.apache.org/docs/current/reference/#gremlin-javascript
 [gs]: http://tinkerpop.apache.org/docs/current/reference/#gremlin-server
 [rgp]: http://tinkerpop.apache.org/docs/current/reference/#connecting-rgp
+[console]: https://tinkerpop.apache.org/docs/current/tutorials/the-gremlin-console/
+[steps]: https://tinkerpop.apache.org/docs/current/reference/#graph-traversal-steps
+[differences]: https://tinkerpop.apache.org/docs/current/reference/#gremlin-javascript-differences
