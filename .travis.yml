@@ -50,7 +50,7 @@ jobs:
       name: "javascript"
     - script:
       - "mvn clean install -q -DskipTests"
-      - "mvn verify -pl :gremlin-server -DskipTests -DskipIntegrationTests=false"
+      - "mvn verify -pl :gremlin-server -DskipTests -DskipIntegrationTests=false -DincludeNeo4j"
       name: "gremlin server"
     - script:
         - "mvn clean install -q -DskipTests"
