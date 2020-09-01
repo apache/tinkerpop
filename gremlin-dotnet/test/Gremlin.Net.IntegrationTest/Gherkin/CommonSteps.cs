@@ -50,7 +50,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private static readonly IDictionary<Regex, Func<string, string, object>> Parsers =
             new Dictionary<string, Func<string, string, object>>
             {
-                {@"d\[([\d.]+)\]\.([ilfdm])", ToNumber},
+                {@"d\[(.*)\]\.([ilfdm])", ToNumber},
                 {@"D\[(.+)\]", ToDirection},
                 {@"v\[(.+)\]", ToVertex},
                 {@"v\[(.+)\]\.id", (x, graphName) => ToVertex(x, graphName).Id},

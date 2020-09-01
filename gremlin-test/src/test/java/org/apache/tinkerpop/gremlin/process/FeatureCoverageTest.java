@@ -49,6 +49,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LoopsTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinTest;
@@ -139,6 +140,7 @@ public class FeatureCoverageTest {
                 GraphTest.class,
                 LoopsTest.class,
                 MapTest.class,
+                MathTest.class,
                 MatchTest.class,
                 MaxTest.class,
                 MeanTest.class,

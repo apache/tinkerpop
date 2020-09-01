@@ -41,7 +41,7 @@ const direction = traversalModule.direction;
 const mapAsObject = false;
 
 const parsers = [
-  [ 'd\\[([\\d.]+)\\]\\.[ilfdm]', toNumeric ],
+  [ 'd\\[(.*)\\]\\.[ilfdm]', toNumeric ],
   [ 'v\\[(.+)\\]', toVertex ],
   [ 'v\\[(.+)\\]\\.id', toVertexId ],
   [ 'v\\[(.+)\\]\\.sid', toVertexIdString ],

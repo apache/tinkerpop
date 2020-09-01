@@ -151,7 +151,7 @@ public abstract class MathTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Integer, Double> get_g_withSackX1X_injectX1X_repeatXsackXsumX_byXconstantX1XXX_timesX5X_emit_mathXsin__X_byXsackX() {
-            return g.withSack(1).inject(1).repeat(__.sack((BiFunction) sum).by(__.constant(1))).times(10).emit().math("sin _").by(sack());
+            return g.withSack(1).inject(1).repeat(__.sack((BiFunction) sum).by(__.constant(1))).times(5).emit().math("sin _").by(sack());
         }
 
         @Override
