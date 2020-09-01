@@ -2310,16 +2310,22 @@ the current state of the traverser.
 
 [gremlin-groovy,modern]
 ----
+g.V().has('name','marko').
+  project('id', 'name', 'out', 'in').
+    by(id).
+    by('name').
+    by(outE().count()).
+    by(inE().count())
+g.V().has('name','marko').
+  project('name', 'friendsNames').
+    by('name').
+    by(out('knows').values('name').fold())
 g.V().out('created').
   project('a','b').
     by('name').
     by(__.in('created').count()).
   order().by(select('b'),desc).
   select('a')
-g.V().has('name','marko').
-               project('out','in').
-                 by(outE().count()).
-                 by(inE().count())
 ----
 
 *Additional References*
