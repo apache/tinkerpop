@@ -38,11 +38,11 @@ Gremlin.Net implements Gremlin within .NET. C# syntax has the same constructs as
 
 Gremlin.Net is designed to connect to a "server" that is hosting a TinkerPop-enabled graph system. That "server" could be Gremlin Server
 
-http://tinkerpop.apache.org/docs/current/reference/#gremlin-server
+https://tinkerpop.apache.org/docs/current/reference/#gremlin-server
 
 or a remote graph provider that exposes protocols by which Gremlin.Net can connect.
 
-Please see the Reference Documentation of Apache TinkerPop for more information on usage: http://tinkerpop.apache.org/docs/current/reference
+Please see the Reference Documentation of Apache TinkerPop for more information on usage: https://tinkerpop.apache.org/docs/current/reference
 
 and use our Google Group gremlin-users if there are any questions: https://s.apache.org/c8hru
 
@@ -61,10 +61,10 @@ NOTE that versions suffixed with "-rc" are considered release candidates (i.e. p
     <SignAssembly>true</SignAssembly>
     <PackageId>Gremlin.Net</PackageId>
     <PackageTags>gremlin;tinkerpop;apache</PackageTags>
-    <PackageProjectUrl>http://tinkerpop.apache.org</PackageProjectUrl>
+    <PackageProjectUrl>https://tinkerpop.apache.org</PackageProjectUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageIcon>gremlin-dotnet-logo_256x256.png</PackageIcon>
-    <PackageIconUrl>http://tinkerpop.apache.org/docs/current/images/gremlin-dotnet-logo_256x256.png</PackageIconUrl>
+    <PackageIconUrl>https://tinkerpop.apache.org/docs/current/images/gremlin-dotnet-logo_256x256.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/apache/tinkerpop</RepositoryUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>    
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>

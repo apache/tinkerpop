@@ -46,9 +46,9 @@ Gremlin variant for that language.
 **NOTE** that versions suffixed with "-rc" are considered release candidates (i.e. pre-alpha, alpha, beta, etc.) and thus 
 for early testing purposes only.
 
-[tk]: http://tinkerpop.apache.org
-[gremlin]: http://tinkerpop.apache.org/gremlin.html
-[docs]: http://tinkerpop.apache.org/docs/current/reference/#gremlin-dotnet
+[tk]: https://tinkerpop.apache.org
+[gremlin]: https://tinkerpop.apache.org/gremlin.html
+[docs]: https://tinkerpop.apache.org/docs/current/reference/#gremlin-dotnet
 [console]: https://tinkerpop.apache.org/docs/current/tutorials/the-gremlin-console/
 [steps]: https://tinkerpop.apache.org/docs/current/reference/#graph-traversal-steps
 [differences]: https://tinkerpop.apache.org/docs/current/reference/#gremlin-javascript-differences

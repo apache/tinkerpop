@@ -19,9 +19,9 @@
 Apache TinkerPop - Gremlin Python
 =================================
 
-`Apache TinkerPop™ <http://tinkerpop.apache.org>`_
+`Apache TinkerPop™ <https://tinkerpop.apache.org>`_
 is a graph computing framework for both graph databases (OLTP) and
-graph analytic systems (OLAP). `Gremlin <http://tinkerpop.apache.org/gremlin.html>`_
+graph analytic systems (OLAP). `Gremlin <https://tinkerpop.apache.org/gremlin.html>`_
 is the graph traversal language of
 TinkerPop. It can be described as a functional, data-flow language that enables users to succinctly express complex
 traversals on (or queries of) their application's property graph.
@@ -33,8 +33,8 @@ chaining ``(a.b.c)``, round bracket function arguments ``(a(b,c))``, and support
 Gremlin-Python. Moreover, there are a few added constructs to Gremlin-Python that make traversals a bit more succinct.
 
 Gremlin-Python is designed to connect to a "server" that is hosting a TinkerPop-enabled graph system. That "server"
-could be `Gremlin Server <http://tinkerpop.apache.org/docs/current/reference/#gremlin-server>`_ or a
-`remote Gremlin provider <http://tinkerpop.apache.org/docs/current/reference/#connecting-rgp>`_ that exposes
+could be `Gremlin Server <https://tinkerpop.apache.org/docs/current/reference/#gremlin-server>`_ or a
+`remote Gremlin provider <https://tinkerpop.apache.org/docs/current/reference/#connecting-rgp>`_ that exposes
 protocols by which Gremlin-Python can connect.
 
 A typical connection to a server running on "localhost" that supports the Gremlin Server protocol using websockets
@@ -61,7 +61,7 @@ Sample Traversals
 The Gremlin language allows users to write highly expressive graph traversals and has a broad list of functions that
 cover a wide body of features. The `Reference Documentation <https://tinkerpop.apache.org/docs/current/reference/#graph-traversal-steps>`_
 describes these functions and other aspects of the TinkerPop ecosystem including some specifics on
-`Gremlin in Python <http://tinkerpop.apache.org/docs/current/reference/#gremlin-python>`_ itself. Most of the
+`Gremlin in Python <https://tinkerpop.apache.org/docs/current/reference/#gremlin-python>`_ itself. Most of the
 examples found in the documentation use Groovy language syntax in the
 `Gremlin Console <https://tinkerpop.apache.org/docs/current/tutorials/the-gremlin-console/>`_.
 For the most part, these examples should generally translate to Python with
