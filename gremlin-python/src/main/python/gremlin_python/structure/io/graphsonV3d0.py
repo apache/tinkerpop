@@ -32,6 +32,7 @@ from gremlin_python import statics
 from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, DictType, ListType, SetType, SingleByte, ByteBufferType, SingleChar
 from gremlin_python.process.traversal import Binding, Bytecode, Direction, P, TextP, Traversal, Traverser, TraversalStrategy, T
 from gremlin_python.structure.graph import Edge, Property, Vertex, VertexProperty, Path
+from gremlin_python.structure.io.util import HashableDict
 
 log = logging.getLogger(__name__)
 
@@ -40,7 +41,6 @@ log = logging.getLogger(__name__)
 # not a dict.
 _serializers = OrderedDict()
 _deserializers = {}
-
 
 class GraphSONTypeType(type):
     def __new__(mcs, name, bases, dct):
@@ -476,7 +476,7 @@ class MapType(_GraphSONTypeIO):
         if len(l) > 0:
             x = 0
             while x < len(l):
-                new_dict[reader.toObject(l[x])] = reader.toObject(l[x + 1])
+                new_dict[HashableDict.of(reader.toObject(l[x]))] = reader.toObject(l[x + 1])
                 x = x + 2
         return new_dict
 
