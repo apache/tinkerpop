@@ -99,6 +99,7 @@ connection methods described in the <<connecting-gremlin,Connecting Gremlin>> Se
 </dependency>
 ----
 
+[[gremlin-java-connecting]]
 === Connecting
 
 The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down
@@ -214,7 +215,8 @@ GraphTraversalSource g = traversal().withRemote(conf);
 List<Vertex> vertices = g.with(Tokens.ARGS_EVAL_TIMEOUT, 500L).V().out("knows").toList()
 ----
 
-[[java-imports]]
+anchor:java-imports[]
+[[gremlin-java-imports]]
 === Common Imports
 
 There are a number of classes, functions and tokens that are typically used with Gremlin. The following imports
@@ -238,6 +240,7 @@ import static org.apache.tinkerpop.gremlin.structure.T.*;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 ----
 
+[[gremlin-java-configuration]]
 === Configuration
 
 The following table describes the various configuration options for the Gremlin Driver:
@@ -283,6 +286,7 @@ The following table describes the various configuration options for the Gremlin 
 
 Please see the link:https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/driver/Cluster.Builder.html[Cluster.Builder javadoc] to get more information on these settings.
 
+[[gremlin-java-serialization]]
 === Serialization
 
 Remote systems like Gremlin Server and Remote Gremlin Providers respond to requests made in a particular serialization
@@ -313,6 +317,7 @@ in the same way and building that into the `Cluster` object.
 
 NOTE: Gryo is no longer the preferred binary serialization format for Gremlin Server - please prefer GraphBinary.
 
+[[gremlin-java-lambda]]
 === The Lambda Solution
 
 Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
@@ -365,6 +370,7 @@ thus, the first submission can be cached for faster evaluation on the next submi
 WARNING: It is generally advised to avoid lambda usage. Please consider <<a-note-on-lambdas,A Note On Lambdas>> for
 more information.
 
+[[gremlin-java-scripts]]
 === Submitting Scripts
 
 WARNING: TinkerPop does not recommend submitting script-based requests and generally continues to support this feature
@@ -582,7 +588,8 @@ NOTE: Using Maven, as shown in the `gremlin-archetype-dsl` module, makes develop
 straightforward in that it sets up appropriate paths to the generated code automatically.
 
 anchor:java-application-examples[]
-[[gremlin-archetypes]]
+anchor:gremlin-archetypes[]
+[[gremlin-java-examples]]
 === Application Examples
 
 The available link:https://maven.apache.org/guides/introduction/introduction-to-archetypes.html[Maven archetypes] are
@@ -644,6 +651,7 @@ To install Gremlin-Python, use Python's link:https://en.wikipedia.org/wiki/Pip_(
 pip install gremlinpython
 ----
 
+[[gremlin-python-connecting]]
 === Connecting
 
 The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down to
@@ -668,7 +676,8 @@ traversals to complete is acceptable, it might be helpful to set `pool_size` and
 See the <<python-configuration,Configuration>> section just below.  Examples where this could apply are serverless cloud functions or WSGI
 worker processes.
 
-[[python-imports]]
+anchor:python-imports[]
+[[gremlin-python-imports]]
 === Common Imports
 
 There are a number of classes, functions and tokens that are typically used with Gremlin. The following imports
@@ -727,7 +736,8 @@ That is, without the `+__+`-prefix.
 [['ripple', 'lop']]
 ----
 
-[[python-configuration]]
+anchor:python-configuration[]
+[[gremlin-python-configuration]]
 === Configuration
 
 The following table describes the various configuration options for the Gremlin-Python Driver. They
@@ -755,7 +765,7 @@ g = traversal().withRemote(
   DriverRemoteConnection('ws://localhost:8182/gremlin','g',
                          transport_factory=lambda: TornadoTransport(read_timeout=10, write_timeout=10)))
 ```
-
+[[gremlin-python-strategies]]
 === Traversal Strategies
 
 In order to add and remove <<traversalstrategy,traversal strategies>> from a traversal source, Gremlin-Python has a
@@ -785,6 +795,7 @@ Apache TinkerPop's JVM-based Gremlin traversal machine. As such, their `apply(Tr
 the strategy is encoded in the Gremlin-Python bytecode and transmitted to the Gremlin traversal machine for
 re-construction machine-side.
 
+[[gremlin-python-lambda]]
 === The Lambda Solution
 
 Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
@@ -819,6 +830,7 @@ instead of translating, compiling, and then executing each submitted bytecode, i
 
 WARNING: As explained throughout the documentation, when possible <<a-note-on-lambdas,avoid>> lambdas.
 
+[[gremlin-python-scripts]]
 === Submitting Scripts
 
 WARNING: TinkerPop does not recommend submitting script-based requests and generally continues to support this feature
@@ -944,6 +956,7 @@ social.persons("marko").youngestFriendsAge()
 social.persons().filter(__.createdAtLeast(2)).count()
 ----
 
+[[gremlin-python-sugar]]
 === Syntactic Sugar
 
 Python supports meta-programming and operator overloading. There are three uses of these techniques in Gremlin-Python
@@ -987,7 +1000,7 @@ key.
 no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with `store()`
 and then convert those results to something the client can use locally.
 
-
+[[gremlin-python-examples]]
 === Application Examples
 
 The TinkerPop source code contains a simple Python script that shows a basic example of how gremlinpython works. It
@@ -1016,6 +1029,7 @@ to comply with .NET conventions.
 [source,powershell]
 nuget install Gremlin.Net
 
+[[gremlin-dotnet-connecting]]
 === Connecting
 
 The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down to
@@ -1028,6 +1042,7 @@ the remote end.
 include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=connecting]
 ----
 
+[[gremlin-dotnet-imports]]
 === Common Imports
 
 There are a number of classes, functions and tokens that are typically used with Gremlin. The following imports
@@ -1038,6 +1053,7 @@ provide most of the typical functionality required to use Gremlin:
 include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=commonImports]
 ----
 
+[[gremlin-dotnet-configuration]]
 === Configuration
 
 The connection properties for the Gremlin.Net driver can be passed to the `GremlinServer` instance as keyword arguments:
@@ -1072,7 +1088,8 @@ when a new request comes in.
 A `ServerUnavailableException` is thrown if no connection is available to the server to submit a request after
 `ReconnectionAttempts` retries.
 
-==== Serialization
+[[gremlin-dotnet-serialization]]
+=== Serialization
 
 The Gremlin.Net driver uses by default GraphSON 3.0 but it is also possible to use GraphSON 2.0 which can be necessary
 when the server does not support GraphSON 3.0 yet:
@@ -1082,6 +1099,7 @@ when the server does not support GraphSON 3.0 yet:
 include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=serialization]
 ----
 
+[[gremlin-dotnet-strategies]]
 === Traversal Strategies
 
 In order to add and remove traversal strategies from a traversal source, Gremlin.Net has an `AbstractTraversalStrategy`
@@ -1096,6 +1114,7 @@ NOTE: Many of the TraversalStrategy classes in Gremlin.Net are proxies to the re
 JVM-based Gremlin traversal machine. As such, their `Apply(ITraversal)` method does nothing. However, the strategy is
 encoded in the Gremlin.Net bytecode and transmitted to the Gremlin traversal machine for re-construction machine-side.
 
+[[gremlin-dotnet-lambda]]
 === The Lambda Solution
 
 Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
@@ -1119,6 +1138,7 @@ TIP: When running into situations where Groovy cannot properly discern a method 
 instance created, it will help to fully define the closure in the lambda expression - so rather than
 `Lambda.Groovy("it.get().value('name'))`, prefer `Lambda.Groovy("x -> x.get().value('name'))`.
 
+[[gremlin-dotnet-scripts]]
 === Submitting Scripts
 
 WARNING: TinkerPop does not recommend submitting script-based requests and generally continues to support this feature
@@ -1147,7 +1167,8 @@ var gremlinServer = new GremlinServer("localhost", 8182);
 var client = new GremlinClient(gremlinServer, sessionId: Guid.NewGuid().ToString()))
 ----
 
-[[gremlin-net-dsl]]
+anchor:gremlin-net-dsl[]
+[[gremlin-dotnet-dsl]]
 === Domain Specific Languages
 
 Developing a <<dsl,Domain Specific Language>> (DSL) for .Net is most easily implemented using
@@ -1181,7 +1202,8 @@ and then it can be called from the application as follows:
 include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsDslTests.cs[tags=dslExamples]
 ----
 
-[[gremlin-net-differences]]
+anchor:gremlin-net-differences[]
+[[gremlin-dotnet-differences]]
 === Differences
 
 The biggest difference between Gremlin in .NET and the canonical version in Java is the casing of steps. Canonical
@@ -1244,7 +1266,8 @@ g.V().hasLabel('person').groupCount().by('age')
 Either of the above two options accomplishes the desired goal as both prevent `groupCount()` from having to process
 the possibility of `null`.
 
-[[gremlin-net-limitations]]
+anchor:gremlin-net-limitations[]
+[[gremlin-dotnet-limitations]]
 === Limitations
 
 * The `subgraph()`-step is not supported by any variant that is not running on the Java Virtual Machine as there is
@@ -1252,7 +1275,9 @@ no `Graph` instance to deserialize a result into on the client-side. A workaroun
 and then convert those results to something the client can use locally.
 
 anchor:gremlin-dotnet-template[]
-[[dotnet-application-examples]]
+anchor:dotnet-application-examples[]
+anchor:gremlin-net-examples[]
+[[gremlin-dotnet-examples]]
 === Application Examples
 
 This link:https://docs.microsoft.com/dotnet/core/tools/custom-templates[dotnet template] helps getting started with
@@ -1284,6 +1309,7 @@ between Gremlin-Java and Gremlin-JavaScript.
 [source,bash]
 npm install gremlin
 
+[[gremlin-javascript-connecting]]
 === Connecting
 
 The pattern for connecting is described in <<connecting-gremlin,Connecting Gremlin>> and it basically distills down to
@@ -1327,6 +1353,7 @@ const names = await g.V().hasLabel('person').values('name').toList();
 console.log(names);
 ----
 
+[[gremlin-javascript-imports]]
 === Common Imports
 
 There are a number of classes, functions and tokens that are typically used with Gremlin. The following imports
@@ -1359,6 +1386,7 @@ const { order: { desc } } = gremlin.process;
 g.V().hasLabel('person').has('age',gt(30)).order().by('age',desc).toList()
 ----
 
+[[gremlin-javascript-scripts]]
 === Submitting Scripts
 
 WARNING: TinkerPop does not recommend submitting script-based requests and generally continues to support this feature
