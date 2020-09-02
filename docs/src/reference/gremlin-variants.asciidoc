@@ -736,15 +736,25 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
-|protocol_factory |A callable that returns an instance of `AbstractBaseProtocol`. |`gremlin_python.driver.protocol.GremlinServerWSProtocol`
-|transport_factory |A callable that returns an instance of `AbstractBaseTransport`. |`gremlin_python.driver.tornado.transport.TornadoTransport`
-|pool_size |The number of connections used by the pool. |4
+|headers |Additional headers that will be added to each request message. |`None`
 |max_workers |Maximum number of worker threads. |Number of CPUs * 5
 |message_serializer |The message serializer implementation.|`gremlin_python.driver.serializer.GraphSONMessageSerializer`
 |password |The password to submit on requests that require authentication. |""
+|pool_size |The number of connections used by the pool. |4
+|protocol_factory |A callable that returns an instance of `AbstractBaseProtocol`. |`gremlin_python.driver.protocol.GremlinServerWSProtocol`
+|transport_factory |A callable that returns an instance of `AbstractBaseTransport`. |`gremlin_python.driver.tornado.transport.TornadoTransport`
 |username |The username to submit on requests that require authentication. |""
 |session | A unique string-based identifier (typically a UUID) to enable a <<sessions,session-based connection>>. This is not a valid configuration for `DriverRemoteConnection`. |None
 |=========================================================
+
+Note that the `transport_factory` can allow for additional configuration of the `TornadoTransport`, which exposes
+options to manage `ioloop` timeouts:
+
+```python
+g = traversal().withRemote(
+  DriverRemoteConnection('ws://localhost:8182/gremlin','g',
+                         transport_factory=lambda: TornadoTransport(read_timeout=10, write_timeout=10)))
+```
 
 === Traversal Strategies
 
