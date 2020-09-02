@@ -115,7 +115,6 @@ other reachable vertices in the graph. The following examples use the modern toy
 
 [gremlin-groovy,modern]
 ----
-g = TinkerFactory.createModern().traversal()
 g.withSack(1f).V().as("v").                                                     <1>
   repeat(both().simplePath().as("v")).emit().                                   <2>
   filter(project("x","y","z").by(select(first, "v")).                           <3>
@@ -185,6 +184,6 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#pagerank-step[pageRank()
 
 [gremlin-groovy,modern]
 ----
-g = graph.traversal().withComputer()
+g = traversal().withEmbedded(graph).withComputer()
 g.V().pageRank().by('pageRank').values('pageRank')
 ----

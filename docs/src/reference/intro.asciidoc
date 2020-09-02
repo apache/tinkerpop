@@ -222,7 +222,7 @@ $ bin/gremlin.sh
 -----oOOo-(3)-oOOo-----
 gremlin> graph = TinkerFactory.createModern() // <1>
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> g = graph.traversal()        // <2>
+gremlin> g = traversal().withEmbedded(graph)        // <2>
 ==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
 gremlin> g.V().has('name','marko').out('knows').values('name') // <3>
 ==>vadas
@@ -325,11 +325,12 @@ that are JVM-based (or have a JVM-based connector) and directly implement Tinker
 [source,java]
 Graph graph = TinkerGraph.open();
 
-The "graph" then spawns a `GraphTraversalSource` as follows and typically, by convention, this variable is named "g":
+The "graph" is then used to spawn a `GraphTraversalSource` as follows and typically, by convention, this variable is
+named "g":
 
 [source,java]
 ----
-GraphTraversalSource g = graph.traversal();
+GraphTraversalSource g = traversal().withEmbedded(graph);
 List<Vertex> vertices = g.V().toList()
 ----
 

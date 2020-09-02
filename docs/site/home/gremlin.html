@@ -293,7 +293,7 @@ g.V().hasLabel("person").
   public void run(String name, String property) {
 
     Graph graph = GraphFactory.open(...);
-    GraphTraversalSource g = graph.traversal();
+    GraphTraversalSource g = traversal().withEmbedded(graph);
 
     double avg = g.V().has("name",name).
                    out("knows").out("created").
@@ -337,9 +337,9 @@ g.V().hasLabel("person").
        <div class="col-md-12">
           <pre style="padding:10px;"><code class="language-gremlin">Graph graph = GraphFactory.open(...);
 GraphTraversalSource g;
-g = graph.traversal();                                                         // local OLTP
-g = traversal().withRemote(DriverRemoteConnection.using("localhost", 8182))    // remote
-g = graph.traversal().withComputer(SparkGraphComputer.class);                 // distributed OLAP</code>
+g = traversal().withEmbedded(graph);                                            // local OLTP
+g = traversal().withRemote(DriverRemoteConnection.using("localhost", 8182))     // remote
+g = traversal().withEmbedded(graph).withComputer(SparkGraphComputer.class);     // distributed OLAP</code>
 </pre>
        </div>
        <br/>

@@ -44,7 +44,7 @@ public class MyApplication {
 
     // assumes args[0] is a configuration file location
     Graph graph = GraphFactory.open(args[0]);
-    GraphTraversalSource g = graph.traversal();
+    GraphTraversalSource g = traversal().withEmbedded(graph);
 
     // assumes that args[1] and args[2] are range boundaries
     Iterator<Map<String,Double>> result =
@@ -160,7 +160,7 @@ TinkerPop-enabled graph system.
 Every language variant, regardless of the implementation details, will have to account for the four core concepts below:
 
 1. `Graph` (**data**): The source of the graph data to be traversed and the interface which enables the creation of a
-`GraphTraversalSource` (via `graph.traversal()`).
+`GraphTraversalSource` (via `traversal().withEmbedded(graph)`).
 
 2. `GraphTraversalSource` (**compiler**): This is the typical `g` reference. A `GraphTraversalSource` maintains the
 `withXXX()`-strategy methods as well as the "traversal spawn"-methods such as `V()`, `E()`, `addV()`, etc.
