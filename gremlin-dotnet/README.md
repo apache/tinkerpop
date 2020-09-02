@@ -33,8 +33,22 @@ operating systems and with different .NET frameworks, such as .NET Framework and
 nuget install Gremlin.Net
 ```
 
-Please see the [reference documentation][docs] at Apache TinkerPop for more information.
+The Gremlin language allows users to write highly expressive graph traversals and has a broad list of functions that 
+cover a wide body of features. The [Reference Documentation][steps] describes these functions and other aspects of the 
+TinkerPop ecosystem including some specifics on [Gremlin in .NET][docs] itself. Most of the examples found in the 
+documentation use Groovy language syntax in the [Gremlin Console][console]. For the most part, these examples
+should generally translate to C# with [some logical modification][differences]. Given the strong correspondence 
+between canonical Gremlin in Java and its variants like C#, there is a limited amount of C#-specific 
+documentation and examples. This strong correspondence among variants ensures that the general Gremlin reference 
+documentation is applicable to all variants and that users moving between development languages can easily adopt the 
+Gremlin variant for that language.
 
-[tk]: http://tinkerpop.apache.org
-[gremlin]: http://tinkerpop.apache.org/gremlin.html
-[docs]: http://tinkerpop.apache.org/docs/current/reference/#gremlin-DotNet
+**NOTE** that versions suffixed with "-rc" are considered release candidates (i.e. pre-alpha, alpha, beta, etc.) and thus 
+for early testing purposes only.
+
+[tk]: https://tinkerpop.apache.org
+[gremlin]: https://tinkerpop.apache.org/gremlin.html
+[docs]: https://tinkerpop.apache.org/docs/current/reference/#gremlin-dotnet
+[console]: https://tinkerpop.apache.org/docs/current/tutorials/the-gremlin-console/
+[steps]: https://tinkerpop.apache.org/docs/current/reference/#graph-traversal-steps
+[differences]: https://tinkerpop.apache.org/docs/current/reference/#gremlin-javascript-differences
