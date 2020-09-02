@@ -21,14 +21,43 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Avant-Gremlin Construction #3 for Theremin and Flowers*
 
-== TinkerPop 3.4.8
+== TinkerPop 3.4.9
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.4.9/CHANGELOG.asciidoc#release-3-4-9[changelog] for a
 complete list of all the modifications that are part of this release.
 
+=== withEmbedded()
 
+The `AnonymousTraversalSource` was introduced in 3.3.5 and is most typically used for constructing remote
+`TraversalSource` instances, but it also provides a way to construct a `TraversalSource` from an embedded `Graph`
+instance:
+
+[source,text]
+----
+gremlin> g = traversal().withGraph(TinkerFactory.createModern())
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+gremlin> g = traversal().withRemote(DriverRemoteConnection.using('localhost',8182))
+==>graphtraversalsource[emptygraph[empty], standard]
+----
+
+The `withGraph(Graph)` method is now deprecated in favor the new `withEmbedded(Graph)` method that is more explicit
+about its intent:
+
+[source,text]
+----
+gremlin> g = traversal().withEmbedded(TinkerFactory.createModern())
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+----
+
+This change is mostly applicable to JVM languages where embedded `Graph` instances are available. For Gremlin Language
+Variants not on the JVM, the `withGraph(Graph)` method has simply been deprecated and not replaced (with the preference
+to use `withRemote()` variants).
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2413[TINKERPOP-2413]
+
+== TinkerPop 3.4.8
 
 *Release Date: August 3, 2020*
 
