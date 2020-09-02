@@ -971,6 +971,7 @@ bits of conflicting Gremlin get an underscore appended as a suffix:
 
 *Tokens* - <<a-note-on-scopes,Scope.global_>>
 
+[[gremlin-python-limitations]]
 === Limitations
 
 * Traversals that return a `Set` *might* be coerced to a `List` in Python. In the case of Python, number equality
@@ -982,6 +983,10 @@ to `Set` manually.
 does not support that at a language level. Using GraphSON 3.0 or GraphBinary (after 3.5.0) makes it possible to return
 such results. In all other cases, Gremlin that returns such results will need to be re-written to avoid that sort of
 key.
+* The `subgraph()`-step is not supported by any variant that is not running on the Java Virtual Machine as there is
+no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with `store()`
+and then convert those results to something the client can use locally.
+
 
 === Application Examples
 
@@ -1004,9 +1009,9 @@ anchor:gremlin-DotNet[]
 image:gremlin-dotnet-logo.png[width=371,float=right] Apache TinkerPop's Gremlin.Net implements Gremlin within the C#
 language. It targets .NET Standard and can therefore be used on different operating systems and with different .NET
 frameworks, such as .NET Framework and link:https://www.microsoft.com/net/core[.NET Core]. Since the C# syntax is very
-similar to that of Java, it should be very easy to switch between Gremlin-Java and Gremlin.Net. The only major
-syntactical difference is that all method names in Gremlin.Net use PascalCase as opposed to camelCase in Gremlin-Java
-in order to comply with .NET conventions.
+similar to that of Java, it should be easy to switch between Gremlin-Java and Gremlin.Net. The only major syntactical
+difference is that all method names in Gremlin.Net use PascalCase as opposed to camelCase in Gremlin-Java in order
+to comply with .NET conventions.
 
 [source,powershell]
 nuget install Gremlin.Net
@@ -1176,8 +1181,49 @@ and then it can be called from the application as follows:
 include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsDslTests.cs[tags=dslExamples]
 ----
 
-[[gremlin-dotnet-differences]]
+[[gremlin-net-differences]]
 === Differences
+
+The biggest difference between Gremlin in .NET and the canonical version in Java is the casing of steps. Canonical
+Gremlin utilizes `camelCase` as is typical in Java for function names, but C# utilizes `PascalCase` as it is more
+typical in that language. Therefore, when viewing a typical Gremlin example written in Gremlin Console, the conversion
+to C# usually just requires capitalization of the first letter in the step name, thus the following example in Groovy:
+
+[source,groovy]
+----
+g.V().has('person','name','marko').
+  out('knows').
+  elementMap().toList()
+----
+
+would become the following in C#:
+
+[source,csharp]
+----
+g.V().Has("Person","name","marko").
+  Out("knows").
+  ElementMap().ToList();
+----
+
+In addition to the uppercase change, also note the conversion of the single quotes to double quotes as is expected for
+declaring string values in C# and the addition of the semi-colon at the end of the line. In short, don't forget to
+apply the common syntax expectations for C# when trying to convert an example of Gremlin from a different language.
+
+Another common conversion issues lies in having to explicitly define generics, which can make canonical Gremlin appear
+much more complex in C# where type erasure is not a feature of the language. For example, the following example in
+Groovy:
+
+[source,groovy]
+----
+g.V().repeat(__.out()).times(2).values('name')
+----
+
+must be written as:
+
+[source,csharp]
+----
+g.V().Repeat(__.Out()).Times(2).Values<string>("name");
+----
 
 Gremlin allows for `Map` instances to include `null` keys, but `null` keys in C# `Dictionary` instances are not allowed.
 It is therefore necessary to rewrite a traversal such as:
@@ -1197,6 +1243,13 @@ g.V().hasLabel('person').groupCount().by('age')
 
 Either of the above two options accomplishes the desired goal as both prevent `groupCount()` from having to process
 the possibility of `null`.
+
+[[gremlin-net-limitations]]
+=== Limitations
+
+* The `subgraph()`-step is not supported by any variant that is not running on the Java Virtual Machine as there is
+no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with `store()`
+and then convert those results to something the client can use locally.
 
 anchor:gremlin-dotnet-template[]
 [[dotnet-application-examples]]
@@ -1294,6 +1347,16 @@ const pop = gremlin.process.pop
 const order = gremlin.process.order
 const scope = gremlin.process.scope
 const t = gremlin.process.t
+----
+
+By defining these imports it becomes possible to write Gremlin in the more shorthand, canonical style that is
+demonstrated in most examples found here in the documentation:
+
+[source,javascript]
+----
+const { P: { gt } } = gremlin.process;
+const { order: { desc } } = gremlin.process;
+g.V().hasLabel('person').has('age',gt(30)).order().by('age',desc).toList()
 ----
 
 === Submitting Scripts
@@ -1400,6 +1463,7 @@ g.person('marko').aged(29).values('name').toList().
   then(names => console.log(names));
 ----
 
+[[javascript-differences]]
 [[gremlin-javascript-differences]]
 === Differences
 
@@ -1443,3 +1507,9 @@ g.V().hasLabel('person').groupCount().by('age')
 
 Either of the above two options accomplishes the desired goal as both prevent `groupCount()` from having to process
 the possibility of `null`.
+[[gremlin-javascript-limitations]]
+=== Limitations
+
+* The `subgraph()`-step is not supported by any variant that is not running on the Java Virtual Machine as there is
+no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with `store()`
+and then convert those results to something the client can use locally.
