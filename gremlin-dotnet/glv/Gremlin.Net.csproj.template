@@ -51,10 +51,10 @@ NOTE that versions suffixed with "-rc" are considered release candidates (i.e. p
     <SignAssembly>true</SignAssembly>
     <PackageId>Gremlin.Net</PackageId>
     <PackageTags>gremlin;tinkerpop;apache</PackageTags>
-    <PackageProjectUrl>http://tinkerpop.apache.org</PackageProjectUrl>
+    <PackageProjectUrl>https://tinkerpop.apache.org</PackageProjectUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageIcon>gremlin-dotnet-logo_256x256.png</PackageIcon>
-    <PackageIconUrl>http://tinkerpop.apache.org/docs/current/images/gremlin-dotnet-logo_256x256.png</PackageIconUrl>
+    <PackageIconUrl>https://tinkerpop.apache.org/docs/current/images/gremlin-dotnet-logo_256x256.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/apache/tinkerpop</RepositoryUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>    
     <AllowedOutputExtensionsInPackageBuildOutputFolder>\$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
