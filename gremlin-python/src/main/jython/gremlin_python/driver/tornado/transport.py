@@ -26,8 +26,10 @@ __author__ = 'David M. Brown (davebshow@gmail.com)'
 
 class TornadoTransport(AbstractBaseTransport):
 
-    def __init__(self):
+    def __init__(self, read_timeout=30, write_timeout=30):
         self._loop = ioloop.IOLoop(make_current=False)
+        self._read_timeout = read_timeout
+        self._write_timeout = write_timeout
 
     def connect(self, url, headers=None):
         if headers:
@@ -37,10 +39,10 @@ class TornadoTransport(AbstractBaseTransport):
 
     def write(self, message):
         self._loop.run_sync(
-            lambda: self._ws.write_message(message, binary=True))
+            lambda: self._ws.write_message(message, binary=True), timeout=self._write_timeout)
 
     def read(self):
-        return self._loop.run_sync(lambda: self._ws.read_message())
+        return self._loop.run_sync(lambda: self._ws.read_message(), timeout=self._read_timeout)
 
     def close(self):
         self._ws.close()
