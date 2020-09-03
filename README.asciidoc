@@ -16,16 +16,16 @@ limitations under the License.
 ////
 == TinkerPop3
 
-image:https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/tinkerpop3-splash.png[TinkerPop3, link="http://tinkerpop.apache.org"]
+image:https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/tinkerpop3-splash.png[TinkerPop3, link="https://tinkerpop.apache.org"]
 
 === Documentation
 
 Apache TinkerPop™ provides graph computing capabilities for both graph databases (OLTP) and graph analytic systems (OLAP).
 
-* link:http://tinkerpop.apache.org/[homepage (downloads)]
-* link:http://tinkerpop.apache.org/docs/current/reference/[reference documentation]
-* link:http://tinkerpop.apache.org/javadocs/current/core/[core javadoc]
-* link:http://tinkerpop.apache.org/javadocs/current/full/[full javadoc]
+* link:https://tinkerpop.apache.org/[homepage (downloads)]
+* link:https://tinkerpop.apache.org/docs/current/reference/[reference documentation]
+* link:https://tinkerpop.apache.org/javadocs/current/core/[core javadoc]
+* link:https://tinkerpop.apache.org/javadocs/current/full/[full javadoc]
 
 === Building and Testing
 
@@ -39,7 +39,7 @@ The zip distributions can be found in the following directories:
 . `gremlin-server/target`
 . `gremlin-console/target`
 
-Please see the link:http://tinkerpop.apache.org/docs/current/dev/developer/#_contributing[CONTRIBUTING.asciidoc] file for more detailed information and options for building, test running and developing TinkerPop.
+Please see the link:https://tinkerpop.apache.org/docs/current/dev/developer/#_contributing[CONTRIBUTING.asciidoc] file for more detailed information and options for building, test running and developing TinkerPop.
 
 === Get Started
 
@@ -55,7 +55,7 @@ plugin activated: tinkerpop.utilities
 plugin activated: tinkerpop.tinkergraph
 gremlin> graph = TinkerFactory.createModern()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> g = graph.traversal()
+gremlin> g = traversal().withEmbedded(graph)
 ==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
 gremlin> g.V().has('name','vadas').valueMap()
 ==>[name:[vadas], age:[27]]
