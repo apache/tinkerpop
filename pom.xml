@@ -409,8 +409,7 @@ limitations under the License.
                         <exclude>**/*.nuspec</exclude>
                         <exclude>**/gremlin-javascript/node_modules/**</exclude>
                         <exclude>**/gremlin-javascript/doc/**</exclude>
-                        <exclude>**/node/node_modules/**</exclude>
-                        <exclude>**/node/node</exclude>
+                        <exclude>**/node/**</exclude>
                         <exclude>**/npm-debug.log</exclude>
                         <exclude>**/_site/**</exclude>
                         <exclude>**/.pytest_cache/**</exclude>
