@@ -38,7 +38,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> implements SideEffectCapable<Map<E, Long>, Map<E, Long>>, TraversalParent, ByModulating {
+public final class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> implements SideEffectCapable<Map<E, Long>, Map<E, Long>>, TraversalParent, ByModulating {
 
     private Traversal.Admin<S, E> keyTraversal = null;
     private String sideEffectKey;

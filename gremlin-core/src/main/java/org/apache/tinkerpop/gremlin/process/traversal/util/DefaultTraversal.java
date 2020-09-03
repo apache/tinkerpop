@@ -348,11 +348,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     public void setGraph(final Graph graph) {
         this.graph = graph;
     }
-
-    public void setLocked(boolean locked) {
-        this.locked = locked;
-    }
-
+    
     @Override
     public boolean equals(final Object other) {
         return other != null && other.getClass().equals(this.getClass()) && this.equals(((Traversal.Admin) other));
