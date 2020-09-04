@@ -49,7 +49,8 @@ public enum GraphBinaryCompatibility implements Compatibility {
     V1_3_4_5("3.4.5", "1.0", "v1"),
     V1_3_4_6("3.4.6", "1.0", "v1"),
     V1_3_4_7("3.4.7", "1.0", "v1"),
-    V1_3_4_8("3.4.8", "1.0", "v1");
+    V1_3_4_8("3.4.8", "1.0", "v1"),
+    V1_3_4_9("3.4.9", "1.0", "v1");
 
     private static final String SEP = File.separator;
 
