@@ -92,7 +92,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed `Connection` from `Connection Pool` when server closes a connection with no pending requests in Java Driver.
 * Improved initialization time of Java Driver if the default serializer is replaced.
 * Fixed bug in Javascript `Translator` that wasn't handling child traversals well.
-* Fix an interator leak in HasContainer. 
+* Fixed an iterator leak in `HasContainer`.
 
 [[release-3-4-8]]
 === TinkerPop 3.4.8 (Release Date: August 3, 2020)
