@@ -24,7 +24,6 @@ import org.apache.kerby.kerberos.kerb.client.KrbConfig;
 import org.apache.kerby.kerberos.kerb.client.KrbConfigKey;
 import org.apache.kerby.kerberos.kerb.server.SimpleKdcServer;
 import org.apache.kerby.kerberos.kerb.type.ticket.TgtTicket;
-import org.apache.kerby.util.NetworkUtil;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
@@ -47,8 +46,10 @@ public class KdcFixture {
 
     final String clientPassword = "123456";
     final String clientPassword2 = "1234562";
+    final String userPassword = "password";
     final String clientPrincipalName = "drankye";
     final String clientPrincipalName2 = "drankye2";
+    final String userPrincipalName = "stephen";
     final String serverPrincipalName = "test-service";
     final String ticketCacheFileName = "test-tkt.cc";
     final String ticketCacheFileName2 = "test-tkt2.cc";
@@ -57,21 +58,31 @@ public class KdcFixture {
     final String clientPrincipal;
     final String clientPrincipal2;
     final String serverPrincipal;
+    final String userPrincipal;
     final File testDir;
     final File ticketCacheFile;
     final File ticketCacheFile2;
     final File serviceKeytabFile;
 
-    final String hostname;
+    final String gremlinHostname;
+    final String kdcHostname;
     private SimpleKdcServer kdcServer;
 
-    public KdcFixture(final String authConfigName) {
-        System.setProperty("java.security.auth.login.config", authConfigName);
-        hostname = findHostname();
-        serverPrincipal = serverPrincipalName + "/" + hostname + "@" + KdcFixture.TestKdcServer.KDC_REALM;
+    public KdcFixture(final String moduleBaseDir) {
+        this(moduleBaseDir, "localhost");
+    }
+
+    public KdcFixture(final String moduleBaseDir, final String kdcHostName) {
+        this.kdcHostname = kdcHostName;
+        gremlinHostname = findHostname();
+        serverPrincipal = serverPrincipalName + "/" + gremlinHostname + "@" + KdcFixture.TestKdcServer.KDC_REALM;
         clientPrincipal = clientPrincipalName + "@" + KdcFixture.TestKdcServer.KDC_REALM;
         clientPrincipal2 = clientPrincipalName2 + "@" + KdcFixture.TestKdcServer.KDC_REALM;
-        testDir = createTestDir();
+        userPrincipal = userPrincipalName  + "@" + KdcFixture.TestKdcServer.KDC_REALM;
+
+        final File targetDir = new File(moduleBaseDir, "target");
+        testDir = new File(targetDir, "kdc");
+        testDir.mkdirs();
         ticketCacheFile = new File(testDir, ticketCacheFileName);
         ticketCacheFile2 = new File(testDir, ticketCacheFileName2);
         serviceKeytabFile = new File(testDir, serviceKeytabFileName);
@@ -90,29 +101,24 @@ public class KdcFixture {
         return hostname;
     }
 
-    private File createTestDir() {
-        final String basedir = System.getProperty("basedir");
-        final File targetdir = new File(basedir, "target");
-        final File testDir = new File(targetdir, "kdc");
-        testDir.mkdirs();
-        return testDir;
-    }
-
     private class TestKdcServer extends SimpleKdcServer {
         public static final String KDC_REALM = "TEST.COM";
-        public static final String HOSTNAME = "localhost";
+        public final String HOSTNAME = kdcHostname;
+        public static final int KDC_PORT = 4588;
 
         TestKdcServer() throws KrbException {
             setKdcRealm(KDC_REALM);
             setKdcHost(HOSTNAME);
             setAllowTcp(true);
-            setAllowUdp(false);    // There are still udp issues in Apache Directory-Kerby 1.0.0-RC2
-            setKdcTcpPort(NetworkUtil.getServerPort());
+            setAllowUdp(true);
+            setKdcTcpPort(KDC_PORT);
+            setKdcUdpPort(KDC_PORT);
 
             final KrbClient krbClnt = getKrbClient();
             final KrbConfig krbConfig = krbClnt.getKrbConfig();
             krbConfig.setString(KrbConfigKey.PERMITTED_ENCTYPES,
                     "aes128-cts-hmac-sha1-96 des-cbc-crc des-cbc-md5 des3-cbc-sha1");
+            krbConfig.setString(KrbConfigKey.DEFAULT_REALM, KDC_REALM);
             krbClnt.setTimeout(10 * 1000);
         }
     }
@@ -140,6 +146,8 @@ public class KdcFixture {
         kdcServer.createPrincipal(clientPrincipal2, clientPassword2);
         final TgtTicket tgt2 = kdcServer.getKrbClient().requestTgt(clientPrincipal2, clientPassword2);
         kdcServer.getKrbClient().storeTicket(tgt2, ticketCacheFile2);
+
+        kdcServer.createPrincipal(userPrincipal, userPassword);
     }
 
     public void close() throws Exception {
@@ -149,7 +157,6 @@ public class KdcFixture {
         ticketCacheFile2.delete();
         serviceKeytabFile.delete();
         testDir.delete();
-        System.clearProperty("java.security.auth.login.config");
     }
 
     private void deletePrincipals() throws KrbException {
@@ -161,5 +168,16 @@ public class KdcFixture {
 
     public void createPrincipal(final String principal) throws KrbException {
         kdcServer.createPrincipal(principal);
+    }
+
+    public static void main(final String[] args) throws Exception{
+        final String projectBaseDir = args[0];
+        // The KDC in docker/gremlin-server.sh needs to be exposed to both the container and the host
+        final KdcFixture kdcFixture = new KdcFixture(projectBaseDir, "0.0.0.0");
+        kdcFixture.setUp();
+        logger.info("KDC started with configuration {}/target/kdc/krb5.conf", projectBaseDir);
+        while (true) {
+            Thread.sleep(1000);
+        }
     }
 }

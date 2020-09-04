@@ -16,6 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+
 import pytest
 
 from gremlin_python import statics
@@ -210,3 +211,9 @@ class TestDriverRemoteConnection(object):
         assert 6 == t.next()
         assert 6 == t.clone().next()
         assert 6 == t.clone().next()
+
+    def test_authenticated(self, remote_connection_authenticated):
+        statics.load_statics(globals())
+        g = traversal().withRemote(remote_connection_authenticated)
+
+        assert long(6) == g.V().count().toList()[0]

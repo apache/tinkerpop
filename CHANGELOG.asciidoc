@@ -58,6 +58,9 @@ This release also includes changes from <<release-3-4-3, 3.4.3>>.
 * Supported build for Java 11.
 * Added a parameterized `TypeTranslator` for use with `GroovyTranslator` that should produce more cache hits.
 * Added support for `TextP` in Neo4j using its string search functions.
+* Added a kerberos KDC to the docker container for testing GLV's.
+* Added kerberos authentication to Gremlin-Python.
+* Added audit logging to bytecode-based traversals.
 * Changed `TraversalStrategy` application methodology to apply each strategy in turn to each level of the traversal hierarchy starting from root down to children.
 * Prevented more than one `Client` from connecting to the same Gremlin Server session.
 * Removed internal functionality for the session close message in Gremlin Server - the message is accepted but ignored if sent.

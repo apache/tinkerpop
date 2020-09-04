@@ -81,6 +81,9 @@ setup(
         'PyHamcrest>=1.9.0,<2.0.0'
     ],
     install_requires=install_requires,
+    extra_require={
+        'kerberos': 'kerberos>=1.3.0,<2.0.0'    # Does not install in Microsoft Windows
+    },
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: Apache Software License",

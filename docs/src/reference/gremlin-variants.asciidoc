@@ -649,6 +649,7 @@ To install Gremlin-Python, use Python's link:https://en.wikipedia.org/wiki/Pip_(
 [source,bash]
 ----
 pip install gremlinpython
+pip install gremlinpython[kerberos]     # Optional, not available on Microsoft Windows
 ----
 
 [[gremlin-python-connecting]]
@@ -668,8 +669,35 @@ to the `DriverRemoteConnection` constructor.
 
 [source,python]
 ----
-g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g',headers={'Header':'Value'}))
+g = traversal().withRemote(DriverRemoteConnection(
+    'ws://localhost:8182/gremlin', 'g', headers={'Header':'Value'}))
 ----
+
+Gremlin-Python supports plain text and Kerberos SASL authentication, you can set it on the connection options.
+
+[source,python]
+----
+# Plain text authentication
+g = traversal().withRemote(DriverRemoteConnection(
+    'ws://localhost:8182/gremlin', 'g', username='stephen', password='password'))
+
+# Kerberos authentication
+g = traversal().withRemote(DriverRemoteConnection(
+    'ws://localhost:8182/gremlin', 'g', kerberized_service='gremlin@hostname.your.org'))
+----
+
+The value specified for the kerberized_service should correspond to the first part of the principal name configured for
+the gremlin service, but with the slash replaced by an _at_ sign. The Gremlin-Python client reads the kerberos
+configurations from your system. It finds the KDC's hostname and port from the krb5.conf file at the
+https://web.mit.edu/kerberos/krb5-devel/doc/mitK5defaults.html[default location] or as indicated in the KRB5_CONFIG
+environment variable. It finds credentials from the credential cache or a keytab file at the
+https://web.mit.edu/kerberos/krb5-devel/doc/mitK5defaults.html[default locations] or as indicated
+in the KRB5CCNAME or KRB5_KTNAME environment variables.
+
+If you authenticate to a remote <<connecting-gremlin-server,Gremlin Server>> or
+<<connecting-rgp,Remote Gremlin Provider>>, this server normally has SSL activated and the websockets url will start
+with 'wss://'. If Gremlin-Server uses a self-signed certificate for SSL, Gremlin-Python needs access to a local copy of
+the CA certificate file (in openssl .pem format), to be specified in the SSL_CERT_FILE environment variable.
 
 NOTE: If connecting from an inherently single-threaded Python process where blocking while waiting for Gremlin
 traversals to complete is acceptable, it might be helpful to set `pool_size` and `max_workers` parameters to 1.
@@ -754,6 +782,7 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 |protocol_factory |A callable that returns an instance of `AbstractBaseProtocol`. |`gremlin_python.driver.protocol.GremlinServerWSProtocol`
 |transport_factory |A callable that returns an instance of `AbstractBaseTransport`. |`gremlin_python.driver.tornado.transport.TornadoTransport`
 |username |The username to submit on requests that require authentication. |""
+|kerberized_service |the first part of the principal name configured for the gremlin service|"""
 |session | A unique string-based identifier (typically a UUID) to enable a <<sessions,session-based connection>>. This is not a valid configuration for `DriverRemoteConnection`. |None
 |=========================================================
 

@@ -164,8 +164,13 @@ module. If Python is not installed, TinkerPop will still build with Maven, but n
 Java tests that require Python code will be skipped. Developers should also install link:https://pypi.python.org/pypi/pip[pip]
 and link:https://virtualenv.pypa.io/en/stable/[virtualenv] (version 15.0.2 - older versions may cause build failures).
 
-The build expects two Python executables `python` and `python3` where `python` maps to 2.7.6 and `python3` is 3.4.3 or
-higher. Once the Python environment is established, the full building and testing of `gremlin-python` may commence. It
+The build expects Python a `python3` installation which should be 3.5.3 or better. Python also tests kerberos and
+therefore requires:
+
+[source,text]
+sudo apt install libkrb5-dev krb5-user
+
+Once the Python environment is established, the full building and testing of `gremlin-python` may commence. It
 can be done manually from the command line with:
 
 [source,text]
@@ -175,10 +180,10 @@ which enables the "glv-python" Maven profile or in a more automated fashion simp
 `gremlin-python` module which will signify to Maven that the environment is Python-ready. The `.glv` file need not have
 any contents and is ignored by Git. A standard `mvn clean install` will then build `gremlin-python` in full.
 
-As of TinkerPop 3.2.5, the build also requires Python to execute `gremlin-console` integration tests. The integration
-test is configured by a "console-integration-tests" Maven profile. This profile can be activated manually or can more
-simply piggy-back on the `.glv` file in `gremlin-python`. Note that unlike `gremlin-python` the tests are actually
-integration tests and therefore must be actively switched on with `-DskipIntegrationTests=false`:
+The build also requires Python to execute `gremlin-console` integration tests. The integration test is configured by a
+"console-integration-tests" Maven profile. This profile can be activated manually or can more simply piggy-back on
+the `.glv` file in `gremlin-python`. Note that unlike `gremlin-python` the tests are actually integration tests and
+therefore must be actively switched on with `-DskipIntegrationTests=false`:
 
 [source,text]
 mvn clean install -pl gremlin-console -DskipIntegrationTests=false
