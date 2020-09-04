@@ -316,6 +316,19 @@ All lambdas should be written using `gremlin-groovy` if they are needed.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2317[TINKERPOP-2317]
 
+==== Python Kerberos Support
+
+The Python Driver now supports Kerberos based authentication:
+
+[source,python]
+----
+g = traversal().withRemote(DriverRemoteConnection(
+    'ws://localhost:8182/gremlin', 'g', kerberized_service='gremlin@hostname.your.org'))
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1641[TINKERPOP-1641],
+link:https://tinkerpop.apache.org/docs/current/reference/#gremlin-python-connecting[Reference Documentation]
+
 ==== .NET Standard 2.0 Only
 
 Gremlin.NET no longer targets .NET Standard 1.3, but only .NET Standard 2.0. Since .NET Core 2.0 and .NET Framework
