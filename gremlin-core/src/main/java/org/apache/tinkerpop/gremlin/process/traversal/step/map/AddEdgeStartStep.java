@@ -116,7 +116,7 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
                         .attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
             final String edgeLabel = (String) this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
             final Edge edge = fromVertex.addEdge(edgeLabel, toVertex, this.parameters.getKeyValues(traverser, TO, FROM, T.label));
-            if (callbackRegistry != null) {
+            if (callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
                 final EventStrategy eventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
                 final Event.EdgeAddedEvent vae = new Event.EdgeAddedEvent(eventStrategy.detach(edge));
                 callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
