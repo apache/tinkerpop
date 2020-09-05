@@ -96,6 +96,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Improved initialization time of Java Driver if the default serializer is replaced.
 * Fixed bug in Javascript `Translator` that wasn't handling child traversals well.
 * Fixed an iterator leak in `HasContainer`.
+* Avoid creating unnecessary detached objects in JVM 
 
 [[release-3-4-8]]
 === TinkerPop 3.4.8 (Release Date: August 3, 2020)
