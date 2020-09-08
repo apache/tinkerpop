@@ -22,9 +22,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.function.TraverserSetSupplier;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -50,7 +52,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     public AbstractStep(final Traversal.Admin traversal) {
         this.traversal = traversal;
-        this.starts = new ExpandableStepIterator<>(this);
+        this.starts = new ExpandableStepIterator<>(this, (TraverserSet<S>) traversal.getTraverserSetSupplier().get());
     }
 
     @Override
@@ -175,7 +177,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     public AbstractStep<S, E> clone() {
         try {
             final AbstractStep<S, E> clone = (AbstractStep<S, E>) super.clone();
-            clone.starts = new ExpandableStepIterator<>(clone);
+            clone.starts = new ExpandableStepIterator<>(clone, (TraverserSet<S>) traversal.getTraverserSetSupplier().get());
             clone.previousStep = EmptyStep.instance();
             clone.nextStep = EmptyStep.instance();
             clone.nextEnd = EmptyTraverser.instance();
@@ -202,7 +204,11 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         return result;
     }
 
-    private final Traverser.Admin<E> prepareTraversalForNextStep(final Traverser.Admin<E> traverser) {
+    public ExpandableStepIterator<S> getStarts() {
+        return this.starts;
+    }
+
+    private Traverser.Admin<E> prepareTraversalForNextStep(final Traverser.Admin<E> traverser) {
         if (!this.traverserStepIdAndLabelsSetByChild) {
             traverser.setStepId(this.nextStep.getId());
             traverser.addLabels(this.labels);

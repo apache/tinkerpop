@@ -21,16 +21,19 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.function.TraverserSetSupplier;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class AddVertexStepTest {
 
     @Test
     public void shouldDefaultTheLabelIfNullString() {
         final Traversal.Admin t = mock(Traversal.Admin.class);
+        when(t.getTraverserSetSupplier()).thenReturn(TraverserSetSupplier.instance());
         final AddVertexStartStep starStep = new AddVertexStartStep(t, (String) null);
         assertEquals(Vertex.DEFAULT_LABEL, starStep.getParameters().getRaw().get(T.label).get(0));
         final AddVertexStep step = new AddVertexStep(t, (String) null);
@@ -40,6 +43,7 @@ public class AddVertexStepTest {
     @Test
     public void shouldDefaultTheLabelIfNullTraversal() {
         final Traversal.Admin t = mock(Traversal.Admin.class);
+        when(t.getTraverserSetSupplier()).thenReturn(TraverserSetSupplier.instance());
         final AddVertexStartStep starStep = new AddVertexStartStep(t, (Traversal<?,String>) null);
         assertEquals(Vertex.DEFAULT_LABEL, starStep.getParameters().getRaw().get(T.label).get(0));
         final AddVertexStep step = new AddVertexStep(t, (String) null);

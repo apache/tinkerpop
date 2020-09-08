@@ -66,8 +66,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     protected transient TraverserGenerator generator;
     protected Set<TraverserRequirement> requirements;
     protected boolean locked = false;
-    protected Bytecode bytecode; // TODO: perhaps make transient until 3.3.0?
-
+    protected Bytecode bytecode;
 
     private DefaultTraversal(final Graph graph, final TraversalStrategies traversalStrategies, final Bytecode bytecode) {
         this.graph = graph;
@@ -172,7 +171,6 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     @Override
     public Set<TraverserRequirement> getTraverserRequirements() {
         if (null == this.requirements) {
-            // if (!this.locked) this.applyStrategies();
             this.requirements = EnumSet.noneOf(TraverserRequirement.class);
             for (final Step<?, ?> step : this.getSteps()) {
                 this.requirements.addAll(step.getRequirements());
