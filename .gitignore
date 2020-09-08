@@ -22,6 +22,7 @@ __pycache__/
 __version__.py
 .glv
 settings.xml
+package-lock.json
 tools/
 [Dd]ebug/
 [Rr]elease/
