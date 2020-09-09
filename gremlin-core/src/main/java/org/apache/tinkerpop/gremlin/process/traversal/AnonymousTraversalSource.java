@@ -24,10 +24,6 @@ import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
-import java.lang.reflect.Constructor;
-
-import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE_CONNECTION_CLASS;
-
 /**
  * Provides a unified way to construct a {@link TraversalSource} from the perspective of the traversal. In this syntax
  * the user is creating the source and binding it to a reference which is either an existing {@link Graph} instance
@@ -60,24 +56,28 @@ public class AnonymousTraversalSource<T extends TraversalSource> {
     }
 
     /**
-     * Creates the specified {@link TraversalSource} binding a {@link RemoteConnection} as its reference such that
-     * traversals spawned from it will execute over that reference.
+     * Creates a {@link TraversalSource} binding a {@link RemoteConnection} to a remote {@link Graph} instances as its
+     * reference so that traversals spawned from it will execute over that reference.
+     *
+     * @param configFile a path to a file that would normally be provided to configure a {@link RemoteConnection}
      */
     public T withRemote(final String configFile) throws Exception {
         return withRemote(new PropertiesConfiguration(configFile));
     }
 
     /**
-     * Creates the specified {@link TraversalSource} binding a {@link RemoteConnection} as its reference such that
-     * traversals spawned from it will execute over that reference.
+     * Creates a {@link TraversalSource} binding a {@link RemoteConnection} to a remote {@link Graph} instances as its
+     * reference so that traversals spawned from it will execute over that reference.
+     *
+     * @param conf a {@code Configuration} object that would normally be provided to configure a {@link RemoteConnection}
      */
     public T withRemote(final Configuration conf) {
         return withRemote(RemoteConnection.from(conf));
     }
 
     /**
-     * Creates the specified {@link TraversalSource} binding a {@link RemoteConnection} as its reference such that
-     * traversals spawned from it will execute over that reference.
+     * Creates a {@link TraversalSource} binding a {@link RemoteConnection} to a remote {@link Graph} instances as its
+     * reference so that traversals spawned from it will execute over that reference.
      */
     public T withRemote(final RemoteConnection remoteConnection) {
         try {
@@ -88,10 +88,20 @@ public class AnonymousTraversalSource<T extends TraversalSource> {
     }
 
     /**
-     * Creates the specified {@link TraversalSource} binding a {@link Graph} as its reference such that traversals
-     * spawned from it will execute over that reference.
+     * Creates the specified {@link TraversalSource} binding an embedded {@link Graph} as its reference such that
+     * traversals spawned from it will execute over that reference.
+     *
+     * @deprecated As of release 3.4.9, replaced by {@link #withEmbedded(Graph)}
      */
     public T withGraph(final Graph graph) {
+        return withEmbedded(graph);
+    }
+
+    /**
+     * Creates the specified {@link TraversalSource} binding an embedded {@link Graph} as its reference such that
+     * traversals spawned from it will execute over that reference.
+     */
+    public T withEmbedded(final Graph graph) {
         try {
             return traversalSourceClass.getConstructor(Graph.class).newInstance(graph);
         } catch (final Exception e) {

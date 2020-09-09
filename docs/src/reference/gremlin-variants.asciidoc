@@ -109,7 +109,7 @@ to creating a `GraphTraversalSource`. For <<connecting-embedded,embedded>> mode,
 [source,java]
 ----
 Graph graph = ...;
-GraphTraversalSource g = graph.traversal();
+GraphTraversalSource g = traversal().withEmbedded(graph);
 ----
 
 Using "g" it is then possible to start writing Gremlin. The "g" allows for the setting of many configuration options
@@ -527,7 +527,7 @@ Using the DSL then just involves telling the `Graph` to use it:
 
 [source,java]
 ----
-SocialTraversalSource social = graph.traversal(SocialTraversalSource.class);
+SocialTraversalSource social = traversal(SocialTraversalSource.class).withEmbedded(graph);
 social.V().has("name","marko").knows("josh");
 ----
 
@@ -579,7 +579,7 @@ It is then possible to use the `persons()` method to start traversals:
 
 [source,java]
 ----
-SocialTraversalSource social = graph.traversal(SocialTraversalSource.class);
+SocialTraversalSource social = traversal(SocialTraversalSource.class).withEmbedded(graph);
 social.persons("marko").knows("josh");
 ----
 
@@ -1004,7 +1004,7 @@ be used:
 
 [source,python]
 ----
-social = Graph().traversal(SocialTraversalSource).withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
+social = traversal(SocialTraversalSource).withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
 social.persons("marko").knows("josh")
 social.persons("marko").youngestFriendsAge()
 social.persons().filter(__.createdAtLeast(2)).count()

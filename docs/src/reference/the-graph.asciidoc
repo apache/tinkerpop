@@ -33,7 +33,7 @@ spawn `GraphTraversalSource` instances so as to write Gremlin:
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-g = graph.traversal()
+g = traversal().withEmbedded(graph)
 g.addV('person')
 ----
 
@@ -117,7 +117,7 @@ A running example using vertex properties is provided below to demonstrate and e
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-g = graph.traversal()
+g = traversal().withEmbedded(graph)
 v = g.addV().property('name','marko').property('name','marko a. rodriguez').next()
 g.V(v).properties('name').count() <1>
 v.property(list, 'name', 'm. a. rodriguez') <2>
@@ -290,7 +290,7 @@ not support transactions.
 ----
 gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
-gremlin> g = graph.traversal()
+gremlin> g = traversal().withEmbedded(graph)
 ==>graphtraversalsource[neo4jgraph[community single [/tmp/neo4j]], standard]
 gremlin> graph.features()
 ==>FEATURES
@@ -340,7 +340,7 @@ is bound to the current thread of execution. Consider the following example to d
 
 [source,java]
 ----
-GraphTraversalSource g = graph.traversal();
+GraphTraversalSource g = traversal().withEmbedded(graph);
 g.addV("person").("name","stephen").iterate();
 
 Thread t1 = new Thread(() -> {
@@ -374,7 +374,7 @@ different threads operating within the same transaction, the above code could be
 [source,java]
 ----
 Graph threaded = graph.tx().createThreadedTx();
-GraphTraversalSource g = graph.traversal();
+GraphTraversalSource g = traversal().withEmbedded(graph);
 g.addV("person").("name","stephen").iterate();
 
 Thread t1 = new Thread(() -> {

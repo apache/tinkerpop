@@ -871,7 +871,7 @@ A `RequestMessage` to evaluate a script with variable bindings looks like this i
 { "requestId":"1d6d02bd-8e56-421d-9438-3bd6d0079ff1",
   "op":"eval",
   "processor":"",
-  "args":{"gremlin":"g.traversal().V(x).out()",
+  "args":{"gremlin":"g.V(x).out()",
           "bindings":{"x":1},
           "language":"gremlin-groovy"}}
 ----
@@ -896,7 +896,7 @@ NOTE: Gremlin Server will only accept masked packets as it pertains to a WebSock
 
 When Gremlin Server receives that request, it will decode it given the "mime type", pass it to the requested
 `OpProcessor` which will execute the `op` defined in the message.  In this case, it will evaluate the script
-`g.traversal().V(x).out()` using the `bindings` supplied in the `args` and stream back the results in a series of
+`g.V(x).out()` using the `bindings` supplied in the `args` and stream back the results in a series of
 `ResponseMessages`.  A `ResponseMessage` looks like this:
 
 [width="100%",cols="3,10",options="header"]
@@ -1094,7 +1094,7 @@ To demonstrate consider this example:
 cluster = Cluster.open()
 client = cluster.connect()
 aliased = client.alias("g")
-g = org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph.instance().traversal()     <1>
+g = traversal().withEmbedded(org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph.instance())     <1>
 rs = aliased.submit(g.V().both().barrier().both().barrier()).all().get()                    <2>
 aliased.submit(g.V().both().barrier().both().barrier().count()).all().get().get(0).getInt() <3>
 rs.collect{[value: it.getObject().get(), bulk: it.getObject().bulk()]}                      <4>

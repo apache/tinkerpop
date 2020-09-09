@@ -109,7 +109,7 @@ The "toy" graph provides a way to get started with Gremlin quickly.
 
 [gremlin-groovy]
 ----
-g = TinkerFactory.createModern().traversal()
+g = traversal().withEmbedded(TinkerFactory.createModern())
 g.V()
 g.V().values('name')
 g.V().has('name','marko').out('knows').values('name')
@@ -296,7 +296,7 @@ from the command line.  Consider the following file named `gremlin.groovy`:
 [source,groovy]
 ----
 graph = TinkerFactory.createModern()
-g = graph.traversal()
+g = traversal().withEmbedded(graph)
 g.V().each { println it }
 ----
 
@@ -322,7 +322,7 @@ to system out:
 [source,groovy]
 ----
 graph = TinkerFactory.createModern()
-g = graph.traversal()
+g = traversal().withEmbedded(graph)
 g.V().has('name',args[0]).each { println it }
 ----
 
@@ -362,7 +362,7 @@ graph might create a script called `init.groovy` like:
 [source,groovy]
 ----
 graph = TinkerFactory.createModern()
-g = graph.traversal()
+g = traversal().withEmbedded(graph)
 ----
 
 and then start Gremlin Console as follows:
@@ -1239,7 +1239,7 @@ Please see the example usage as follows:
 ----
 graph = TinkerGraph.open()
 graph.createIndex("username",Vertex.class)
-credentials = graph.traversal(CredentialTraversalSource.class)
+credentials = traversal(CredentialTraversalSource.class).withEmbedded(graph)
 credentials.user("stephen","password")
 credentials.user("daniel","better-password")
 credentials.user("marko","rainbow-dash")
@@ -1845,7 +1845,7 @@ like this:
 
 [source,groovy]
 ----
-globals << [g : graph.traversal().withStrategies(ReferenceElementStrategy.instance())]
+globals << [g : traversal().withEmbedded(graph).withStrategies(ReferenceElementStrategy.instance())]
 ----
 
 This configuration is global to Gremlin Server and therefore all methods of connection will always return elements

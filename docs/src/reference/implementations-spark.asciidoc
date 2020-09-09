@@ -44,7 +44,7 @@ Once the `lib/` directory is distributed, `SparkGraphComputer` can be used as fo
 [gremlin-groovy]
 ----
 graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
-g = graph.traversal().withComputer(SparkGraphComputer)
+g = traversal().withEmbedded(graph).withComputer(SparkGraphComputer)
 g.V().count()
 g.V().out().out().values('name')
 ----
@@ -54,7 +54,7 @@ For using lambdas in Gremlin-Groovy, simply provide `:remote connect` a `Travers
 [gremlin-groovy]
 ----
 graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
-g = graph.traversal().withComputer(SparkGraphComputer)
+g = traversal().withEmbedded(graph).withComputer(SparkGraphComputer)
 :remote connect tinkerpop.hadoop graph g
 :> g.V().group().by{it.value('name')[1]}.by('name')
 ----
