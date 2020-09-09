@@ -148,7 +148,7 @@ which is the OLAP Gremlin machine.
 hdfs.copyFromLocal('data/tinkerpop-modern.kryo', 'tinkerpop-modern.kryo')
 hdfs.ls()
 graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
-g = graph.traversal()
+g = traversal().withEmbedded(graph)
 g.V().count()
 g.V().out().out().values('name')
 g.V().group().by{it.value('name')[1]}.by('name').next()

@@ -76,7 +76,7 @@ The Gremlin-Console session below demonstrates Neo4j indices. For more informati
 [gremlin-groovy]
 ----
 graph = Neo4jGraph.open('/tmp/neo4j')
-g = graph.traversal()
+g = traversal().withEmbedded(graph)
 graph.cypher("CREATE INDEX ON :person(name)")
 graph.tx().commit()  <1>
 g.addV('person').property('name','marko')
@@ -93,7 +93,7 @@ labels), a linear scan of the vertex-label partition is still faster than a line
 [gremlin-groovy]
 ----
 graph = Neo4jGraph.open('/tmp/neo4j')
-g = graph.traversal()
+g = traversal().withEmbedded(graph)
 g.io('data/grateful-dead.xml').read().iterate()
 g.tx().commit()
 clock(1000) {g.V().hasLabel('artist').has('name','Garcia').iterate()}  <1>
@@ -124,7 +124,7 @@ It is possible to leverage Cypher from within Gremlin by using the `Neo4jGraph.c
 [gremlin-groovy]
 ----
 graph = Neo4jGraph.open('/tmp/neo4j')
-g = graph.traversal()
+g = traversal().withEmbedded(graph)
 g.io('data/tinkerpop-modern.kryo').read().iterate()
 graph.cypher('MATCH (a {name:"marko"}) RETURN a')
 graph.cypher('MATCH (a {name:"marko"}) RETURN a').select('a').out('knows').values('name')
@@ -155,7 +155,7 @@ An example use case is presented below.
 [gremlin-groovy]
 ----
 graph = Neo4jGraph.open('/tmp/neo4j')
-g = graph.traversal()
+g = traversal().withEmbedded(graph)
 vertex = (Neo4jVertex) g.addV('human::animal').next() <1>
 vertex.label() <2>
 vertex.labels() <3>
@@ -215,7 +215,7 @@ which can then be used as follows:
 ----
 gremlin> graph = GraphFactory.open('neo4j.properties')
 ==>neo4jgraph[community single [/tmp/neo4j]]
-gremlin> g = graph.traversal()
+gremlin> g = traversal().withEmbedded(graph)
 ==>graphtraversalsource[neo4jgraph[community single [/tmp/neo4j]], standard]
 ----
 

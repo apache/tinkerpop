@@ -67,7 +67,7 @@ may be used as follows:
 [gremlin-groovy,modern]
 ----
 graph = TinkerFactory.createModern()
-g = graph.traversal(SparqlTraversalSource)                                                             <1>
+g = traversal(SparqlTraversalSource).withEmbedded(graph)                                               <1>
 g.sparql("""SELECT ?name ?age
             WHERE { ?person v:name ?name . ?person v:age ?age }
             ORDER BY ASC(?age)""")                                                                     <2>
@@ -388,7 +388,7 @@ graph.
 
 [gremlin-groovy,theCrew]
 ----
-g = graph.traversal(SparqlTraversalSource)
+g = traversal(SparqlTraversalSource).withEmbedded(graph)
 g.sparql("""SELECT ?name ?startTime
 WHERE {
   ?person v:name "daniel" .
@@ -422,7 +422,7 @@ steps as shown below:
 
 [gremlin-groovy,modern]
 ----
-g = graph.traversal(SparqlTraversalSource)
+g = traversal(SparqlTraversalSource).withEmbedded(graph)
 g.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age }")
 g.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age }").select("name")
 g.sparql("SELECT * WHERE { }").out("knows").values("name")

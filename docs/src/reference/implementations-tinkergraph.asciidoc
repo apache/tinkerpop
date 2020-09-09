@@ -44,7 +44,7 @@ Constructing a simple graph using TinkerGraph in Java is presented below:
 [source,java]
 ----
 Graph graph = TinkerGraph.open();
-GraphTraversalSource g = graph.traversal();
+GraphTraversalSource g = traversal().withEmbedded(graph);
 Vertex marko = g.addV("person").property("name","marko").property("age",29).next();
 Vertex lop = g.addV("software").property("name","lop").property("lang","java").next();
 g.addE("created").from(marko).to(lop).property("weight",0.6d).iterate();
@@ -89,11 +89,11 @@ TinkerGraph over the Grateful Dead graph.
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-g = graph.traversal()
+g = traversal().withEmbedded(graph)
 g.io('data/grateful-dead.xml').read().iterate()
 clock(1000) {g.V().has('name','Garcia').iterate()} <1>
 graph = TinkerGraph.open()
-g = graph.traversal()
+g = traversal().withEmbedded(graph)
 graph.createIndex('name',Vertex.class)
 g.io('data/grateful-dead.xml').read().iterate()
 clock(1000){g.V().has('name','Garcia').iterate()} <2>
@@ -159,13 +159,13 @@ cardinality to `list` or else the data will import as `single`.  Consider the fo
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-g = graph.traversal()
+g = traversal().withEmbedded(graph)
 g.io("data/tinkerpop-crew.kryo").read().iterate()
 g.V().properties()
 conf = new BaseConfiguration()
 conf.setProperty("gremlin.tinkergraph.defaultVertexPropertyCardinality","list")
 graph = TinkerGraph.open(conf)
-g = graph.traversal()
+g = traversal().withEmbedded(graph)
 g.io("data/tinkerpop-crew.kryo").read().iterate()
 g.V().properties()
 ----
