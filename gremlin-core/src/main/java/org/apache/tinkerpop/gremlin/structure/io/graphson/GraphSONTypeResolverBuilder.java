@@ -21,7 +21,9 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 import org.apache.tinkerpop.shaded.jackson.databind.DeserializationConfig;
 import org.apache.tinkerpop.shaded.jackson.databind.JavaType;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializationConfig;
+import org.apache.tinkerpop.shaded.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.NamedType;
+import org.apache.tinkerpop.shaded.jackson.databind.jsontype.PolymorphicTypeValidator;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeDeserializer;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeIdResolver;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
@@ -41,6 +43,7 @@ public class GraphSONTypeResolverBuilder extends StdTypeResolverBuilder {
     private TypeInfo typeInfo;
     private String valuePropertyName;
     private final GraphSONVersion version;
+    private final PolymorphicTypeValidator typeValidator = BasicPolymorphicTypeValidator.builder().build();
 
     public GraphSONTypeResolverBuilder(final GraphSONVersion version) {
         this.version = version;
@@ -49,7 +52,7 @@ public class GraphSONTypeResolverBuilder extends StdTypeResolverBuilder {
     @Override
     public TypeDeserializer buildTypeDeserializer(final DeserializationConfig config, final JavaType baseType,
                                                   final Collection<NamedType> subtypes) {
-        final TypeIdResolver idRes = this.idResolver(config, baseType, subtypes, false, true);
+        final TypeIdResolver idRes = this.idResolver(config, baseType, typeValidator, subtypes, false, true);
         return new GraphSONTypeDeserializer(baseType, idRes, this.getTypeProperty(), typeInfo, valuePropertyName);
     }
 
@@ -57,7 +60,7 @@ public class GraphSONTypeResolverBuilder extends StdTypeResolverBuilder {
     @Override
     public TypeSerializer buildTypeSerializer(final SerializationConfig config, final JavaType baseType,
                                               final Collection<NamedType> subtypes) {
-        final TypeIdResolver idRes = this.idResolver(config, baseType, subtypes, true, false);
+        final TypeIdResolver idRes = this.idResolver(config, baseType, typeValidator, subtypes, true, false);
         return version == GraphSONVersion.V2_0 ?
                 new GraphSONTypeSerializerV2d0(idRes, this.getTypeProperty(), typeInfo, valuePropertyName) :
                 new GraphSONTypeSerializerV3d0(idRes, this.getTypeProperty(), typeInfo, valuePropertyName);
