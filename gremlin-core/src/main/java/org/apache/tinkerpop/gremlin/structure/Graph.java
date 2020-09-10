@@ -303,7 +303,11 @@ public interface Graph extends AutoCloseable, Host {
      * If the default is overridden, take care to register the current graph via the
      * {@link org.apache.tinkerpop.gremlin.structure.io.Io.Builder#graph(Graph)} method.
      *
-     * @deprecated As of release 3.4.0, replaced by {@link GraphTraversalSource#io(String)}.
+     * @deprecated As of release 3.4.0, partially replaced by {@link GraphTraversalSource#io(String)}. Notice
+     * {@link GraphTraversalSource#io(String)} doesn't support read operation from {@link java.io.InputStream}
+     * or write operation to {@link java.io.OutputStream}. Thus for readers or writers which need this functionality
+     * are safe to use this deprecated method. There is no intention to remove this method unless all the
+     * functionality is replaced by the `io` step of {@link GraphTraversalSource}.
      */
     @Deprecated
     public default <I extends Io> I io(final Io.Builder<I> builder) {
