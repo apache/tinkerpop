@@ -743,3 +743,51 @@ Feature: Step - select()
       | s[a,b] |
       | s[c]   |
     And the graph should return 6 for count of "g.V().as(\"a\", \"b\").out().as(\"c\").path().select(Column.keys)"
+
+  Scenario: g_V_hasXperson_name_markoX_barrier_asXaX_outXknows_selectXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("person","name","marko").barrier().as("a").out("knows").select("a")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[marko] |
+
+  Scenario: g_V_hasXperson_name_markoX_elementMapXnameX_asXaX_unionXidentity_identityX_selectXaX_selectXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("person","name","marko").elementMap("name").as("a").union(__.identity(),__.identity()).select("a").select("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | marko |
+
+  Scenario: g_V_hasXperson_name_markoX_count_asXaX_unionXidentity_identityX_selectXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("person","name","marko").count().as("a").union(__.identity(),__.identity()).select("a")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].l |
+      | d[1].l |
+
+  Scenario: g_V_hasXperson_name_markoX_path_asXaX_unionXidentity_identityX_selectXaX_unfold
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("person","name","marko").path().as("a").union(__.identity(),__.identity()).select("a").unfold()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[marko] |
