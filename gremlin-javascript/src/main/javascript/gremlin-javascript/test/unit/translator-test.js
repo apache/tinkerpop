@@ -20,11 +20,8 @@
 'use strict';
 
 const assert = require('assert');
-const expect = require('chai').expect;
 const graph = require('../../lib/structure/graph');
 const t = require('../../lib/process/traversal');
-const TraversalStrategies = require('../../lib/process/traversal-strategy').TraversalStrategies;
-const Bytecode = require('../../lib/process/bytecode');
 const Translator = require('../../lib/process/translator');
 const graphTraversalModule = require('../../lib/process/graph-traversal');
 const __ = graphTraversalModule.statics;

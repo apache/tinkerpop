@@ -71,7 +71,9 @@ class GraphTraversalSource {
    * @returns {GraphTraversalSource}
    */
   withComputer(graphComputer, workers, result, persist, vertices, edges, configuration) {
-    return this.withStrategies(new VertexProgramStrategy(graphComputer, workers, result, persist, vertices, edges, configuration));
+    return this.withStrategies(new VertexProgramStrategy({graphComputer: graphComputer,
+                           workers: workers, result: result, persist: persist, vertices: vertices, edges: edges,
+                           configuration: configuration}));
   }
 
   /**
