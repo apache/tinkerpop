@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.util.iterator;
 
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +28,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -111,5 +111,48 @@ public class MultiIteratorTest {
         itty.clear();
 
         assertFalse(itty.hasNext());
+    }
+
+    @Test
+    public void shouldCloseIterators() {
+
+        final MultiIterator<String> itty = new MultiIterator<>();
+        final DummyAutoCloseableIterator<String> inner1 = new DummyAutoCloseableIterator<>();
+        final DummyAutoCloseableIterator<String> inner2 = new DummyAutoCloseableIterator<>();
+        itty.addIterator(inner1);
+        itty.addIterator(inner2);
+
+        itty.close();
+
+        assertTrue(inner1.isClosed());
+        assertTrue(inner2.isClosed());
+    }
+
+    // Dummy iterator to verify that its close method is called in the test.
+    private static class DummyAutoCloseableIterator<T> implements Iterator<T>, AutoCloseable {
+        private boolean closed;
+
+        public DummyAutoCloseableIterator() {
+            closed = false;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public T next() {
+            return null;
+        }
+
+        @Override
+        public void close() throws Exception {
+            closed = true;
+        }
+
+        public boolean isClosed() {
+            return closed;
+        }
     }
 }
