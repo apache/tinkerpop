@@ -100,7 +100,6 @@ class TestDriverRemoteConnection(object):
         results = g.V().has('person', 'age', Bindings.of('x', lt(30))).count().next()
         assert 2 == results
 
-
     def test_lambda_traversals(self, remote_connection):
         statics.load_statics(globals())
         assert "remoteconnection[ws://localhost:45940/gremlin,gmodern]" == str(remote_connection)
@@ -194,6 +193,13 @@ class TestDriverRemoteConnection(object):
             assert False
         except GremlinServerError as gse:
             assert gse.status_code == 500
+        #
+        g = traversal().withRemote(remote_connection).with_("x", True).with_('evaluationTimeout', 10)
+        try:
+            g.inject(1).sideEffect(lambda: ("Thread.sleep(5000)", "gremlin-groovy")).iterate()
+            assert False
+        except GremlinServerError as gse:
+            assert gse.status_code == 598
 
     def test_side_effects(self, remote_connection):
         statics.load_statics(globals())

@@ -21,6 +21,7 @@ from concurrent.futures import Future
 from gremlin_python.driver import client, serializer
 from gremlin_python.driver.remote_connection import (
     RemoteConnection, RemoteTraversal, RemoteTraversalSideEffects)
+from gremlin_python.process.strategies import OptionsStrategy
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
@@ -52,7 +53,7 @@ class DriverRemoteConnection(RemoteConnection):
         self._client.close()
 
     def submit(self, bytecode):
-        result_set = self._client.submit(bytecode)
+        result_set = self._client.submit(bytecode, request_options=self._extract_request_options(bytecode))
         results = result_set.all().result()
         side_effects = RemoteTraversalSideEffects(result_set.request_id, self._client,
                                                   result_set.status_attributes)
@@ -60,7 +61,7 @@ class DriverRemoteConnection(RemoteConnection):
 
     def submitAsync(self, bytecode):
         future = Future()
-        future_result_set = self._client.submitAsync(bytecode)
+        future_result_set = self._client.submitAsync(bytecode, request_options=self._extract_request_options(bytecode))
 
         def cb(f):
             try:
@@ -74,3 +75,14 @@ class DriverRemoteConnection(RemoteConnection):
 
         future_result_set.add_done_callback(cb)
         return future
+
+    @staticmethod
+    def _extract_request_options(bytecode):
+        options_strategy = next((x for x in bytecode.source_instructions
+                                 if x[0] == "withStrategies" and type(x[1]) is OptionsStrategy), None)
+        request_options = None
+        if options_strategy:
+            allowed_keys = ['evaluationTimeout', 'scriptEvaluationTimeout', 'batchSize', 'requestId', 'userAgent']
+            request_options = {allowed: options_strategy[1].configuration[allowed] for allowed in allowed_keys
+                               if allowed in options_strategy[1].configuration}
+        return request_options

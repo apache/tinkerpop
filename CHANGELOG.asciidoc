@@ -29,6 +29,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed `Connection` from `Connection Pool` when server closes a connection with no pending requests in Java Driver.
 * Improved initialization time of Java Driver if the default serializer is replaced.
 * Deprecated `withGraph()` in favor of `withEmbedded()` on `AnonymousTraversalSource`.
+* Added support for per-request level configurations, like timeouts, in Python.
 * Fixed bug in Javascript `Translator` that wasn't handling child traversals well.
 * Implemented `AutoCloseable` on `MultiIterator`.
 * Fixed an iterator leak in `HasContainer`.
