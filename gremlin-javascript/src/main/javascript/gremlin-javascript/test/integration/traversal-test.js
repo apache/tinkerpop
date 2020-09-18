@@ -23,10 +23,12 @@
 'use strict';
 
 const assert = require('assert');
+const expect = require('chai').expect;
 const { Vertex } = require('../../lib/structure/graph');
 const { traversal } = require('../../lib/process/anonymous-traversal');
-const { GraphTraversalSource } = require('../../lib/process/graph-traversal');
-const { GraphTraversal, statics } = require('../../lib/process/graph-traversal');
+const { GraphTraversalSource, GraphTraversal, statics } = require('../../lib/process/graph-traversal');
+const { SubgraphStrategy, ReadOnlyStrategy,
+        ReservedKeysVerificationStrategy, EdgeLabelVerificationStrategy } = require('../../lib/process/traversal-strategy');
 const Bytecode = require('../../lib/process/bytecode');
 const helper = require('../helper');
 const __ = statics;
@@ -134,7 +136,7 @@ describe('Traversal', function () {
   });
   describe("more complex traversals", function() {
     it('should return paths of value maps', function() {
-      var g = traversal().withRemote(connection);
+      const g = traversal().withRemote(connection);
       return g.V(1).out().in_().limit(1).path().by(__.valueMap('name')).toList().then(function (list) {
         assert.ok(list);
         assert.strictEqual(list.length, 1);
@@ -142,6 +144,44 @@ describe('Traversal', function () {
         assert.strictEqual(list[0].objects[1].get('name')[0], "lop");
         assert.strictEqual(list[0].objects[2].get('name')[0], "marko");
       });
+    });
+  });
+  describe("should allow TraversalStrategy definition", function() {
+    it('should allow SubgraphStrategy', function() {
+      const g = traversal().withRemote(connection).withStrategies(
+          new SubgraphStrategy({vertices:__.hasLabel("person"), edges:__.hasLabel("created")}));
+      g.V().count().next().then(function (item1) {
+        assert.ok(item1);
+        assert.strictEqual(item1.value, 4);
+      });
+      g.E().count().next().then(function (item1) {
+        assert.ok(item1);
+        assert.strictEqual(item1.value, 0);
+      });
+      g.V().label().dedup().count().next().then(function (item1) {
+        assert.ok(item1);
+        assert.strictEqual(item1.value, 1);
+      });
+      g.V().label().dedup().next().then(function (item1) {
+        assert.ok(item1);
+        assert.strictEqual(item1.value, "person");
+      });
+    });
+    it('should allow ReadOnlyStrategy', function() {
+      const g = traversal().withRemote(connection).withStrategies(new ReadOnlyStrategy());
+      return g.addV().iterate().then(() => assert.fail("should have tanked"), (err) => assert.ok(err));
+    });
+    it('should allow ReservedKeysVerificationStrategy', function() {
+      const g = traversal().withRemote(connection).withStrategies(new ReservedKeysVerificationStrategy(false, true));
+      return g.addV().property("id", "please-don't-use-id").iterate().then(() => assert.fail("should have tanked"), (err) => assert.ok(err));
+    });
+    it('should allow EdgeLabelVerificationStrategy', function() {
+      const g = traversal().withRemote(connection).withStrategies(new EdgeLabelVerificationStrategy(false, true));
+      g.V().outE("created", "knows").count().next().then(function (item1) {
+        assert.ok(item1);
+        assert.strictEqual(item1.value, 6);
+      });
+      return g.V().out().iterate().then(() => assert.fail("should have tanked"), (err) => assert.ok(err));
     });
   });
 });

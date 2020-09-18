@@ -66,6 +66,19 @@ to use `withRemote()` variants).
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2413[TINKERPOP-2413]
 
+==== TraversalStrategy in Javascript
+
+Using `SubgraphStrategy`, `PartitionStrategy` and other `TraversalStrategy` implementations is now possible in
+Javascript.
+
+[source,javascript]
+----
+const sg = g.withStrategies(
+          new SubgraphStrategy({vertices:__.hasLabel("person"), edges:__.hasLabel("created")}));
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2054[TINKERPOP-2054]
+
 === Upgrading for Providers
 
 ==== Graph System Providers
