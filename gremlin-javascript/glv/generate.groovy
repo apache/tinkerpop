@@ -87,6 +87,7 @@ def binding = ["enums": CoreImports.getClassImports()
                            !it.name.equals("clone") &&
                                    // Use hardcoded name to be for forward-compatibility
                                    !it.name.equals("withBindings") &&
+                                   !it.name.equals(TraversalSource.Symbols.with) &&
                                    !it.name.equals(TraversalSource.Symbols.withRemote) &&
                                    !it.name.equals(TraversalSource.Symbols.withComputer)
                        }.
