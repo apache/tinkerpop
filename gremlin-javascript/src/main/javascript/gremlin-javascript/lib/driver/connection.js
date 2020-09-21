@@ -29,6 +29,7 @@ const utils = require('../utils');
 const serializer = require('../structure/io/graph-serializer');
 const ResultSet = require('./result-set');
 const ResponseError = require('./response-error');
+const Bytecode = require('../process/bytecode');
 
 const responseStatusCode = {
   success: 200,
@@ -155,11 +156,8 @@ class Connection extends EventEmitter {
   }
 
   /** @override */
-  submit(bytecode, op, args, requestId, processor) {
-    const requestIdDefined = (args !== undefined && args !== null && 'requestId' in args)
-    const rid = requestId === undefined || requestId === null ? (requestIdDefined ? args['requestId'] : utils.getUuid()) : requestId;
-    if (requestIdDefined) delete args['requestId'];
-
+  submit(processor, op, args, requestId) {
+    const rid = requestId || utils.getUuid();
     return this.open().then(() => new Promise((resolve, reject) => {
       if (op !== 'authentication') {
         this._responseHandlers[rid] = {
@@ -168,7 +166,7 @@ class Connection extends EventEmitter {
         };
       }
 
-      const message = Buffer.from(this._header + JSON.stringify(this._getRequest(rid, bytecode, op, args, processor)));
+      const message = Buffer.from(this._header + JSON.stringify(this._getRequest(rid, op, args, processor)));
       this._ws.send(message);
     }));
   }
@@ -185,16 +183,15 @@ class Connection extends EventEmitter {
       : new serializer.GraphSONWriter();
   }
 
-  _getRequest(id, bytecode, op, args, processor) {
+  _getRequest(id, op, args, processor) {
     if (args) {
       args = this._adaptArgs(args, true);
     } else {
       args = {};
     }
 
-    if (bytecode) {
-      args['gremlin'] = this._writer.adaptObject(bytecode);
-      args['aliases'] = { 'g': this.traversalSource }
+    if (args['gremlin'] instanceof Bytecode) {
+      args['gremlin'] = this._writer.adaptObject(args['gremlin']);
     }
 
     return ({
@@ -277,7 +274,7 @@ class Connection extends EventEmitter {
 
     if (response.status.code === responseStatusCode.authenticationChallenge && this._authenticator) {
       this._authenticator.evaluateChallenge(response.result.data).then(res => {
-        return this.submit(null, 'authentication', res, response.requestId);
+        return this.submit(undefined, 'authentication', res, response.requestId);
       }).catch(handler.callback);
 
       return;
