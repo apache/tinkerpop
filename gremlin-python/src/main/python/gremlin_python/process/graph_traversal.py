@@ -21,7 +21,7 @@ import sys
 import copy
 from .traversal import Traversal
 from .traversal import TraversalStrategies
-from .strategies import VertexProgramStrategy
+from .strategies import VertexProgramStrategy, OptionsStrategy
 from .traversal import Bytecode
 from ..driver.remote_connection import RemoteStrategy
 from .. import statics
@@ -71,14 +71,23 @@ class GraphTraversalSource(object):
         source.bytecode.add_source("withStrategies", *args)
         return source
 
-    def with_(self, *args):
-        source = self.get_graph_traversal_source()
-        source.bytecode.add_source("with", *args)
-        return source
-
     def withoutStrategies(self, *args):
         source = self.get_graph_traversal_source()
         source.bytecode.add_source("withoutStrategies", *args)
+        return source
+
+    def with_(self, k, v=None):
+        source = self.get_graph_traversal_source()
+        options_strategy = next((x for x in source.bytecode.source_instructions
+                                if x[0] == "withStrategies" and type(x[1]) is OptionsStrategy), None)
+
+        val = True if v is None else v
+        if options_strategy is None:
+            options_strategy = OptionsStrategy({k: val})
+            source = self.withStrategies(options_strategy)
+        else:
+            options_strategy[1].configuration[k] = val
+
         return source
 
     def withRemote(self, remote_connection):
