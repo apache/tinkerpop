@@ -20,9 +20,10 @@ package org.apache.tinkerpop.gremlin.server.handler;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
-import io.netty.handler.codec.TooLongFrameException;
-import io.netty.handler.codec.http.HttpHeaderValues;
-import io.netty.handler.codec.http.HttpUtil;
+import org.javatuples.Pair;
+import org.javatuples.Quartet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
@@ -38,34 +39,35 @@ import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
+import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
+import org.apache.tinkerpop.shaded.jackson.databind.node.ArrayNode;
+import org.apache.tinkerpop.shaded.jackson.databind.node.ObjectNode;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.TooLongFrameException;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
-import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
-import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
-import org.apache.tinkerpop.shaded.jackson.databind.node.ArrayNode;
-import org.apache.tinkerpop.shaded.jackson.databind.node.ObjectNode;
-import org.javatuples.Pair;
-import org.javatuples.Quartet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -82,19 +84,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.codahale.metrics.MetricRegistry.name;
-import static io.netty.handler.codec.http.HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN;
-import static io.netty.handler.codec.http.HttpHeaderNames.CONNECTION;
-import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
-import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
-import static io.netty.handler.codec.http.HttpHeaderNames.ORIGIN;
+import static io.netty.handler.codec.http.HttpHeaderNames.*;
 import static io.netty.handler.codec.http.HttpMethod.GET;
 import static io.netty.handler.codec.http.HttpMethod.POST;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONTINUE;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_0;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
@@ -106,7 +100,7 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(HttpGremlinEndpointHandler.class);
     private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
-    private static final Charset UTF8 = Charset.forName("UTF-8");
+    private static final Charset UTF8 = StandardCharsets.UTF_8;
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
 
     private static final String ARGS_BINDINGS_DOT = Tokens.ARGS_BINDINGS + ".";
@@ -146,9 +140,10 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
         if (msg instanceof FullHttpRequest) {
             final FullHttpRequest req = (FullHttpRequest) msg;
+            final boolean keepAlive = HttpUtil.isKeepAlive(req);
 
             if ("/favicon.ico".equals(req.uri())) {
-                sendError(ctx, NOT_FOUND, "Gremlin Server doesn't have a favicon.ico");
+                sendError(ctx, NOT_FOUND, "Gremlin Server doesn't have a favicon.ico", keepAlive);
                 ReferenceCountUtil.release(msg);
                 return;
             }
@@ -158,7 +153,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             }
 
             if (req.method() != GET && req.method() != POST) {
-                sendError(ctx, METHOD_NOT_ALLOWED, METHOD_NOT_ALLOWED.toString());
+                sendError(ctx, METHOD_NOT_ALLOWED, METHOD_NOT_ALLOWED.toString(), keepAlive);
                 ReferenceCountUtil.release(msg);
                 return;
             }
@@ -167,7 +162,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             try {
                 requestArguments = getRequestArguments(req);
             } catch (IllegalArgumentException iae) {
-                sendError(ctx, BAD_REQUEST, iae.getMessage());
+                sendError(ctx, BAD_REQUEST, iae.getMessage(), keepAlive);
                 ReferenceCountUtil.release(msg);
                 return;
             }
@@ -175,13 +170,13 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             final String acceptString = Optional.ofNullable(req.headers().get("Accept")).orElse("application/json");
             final Pair<String, MessageTextSerializer> serializer = chooseSerializer(acceptString);
             if (null == serializer) {
-                sendError(ctx, BAD_REQUEST, String.format("no serializer for requested Accept header: %s", acceptString));
+                sendError(ctx, BAD_REQUEST, String.format("no serializer for requested Accept header: %s", acceptString),
+                        keepAlive);
                 ReferenceCountUtil.release(msg);
                 return;
             }
 
             final String origin = req.headers().get(ORIGIN);
-            final boolean keepAlive = HttpUtil.isKeepAlive(req);
 
             // not using the req any where below here - assume it is safe to release at this point.
             ReferenceCountUtil.release(msg);
@@ -204,17 +199,11 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                                 requestArguments.getValue0(), requestArguments.getValue1(), resultHolder.get(), Thread.currentThread().getName());
                         final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, (ByteBuf) resultHolder.get());
                         response.headers().set(CONTENT_TYPE, serializer.getValue0());
-                        response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
 
                         // handle cors business
                         if (origin != null) response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
 
-                        if (!keepAlive) {
-                            ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-                        } else {
-                            response.headers().set(CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-                            ctx.writeAndFlush(response);
-                        }
+                        sendAndCleanupConnection(ctx, keepAlive, response);
                     }
                 });
 
@@ -224,7 +213,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 try {
                     bindings = createBindings(requestArguments.getValue1(), requestArguments.getValue3());
                 } catch (IllegalStateException iae) {
-                    sendError(ctx, BAD_REQUEST, iae.getMessage());
+                    sendError(ctx, BAD_REQUEST, iae.getMessage(), keepAlive);
                     ReferenceCountUtil.release(msg);
                     return;
                 }
@@ -258,12 +247,12 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                             }
                         }));
 
-                evalFuture.exceptionally(t -> {		
-					if (t.getMessage() != null)
-						sendError(ctx, INTERNAL_SERVER_ERROR, t.getMessage(), Optional.of(t));
-					else
-						sendError(ctx, INTERNAL_SERVER_ERROR, String.format("Error encountered evaluating script: %s", requestArguments.getValue0())
-									 , Optional.of(t));			
+                evalFuture.exceptionally(t -> {
+                    if (t.getMessage() != null)
+                        sendError(ctx, INTERNAL_SERVER_ERROR, t.getMessage(), Optional.of(t), keepAlive);
+                    else
+                        sendError(ctx, INTERNAL_SERVER_ERROR, String.format("Error encountered evaluating script: %s", requestArguments.getValue0())
+                                , Optional.of(t), keepAlive);
                     promise.setFailure(t);
                     return null;
                 });
@@ -275,9 +264,14 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                     promise.setSuccess();
                 }, gremlinExecutor.getExecutorService());
             } catch (Exception ex) {
-                // tossed to exceptionCaught which delegates to sendError method
+                // send the error response here and don't rely on exception caught because it might not have the
+                // context on whether to close the connection or not, based on keepalive.
                 final Throwable t = ExceptionUtils.getRootCause(ex);
-                throw new RuntimeException(null == t ? ex : t);
+                if (t instanceof TooLongFrameException) {
+                    sendError(ctx, HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE, t.getMessage() + " - increase the maxContentLength", keepAlive);
+                } else {
+                    sendError(ctx, INTERNAL_SERVER_ERROR, t.getMessage(), keepAlive);
+                }
             }
         }
     }
@@ -285,16 +279,13 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
         logger.error("Error processing HTTP Request", cause);
-        final Throwable t = null == cause.getCause() ? cause : cause.getCause();
-        if (t instanceof TooLongFrameException) {
-            sendError(ctx, HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE, t.getMessage() + " - increase the maxContentLength");
-        } else {
-            sendError(ctx, INTERNAL_SERVER_ERROR, t.getMessage());
+
+        if (ctx.channel().isActive()) {
+            sendError(ctx, INTERNAL_SERVER_ERROR, cause.getMessage(), false);
         }
-        ctx.close();
     }
 
-    private Bindings createBindings(final Map<String,Object> bindingMap, final Map<String,String> rebindingMap)  {
+    private Bindings createBindings(final Map<String, Object> bindingMap, final Map<String, String> rebindingMap) {
         final Bindings bindings = new SimpleBindings();
 
         // rebind any global bindings to a different variable.
@@ -328,8 +319,8 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         return bindings;
     }
 
-    private Pair<String,MessageTextSerializer> chooseSerializer(final String acceptString) {
-        final List<Pair<String,Double>> ordered = Stream.of(acceptString.split(",")).map(mediaType -> {
+    private Pair<String, MessageTextSerializer> chooseSerializer(final String acceptString) {
+        final List<Pair<String, Double>> ordered = Stream.of(acceptString.split(",")).map(mediaType -> {
             // parse out each mediaType with its params - keeping it simple and just looking for "quality".  if
             // that value isn't there, default it to 1.0.  not really validating here so users better get their
             // accept headers straight
@@ -337,7 +328,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             return (matcher.matches()) ? Pair.with(matcher.group(1), Double.parseDouble(matcher.group(2))) : Pair.with(mediaType, 1.0);
         }).sorted((o1, o2) -> o2.getValue0().compareTo(o1.getValue0())).collect(Collectors.toList());
 
-        for (Pair<String,Double> p : ordered) {
+        for (Pair<String, Double> p : ordered) {
             // this isn't perfect as it doesn't really account for wildcards.  that level of complexity doesn't seem
             // super useful for gremlin server really.
             final String accept = p.getValue0().equals("*/*") ? "application/json" : p.getValue0();
@@ -348,7 +339,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         return null;
     }
 
-    private static Quartet<String, Map<String, Object>, String, Map<String,String>> getRequestArguments(final FullHttpRequest request) {
+    private static Quartet<String, Map<String, Object>, String, Map<String, String>> getRequestArguments(final FullHttpRequest request) {
         if (request.method() == GET) {
             final QueryStringDecoder decoder = new QueryStringDecoder(request.uri());
             final List<String> gremlinParms = decoder.parameters().get(Tokens.ARGS_GREMLIN);
@@ -434,14 +425,13 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             return node.asText();
     }
 
-
     private static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status,
-                                  final String message) {
-        sendError(ctx, status, message, Optional.empty());
+                                  final String message, final boolean keepAlive) {
+        sendError(ctx, status, message, Optional.empty(), keepAlive);
     }
 
     private static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status,
-                                  final String message, final Optional<Throwable> t) {
+                                  final String message, final Optional<Throwable> t, final boolean keepAlive) {
         if (t.isPresent())
             logger.warn(String.format("Invalid request - responding with %s and %s", status, message), t.get());
         else
@@ -450,21 +440,34 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         errorMeter.mark();
         final ObjectNode node = mapper.createObjectNode();
         node.put("message", message);
-		if (t.isPresent()) {
+        if (t.isPresent()) {
             // "Exception-Class" needs to go away - didn't realize it was named that way during review for some reason.
             // replaced with the same method for exception reporting as is used with websocket/nio protocol
-			node.put("Exception-Class", t.get().getClass().getName());
+            node.put("Exception-Class", t.get().getClass().getName());
             final ArrayNode exceptionList = node.putArray(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS);
             ExceptionUtils.getThrowableList(t.get()).forEach(throwable -> exceptionList.add(throwable.getClass().getName()));
             node.put(Tokens.STATUS_ATTRIBUTE_STACK_TRACE, ExceptionUtils.getStackTrace(t.get()));
-		}
-		
+        }
+
         final FullHttpResponse response = new DefaultFullHttpResponse(
                 HTTP_1_1, status, Unpooled.copiedBuffer(node.toString(), CharsetUtil.UTF_8));
         response.headers().set(CONTENT_TYPE, "application/json");
 
-        // Close the connection as soon as the error message is sent.
-        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+        sendAndCleanupConnection(ctx, keepAlive, response);
+    }
+
+    private static void sendAndCleanupConnection(final ChannelHandlerContext ctx,
+                                                 final boolean keepAlive,
+                                                 final FullHttpResponse response) {
+        HttpUtil.setKeepAlive(response, keepAlive);
+        HttpUtil.setContentLength(response, response.content().readableBytes());
+
+        final ChannelFuture flushPromise = ctx.writeAndFlush(response);
+
+        if (!keepAlive) {
+            // Close the connection as soon as the response is sent.
+            flushPromise.addListener(ChannelFutureListener.CLOSE);
+        }
     }
 
     private static void attemptCommit(final Map<String, String> aliases, final GraphManager graphManager, final boolean strict) {
