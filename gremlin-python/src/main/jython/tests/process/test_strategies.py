@@ -77,6 +77,17 @@ class TestTraversalStrategies(object):
         assert LazyBarrierStrategy() == bytecode.source_instructions[1][2]
         assert 1 == len(bytecode.step_instructions)
         assert "V" == bytecode.step_instructions[0][0]
+        ###
+        g = Graph().traversal()
+        bytecode = g.with_("x", "test").with_("y").bytecode
+        assert 1 == len(bytecode.source_instructions)
+        assert 2 == len(bytecode.source_instructions[0])
+        assert "withStrategies" == bytecode.source_instructions[0][0]
+        assert OptionsStrategy() == bytecode.source_instructions[0][1]
+        strategy = bytecode.source_instructions[0][1]
+        assert 2 == len(strategy.configuration)
+        assert "test" == strategy.configuration["x"]
+        assert strategy.configuration["y"]
 
     def test_configurable(self):
         g = Graph().traversal()

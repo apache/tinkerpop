@@ -123,10 +123,10 @@ class Client:
             self._transport_factory, self._executor, self._pool,
             headers=self._headers)
 
-    def submit(self, message, bindings=None):
-        return self.submitAsync(message, bindings=bindings).result()
+    def submit(self, message, bindings=None, request_options=None):
+        return self.submitAsync(message, bindings=bindings, request_options=request_options).result()
 
-    def submitAsync(self, message, bindings=None):
+    def submitAsync(self, message, bindings=None, request_options=None):
         if isinstance(message, traversal.Bytecode):
             message = request.RequestMessage(
                 processor='traversal', op='bytecode',
@@ -143,4 +143,6 @@ class Client:
                 message = message._replace(processor='session')
                 message.args.update({'session': self._session})
         conn = self._pool.get(True)
+        if request_options:
+            message.args.update(request_options)
         return conn.write(message)

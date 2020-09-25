@@ -215,6 +215,10 @@ GraphTraversalSource g = traversal().withRemote(conf);
 List<Vertex> vertices = g.with(Tokens.ARGS_EVAL_TIMEOUT, 500L).V().out("knows").toList()
 ----
 
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
+`evaluationTimeout` (formerly 'scriptEvaluationTimeout' which is also supported but now deprecated). Use of `Tokens`
+to reference these options is preferred.
+
 anchor:java-imports[]
 [[gremlin-java-imports]]
 === Common Imports
@@ -421,7 +425,7 @@ which will boost performance and reduce resources required on the server.
 
 There are a number of overloads to `Client.submit()` that accept a `RequestOptions` object. The `RequestOptions`
 provide a way to include options that are specific to the request made with the call to `submit()`. A good use-case for
-this feature is to set a per-request override to the `scriptEvaluationTimeout` so that it only applies to the current
+this feature is to set a per-request override to the `evaluationTimeout` so that it only applies to the current
 request.
 
 [source,java]
@@ -674,6 +678,17 @@ NOTE: If connecting from an inherently single-threaded Python process where bloc
 traversals to complete is acceptable, it might be helpful to set `pool_size` and `max_workers` parameters to 1.
 See the <<python-configuration,Configuration>> section just below.  Examples where this could apply are serverless cloud functions or WSGI
 worker processes.
+
+Some connection options can also be set on individual requests made through the using `with()` step on the
+`TraversalSource`. For instance to set request timeout to 500 milliseconds:
+
+[source,python]
+----
+vertices = g.with_("evaluationTimeout", 500L).V().out("knows").toList()
+----
+
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
+`evaluationTimeout` (formerly 'scriptEvaluationTimeout' which is also supported but now deprecated).
 
 anchor:python-imports[]
 [[gremlin-python-imports]]
@@ -936,6 +951,21 @@ returns a `concurrent.futures.Future` that resolves to a list when it is complet
 <8> Again, verify the result.
 <9> Verify that the all results have been read and stream is closed.
 <10> Close client and underlying pool connections.
+
+==== Per Request Settings
+
+The `client.submit()` functions accept a `request_options` which expects a dictionary. The `request_options`
+provide a way to include options that are specific to the request made with the call to `submit()`. A good use-case for
+this feature is to set a per-request override to the `evaluationTimeout` so that it only applies to the current
+request.
+
+[source,java]
+----
+result_set = client.submit("[1,2,3,4]", result_options={'evaluationTimeout': 5000})
+----
+
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
+`evaluationTimeout` (formerly 'scriptEvaluationTimeout' which is also supported but now deprecated).
 
 [[gremlin-python-dsl]]
 === Domain Specific Languages
