@@ -35,7 +35,7 @@ public final class WebSocketClientHandler extends WebSocketClientProtocolHandler
     private ChannelPromise handshakeFuture;
 
     public WebSocketClientHandler(final WebSocketClientHandshaker handshaker, final long timeoutMillis) {
-        super(handshaker, true, true, timeoutMillis);
+        super(handshaker, /*handleCloseFrames*/true, /*dropPongFrames*/true, timeoutMillis);
         this.handshakeTimeoutMillis = timeoutMillis;
     }
 
