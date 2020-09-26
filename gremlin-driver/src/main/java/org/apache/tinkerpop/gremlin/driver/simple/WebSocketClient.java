@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.driver.simple;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.codec.http.EmptyHttpHeaders;
-import io.netty.handler.codec.http.HttpHeaders;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinRequestEncoder;
@@ -41,7 +40,6 @@ import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A simple, non-thread safe Gremlin Server client using websockets.  Typical use is for testing and demonstration.
@@ -65,10 +63,8 @@ public class WebSocketClient extends AbstractClient {
             throw new IllegalArgumentException("Unsupported protocol: " + protocol);
 
         try {
-            final WebSocketClientHandler wsHandler =
-                    new WebSocketClientHandler(
-                            WebSocketClientHandshakerFactory.newHandshaker(
-                                    uri, WebSocketVersion.V13, null, false, EmptyHttpHeaders.INSTANCE, 65536));
+            final WebSocketClientHandler wsHandler = new WebSocketClientHandler(WebSocketClientHandshakerFactory.newHandshaker(
+                    uri, WebSocketVersion.V13, null, false, EmptyHttpHeaders.INSTANCE, 65536), 10000);
             final MessageSerializer serializer = new GryoMessageSerializerV3d0();
             b.channel(NioSocketChannel.class)
                     .handler(new ChannelInitializer<SocketChannel>() {
@@ -86,7 +82,7 @@ public class WebSocketClient extends AbstractClient {
                     });
 
             channel = b.connect(uri.getHost(), uri.getPort()).sync().channel();
-            wsHandler.handshakeFuture().get(10000, TimeUnit.MILLISECONDS);
+            wsHandler.handshakeFuture().get();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

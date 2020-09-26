@@ -72,6 +72,7 @@ public class SettingsTest {
         conf.setProperty("connectionPool.resultIterationBatchSize", 1100);
         conf.setProperty("connectionPool.channelizer", "channelizer0");
         conf.setProperty("connectionPool.validationRequest", "g.inject()");
+        conf.setProperty("connectionPool.wsHandshakeTimeoutMillis", 15000);
 
         final Settings settings = Settings.from(conf);
 
@@ -108,6 +109,7 @@ public class SettingsTest {
         assertEquals(700, settings.connectionPool.maxWaitForConnection);
         assertEquals(800, settings.connectionPool.maxContentLength);
         assertEquals(900, settings.connectionPool.reconnectInterval);
+        assertEquals(15000, settings.connectionPool.wsHandshakeTimeoutMillis);
         assertEquals(1100, settings.connectionPool.resultIterationBatchSize);
         assertEquals("channelizer0", settings.connectionPool.channelizer);
         assertEquals("g.inject()", settings.connectionPool.validationRequest);

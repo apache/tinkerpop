@@ -45,7 +45,7 @@ public class WebSocketClientBehaviorIntegrateTest {
     private static final Logger logger = LoggerFactory.getLogger(WebSocketClientBehaviorIntegrateTest.class);
     private Log4jRecordingAppender recordingAppender = null;
     private Level previousLogLevel;
-    private SimpleWebSocketServer server;
+    private SimpleSocketServer server;
 
     @Before
     public void setUp() throws InterruptedException {
@@ -62,7 +62,7 @@ public class WebSocketClientBehaviorIntegrateTest {
 
         rootLogger.addAppender(recordingAppender);
 
-        server = new SimpleWebSocketServer();
+        server = new SimpleSocketServer();
         server.start(new TestWSGremlinInitializer());
     }
 
@@ -90,7 +90,7 @@ public class WebSocketClientBehaviorIntegrateTest {
      */
     @Test
     public void shouldRemoveConnectionFromPoolWhenServerClose_WithNoPendingRequests() throws InterruptedException {
-        final Cluster cluster = Cluster.build("localhost").port(SimpleWebSocketServer.PORT)
+        final Cluster cluster = Cluster.build("localhost").port(SimpleSocketServer.PORT)
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(1)
                 .serializer(Serializers.GRAPHSON_V2D0)
@@ -137,7 +137,7 @@ public class WebSocketClientBehaviorIntegrateTest {
      */
     @Test
     public void shouldRemoveConnectionFromPoolWhenServerClose_WithPendingRequests() throws InterruptedException, ExecutionException {
-        final Cluster cluster = Cluster.build("localhost").port(SimpleWebSocketServer.PORT)
+        final Cluster cluster = Cluster.build("localhost").port(SimpleSocketServer.PORT)
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(1)
                 .serializer(Serializers.GRAPHSON_V2D0)
@@ -185,7 +185,7 @@ public class WebSocketClientBehaviorIntegrateTest {
      */
     @Test
     public void shouldNotCreateReplacementConnectionWhenClientClosesConnection() throws ExecutionException, InterruptedException {
-        final Cluster cluster = Cluster.build("localhost").port(SimpleWebSocketServer.PORT)
+        final Cluster cluster = Cluster.build("localhost").port(SimpleSocketServer.PORT)
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(1)
                 .serializer(Serializers.GRAPHSON_V2D0)

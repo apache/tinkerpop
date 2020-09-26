@@ -20,8 +20,10 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
@@ -29,12 +31,12 @@ import io.netty.handler.logging.LoggingHandler;
 /**
  * Simple Netty Server
  */
-public class SimpleWebSocketServer {
+public class SimpleSocketServer {
     public static final int PORT = 45940;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
-    public Channel start(final TestWebSocketServerInitializer channelInitializer) throws InterruptedException {
+    public Channel start(ChannelInitializer<SocketChannel>  channelInitializer) throws InterruptedException {
         bossGroup = new NioEventLoopGroup(1);
         workerGroup = new NioEventLoopGroup();
         final ServerBootstrap b = new ServerBootstrap();

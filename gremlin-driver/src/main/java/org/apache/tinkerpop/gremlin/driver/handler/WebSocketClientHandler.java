@@ -18,33 +18,25 @@
  */
 package org.apache.tinkerpop.gremlin.driver.handler;
 
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
-import io.netty.handler.codec.http.websocketx.WebSocketFrame;
-import io.netty.util.CharsetUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
+
+import java.util.concurrent.TimeoutException;
 
 /**
- * @author Stephen Mallette (http://stephen.genoprime.com)
+ * Wrapper over {@link WebSocketClientProtocolHandler}. This wrapper provides a future which represents the termination
+ * of a WS handshake (both success and failure).
  */
-public final class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
-    private static final Logger logger = LoggerFactory.getLogger(WebSocketClientHandler.class);
-    private final WebSocketClientHandshaker handshaker;
+public final class WebSocketClientHandler extends WebSocketClientProtocolHandler {
+    private final long handshakeTimeoutMillis;
     private ChannelPromise handshakeFuture;
 
-    public WebSocketClientHandler(final WebSocketClientHandshaker handshaker) {
-        this.handshaker = handshaker;
+    public WebSocketClientHandler(final WebSocketClientHandshaker handshaker, final long timeoutMillis) {
+        super(handshaker, true, true, timeoutMillis);
+        this.handshakeTimeoutMillis = timeoutMillis;
     }
 
     public ChannelFuture handshakeFuture() {
@@ -52,51 +44,47 @@ public final class WebSocketClientHandler extends SimpleChannelInboundHandler<Ob
     }
 
     @Override
-    public void handlerAdded(final ChannelHandlerContext ctx) throws Exception {
+    public void handlerAdded(final ChannelHandlerContext ctx) {
+        super.handlerAdded(ctx);
         handshakeFuture = ctx.newPromise();
     }
 
     @Override
-    public void channelActive(final ChannelHandlerContext ctx) throws Exception {
-        handshaker.handshake(ctx.channel());
-    }
-
-    @Override
-    protected void channelRead0(final ChannelHandlerContext ctx, final Object msg) throws Exception {
-        final Channel ch = ctx.channel();
-        if (!handshaker.isHandshakeComplete()) {
-            // web socket client connected
-            handshaker.finishHandshake(ch, (FullHttpResponse) msg);
-            handshakeFuture.setSuccess();
-            return;
+    public void userEventTriggered(final ChannelHandlerContext ctx, final Object evt) throws Exception {
+        if (ClientHandshakeStateEvent.HANDSHAKE_COMPLETE.equals(evt)) {
+            if (!handshakeFuture.isDone()) {
+                handshakeFuture.setSuccess();
+            }
+        } else if (ClientHandshakeStateEvent.HANDSHAKE_TIMEOUT.equals(evt)) {
+            if (!handshakeFuture.isDone()) {
+                handshakeFuture.setFailure(
+                        new TimeoutException(String.format("handshake not completed in stipulated time=[%s]ms",
+                                handshakeTimeoutMillis)));
+            }
+        } else {
+            super.userEventTriggered(ctx, evt);
         }
-
-        if (msg instanceof FullHttpResponse) {
-            final FullHttpResponse response = (FullHttpResponse) msg;
-            throw new Exception("Unexpected FullHttpResponse (getStatus=" + response.status() + ", content="
-                    + response.content().toString(CharsetUtil.UTF_8) + ')');
-        }
-
-        // a close frame doesn't mean much here.  errors raised from closed channels will mark the host as dead
-        final WebSocketFrame frame = (WebSocketFrame) msg;
-        if (frame instanceof TextWebSocketFrame) {
-            ctx.fireChannelRead(frame.retain());
-        } else if (frame instanceof PingWebSocketFrame) {
-            ctx.writeAndFlush(new PongWebSocketFrame());
-        }else if (frame instanceof PongWebSocketFrame) {
-            logger.debug("Received response from keep-alive request");
-        } else if (frame instanceof BinaryWebSocketFrame) {
-            ctx.fireChannelRead(frame.retain());
-        } else if (frame instanceof CloseWebSocketFrame)
-            ch.close();
-
     }
 
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) throws Exception {
-        if (!handshakeFuture.isDone()) handshakeFuture.setFailure(cause);
+        if (!handshakeFuture.isDone()) {
+            handshakeFuture.setFailure(cause);
+        }
 
         // let the GremlinResponseHandler take care of exception logging, channel closing, and cleanup
         ctx.fireExceptionCaught(cause);
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        if (!handshakeFuture.isDone()) {
+            // channel was closed before the handshake could be completed.
+            handshakeFuture.setFailure(
+                    new RuntimeException(String.format("Channel=[%s] closed before the handshake could complete",
+                            ctx.channel().toString())));
+        }
+
+        super.channelInactive(ctx);
     }
 }
