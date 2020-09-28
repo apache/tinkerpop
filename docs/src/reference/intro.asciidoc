@@ -381,7 +381,7 @@ the location of the Gremlin Server to connect to:
 ----
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 
-GraphTraversalSource g = traversal().withRemote('conf/remote-graph.properties');
+GraphTraversalSource g = traversal().withRemote("conf/remote-graph.properties");
 ----
 [source,groovy]
 ----
