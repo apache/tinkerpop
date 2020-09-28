@@ -121,6 +121,8 @@ final class Handler {
                 }
                 channelHandlerContext.writeAndFlush(messageBuilder.create());
             } else {
+                // SimpleChannelInboundHandler will release the frame if we don't retain it explicitely.
+                ReferenceCountUtil.retain(response);
                 channelHandlerContext.fireChannelRead(response);
             }
         }
@@ -216,58 +218,52 @@ final class Handler {
 
         @Override
         protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessage response) throws Exception {
-            try {
-                final ResponseStatusCode statusCode = response.getStatus().getCode();
-                final ResultQueue queue = pending.get(response.getRequestId());
-                if (statusCode == ResponseStatusCode.SUCCESS || statusCode == ResponseStatusCode.PARTIAL_CONTENT) {
-                    final Object data = response.getResult().getData();
-                    final Map<String,Object> meta = response.getResult().getMeta();
+            final ResponseStatusCode statusCode = response.getStatus().getCode();
+            final ResultQueue queue = pending.get(response.getRequestId());
+            if (statusCode == ResponseStatusCode.SUCCESS || statusCode == ResponseStatusCode.PARTIAL_CONTENT) {
+                final Object data = response.getResult().getData();
+                final Map<String,Object> meta = response.getResult().getMeta();
 
-                    if (!meta.containsKey(Tokens.ARGS_SIDE_EFFECT_KEY)) {
-                        // this is a "result" from the server which is either the result of a script or a
-                        // serialized traversal
-                        if (data instanceof List) {
-                            // unrolls the collection into individual results to be handled by the queue.
-                            final List<Object> listToUnroll = (List<Object>) data;
-                            listToUnroll.forEach(item -> queue.add(new Result(item)));
-                        } else {
-                            // since this is not a list it can just be added to the queue
-                            queue.add(new Result(response.getResult().getData()));
-                        }
+                if (!meta.containsKey(Tokens.ARGS_SIDE_EFFECT_KEY)) {
+                    // this is a "result" from the server which is either the result of a script or a
+                    // serialized traversal
+                    if (data instanceof List) {
+                        // unrolls the collection into individual results to be handled by the queue.
+                        final List<Object> listToUnroll = (List<Object>) data;
+                        listToUnroll.forEach(item -> queue.add(new Result(item)));
                     } else {
-                        // this is the side-effect from the server which is generated from a serialized traversal
-                        final String aggregateTo = meta.getOrDefault(Tokens.ARGS_AGGREGATE_TO, Tokens.VAL_AGGREGATE_TO_NONE).toString();
-                        if (data instanceof List) {
-                            // unrolls the collection into individual results to be handled by the queue.
-                            final List<Object> listOfSideEffects = (List<Object>) data;
-                            listOfSideEffects.forEach(sideEffect -> queue.addSideEffect(aggregateTo, sideEffect));
-                        } else {
-                            // since this is not a list it can just be added to the queue. this likely shouldn't occur
-                            // however as the protocol will typically push everything to list first.
-                            queue.addSideEffect(aggregateTo, data);
-                        }
+                        // since this is not a list it can just be added to the queue
+                        queue.add(new Result(response.getResult().getData()));
                     }
                 } else {
-                    // this is a "success" but represents no results otherwise it is an error
-                    if (statusCode != ResponseStatusCode.NO_CONTENT) {
-                        final Map<String,Object> attributes = response.getStatus().getAttributes();
-                        final String stackTrace = attributes.containsKey(Tokens.STATUS_ATTRIBUTE_STACK_TRACE) ?
-                                (String) attributes.get(Tokens.STATUS_ATTRIBUTE_STACK_TRACE) : null;
-                        final List<String> exceptions = attributes.containsKey(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS) ?
-                                (List<String>) attributes.get(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS) : null;
-                        queue.markError(new ResponseException(response.getStatus().getCode(), response.getStatus().getMessage(),
-                                exceptions, stackTrace, cleanStatusAttributes(attributes)));
+                    // this is the side-effect from the server which is generated from a serialized traversal
+                    final String aggregateTo = meta.getOrDefault(Tokens.ARGS_AGGREGATE_TO, Tokens.VAL_AGGREGATE_TO_NONE).toString();
+                    if (data instanceof List) {
+                        // unrolls the collection into individual results to be handled by the queue.
+                        final List<Object> listOfSideEffects = (List<Object>) data;
+                        listOfSideEffects.forEach(sideEffect -> queue.addSideEffect(aggregateTo, sideEffect));
+                    } else {
+                        // since this is not a list it can just be added to the queue. this likely shouldn't occur
+                        // however as the protocol will typically push everything to list first.
+                        queue.addSideEffect(aggregateTo, data);
                     }
                 }
-
-                // as this is a non-PARTIAL_CONTENT code - the stream is done.
-                if (statusCode != ResponseStatusCode.PARTIAL_CONTENT) {
-                    pending.remove(response.getRequestId()).markComplete(response.getStatus().getAttributes());
+            } else {
+                // this is a "success" but represents no results otherwise it is an error
+                if (statusCode != ResponseStatusCode.NO_CONTENT) {
+                    final Map<String,Object> attributes = response.getStatus().getAttributes();
+                    final String stackTrace = attributes.containsKey(Tokens.STATUS_ATTRIBUTE_STACK_TRACE) ?
+                            (String) attributes.get(Tokens.STATUS_ATTRIBUTE_STACK_TRACE) : null;
+                    final List<String> exceptions = attributes.containsKey(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS) ?
+                            (List<String>) attributes.get(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS) : null;
+                    queue.markError(new ResponseException(response.getStatus().getCode(), response.getStatus().getMessage(),
+                            exceptions, stackTrace, cleanStatusAttributes(attributes)));
                 }
-            } finally {
-                // in the event of an exception above the exception is tossed and handled by whatever channelpipeline
-                // error handling is at play.
-                ReferenceCountUtil.release(response);
+            }
+
+            // as this is a non-PARTIAL_CONTENT code - the stream is done.
+            if (statusCode != ResponseStatusCode.PARTIAL_CONTENT) {
+                pending.remove(response.getRequestId()).markComplete(response.getStatus().getAttributes());
             }
         }
 
