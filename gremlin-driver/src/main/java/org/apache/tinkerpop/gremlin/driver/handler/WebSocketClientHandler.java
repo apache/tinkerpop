@@ -80,13 +80,13 @@ public final class WebSocketClientHandler extends SimpleChannelInboundHandler<Ob
         // a close frame doesn't mean much here.  errors raised from closed channels will mark the host as dead
         final WebSocketFrame frame = (WebSocketFrame) msg;
         if (frame instanceof TextWebSocketFrame) {
-            ctx.fireChannelRead(frame.retain(2));
+            ctx.fireChannelRead(frame.retain());
         } else if (frame instanceof PingWebSocketFrame) {
             ctx.writeAndFlush(new PongWebSocketFrame());
         }else if (frame instanceof PongWebSocketFrame) {
             logger.debug("Received response from keep-alive request");
         } else if (frame instanceof BinaryWebSocketFrame) {
-            ctx.fireChannelRead(frame.retain(2));
+            ctx.fireChannelRead(frame.retain());
         } else if (frame instanceof CloseWebSocketFrame)
             ch.close();
 
