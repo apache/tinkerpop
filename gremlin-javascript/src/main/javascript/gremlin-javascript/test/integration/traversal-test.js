@@ -153,19 +153,19 @@ describe('Traversal', function () {
       g.V().count().next().then(function (item1) {
         assert.ok(item1);
         assert.strictEqual(item1.value, 4);
-      });
+      }, (err) => assert.fail("tanked: " + err));
       g.E().count().next().then(function (item1) {
         assert.ok(item1);
         assert.strictEqual(item1.value, 0);
-      });
+      }, (err) => assert.fail("tanked: " + err));
       g.V().label().dedup().count().next().then(function (item1) {
         assert.ok(item1);
         assert.strictEqual(item1.value, 1);
-      });
+      }, (err) => assert.fail("tanked: " + err));
       g.V().label().dedup().next().then(function (item1) {
         assert.ok(item1);
         assert.strictEqual(item1.value, "person");
-      });
+      }, (err) => assert.fail("tanked: " + err));
     });
     it('should allow ReadOnlyStrategy', function() {
       const g = traversal().withRemote(connection).withStrategies(new ReadOnlyStrategy());
@@ -181,7 +181,11 @@ describe('Traversal', function () {
         assert.ok(item1);
         assert.strictEqual(item1.value, 6);
       });
-      return g.V().out().iterate().then(() => assert.fail("should have tanked"), (err) => assert.ok(err));
+      return g.V().out().iterate().then(() => assert.fail("should have tanked"), (err) => assert.strictEqual(err.statusCode, 500));
+    });
+    it('should allow with_(evaluationTimeout,10)', function() {
+      const g = traversal().withRemote(connection).with_('x').with_('evaluationTimeout', 10);
+      return g.V().repeat(__.both()).iterate().then(() => assert.fail("should have tanked"), (err) => assert.strictEqual(err.statusCode, 598));
     });
   });
 });

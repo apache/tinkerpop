@@ -28,7 +28,7 @@ describe('Client', function () {
 
   it('should use default opProcessor', function () {
     const connectionMock = {
-      submit: function (bytecode, op, args, requestId, processor) {
+      submit: function (processor, op, args, requestId) {
         assert.strictEqual(args.gremlin, query);
         assert.strictEqual(processor, '');
 
@@ -43,7 +43,7 @@ describe('Client', function () {
 
   it('should allow to configure opProcessor', function () {
     const connectionMock = {
-      submit: function (bytecode, op, args, requestId, processor) {
+      submit: function (processor, op, args, requestId) {
         assert.strictEqual(args.gremlin, query);
         assert.strictEqual(processor, customOpProcessor);
 

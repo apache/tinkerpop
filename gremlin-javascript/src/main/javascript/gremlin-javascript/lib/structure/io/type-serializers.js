@@ -256,9 +256,16 @@ class TraverserSerializer extends TypeSerializer {
 class TraversalStrategySerializer extends TypeSerializer {
   /** @param {TraversalStrategy} item */
   serialize(item) {
+    const conf = {};
+    for (let k in item.configuration) {
+      if (item.configuration.hasOwnProperty(k)) {
+        conf[k] = this.writer.adaptObject(item.configuration[k]);
+      }
+    }
+
     return {
       [typeKey]: 'g:' + item.constructor.name,
-      [valueKey]: item.configuration
+      [valueKey]: conf
     };
   }
 

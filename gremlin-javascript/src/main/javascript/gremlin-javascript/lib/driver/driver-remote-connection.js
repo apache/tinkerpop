@@ -26,6 +26,7 @@ const rcModule = require('./remote-connection');
 const RemoteConnection = rcModule.RemoteConnection;
 const RemoteTraversal = rcModule.RemoteTraversal;
 const Client = require('./client');
+const OptionsStrategy = require('../process/traversal-strategy').OptionsStrategy;
 
 /**
  * Represents the default {@link RemoteConnection} implementation.
@@ -60,7 +61,21 @@ class DriverRemoteConnection extends RemoteConnection {
 
   /** @override */
   submit(bytecode) {
-    return this._client.submit(bytecode).then(result => new RemoteTraversal(result.toArray()));
+    let optionsStrategy = bytecode.sourceInstructions.find(
+        i => i[0] === "withStrategies" && i[1] instanceof OptionsStrategy);
+    const allowedKeys = ['evaluationTimeout', 'scriptEvaluationTimeout', 'batchSize', 'requestId', 'userAgent'];
+
+    let requestOptions = undefined;
+    if (optionsStrategy !== undefined) {
+      requestOptions = {};
+      const conf = optionsStrategy[1].configuration;
+      for (let key in conf) {
+        if (conf.hasOwnProperty(key) && allowedKeys.indexOf(key) > -1) {
+          requestOptions[key] = conf[key];
+        }
+      }
+    }
+    return this._client.submit(bytecode, null, requestOptions).then(result => new RemoteTraversal(result.toArray()));
   }
 
   /** @override */
