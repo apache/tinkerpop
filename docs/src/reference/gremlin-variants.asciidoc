@@ -684,7 +684,7 @@ Some connection options can also be set on individual requests made through the 
 
 [source,python]
 ----
-vertices = g.with_("evaluationTimeout", 500L).V().out("knows").toList()
+vertices = g.with_('evaluationTimeout', 500L).V().out('knows').toList()
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
@@ -814,10 +814,10 @@ is encoded such that the remote connection host can infer which translator and u
 ----
 g.V().out().map(lambda: "lambda x: len(x.get().value('name'))").sum().toList()                     <1>
 statics.default_lambda_language                                                                    <2>
-g.V().out().map(lambda: ("it.get().value('name').length()", "gremlin-groovy")).sum().toList()      <3>
+g.V().out().map(lambda: ("it.get().value('name').length()", 'gremlin-groovy')).sum().toList()      <3>
 statics.default_lambda_language = 'gremlin-groovy'                                                 <4>
 g.V().out().map(lambda: "it.get().value('name').length()").sum().toList()                          <5>
-g.V().out().map(lambda: ("lambda x: len(x.get().value('name'))", "gremlin-python")).sum().toList() <6>
+g.V().out().map(lambda: ("lambda x: len(x.get().value('name'))", 'gremlin-python')).sum().toList() <6>
 statics.default_lambda_language = 'gremlin-python'                                                 <7>
 g.V().out().map(lambda: "x: len(x.get().value('name'))").sum().toList()                            <8>
 ----
@@ -833,7 +833,7 @@ g.V().out().map(lambda: "x: len(x.get().value('name'))").sum().toList()         
 
 TIP: When running into situations where Groovy cannot properly discern a method signature based on the `Lambda`
 instance created, it will help to fully define the closure in the lambda expression - so rather than
-`lambda: ("it.get().value("name')","gremlin-groovy")`, prefer `lambda: ("x -> x.get().value("name"),"gremlin-groovy")`.
+`lambda: ('it.get().value('name')','gremlin-groovy')`, prefer `lambda: ('x -> x.get().value('name'),'gremlin-groovy')`.
 
 WARNING: Jython support has been deprecated as for 3.3.10 and will be removed in 3.5.0. Gremlin-Python will at that
 point default to Groovy for lambda processing and Python lambdas will not be supported.
@@ -845,8 +845,8 @@ instead of translating, compiling, and then executing each submitted bytecode, i
 
 [gremlin-python,modern]
 ----
-g.V(Bindings.of('id',1)).out('created').map(lambda: ("it.get().value('name').length()", "gremlin-groovy")).sum().toList()
-g.V(Bindings.of('id',4)).out('created').map(lambda: ("it.get().value('name').length()", "gremlin-groovy")).sum().toList()
+g.V(Bindings.of('id',1)).out('created').map(lambda: ("it.get().value('name').length()", 'gremlin-groovy')).sum().toList()
+g.V(Bindings.of('id',4)).out('created').map(lambda: ("it.get().value('name').length()", 'gremlin-groovy')).sum().toList()
 ----
 
 ==== Native Python Lambdas
@@ -924,12 +924,12 @@ Once a `Client` instance is ready, it is possible to issue some Gremlin:
 
 [source,python]
 ----
-result_set = client.submit("[1,2,3,4]")  <1>
+result_set = client.submit('[1,2,3,4]')  <1>
 future_results = result_set.all()  <2>
 results = future_results.result() <3>
 assert results == [1, 2, 3, 4] <4>
 
-future_result_set = client.submitAsync("[1,2,3,4]") <5>
+future_result_set = client.submitAsync('[1,2,3,4]') <5>
 result_set = future_result_set.result() <6>
 result = result_set.one() <7>
 assert results == [1, 2, 3, 4] <8>
@@ -959,9 +959,9 @@ provide a way to include options that are specific to the request made with the 
 this feature is to set a per-request override to the `evaluationTimeout` so that it only applies to the current
 request.
 
-[source,java]
+[source,python]
 ----
-result_set = client.submit("[1,2,3,4]", result_options={'evaluationTimeout': 5000})
+result_set = client.submit('[1,2,3,4]', result_options={'evaluationTimeout': 5000})
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
@@ -984,13 +984,13 @@ might look like this:
 class SocialTraversal(GraphTraversal):
 
     def knows(self, person_name):
-        return self.out("knows").hasLabel("person").has("name", person_name)
+        return self.out('knows').hasLabel('person').has('name', person_name)
 
     def youngestFriendsAge(self):
-        return self.out("knows").hasLabel("person").values("age").min()
+        return self.out('knows').hasLabel('person').values('age').min()
 
     def createdAtLeast(self, number):
-        return self.outE("created").count().is_(P.gte(number))
+        return self.outE('created').count().is_(P.gte(number))
 
 class __(AnonymousTraversal):
 
@@ -1017,11 +1017,11 @@ class SocialTraversalSource(GraphTraversalSource):
 
     def persons(self, *args):
         traversal = self.get_graph_traversal()
-        traversal.bytecode.add_step("V")
-        traversal.bytecode.add_step("hasLabel", "person")
+        traversal.bytecode.add_step('V')
+        traversal.bytecode.add_step('hasLabel', 'person')
 
         if len(args) > 0:
-            traversal.bytecode.add_step("has", "name", P.within(args))
+            traversal.bytecode.add_step('has', 'name', P.within(args))
 
         return traversal
 ----
@@ -1035,8 +1035,8 @@ be used:
 [source,python]
 ----
 social = traversal(SocialTraversalSource).withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
-social.persons("marko").knows("josh")
-social.persons("marko").youngestFriendsAge()
+social.persons('marko').knows('josh')
+social.persons('marko').youngestFriendsAge()
 social.persons().filter(__.createdAtLeast(2)).count()
 ----
 
@@ -1413,6 +1413,17 @@ const names = await g.V().hasLabel('person').values('name').toList();
 console.log(names);
 ----
 
+Some connection options can also be set on individual requests made through the using `with()` step on the
+`TraversalSource`. For instance to set request timeout to 500 milliseconds:
+
+[source,javascript]
+----
+const vertices = await g.with_('evaluationTimeout', 500L).V().out('knows').toList()
+----
+
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
+`evaluationTimeout` (formerly 'scriptEvaluationTimeout' which is also supported but now deprecated).
+
 [[gremlin-javascript-imports]]
 === Common Imports
 
@@ -1479,6 +1490,21 @@ const client = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traver
 ----
 
 With this configuration, the state of variables within scripts are preserved between requests.
+
+==== Per Request Settings
+
+The `client.submit()` functions accept a `requestOptions` which expects a dictionary. The `requestOptions`
+provide a way to include options that are specific to the request made with the call to `submit()`. A good use-case for
+this feature is to set a per-request override to the `evaluationTimeout` so that it only applies to the current
+request.
+
+[source,javascript]
+----
+const result = await client.submit("[1,2,3,4]", null, { evaluationTimeout: 5000 })
+----
+
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
+`evaluationTimeout` (formerly 'scriptEvaluationTimeout' which is also supported but now deprecated).
 
 [[gremlin-javascript-dsl]]
 === Domain Specific Languages
