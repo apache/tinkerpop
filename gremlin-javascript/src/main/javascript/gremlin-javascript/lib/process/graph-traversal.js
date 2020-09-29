@@ -26,7 +26,7 @@ const { Traversal } = require('./traversal');
 const remote = require('../driver/remote-connection');
 const utils = require('../utils');
 const Bytecode = require('./bytecode');
-const { TraversalStrategies, VertexProgramStrategy } = require('./traversal-strategy');
+const { TraversalStrategies, VertexProgramStrategy, OptionsStrategy } = require('./traversal-strategy');
 
 
 /**
@@ -77,21 +77,31 @@ class GraphTraversalSource {
   }
 
   /**
+   * Graph Traversal Source with method.
+   * @param {String} key
+   * @param {Object} value if not specified, the value with default to {@code true}
+   * @returns {GraphTraversalSource}
+   */
+  with_(key, value=undefined) {
+    const val = value === undefined ? true : value;
+    let optionsStrategy = this.bytecode.sourceInstructions.find(
+        i => i[0] === "withStrategies" && i[1] instanceof OptionsStrategy);
+    if (optionsStrategy === undefined) {
+      optionsStrategy = new OptionsStrategy({[key]: val});
+      return this.withStrategies(optionsStrategy);
+    } else {
+      optionsStrategy[1].configuration[key] = val;
+      return new this.graphTraversalSourceClass(this.graph, new TraversalStrategies(this.traversalStrategies),
+          this.bytecode, this.graphTraversalSourceClass, this.graphTraversalClass);
+    }
+  }
+
+  /**
    * Returns the string representation of the GraphTraversalSource.
    * @returns {string}
    */
   toString() {
     return 'graphtraversalsource[' + this.graph.toString() + ']';
-  }
-  
-  /**
-   * Graph Traversal Source with method.
-   * @param {...Object} args
-   * @returns {GraphTraversalSource}
-   */
-  with_(...args) {
-    const b = new Bytecode(this.bytecode).addSource('with', args);
-    return new this.graphTraversalSourceClass(this.graph, new TraversalStrategies(this.traversalStrategies), b, this.graphTraversalSourceClass, this.graphTraversalClass);
   }
   
   /**

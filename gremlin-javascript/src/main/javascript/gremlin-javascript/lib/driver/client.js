@@ -69,27 +69,35 @@ class Client {
    * Send a request to the Gremlin Server, can send a script or bytecode steps.
    * @param {Bytecode|string} message The bytecode or script to send
    * @param {Object} [bindings] The script bindings, if any.
-   * @param {Object} [extraArgs] The extra arguments, if any.
+   * @param {Object} [requestOptions] Configuration specific to the current request.
+   * @param {String} [requestOptions.requestId] User specified request identifier which must be a UUID.
+   * @param {Number} [requestOptions.batchSize] The size in which the result of a request is to be "batched" back to the client
+   * @param {String} [requestOptions.userAgent] A custom string that specifies to the server where the request came from.
+   * @param {Number} [requestOptions.evaluationTimeout] The timeout for the evaluation of the request.
    * @returns {Promise}
    */
-  submit(message, bindings, extraArgs) {
-    if (typeof message === 'string') {
-      const args = Object.assign({}, extraArgs, {
-        'gremlin': message,
-        'bindings': bindings,
-        'language': 'gremlin-groovy',
-        'accept': this._connection.mimeType,
-        'aliases': { 'g': this._options.traversalSource || 'g' }
-      });
+  submit(message, bindings, requestOptions) {
+    const requestIdOverride = requestOptions && requestOptions.requestId
+    if (requestIdOverride) delete requestOptions['requestId'];
+
+    const args = Object.assign({
+      gremlin: message,
+      aliases: { 'g': this._options.traversalSource || 'g' }
+    }, requestOptions)
+
+    if (message instanceof Bytecode) {
+      return this._connection.submit('traversal','bytecode', args, requestIdOverride);
+    } else if (typeof message === 'string') {
+      args['bindings'] = bindings;
+      args['language'] = 'gremlin-groovy';
+      args['accept'] = this._connection.mimeType;
+
       if (this._options.session && this._options.processor === 'session') {
         args['session'] = this._options.session;
       }
-
-      return this._connection.submit(null, 'eval', args, null, this._options.processor || '');
-    }
-
-    if (message instanceof Bytecode) {
-      return this._connection.submit(message);
+      return this._connection.submit(this._options.processor || '','eval', args, requestIdOverride);
+    } else {
+      throw new TypeError("message must be of type Bytecode or string");
     }
   }
 
@@ -101,7 +109,7 @@ class Client {
   close() {
     if (this._options.session && this._options.processor === 'session') {
       const args = {'session': this._options.session};
-      return this._connection.submit(null, 'close', args, null, this._options.processor).then(() => this._connection.close());
+      return this._connection.submit(this._options.processor, 'close', args, null).then(() => this._connection.close());
     }
     return this._connection.close();
   }

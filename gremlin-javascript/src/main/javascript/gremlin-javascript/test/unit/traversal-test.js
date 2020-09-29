@@ -60,43 +60,20 @@ describe('Traversal', function () {
       assert.strictEqual(bytecode.stepInstructions[2][2].typeName, 'Order');
       assert.strictEqual(bytecode.stepInstructions[2][2].elementName, 'desc');
     });
-  });
 
-  // describe('#hasNext()', function() {
-  //   it('should apply strategies and determine if there is anything left to iterate in the traversal')
-  //   const strategyMock = {
-  //     apply: function (traversal) {
-  //       traversal.traversers = [ new t.Traverser(1, 1), new t.Traverser(2, 1) ];
-  //       return Promise.resolve();
-  //     }
-  //   };
-  //   const strategies = new TraversalStrategies();
-  //   strategies.addStrategy(strategyMock);
-  //   const traversal = new t.Traversal(null, strategies, null);
-  //   return traversal.hasNext()
-  //       .then(function (more) {
-  //         assert.strictEqual(more, true);
-  //         return traversal.next();
-  //       })
-  //       .then(function (item) {
-  //         assert.strictEqual(item.value, 1);
-  //         assert.strictEqual(item.done, false);
-  //         return traversal.next();
-  //       })
-  //       .then(function (item) {
-  //         assert.strictEqual(item.value, 2);
-  //         assert.strictEqual(item.done, false);
-  //         return traversal.next();
-  //       })
-  //       .then(function (item) {
-  //         assert.strictEqual(item.value, null);
-  //         assert.strictEqual(item.done, true);
-  //         return traversal.hasNext();
-  //       })
-  //       .then(function (more) {
-  //         assert.strictEqual(more, false);
-  //       });
-  // });
+    it('should configure OptionStrategy for with_()', function () {
+      const g = new graph.Graph().traversal();
+      const bytecode = g.with_('x','test').with_('y').V().getBytecode();
+      assert.ok(bytecode);
+      assert.strictEqual(bytecode.sourceInstructions.length, 1);
+      assert.strictEqual(bytecode.sourceInstructions[0][0], 'withStrategies');
+      const conf = bytecode.sourceInstructions[0][1].configuration;
+      assert.strictEqual(conf.x, 'test');
+      assert.strictEqual(conf.y, true);
+      assert.strictEqual(bytecode.stepInstructions.length, 1);
+      assert.strictEqual(bytecode.stepInstructions[0][0], 'V');
+    });
+  });
 
   describe('#next()', function () {
     it('should apply the strategies and return a Promise with the iterator item', function () {

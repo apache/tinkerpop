@@ -28,7 +28,7 @@ describe('Client', function () {
 
   it('should use default opProcessor', function () {
     const connectionMock = {
-      submit: function (bytecode, op, args, requestId, processor) {
+      submit: function (processor, op, args, requestId) {
         assert.strictEqual(args.gremlin, query);
         assert.strictEqual(processor, '');
 
@@ -43,7 +43,7 @@ describe('Client', function () {
 
   it('should allow to configure opProcessor', function () {
     const connectionMock = {
-      submit: function (bytecode, op, args, requestId, processor) {
+      submit: function (processor, op, args, requestId) {
         assert.strictEqual(args.gremlin, query);
         assert.strictEqual(processor, customOpProcessor);
 
@@ -58,9 +58,9 @@ describe('Client', function () {
 
   it('should allow to submit extra arguments', function () {
     const connectionMock = {
-      submit: function (bytecode, op, args, requestId, processor) {
+      submit: function (processor, op, args, requestId) {
         assert.strictEqual(args.gremlin, query);
-        assert.strictEqual(args.scriptEvaluationTimeout, 123);
+        assert.strictEqual(args.evaluationTimeout, 123);
         assert.strictEqual(processor, customOpProcessor);
 
         return Promise.resolve();
@@ -69,6 +69,6 @@ describe('Client', function () {
 
     const customClient = new Client('ws://localhost:9321', {traversalSource: 'g', processor: customOpProcessor});
     customClient._connection = connectionMock;
-    customClient.submit(query, null, {"scriptEvaluationTimeout": 123})
+    customClient.submit(query, null, {"evaluationTimeout": 123})
   });
 });
