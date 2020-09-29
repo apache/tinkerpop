@@ -434,7 +434,7 @@ request.
 Cluster cluster = Cluster.open();
 Client client = cluster.connect();
 RequestOptions options = RequestOptions.build().timeout(500).create();
-List<Result> result = client.submit("g.V()", options).all().get();
+List<Result> result = client.submit("g.V().repeat(both()).times(100)", options).all().get();
 ----
 
 ==== Aliases
@@ -936,7 +936,7 @@ request.
 
 [source,python]
 ----
-result_set = client.submit('[1,2,3,4]', result_options={'evaluationTimeout': 5000})
+result_set = client.submit('g.V().repeat(both()).times(100)', result_options={'evaluationTimeout': 5000})
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
