@@ -158,7 +158,7 @@ limitations under the License.
         <metrics.version>3.0.2</metrics.version>
         <netty.version>4.1.52.Final</netty.version>
         <slf4j.version>1.7.25</slf4j.version>
-        <snakeyaml.version>1.15</snakeyaml.version>
+        <snakeyaml.version>1.27</snakeyaml.version>
         <spark.version>2.4.0</spark.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
